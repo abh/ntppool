@@ -1,0 +1,58 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+<title>pool.ntp.org server statistics</title>
+<link rel="icon" href="http://www.ntp.org/favicon.ico" type="image/x-icon" />
+</head>
+<body style="background-color:white">
+<hr/>
+<h1><a href="/">pool.ntp.org</a> server statistics</h1>
+<hr/>
+<p>
+As announced in <a
+href="https://fortytwo.ch/mailman/pipermail/timekeepers-announce/2003/000006.html"
+>this message</a> and further explained <a
+href="https://fortytwo.ch/mailman/pipermail/timekeepers/2005/001269.html"
+>here</a>, the time servers in the <a href="http://www.pool.ntp.org"
+>pool.ntp.org</a> project are monitored, and a scoring system is used to
+determine the servers which are eliglible for the DNS rotation.  Of the good
+servers, a random subset of 15 servers is chosen for the pool.ntp.org DNS name
+and changed every hour so that the DNS answers stay small enough to fit in UDP
+packets, and to achieve a good load balancing even when some caching
+nameservers do not rotate their entries in pool.ntp.org.
+</p>
+<p>
+Below, you can query how the monitoring system rated a pool.ntp.org timeserver
+over the last 31 days.
+</p>
+<form action="show_server_stats_do.php" method="post">
+<table>
+<tr><td>IP address of server:</td><td><input type="text" name="server_ip"/></td>
+<td></td><td><input type="submit"/></td></tr>
+</table>
+</form>
+<hr/>
+<div style="font-size:x-small">
+<div style="text-align:right">
+<a href="http://www.vanheusden.com/" target="_new">Folkert van Heusden</a>
+</div>
+<pre>
+$Log: show_server_stats.html,v $
+Revision 1.5  2004/09/23 12:08:43  avbidder
+ * French translation: Thanks, Vincent
+ * Newsletter
+ * Various small correction; thanks to various people
+
+Revision 1.4  2004/06/12 12:24:53  avbidder
+ * english grammar...
+
+Revision 1.3  2004/06/12 12:13:56  avbidder
+ * html completely redone
+ * static y-range in plot
+ * of course, thanks a lot Folkert for doing the plot!
+
+</pre>
+</div>
+</body>
+</html>

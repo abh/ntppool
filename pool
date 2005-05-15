@@ -1,0 +1,306 @@
+#! /usr/bin/perl -w
+use strict;
+use DBI;
+use List::Util qw(shuffle);
+use Net::hostent;
+use Net::IPv4Addr qw(ipv4_chkip);
+use Net::NTP;
+use Socket;
+use Time::HiRes;
+use Data::Dumper;
+use Sys::Hostname qw(hostname);
+
+use constant LOGFILE => "$ENV{CBROOTLOCAL}/log";
+
+$Net::NTP::TIMEOUT = 2;
+
+my $db;
+
+# exit handler
+sub closedbconnection {
+    $db->rollback();
+    $db->disconnect();
+}
+
+# tools
+sub ntpdate {
+    my ($host, $error) = @_;
+
+    my %ntp = eval { get_ntp_response($host); };
+    warn Data::Dumper->Dump([\%ntp]);
+
+    my @error;
+    
+    $ntp{Stratum} ||= '';
+    push @error, "Bad stratum: $ntp{Stratum}" unless $ntp{Stratum} and $ntp{Stratum} < 6;
+
+    if (@error) {
+      print @error,"\n";
+      my @query = `ntpdate -q $host 2>&1`
+	or die "Error in command execution: ntpdate\n";
+      print @query;
+
+      return undef;
+    }
+
+    return 1;
+}
+
+if ($#ARGV < 0) {
+    die "pool add|report|scores|zone [<args>]\n";
+}
+
+# connect to the db
+$db = DBI->connect("dbi:mysql:dbname=ntppool", "root", "",
+        {AutoCommit => 0, RaiseError => 1})
+    or die "Couldn't connect to database\n";
+#$SIG{__DIE__} = \&closedbconnection;
+
+my $cmd = shift @ARGV;
+if ($cmd eq "add") {
+    if ($#ARGV < 1) {
+        die "pool add <email> <host or IP> [<zone ...>]\n";
+    }
+    # look if the email address is already registered
+    my $email = $db->quote(shift @ARGV);
+    my @row = $db->selectrow_array(
+        "SELECT id FROM users WHERE email = $email");
+    my $emailid = $row[0];
+    if ($#row == -1) {
+        $db->do("INSERT INTO users (email) VALUES ($email)");
+        $emailid = $db->{'mysql_insertid'};
+    }
+    # do we have a hostname or an IP?
+    my $hostname = shift @ARGV;
+    my $ip;
+    if (ipv4_chkip $hostname) {
+        $ip = $hostname;
+        $hostname = undef;
+    } else {
+        my $addrs = gethostbyname($hostname)
+            or die "$hostname does not resolve.\n";
+        if ($#{$addrs->addr_list} > 0) {
+            print "warning: $hostname has multiple IP addresses.\n";
+        }
+        $ip = inet_ntoa(${$addrs->addr_list}[0]);
+    }
+    # test the timeserver
+    ntpdate $ip, "Bad server ".($hostname?$hostname:"")."[$ip]:"
+        or exit;
+    # insert into database
+    @row = $db->selectrow_array(
+        "SELECT email FROM servers, users WHERE ip = '$ip' "
+        . "AND servers.admin = users.id");
+    if ($#row != -1) {
+        die "server $ip already in database for $row[0]\n";
+    }
+    warn "FOOBAR!";
+    $db->do("INSERT INTO servers (ip, admin, hostname) VALUES (?,?,?)", {}, $ip, $emailid, $hostname);
+    my $serverid = $db->{'mysql_insertid'};
+    # insert into zones
+    foreach (@ARGV) {
+        my $zone = $db->quote($_);
+        @row = $db->selectrow_array("SELECT id FROM zones WHERE name = $zone");
+        if (not @row or not $row[0]) {
+            die "No such zone: $zone\n";
+        }
+        $db->do("INSERT INTO locations (server, zone) "
+            . "VALUES ($serverid, $row[0])");
+    }
+    # now add to the log file
+    open LOG, ">>".LOGFILE
+        or die "Opening log (".LOGFILE."): $!\n";
+    my (undef, undef, undef, $d, $m, $y, undef) = localtime time;
+    unless (defined $hostname) { $hostname = $ip; }
+    my $z = join " ", @ARGV;
+    printf LOG "%04d%02d%02d clockmaster $serverid "
+        . "add $email $hostname $z\n", $y + 1900, $m + 1, $d;
+
+} elsif ($cmd eq "report") {
+    print <<'EOT';
+From: pool.ntp.org monitoring script <clockmaster@fortytwo.ch>
+To: <timekeepers-bulletin@fortytwo.ch>
+Subject: Daily pool.ntp.org status report
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii";
+Content-Transfer-Encoding: 7bit
+X-Script-Version: $Revision: 1.26 $
+
+Servers with a score <= 5, currently not in the pool.ntp.org zone:
+
+IP              score history
+-------------------------------------------------------------------------
+EOT
+    my $badservers = $db->selectall_arrayref("SELECT sv.ip,sv.id,sc.score "
+        . "FROM servers sv, scores sc "
+        . "WHERE sv.id = sc.server AND sc.score <= 5 ORDER BY score DESC");
+    foreach my $srv (@$badservers) {
+        my $history = $db->selectcol_arrayref("SELECT step FROM log_scores "
+            . "WHERE server=$$srv[1] ORDER BY ts DESC LIMIT 50");
+        for (my $i = 0; $i <= $#$history; $i++) {
+            if    ($$history[$i] >= 0)  { $$history[$i] = '#'; }
+            elsif ($$history[$i] >= -1) { $$history[$i] = 'x'; }
+            elsif ($$history[$i] >= -3) { $$history[$i] = 'o'; }
+            else                        { $$history[$i] = '_'; }
+        }
+        $history = scalar reverse @$history;
+        printf "%-15s %6.1f %50s\n", $$srv[0], $$srv[2], $history;
+    }
+    print <<'EOT';
+-------------------------------------------------------------------------
+
+The history is one entry per hour (left is old values). Legend:
+    #: server offset is ok
+    x: server offset is tolerable
+    o: server offset is too big
+    _: server is unreachable
+
+Comments welcome on the timekeepers@fortytwo.ch mailing list.
+EOT
+} elsif ($cmd eq "scores") {
+    $db->do("UPDATE scores SET score = score * 0.95");
+
+    # check if this machine has good time.
+    $Net::NTP::CLIENT_TIME_SEND = undef;
+    $Net::NTP::CLIENT_TIME_RECEIVE = undef;
+    my $mon_host = 'localhost';
+    $mon_host = 'miette' if hostname eq "powermac.bn.dev";
+    my %pkt = get_ntp_response($mon_host);
+    if ($pkt{'Stratum'} == 0 or $pkt{'Stratum'} > 6) {
+        die "monitoring server not synchronized\n";
+    }
+
+    # and if we're connected
+    $Net::NTP::CLIENT_TIME_SEND = undef;
+    $Net::NTP::CLIENT_TIME_RECEIVE = undef;
+    %pkt = get_ntp_response('ntp.metas.ch');
+    if ($pkt{'Stratum'} == 0 or $pkt{'Stratum'} > 6) {
+        $Net::NTP::CLIENT_TIME_SEND = undef;
+        $Net::NTP::CLIENT_TIME_RECEIVE = undef;
+        %pkt = get_ntp_response('time.ethz.ch');
+        if ($pkt{'Stratum'} == 0 or $pkt{'Stratum'} > 6) {
+            die "no time from ntp.metas.ch or time.ethz.ch\n";
+        }
+    }
+
+    # go through server array and fetch offset for all servers
+    my $srv = $db->selectall_arrayref("SELECT sr.id, sr.ip, sc.score "
+        . "FROM servers sr LEFT OUTER JOIN scores sc ON sr.id = sc.server");
+    foreach my $s (@$srv) {
+        my $step = 0;
+        if (not defined $$s[2]) {
+            # start at score = 0 if new server
+            $$s[2] = 0;
+        }
+
+        # fetch offset by ntp
+        # if a server is not good, query a second time
+        # and use the second result - this is said to solve problems with some
+        # crappy Internet access routers.
+        my $offset = undef;
+        for (my $i = 0; $step != 1 and $i < 2; $i++) {
+            $Net::NTP::CLIENT_TIME_RECEIVE = undef;
+            my $time_then = Time::HiRes::time;
+            $Net::NTP::CLIENT_TIME_SEND = $time_then;
+#            $SIG{__DIE__} = 'DEFAULT';
+            my %pkt = eval {get_ntp_response($$s[1])};
+#            $SIG{__DIE__} = \&closedbconnection;
+            my $time_now = Time::HiRes::time;
+
+            if ($!) {
+                $step = -5;
+            } else {
+                my $recv_org =  $pkt{'Receive Timestamp'} - $time_now ;
+                my $trans_dest = $pkt{'Transmit Timestamp'} - $time_then;
+                $offset = abs(($recv_org + $trans_dest) / 2);
+                if ($offset > 1.5) {
+                    $step = -2;
+                } elsif ($offset > 0.5) {
+                    $step = -2 * $offset + 2;
+                } else {
+                    $step = 1;
+                }
+            }
+        }
+
+        if (not defined $offset) { $offset = "NULL"; }
+        if ($db->do("UPDATE scores SET score = score + $step, ts=now() "
+                . "WHERE server = $$s[0]") != 1) {
+            $db->do("INSERT INTO scores (server, score) "
+                . "VALUES ($$s[0], $step)");
+        }
+        $db->do("INSERT INTO log_scores "
+            . "(server, score, step, offs) "
+            . "VALUES ($$s[0], $$s[2] + $step, $step, $offset)");
+    }
+} elsif ($cmd eq "zone") {
+    #open HEAD, "<$ENV{HOME}/db/header"
+    open HEAD, "<header"
+        or die "Opening DNS zone file header ($ENV{HOME}/db/header): $!\n";
+    print "; ATTENTION\n; This is a generated file\n;\n";
+    my $t = int time / 100;
+    while (<HEAD>) {
+        s/\@VERSION\@/$t/;
+        print;
+    }
+    close HEAD;
+
+    my $entries = $db->selectall_arrayref("SELECT s.ip "
+        . "FROM servers s, scores sc "
+        . "WHERE sc.server = s.id AND sc.score > 5");
+    if ($#$entries < 59) {
+        print "; possible duplicates in the zones below (@)\n";
+        foreach my $z (("@", "0", "1", "2")) {
+            @$entries = shuffle(@$entries);
+            my $i;
+            foreach my $e (@$entries) {
+                print "$z IN A $$e[0]\n";
+                $i++;
+                last if ($i >= 15);
+            }
+        }
+    } else {
+        print "; 'big' zone without duplicates below (@)\n";
+        @$entries = shuffle(@$entries);
+        foreach my $z (("@", "0", "1", "2")) {
+            for (my $i = 0; $i < 15; $i++) {
+                print "$z IN A ", ${shift @$entries}[0], "\n";
+            }
+        }
+    }
+
+
+    my $zones = $db->selectall_arrayref("SELECT id, name FROM zones");
+    foreach my $zone (@$zones) {
+        $entries = $db->selectall_arrayref("SELECT s.ip "
+            . "FROM servers s, scores sc, locations l "
+            . "WHERE l.server = s.id AND l.zone = $$zone[0] "
+            . "AND sc.server = s.id AND sc.score > 5");
+        if ($#$entries < 59) {
+            print "; possible duplicates in the zones below ($$zone[1])\n";
+            foreach my $z (("", "0.", "1.", "2.")) {
+                @$entries = shuffle(@$entries);
+                my $i;
+                foreach my $e (@$entries) {
+                    print "$z$$zone[1] IN A $$e[0]\n";
+                    $i++;
+                    last if ($i >= 15);
+                }
+            }
+        } else {
+            print "; 'big' zone without duplicates below ($$zone[1])\n";
+            @$entries = shuffle(@$entries);
+            foreach my $z (("", "0.", "1.", "2.")) {
+                for (my $i = 0; $i < 15; $i++) {
+                    print "$z$$zone[1] IN A ", ${shift @$entries}[0], "\n";
+                }
+            }
+        }
+    }
+} else {
+    die "Unknown command: $cmd\n";
+}
+
+$db->commit() or die "Error on commit\n";
+$SIG{__DIE__} = 'DEFAULT';
+$db->disconnect();

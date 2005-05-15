@@ -1,0 +1,425 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+<title>pool.ntp.org: the internet time network</title>
+<link rel="icon" href="http://www.ntp.org/favicon.ico" type="image/x-icon" />
+</head>
+<body style="background-color:white">
+<div>
+<a name="top">Translations:</a>
+<a href="http://ntp.robertkehl.de/" title="german">deutsch</a> |
+<a href="http://pool.ntp.bitic.net/" title="spanish">español</a> |
+<a href="http://ntp.vuntz.net/" title="french">français</a> |
+<a href="http://ntp.rondom.org/" title="dutch">nederlands</a>
+</div>
+<hr/>
+<h1>pool.ntp.org: public ntp time server for everyone</h1>
+<hr/>
+<ol>
+<li><a href="#news">News</a></li>
+<li><a href="#use">How do I <i>use</i> pool.ntp.org?</a></li>
+<li><a href="#join">How do I <i>join</i> pool.ntp.org?</a></li>
+<li><a href="#mail">The mailing lists</a></li>
+</ol>
+<hr/>
+<h2>Introduction</h2>
+<p>
+I created this project after a <a
+href="http://groups.google.com/groups?threadm=3E2DBFF7.F9A51614%40udel.edu"
+>discussion</a> about resource consumption on the big timeservers, with the
+idea that for everyday use a DNS round robin would be good enough, and would
+allow spreading the load over many servers. The disadvantage is, of course,
+that you may occasionally get a bad server (if so, please report it to the <a
+href="mailto:timekeepers@fortytwo.ch"
+>timekeepers mailing list</a>, see <a href="#mail">below</a>) and that you
+usually won't get the server closest to you.
+</p>
+<p>
+I originally started this project as the <em>time.fortytwo.ch</em> project in
+my own domain, but David Mills (he who is ntp) thought the idea was good enough
+to be tried, so the project soon moved to the <em>pool.ntp.org</em> domain.
+</p>
+<div style="text-align:right"><a href="#top">go up</a></div>
+<h2><a name="news">News</a></h2>
+<table cellpadding="4">
+<tr>
+<td align="center" valign="top"><b>2004-09-07</b></td>
+<td>
+Server count hits 220.  Please do not use OpenNTP as a server for the
+pool.ntp.org project <i>[2004-12-15: Versions later than 3.6.1 do now properly
+report the stratum, though].</i>  The monitoring system has been changed: it
+now uses simple ntp queries instead of 'ntpd' monitoring servers.
+{0,1,2}.pool.ntp.org subzones have been reintroduced.  time.fortytwo.ch will be
+retired in the long run.  Read more in the <a
+href="https://fortytwo.ch/mailman/pipermail/timekeepers-announce/2004/000010.html">full
+announcement</a>.
+</td>
+</tr>
+<tr>
+<td align="center" valign="top"><b>2004-06-18</b></td>
+<td>
+Thanks to the efforts of <a href="http://www.vanheusden.com/">Folkert van
+Heusden</a>, you can see your timeserver's <a href="scores">performance</a>
+over the last 31 days. Current server count: 188 - probably mostly because
+Folkert got the pool.ntp.org project <a
+href="http://developers.slashdot.org/article.pl?sid=04/05/31/0150251"
+>slashdotted</a>.
+</td>
+</tr>
+<tr>
+<td align="center" valign="top"><b>2004-03-19</b></td>
+<td>
+Current server count: 115.  The <a href="http://packages.debian.org/ntp">ntp
+4.2 packages</a> in <a href="http://debian.org">Debian GNU/Linux</a> now use
+pool.ntp.org per default, and include an invitation to join the pool.  A
+sidenote: some people have experienced problems when trying to reach me per
+mail.  This is nothing personal, but as I've been flooded by spam, I now block
+some countries and some internet providers almost entirely.
+</td>
+</tr>
+<tr>
+<td align="center" valign="top"><b>2004-01-09</b></td>
+<td>
+Xisco Lladó has published a long article about the project at <a
+href="http://bulma.net/body.phtml?nIdNoticia=1947"
+>http://bulma.net/body.phtml?nIdNoticia=1947</a> - thanks a lot!  This caused
+a few more people to donate servers, so that we now count 106 servers in the
+project, with 10 servers in spain.
+</td>
+</tr>
+<tr>
+<td align="center" valign="top"><b>2003-11-03</b></td>
+<td>
+There is a <a href="http://pool.ntp.bitic.net">Spanish translation</a> - thanks
+to Xisco Lladó.  Also, I have installed an automatical rating mechanism, so
+that bad timeservers are automatically removed from the pool.ntp.org
+nameserver (an associated <a href="#mail">mailing list</a> has also been
+created). Richard S. Shuford (Sun) sent me a note about how to configure nscd
+properly to work around the fact that it doesn't do proper round robin of DNS
+entries. I don't recommend the use of <tt>maxpoll 12</tt> in <tt>ntp.conf</tt>
+anymore. As always: more information on the <a
+href="https://fortytwo.ch/mailman/pipermail/timekeepers-announce/2003/000006.html">
+mailing list</a>.
+</td>
+</tr>
+<tr>
+<td align="center" valign="top"><b>2003-09-16</b></td>
+<td>
+The project now consists of 87 servers - thanks to all who participate.  Also,
+nameservers in the US and in New Zealand will be added shortly.  The <a
+href="#mail">mailing list</a> has seen some discussions about monitoring server
+quality - I'll have to look at this problem more detail. Read the long version
+of these news in the <a
+href="https://fortytwo.ch/mailman/pipermail/timekeepers/2003/000126.html"
+>mailing list archives</a>.
+</td>
+</tr>
+<tr>
+<td align="center" valign="top"><b>2003-03-27</b></td>
+<td>
+It's done!  The project is now at pool.ntp.org.  Also, country level subdomain
+are being created - the biggest (us) already has 18 servers, with ch (11) and
+nl (8) being the next biggest.  Due to a problem with TCP nameserver requests,
+no more than 15 servers are visible at any moment in the zone.  Debian
+developer Bdale Garbee considers using pool.ntp.org in the default
+configuration of the Debian ntp package.  Read the longer version of these news
+in the <a
+href="https://fortytwo.ch/mailman/pipermail/timekeepers-announce/2003/000002.html"
+>mailing list archives</a>.
+</td>
+</tr>
+<tr>
+<td align="center" valign="top"><b>2003-02-19</b></td>
+<td>
+We've been covered by the <a href="http://www.debian.org/News/weekly/2003/07/"
+>Debian Weekly News</a> - resulting in a few more timeservers being added, the
+count is at 30 now with some more having shown interest.  Amongst the latter is
+also somebody in Hongkong, so the asia.time.fortytwo.ch zone will be created
+shortly. I've also added a new <a
+href="http://www.asksnoop.com/shizzolator.php?url=http://fortytwo.ch/time/index.html.en"
+>translation</a> - hope you like it.
+</td>
+</tr>
+<tr>
+<td align="center" valign="top"><b>2003-02-12</b></td>
+<td> 
+Regional zones are being created now: europe.time.fortytwo.ch,
+north-america.time.fortytwo.ch and oceania.time.fortytwo.ch exist now.
+</td>
+</tr>
+<tr>
+<td align="center" valign="top"><b>2003-02-12</b></td>
+<td> 
+I've added our first two <i>stratum 1</i> clocks - thanks to <a
+href="http://redhat.com">RedHat</a> for donating them.
+</td>
+</tr>
+<tr>
+<td align="center" valign="top"><b>2003-02-12</b></td>
+<td> 
+Suggestion by Mark Lijftogt: A news section has been added.
+</td>
+</tr>
+</table>
+<p>
+Older (and more) news are available in the <a href="#mail"
+>mailing list archives</a> 
+</p>
+<div style="text-align:right"><a href="#top">go up</a></div>
+<h2><a name="use">How do I use pool.ntp.org?</a></h2>
+<p>
+If you just want to synchronise your computers clock to the network, the
+configuration file (for the ntpd program from the <a
+href="http://www.ntp.org">ntp.org distribution</a>, on any supported operating
+system - <b>Linux, *BSD, Windows and even some more exotic systems</b>) is
+really simple:
+</p>
+<pre style="background-color:#e0e0e0;">
+driftfile /var/lib/ntp/ntp.drift
+
+server 0.pool.ntp.org
+server 1.pool.ntp.org
+server 2.pool.ntp.org
+</pre>
+<p>
+The 0, 1 and 2.pool.ntp.org names point to a random set of servers that will
+change every hour.  Make sure your computer's clock is set to something
+sensible (within a few minutes of the 'true' time) - you could use <tt>ntpdate
+pool.ntp.org</tt>, or you could just use the <tt>date</tt> command and set it
+to your wristwatch. Start ntpd, and after some time (this could take as long as
+half an hour!), <tt>ntpq -pn</tt> should output something like:
+</p>
+<pre style="background-color:#e0e0e0;">
+avbidder:~$ ntpq -p
+     remote           refid      st t when poll reach   delay   offset  jitter
+==============================================================================
++81.6.42.224     193.5.216.14     2 u   68 1024  377  158.995   51.220  50.287
+*217.162.232.173 130.149.17.8     2 u  191 1024  176   79.245    3.589  27.454
+-129.132.57.95   131.188.3.222    3 u  766 1024  377   22.302   -2.928   0.508
+</pre> 
+<p>
+The IP addresses will be different, because you've been assigned random
+timeservers. The essential thing is that one of the lines starts with an
+asterisk (<tt>*</tt>), this means your computer gets the time from the internet
+- you'll never have to worry about it again!
+</p>
+<p>
+As <tt>pool.ntp.org</tt> will assign you timeservers from all over the
+world, time quality will not be ideal.  You get a bit better result if you use
+the continental zones (europe, north-america, oceania and asia.pool.ntp.org
+currently exist), and even better time if you use the country zone (like
+ch.pool.ntp.org in Switzerland) - for all these zones, you can again use the 0,
+1 or 2 prefixes, like 0.ch.pool.ntp.org.  Note, however, that the country zone
+might not exist for your country, or might contain only one or two timeservers.
+If you know timeservers that are really close to you (measured by network
+distance, with <tt>traceroute</tt> or <tt>ping</tt>), time probably will be
+even better.
+</p>
+<p>
+If you're using <b>a recent Windows version</b>, you can also use the ntp
+client that is built into the system. Just execute:</p>
+<pre style="background-color:#e0e0e0;">
+net time /setsntp:pool.ntp.org
+</pre>
+<p>
+at the command prompt. This is known to work on Windows 2000/XP/2003.  The same
+can be achieved by, as administrator, right-clicking the clock in the taskbar,
+selecting 'Adjust Date/Time' and entering the server name in the 'Internet Time'
+tab.
+</p>
+<div>
+Additional notes:
+</div>
+<ul>
+<li>
+If you have a static IP address and a reasonable Internet connection (bandwidth
+is not so important, but it should be stable and not too highly loaded), please
+consider donating your server to the server pool. It doesn't cost you more than
+a few hundred bytes per second traffic, but you help this project survive.
+Please <a href="#join">see below</a> for more information.
+</li>
+<li>
+If your Internet provider has a timeserver, or if you know of a good timeserver
+near you, you should use that and not this list - you'll probably get better
+time and you'll use fewer network resources.  If you know only one timeserver
+near you, you can of course use that and two from pool.ntp.org or so.
+</li>
+<li>
+It can rarely happen that you are assigned the same timeserver twice - just
+restarting the ntp server usually solves this problem.  If you use a country
+zone, please note that it may be because there is only one server known in the
+project - better use a continental zone in that case.
+</li>
+<li>
+Be friendly. Many servers are provided by volounteers, and almost all time
+servers are really file or mail or webservers which just happen to also run ntp.
+So don't use more than three time servers in your configuration, and don't play
+dirty tricks with <tt>burst</tt> or <tt>minpoll</tt> - all you will gain is
+that this project will be stopped sooner or later.
+</li>
+<li>
+Make sure that the <i>time zone configuration</i> of your computer is correct.
+ntpd itself does not do anything about the time zones, it just uses UTC
+internally.
+</li>
+<li>
+If you are synchronising a network to pool.ntp.org, please set up one of your
+computers as a time server and synchronize the other computers to that one.
+(you'll have some reading to do - it's not difficult though. And there's always
+the <a href="news:comp.protocols.time.ntp"
+>comp.protocols.time.ntp newsgroup</a>.)
+</li>
+<li>
+At this point, I'd like to thank those donating their time and timeservers to
+this network.
+</li>
+</ul>
+<div style="text-align:right"><a href="#top">go up</a></div>
+<h2><a name="join">How do I join pool.ntp.org?</a></h2>
+<p>
+Your computer <b>must have a static IP address</b> and a permanent internet
+connection. The required bandwidth is really low (2 packets per client and
+minute is about the maximum you'll get. The project steadily acquires more
+timeservers, so the load should distribute pretty evenly, with only few clients
+for each server). Then, I assume that you already are running a timeserver and
+have it synchronised to some time source. If this is all ok, you can write an
+email to <a href="mailto:clockmaster@fortytwo.ch"
+>clockmaster@fortytwo.ch</a> to tell me that you'd like to join and in which
+country your server is. I'd ask you to also subscribe to the <a
+href="mailto:timekeepers-announce-request@fortytwo.ch?subject=subscribe"
+>timekeepers-announce@fortytwo.ch</a> mailing list so you keep up with newest
+developments (I try to keep the mail volume down at around one message per
+month).
+</p>
+<p>
+The servers joining should not have <tt>pool.ntp.org</tt> as their upstream
+server(s), but should configure some good servers manually (those servers
+<b>may</b> be chosen from the pool. The point is that they are chosen
+statically instead of assigned randomly at each server restart.  This will help
+providing an acceptable quality of service.)  Note that it is not required that
+your server is a stratum 1 or 2 server - as this project is about load
+distribution mostly, there is no reason why a stratum 3 or even stratum 4
+server shouldn't join.
+</p>
+<p>
+It would be nice (but it's not necessary) if you could redirect web requests
+on port 80 of your time server to the official web page of the project at
+<tt>http://www.pool.ntp.org</tt>. If you run Apache, you could do this with:
+</p>
+<pre style="background-color:#e0e0e0;">
+&lt;VirtualHost *:80&gt;
+    ServerName pool.ntp.org
+    ServerAlias *.pool.ntp.org
+    Redirect permanent / http://www.pool.ntp.org/
+&lt;/VirtualHost&gt;
+</pre>
+<p>
+Again, this is only if you run a webserver anyway. The official project web 
+page will always be given with the 'www' at the beginning - but sometimes
+people are lazy and just type <tt>pool.ntp.org</tt> and are then surprised
+to just get a random web page.
+</p>
+<p>
+Once I have confirmed the server's addition to the pool, the server is
+constantly monitored for quality, using a scoring algorithm described in <a
+href="https://fortytwo.ch/mailman/pipermail/timekeepers-announce/2003/000006.html"
+>this email</a>.  You can watch your server's performance using the <a
+href="scores">web frontend</a>, but please do not use this for automated
+queries - my server is not a big machine and I don't want to restrict access to
+this page because the load goes through the roof.
+</p>
+<div style="text-align:right"><a href="#top">go up</a></div>
+<h2><a name="mail">The mailing lists</a></h2>
+<p>
+Currently, there are three mailing lists for the pool.ntp.org project: the
+discussion list <a
+href="https://fortytwo.ch/mailman/cgi-bin/listinfo/timekeepers"
+>timekeepers@fortytwo.ch</a> (<a
+href="mailto:timekeepers-request@fortytwo.ch?subject=subscribe" >subscribe</a>,
+<a href="https://fortytwo.ch/mailman/pipermail/timekeepers/" >archive</a>),
+the announcement list <a
+href="https://fortytwo.ch/mailman/cgi-bin/listinfo/timekeepers-announce"
+>timekeepers-announce@fortytwo.ch</a> (<a
+href="mailto:timekeepers-announce-request@fortytwo.ch?subject=subscribe"
+>subscribe</a>,
+<a href="https://fortytwo.ch/mailman/pipermail/timekeepers-announce/"
+>archive</a>) and the bulletins list <a
+href="https://fortytwo.ch/mailman/cgi-bin/listinfo/timekeepers-bulletin"
+>timekeepers-bulletin@fortytwo.ch</a> (<a
+href="mailto:timekeepers-bulletin-request@fortytwo.ch?subject=subscribe"
+>subscribe</a>, <a
+href="https://fortytwo.ch/mailman/pipermail/timekeepers-bulletin">archive</a>).
+The discussion list is, of course, mainly for those interested in the project,
+while the announcements list is intended for server operators (or users of the
+pool.ntp.org service) who do not wish to be more deeply involved with the
+development and maintenance of the project. <i>There is no need to subscribe to
+both lists - announcements will be sent to both lists</i> (if I don't forget
+it, that is). Of course, general discussions about ntp should take place on the
+<a href="news:comp.protocols.time.ntp">comp.protocols.time.ntp</a> Usenet
+newsgroup.
+</p>
+<div style="text-align:right"><a href="#top">go up</a></div>
+<h2>Links</h2>
+<ul>
+<li>
+<a href="http://www.ntp.org">NTP home</a> - <i>the</i> website about ntp
+</li>
+<li>
+The <a
+href="http://groups.google.com/groups?threadm=3E2DBFF7.F9A51614%40udel.edu"
+>Public servers abuse</a> and the <a
+href="http://groups.google.com/groups?threadm=cpaznpnzrb1.fsf%40cabernet.nelson.monkey.org"
+>Fixing the NTP server abuse problem</a> threads on the <a
+href="news:comp.protocols.time.ntp"
+>comp.protocols.time.ntp</a> newsgroup have caused this project to be started.
+</li>
+<li>
+If you want to monitor your timeserver, <a
+href="http://fortytwo.ch/stats/time" >my statistics</a> could give you a
+starting point.
+</li>
+<li>
+Federico Sevilla III also has a <a href="http://marc.free.net.ph" >mailing
+list archive</a> of the timekeepers list - this one is searchable.
+</li>
+<li>
+More hints and a list of NTP servers can be found in the article <a
+href="http://robertkehl.de/ntp.php">NTP-Server im Internet</a> (german) on the
+website of Robert Kehl.
+</li>
+</ul>
+<div style="text-align:right"><a href="#top">go up</a></div>
+<hr/>
+<div style="font-size:x-small">
+<div style="text-align:right">
+Adrian von Bidder -
+<a href="mailto:clockmaster@fortytwo.ch">clockmaster@fortytwo.ch</a><br/>
+Favicon nicked from <a href="http://www.ntp.org/">http://www.ntp.org/</a>
+</div>
+<pre>
+$Log: index.html.en,v $
+Revision 2.8  2004/09/24 08:13:00  avbidder
+ * german - thans, Robert
+ * more Robert: new link; some smallish changes
+
+Revision 2.7  2004/09/23 12:59:06  avbidder
+ * typo
+
+Revision 2.6  2004/09/23 12:08:43  avbidder
+ * French translation: Thanks, Vincent
+ * Newsletter
+ * Various small correction; thanks to various people
+
+Revision 2.5  2004/06/18 07:50:12  avbidder
+ * integrate the scores into the web page
+ * mention that high-stratum servers are welcome, too
+
+Revision 2.4  2004/06/18 07:33:07  avbidder
+ * Big load of thanks to Folkert
+ * New scores version
+ * announce scores publicly
+</pre>
+</div>
+</body>
+</html>

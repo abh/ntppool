@@ -1,0 +1,15 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+<meta http-equiv="refresh"
+        content="0; url=http://ntp.vuntz.net/"/>
+<title>French translation is off-site.</title>
+</head>
+<body>
+<div style="text-align:center;">
+The french translation is at <a href="http://ntp.vuntz.net/"
+>http://ntp.vuntz.net/</a>.
+</div>
+</body>
+</html>

@@ -1,0 +1,367 @@
+#!/usr/bin/perl
+#
+# ntpcheck
+#
+#
+use strict;
+use DBI;
+use Net::SMTP;
+
+
+
+my $Debug = 0;		# Turn on lots of debug messages
+my $Testing = 1;	# If set, no work is done.
+
+
+my $DBConnectStr = "dbi:mysql:dbname=ntppool";
+
+my $DaysToDeletion = 41;
+my $DaysBetweenNotices = 14;
+
+#
+# Must be in the form: user@host
+#
+my $NTPPoolAdminEmail = 'clockmaster@fortytwo.ch';
+
+
+my $EMailNoticeMessageText = qq{
+Hi,
+
+Because your timeserver is being detected as either unreachable or bad, your
+timeserver is not being included in the pool.ntp.org DNS zones.
+
+Please solve the problem or notify me of the new IP address of your server.
+
+       ip        |         hostname
+-----------------+--------------------------
+};
+
+my $EMailRemovalMessageText = qq{
+Hi,
+
+Due to unresolved problems with your timeserver it is being removed
+from the pool.ntp.org project.
+
+If you perceive this to be in error (or fixed the server problem) 
+and want to add the server to the project again, please contact me.
+
+       ip        |         hostname
+-----------------+--------------------------
+};
+
+
+
+#
+# Query to find new unusable servers.
+#
+my $NTPUnusableServerSQL = qq{ SELECT sv.id
+			FROM servers sv, scores sc
+			WHERE sc.server = sv.id 
+			AND sc.score < -99.5 
+			EXCEPT SELECT us.server
+			FROM unusable_servers us };
+
+#
+# Query to find unusable servers that need to be E-mailed a notice.
+#
+my $NTPUnusableNotifySQL = qq{ SELECT sv.id, sv.hostname, sv.ip, u.email
+			FROM servers sv, scores sc, 
+			unusable_servers us, users u
+			WHERE sv.id = us.server 
+			AND sc.score <= us.last_score
+			AND sc.server = sv.id
+			AND sv.admin = u.id
+			AND sc.server = sv.id
+			AND ( age(us.last_email_time) > '$DaysBetweenNotices days' 
+			OR us.last_email_time IS NULL ) };
+
+#
+# Query to find recovered servers.
+#
+my $NTPRecoveredSQL = qq{ SELECT us.server, sc.score
+			FROM unusable_servers us, scores sc
+			WHERE us.server = sc.server 
+			AND sc.score > 0.0 };
+
+
+#
+# Query to find servers to remove
+#
+my $NTPRemoveServerSQL = qq{ SELECT us.server, us.ts, sv.hostname, 
+			sv.ip, u.email
+			FROM unusable_servers us, servers sv, users u
+			WHERE age(us.ts) > '$DaysToDeletion days' 
+			AND sv.id = us.server
+			AND sv.admin = u.id };
+
+my $DBH;
+
+sub DBConnect {
+	my( $dbh );
+
+
+	$dbh = DBI->connect( $DBConnectStr, 'root' );
+
+	$dbh->{RaiseError} = 1;
+	$dbh->{AutoCommit} = 0;
+
+	$dbh;
+}
+
+sub DBDisconnect {
+	my( $dbh ) = @_;
+
+	$dbh->commit();
+	$dbh->disconnect();
+}
+
+
+#
+# Look for recovered servers
+#
+sub CheckForRecoveredServers {
+	my( $dbh ) = @_;
+	my( $sv, $s );
+
+	print STDERR "Looking from recovered servers.\n" if( $Debug );
+
+	print STDERR "executing: $NTPRecoveredSQL \n" if( $Debug );
+
+	$sv = $dbh->selectall_arrayref( $NTPRecoveredSQL );
+
+	if( $#$sv < 0 ) {
+		print STDERR "No recovered servers.\n" if( $Debug );
+		return;
+	}
+	
+	#
+	# Process recovered servers
+	#
+	print STDERR "Processing recovered servers:\n" if( $Debug );
+	foreach $s ( @$sv ) {
+
+		print STDERR "DELETE FROM unusable_servers " .
+			     "WHERE server = $s->[0]\n"
+                             if( $Debug || $Testing );
+
+		$dbh->do( "DELETE FROM unusable_servers
+				  WHERE server = $s->[0]" );
+				
+	}
+}
+
+#
+# Look for new unusable servers
+#
+sub CheckForUnusableServers {
+	my( $dbh ) = @_;
+	my( $s, $sv, $sv_data, $res );
+
+	print STDERR "Looking for new unusable servers.\n" if( $Debug );
+
+	print STDERR "executing: $NTPUnusableServerSQL \n" if( $Debug );
+	$sv = $dbh->selectall_arrayref( $NTPUnusableServerSQL );
+
+	if( $#$sv < 0 ) {
+		print STDERR "No new unusable servers.\n" if( $Debug );
+		return;
+	}
+
+	#
+	# Add new new servers to unusable_servers table
+	#
+	print STDERR "Adding unusable servers:\n" if( $Debug );
+	foreach $s ( @$sv ) {
+
+		
+		print STDERR "looking up score for server $s->[0] " if($Debug);
+		( $sv_data ) = $dbh->selectrow_array( 
+			"SELECT score FROM scores WHERE server = $s->[0]" );
+
+		print STDERR " = $sv_data\n" if( $Debug );
+
+		print STDERR "INSERT INTO unusable_servers " .
+			     "( server, last_score ) VALUES" .
+			     " ( $s->[0], $sv_data )\n" if( $Debug );
+
+		$res = $dbh->do( "INSERT INTO unusable_servers
+				  ( server, last_score ) VALUES
+				  ( $s->[0], $sv_data )");
+	}
+
+}
+
+#
+# Do E-mail Notifications
+#
+sub CheckForNotify {
+	my( $dbh ) = @_;
+	my( $s, $sv, $res );
+
+
+	print STDERR "Checking server failure notices:\n" if( $Debug );
+
+	print STDERR "executing: $NTPUnusableNotifySQL \n" if( $Debug );
+	$sv = $dbh->selectall_arrayref( $NTPUnusableNotifySQL );
+
+	if( $#$sv < 0 ) {
+		print STDERR "No notifications needed.\n" if( $Debug );
+		return;
+	}
+
+
+	foreach $s ( @$sv ) {
+
+		print STDERR "Email Failure: $s->[3] for server $s->[2]\n"
+								if( $Debug );
+
+		SendFailedNotification( $s->[3], $s->[2], $s->[1] );
+
+		print STDERR "UPDATE unusable_servers SET " .
+				"last_email_time  = 'now' " .
+				"WHERE server = $s->[0]\n" if( $Debug );
+
+		$res = $dbh->do( "UPDATE unusable_servers SET 
+				  last_email_time  = 'now' 
+				  WHERE server = $s->[0]" );
+	}
+}
+
+
+sub SendFailedNotification {
+	my( $email, $ip, $hostname ) = @_;
+	my( $tmp );
+	my( $smtp );
+
+	$smtp = Net::SMTP->new( 'localhost' );
+
+	if( ! defined( $smtp ) ) {
+		print STDERR "SMTP init failed, send to $email failed.\n";
+		return;
+	}
+
+	$tmp = sprintf "%-17s %s\n", $ip, $hostname;
+
+	$smtp->mail( $NTPPoolAdminEmail ) || die;
+	$smtp->to( $email ) if( ! $Testing );
+	$smtp->to( $NTPPoolAdminEmail ) || die;
+	$smtp->to( $email ) if(! $Testing );
+
+	$smtp->data() || die;
+	$smtp->datasend("X-Script: ntpcheck\n") || die;
+	$smtp->datasend("To: $email\n") || die if(! $Testing );
+	$smtp->datasend("Cc: $NTPPoolAdminEmail\n") || die;
+	$smtp->datasend("Subject: [pool.ntp.org] Your timeserver is not being used by the pool.ntp.org project\n") || die;
+	$smtp->datasend("\n") || die;
+	$smtp->datasend( $EMailNoticeMessageText ) || die;
+	$smtp->datasend( $tmp ) || die;
+	$smtp->datasend("\n") || die;
+	$smtp->datasend("\n") || die;
+	$smtp->datasend("You can view the status of your timeserver over the last month at:\n") || die;
+	$smtp->datasend("\n") || die;
+	$smtp->datasend("\thttp://www.pool.ntp.org/scores/show_server_stats.html") || die;
+	$smtp->datasend("\n") || die;
+	$smtp->dataend() || die;
+
+	$smtp->quit || die;
+}
+
+sub SendRemovalNotification {
+	my( $email, $ip, $hostname ) = @_;
+	my( $tmp );
+	my( $smtp );
+
+	$smtp = Net::SMTP->new( 'localhost' );
+
+	if( ! defined( $smtp ) ) {
+		print STDERR "SMTP init failed, send to $email failed.\n";
+		return;
+	}
+
+	$tmp = sprintf "%-17s %s\n", $ip, $hostname;
+
+	$smtp->mail( $NTPPoolAdminEmail ) || die;
+	$smtp->to( $email ) if( ! $Testing );
+	$smtp->to( $NTPPoolAdminEmail ) || die;
+	$smtp->to( $email ) if(! $Testing );
+
+	$smtp->data() || die;
+	$smtp->datasend("X-Script: ntpcheck\n") || die;
+	$smtp->datasend("To: $email\n") || die if(! $Testing );
+	$smtp->datasend("Cc: $NTPPoolAdminEmail\n") || die;
+	$smtp->datasend("Subject: [pool.ntp.org] Your timeserver is being removed from the pool.ntp.org project\n") || die;
+	$smtp->datasend("\n") || die;
+	$smtp->datasend( $EMailRemovalMessageText ) || die;
+	$smtp->datasend( $tmp ) || die;
+	$smtp->datasend("\n") || die;
+	$smtp->dataend() || die;
+
+	$smtp->quit || die;
+}
+
+
+
+
+#
+# Remove servers that have be dead for to long.
+#
+sub CheckForServersToRemove {
+	my( $dbh ) = @_;
+	my( $s, $sv, $res );
+
+
+	print STDERR "Looking for servers to remove:\n" if( $Debug );
+
+	print STDERR "executing: $NTPRemoveServerSQL \n" if( $Debug );
+	$sv = $dbh->selectall_arrayref( $NTPRemoveServerSQL );
+
+	if( $#$sv < 0 ) {
+		print STDERR "No servers to remove.\n" if( $Debug );
+		return;
+	}
+
+	foreach $s ( @$sv ) {
+
+		print STDERR "Removing server: $s->[2] ($s->[3])\n" if( $Debug );
+
+		print STDERR "DELETE FROM servers " .
+		    	     "WHERE id = $s->[0]\n" if( $Debug or $Testing );
+
+		$dbh->do( "DELETE FROM servers 
+				WHERE id = $s->[0]" ) if( ! $Testing );
+
+
+		print STDERR "Sending removal notice to $s->[4] for $s->[2]\n" 
+								if( $Debug );
+
+		SendRemovalNotification( $s->[4], $s->[3], $s->[2] );
+	}
+}
+
+#
+#
+#
+#
+#
+
+
+#
+# Clean up the DB connection on error.
+#
+sub ErrorSigHandler {
+    $DBH->rollback();
+    $DBH->disconnect();
+}
+
+$SIG{__DIE__} = \&ErrorSigHandler;
+
+
+$DBH = DBConnect();
+
+CheckForRecoveredServers( $DBH );
+CheckForServersToRemove( $DBH );
+CheckForUnusableServers( $DBH );
+CheckForNotify( $DBH );
+
+DBDisconnect( $DBH );
+
