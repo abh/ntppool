@@ -1,6 +1,10 @@
-#! /usr/bin/perl -w
+# -*- cperl -*-
+eval 'exec $CBROOT/bin/perl $0 ${1+"$@"}'
+    unless $running_under_some_shell;
 use strict;
-use DBI;
+use lib "$ENV{CBROOTLOCAL}/lib";
+use lib "$ENV{CBROOT}/lib";
+use Combust::DB;
 use List::Util qw(shuffle);
 use Net::hostent;
 use Net::IPv4Addr qw(ipv4_chkip);
@@ -51,8 +55,7 @@ if ($#ARGV < 0) {
 }
 
 # connect to the db
-$db = DBI->connect("dbi:mysql:dbname=ntppool", "root", "",
-        {AutoCommit => 0, RaiseError => 1})
+$db = Combust::DB::db_open('ntppool', {AutoCommit => 0})
     or die "Couldn't connect to database\n";
 #$SIG{__DIE__} = \&closedbconnection;
 
@@ -173,13 +176,13 @@ EOT
     # and if we're connected
     $Net::NTP::CLIENT_TIME_SEND = undef;
     $Net::NTP::CLIENT_TIME_RECEIVE = undef;
-    %pkt = get_ntp_response('ntp.metas.ch');
+    %pkt = eval { get_ntp_response('clock-a.develooper.com'); };
     if ($pkt{'Stratum'} == 0 or $pkt{'Stratum'} > 6) {
         $Net::NTP::CLIENT_TIME_SEND = undef;
         $Net::NTP::CLIENT_TIME_RECEIVE = undef;
-        %pkt = get_ntp_response('time.ethz.ch');
+        %pkt = eval { get_ntp_response('clock-b.develooper.com'); };
         if ($pkt{'Stratum'} == 0 or $pkt{'Stratum'} > 6) {
-            die "no time from ntp.metas.ch or time.ethz.ch\n";
+            die "no time from clock-a or clock-b\n";
         }
     }
 
@@ -193,6 +196,8 @@ EOT
             $$s[2] = 0;
         }
 
+	#print "testing $$s[1]\n";
+
         # fetch offset by ntp
         # if a server is not good, query a second time
         # and use the second result - this is said to solve problems with some
@@ -202,9 +207,7 @@ EOT
             $Net::NTP::CLIENT_TIME_RECEIVE = undef;
             my $time_then = Time::HiRes::time;
             $Net::NTP::CLIENT_TIME_SEND = $time_then;
-#            $SIG{__DIE__} = 'DEFAULT';
             my %pkt = eval {get_ntp_response($$s[1])};
-#            $SIG{__DIE__} = \&closedbconnection;
             my $time_now = Time::HiRes::time;
 
             if ($!) {
