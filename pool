@@ -263,72 +263,81 @@ elsif ($cmd eq "scores") {
 }
 elsif ($cmd eq "zone") {
 
-    #open HEAD, "<$ENV{HOME}/db/header"
+    my $file = "/home/ask/bsb-out/pool.ntp.org";
+    open(my $fh, ">$file.tmp") or die "Could not open $file.tmp: $!";
+
     open HEAD, "<header"
       or die "Opening DNS zone file header ($ENV{HOME}/db/header): $!\n";
-    print "; ATTENTION\n; This is a generated file\n;\n";
-    my $t = int time / 100;
+    print $fh "# ATTENTION\n# This is a generated file\n#\n";
+    my $t = time;
     while (<HEAD>) {
         s/\@VERSION\@/$t/;
-        print;
+        print $fh $_;
     }
     close HEAD;
+
+    my $ttl = 120;
 
     my $entries =
       $db->selectall_arrayref(  "SELECT s.ip "
                               . "FROM servers s, scores sc "
                               . "WHERE sc.server = s.id AND sc.score > 5");
     if ($#$entries < 59) {
-        print "; possible duplicates in the zones below (@)\n";
-        foreach my $z (("@", "0", "1", "2")) {
+        print $fh "# possible duplicates in the zones below (@)\n";
+        for my $zone (("@", "0", "1", "2")) {
+            my $z = $zone eq '@' ? '' : "$zone.";
             @$entries = shuffle(@$entries);
             my $i;
             foreach my $e (@$entries) {
-                print "$z IN A $$e[0]\n";
+                #print "$z IN A $$e[0]\n";
+                print $fh "+${z}pool.ntp.org:$$e[0]:$ttl\n";
                 $i++;
                 last if ($i >= 15);
             }
         }
     }
     else {
-        print "; 'big' zone without duplicates below (@)\n";
+        print $fh "#; 'big' zone without duplicates below (@)\n";
         @$entries = shuffle(@$entries);
-        foreach my $z (("@", "0", "1", "2")) {
+        for my $zone (("@", "0", "1", "2")) {
+            my $z = $zone eq '@' ? '' : "$zone.";
             for (my $i = 0 ; $i < 15 ; $i++) {
-                print "$z IN A ", ${shift @$entries}[0], "\n";
+                print $fh "+${z}pool.ntp.org:", ${shift @$entries}[0], ":$ttl\n";
             }
         }
     }
 
     my $zones = $db->selectall_arrayref("SELECT id, name FROM zones");
-    foreach my $zone (@$zones) {
+    for my $zone (@$zones) {
         $entries =
           $db->selectall_arrayref("SELECT s.ip "
                                . "FROM servers s, scores sc, locations l "
                                . "WHERE l.server = s.id AND l.zone = $$zone[0] "
                                . "AND sc.server = s.id AND sc.score > 5");
         if ($#$entries < 59) {
-            print "; possible duplicates in the zones below ($$zone[1])\n";
+            print $fh "# possible duplicates in the zones below ($$zone[1])\n";
             foreach my $z (("", "0.", "1.", "2.")) {
                 @$entries = shuffle(@$entries);
                 my $i;
                 foreach my $e (@$entries) {
-                    print "$z$$zone[1] IN A $$e[0]\n";
+                    print $fh "+$z$$zone[1].pool.ntp.org:$$e[0]:$ttl\n";
                     $i++;
                     last if ($i >= 15);
                 }
             }
         }
         else {
-            print "; 'big' zone without duplicates below ($$zone[1])\n";
+            print $fh "# 'big' zone without duplicates below ($$zone[1])\n";
             @$entries = shuffle(@$entries);
             foreach my $z (("", "0.", "1.", "2.")) {
                 for (my $i = 0 ; $i < 15 ; $i++) {
-                    print "$z$$zone[1] IN A ", ${shift @$entries}[0], "\n";
+                    print $fh "+$z$$zone[1].pool.ntp.org:", ${shift @$entries}[0], ":120\n";
                 }
             }
         }
     }
+    close $fh or die "could not close $file.tmp: $!";
+    rename "$file.tmp", "$file.tinydns" or die "could not rename $file.tmp to $file.tinydns: $!";
 }
 else {
     die "Unknown command: $cmd\n";

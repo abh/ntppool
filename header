@@ -1,37 +1,32 @@
-; BIND data file for pool.ntp.org and time.fortytwo.ch zone
-; $Id: header 814 2005-04-05 16:58:18Z clockmaster $
-;
-$TTL	120
-@	IN	SOA	zbasel.fortytwo.ch. clockmaster.fortytwo.ch. (
-		      @VERSION@		; Serial
-			  10800		; Refresh
-			   1800		; Retry
-			 604800		; Expire
-			    300 	; Negative Cache TTL
-		)
+Zpool.ntp.org:ns1.us.bitnames.com:pool.ntp.org:@VERSION:1800:1800:604800:300
 
-@	IN	NS	zbasel.fortytwo.ch.
+&pool.ntp.org::ns1.us.bitnames.com:86400
+&pool.ntp.org::ns3.us.bitnames.com:86400
+&pool.ntp.org::ns1.eu.bitnames.com:86400
+&pool.ntp.org::zbasel.fortytwo.ch:86400
 
-; secondary DNS provided by Bart-Jan Vrielink <bartjan at vrielink.net>
-@	IN	NS	aventura.bhms-groep.nl.
-@	IN	NS	slartibartfast.bhms-groep.nl.
-@       IN      NS      superzooi.bhms-groep.nl.
+# secondary DNS provided by Bart-Jan Vrielink <bartjan at vrielink.net>
+&pool.ntp.org::aventura.bhms-groep.nl:86400
+&pool.ntp.org::slartibartfast.bhms-groep.nl.:86400
+&pool.ntp.org::superzooi.bhms-groep.nl.:86400
 
-; in nz offered by Simon Lyall <simon.lyall@ihug.co.nz>
-@       IN      NS      usenet.net.nz.
+#; in nz offered by Simon Lyall <simon.lyall@ihug.co.nz>
+&pool.ntp.org::usenet.net.nz.:86400
 
-; in us, provided by "Jeff Schmidt" <jschmidt@jschmidt.org>
-@       IN      NS      ns1.mailworx.net.
+# in us, provided by "Jeff Schmidt" <jschmidt@jschmidt.org>
+&pool.ntp.org::ns1.mailworx.net.:86400
 
-; another backup MX offered by Olivier Macchioni <mac@tuxfinder.com>
-; offered by Sanjeev "Ghane" Gupta <ghane@dotxtra.com>
-; ns{1,2}.secondary.com
-; another one offered by Robert Loomans <robert@zots.net>
-; and more by Matthias Geiser <matthias.geiser@dodeka.ch>
-; more offered by Mike <miked@xac.net>
-; more offered by Hagen Herrschaft <hrx@hrxnet.de>
-; more offered (.es and .us) by Xisco Lladó <xisco@zigazaga.net>
-; more offered - in the us - by Ask Bjørn Hansen <ask@develooper.com>
+# another backup MX offered by Olivier Macchioni <mac@tuxfinder.com>
+# offered by Sanjeev "Ghane" Gupta <ghane@dotxtra.com>
+# ns{1,2}.secondary.com
+# another one offered by Robert Loomans <robert@zots.net>
+# and more by Matthias Geiser <matthias.geiser@dodeka.ch>
+# more offered by Mike <miked@xac.net>
+# more offered by Hagen Herrschaft <hrx@hrxnet.de>
+# more offered (.es and .us) by Xisco Lladó <xisco@zigazaga.net>
+# more offered - in the us - by Ask Bjørn Hansen <ask@develooper.com>
 
-www	IN	A	193.138.215.60
++www.pool.ntp.org:193.138.215.60
+
+
 
