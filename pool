@@ -14,6 +14,8 @@ use Time::HiRes;
 use Data::Dumper;
 use Sys::Hostname qw(hostname);
 
+use NTPPool::Server;
+
 use constant LOGFILE => "$ENV{CBROOTLOCAL}/log";
 
 $Net::NTP::TIMEOUT = 2;
@@ -50,6 +52,16 @@ sub ntpdate {
     }
 
     return 1;
+}
+
+
+sub logsay { 
+    my $msg = join " ", @_;
+    open LOG, ">>" . LOGFILE
+      or die "Opening log (" . LOGFILE . "): $!\n";
+    my (undef, undef, undef, $d, $m, $y, undef) = localtime time;
+    printf LOG "%04d%02d%02d clockmaster %s\n", $y + 1900, $m + 1, $d, $msg;
+    close LOG;
 }
 
 if ($#ARGV < 0) {
@@ -104,7 +116,6 @@ if ($cmd eq "add") {
     if ($#row != -1) {
         die "server $ip already in database for $row[0]\n";
     }
-    warn "FOOBAR!";
     $db->do("INSERT INTO servers (ip, admin, hostname) VALUES (?,?,?)",
             {}, $ip, $emailid, $hostname);
     my $serverid = $db->{'mysql_insertid'};
@@ -120,15 +131,33 @@ if ($cmd eq "add") {
                 . "VALUES ($serverid, $row[0])");
     }
 
-    # now add to the log file
-    open LOG, ">>" . LOGFILE
-      or die "Opening log (" . LOGFILE . "): $!\n";
-    my (undef, undef, undef, $d, $m, $y, undef) = localtime time;
     unless (defined $hostname) { $hostname = $ip; }
     my $z = join " ", @ARGV;
-    printf LOG "%04d%02d%02d clockmaster $serverid "
-      . "add $email $hostname $z\n", $y + 1900, $m + 1, $d;
+    logsay("$serverid add $email $hostname $z");
 
+}
+elsif ($cmd eq "rm") {
+    my $arg = shift @ARGV
+      or die "pool rm <host or IP>\n";
+    my ($server) = NTPPool::Server->search(ip => $arg);
+    ($server) = NTPPool::Server->search(hostname => $arg) unless $server;
+    die "Could not find server $arg\n" unless $server;
+    my $server_desc = (join " / ", grep { defined $_ } $server->ip, $server->hostname);
+    logsay($server->id, "rm", $server_desc);
+    printf "%i, %s - %s\n", $server->id, $server_desc, $server->admin->email;
+    $server->delete;
+}
+elsif ($cmd eq "ip") {
+    my ($from, $to) = @ARGV;
+    $to or die "pool $cmd <host or IP> <IP>\n";
+    my ($server) = NTPPool::Server->search(ip => $from);
+    ($server) = NTPPool::Server->search(hostname => $from) unless $server;
+    die "Could not find server $from\n" unless $server;
+    my $server_desc = (join " / ", grep { defined $_ } $server->ip, $server->hostname);
+    logsay($server->id, "ip", "$server_desc => $to");
+    printf "%i, %s (%s) => %s\n", $server->id, $server_desc, $server->admin->email, $to;
+    $server->ip($to);
+    $server->update;
 }
 elsif ($cmd eq "report") {
     print <<'EOT';
@@ -233,7 +262,10 @@ elsif ($cmd eq "scores") {
                 my $recv_org   = $pkt{'Receive Timestamp'} - $time_now;
                 my $trans_dest = $pkt{'Transmit Timestamp'} - $time_then;
                 $offset = abs(($recv_org + $trans_dest) / 2);
-                if ($offset > 1.5) {
+                if ($offset > 3) {
+                    $step = -5;
+                }
+                elsif ($offset > 1.5) {
                     $step = -2;
                 }
                 elsif ($offset > 0.5) {
@@ -346,3 +378,5 @@ else {
 $db->commit() or die "Error on commit\n";
 $SIG{__DIE__} = 'DEFAULT';
 $db->disconnect();
+
+    
