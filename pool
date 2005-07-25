@@ -167,7 +167,7 @@ Subject: Daily pool.ntp.org status report
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii";
 Content-Transfer-Encoding: 7bit
-X-Script-Version: $Revision: 1.26 $
+X-Script-Version: $Rev$
 
 Servers with a score <= 5, currently not in the pool.ntp.org zone:
 
@@ -175,13 +175,13 @@ IP              score history
 -------------------------------------------------------------------------
 EOT
     my $badservers =
-      $db->selectall_arrayref("SELECT sv.ip,sv.id,sc.score "
+      $db->selectall_arrayref("SELECT sv.id "
              . "FROM servers sv, scores sc "
              . "WHERE sv.id = sc.server AND sc.score <= 5 ORDER BY score DESC");
     foreach my $srv (@$badservers) {
-        my $history = ...
-        $history = scalar reverse @$history;
-        printf "%-15s %6.1f %50s\n", $$srv[0], $$srv[2], $history;
+        my $server = NTPPool::Server->retrieve($srv->[0]);
+        my @history = $server->history(50);
+        printf "%-15s %6.1f %50s\n", $server->ip, $server->score, join "", map { $_->history_symbol } @history;
     }
     print <<'EOT';
 -------------------------------------------------------------------------
@@ -367,7 +367,7 @@ else {
     die "Unknown command: $cmd\n";
 }
 
-$db->commit() or die "Error on commit\n";
+#$db->commit() or die "Error on commit\n";
 $SIG{__DIE__} = 'DEFAULT';
 $db->disconnect();
 
