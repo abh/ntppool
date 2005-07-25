@@ -1,0 +1,30 @@
+
+
+  <VirtualHost *:[% config.port %]>
+    ServerName [% config.site.ntppool.servername %]
+    [% expandServerAliases( config.site.ntppool.aliases ) %]
+    PerlSetVar site [% site %]
+
+    PerlModule NTPPool
+
+    <Location />
+       SetHandler perl-script
+       PerlHandler NTPPool::Control::Basic->super
+    </Location>
+
+    <Location /scores/graph>
+      SetHandler perl-script
+      PerlHandler NTPPool::Control::ScoresGraph->super
+    </Location>
+
+    <Location /scores/>
+      SetHandler perl-script
+      PerlHandler NTPPool::Control::Scores->super
+    </Location>
+
+    <Location /error/>
+       SetHandler   perl-script
+       PerlHandler NTPPool::Control::Error->super
+    </Location>
+  </VirtualHost>
+

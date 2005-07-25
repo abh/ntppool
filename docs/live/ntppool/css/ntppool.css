@@ -1,0 +1,11 @@
+body {
+  background-color: white;
+}
+
+span.s_his      { font-family: monospace; }
+span.s_his_ok   { color: green; font-size:80%; }  /* # */
+span.s_his_tol  { color: yellow; }  /* x */
+span.s_his_big  { color: #ffa500; }  /* o */
+span.s_his_down { color: red;    }  /* _ */
+
+

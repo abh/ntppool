@@ -179,15 +179,7 @@ EOT
              . "FROM servers sv, scores sc "
              . "WHERE sv.id = sc.server AND sc.score <= 5 ORDER BY score DESC");
     foreach my $srv (@$badservers) {
-        my $history =
-          $db->selectcol_arrayref("SELECT step FROM log_scores "
-                           . "WHERE server=$$srv[1] ORDER BY ts DESC LIMIT 50");
-        for (my $i = 0 ; $i <= $#$history ; $i++) {
-            if    ($$history[$i] >= 0)  { $$history[$i] = '#'; }
-            elsif ($$history[$i] >= -1) { $$history[$i] = 'x'; }
-            elsif ($$history[$i] >= -3) { $$history[$i] = 'o'; }
-            else { $$history[$i] = '_'; }
-        }
+        my $history = ...
         $history = scalar reverse @$history;
         printf "%-15s %6.1f %50s\n", $$srv[0], $$srv[2], $history;
     }
@@ -263,7 +255,7 @@ elsif ($cmd eq "scores") {
                 my $trans_dest = $pkt{'Transmit Timestamp'} - $time_then;
                 $offset = abs(($recv_org + $trans_dest) / 2);
                 if ($offset > 3) {
-                    $step = -5;
+                    $step = -4;
                 }
                 elsif ($offset > 1.5) {
                     $step = -2;

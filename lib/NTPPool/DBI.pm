@@ -2,6 +2,8 @@ package NTPPool::DBI;
 use strict;
 use base qw(Class::DBI::mysql);
 use Combust::DB qw(db_open);
+use Class::DBI::Plugin::AbstractCount;      # pager needs this
+use Class::DBI::Plugin::Pager;
 
 sub dbh { db_Main(@_) }
 

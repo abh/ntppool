@@ -43,6 +43,35 @@ to be tried, so the project soon moved to the <em>pool.ntp.org</em> domain.
 <div style="text-align:right"><a href="#top">go up</a></div>
 <h2><a name="news">News</a></h2>
 <table cellpadding="4">
+
+<tr>
+<td align="center" valign="top"><b>[% USE date; date.format(date.now, '%Y-%m-%d'); %]</b></td>
+<td>
+Active server count:<br/>
+<table>
+[% FOR cont = combust.count_by_continent %]
+<tr>
+<td>[% cont.name ? cont.name : '<b>Total</b>' %]</td>
+<td>[% cont.count %]</td>
+</tr>
+[% END%]
+
+</table>
+
+</td>
+</tr>
+
+
+<tr>
+<td align="center" valign="top"><b>2005-07-24</b></td>
+<td>
+No news for almost a year... It's time to say good bye.  I'll hand over the
+project to  Ask Bjørn Hansen effective tomorrow morning.  Details are, of
+course, in the <a
+href="https://fortytwo.ch/mailman/pipermail/timekeepers-announce/2005/000014.html">list
+archives</a>.
+</td>
+</tr>
 <tr>
 <td align="center" valign="top"><b>2004-09-07</b></td>
 <td>
@@ -92,7 +121,7 @@ project, with 10 servers in spain.
 <td align="center" valign="top"><b>2003-11-03</b></td>
 <td>
 There is a <a href="http://pool.ntp.bitic.net">Spanish translation</a> - thanks
-to Xisco Lladó.  Also, I have installed an automatical rating mechanism, so
+to Xisco Lladó.  Also, I have installed an automatic rating mechanism, so
 that bad timeservers are automatically removed from the pool.ntp.org
 nameserver (an associated <a href="#mail">mailing list</a> has also been
 created). Richard S. Shuford (Sun) sent me a note about how to configure nscd
@@ -252,7 +281,7 @@ zone, please note that it may be because there is only one server known in the
 project - better use a continental zone in that case.
 </li>
 <li>
-Be friendly. Many servers are provided by volounteers, and almost all time
+Be friendly. Many servers are provided by volunteers, and almost all time
 servers are really file or mail or webservers which just happen to also run ntp.
 So don't use more than three time servers in your configuration, and don't play
 dirty tricks with <tt>burst</tt> or <tt>minpoll</tt> - all you will gain is
@@ -395,31 +424,9 @@ website of Robert Kehl.
 <div style="text-align:right">
 Adrian von Bidder -
 <a href="mailto:clockmaster@fortytwo.ch">clockmaster@fortytwo.ch</a><br/>
-Favicon nicked from <a href="http://www.ntp.org/">http://www.ntp.org/</a>
+Favicon by Brad Knowles used with permission from <a
+href="http://ntp.isc.org/">http://ntp.isc.org/</a>
 </div>
-<pre>
-$Log: index.html.en,v $
-Revision 2.8  2004/09/24 08:13:00  avbidder
- * german - thans, Robert
- * more Robert: new link; some smallish changes
-
-Revision 2.7  2004/09/23 12:59:06  avbidder
- * typo
-
-Revision 2.6  2004/09/23 12:08:43  avbidder
- * French translation: Thanks, Vincent
- * Newsletter
- * Various small correction; thanks to various people
-
-Revision 2.5  2004/06/18 07:50:12  avbidder
- * integrate the scores into the web page
- * mention that high-stratum servers are welcome, too
-
-Revision 2.4  2004/06/18 07:33:07  avbidder
- * Big load of thanks to Folkert
- * New scores version
- * announce scores publicly
-</pre>
 </div>
 </body>
 </html>
