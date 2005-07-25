@@ -12,6 +12,11 @@
        PerlHandler NTPPool::Control::Basic->super
     </Location>
 
+    <Location /dns.html>
+       SetHandler perl-script
+       PerlHandler NTPPool::Control::DNSStatus->super
+    </Location>
+
     <Location /scores/graph>
       SetHandler perl-script
       PerlHandler NTPPool::Control::ScoresGraph->super

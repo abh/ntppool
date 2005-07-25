@@ -1,0 +1,33 @@
+
+<h2>dns status</h2>
+
+<p>
+The DNS data was updated
+<span style="background:[% master.age_css_color %]">[% master.age_text %] ago</span>.
+</p>
+
+<p>
+
+<table>
+<tr>
+<td>
+<b>NS</b>
+</td>
+<td>
+<b>Lag</b>
+</td>
+</tr>
+
+[% FOR ns = servers %]
+<tr>
+<td>
+[% ns.name %]
+</td>
+<td>
+<span style="background:[% ns.lag_css_color %]">[% ns.lag_text %]</span>
+</td>
+</tr>
+[% END %]
+</table>
+
+</p>
