@@ -1,17 +1,13 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html>
-<head>
-<title>pool.ntp.org: the internet time network</title>
-<link rel="icon" href="http://www.ntp.org/favicon.ico" type="image/x-icon" />
-</head>
-<body style="background-color:white">
 <div>
 <a name="top">Translations:</a>
 <a href="http://ntp.robertkehl.de/" title="german">deutsch</a> |
 <a href="http://pool.ntp.bitic.net/" title="spanish">español</a> |
 <a href="http://ntp.vuntz.net/" title="french">français</a> |
 <a href="http://ntp.rondom.org/" title="dutch">nederlands</a>
+<b> |
+ <a href="/manage">Manage servers</a>
+</b>
+
 </div>
 <hr/>
 <h1>pool.ntp.org: public ntp time server for everyone</h1>
@@ -24,30 +20,8 @@
 </ol>
 <hr/>
 <h2>Introduction</h2>
-<p>
-I created this project after a <a
-href="http://groups.google.com/groups?threadm=3E2DBFF7.F9A51614%40udel.edu"
->discussion</a> about resource consumption on the big timeservers, with the
-idea that for everyday use a DNS round robin would be good enough, and would
-allow spreading the load over many servers. The disadvantage is, of course,
-that you may occasionally get a bad server (if so, please report it to the <a
-href="mailto:timekeepers@fortytwo.ch"
->timekeepers mailing list</a>, see <a href="#mail">below</a>) and that you
-usually won't get the server closest to you.
-</p>
-<p>
-I originally started this project as the <em>time.fortytwo.ch</em> project in
-my own domain, but David Mills (he who is ntp) thought the idea was good enough
-to be tried, so the project soon moved to the <em>pool.ntp.org</em> domain.
-</p>
-<div style="text-align:right"><a href="#top">go up</a></div>
-<h2><a name="news">News</a></h2>
-<table cellpadding="4">
-
-<tr>
-<td align="center" valign="top"><b>[% USE date; date.format(date.now, '%Y-%m-%d'); %]</b></td>
-<td>
-Active server count:<br/>
+<div id="server_count">
+Active server count on [% USE date; date.format(date.now, '%Y-%m-%d'); %] <br/>
 <table>
 [% FOR cont = combust.count_by_continent %]
 <tr>
@@ -55,20 +29,63 @@ Active server count:<br/>
 <td>[% cont.count %]</td>
 </tr>
 [% END%]
-
 </table>
+</div>
+<p>
+The pool.ntp.org project is a big virtual cluster of timeservers
+striving to provide reliable easy to use NTP service for millions of
+clients without putting a strain on the big popular timeservers.
+</p>
+
+<p>
+<a href="http://fortytwo.ch/">Adrian von Bidder</a> created this
+project after a <a
+href="http://groups.google.com/groups?threadm=3E2DBFF7.F9A51614%40udel.edu"
+>discussion</a> about resource consumption on the big timeservers,
+with the idea that for everyday use a DNS round robin would be good
+enough, and would allow spreading the load over many servers. The
+disadvantage is, of course, that you may occasionally get a bad server
+(if so, please report it to the <a
+href="mailto:timekeepers@fortytwo.ch" >timekeepers mailing list</a>,
+see <a href="#mail">below</a>) and that you usually won't get the
+server closest to you.
+</p>
+
+<p>
+
+The pool project is now being maintained by <a
+href="http://www.askbjoernhansen.com/">Ask Bj&oslash;rn Hansen</a> and
+a great group of contributors on the <a href="#mail">mailing
+lists</a>.
+</p>
+
+<div style="text-align:right"><a href="#top">go up</a></div>
+<h2><a name="news">News</a></h2>
+<table cellpadding="4">
+
+
+<tr>
+<td align="center" valign="top"><b>2005-07-28</b></td>
+<td>
+
+I've added a page for server admins to <a href="/manage">login</a> and
+see their servers as they are listed in the pool system.  I'm using <a
+href="http://www.bitcard.org/">Bitcard</a> for the authentication, so
+don't be alarmed when you get redirected over there.  In the not too
+far future I'll add functionality so new servers can be registered
+via the manage page too.
 
 </td>
 </tr>
+<tr>
+
 
 <tr>
 <td align="center" valign="top"><b>2005-07-25</b></td>
 <td>
-
 If you see this message you are fetching this page from the new
 server.  I added a page to keep track of the <a href="dns.html">dns
 servers</a>.
-
 </td>
 </tr>
 <tr>
@@ -98,116 +115,11 @@ href="https://fortytwo.ch/mailman/pipermail/timekeepers-announce/2004/000010.htm
 announcement</a>.
 </td>
 </tr>
-<tr>
-<td align="center" valign="top"><b>2004-06-18</b></td>
-<td>
-Thanks to the efforts of <a href="http://www.vanheusden.com/">Folkert van
-Heusden</a>, you can see your timeserver's <a href="scores">performance</a>
-over the last 31 days. Current server count: 188 - probably mostly because
-Folkert got the pool.ntp.org project <a
-href="http://developers.slashdot.org/article.pl?sid=04/05/31/0150251"
->slashdotted</a>.
-</td>
-</tr>
-<tr>
-<td align="center" valign="top"><b>2004-03-19</b></td>
-<td>
-Current server count: 115.  The <a href="http://packages.debian.org/ntp">ntp
-4.2 packages</a> in <a href="http://debian.org">Debian GNU/Linux</a> now use
-pool.ntp.org per default, and include an invitation to join the pool.  A
-sidenote: some people have experienced problems when trying to reach me per
-mail.  This is nothing personal, but as I've been flooded by spam, I now block
-some countries and some internet providers almost entirely.
-</td>
-</tr>
-<tr>
-<td align="center" valign="top"><b>2004-01-09</b></td>
-<td>
-Xisco Lladó has published a long article about the project at <a
-href="http://bulma.net/body.phtml?nIdNoticia=1947"
->http://bulma.net/body.phtml?nIdNoticia=1947</a> - thanks a lot!  This caused
-a few more people to donate servers, so that we now count 106 servers in the
-project, with 10 servers in spain.
-</td>
-</tr>
-<tr>
-<td align="center" valign="top"><b>2003-11-03</b></td>
-<td>
-There is a <a href="http://pool.ntp.bitic.net">Spanish translation</a> - thanks
-to Xisco Lladó.  Also, I have installed an automatic rating mechanism, so
-that bad timeservers are automatically removed from the pool.ntp.org
-nameserver (an associated <a href="#mail">mailing list</a> has also been
-created). Richard S. Shuford (Sun) sent me a note about how to configure nscd
-properly to work around the fact that it doesn't do proper round robin of DNS
-entries. I don't recommend the use of <tt>maxpoll 12</tt> in <tt>ntp.conf</tt>
-anymore. As always: more information on the <a
-href="https://fortytwo.ch/mailman/pipermail/timekeepers-announce/2003/000006.html">
-mailing list</a>.
-</td>
-</tr>
-<tr>
-<td align="center" valign="top"><b>2003-09-16</b></td>
-<td>
-The project now consists of 87 servers - thanks to all who participate.  Also,
-nameservers in the US and in New Zealand will be added shortly.  The <a
-href="#mail">mailing list</a> has seen some discussions about monitoring server
-quality - I'll have to look at this problem more detail. Read the long version
-of these news in the <a
-href="https://fortytwo.ch/mailman/pipermail/timekeepers/2003/000126.html"
->mailing list archives</a>.
-</td>
-</tr>
-<tr>
-<td align="center" valign="top"><b>2003-03-27</b></td>
-<td>
-It's done!  The project is now at pool.ntp.org.  Also, country level subdomain
-are being created - the biggest (us) already has 18 servers, with ch (11) and
-nl (8) being the next biggest.  Due to a problem with TCP nameserver requests,
-no more than 15 servers are visible at any moment in the zone.  Debian
-developer Bdale Garbee considers using pool.ntp.org in the default
-configuration of the Debian ntp package.  Read the longer version of these news
-in the <a
-href="https://fortytwo.ch/mailman/pipermail/timekeepers-announce/2003/000002.html"
->mailing list archives</a>.
-</td>
-</tr>
-<tr>
-<td align="center" valign="top"><b>2003-02-19</b></td>
-<td>
-We've been covered by the <a href="http://www.debian.org/News/weekly/2003/07/"
->Debian Weekly News</a> - resulting in a few more timeservers being added, the
-count is at 30 now with some more having shown interest.  Amongst the latter is
-also somebody in Hongkong, so the asia.time.fortytwo.ch zone will be created
-shortly. I've also added a new <a
-href="http://www.asksnoop.com/shizzolator.php?url=http://fortytwo.ch/time/index.html.en"
->translation</a> - hope you like it.
-</td>
-</tr>
-<tr>
-<td align="center" valign="top"><b>2003-02-12</b></td>
-<td> 
-Regional zones are being created now: europe.time.fortytwo.ch,
-north-america.time.fortytwo.ch and oceania.time.fortytwo.ch exist now.
-</td>
-</tr>
-<tr>
-<td align="center" valign="top"><b>2003-02-12</b></td>
-<td> 
-I've added our first two <i>stratum 1</i> clocks - thanks to <a
-href="http://redhat.com">RedHat</a> for donating them.
-</td>
-</tr>
-<tr>
-<td align="center" valign="top"><b>2003-02-12</b></td>
-<td> 
-Suggestion by Mark Lijftogt: A news section has been added.
-</td>
-</tr>
 </table>
 <p>
-Older (and more) news are available in the <a href="#mail"
->mailing list archives</a> 
+<a href="older_news.html">Older news...</a>
 </p>
+
 <div style="text-align:right"><a href="#top">go up</a></div>
 <h2><a name="use">How do I use pool.ntp.org?</a></h2>
 <p>
@@ -418,8 +330,8 @@ href="news:comp.protocols.time.ntp"
 </li>
 <li>
 If you want to monitor your timeserver, <a
-href="http://fortytwo.ch/stats/time" >my statistics</a> could give you a
-starting point.
+href="http://fortytwo.ch/stats/time" >Adrian von Bidder's
+statistics</a> could give you a starting point.
 </li>
 <li>
 Federico Sevilla III also has a <a href="http://marc.free.net.ph" >mailing
@@ -435,8 +347,8 @@ website of Robert Kehl.
 <hr/>
 <div style="font-size:x-small">
 <div style="text-align:right">
-Adrian von Bidder -
-<a href="mailto:clockmaster@fortytwo.ch">clockmaster@fortytwo.ch</a><br/>
+Ask Bj&oslash;rn Hansen -
+<a href="mailto:ask@develooper.com">ask@develooper.com</a><br/>
 Favicon by Brad Knowles used with permission from <a
 href="http://ntp.isc.org/">http://ntp.isc.org/</a>
 </div>

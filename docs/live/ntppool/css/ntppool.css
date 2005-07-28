@@ -8,4 +8,9 @@ span.s_his_tol  { color: yellow; }  /* x */
 span.s_his_big  { color: #ffa500; }  /* o */
 span.s_his_down { color: red;    }  /* _ */
 
+#server_count { float:right;
+	   	border: 1px dotted;
+		margin: 2px;
+		padding: 9px;
+		}
 

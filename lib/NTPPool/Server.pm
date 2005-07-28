@@ -26,7 +26,8 @@ sub count_by_continent {
 sub score {
   my $self = shift;
   my ($score) = NTPPool::Server::Score->search( server => $self->id );
-  ($score && $score->score || 0);
+  $score = $score->score || 0;
+  sprintf "%0.1f", $score;
 }
 
 sub history {

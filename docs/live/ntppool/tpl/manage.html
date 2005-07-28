@@ -1,0 +1,50 @@
+<a href="/manage/logout">Logout</a> | <a href="[% combust.account_url %]">Bitcard Account</a>
+
+
+<h3>Admin information</h3>
+<p>
+[% user = combust.user %]
+Username: <b>[% user.username %]</b><br />
+Email: <b>[% user.email %]</b><br/><br/>
+
+(change your email address in your <a href="[% combust.account_url %]">Bitcard Account</a>)
+
+</p>
+
+<h3>Your servers</h3>
+<p>
+[% servers = user.servers; 
+   FOR server = servers; %] 
+[% IF server.hostname %]Hostname: <b>[% server.hostname | html %]</b><br />[% END %]
+IP: <b>[% server.ip | html %]</b><br />
+Current score: <b>[% server.score %]</b><br />
+<a href="/scores/?ip=[% server.ip | uri %]">Trend</a>: [% FOR h = server.history(60).reverse -%]
+<span class="[% h.history_css_class %]">[% h.history_symbol  %]</span>
+[%- END %]
+<br />
+
+<br />
+[% END %]
+
+</p>
+[% IF servers %]
+<p>
+The "availability score" goes up to 20.  It must be higher than 5 for the server to be included in the cluster.
+</p>
+
+<p>
+[% PROCESS tpl/server_trend_legend.html %]
+</p>
+[% ELSE %]
+
+<i>No servers registered to your email address. Send  a mail if that was not what you expected!</i> 
+
+[% END %]
+
+<p>
+To add a server or change server information (say the IP), email <a
+href="mailto:ask@develooper.com">ask@develooper.com</a>.
+</p>
+
+
+
