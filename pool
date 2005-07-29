@@ -81,13 +81,10 @@ if ($cmd eq "add") {
     }
 
     # look if the email address is already registered
-    my $email = $db->quote(shift @ARGV);
-    my @row = $db->selectrow_array("SELECT id FROM users WHERE email = $email");
-    my $emailid = $row[0];
-    if ($#row == -1) {
-        $db->do("INSERT INTO users (email) VALUES ($email)");
-        $emailid = $db->{'mysql_insertid'};
-    }
+    my $email = shift @ARGV;
+    my ($user) = NTPPool::Admin->search(email => $email);
+    $user = NTPPool::Admin->search(username => $email) unless $user;
+    die "No $email user\n" unless $user;
 
     # do we have a hostname or an IP?
     my $hostname = shift @ARGV;
@@ -110,14 +107,13 @@ if ($cmd eq "add") {
       or exit;
 
     # insert into database
-    @row =
-      $db->selectrow_array("SELECT email FROM servers, users WHERE ip = '$ip' "
-                           . "AND servers.admin = users.id");
+    my @row = $db->selectrow_array("SELECT email FROM servers, users WHERE ip = '$ip' "
+                                   . "AND servers.admin = users.id");
     if ($#row != -1) {
         die "server $ip already in database for $row[0]\n";
     }
     $db->do("INSERT INTO servers (ip, admin, hostname) VALUES (?,?,?)",
-            {}, $ip, $emailid, $hostname);
+            {}, $ip, $user->id, $hostname);
     my $serverid = $db->{'mysql_insertid'};
 
     # insert into zones
@@ -321,7 +317,7 @@ elsif ($cmd eq "zone") {
         }
     }
     else {
-        print $fh "#; 'big' zone without duplicates below (@)\n";
+        print $fh "# 'big' zone without duplicates below (@)\n";
         @$entries = shuffle(@$entries);
         for my $zone (("@", "0", "1", "2")) {
             my $z = $zone eq '@' ? '' : "$zone.";
@@ -338,7 +334,8 @@ elsif ($cmd eq "zone") {
                                . "FROM servers s, scores sc, locations l "
                                . "WHERE l.server = s.id AND l.zone = $$zone[0] "
                                . "AND sc.server = s.id AND sc.score > 5");
-        if ($#$entries < 59) {
+        my $min_non_duplicate_size = 8; 
+        if ($#$entries < ($min_non_duplicate_size*4 - 1)) {
             print $fh "# possible duplicates in the zones below ($$zone[1])\n";
             foreach my $z (("", "0.", "1.", "2.")) {
                 @$entries = shuffle(@$entries);
@@ -346,7 +343,7 @@ elsif ($cmd eq "zone") {
                 foreach my $e (@$entries) {
                     print $fh "+$z$$zone[1].pool.ntp.org:$$e[0]:$ttl\n";
                     $i++;
-                    last if ($i >= 15);
+                    last if ($i >= 14);
                 }
             }
         }
@@ -354,7 +351,7 @@ elsif ($cmd eq "zone") {
             print $fh "# 'big' zone without duplicates below ($$zone[1])\n";
             @$entries = shuffle(@$entries);
             foreach my $z (("", "0.", "1.", "2.")) {
-                for (my $i = 0 ; $i < 15 ; $i++) {
+                for (my $i = 0 ; $i < $min_non_duplicate_size; $i++) {
                     print $fh "+$z$$zone[1].pool.ntp.org:", ${shift @$entries}[0], ":120\n";
                 }
             }

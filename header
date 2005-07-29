@@ -1,14 +1,14 @@
-Zpool.ntp.org:ns1.us.bitnames.com:pool.ntp.org:@VERSION:1800:1800:604800:300
+Zpool.ntp.org:ns1.us.bitnames.com:pool.ntp.org:@VERSION:900:900:604800:300
 
 &pool.ntp.org::ns1.us.bitnames.com:86400
-&pool.ntp.org::ns3.us.bitnames.com:86400
-&pool.ntp.org::ns1.eu.bitnames.com:86400
+#&pool.ntp.org::ns3.us.bitnames.com:86400
+#&pool.ntp.org::ns1.eu.bitnames.com:86400
 &pool.ntp.org::zbasel.fortytwo.ch:86400
 
 # secondary DNS provided by Bart-Jan Vrielink <bartjan at vrielink.net>
 &pool.ntp.org::aventura.bhms-groep.nl:86400
-&pool.ntp.org::slartibartfast.bhms-groep.nl.:86400
-&pool.ntp.org::superzooi.bhms-groep.nl.:86400
+#&pool.ntp.org::slartibartfast.bhms-groep.nl.:86400
+#&pool.ntp.org::superzooi.bhms-groep.nl.:86400
 
 #; in nz offered by Simon Lyall <simon.lyall@ihug.co.nz>
 &pool.ntp.org::usenet.net.nz.:86400
@@ -26,7 +26,11 @@ Zpool.ntp.org:ns1.us.bitnames.com:pool.ntp.org:@VERSION:1800:1800:604800:300
 # more offered (.es and .us) by Xisco Lladó <xisco@zigazaga.net>
 # more offered - in the us - by Ask Bjørn Hansen <ask@develooper.com>
 
-+www.pool.ntp.org:193.138.215.60
+# +www.pool.ntp.org:193.138.215.60
+Cweb.pool.ntp.org:x3.develooper.com:7200
+Cwww.pool.ntp.org:x3.develooper.com:7200
+
+
 
 
 
