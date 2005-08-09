@@ -283,7 +283,7 @@ elsif ($cmd eq "scores") {
 }
 elsif ($cmd eq "zone") {
 
-    my $file = "/home/ask/bsb-out/pool.ntp.org";
+    my $file = "bsb-out/pool.ntp.org";
     open(my $fh, ">$file.tmp") or die "Could not open $file.tmp: $!";
 
     open HEAD, "<header"
@@ -298,61 +298,36 @@ elsif ($cmd eq "zone") {
 
     my $ttl = 120;
 
-    my $entries =
-      $db->selectall_arrayref(  "SELECT s.ip "
-                              . "FROM servers s, scores sc "
-                              . "WHERE sc.server = s.id AND sc.score > 5");
-    if ($#$entries < 59) {
-        print $fh "# possible duplicates in the zones below (@)\n";
-        for my $zone (("@", "0", "1", "2")) {
-            my $z = $zone eq '@' ? '' : "$zone.";
-            @$entries = shuffle(@$entries);
-            my $i;
-            foreach my $e (@$entries) {
-                #print "$z IN A $$e[0]\n";
-                print $fh "+${z}pool.ntp.org:$$e[0]:$ttl\n";
-                $i++;
-                last if ($i >= 15);
-            }
-        }
-    }
-    else {
-        print $fh "# 'big' zone without duplicates below (@)\n";
-        @$entries = shuffle(@$entries);
-        for my $zone (("@", "0", "1", "2")) {
-            my $z = $zone eq '@' ? '' : "$zone.";
-            for (my $i = 0 ; $i < 15 ; $i++) {
-                print $fh "+${z}pool.ntp.org:", ${shift @$entries}[0], ":$ttl\n";
-            }
-        }
-    }
-
-    my $zones = $db->selectall_arrayref("SELECT id, name FROM zones");
+    my $zones = $db->selectall_arrayref("SELECT id, name FROM zones", {Columns => {}});
     for my $zone (@$zones) {
-        $entries =
+        my $name = $zone->{name};
+	$name = '' if $name eq '@';
+	$name = "$name." if $name;
+
+        my $entries =
           $db->selectall_arrayref("SELECT s.ip "
                                . "FROM servers s, scores sc, locations l "
-                               . "WHERE l.server = s.id AND l.zone = $$zone[0] "
-                               . "AND sc.server = s.id AND sc.score > 5");
+                               . "WHERE l.server = s.id AND l.zone = ? "
+                               . "AND sc.server = s.id AND sc.score > 5", undef, $zone->{id});
         my $min_non_duplicate_size = 8; 
         if ($#$entries < ($min_non_duplicate_size*4 - 1)) {
-            print $fh "# possible duplicates in the zones below ($$zone[1])\n";
+            print $fh "# possible duplicates in the zones below ($zone->{name})\n";
             foreach my $z (("", "0.", "1.", "2.")) {
                 @$entries = shuffle(@$entries);
                 my $i;
                 foreach my $e (@$entries) {
-                    print $fh "+$z$$zone[1].pool.ntp.org:$$e[0]:$ttl\n";
+                    print $fh "+$z${name}pool.ntp.org:$$e[0]:$ttl\n";
                     $i++;
                     last if ($i >= 14);
                 }
             }
         }
         else {
-            print $fh "# 'big' zone without duplicates below ($$zone[1])\n";
+            print $fh "# 'big' zone without duplicates below ($zone->{name})\n";
             @$entries = shuffle(@$entries);
             foreach my $z (("", "0.", "1.", "2.")) {
                 for (my $i = 0 ; $i < $min_non_duplicate_size; $i++) {
-                    print $fh "+$z$$zone[1].pool.ntp.org:", ${shift @$entries}[0], ":120\n";
+                    print $fh "+$z${name}pool.ntp.org:", ${shift @$entries}[0], ":120\n";
                 }
             }
         }
