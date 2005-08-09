@@ -1,0 +1,37 @@
+# -*- cperl -*-
+eval 'exec $CBROOT/bin/perl $0 ${1+"$@"}'
+  unless $running_under_some_shell;
+use strict;
+use lib "$ENV{CBROOTLOCAL}/lib";
+use lib "$ENV{CBROOT}/lib";
+use Data::Dumper;
+use Locale::Object;
+
+use NTPPool::Zone;
+
+my $zones = NTPPool::Zone->retrieve_all;
+
+my ($global) = NTPPool::Zone->search(name => '@')
+  or die "No global zone setup in the zones table";
+
+while (my $zone = $zones->next) {
+  next if $zone->name eq '@';
+  if (length($zone->name) > 2) {
+    my $name = $zone->name;
+    $name =~ s/-/ /;
+    $name =~ s/\b(.)/\U$1/g;
+    my $obj = Locale::Object::Continent->new( name => $name );
+    $zone->parent($global);
+    $zone->description($obj->name);
+  }
+  else {
+    my $cc = $zone->name;
+    $cc = 'gb' if $cc eq 'uk';
+    my $country = Locale::Object::Country->new( code_alpha2 => $cc );
+    $zone->description($country->name);
+    my ($continent) = NTPPool::Zone->search(description => $country->continent->name);
+    $zone->parent($continent) if $continent;
+  }
+
+  $zone->update;
+}
