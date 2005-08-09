@@ -1,3 +1,9 @@
 
 make the country zones alias to the continent zones when they are otherwise too small
 
+alter table zones add parent id int unsigned;
+alter table zones add description varchar(255);
+insert into zones (name,description) values ('@', 'Global');
+
+insert into locations (server,zone) select id, 49 from servers;
+

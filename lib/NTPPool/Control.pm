@@ -105,7 +105,9 @@ sub login {
 
 
 sub count_by_continent {
-  NTPPool::Server->count_by_continent;
+  my @x = eval { NTPPool::Server->count_by_continent };
+  warn $@ if $@;
+  @x;
 }
 
 

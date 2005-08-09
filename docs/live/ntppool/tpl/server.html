@@ -11,7 +11,16 @@ IP <input type="text" name="ip">
 <h3>[% server.ip %] [% IF server.hostname;  '/ ' _ server.hostname; END %]</h3>
 
 <p>
+Zones:
+[% FOR zone = server.zones %]
+<a href="[% zone.url %]">[% zone.name %]</a>
+[% END  %]
+</p>
+
+<p>
 Current score: [% USE Number.Format; server.score | format_number(2); %] (only servers with a score higher than 5 are used)<br/>
+
+
 
 <br />
 History:<br />

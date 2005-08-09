@@ -1,0 +1,54 @@
+
+<h2><a name="join">How do I join pool.ntp.org?</a></h2>
+<p>
+Your computer <b>must have a static IP address</b> and a permanent internet
+connection. The required bandwidth is really low (2 packets per client and
+minute is about the maximum you'll get. The project steadily acquires more
+timeservers, so the load should distribute pretty evenly, with only few clients
+for each server). Then, I assume that you already are running a timeserver and
+have it synchronised to some time source. If this is all ok, you can write an
+email to <a href="mailto:clockmaster@fortytwo.ch"
+>clockmaster@fortytwo.ch</a> to tell me that you'd like to join and in which
+country your server is. I'd ask you to also subscribe to the <a
+href="mailto:timekeepers-announce-request@fortytwo.ch?subject=subscribe"
+>timekeepers-announce@fortytwo.ch</a> mailing list so you keep up with newest
+developments (I try to keep the mail volume down at around one message per
+month).
+</p>
+<p>
+The servers joining should not have <tt>pool.ntp.org</tt> as their upstream
+server(s), but should configure some good servers manually (those servers
+<b>may</b> be chosen from the pool. The point is that they are chosen
+statically instead of assigned randomly at each server restart.  This will help
+providing an acceptable quality of service.)  Note that it is not required that
+your server is a stratum 1 or 2 server - as this project is about load
+distribution mostly, there is no reason why a stratum 3 or even stratum 4
+server shouldn't join.
+</p>
+<p>
+It would be nice (but it's not necessary) if you could redirect web requests
+on port 80 of your time server to the official web page of the project at
+<tt>http://www.pool.ntp.org</tt>. If you run Apache, you could do this with:
+</p>
+<pre style="background-color:#e0e0e0;">
+&lt;VirtualHost *:80&gt;
+    ServerName pool.ntp.org
+    ServerAlias *.pool.ntp.org
+    Redirect permanent / http://www.pool.ntp.org/
+&lt;/VirtualHost&gt;
+</pre>
+<p>
+Again, this is only if you run a webserver anyway. The official project web 
+page will always be given with the 'www' at the beginning - but sometimes
+people are lazy and just type <tt>pool.ntp.org</tt> and are then surprised
+to just get a random web page.
+</p>
+<p>
+Once I have confirmed the server's addition to the pool, the server is
+constantly monitored for quality, using a scoring algorithm described in <a
+href="https://fortytwo.ch/mailman/pipermail/timekeepers-announce/2003/000006.html"
+>this email</a>.  You can watch your server's performance using the <a
+href="scores">web frontend</a>, but please do not use this for automated
+queries - my server is not a big machine and I don't want to restrict access to
+this page because the load goes through the roof.
+</p>

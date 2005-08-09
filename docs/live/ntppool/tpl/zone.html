@@ -1,0 +1,27 @@
+
+<h3>[% zone.description %] &#8212; [% zone.fqdn %]</h3>
+
+<p>
+There [% zone.server_count==1 ? 'is' : 'are' %] [% zone.server_count %] active server[% zone.server_count==1 ? '' : 's' %] in this zone.
+</p>
+
+[% IF !zone.children and zone.server_count < 39 %]
+<p>
+We can use more servers in this country.  If you have a server with a static IP, please consider <a href="/join.html">joining the pool</a>!
+</p>
+[% END %]
+
+[% IF zone.parent %]
+<p>
+See all zones in <a href="[% zone.parent.url %]">[% zone.parent.description %]</a>.
+</p>
+[% END %]
+
+[% IF zone.children %]
+<p>
+[% FOR child = zone.children %]
+<a href="[% child.url %]">[% child.description %]</a> &#8212; [% child.fqdn %] ([% child.server_count %])<br />
+
+[% END %]
+</p>
+[% END %]

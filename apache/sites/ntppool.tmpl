@@ -27,9 +27,14 @@
       PerlHandler NTPPool::Control::ScoresGraph->super
     </Location>
 
-    <Location /scores/>
+    <Location /scores>
       SetHandler perl-script
       PerlHandler NTPPool::Control::Scores->super
+    </Location>
+
+    <Location /zone>
+      SetHandler perl-script
+      PerlHandler NTPPool::Control::Zone->super
     </Location>
 
     <Location /error/>

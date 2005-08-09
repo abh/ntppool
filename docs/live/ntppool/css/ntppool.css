@@ -2,6 +2,49 @@ body {
   background-color: white;
 }
 
+#nav { 
+  margin-bottom: 0px;
+}
+
+#nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#nav li {
+  float: left;
+  margin: 0 0.15em;
+  padding: 0;
+  text-align: center
+}
+
+#nav li a {
+  background: url(/images/background.png) #fff bottom left repeat-x;
+  font-family: Verdana, sans-serif;
+  font-size: 0.9em;
+  height: 1.4em;
+  line-height: 1.4em;
+  display: block;
+  padding-left: 4px;
+  padding-right: 4px;
+  border: 0.1em solid #dcdce9;
+  color: #0d2474;
+  text-decoration: none;
+  text-align: center;
+}
+
+#nav li a:hover {
+  color: #0d74FF;
+}
+
+#content { 
+  clear: both;
+  padding-top: 10px;
+}
+
+
+
 span.s_his      { font-family: monospace; }
 span.s_his_ok   { color: green; font-size:80%; }  /* # */
 span.s_his_tol  { color: yellow; }  /* x */

@@ -18,6 +18,12 @@ Email: <b>[% user.email %]</b><br/><br/>
 [% IF server.hostname %]Hostname: <b>[% server.hostname | html %]</b><br />[% END %]
 IP: <b>[% server.ip | html %]</b><br />
 Current score: <b>[% server.score %]</b><br />
+
+Zones:
+[% FOR zone = server.zones %]
+<a href="[% zone.url %]">[% zone.name %]</a>
+[% END  %]<br />
+
 <a href="/scores/?ip=[% server.ip | uri %]">Trend</a>: [% FOR h = server.history(60).reverse -%]
 <span class="[% h.history_css_class %]">[% h.history_symbol  %]</span>
 [%- END %]
