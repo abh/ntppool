@@ -216,7 +216,7 @@ elsif ($cmd eq "scores") {
     }
 
     # go through server array and fetch offset for all servers
-    my $servers = NTPPool::Server->search( admin => 536 );
+    my $servers = NTPPool::Server->retrieve_all;
     while (my $server = $servers->next) { 
         my $step = 0;
 
@@ -256,11 +256,12 @@ elsif ($cmd eq "scores") {
                     $step = 1;
                 }
             }
+
+            $server->stratum($pkt{Stratum}) if $pkt{Stratum};
         }
 
         if (not defined $offset) { $offset = "NULL"; }
         $server->score( $server->score + $step );
-        $server->stratum($pkt{Stratum}) if $pkt{Stratum};
         $db->do(  "INSERT INTO log_scores "
                 . "(server, score, step, offs) "
                 . "VALUES (?, ?, $step, $offset)",
