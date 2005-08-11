@@ -18,6 +18,7 @@ Email: <b>[% user.email %]</b><br/><br/>
 [% IF server.hostname %]Hostname: <b>[% server.hostname | html %]</b><br />[% END %]
 IP: <b>[% server.ip | html %]</b><br />
 Current score: <b>[% server.score %]</b><br />
+[% IF server.stratum %]Stratum: <b>[% server.stratum %]</b><br/>[% END %]
 
 Zones:
 [% FOR zone = server.zones %]

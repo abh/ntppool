@@ -8,6 +8,7 @@ __PACKAGE__->set_up_table('servers');
 __PACKAGE__->has_a('admin' => 'NTPPool::Admin');
 __PACKAGE__->has_many('log_scores' => 'NTPPool::Server::LogScore');
 __PACKAGE__->has_many('locations' => 'NTPPool::Location');
+__PACKAGE__->might_have('_score'  => 'NTPPool::Server::Score');
 
 sub zones {
   my $self = shift;
@@ -35,7 +36,12 @@ sub count_by_continent {
 
 sub score {
   my $self = shift;
-  my ($score) = NTPPool::Server::Score->search( server => $self->id );
+  my ($score) = $self->_score;
+  if (@_) {
+      $score ||= NTPPool::Server::Score->create({ server => $self });
+      $score->score(shift @_);
+      $score->update;
+  }
   $score = $score ? $score->score : 0;
   sprintf "%0.1f", $score;
 }

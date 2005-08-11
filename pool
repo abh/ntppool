@@ -192,8 +192,6 @@ Comments welcome on the timekeepers@fortytwo.ch mailing list.
 EOT
 }
 elsif ($cmd eq "scores") {
-    $db->do("UPDATE scores SET score = score * 0.95");
-
     # check if this machine has good time.
     $Net::NTP::CLIENT_TIME_SEND    = undef;
     $Net::NTP::CLIENT_TIME_RECEIVE = undef;
@@ -218,16 +216,11 @@ elsif ($cmd eq "scores") {
     }
 
     # go through server array and fetch offset for all servers
-    my $srv =
-      $db->selectall_arrayref("SELECT sr.id, sr.ip, sc.score "
-            . "FROM servers sr LEFT OUTER JOIN scores sc ON sr.id = sc.server");
-    foreach my $s (@$srv) {
+    my $servers = NTPPool::Server->search( admin => 536 );
+    while (my $server = $servers->next) { 
         my $step = 0;
-        if (not defined $$s[2]) {
 
-            # start at score = 0 if new server
-            $$s[2] = 0;
-        }
+        $server->score( $server->score * 0.95 );
 
         #print "testing $$s[1]\n";
 
@@ -240,7 +233,7 @@ elsif ($cmd eq "scores") {
             $Net::NTP::CLIENT_TIME_RECEIVE = undef;
             my $time_then = Time::HiRes::time;
             $Net::NTP::CLIENT_TIME_SEND = $time_then;
-            my %pkt      = eval { get_ntp_response($$s[1]) };
+            my %pkt      = eval { get_ntp_response($server->ip) };
             my $time_now = Time::HiRes::time;
 
             if ($!) {
@@ -266,19 +259,16 @@ elsif ($cmd eq "scores") {
         }
 
         if (not defined $offset) { $offset = "NULL"; }
-        if (
-            $db->do(
-                        "UPDATE scores SET score = score + $step, ts=now() "
-                      . "WHERE server = $$s[0]"
-            ) != 1
-           )
-        {
-            $db->do(  "INSERT INTO scores (server, score) "
-                    . "VALUES ($$s[0], $step)");
-        }
+        $server->score( $server->score + $step );
+        $server->stratum($pkt{Stratum}) if $pkt{Stratum};
         $db->do(  "INSERT INTO log_scores "
                 . "(server, score, step, offs) "
-                . "VALUES ($$s[0], $$s[2] + $step, $step, $offset)");
+                . "VALUES (?, ?, $step, $offset)",
+                  undef,
+                  $server->id,
+                  $server->score,
+               );
+        $server->update;
     }
 }
 elsif ($cmd eq "zone") {
