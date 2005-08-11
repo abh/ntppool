@@ -97,7 +97,7 @@ sub get_server_info {
     my $country = $geo_ip->country_code_by_addr($server{ip});
     my @zones = NTPPool::Zone->search(name => $country);
     @zones = NTPPool::Zone->search(name => '@') unless @zones;
-    unshift @zones, $zones->[0]->parent while ($zones[0]->parent);
+    unshift @zones, $_->parent while ($zones[0]->parent);
 
     $server{zones} = \@zones;
 

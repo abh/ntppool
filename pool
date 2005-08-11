@@ -83,7 +83,7 @@ if ($cmd eq "add") {
     # look if the email address is already registered
     my $email = shift @ARGV;
     my ($user) = NTPPool::Admin->search(email => $email);
-    $user = NTPPool::Admin->search(username => $email) unless $user;
+    ($user) = NTPPool::Admin->search(username => $email) unless $user;
     die "No $email user\n" unless $user;
 
     # do we have a hostname or an IP?
@@ -286,7 +286,7 @@ elsif ($cmd eq "zone") {
     }
     close HEAD;
 
-    my $ttl = 120;
+    my $ttl = 240;
 
     my $zones = $db->selectall_arrayref("SELECT id, name FROM zones", {Columns => {}});
     for my $zone (@$zones) {
@@ -317,7 +317,7 @@ elsif ($cmd eq "zone") {
             @$entries = shuffle(@$entries);
             foreach my $z (("", "0.", "1.", "2.")) {
                 for (my $i = 0 ; $i < $min_non_duplicate_size; $i++) {
-                    print $fh "+$z${name}pool.ntp.org:", ${shift @$entries}[0], ":120\n";
+                    print $fh "+$z${name}pool.ntp.org:", ${shift @$entries}[0], ":$ttl\n";
                 }
             }
         }
