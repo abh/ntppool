@@ -2,13 +2,18 @@
 
 alter database default character set 'utf8';
 
-CREATE TABLE users (
-    id int unsigned primary key auto_increment,
-    email varchar(255) NOT NULL UNIQUE,
-    name varchar(255),
-    pass varchar(255),
-    nomail enum('0','1') not null default '0'
-) engine=INNODB;
+CREATE TABLE `users` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `email` varchar(255) NOT NULL default '',
+  `name` varchar(255) default NULL,
+  `pass` varchar(255) default NULL,
+  `nomail` enum('0','1') NOT NULL default '0',
+  `bitcard_id` char(40) default NULL,
+  `username` varchar(40) default NULL,
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `email` (`email`),
+  UNIQUE KEY `users_email_key` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE servers (
     id int unsigned primary key auto_increment,
@@ -20,7 +25,9 @@ CREATE TABLE servers (
 
 CREATE TABLE zones (
     id SERIAL NOT NULL PRIMARY KEY,
-    name varchar(255) NOT NULL UNIQUE
+    name varchar(255) NOT NULL UNIQUE,
+    description varchar(255) default NULL,
+    parent int(10) unsigned default NULL
 ) ENGINE=INNODB;
 
 CREATE TABLE locations (
@@ -32,6 +39,7 @@ CREATE TABLE locations (
 
 -- the dynamic part: logging
 CREATE TABLE log_scores (
+    id int not null auto_increment primary key,
     server INTEGER NOT NULL REFERENCES servers (id) ON DELETE CASCADE,
     ts timestamp NOT NULL,
     score REAL NOT NULL,
