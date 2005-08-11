@@ -1,0 +1,19 @@
+<h3>Add my server</h3>
+
+<p>
+<a name="add"></a>
+Please, only add your own servers.  If you want another server to be
+added, contact the owner/administrator of that server and encourage
+them to add it to the pool.  That goes even if the server is listed as a public server!
+</p>
+
+<p>
+Your servers hostname or IP address: <br />
+[% IF host_error %]<span class="error">[% host_error | html %]</span><br />[% END %]
+<form action="/manage/add#add" method="post">
+<input type="text" name="host" value="[% host | html %]">
+<input type="submit">
+</form>
+</p>
+
+

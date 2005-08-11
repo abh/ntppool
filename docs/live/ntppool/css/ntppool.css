@@ -1,5 +1,10 @@
 body {
   background-color: white;
+  font-family: verdana, "Lucida Grande", arial, helvetica, sans-serif;
+}
+
+h1,h2,h3 {
+  font-family: "Lucida Grande", verdana, arial, helvetica, sans-serif;
 }
 
 #nav { 
@@ -50,6 +55,13 @@ span.s_his_ok   { color: green; font-size:80%; }  /* # */
 span.s_his_tol  { color: yellow; }  /* x */
 span.s_his_big  { color: #ffa500; }  /* o */
 span.s_his_down { color: red;    }  /* _ */
+
+span.error      { color: red; }
+
+h4 {
+  margin-top: 0.5em;
+  margin-bottom:0px;
+}
 
 #server_count { float:right;
 	   	border: 1px dotted;

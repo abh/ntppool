@@ -1,0 +1,46 @@
+
+<h2>Add my server to the pool</h2>
+
+<p>
+Thanks for offering your server to the pool!<br /> Please verify the following information.
+</p>
+
+<p>
+<h4>IP</h4>
+[% server.ip %]<br />
+
+[% IF server.hostname %]
+<h4>Hostname</h4>
+[% server.hostname | html %]
+[% END %]
+
+<h4>Zones</h4>
+[% IF server.zones.count == 1 %]
+We couldn't determine which country your server is in, please tell us in the comments field!<br />
+[% END %]
+[% FOR zone = server.zones %]
+<a href="[% zone.url %]">[% zone.description %]</a>
+[% END %]
+
+</p>
+
+<form method="post">
+<input type="hidden" name="host" value="[% host | html %]">
+<h4>Comment</h4>
+<textarea name="comment" rows="6" cols="60">
+</textarea><br />
+<span style="font-size:0.6em">(Tell us if we auto-configured your zones wrong)</span>
+<br/> 
+<br/>
+<input type="submit" name="yes" value="Yes, this is my server, add it!">
+</form>
+
+<p>
+No, please <a href="/manage">cancel</a>.
+</p>
+
+<!-- 
+<pre>
+[% USE Dumper; Dumper.dump(server) %]
+</pre>
+-->

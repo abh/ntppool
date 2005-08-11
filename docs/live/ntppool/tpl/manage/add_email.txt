@@ -1,0 +1,17 @@
+[%- page.style='bare.html' %]To: ask@develooper.com
+From: ([% combust.user.username %]) [% combust.user.email %]
+Subject: New addition to the NTP Pool: [% server.ip; server.hostname ? " / " _ server.hostname : "" %]
+
+[% combust.user.username %] added [% server.ip %] to the pool.
+
+Zones:  [% FOR zone = server.zones; " " _ zone.name; END; %]
+Stratum: [% server.ntp.Stratum %]
+
+Comment:
+[% comment %]
+
+
+
+
+
+ 
