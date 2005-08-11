@@ -66,6 +66,18 @@ lists</a>.
 <table cellpadding="4">
 
 <tr>
+<td align="center" valign="top"><b>2005-08-10</b></td>
+<td>
+
+You can now add your NTP servers (and only your own, please) via the
+new <a href="/manage">web interface</a>.  Please <a
+href="mailto:ask@develooper.com">email me</a> if it doesn't work as expected.
+
+</td></tr>
+
+
+
+<tr>
 <td align="center" valign="top"><b>2005-08-09</b></td>
 <td>
 
