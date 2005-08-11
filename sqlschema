@@ -59,3 +59,14 @@ CREATE TABLE unusable_servers (
 ) ENGINE=INNODB;
 
 
+CREATE TABLE `zone_server_counts` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `zone` bigint(20) unsigned NOT NULL,
+  `date` date NOT NULL,
+  `count_active` mediumint(8) unsigned NOT NULL,
+  `count_all` mediumint(8) unsigned NOT NULL,
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `zone` (`zone`,`date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
