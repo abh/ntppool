@@ -37,6 +37,7 @@ sub handle_add {
     my $server = eval { $self->get_server_info };
     if (!$server or $@) {
         $self->tpl_param('host_error', $@ || 'Error checking your server');
+        warn $self->tpl_param('host_error');
         return OK, $self->evaluate_template('tpl/manage/add_form.html');
     }
 
@@ -89,15 +90,18 @@ sub get_server_info {
     warn Data::Dumper->Dump([\%ntp]);
 
     die "Didn't get an NTP response from $host\n" unless defined $ntp{Stratum};
-    die "Invalid stratum response from $host. Is your server configured properly? Is public access allowed?\n"
+    die "Invalid stratum response from $host (Your server is in stratum $ntp{Stratum}).  Is your server configured properly? Is public access allowed?\n"
       unless $ntp{Stratum} > 0 and $ntp{Stratum} < 6;
 
     $server{ntp} = \%ntp;
 
     my $country = $geo_ip->country_code_by_addr($server{ip});
-    my @zones = NTPPool::Zone->search(name => $country);
+    warn "Country: $country\n";
+    my $country_zone = NTPPool::Zone->retrieve_by_name($country);
+    my @zones;
+    push @zones, $country_zone if $country_zone;
     @zones = NTPPool::Zone->search(name => '@') unless @zones;
-    unshift @zones, $_->parent while ($zones[0]->parent);
+    unshift @zones, $zones[0]->parent while ($zones[0]->parent);
 
     $server{zones} = \@zones;
 
