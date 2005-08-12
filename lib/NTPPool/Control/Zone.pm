@@ -31,12 +31,13 @@ sub sort_order {
 
 sub show_servers_access {
     my $self = shift;
-    my $p = $self->user && $self->user->privileges;
-    warn Data::Dumper->Dump([\$p], [qw(p)]);
-    return 1 if $self->user 
-      and $self->user->privileges
-      and $self->user->privileges->see_all_servers;
-    return 0;
+    return $self->{_show_servers_access} if defined $self->{_show_servers_access};
+    return $self->{_show_servers_access} = 1
+      if $self->user 
+        and $self->user->privileges
+        and $self->user->privileges->see_all_servers;
+
+    return $self->{_show_servers_access} = 0;
 }
 
 sub show_servers {
