@@ -13,15 +13,41 @@ We can use more servers in this country.  If you have a server with a static IP,
 
 [% IF zone.parent %]
 <p>
-See all zones in <a href="[% zone.parent.url %]">[% zone.parent.description %]</a>.
+See all zones in <a href="[% zone.parent.url %][% show_servers ? '?show_servers=1' : '' %]">[% zone.parent.description %]</a>.
 </p>
 [% END %]
+
+[% IF is_logged_in;
+     IF show_servers;
+ %]
+<a href="[% zone.url %]">Don't show servers</a>
+[%   ELSE %]
+<a href="[% zone.url %]?show_servers=1">Show servers</a> (only available by request from server admins)
+[%   END;
+  END;
+%]
 
 [% IF zone.children %]
 <p>
 [% FOR child = zone.children %]
-<a href="[% child.url %]">[% child.description %]</a> &#8212; [% child.fqdn %] ([% child.server_count %])<br />
+<a href="[% child.url %][% show_servers ? '?show_servers=1' : '' %]">[% child.description %]</a> &#8212; [% child.fqdn %] ([% child.server_count %])<br />
 
 [% END %]
 </p>
+[% END %]
+
+[% IF servers %]
+<p>
+<table class="servertable">
+[% FOR server = servers %]
+<tr>
+<!-- <td>[% server.id %]</td> -->
+<td><a href="/scores?ip=[% server.ip %]">[% server.ip %]</a></td>
+<td>[% server.hostname %]</td>
+<td>[% server.score %]</td>
+<td>[% server.stratum %]</td>
+<td>[% server.admin.username %]</td>
+</tr>
+[% END %]
+</table>
 [% END %]

@@ -18,13 +18,14 @@ CREATE TABLE `users` (
 CREATE TABLE servers (
     id int unsigned primary key auto_increment,
     ip varchar(15) NOT NULL unique,
-    admin INTEGER NOT NULL REFERENCES users (id),
-    hostname TEXT
+    admin int unsigned not null,
+    hostname TEXT,
+    index (admin),
+    CONSTRAINT admin FOREIGN KEY (admin) REFERENCES users(id)
 ) engine=INNODB;
--- GRANT SELECT ON servers TO "www-data";
 
 CREATE TABLE zones (
-    id SERIAL NOT NULL PRIMARY KEY,
+    id int unsigned primary key auto_increment,
     name varchar(255) NOT NULL UNIQUE,
     description varchar(255) default NULL,
     parent int(10) unsigned default NULL
@@ -32,49 +33,62 @@ CREATE TABLE zones (
 
 CREATE TABLE locations (
     id int unsigned primary key auto_increment,
-    server INTEGER NOT NULL REFERENCES servers (id) ON DELETE CASCADE,
-    zone INTEGER NOT NULL REFERENCES zones (id),
-    UNIQUE (server, zone)
+    server int unsigned not null,
+    zone   int unsigned not null,
+    UNIQUE (server, zone),
+    constraint locations_server FOREIGN KEY (server) REFERENCES servers(id) ON DELETE CASCADE,
+    constraint locations_zone   FOREIGN KEY (zone) REFERENCES zones(id) ON DELETE CASCADE
 ) ENGINE=INNODB;
 
 -- the dynamic part: logging
 CREATE TABLE log_scores (
     id int not null auto_increment primary key,
-    server INTEGER NOT NULL REFERENCES servers (id) ON DELETE CASCADE,
+    server INTEGER unsigned NOT NULL,
     ts timestamp NOT NULL,
     score REAL NOT NULL,
     step REAL NOT NULL,
-    offs REAL -- abs(offset)
+    offs REAL -- abs(offset),
+    key (server,ts),
+    constraint log_scores_server FOREIGN KEY (server) REFERENCES servers(id) ON DELETE CASCADE
 ) ENGINE=INNODB;
-CREATE INDEX log_scores_server_ts_idx ON log_scores (server,ts);
 
 -- this is a different table from 'servers' since it changes a lot
 -- and in a different table from 'log' as we only store the current score
 CREATE TABLE scores (
-    server INTEGER NOT NULL UNIQUE REFERENCES servers(id) ON DELETE CASCADE,
+    server INTEGER unsigned NOT NULL UNIQUE,
     ts TIMESTAMP not null,
-    score REAL NOT NULL DEFAULT 0.0
+    score REAL NOT NULL DEFAULT 0.0,
+    constraint scores_server FOREIGN KEY (server) REFERENCES servers(id) ON DELETE CASCADE
 ) ENGINE=INNODB;
 
--- GRANT SELECT ON log_scores TO "www-data";
 
 -- integrating automatic checking/reporting of unreachable servers
 CREATE TABLE unusable_servers (
-    server INTEGER NOT NULL REFERENCES servers (id) ON DELETE CASCADE,
+    server INT unsigned  NOT NULL,
     last_score REAL NOT NULL DEFAULT 0.0,
     last_email_time datetime,
-    ts TIMESTAMP not null
+    ts TIMESTAMP not null,
+    key (server),
+    constraint unusable_servers_server foreign key (server) REFERENCES servers(id) ON DELETE CASCADE
 ) ENGINE=INNODB;
 
 
 CREATE TABLE `zone_server_counts` (
   `id` int(10) unsigned NOT NULL auto_increment,
-  `zone` bigint(20) unsigned NOT NULL,
+  `zone` int unsigned NOT NULL,
   `date` date NOT NULL,
   `count_active` mediumint(8) unsigned NOT NULL,
   `count_all` mediumint(8) unsigned NOT NULL,
   PRIMARY KEY  (`id`),
-  UNIQUE KEY `zone` (`zone`,`date`)
+  UNIQUE KEY `zone` (`zone`,`date`),
+  constraint zone_server_counts foreign key (zone) references zones(id) on delete cascade
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+
+CREATE TABLE `user_privileges` (
+  `user` int(10) unsigned NOT NULL default '0',
+  `see_all_servers` tinyint(1) not null default 0,
+  UNIQUE KEY `user` (`user`),
+  CONSTRAINT `user_privileges` FOREIGN KEY (`user`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
