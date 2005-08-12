@@ -196,7 +196,7 @@ elsif ($cmd eq "scores") {
     $Net::NTP::CLIENT_TIME_SEND    = undef;
     $Net::NTP::CLIENT_TIME_RECEIVE = undef;
     my $mon_host = 'localhost';
-    $mon_host = 'miette' if hostname eq "powermac.bn.dev";
+    $mon_host = 'miette' if hostname eq "powermac.bn.dev" or hostname eq "one.develooper.com";
     my %pkt = get_ntp_response($mon_host);
     if ($pkt{'Stratum'} == 0 or $pkt{'Stratum'} > 6) {
         die "monitoring server not synchronized\n";
@@ -233,17 +233,20 @@ elsif ($cmd eq "scores") {
             $Net::NTP::CLIENT_TIME_RECEIVE = undef;
             my $time_then = Time::HiRes::time;
             $Net::NTP::CLIENT_TIME_SEND = $time_then;
-            my %pkt      = eval { get_ntp_response($server->ip) };
+
+            my %pkt      = eval { 
+                get_ntp_response($server->ip) 
+            };
             my $time_now = Time::HiRes::time;
 
-            if ($!) {
+            if (!$pkt{Stratum} or $!) {
                 $step = -5;
             }
             else {
                 my $recv_org   = $pkt{'Receive Timestamp'} - $time_now;
                 my $trans_dest = $pkt{'Transmit Timestamp'} - $time_then;
                 $offset = abs(($recv_org + $trans_dest) / 2);
-                if ($offset > 3) {
+                if ($offset > 3 or $pkt{Stratum} > 5) {
                     $step = -4;
                 }
                 elsif ($offset > 1.5) {

@@ -105,12 +105,13 @@ sub login {
 
 
 sub count_by_continent {
-  my @x = eval { NTPPool::Server->count_by_continent };
-  warn $@ if $@;
-  @x;
+    my $self = shift;
+    my $global = NTPPool::Zone->retrieve_by_name('@');
+    my @zones = sort { $a->description cmp $b->description }
+      NTPPool::Zone->search(parent => $global);
+    push @zones, $global;
+    \@zones
 }
-
-
 
 package NTPPool::Control::Basic;
 use base qw(NTPPool::Control Combust::Control::Basic);

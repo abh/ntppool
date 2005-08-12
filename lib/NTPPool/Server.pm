@@ -15,25 +15,6 @@ sub zones {
   sort { $a->name cmp $b->name } map { $_->zone } $self->locations;
 }
 
-sub count_by_continent {
-  my $class = shift;
-  my $dbh = $class->db_Main;
-  my $a = $dbh->selectall_arrayref(q[select z.name, z.id as zone_id,count(*) as count
-				    from servers s
-                                      inner join scores sc on (s.id=sc.server)
-				      inner join locations l on(s.id=l.server)
-                                      inner join zones z on(z.id=l.zone)
-				    where length(z.name)>2 and sc.score >= 5
-				    group by z.name with rollup],
-				   { Columns => {} }
-				 );
-  return map { 
-    $_->{zone} = NTPPool::Zone->retrieve(delete $_->{zone_id}) if $_->{zone_id} and $_->{name};
-    $_;
-  } @$a if $a;
-
-}
-
 sub score {
   my $self = shift;
   my ($score) = $self->_score;

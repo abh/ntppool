@@ -9,6 +9,12 @@ __PACKAGE__->has_many('children' => 'NTPPool::Zone' => 'parent', { order_by => '
 
 __PACKAGE__->columns(Essential => __PACKAGE__->columns);
 
+sub retrieve_by_name {
+    my ($class, $name) = @_;
+    my ($zone) = $class->search(name => $name);
+    $zone;
+}
+
 sub url {
   my $self = shift;
   "/zone/" . $self->name;

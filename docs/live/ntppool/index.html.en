@@ -20,15 +20,13 @@
 <div id="server_count">
 Active server count on [% USE date; date.format(date.now, '%Y-%m-%d'); %] <br/>
 <table>
-[% FOR cont = combust.count_by_continent %]
+[% FOR zone = combust.count_by_continent %]
 <tr>
-<td>[% IF cont.zone.description %]   
-<a href="[% cont.zone.url %]">[% cont.zone.description %]</a>
-[% ELSE %]
-<b>Total</b>
-[% END %]
+<td>[% zone.name == '@' ? '<b>' : '' %]
+<a href="[% zone.url %]">[% zone.description %]</a>
+[% zone.name == '@' ? '</b>' : '' %]
 </td>
-<td>[% cont.count %]</td>
+<td>[% zone.server_count %]</td>
 </tr>
 [% END%]
 </table>
