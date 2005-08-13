@@ -58,6 +58,8 @@ span.s_his_down { color: red;    }  /* _ */
 
 span.error      { color: red; }
 
+.server_history_legend { font-size: 0.85em; }
+
 h4 {
   margin-top: 0.5em;
   margin-bottom:0px;

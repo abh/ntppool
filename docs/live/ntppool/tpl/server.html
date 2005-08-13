@@ -25,7 +25,7 @@ Current score: [% USE Number.Format; server.score | format_number(2); %] (only s
 <br />
 History:<br />
 [% FOR h = server.history(60).reverse -%]
-<span class="[% h.history_css_class %]">[% h.history_symbol  %]</span>
+<span class="[% h.history_css_class %]" title="[% h.ts | html %]">[% h.history_symbol  %]</span>
 [%- END %]
 <br/>
 
