@@ -47,6 +47,11 @@ See all zones in <a href="[% zone.parent.url %]">[% zone.parent.description %]</
 <td>[% server.score %]</td>
 <td>[% server.stratum %]</td>
 <td>[% server.admin.username %]</td>
+<td>
+[% FOR zone = server.zones %]
+<a href="[% zone.url %]">[% zone.name %]</a>
+[% END  %]
+</td>
 </tr>
 [% END %]
 </table>
