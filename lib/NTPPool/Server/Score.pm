@@ -3,8 +3,19 @@ use strict;
 use base qw(NTPPool::DBI);
 
 __PACKAGE__->set_up_table('scores');
-__PACKAGE__->has_a('server' => 'NTPPool::Server');
 
+sub accessor_name {
+  my ($class, $column) = @_;
+  return "_$column" if $column eq 'server';
+  $column;
+}
+
+sub server {
+  my $self = shift;
+  my $id = $self->_server(@_);
+  return unless $id;
+  NTPPool::Server->retrieve($id);
+}
 
 1;
 
