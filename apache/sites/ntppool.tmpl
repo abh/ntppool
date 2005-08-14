@@ -5,6 +5,8 @@
     [% expandServerAliases( config.site.ntppool.aliases ) %]
     PerlSetVar site [% site %]
 
+    PerlTransHandler Combust::Redirect->super
+
     PerlModule NTPPool
 
     <Location />

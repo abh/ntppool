@@ -28,7 +28,9 @@ while (my $zone = $zones->next) {
     my $cc = $zone->name;
     $cc = 'gb' if $cc eq 'uk';
     my $country = Locale::Object::Country->new( code_alpha2 => $cc );
-    $zone->description($country->name);
+    my $country_name = $country->name;
+    $country_name =~ s/,.*//;
+    $zone->description($country_name);
     my ($continent) = NTPPool::Zone->search(description => $country->continent->name);
     $zone->parent($continent) if $continent;
   }
