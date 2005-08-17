@@ -11,6 +11,7 @@ We can use more servers in this country.  If you have a server with a static IP,
 </p>
 [% END %]
 
+<p>
 [% FOR days = [1,7,14,30,90,365,730];
    st = zone.stats_days_ago(days);
    NEXT UNLESS st;
@@ -22,6 +23,7 @@ We can use more servers in this country.  If you have a server with a static IP,
  active [% st.ago %]<br />
 
 [% END %]
+</p>
 
 [% IF zone.parent %]
 <p>

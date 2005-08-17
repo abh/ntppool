@@ -24,11 +24,10 @@ Zpool.ntp.org:ns1.us.bitnames.com:pool.ntp.org:@VERSION:900:900:604800:300
 # more offered by Mike <miked@xac.net>
 # more offered by Hagen Herrschaft <hrx@hrxnet.de>
 # more offered (.es and .us) by Xisco Lladó <xisco@zigazaga.net>
-# more offered - in the us - by Ask Bjørn Hansen <ask@develooper.com>
 
 # +www.pool.ntp.org:193.138.215.60
-Cweb.pool.ntp.org:x3.develooper.com:7200
-Cwww.pool.ntp.org:x3.develooper.com:7200
+Cweb.pool.ntp.org:x3.develooper.com:28800
+Cwww.pool.ntp.org:x3.develooper.com:28800
 
 
 
