@@ -7,6 +7,7 @@ __PACKAGE__->has_a('parent' => 'NTPPool::Zone');
 __PACKAGE__->has_many('locations' => 'NTPPool::Location' );
 __PACKAGE__->has_many('children'  => 'NTPPool::Zone' => 'parent', { order_by => 'description' });
 __PACKAGE__->has_many('servers'   => [ 'NTPPool::Location' => 'server' ]);
+__PACKAGE__->has_many('_stats' => 'NTPPool::Zone::Stats', { order_by => 'date' } );
 
 __PACKAGE__->columns(Essential => __PACKAGE__->columns);
 
@@ -27,6 +28,11 @@ sub fqdn {
   my $pool_name = 'pool.ntp.org';
   return $pool_name if $self->name eq '@';
   join ".", $self->name, 'pool.ntp.org';
+}
+
+sub stats_days_ago {
+    warn "beep: @_";
+    NTPPool::Zone::Stats->search_days_ago(@_);
 }
 
 sub server_count {
