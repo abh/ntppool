@@ -8,6 +8,9 @@ our $cookie_name = 'npuid';
 
 sub init {
   my $self = shift;
+  
+  #my $lo = \%Class::DBI::Live_Objects;
+  #warn Data::Dumper->Dump([\$lo], [qw(lo)]) if defined $lo and %$lo;
 
   if ($self->req_param('sig') or $self->req_param('bc_id')) {
     my $bc = $self->bitcard;
@@ -100,7 +103,8 @@ sub account_url {
 
 sub login {
   my $self = shift;
-  return $self->redirect($self->login_url);
+  $self->tpl_param('login_url', $self->login_url);
+  return OK, $self->evaluate_template('tpl/login.html');
 }
 
 
