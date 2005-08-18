@@ -96,6 +96,7 @@ sub get_server_info {
     $server{ntp} = \%ntp;
 
     my $country = $geo_ip->country_code_by_addr($server{ip});
+    $country = 'UK' if $country eq 'GB';
     warn "Country: $country\n";
     my $country_zone = NTPPool::Zone->retrieve_by_name($country);
     my @zones;
