@@ -31,7 +31,6 @@ sub fqdn {
 }
 
 sub stats_days_ago {
-    warn "beep: @_";
     NTPPool::Zone::Stats->search_days_ago(@_);
 }
 

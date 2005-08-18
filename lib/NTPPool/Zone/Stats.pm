@@ -26,8 +26,6 @@ __PACKAGE__->set_sql(days_ago => qq{
 
 sub ago {
     my $self = shift;
-    warn "THEN: ", $self->then;
-    warn "NOW : ", $self->today;
     Time::Duration::ago($self->today - $self->then, 2);
 }
 
