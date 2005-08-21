@@ -6,20 +6,127 @@ use lib "$ENV{CBROOTLOCAL}/lib";
 use lib "$ENV{CBROOT}/lib";
 use Data::Dumper;
 use Locale::Object;
+use RRDs;
 
+my $base_path = "$ENV{CBROOTLOCAL}/rrd/zone";
+ 
 use NTPPool::Zone;
 
 my $zones = NTPPool::Zone->retrieve_all;
 
 my $dbh = NTPPool::Zone->db_Main;
 
+if (@ARGV and $ARGV[0] eq "populate_all") {
+    populate_all();
+}
+
 while (my $zone = $zones->next) {
     my $count_active = $zone->server_count;
     my $count_all    = $zone->server_count_all;
     #printf "%-8s %3i %3i\n", $zone->name, $count_active, $count_all;
-    $dbh->do(q[replace into zone_server_counts (zone,date,count_active,count_all) 
+    my $now = time;
+    $dbh->do(q[replace into zone_server_counts (zone,date,count_active,count_registered) 
                values (?,NOW(),?,?)],
              undef,
              $zone->id, $count_active, $count_all
             );
+    update_rrd($zone->name, $now, $count_active, $count_all);
+    update_graph($zone->name);
+}
+
+my $time = time;
+
+sub populate_all {
+    while (my $zone = $zones->next) {
+        my $data = $dbh->selectall_arrayref(q[select unix_timestamp(date) as time, count_active, count_registered
+                                              from zone_server_counts
+                                              where zone=? order by date], 
+                                            {Columns=>{}}, $zone->id);
+        create_rrd($zone->name);
+        for my $d (@$data) {
+            update_rrd($zone->name, $d->{time}, $d->{count_active}, $d->{count_registered});
+        }
+    }
+}
+
+sub update_rrd {
+    my ($zone, $time, $active, $registered) = @_;
+    my $path = rrd_path($zone);
+    my @options = ('--template' => 'active:registered',
+                   "$time:$active:$registered",
+                  );
+    RRDs::update "$path", @options;
+    if (my $ERROR = RRDs::error) {
+        warn "$0: unable to update $path: $ERROR\nOptions: ", join " ", @options;
+    }
+}
+
+
+sub rrd_path {
+    my $zone = shift;
+    "$base_path/$zone.rrd";
+}
+
+sub graph_path {
+    my $zone = shift;
+    "$base_path/graph/$zone.png";
+}
+
+sub update_graph {
+    my $zone = shift;
+
+    my $title = "Servers in the $zone.pool.ntp.org zone";
+
+    my $rrd = rrd_path($zone);
+
+# --slope-mode 
+    my @options = ('--end'    => 'now',
+                   '--start'  => 'end-14d',
+                   '--width'  => 420,
+                   '--height' => 130,
+                   '--title'  => $title,
+                   qq[DEF:active=$rrd:active:AVERAGE],
+                   qq[DEF:registered=$rrd:registered:AVERAGE],
+                   qq[CDEF:inactive=registered,active,-],
+                   qq[LINE2:active#00BB00:"active servers"],
+                   qq[LINE2:registered#00CCCC:"registered servers"],
+                   qq[LINE2:inactive#EE0000:"inactive servers"],
+                  );
+
+    my $path = graph_path($zone);
+    RRDs::graph $path, @options;
+    my $ERROR = RRDs::error;
+    if ($ERROR) {
+        warn "$0: unable to create '$path': $ERROR\n";
+    }
+
+}
+
+sub create_rrd {
+    my $zone = shift;
+    my $path = rrd_path($zone);
+    return if -e $path;
+
+    my $START = $time - 9450000;
+    
+    my @graph = (
+                 "--start", $START, "--step", 21600, # 6 hours interval
+                 "DS:active:GAUGE:180000:0:20000",  # heartbeat of ~2 days, min value = 0, max = 20000
+                 "DS:registered:GAUGE:180000:0:20000",
+                 "RRA:AVERAGE:0.5:1:1024",   # 6 hours, 170 days
+                 "RRA:AVERAGE:0.5:4:1024",   # 1 day, ~3 years
+                 "RRA:AVERAGE:0.5:12:1024",  # 3 days, ~9 years
+                 "RRA:AVERAGE:0.5:42:1024",  # 1 week, ~19 years.
+                 "RRA:MIN:0.5:4:1024",       # 1 day, ~3 years
+                 "RRA:MAX:0.5:4:1024",       # 1 day, ~3 years
+                 "RRA:MIN:0.5:42:1024",      # 1 week, ~19 years.
+                 "RRA:MAX:0.5:42:1024",      # 1 week, ~19 years.
+                );
+                 
+
+    RRDs::create "$path", @graph;
+    my $ERROR = RRDs::error;
+    if ($ERROR) {
+        die "$0: unable to create '$path': $ERROR\n";
+    }
 }

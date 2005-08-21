@@ -9,6 +9,8 @@
 
     PerlModule NTPPool
 
+    Alias /zone/graph/ [% root_local %]/rrd/zone/graph/
+
     <Location />
        SetHandler perl-script
        PerlHandler NTPPool::Control::Basic->super
@@ -37,6 +39,10 @@
     <Location /zone>
       SetHandler perl-script
       PerlHandler NTPPool::Control::Zone->super
+    </Location>
+
+    <Location /zone/graph>
+      SetHandler default
     </Location>
 
     <Location /error/>
