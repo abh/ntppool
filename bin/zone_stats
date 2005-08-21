@@ -30,6 +30,7 @@ while (my $zone = $zones->next) {
              undef,
              $zone->id, $count_active, $count_all
             );
+    create_rrd($zone->name);
     update_rrd($zone->name, $now, $count_active, $count_all);
     update_graph($zone->name);
 }
@@ -80,17 +81,24 @@ sub update_graph {
     my $rrd = rrd_path($zone);
 
 # --slope-mode 
-    my @options = ('--end'    => 'now',
-                   '--start'  => 'end-14d',
+    my @options = (
+                   '--lazy',
+                   '--end'    => 'now',
+                   '--start'  => 1123657000, # 2005-08-10, first data...  'end-14d',
                    '--width'  => 420,
                    '--height' => 130,
                    '--title'  => $title,
+                   '--lower-limit' => 0,
+                   '--upper-limit' => 5,
+                   '--alt-autoscale-max',
+                   #'--no-gridfit',
+                   #'--slope-mode',
                    qq[DEF:active=$rrd:active:AVERAGE],
                    qq[DEF:registered=$rrd:registered:AVERAGE],
                    qq[CDEF:inactive=registered,active,-],
-                   qq[LINE2:active#00BB00:"active servers"],
-                   qq[LINE2:registered#00CCCC:"registered servers"],
-                   qq[LINE2:inactive#EE0000:"inactive servers"],
+                   qq[LINE2:registered#00CCCC:registered servers],
+                   qq[LINE2:inactive#EE0000:inactive servers],
+                   qq[LINE2:active#00BB00:active servers],
                   );
 
     my $path = graph_path($zone);

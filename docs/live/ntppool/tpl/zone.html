@@ -12,7 +12,7 @@ We can use more servers in this country.  If you have a server with a static IP,
 [% END %]
 
 <p>
-[% FOR days = [1,7,14,30,90,365,730];
+[% FOR days = [1,3,7,14,30,90,365,730];
    st = zone.stats_days_ago(days);
    NEXT UNLESS st;
    diff = zone.server_count - st.count_active;
@@ -62,8 +62,8 @@ See all zones in <a href="[% zone.parent.url %]">[% zone.parent.description %]</
 <td>[% server.stratum %]</td>
 <td>[% server.admin.username %]</td>
 <td>
-[% FOR zone = server.zones %]
-<a href="[% zone.url %]">[% zone.name %]</a>
+[% FOR szone = server.zones %]
+<a href="[% szone.url %]">[% szone.name %]</a>
 [% END  %]
 </td>
 </tr>
