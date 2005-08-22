@@ -15,20 +15,16 @@ my $populate_all = @ARGV and $ARGV[0] eq 'populate_all' ? 1 : 0;
 my $servers = NTPPool::Server->retrieve_all;
 while (my $server = $servers->next) { 
     if ($populate_all) {
-        #DBI->trace(2);
+        #warn "Server: ", $server->id, " / ", $server->ip;
         my $scores = NTPPool::Server::LogScore->search_where
-          (  { ts => { '>', '2005-08-22 04:40:00' },
+          (  {  # ts => { '>', '2005-08-22 04:40:00' },
                server => $server, },
              { order_by => 'ts' } 
           );
-        #DBI->trace(0);
         while (my $ls = $scores->next) {
-            warn "got ls, ts: ", $ls->ts;
-            warn Data::Dumper->Dump([\$ls], [qw(ls)]);
+            #warn "got ls, ts: ", $ls->ts;
             $ls->update_rrd;
-            last;
         } 
-        last;
     }
 
     #next unless $server->id >= 300; #  and $server->id < 370;
@@ -59,6 +55,7 @@ sub score_graph {
     my $title = "Score history for " . $server->ip;
 
     my @options = (@$defaults,
+                   '--height' => 160,
                    '--title'  => $title,
                    '--lower-limit' => -10,
                    '--upper-limit' => 20,
