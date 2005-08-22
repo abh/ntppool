@@ -2,6 +2,7 @@ package NTPPool::Server::LogScore;
 use strict;
 use base qw(NTPPool::DBI);
 use RRDs;
+use Class::DBI::AbstractSearch;
 use Time::Piece;
 use Time::Piece::MySQL;
 
