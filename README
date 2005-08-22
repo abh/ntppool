@@ -1,0 +1,24 @@
+
+This is the code for the NTP Pool project, http://www.pool.ntp.org/
+
+See the LICENSE file for copyright and licensing information.
+
+-------------------------------------------------------------------------
+Quick and dirty install instructions; email ask@develooper.com for help.
+
+
+DIR=~/ntppool
+mkdir $DIR; cd $DIR
+svn co http://svn.develooper.com/project/ntppool/trunk .
+svn co http://svn.perl.org/combust/trunk combust
+
+export CBROOTLOCAL=$DIR
+export CBROOT=$DIR/combust
+
+cp combust/combust.conf.sample combust.conf
+edit combust.conf  # setup the database section with an "ntppool" database
+
+$CBROOT/bin/cmysql ntppool < sqlschema
+
+$CBROOT/bin/run_httpd
+

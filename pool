@@ -220,7 +220,7 @@ elsif ($cmd eq "scores") {
     while (my $server = $servers->next) { 
         my $step = 0;
 
-        $server->score( $server->score * 0.95 );
+        $server->score_raw( $server->score_raw * 0.95 );
 
         #print "testing $$s[1]\n";
 

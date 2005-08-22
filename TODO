@@ -1,8 +1,6 @@
 
 make the country zones alias to the continent zones when they are otherwise too small
 
-fix the "stuck at 19.4" bug.
-
 alter table zones add parent id int unsigned;
 alter table zones add description varchar(255);
 insert into zones (name,description) values ('@', 'Global');

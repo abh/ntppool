@@ -15,7 +15,7 @@ sub zones {
   sort { $a->name cmp $b->name } map { $_->zone } $self->locations;
 }
 
-sub score {
+sub score_raw {
   my $self = shift;
   my ($score) = $self->_score;
   if (@_) {
@@ -24,7 +24,11 @@ sub score {
       $score->update;
   }
   $score = $score ? $score->score : 0;
-  sprintf "%0.1f", $score;
+}
+
+sub score {
+  my $self = shift;
+  sprintf "%0.1f", $self->score_raw;
 }
 
 sub history {
