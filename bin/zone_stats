@@ -2,6 +2,7 @@
 eval 'exec $CBROOT/bin/perl $0 ${1+"$@"}'
   unless $running_under_some_shell;
 use strict;
+use warnings;
 use lib "$ENV{CBROOTLOCAL}/lib";
 use lib "$ENV{CBROOT}/lib";
 use Data::Dumper;
@@ -80,7 +81,6 @@ sub update_graph {
 
     my $rrd = rrd_path($zone);
 
-# --slope-mode 
     my @options = (
                    '--lazy',
                    '--end'    => 'now',

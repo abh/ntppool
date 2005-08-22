@@ -51,4 +51,26 @@ sub find_server {
   $server;
 }
 
+my $rrd_path = "$ENV{CBROOTLOCAL}/rrd/server";
+sub rrd_path {
+    my $self = shift;
+    "$rrd_path/" . $self->id . ".rrd";
+}
+
+sub graph_filename {
+    my ($self, $name) = @_;
+    $self->id . ($name ? "-$name" : "") . ".png";
+}
+
+sub graph_path {
+    my $self = shift;
+   "$rrd_path/graph/" . $self->graph_filename(@_);
+}
+
+sub graph_uri {
+    my $self = shift;
+    "/scores/graph/" . $self->graph_filename(@_);
+
+} 
+
 1;

@@ -10,6 +10,7 @@
     PerlModule NTPPool
 
     Alias /zone/graph/ [% root_local %]/rrd/zone/graph/
+    Alias /scores/graph/ [% root_local %]/rrd/server/graph/
 
     <Location />
        SetHandler perl-script
@@ -26,14 +27,15 @@
        PerlHandler NTPPool::Control::DNSStatus->super
     </Location>
 
-    <Location /scores/graph>
-      SetHandler perl-script
-      PerlHandler NTPPool::Control::ScoresGraph->super
-    </Location>
-
     <Location /scores>
       SetHandler perl-script
       PerlHandler NTPPool::Control::Scores->super
+    </Location>
+
+    <Location /scores/graph>
+       SetHandler default
+#      SetHandler perl-script
+#      PerlHandler NTPPool::Control::ScoresGraph->super
     </Location>
 
     <Location /zone>

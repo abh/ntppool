@@ -21,18 +21,9 @@ Zones:
 Current score: [% USE Number.Format; server.score | format_number(2); %] (only servers with a score higher than 5 are used)<br/>
 
 
-
-<br />
-History:<br />
-[% FOR h = server.history(60).reverse -%]
-<span class="[% h.history_css_class %]" title="[% h.ts | html %]">[% h.history_symbol  %]</span>
-[%- END %]
-<br/>
-
 <p>
-[% PROCESS tpl/server_trend_legend.html %]
-<p>
-
+<img src="[% server.graph_uri('score') %]"><br />
+<img src="[% server.graph_uri('offset') %]">
 </p>
 
-[% END %]
+[% END  # unless server%]
