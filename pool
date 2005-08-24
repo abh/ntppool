@@ -140,7 +140,11 @@ elsif ($cmd eq "zones") {
     my $server = NTPPool::Server->find_server($arg);
     die "Could not find server $arg\n" unless $server;
     my @zones  = $server->zones;
-    print "IP: ", $server->ip, "\n"; 
+    printf "IP: %s, ID: %i, username: %s email: %s\n",
+      $server->ip,
+      $server->id,
+      $server->admin->username ? $server->admin->username : "-",
+      $server->admin->email; 
     my $gi = Geo::IP->new(GEOIP_STANDARD);
     my $country = $gi->country_code_by_addr($server->ip);
     $country = lc $country if $country;
@@ -157,8 +161,7 @@ elsif ($cmd eq "zones") {
 elsif ($cmd eq "rm") {
     my $arg = shift @ARGV
       or die "pool rm <host or IP>\n";
-    my ($server) = NTPPool::Server->search(ip => $arg);
-    ($server) = NTPPool::Server->search(hostname => $arg) unless $server;
+    my $server = NTPPool::Server->find_server($arg);
     die "Could not find server $arg\n" unless $server;
     my $server_desc = (join " / ", grep { defined $_ } $server->ip, $server->hostname);
     logsay($server->id, "rm", $server_desc);
@@ -308,7 +311,7 @@ elsif ($cmd eq "zone") {
     }
     close HEAD;
 
-    my $ttl = 240;
+    my $ttl = 1500;
 
     my $zones = $db->selectall_arrayref("SELECT id, name FROM zones", {Columns => {}});
     for my $zone (@$zones) {
@@ -321,7 +324,17 @@ elsif ($cmd eq "zone") {
                                . "FROM servers s, scores sc, locations l "
                                . "WHERE l.server = s.id AND l.zone = ? "
                                . "AND sc.server = s.id AND sc.score > 5", undef, $zone->{id});
-        my $min_non_duplicate_size = 8; 
+
+        next unless $entries and @$entries;
+
+
+        my $min_non_duplicate_size = 5; 
+        $min_non_duplicate_size = int(@$entries / 4) 
+          if (@$entries / 4 > $min_non_duplicate_size);
+        $min_non_duplicate_size = 12 if $min_non_duplicate_size > 12;
+
+        print $fh "# " . scalar @$entries . " active servers in $zone->{name}\n";
+
         if ($#$entries < ($min_non_duplicate_size*4 - 1)) {
             print $fh "# possible duplicates in the zones below ($zone->{name})\n";
             foreach my $z (("", "0.", "1.", "2.")) {
