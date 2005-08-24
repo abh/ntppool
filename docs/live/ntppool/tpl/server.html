@@ -6,7 +6,10 @@
 IP <input type="text" name="ip">
 <input type="submit" name="Find">
 </form>
-[% ELSE %]
+ 
+[% RETURN;
+   END 
+ %]
 
 <h3>[% server.ip %] [% IF server.hostname;  '/ ' _ server.hostname; END %]</h3>
 
@@ -23,7 +26,16 @@ Current score: [% USE Number.Format; server.score | format_number(2); %] (only s
 
 <p>
 <img src="[% server.graph_uri('score') %]"><br />
-<img src="[% server.graph_uri('offset') %]">
+<img src="[% server.graph_uri('offset') %]"><br />
+<span style="font-size:60%"># [% server.id %]</span>
 </p>
 
-[% END  # unless server%]
+[% IF server.urls;
+  '<p class="serverurls">';
+     FOR url = server.urls %]
+
+<a rel="nofollow" href="[% url | html %]">[% url | html %]</a><br />
+
+[%   END;
+   END;
+ %]

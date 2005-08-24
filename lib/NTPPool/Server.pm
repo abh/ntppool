@@ -8,6 +8,7 @@ __PACKAGE__->set_up_table('servers');
 __PACKAGE__->has_a('admin' => 'NTPPool::Admin');
 __PACKAGE__->has_many('log_scores' => 'NTPPool::Server::LogScore');
 __PACKAGE__->has_many('locations' => 'NTPPool::Location');
+__PACKAGE__->has_many('urls'      => [ 'NTPPool::Server::URL' => 'url' ]);
 __PACKAGE__->might_have('_score'  => 'NTPPool::Server::Score');
 
 sub zones {
