@@ -13,6 +13,9 @@ use Socket;
 use Time::HiRes;
 use Data::Dumper;
 use Sys::Hostname qw(hostname);
+use Geo::IP;
+
+my $gi = Geo::IP->new(GEOIP_STANDARD);
 
 use NTPPool::Server;
 
@@ -131,6 +134,25 @@ if ($cmd eq "add") {
     my $z = join " ", @ARGV;
     logsay("$serverid add $email $hostname $z");
 
+}
+elsif ($cmd eq "zones") {
+    my $arg = shift @ARGV or die "pool zones <host or IP>\n";
+    my $server = NTPPool::Server->find_server($arg);
+    die "Could not find server $arg\n" unless $server;
+    my @zones  = $server->zones;
+    print "IP: ", $server->ip, "\n"; 
+    my $gi = Geo::IP->new(GEOIP_STANDARD);
+    my $country = $gi->country_code_by_addr($server->ip);
+    $country = lc $country if $country;
+    print "Country: $country\n" if $country;
+    for my $zone_name (@ARGV) {
+        next if grep { $zone_name eq $_->name } @zones;
+        my ($zone) = NTPPool::Zone->search(name => $zone_name);
+        print "Can't delete zones yet\n" and next if $zone_name =~ m/^-/; 
+        print "Could not find '$zone_name'\n" and next unless $zone;
+        $server->add_to_locations({ zone => $zone });
+    }
+    print "Zones: ", join (", ", map { $_->name } @zones), "\n";
 }
 elsif ($cmd eq "rm") {
     my $arg = shift @ARGV

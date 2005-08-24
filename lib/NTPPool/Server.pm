@@ -46,8 +46,10 @@ sub history {
 
 sub find_server {
   my ($class, $arg) = @_;
-  my ($server) = $class->search(ip => $arg);
-  ($server)    = $class->search(hostname => $arg) unless $server;
+  my $server;
+  ($server) = $class->retrieve($arg) if ($arg =~ m/^\d+$/);
+  ($server) = $class->search(ip => $arg) unless $server; 
+  ($server) = $class->search(hostname => $arg) unless $server;
   $server;
 }
 
