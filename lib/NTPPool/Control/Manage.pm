@@ -46,6 +46,7 @@ sub handle_add {
     if ($self->req_param('yes')) {
 
         $self->tpl_param('comment', $self->req_param('comment'));
+        $self->tpl_param('scores_url', $self->config->base_url('ntppool') . '/scores/ip=' . $server->{ip});
 
         my $msg = $self->evaluate_template('tpl/manage/add_email.txt');
         my $email = Email::Simple->new($$msg);

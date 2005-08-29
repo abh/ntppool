@@ -11,5 +11,4 @@ Comment:
 [% comment %]
 
 
-http://[% combust.config.site.dbi.servername %]/scores?ip=[% server.ip %]
-#[% server.id %]
+[% scores_url %]
