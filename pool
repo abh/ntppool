@@ -241,13 +241,14 @@ elsif ($cmd eq "scores") {
     }
 
     # go through server array and fetch offset for all servers
-    my $servers = NTPPool::Server->retrieve_all;
+    my $servers = NTPPool::Server->search_check_due;
+
     while (my $server = $servers->next) { 
         my $step = 0;
 
         $server->score_raw( $server->score_raw * 0.95 );
 
-        #print "testing $$s[1]\n";
+        #printf "testing %s\n", $server->ip;
 
         # fetch offset by ntp
         # if a server is not good, query a second time

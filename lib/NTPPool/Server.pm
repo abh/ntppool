@@ -14,6 +14,14 @@ __PACKAGE__->might_have('_score'  => 'NTPPool::Server::Score');
 
 __PACKAGE__->add_trigger( after_create => \&setup_rrd );
 
+__PACKAGE__->set_sql(check_due => qq{
+                     SELECT s.id
+                         FROM servers s, scores sc
+                         WHERE s.id=sc.server
+                              and sc.ts < DATE_SUB( NOW(), INTERVAL 29 minute)
+                         ORDER BY sc.ts
+               });
+
 sub setup_rrd {
     my $self = shift;
     my $ls = $self->add_to_log_scores({ step => 1, score => 0, offset => 0 });
