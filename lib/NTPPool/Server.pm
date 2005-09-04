@@ -25,6 +25,7 @@ __PACKAGE__->set_sql(check_due => qq{
 sub setup_rrd {
     my $self = shift;
     my $ls = $self->add_to_log_scores({ step => 1, score => 0, offset => 0 });
+    $self->score(-6);
     $self->update_graphs;
 }
 
