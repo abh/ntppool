@@ -1,0 +1,38 @@
+[% page.style = 'bare.html' -%]
+Subject: pool.ntp.org status report for [% USE date; date.format(date.now, '%Y-%m-%d      ') %]
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii";
+Content-Transfer-Encoding: 7bit
+
+This is the daily status bulletin for the pool.ntp.org system.  There
+are per zone graphs at http://www.pool.ntp.org/zone/ and per server graphs at
+http://www.pool.ntp.org/scores/
+
+[% USE format;
+     ip_format = format('%-15s');
+     score_format = format('%6.1f');
+     zone_description_format = format("%-15s");
+     zone_count_format       = format("%3i");
+-%]
+Active servers per zone:
+[% FOR zone = combust.count_by_continent -%]
+[% zone_description_format(zone.description) %] [% zone_count_format(zone.server_count) %]
+[% END %]
+
+Servers with a score <= 5, currently not in the pool.ntp.org zone:
+
+IP                  score history
+--------------------------------------------------------------------------
+[% FOR server = bad_servers %]
+[%- ip_format(server.ip) %] [% server.country %] [% score_format(server.score);
+ %] [% FOR h = server.history(48).reverse %][% h.history_symbol %][% END %]
+[% END -%]
+--------------------------------------------------------------------------
+
+The history is one entry per hour (left is old values). Legend:
+    #: server offset is ok
+    x: server offset is tolerable
+    o: server offset is too big
+    _: server is unreachable
+
+Comments welcome on the timekeepers@fortytwo.ch mailing list.

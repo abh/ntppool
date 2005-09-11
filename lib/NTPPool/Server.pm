@@ -22,6 +22,15 @@ __PACKAGE__->set_sql(check_due => qq{
                          ORDER BY sc.ts
                });
 
+__PACKAGE__->set_sql(bad_score => qq{
+                     SELECT s.id
+                         FROM servers s, scores sc
+                         WHERE s.id=sc.server
+                              and sc.score <= 5
+                         ORDER BY sc.score desc
+               });
+
+
 sub setup_rrd {
     my $self = shift;
     my $ls = $self->add_to_log_scores({ step => 1, score => 0, offset => 0 });
@@ -32,6 +41,12 @@ sub setup_rrd {
 sub zones {
   my $self = shift;
   sort { $a->name cmp $b->name } map { $_->zone } $self->locations;
+}
+
+sub country {
+  my $self = shift;
+  my ($country) = grep { length $_->name == 2 } $self->zones;
+  $country && $country->name;
 }
 
 sub score_raw {

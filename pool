@@ -14,6 +14,10 @@ use Time::HiRes;
 use Data::Dumper;
 use Sys::Hostname qw(hostname);
 use Geo::IP;
+use LWP::Simple;
+use Email::Simple;
+use Email::Date;
+use Email::Send 'SMTP';
 
 my $gi = Geo::IP->new(GEOIP_STANDARD);
 
@@ -181,40 +185,24 @@ elsif ($cmd eq "ip") {
     $server->update;
 }
 elsif ($cmd eq "report") {
-    print <<'EOT';
+
+    my $config = Combust::Config->new;
+    my $url = $config->base_url("ntppool") . "/bulletin";
+    my $msg = get($url);
+
+    die "no msg?!" unless $msg;
+
+    my $head = <<'EOT';
 From: pool.ntp.org monitoring script <clockmaster@fortytwo.ch>
 To: <timekeepers-bulletin@fortytwo.ch>
-Subject: Daily pool.ntp.org status report
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii";
-Content-Transfer-Encoding: 7bit
-X-Script-Version: $Rev$
-
-Servers with a score <= 5, currently not in the pool.ntp.org zone:
-
-IP              score history
--------------------------------------------------------------------------
 EOT
-    my $badservers =
-      $db->selectall_arrayref("SELECT sv.id "
-             . "FROM servers sv, scores sc "
-             . "WHERE sv.id = sc.server AND sc.score <= 5 ORDER BY score DESC");
-    foreach my $srv (@$badservers) {
-        my $server = NTPPool::Server->retrieve($srv->[0]);
-        my @history = $server->history(50);
-        printf "%-15s %6.1f %50s\n", $server->ip, $server->score, join "", map { $_->history_symbol } @history;
-    }
-    print <<'EOT';
--------------------------------------------------------------------------
 
-The history is one entry per hour (left is old values). Legend:
-    #: server offset is ok
-    x: server offset is tolerable
-    o: server offset is too big
-    _: server is unreachable
+    my $email = Email::Simple->new($head . $msg);
+    $email->header_set('Message-ID' => join("-", int(rand(1000)), $$, time) . '@' . hostname);
+    $email->header_set('Date'       => Email::Date::format_date);
 
-Comments welcome on the timekeepers@fortytwo.ch mailing list.
-EOT
+    my $return = send SMTP => $email, 'localhost';
+
 }
 elsif ($cmd eq "scores") {
     # check if this machine has good time.
