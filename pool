@@ -186,22 +186,33 @@ elsif ($cmd eq "ip") {
 }
 elsif ($cmd eq "report") {
 
+    my $rcpt = shift;
+
     my $config = Combust::Config->new;
     my $url = $config->base_url("ntppool") . "/bulletin";
     my $msg = get($url);
 
     die "no msg?!" unless $msg;
 
-    my $head = <<'EOT';
-From: pool.ntp.org monitoring script <clockmaster@fortytwo.ch>
-To: <timekeepers-bulletin@fortytwo.ch>
+    my $head = "";
+
+    $rcpt and $head = <<EOT;
+From: pool.ntp.org monitoring script <clockmaster\@fortytwo.ch>
+To: <$rcpt>
 EOT
 
-    my $email = Email::Simple->new($head . $msg);
-    $email->header_set('Message-ID' => join("-", int(rand(1000)), $$, time) . '@' . hostname);
-    $email->header_set('Date'       => Email::Date::format_date);
+    #  timekeepers-bulletin@fortytwo.ch
 
-    my $return = send SMTP => $email, 'localhost';
+    if ($rcpt) {
+        my $email = Email::Simple->new($head . $msg);
+        $email->header_set('Message-ID' => join("-", int(rand(1000)), $$, time) . '@' . hostname);
+        $email->header_set('Date'       => Email::Date::format_date);
+
+        my $return = send SMTP => $email, 'localhost';
+    }
+    else {
+        print $msg;
+    }
 
 }
 elsif ($cmd eq "scores") {
