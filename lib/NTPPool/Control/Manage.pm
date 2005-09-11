@@ -46,7 +46,7 @@ sub handle_add {
     if ($self->req_param('yes')) {
 
         $self->tpl_param('comment', $self->req_param('comment'));
-        $self->tpl_param('scores_url', $self->config->base_url('ntppool') . '/scores/ip=' . $server->{ip});
+        $self->tpl_param('scores_url', $self->config->base_url('ntppool') . '/scores/?ip=' . $server->{ip});
 
         my $msg = $self->evaluate_template('tpl/manage/add_email.txt');
         my $email = Email::Simple->new($$msg);
@@ -67,7 +67,6 @@ sub handle_add {
     return OK, $self->evaluate_template('tpl/manage/add.html');
 }
 
-my $geo_ip = Geo::IP->new(GEOIP_STANDARD);
 sub get_server_info {
     my $self = shift;
     my $host = $self->req_param('host');
@@ -96,6 +95,7 @@ sub get_server_info {
 
     $server{ntp} = \%ntp;
 
+    my $geo_ip = Geo::IP->new(GEOIP_STANDARD);
     my $country = $geo_ip->country_code_by_addr($server{ip});
     $country = 'UK' if $country eq 'GB';
     warn "Country: $country\n";

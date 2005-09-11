@@ -15,11 +15,11 @@ __PACKAGE__->might_have('_score'  => 'NTPPool::Server::Score');
 __PACKAGE__->add_trigger( after_create => \&setup_rrd );
 
 __PACKAGE__->set_sql(check_due => qq{
-                     SELECT s.id
-                         FROM servers s, scores sc
-                         WHERE s.id=sc.server
-                              and sc.ts < DATE_SUB( NOW(), INTERVAL 29 minute)
-                         ORDER BY sc.ts
+SELECT s.id
+FROM servers s left join scores sc ON(s.id=sc.server)
+WHERE
+  sc.score IS NULL or sc.ts < DATE_SUB( NOW(), INTERVAL 29 minute)
+ORDER BY sc.ts
                });
 
 __PACKAGE__->set_sql(bad_score => qq{
@@ -33,8 +33,9 @@ __PACKAGE__->set_sql(bad_score => qq{
 
 sub setup_rrd {
     my $self = shift;
-    my $ls = $self->add_to_log_scores({ step => 1, score => 0, offset => 0 });
-    $self->score(-6);
+    my $start_score = -5;
+    my $ls = $self->add_to_log_scores({ step => 1, score => $start_score, offset => 0 });
+    $self->score_raw($start_score);
     $self->update_graphs;
 }
 

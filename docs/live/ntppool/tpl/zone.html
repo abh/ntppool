@@ -12,7 +12,7 @@ We can use more servers in this country.  If you have a server with a static IP,
 [% END %]
 
 <p>
-[% FOR days = [1,3,7,14,30,90,365,730];
+[% FOR days = [1,7,14,30,90,365,730];
    st = zone.stats_days_ago(days);
    NEXT UNLESS st;
    diff = zone.server_count - st.count_active;

@@ -205,6 +205,10 @@ EOT
 
 }
 elsif ($cmd eq "scores") {
+
+    my $dbh = NTPPool::DBI->dbh;
+    $dbh->selectrow_array(q[SELECT GET_LOCK("scores", 0)]) or exit;
+
     # check if this machine has good time.
     $Net::NTP::CLIENT_TIME_SEND    = undef;
     $Net::NTP::CLIENT_TIME_RECEIVE = undef;
