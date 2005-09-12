@@ -175,8 +175,7 @@ elsif ($cmd eq "rm") {
 elsif ($cmd eq "ip") {
     my ($from, $to) = @ARGV;
     $to or die "pool $cmd <host or IP> <IP>\n";
-    my ($server) = NTPPool::Server->search(ip => $from);
-    ($server) = NTPPool::Server->search(hostname => $from) unless $server;
+    my $server = NTPPool::Server->find_server($from);
     die "Could not find server $from\n" unless $server;
     my $server_desc = (join " / ", grep { defined $_ } $server->ip, $server->hostname);
     logsay($server->id, "ip", "$server_desc => $to");

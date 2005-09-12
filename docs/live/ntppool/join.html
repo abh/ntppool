@@ -17,8 +17,8 @@ only send a couple of UDP packets every few to every 20 minutes.
 
 <p>
 Currently most servers get about 5-10 NTP packets per second with
-spikes a couple of times a day of 15-20 packets per second.  This is
-roughly equivalent to 10-20Kbit/sec with spikes of 30-40Kbit/sec.  The
+spikes a couple of times a day of 25-40 packets per second.  This is
+roughly equivalent to 10-20Kbit/sec with spikes of 30-50Kbit/sec.  The
 project steadily acquires more timeservers, so the load should not
 increase dramatically for each server.  It was going up for a while,
 but the last few months (as of September 2005) it has actually been
@@ -27,8 +27,7 @@ going down.
 
 <p>
 
-Here are a few servers with traffic/load graphs (go to the bottom of
-the page for the links): [% i = 0; FOR server = combust.servers_with_urls; %]
+Here are a few servers with traffic/load graphs: [% i = 0; FOR server = combust.servers_with_urls; %]
 <a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
 [% END %]
 
@@ -52,6 +51,12 @@ clients you'll get by being in the pool.  The symptom is that your
 ntpd will crash(!).  The problem is that one of the ulimit settings is
 too low.  On one of my servers exhibiting this problem I fixed it by
 adding <tt>ulimit -l 8192</tt> to <tt>/etc/init.d/ntpd</tt>.
+</p>
+
+<p>Finally, I must emphasize that joining the pool is a <b>long term
+commitment</b>.  We are happy to take you out of the pool again if your
+circumstances change, but because of how the ntp clients operate <b>it
+will take weeks or even months before the traffic goes away</b>.
 </p>
 
 <p>
