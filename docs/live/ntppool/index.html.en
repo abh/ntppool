@@ -86,7 +86,6 @@ web interface done.
 
 </td>
 </tr>
-<tr>
 
 <tr>
 <td align="center" valign="top"><b>2005-07-28</b></td>
@@ -98,10 +97,8 @@ href="http://www.bitcard.org/">Bitcard</a> for the authentication, so
 don't be alarmed when you get redirected over there.  In the not too
 far future I'll add functionality so new servers can be registered
 via the manage page too.
-
 </td>
 </tr>
-<tr>
 
 
 <tr>
@@ -112,9 +109,6 @@ server.  I added a page to keep track of the <a href="dns.html">dns
 servers</a>.
 </td>
 </tr>
-<tr>
-
-
 
 <tr>
 <td align="center" valign="top"><b>2005-07-24</b></td>

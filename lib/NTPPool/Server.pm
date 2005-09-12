@@ -31,6 +31,14 @@ __PACKAGE__->set_sql(bad_score => qq{
                });
 
 
+__PACKAGE__->set_sql(urls => qq{
+                     SELECT s.id
+                         FROM servers s, server_urls u
+                         WHERE s.id=u.server
+                         ORDER BY s.id
+               });
+
+
 sub setup_rrd {
     my $self = shift;
     my $start_score = -5;

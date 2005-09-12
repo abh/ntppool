@@ -122,6 +122,12 @@ sub count_by_continent {
 package NTPPool::Control::Basic;
 use base qw(NTPPool::Control Combust::Control::Basic);
 
+sub servers_with_urls {
+    my $self = shift;
+    my @servers = NTPPool::Server->search_urls;
+    \@servers;
+}
+
 package NTPPool::Control::Error;
 use base qw(NTPPool::Control Combust::Control::Error);
 

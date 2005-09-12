@@ -21,7 +21,7 @@ h1,h2,h3 {
   float: left;
   margin: 0 0.15em;
   padding: 0;
-  text-align: center
+  text-align: center;
 }
 
 #nav li a {
@@ -77,5 +77,10 @@ table.servertable {
 }
 
 p.serverurls {
-  font-size: 0.9em;
+  font-size: 0.8em;
+}
+
+.u {
+  color: black;
+  text-decoration: none;
 }

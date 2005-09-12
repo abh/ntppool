@@ -20,22 +20,23 @@ Zones:
 [% END  %]
 </p>
 
-<p>
-Current score: [% USE Number.Format; server.score | format_number(2); %] (only servers with a score higher than 5 are used)<br/>
+[% IF server.urls;
+  '<p class="serverurls">Server traffic/load stats and graphs:';
+     FOR url = server.urls %]
+<a rel="nofollow" href="[% url | html %]">[% url | html %]</a><br />
+[%   END;
+   '</p>';
+   END;
+ %]
 
 
 <p>
-<img src="[% server.graph_uri('score') %]"><br />
-<img src="[% server.graph_uri('offset') %]"><br />
+Current score: [% USE Number.Format; server.score | format_number(2); %] (only servers with a score higher than 5 are used in the pool)
+</p>
+
+<p>
+<img src="[% server.graph_uri('score') %]" alt="Server score graph" /><br />
+<img src="[% server.graph_uri('offset') %]" alt="Server offset graph" /><br />
 <span style="font-size:60%"># [% server.id %]</span>
 </p>
 
-[% IF server.urls;
-  '<p class="serverurls">';
-     FOR url = server.urls %]
-
-<a rel="nofollow" href="[% url | html %]">[% url | html %]</a><br />
-
-[%   END;
-   END;
- %]
