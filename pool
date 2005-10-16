@@ -153,13 +153,22 @@ elsif ($cmd eq "zones") {
     my $country = $gi->country_code_by_addr($server->ip);
     $country = lc $country if $country;
     print "Country: $country\n" if $country;
+    my @zones  = $server->zones;
     for my $zone_name (@ARGV) {
-        next if grep { $zone_name eq $_->name } @zones;
-        my ($zone) = NTPPool::Zone->search(name => $zone_name);
-        print "Can't delete zones yet\n" and next if $zone_name =~ m/^-/; 
-        print "Could not find '$zone_name'\n" and next unless $zone;
-        $server->add_to_locations({ zone => $zone });
+        my @locations = $server->locations;
+        if ($zone_name =~ s/^-//) {
+            my ($location) = grep { $_->zone->name eq $zone_name } @locations;
+            print "Could not find location '$zone_name' to delete\n" and next unless $location;
+            $location->delete;
+        }
+        else {
+            next if grep { $zone_name eq $_->name } @zones;
+            my ($zone) = NTPPool::Zone->search(name => $zone_name);
+            print "Could not find '$zone_name'\n" and next unless $zone;
+            $server->add_to_locations({ zone => $zone });
+        }
     }
+    @zones  = $server->zones;
     print "Zones: ", join (", ", map { $_->name } @zones), "\n";
 }
 elsif ($cmd eq "rm") {
@@ -181,6 +190,7 @@ elsif ($cmd eq "ip") {
     logsay($server->id, "ip", "$server_desc => $to");
     printf "%i, %s (%s) => %s\n", $server->id, $server_desc, $server->admin->email, $to;
     $server->ip($to);
+    $server->score_raw(0);
     $server->update;
 }
 elsif ($cmd eq "report") {
