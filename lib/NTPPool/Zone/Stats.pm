@@ -29,5 +29,26 @@ sub ago {
     Time::Duration::ago($self->today - $self->then, 2);
 }
 
+sub first_stats {
+    my ($class, $zone, $year) = @_;
+    my $dbh = $class->dbh;
+    my $id;
+    if ($year) {
+        ($id) = $dbh->selectrow_array(q[select id from zone_server_counts where zone=? and year(date)=? order by date limit 1],
+                                      undef,
+                                      $zone->id, $year,
+                                     );
+    }
+    else {
+        ($id) = $dbh->selectrow_array(q[select id from zone_server_counts where zone=? order by date limit 1],
+                                      undef,
+                                      $zone->id,
+                                     );
+    }
+    return unless $id;
+    $class->retrieve($id);
+} 
+
+
 
 1;

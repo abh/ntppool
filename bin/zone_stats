@@ -8,12 +8,21 @@ use lib "$ENV{CBROOT}/lib";
 use Data::Dumper;
 use Locale::Object;
 use RRDs;
+use DateTime;
 
 my $base_path = "$ENV{CBROOTLOCAL}/rrd/zone";
+my $target_path = "$ENV{CBROOTLOCAL}/rrd/zonetargets";
 
 my $time = time;
  
 use NTPPool::Zone;
+
+my %growth_targets = 
+  (
+   2005 => 0.40,
+   2006 => 0.45,
+   2007 => 0.40,
+  );
 
 my $zones = NTPPool::Zone->retrieve_all;
 
@@ -34,6 +43,8 @@ while (my $zone = $zones->next) {
              $zone->id, $count_active, $count_all
             );
     create_rrd($zone->name);
+    create_target_rrd($zone->name);
+    update_target_rrd($zone->name);
     update_rrd($zone->name, $now, $count_active, $count_all);
     update_graph($zone->name);
 }
@@ -69,6 +80,11 @@ sub rrd_path {
     "$base_path/$zone.rrd";
 }
 
+sub target_path {
+    my $zone = shift;
+    "$target_path/$zone.rrd";
+}
+
 sub graph_path {
     my $zone = shift;
     "$base_path/graph/$zone.png";
@@ -80,6 +96,7 @@ sub update_graph {
     my $title = "Servers in the $zone.pool.ntp.org zone";
 
     my $rrd = rrd_path($zone);
+    my $trrd = target_path($zone);
 
     my @options = (
                    '--lazy',
@@ -95,10 +112,12 @@ sub update_graph {
                    '--slope-mode',
                    qq[DEF:active=$rrd:active:AVERAGE],
                    qq[DEF:registered=$rrd:registered:AVERAGE],
+                   qq[DEF:target=$trrd:target:AVERAGE],
                    qq[CDEF:inactive=registered,active,-],
                    qq[LINE2:registered#00CCCC:registered servers],
                    qq[LINE2:inactive#EE0000:inactive servers],
                    qq[LINE2:active#00BB00:active servers],
+                   qq[LINE1:target#999999:growth target],
                   );
 
     my $path = graph_path($zone);
@@ -129,6 +148,80 @@ sub create_rrd {
                  "RRA:MAX:0.5:4:1024",       # 1 day, ~3 years
                  "RRA:MIN:0.5:42:1024",      # 1 week, ~19 years.
                  "RRA:MAX:0.5:42:1024",      # 1 week, ~19 years.
+                );
+                 
+
+    RRDs::create "$path", @graph;
+    my $ERROR = RRDs::error;
+    if ($ERROR) {
+        die "$0: unable to create '$path': $ERROR\n";
+    }
+}
+
+sub update_target_rrd {
+    my $zone = shift;
+    my $path = target_path($zone);
+    my $now  = DateTime->from_epoch( epoch => time );
+    my $last = DateTime->from_epoch( epoch => (RRDs::last target_path($zone) || 0));
+
+    if ($last < $now) { 
+        my $z = NTPPool::Zone->retrieve_by_name($zone);
+        my $first_stats = $z->first_stats;
+        my $first_stats_date = $first_stats->date;
+        my $start_year = ($first_stats_date->year < $last->year ? $last->year : $first_stats_date->year);
+        for my $year ($start_year .. $now->year) {
+            my $first_stats = $z->first_stats($year);
+            next unless $first_stats;
+            my $start_active = $first_stats->count_active;
+            my $first_day = $first_stats->date->day_of_year;
+
+            my $year_growth_goal = $start_active * $growth_targets{$year};
+            $year_growth_goal    = 5 - $start_active if $year_growth_goal < 2;
+
+            my $days_in_year = DateTime->new(year => $year)->is_leap_year ? 366 : 365;
+
+            my $growth_per_day = $year_growth_goal / $days_in_year;
+
+            my $day = DateTime->from_epoch(epoch => $first_stats->date->epoch);
+            my $goal = $start_active;
+            for ($first_day+1 .. $days_in_year) {
+                $goal += $growth_per_day;
+
+                my $time = $day->epoch;
+                my $path = target_path($zone);
+                my @options = ('--template' => 'target',
+                               "$time:$goal",
+                              );
+                RRDs::update "$path", @options;
+                if (my $ERROR = RRDs::error) {
+                    warn "$0: unable to update $path: $ERROR\nOptions: ", join " ", @options;
+                }
+
+
+                # update rrd
+                $day->add( days => 1 );
+            }
+
+            my $growth_goal = ($days_in_year - $first_day) * $growth_per_day;
+
+            my $eoy_goal = $growth_goal + $start_active;
+        }
+    }
+}
+
+sub create_target_rrd {
+    my $zone = shift;
+    my $path = target_path($zone);
+    return if -e $path;
+
+    my $START = 1104364800;  # dec 30 2004
+    
+    my @graph = (
+                 "--start", $START, "--step", 86400, # 24 hours interval
+                 "DS:target:GAUGE:180000:0:20000",  # heartbeat of ~2 days, min value = 0, max = 20000
+                 "RRA:AVERAGE:0.5:1:1024", # 1 day, ~3 years
+                 "RRA:AVERAGE:0.5:3:1024", # 3 days, ~9 years
+                 "RRA:AVERAGE:0.5:7:1024", # 1 week, ~19 years.
                 );
                  
 

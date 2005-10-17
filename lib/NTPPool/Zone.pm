@@ -34,6 +34,10 @@ sub stats_days_ago {
     NTPPool::Zone::Stats->search_days_ago(@_);
 }
 
+sub first_stats {
+    NTPPool::Zone::Stats->first_stats(@_);
+}
+
 sub server_count {
   my $self = shift;
   my $dbh = $self->db_Main;
