@@ -11,6 +11,7 @@ __PACKAGE__->has_many('log_scores' => 'NTPPool::Server::LogScore');
 __PACKAGE__->has_many('locations' => 'NTPPool::Location');
 __PACKAGE__->has_many('urls'      => [ 'NTPPool::Server::URL' => 'url' ]);
 __PACKAGE__->might_have('_score'  => 'NTPPool::Server::Score');
+__PACKAGE__->might_have('alert'  => 'NTPPool::Server::Alert');
 
 __PACKAGE__->add_trigger( after_create => \&setup_rrd );
 

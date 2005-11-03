@@ -63,12 +63,11 @@ CREATE TABLE scores (
 
 
 -- integrating automatic checking/reporting of unreachable servers
-CREATE TABLE unusable_servers (
-    server INT unsigned  NOT NULL,
+CREATE TABLE server_alerts (
+    server INT unsigned  NOT NULL primary key,
     last_score REAL NOT NULL DEFAULT 0.0,
+    first_email_time datetime,
     last_email_time datetime,
-    ts TIMESTAMP not null,
-    key (server),
     constraint unusable_servers_server foreign key (server) REFERENCES servers(id) ON DELETE CASCADE
 ) ENGINE=INNODB;
 

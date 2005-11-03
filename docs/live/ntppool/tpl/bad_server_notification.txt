@@ -1,0 +1,37 @@
+[% page.style = 'bare.html' -%]
+From: Ask Bjoern Hansen <ask@develooper.com>
+To: [% admin.username %] <[% admin.email %]>
+Cc: ask@develooper.com
+Subject: NTP Pool: Problems with your NTP service ([% bad_servers.0.ip %])
+
+Hi [% admin.username || admin.email %],
+
+Because your timeserver is being detected as either unreachable or bad, your
+timeserver is not being included in the pool.ntp.org DNS zones.
+
+Please solve the problem or notify me of the new IP address of your server.
+
+[% FILTER repeat(70) %]-[% END %]
+[%- FOR server = bad_servers %]
+[% server.ip %] (current score: [% server.score %])
+[%- END %]
+[% FILTER repeat(70) %]-[% END %]
+
+A common configuration problem (that makes ntpd crash!) is a too low
+ulimit for "memory that may be locked into memory".  The easiest fix
+is to add "ulimit -l 8092" to /etc/init.d/ntpd (or the equivalent file
+on your system) somewhere before ntpd is started.
+
+You can see the stats for all your servers in the pool at 
+    [% config.base_url('ntppool') %]/manage
+
+
+Thank you for offering your ntp service to the pool!
+
+  - ask
+
+ps. These email alerts are still in testing, so please let me know if
+you have any suggestions or find any errors.  :)
+
+-- 
+[% config.base_url('ntppool') %]/ | http://askask.com/ | http://develooper.com/

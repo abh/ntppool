@@ -4,25 +4,21 @@
 #
 #
 use strict;
+use warnings;
 use DBI;
 use Net::SMTP;
-
-
 
 my $Debug = 0;		# Turn on lots of debug messages
 my $Testing = 1;	# If set, no work is done.
 
 
-my $DBConnectStr = "dbi:mysql:dbname=ntppool";
-
-my $DaysToDeletion = 41;
+# my $DaysToDeletion = 41;
 my $DaysBetweenNotices = 14;
 
 #
 # Must be in the form: user@host
 #
-my $NTPPoolAdminEmail = 'clockmaster@fortytwo.ch';
-
+my $NTPPoolAdminEmail = 'ask@develooper.com';
 
 my $EMailNoticeMessageText = qq{
 Hi,
