@@ -56,7 +56,7 @@ See all zones in <a href="[% zone.parent.url %]">[% zone.parent.description %]</
 [% FOR server = servers %]
 <tr>
 <!-- <td>[% server.id %]</td> -->
-<td><a href="/scores?ip=[% server.ip %]">[% server.ip %]</a></td>
+<td><a href="/scores/[% server.ip %]">[% server.ip %]</a></td>
 <td>[% server.hostname %]</td>
 <td>[% server.score %]</td>
 <td>[% server.stratum %]</td>

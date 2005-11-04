@@ -13,13 +13,13 @@ Please solve the problem or notify me of the new IP address of your server.
 
 [% FILTER repeat(70) %]-[% END %]
 [%- FOR server = bad_servers %]
-[% server.ip %] (current score: [% server.score %])
+[% server.ip %] (current score: [% server.score %])  [% config.base_url('ntppool') %]/s/[% server.id %]
 [%- END %]
 [% FILTER repeat(70) %]-[% END %]
 
 A common configuration problem (that makes ntpd crash!) is a too low
 ulimit for "memory that may be locked into memory".  The easiest fix
-is to add "ulimit -l 8092" to /etc/init.d/ntpd (or the equivalent file
+is to add "ulimit -l 8192" to /etc/init.d/ntpd (or the equivalent file
 on your system) somewhere before ntpd is started.
 
 You can see the stats for all your servers in the pool at 

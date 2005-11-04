@@ -32,6 +32,11 @@
       PerlHandler NTPPool::Control::Scores->super
     </Location>
 
+    <Location /s/>
+      SetHandler perl-script
+      PerlHandler NTPPool::Control::Scores->super
+    </Location>
+
     <Location /scores/graph>
        SetHandler default
     </Location>
