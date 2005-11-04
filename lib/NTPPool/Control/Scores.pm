@@ -14,7 +14,7 @@ sub render {
 
   if (my $ip = $self->req_param('ip')) {
       my ($server) = NTPPool::Server->find_server($ip) or return 404;
-      return $self->redirect('/scores/' . $server->ip);
+      return $self->redirect('/scores/' . $server->ip) if $server;
   }
 
   if ($self->request->uri =~ m!^/scores/(.*)!) {
