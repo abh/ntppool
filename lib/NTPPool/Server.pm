@@ -95,7 +95,7 @@ sub log_scores_csv {
     $csv->combine(qw(ts_epoch ts offset step score));
     my $out = $csv->string . "\n";
     while (my $l = $history->next) {
-        $csv->combine($l->ts->epoch, $l->ts->strftime("%F %T %z"), map { $l->$_ } qw(offset step score));
+        $csv->combine($l->ts->epoch, $l->ts->strftime("%F %T"), map { $l->$_ } qw(offset step score));
         $out .= $csv->string . "\n";
     }
     $out;

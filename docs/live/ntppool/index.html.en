@@ -116,7 +116,7 @@ servers</a>.
 No news for almost a year... It's time to say good bye.  I'll hand over the
 project to  Ask Bjørn Hansen effective tomorrow morning.  Details are, of
 course, in the <a
-href="https://fortytwo.ch/mailman/pipermail/timekeepers-announce/2005/000014.html">list
+href="http://fortytwo.ch/mailman/pipermail/timekeepers-announce/2005/000014.html">list
 archives</a>.
 </td>
 </tr>
@@ -129,7 +129,7 @@ report the stratum, though].</i>  The monitoring system has been changed: it
 now uses simple ntp queries instead of 'ntpd' monitoring servers.
 {0,1,2}.pool.ntp.org subzones have been reintroduced.  time.fortytwo.ch will be
 retired in the long run.  Read more in the <a
-href="https://fortytwo.ch/mailman/pipermail/timekeepers-announce/2004/000010.html">full
+href="http://fortytwo.ch/mailman/pipermail/timekeepers-announce/2004/000010.html">full
 announcement</a>.
 </td>
 </tr>
@@ -153,7 +153,7 @@ href="https://fortytwo.ch/mailman/cgi-bin/listinfo/timekeepers-announce"
 >timekeepers-announce@fortytwo.ch</a> (<a
 href="mailto:timekeepers-announce-request@fortytwo.ch?subject=subscribe"
 >subscribe</a>,
-<a href="https://fortytwo.ch/mailman/pipermail/timekeepers-announce/"
+<a href="http://fortytwo.ch/mailman/pipermail/timekeepers-announce/"
 >archive</a>) and the bulletins list <a
 href="https://fortytwo.ch/mailman/cgi-bin/listinfo/timekeepers-bulletin"
 >timekeepers-bulletin@fortytwo.ch</a> (<a
@@ -183,11 +183,6 @@ href="http://groups.google.com/groups?threadm=cpaznpnzrb1.fsf%40cabernet.nelson.
 >Fixing the NTP server abuse problem</a> threads on the <a
 href="news:comp.protocols.time.ntp"
 >comp.protocols.time.ntp</a> newsgroup have caused this project to be started.
-</li>
-<li>
-If you want to monitor your timeserver, <a
-href="http://fortytwo.ch/stats/time" >Adrian von Bidder's
-statistics</a> could give you a starting point.
 </li>
 <li>
 Federico Sevilla III also has a <a href="http://marc.free.net.ph" >mailing
