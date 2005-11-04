@@ -4,6 +4,7 @@ use base qw(NTPPool::DBI);
 use NTPPool::Server::Score;
 use NTPPool::Zone;
 use RRDs;
+use Text::CSV_XS;
 
 __PACKAGE__->set_up_table('servers');
 __PACKAGE__->has_a('admin' => 'NTPPool::Admin');
@@ -85,7 +86,19 @@ sub history {
   $pager->per_page($count);
   $pager->order_by('ts desc');
   $pager->search_where({ server => $self->id });
+}
 
+sub log_scores_csv {
+    my ($self, $count) = @_;
+    my $history = $self->history($count);
+    my $csv = Text::CSV_XS->new();
+    $csv->combine(qw(ts_epoch ts offset step score));
+    my $out = $csv->string . "\n";
+    while (my $l = $history->next) {
+        $csv->combine($l->ts->epoch, $l->ts->strftime("%F %T %z"), map { $l->$_ } qw(offset step score));
+        $out .= $csv->string . "\n";
+    }
+    $out;
 }
 
 sub find_server {

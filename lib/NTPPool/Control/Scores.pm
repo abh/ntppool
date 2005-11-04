@@ -7,13 +7,13 @@ use Apache::Constants qw(OK);
 sub render {
   my $self = shift;
 
-  if ($self->request->uri =~ m!^/s/(\d+)!) {
-    my ($server) = NTPPool::Server->find_server($1) or return 404;
+  if ($self->request->uri =~ m!^/s/([^/]+)!) {
+    my $server = NTPPool::Server->find_server($1) or return 404;
     return $self->redirect('/scores/' . $server->ip);
   }
 
   if (my $ip = $self->req_param('ip')) {
-      my ($server) = NTPPool::Server->find_server($ip) or return 404;
+      my $server = NTPPool::Server->find_server($ip) or return 404;
       return $self->redirect('/scores/' . $server->ip) if $server;
   }
 
@@ -21,6 +21,7 @@ sub render {
       my $p = $1;
       my ($server) = NTPPool::Server->find_server($p);
       return $self->redirect('/scores/' . $server->ip) unless $p eq $server->ip;
+      return OK, $server->log_scores_csv(300), 'text/plain' if $self->req_param('log');
       $self->tpl_param('server' => $server);
   }
   return OK, $self->evaluate_template('tpl/server.html');
