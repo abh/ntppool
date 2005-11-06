@@ -21,7 +21,7 @@ sub render {
       my $p = $1;
       my ($server) = NTPPool::Server->find_server($p);
       return $self->redirect('/scores/' . $server->ip) unless $p eq $server->ip;
-      return OK, $server->log_scores_csv(300), 'text/plain' if $self->req_param('log');
+      return OK, $server->log_scores_csv(500), 'text/plain' if $self->req_param('log');
       $self->tpl_param('server' => $server);
   }
   return OK, $self->evaluate_template('tpl/server.html');

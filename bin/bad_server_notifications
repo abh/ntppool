@@ -20,9 +20,13 @@ my $production = $config->site->{ntppool}->{servername} eq 'www.pool.ntp.org';
 
 NTPPool::DBI->dbh->selectrow_array(q[SELECT GET_LOCK("notifications", 0)]) or exit;
 
+NTPPool::DBI->dbh->do(q[delete from sa using server_alerts sa inner join scores sc using (server) where sc.score > 0]);
+
 my $admins = NTPPool::Admin->search_admins_to_notify;
 
 my $tpl = Combust::Template->new;
+
+my $i = 0;
 
 while (my $admin = $admins->next) {
     my $param = {admin => $admin};
@@ -47,6 +51,7 @@ while (my $admin = $admins->next) {
     }
 
     last;
+    last if ++$i == 10;
 }
 
 1;

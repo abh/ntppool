@@ -6,12 +6,14 @@ use Apache::Constants qw(OK);
 
 sub cache_info {
   my $self = shift;
-  return +{ id => join ";",
-            "zonepage",
-            $self->zone_name,
-            $self->sort_order,
-            $self->show_servers,
-            ($self->show_servers_access ? 1 : 0),
+  return +{ expires => 3600,
+            id => join(";",
+                       "zonepage",
+                       $self->zone_name,
+                       $self->sort_order,
+                       $self->show_servers,
+                       ($self->show_servers_access ? 1 : 0)
+                      ),
           }
 }
 
