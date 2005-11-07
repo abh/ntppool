@@ -2,7 +2,8 @@
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html>
 <head>
-<title>pool.ntp.org: the internet time network</title>
+[% title = page.title || 'the internet time network' %]
+<title>pool.ntp.org: [% title | html %]</title>
 
   <link rel="stylesheet" type="text/css" 
         href="/css/ntppool.css" 

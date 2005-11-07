@@ -11,6 +11,8 @@ IP <input type="text" name="ip">
    END 
  %]
 
+[% page.title = 'Stats for ' _ server.ip  %]
+
 <h3>[% server.ip %] [% IF server.hostname;  '/ ' _ server.hostname; END %]</h3>
 
 <p>
