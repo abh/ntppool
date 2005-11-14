@@ -336,7 +336,7 @@ elsif ($cmd eq "zone") {
         my $entries =
           $db->selectall_arrayref("SELECT s.ip "
                                . "FROM servers s, scores sc, locations l "
-                               . "WHERE l.server = s.id AND l.zone = ? AND s.in_pool = 1"
+                               . "WHERE l.server = s.id AND l.zone = ? AND s.in_pool = 1 "
                                . "AND sc.server = s.id AND sc.score > 5", undef, $zone->{id});
 
         next unless $entries and @$entries;

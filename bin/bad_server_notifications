@@ -17,6 +17,7 @@ use Sys::Hostname qw(hostname);
 my $config = Combust::Config->new;
 
 my $production = $config->site->{ntppool}->{servername} eq 'www.pool.ntp.org';
+$production = 0;
 
 NTPPool::DBI->dbh->selectrow_array(q[SELECT GET_LOCK("notifications", 0)]) or exit;
 

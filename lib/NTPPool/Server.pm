@@ -20,7 +20,7 @@ __PACKAGE__->set_sql(check_due => qq{
 SELECT s.id
 FROM servers s left join scores sc ON(s.id=sc.server)
 WHERE
-  sc.score IS NULL or sc.ts < DATE_SUB( NOW(), INTERVAL 29 minute)
+  sc.score IS NULL or sc.ts < DATE_SUB( NOW(), INTERVAL 24 minute)
 ORDER BY sc.ts
                });
 
@@ -201,22 +201,20 @@ sub offset_graph {
                    '--height' => 130,
                    '--title'  => $title,
                    '--alt-autoscale-max',
-                   '--slope-mode',
-                   qq[DEF:score=$rrd:score:AVERAGE],
+                    '--slope-mode',
+                   #'--logarithmic', # get empty graphs with this enabled
+                   #'--no-gridfit',
+                   #qq[DEF:score=$rrd:score:AVERAGE],
                    qq[DEF:offset_avg=$rrd:offset:AVERAGE],
                    qq[DEF:offset_top=$rrd:offset:MAX],
                    qq[DEF:offset_bot=$rrd:offset:MIN],
                    
-                   #qq[CDEF:offset_top_smooth=offset_top,7200,TREND],
-                   #qq[CDEF:offset_bot_smooth=offset_bot,7200,TREND],
-
                    q[CDEF:offset_area=offset_top,offset_bot,-],
 
                    q[LINE1:offset_bot#00FF00:Minimum offset],
                    q[AREA:offset_area#FFBFBF::STACK],  
                    q[LINE1:offset_top#FF0000:Maximum offset],
                    q[LINE1:offset_avg#000000:Offset],
-                      
                   );
 
     RRDs::graph $path, @options;
