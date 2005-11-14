@@ -119,7 +119,7 @@ if ($cmd eq "add") {
     if ($#row != -1) {
         die "server $ip already in database for $row[0]\n";
     }
-    $db->do("INSERT INTO servers (ip, admin, hostname) VALUES (?,?,?)",
+    $db->do("INSERT INTO servers (ip, admin, hostname, in_pool) VALUES (?,?,?,1)",
             {}, $ip, $user->id, $hostname);
     my $serverid = $db->{'mysql_insertid'};
 
@@ -149,6 +149,7 @@ elsif ($cmd eq "zones") {
       $server->id,
       $server->admin->username ? $server->admin->username : "-",
       $server->admin->email; 
+    printf "in pool: %i, in server list: %i\n", $server->in_pool, $server->in_server_list;
     my $gi = Geo::IP->new(GEOIP_STANDARD);
     my $country = $gi->country_code_by_addr($server->ip);
     $country = lc $country if $country;
@@ -335,7 +336,7 @@ elsif ($cmd eq "zone") {
         my $entries =
           $db->selectall_arrayref("SELECT s.ip "
                                . "FROM servers s, scores sc, locations l "
-                               . "WHERE l.server = s.id AND l.zone = ? "
+                               . "WHERE l.server = s.id AND l.zone = ? AND s.in_pool = 1"
                                . "AND sc.server = s.id AND sc.score > 5", undef, $zone->{id});
 
         next unless $entries and @$entries;

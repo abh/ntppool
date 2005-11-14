@@ -20,6 +20,9 @@ CREATE TABLE servers (
     ip varchar(15) NOT NULL unique,
     admin int unsigned not null,
     hostname TEXT,
+    stratum tinyint unsigned default NULL,
+    in_pool tinyint unsigned NOT NULL,
+    in_server_list tinyint unsigned NOT NULL,
     index (admin),
     CONSTRAINT admin FOREIGN KEY (admin) REFERENCES users(id)
 ) engine=INNODB;

@@ -59,6 +59,7 @@ sub handle_add {
           ({ ip       => $server->{ip}, 
              hostname => $server->{hostname} || '',
              admin    => $self->user,
+             in_pool  => 1,
            });
         $s->add_to_locations({ zone => $_ }) for @{$server->{zones}};
         return $self->show_manage;
