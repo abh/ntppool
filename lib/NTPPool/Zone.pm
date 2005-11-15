@@ -47,7 +47,7 @@ sub server_count {
       inner join scores sc on(s.id=sc.server)
       inner join locations l on(s.id=l.server)
       inner join zones z on(z.id=l.zone)
-    where z.id=? and sc.score >= 5;
+    where z.id=? and sc.score >= 5 and s.in_pool = 1
   ], undef, $self->id);
 }
 
@@ -59,7 +59,7 @@ sub server_count_all {
     from servers s
       inner join locations l on(s.id=l.server)
       inner join zones z on(z.id=l.zone)
-    where z.id=?
+    where z.id=? and s.in_pool = 1
   ], undef, $self->id);
 }
 
