@@ -46,9 +46,8 @@ while (my $admin = $admins->next) {
     }
 
     for my $server (@bad_servers) {
-        my $alert = $server->alert || NTPPool::Server::Alert->create({server => $server});
+        my $alert = $server->alert;
         $alert->mark_sent;
-        $alert->update;
     }
 
     last;

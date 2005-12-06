@@ -39,7 +39,7 @@ sub update_rrd {
              )
         );
 
-    if (my $ERROR = RRDs::error) {
+    if (my $ERROR = RRDs::error()) {
         warn "$0: unable to update ",$self->server->rrd_path,": $ERROR\n";
     }
 }
@@ -67,8 +67,8 @@ sub create_rrd {
                 );
                  
 
-    RRDs::create "$path", @graph;
-    my $ERROR = RRDs::error;
+    RRDs::create("$path", @graph);
+    my $ERROR = RRDs::error();
     if ($ERROR) {
         die "$0: unable to create '$path': $ERROR\n";
     }

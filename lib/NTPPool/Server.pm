@@ -12,7 +12,7 @@ __PACKAGE__->has_many('log_scores' => 'NTPPool::Server::LogScore');
 __PACKAGE__->has_many('locations' => 'NTPPool::Location');
 __PACKAGE__->has_many('urls'      => [ 'NTPPool::Server::URL' => 'url' ]);
 __PACKAGE__->might_have('_score'  => 'NTPPool::Server::Score');
-__PACKAGE__->might_have('alert'  => 'NTPPool::Server::Alert');
+__PACKAGE__->might_have('_alert'  => 'NTPPool::Server::Alert');
 
 __PACKAGE__->add_trigger( after_create => \&setup_rrd );
 
@@ -75,6 +75,11 @@ sub score {
   my $self = shift;
   sprintf "%0.1f", $self->score_raw;
 }
+
+sub alert {
+  my $self = shift;
+  return $self->_alert || NTPPool::Server::Alert->create({server => $self});
+} 
 
 sub history {
   my ($self, $count) = @_;
@@ -180,8 +185,8 @@ sub score_graph {
 #                   qq[LINE1:step#001100:Step],
                   );
 
-    RRDs::graph $path, @options;
-    my $ERROR = RRDs::error;
+    RRDs::graph($path, @options);
+    my $ERROR = RRDs::error();
     if ($ERROR) {
         warn "$0: unable to create '$path': $ERROR\n";
     }
@@ -217,8 +222,8 @@ sub offset_graph {
                    q[LINE1:offset_avg#000000:Offset],
                   );
 
-    RRDs::graph $path, @options;
-    my $ERROR = RRDs::error;
+    RRDs::graph($path, @options);
+    my $ERROR = RRDs::error();
     if ($ERROR) {
         warn "$0: unable to create '$path': $ERROR\n";
     }

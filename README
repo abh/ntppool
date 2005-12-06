@@ -8,7 +8,8 @@ Quick and dirty install instructions; email ask@develooper.com for help.
 
 CPAN modules needed:
    Bundle::Combust DBI DBD::mysql Class::DBI Class::DBI::mysql Class::DBI::Plugin::AbstractCount
-   Class::DBI::Plugin::Pager
+   Class::DBI::Plugin::Pager Class::DBI::AbstractSearch Time::Piece Time::Piece::MySQL
+   Time::Duration
 
 DIR=~/ntppool
 mkdir $DIR; cd $DIR
@@ -21,7 +22,12 @@ export CBROOT=$DIR/combust
 cp combust/combust.conf.sample combust.conf
 edit combust.conf  # setup the database section with an "ntppool" database
 
-$CBROOT/bin/cmysql ntppool < sqlschema
+mkdir -p $DIR/rrd/server/graph
+mkdir -p $DIR/rrd/zone/graph
+
+$CBROOT/bin/cmysql ntppool < sql/tables.sql
+$CBROOT/bin/cmysql ntppool < sql/zones.sql
+
 
 $CBROOT/bin/run_httpd
 

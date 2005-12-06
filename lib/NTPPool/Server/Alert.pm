@@ -11,6 +11,7 @@ sub mark_sent {
   my $server = $self->server;
   $self->last_score($self->server->score);
   $self->last_email_time(time2iso);
+  $self->update;
 }
 
 sub accessor_name {
@@ -23,6 +24,7 @@ sub server {
   my $self = shift;
   my $id = $self->_server(@_);
   return unless $id;
+  return $id if ref $id;
   NTPPool::Server->retrieve($id);
 }
 
