@@ -6,6 +6,9 @@ See the LICENSE file for copyright and licensing information.
 -------------------------------------------------------------------------
 Quick and dirty install instructions; email ask@develooper.com for help.
 
+CPAN modules needed:
+   Bundle::Combust DBI DBD::mysql Class::DBI Class::DBI::mysql Class::DBI::Plugin::AbstractCount
+   Class::DBI::Plugin::Pager
 
 DIR=~/ntppool
 mkdir $DIR; cd $DIR

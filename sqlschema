@@ -50,7 +50,7 @@ CREATE TABLE log_scores (
     ts timestamp NOT NULL,
     score REAL NOT NULL,
     step REAL NOT NULL,
-    offs REAL -- abs(offset),
+    offset REAL,
     key (server,ts),
     constraint log_scores_server FOREIGN KEY (server) REFERENCES servers(id) ON DELETE CASCADE
 ) ENGINE=INNODB;
@@ -101,3 +101,5 @@ CREATE TABLE server_urls (
   key (server),
   constraint server_urls_server foreign key (server) REFERENCES servers(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
