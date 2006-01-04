@@ -6,10 +6,14 @@ Subject: NTP Pool: Problems with your NTP service ([% bad_servers.0.ip %])
 
 Hi [% admin.username || admin.email %],
 
-Because your timeserver is being detected as either unreachable or bad, your
-timeserver is not being included in the pool.ntp.org DNS zones.
+Because your timeserver is being detected as either unreachable or as
+keeping bad time, it is not being included in the pool.ntp.org DNS
+zones.
 
-Please solve the problem or notify me of the new IP address of your server.
+Unless you have questions then you don't need to notify me that the
+problem has been resolved; the system will figure that out by itself.
+(You can follow the status on the URL listed next to the server IP).
+If the IP of the server changed, just reply with the new IP address.
 
 [% FILTER repeat(70) %]-[% END %]
 [%- FOR server = bad_servers %]
@@ -29,9 +33,6 @@ You can see the stats for all your servers in the pool at
 Thank you for offering your ntp service to the pool!
 
   - ask
-
-ps. These email alerts are still in testing, so please let me know if
-you have any suggestions or find any errors.  :)
 
 -- 
 [% config.base_url('ntppool') %]/ | http://askask.com/ | http://develooper.com/
