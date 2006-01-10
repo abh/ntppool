@@ -1,1 +1,5 @@
 /stats/.* / perm
+
+/ordb.html /
+/rsbl.html /
+/duinv.html /
