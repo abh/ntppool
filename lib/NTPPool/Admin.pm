@@ -19,7 +19,7 @@ __PACKAGE__->set_sql(admins_to_notify => qq{
                            sc.score <= $BAD_THRESHOLD
                             AND (sa.last_email_time IS NULL
                                  OR (DATE_SUB(NOW(), INTERVAL 14 DAY) > sa.last_email_time
-                                     AND sa.last_score >= sc.score
+                                     AND (sa.last_score+10) >= sc.score
                                    ) 
                                 )
                          ORDER BY s.admin

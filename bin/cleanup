@@ -10,6 +10,6 @@ use NTPPool::DBI;
 
 my $dbh = NTPPool::DBI->dbh;
 
-$dbh->do(q[delete from log_scores where ts < date_sub( NOW(), interval 60 day) limit 1000]);
+$dbh->do(q[delete from log_scores where ts < date_sub( NOW(), interval 180 day) limit 5000]);
 
 

@@ -1,4 +1,4 @@
-Zpool.ntp.org:ns1.us.bitnames.com:pool.ntp.org:@VERSION@:900:900:604800:300
+Zpool.ntp.org:ns1.us.bitnames.com:pool.ntp.org:@VERSION@:1200:600:604800:300
 
 &pool.ntp.org::ns1.us.bitnames.com:86400
 #&pool.ntp.org::ns3.us.bitnames.com:86400

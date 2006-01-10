@@ -99,7 +99,7 @@ sub update_graph {
     my $trrd = target_path($zone);
 
     my @options = (
-                   '--lazy',
+                   #'--lazy',
                    '--end'    => 'now',
                    '--start'  => 1123657000, # 2005-08-10, first data...  'end-14d',
                    '--width'  => 420,
@@ -115,8 +115,9 @@ sub update_graph {
                    qq[DEF:target=$trrd:target:AVERAGE],
                    qq[CDEF:inactive=registered,active,-],
                    qq[LINE2:registered#00CCCC:registered servers],
-                   qq[LINE2:inactive#EE0000:inactive servers],
-                   qq[LINE2:active#00BB00:active servers],
+                   #qq[LINE2:inactive#EE0000:inactive servers],
+                   qq[LINE2:inactive#DD9000:inactive servers],
+                   qq[LINE2:active#006600:active servers],
                    qq[LINE1:target#444444:growth target],
                   );
 

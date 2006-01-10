@@ -1,7 +1,7 @@
 package NTPPool::Control;
 use strict;
 use Apache::Constants qw(OK);
-use base qw(Combust::Control);
+use base qw(Combust::Control Combust::Control::Bitcard);
 use NTPPool::Server;
 
 our $cookie_name = 'npuid';

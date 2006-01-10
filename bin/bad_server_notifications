@@ -17,7 +17,6 @@ use Sys::Hostname qw(hostname);
 my $config = Combust::Config->new;
 
 my $production = $config->site->{ntppool}->{servername} eq 'www.pool.ntp.org';
-$production = 0;
 
 NTPPool::DBI->dbh->selectrow_array(q[SELECT GET_LOCK("notifications", 0)]) or exit;
 
@@ -50,8 +49,8 @@ while (my $admin = $admins->next) {
         $alert->mark_sent;
     }
 
-    last;
-    last if ++$i == 10;
+    #last;
+    #last if ++$i == 4;
 }
 
 1;
