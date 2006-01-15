@@ -45,10 +45,17 @@ href="http://groups.google.com/groups?threadm=3E2DBFF7.F9A51614%40udel.edu"
 with the idea that for everyday use a DNS round robin would be good
 enough, and would allow spreading the load over many servers. The
 disadvantage is, of course, that you may occasionally get a bad server
-(if so, please report it to the <a
-href="mailto:timekeepers@fortytwo.ch" >timekeepers mailing list</a>,
-see <a href="#mail">below</a>) and that you usually won't get the
-server closest to you.
+and that you usually won't get the server closest to you.  The
+workarounds for this is respectively to make sure you configure at
+least three servers in your ntp.conf and to use the country zones (for
+example 0.us.pool.ntp.org) rather than the global zone (for example
+0.pool.ntp.org).  Read more on <a
+href="http://www.pool.ntp.org/use.html">using the pool</a>.
+</p>
+
+<p>
+The pool is now enormously popular, being used by at least hundreds of
+thousands and maybe even millions of systems around the world.
 </p>
 
 <p>
@@ -62,6 +69,25 @@ lists</a>.
 <div style="text-align:right"><a href="#top">go up</a></div>
 <h2><a name="news">News</a></h2>
 <table cellpadding="4">
+
+<tr>
+<td align="center" valign="top"><b>2006-01-15</b></td>
+<td>
+
+Welcome <a
+href="http://it.slashdot.org/it/06/01/14/1550221.shtml">Slashdot
+readers</a>.  The Slashdot story was that we had reached 500 active
+servers, but since the story was posted another 50 or so servers
+joined us!  This is great, thank you everyone.  The only way we can
+keep the load on each server reasonable is by adding more servers
+quickly.  If you can, please <a
+href="http://www.pool.ntp.org/join.html">join</a>.  More than 500
+servers in the pool might sound like a lot, but our best guestimates
+puts the number of clients at either hundreds of thousands or millions
+of computers.
+
+</td></tr>
+
 
 <tr>
 <td align="center" valign="top"><b>2005-08-10</b></td>
@@ -120,19 +146,7 @@ href="http://fortytwo.ch/mailman/pipermail/timekeepers-announce/2005/000014.html
 archives</a>.
 </td>
 </tr>
-<tr>
-<td align="center" valign="top"><b>2004-09-07</b></td>
-<td>
-Server count hits 220.  Please do not use OpenNTP as a server for the
-pool.ntp.org project <i>[2004-12-15: Versions later than 3.6.1 do now properly
-report the stratum, though].</i>  The monitoring system has been changed: it
-now uses simple ntp queries instead of 'ntpd' monitoring servers.
-{0,1,2}.pool.ntp.org subzones have been reintroduced.  time.fortytwo.ch will be
-retired in the long run.  Read more in the <a
-href="http://fortytwo.ch/mailman/pipermail/timekeepers-announce/2004/000010.html">full
-announcement</a>.
-</td>
-</tr>
+
 </table>
 <p>
 <a href="older_news.html">Older news...</a>
