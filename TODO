@@ -1,5 +1,15 @@
 
-make the country zones alias to the continent zones when they are otherwise too small
+allow an organization name and http link for each user for attribution
+
+"netspeed" setting for each server
+
+make a graph for the total server counts
+
+check that servers that are not in_pool won't be counted in the active
+server counts.
+
+make the country zones alias to the continent zones when they are
+otherwise too small
 
 alter table zones add parent id int unsigned;
 alter table zones add description varchar(255);
