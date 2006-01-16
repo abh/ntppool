@@ -55,6 +55,10 @@ sub init {
     }
   }
 
+  if ($self->is_logged_in) {
+      $self->r->user( $self->user->username );
+  }
+
   return OK;
 }
 

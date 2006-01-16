@@ -22,6 +22,7 @@ Zones: [% FOR zone = server.zones %] <a href="[% zone.url %]">[% zone.name %]</a
  %]
 [% IF combust.user.privileges.see_all_user_profiles %]
 [% IF server.stratum %]Stratum: <b>[% server.stratum %]</b><br/>[% END %]
+Netspeed: [% server.netspeed_human %]<br/>
 [% END %]
 
 <a href="/s/[% server.id %]"><img border="0" src="[% server.graph_uri('score') %]" alt="Server score graph" /></a><br />
