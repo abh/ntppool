@@ -32,7 +32,7 @@ Zones:
 
 <br/>
 
-<a href="/scores/?ip=[% server.ip | uri %]">Trend</a>: [% FOR h = server.history(60).reverse -%]
+<a href="/scores/[% server.ip | uri %]">Trend</a>: [% FOR h = server.history(60).reverse -%]
 <span class="[% h.history_css_class %]" title="[% h.ts | html %]">[% h.history_symbol  %]</span>
 [%- END %]
 <br />
