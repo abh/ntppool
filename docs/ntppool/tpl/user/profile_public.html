@@ -24,7 +24,7 @@ Zones: [% FOR zone = server.zones %] <a href="[% zone.url %]">[% zone.name %]</a
 [% IF server.stratum %]Stratum: <b>[% server.stratum %]</b><br/>[% END %]
 [% END %]
 
-<img src="[% server.graph_uri('score') %]" alt="Server score graph" /><br />
+<a href="/s/[% server.id %]"><img border="0" src="[% server.graph_uri('score') %]" alt="Server score graph" /></a><br />
 
 
 </p> 

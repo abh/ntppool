@@ -19,9 +19,9 @@ use NTPPool::Zone;
 
 my %growth_targets = 
   (
-   2005 => 0.40,
-   2006 => 0.45,
-   2007 => 0.45,
+   2005 => 0.45,
+   2006 => 0.75,
+   2007 => 0.70,
   );
 
 my $zones = NTPPool::Zone->retrieve_all;
