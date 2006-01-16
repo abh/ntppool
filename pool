@@ -7,7 +7,6 @@ use lib "$ENV{CBROOT}/lib";
 use Combust::DB;
 use List::Util qw(shuffle);
 use Net::hostent;
-use Net::IPv4Addr qw(ipv4_chkip);
 use Net::NTP;
 use Socket;
 use Time::HiRes;
@@ -96,7 +95,8 @@ if ($cmd eq "add") {
     # do we have a hostname or an IP?
     my $hostname = shift @ARGV;
     my $ip;
-    if (ipv4_chkip $hostname) {
+    require Net::IPv4Addr;
+    if (Net::IPv4Addr::ipv4_chkip($hostname)) {
         $ip       = $hostname;
         $hostname = undef;
     }
@@ -234,7 +234,7 @@ elsif ($cmd eq "scores") {
     $Net::NTP::CLIENT_TIME_SEND    = undef;
     $Net::NTP::CLIENT_TIME_RECEIVE = undef;
     my $mon_host = 'localhost';
-    $mon_host = 'miette' if hostname eq "powermac.bn.dev" or hostname eq "one.develooper.com";
+    $mon_host = 'miette' if hostname =~ m/bn.dev$/;
     my %pkt = get_ntp_response($mon_host);
     if ($pkt{'Stratum'} == 0 or $pkt{'Stratum'} > 6) {
         die "monitoring server not synchronized\n";

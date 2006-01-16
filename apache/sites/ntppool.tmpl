@@ -51,6 +51,11 @@
       PerlHandler NTPPool::Control::Zone->super
     </Location>
 
+    <Location /user>
+      SetHandler perl-script
+      PerlHandler NTPPool::Control::UserProfile->super
+    </Location>
+
     <Location /zone/graph>
       SetHandler default
     </Location>

@@ -5,6 +5,8 @@ use NTPPool::Server::Score;
 use NTPPool::Zone;
 use RRDs;
 use Text::CSV_XS;
+use Time::Piece;
+use Time::Piece::MySQL;
 
 __PACKAGE__->set_up_table('servers');
 __PACKAGE__->has_a('admin' => 'NTPPool::Admin');
@@ -15,6 +17,13 @@ __PACKAGE__->might_have('_score'  => 'NTPPool::Server::Score');
 __PACKAGE__->might_have('_alert'  => 'NTPPool::Server::Alert');
 
 __PACKAGE__->add_trigger( after_create => \&setup_rrd );
+
+__PACKAGE__->has_a('created_on' => 'Time::Piece', 
+                   inflate => 'from_mysql_datetime',
+                   deflate => 'mysql_datetime',
+                   );
+
+__PACKAGE__->add_trigger(before_create => sub{ $_[0]->set(created_on => Time::Piece->new() ) } );
 
 __PACKAGE__->set_sql(check_due => qq{
 SELECT s.id
@@ -58,6 +67,19 @@ sub country {
   my $self = shift;
   my ($country) = grep { length $_->name == 2 } $self->zones;
   $country && $country->name;
+}
+
+sub netspeed_human {
+  my $self = shift;
+  my $netspeed = $self->netspeed;
+  _netspeed_human($netspeed);
+}
+
+sub _netspeed_human {
+  my $netspeed = shift;
+  return ($netspeed/1_000_000) . ' Gbit' if ($netspeed / 1_000_000 > 1);
+  return ($netspeed/1_000) . ' Mbit' if ($netspeed / 1_000 >= 1);
+  return "$netspeed Kbit";
 }
 
 sub score_raw {

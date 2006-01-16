@@ -10,6 +10,7 @@ CREATE TABLE `users` (
   `nomail` enum('0','1') NOT NULL default '0',
   `bitcard_id` char(40) default NULL,
   `username` varchar(40) default NULL,
+  `public_profile` tinyint(1) not null default 0,
   PRIMARY KEY  (`id`),
   UNIQUE KEY `email` (`email`),
   UNIQUE KEY `users_email_key` (`email`)
@@ -19,10 +20,13 @@ CREATE TABLE servers (
     id int unsigned primary key auto_increment,
     ip varchar(15) NOT NULL unique,
     admin int unsigned not null,
-    hostname TEXT,
+    hostname varchar(255),
     stratum tinyint unsigned default NULL,
     in_pool tinyint unsigned NOT NULL,
     in_server_list tinyint unsigned NOT NULL,
+    netspeed mediumint(8) unsigned NOT NULL default '1000',
+    created_on datetime default NULL,
+    updated_on timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
     index (admin),
     CONSTRAINT admin FOREIGN KEY (admin) REFERENCES users(id)
 ) engine=INNODB;
@@ -80,7 +84,7 @@ CREATE TABLE `zone_server_counts` (
   `zone` int unsigned NOT NULL,
   `date` date NOT NULL,
   `count_active` mediumint(8) unsigned NOT NULL,
-  `count_all` mediumint(8) unsigned NOT NULL,
+  `count_registered` mediumint(8) unsigned NOT NULL,
   PRIMARY KEY  (`id`),
   UNIQUE KEY `zone` (`zone`,`date`),
   constraint zone_server_counts foreign key (zone) references zones(id) on delete cascade
@@ -90,6 +94,7 @@ CREATE TABLE `zone_server_counts` (
 CREATE TABLE `user_privileges` (
   `user` int(10) unsigned NOT NULL default '0',
   `see_all_servers` tinyint(1) not null default 0,
+  `see_all_user_profiles` tinyint(1) NOT NULL default '0',
   UNIQUE KEY `user` (`user`),
   CONSTRAINT `user_privileges` FOREIGN KEY (`user`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

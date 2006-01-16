@@ -1,0 +1,38 @@
+<span id="server_[% server.id %]">
+<form method="post" action="/manage/update/netspeed">
+
+[% IF server.hostname %]Hostname: <b>[% server.hostname | html %]</b><br />[% END %]
+IP: <b>[% server.ip | html %]</b><br />
+Current score: <b>[% server.score %]</b><br />
+[% IF server.stratum %]Stratum: <b>[% server.stratum %]</b><br/>[% END %]
+
+Zones:
+[% FOR zone = server.zones %]
+<a href="[% zone.url %]">[% zone.name %]</a>
+[% END  %]<br />
+
+<input type="hidden" name="server" value="[% server.id %]">
+<input type="hidden" name="noscript" value="1">
+
+<a href="#netspeed">Net speed</a>: <span id="netspeed_[% server.id %]">[% server.netspeed_human %]</span> |
+<select name="netspeed" onchange="update_netspeed('[% server.id %]', this.value); return false;">
+<option value="">Set connection speed</option>
+[% FOR speed = [256, 512, 768, 1000, 1500, 3000, 10000, 25000, 50000, 100000, 1000000] %]
+<option value="[% speed %]">[% combust.netspeed_human(speed) %]</option>
+[%- END %]
+</select>
+<noscript>
+<input type="submit" value="Update">
+</noscript>
+
+
+<br/>
+
+<a href="/scores/?ip=[% server.ip | uri %]">Trend</a>: [% FOR h = server.history(60).reverse -%]
+<span class="[% h.history_css_class %]" title="[% h.ts | html %]">[% h.history_symbol  %]</span>
+[%- END %]
+<br />
+<br />
+
+</form>
+</span>

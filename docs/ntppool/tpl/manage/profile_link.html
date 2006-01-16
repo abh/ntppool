@@ -1,0 +1,13 @@
+
+[% IF style;
+     page.style = style;
+   END %]
+
+<span id="profile_link">
+Your <a href="/user/[% user.username %]">Profile</a> is currently
+[% IF user.public_profile %]
+<b>public</b>, [% combust.prototype.link_to_remote('mark it private', { update => 'profile_link', url => '/manage/update/profile/private' } ) -%]
+[% ELSE %]
+<b>private</b>, [% combust.prototype.link_to_remote('mark it public', { update => 'profile_link', url => '/manage/update/profile/public' } ) -%]
+[% END %]
+</span>

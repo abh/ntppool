@@ -1,0 +1,31 @@
+[% page.title = (user.username || user.email) _ "'s pool servers" %]
+
+<h3>[% user.username || user.email %]'s pool servers</h3>
+
+[% UNLESS user.public_profile %]
+<p><i>This profile is not public.</i></p>
+[% END %]
+
+[% FOR server = user.servers %]
+<p>
+[% IF server.hostname %]Hostname: <b>[% server.hostname | html %]</b><br />[% END %]
+IP: <b><a href="/scores/[% server.ip %]">[% server.ip | html %]</a></b><br />
+Current score: <b>[% server.score %]</b><br />
+Zones: [% FOR zone = server.zones %] <a href="[% zone.url %]">[% zone.name %]</a>[% END  %]<br/>
+[% IF server.urls;
+  '<p class="serverurls">Server traffic/load stats and graphs:';
+     FOR url = server.urls %]
+<a rel="nofollow" href="[% url | html %]">[% url | html %]</a><br />
+[%   END;
+   '</p>';
+   END;
+ %]
+[% IF combust.user.privileges.see_all_user_profiles %]
+[% IF server.stratum %]Stratum: <b>[% server.stratum %]</b><br/>[% END %]
+[% END %]
+
+<img src="[% server.graph_uri('score') %]" alt="Server score graph" /><br />
+
+
+</p> 
+[% END %]

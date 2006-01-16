@@ -15,7 +15,14 @@ IP <input type="text" name="ip">
 
 <h3>[% server.ip %] [% IF server.hostname;  '/ ' _ server.hostname; END %]</h3>
 
+
 <p>
+[% IF server.admin.public_profile 
+       OR  combust.user.id == server.admin.id
+       OR combust.user.privileges.see_all_user_profiles %]
+Server admin: <a href="/user/[% (server.admin.username || server.admin.id) | html | uri %]"
+>[% server.admin.username || server.admin.email %]</a><br/>
+[% END %]
 Zones:
 [% FOR zone = server.zones %]
 <a href="[% zone.url %]">[% zone.name %]</a>
@@ -33,7 +40,7 @@ Zones:
 
 
 <p>
-Current score: [% USE Number.Format; server.score | format_number(2); %] (only servers with a score higher than 5 are used in the pool)
+Current score: [% server.score %] (only servers with a score higher than 5 are used in the pool)
 </p>
 
 <p>

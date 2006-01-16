@@ -7,6 +7,8 @@ h1,h2,h3 {
   font-family: "Lucida Grande", verdana, arial, helvetica, sans-serif;
 }
 
+#profile_link { display: inline; }
+
 #nav { 
   margin-bottom: 0px;
 }
@@ -15,7 +17,7 @@ h1,h2,h3 {
   list-style: none;
   padding: 0;
   margin: 0;
-  display: inline-block;
+  display: inline;  /* inline-block ?  */
 }
 
 #nav li {
@@ -23,7 +25,7 @@ h1,h2,h3 {
   margin: 0 0.15em;
   padding: 0;
   text-align: center;
-  display: inline-block;
+  display: inline;  /* inline-block ? */
 }
 
 #nav li a {
@@ -39,7 +41,7 @@ h1,h2,h3 {
   color: #0d2474;
   text-decoration: none;
   text-align: center;
-  display: inline-block;
+  display: inline; /* inline-block ? */
 }
 
 #nav li a:hover {

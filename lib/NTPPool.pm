@@ -7,6 +7,6 @@ use NTPPool::Control::DNSStatus;
 use NTPPool::Control::Manage;
 use NTPPool::Control::Zone;
 use NTPPool::Control::Bulletin;
-
+use NTPPool::Control::UserProfile;
 
 1;

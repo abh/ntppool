@@ -2,7 +2,7 @@ package NTPPool::Control::Manage;
 use strict;
 use base qw(NTPPool::Control);
 use NTPPool::Server;
-use Apache::Constants qw(OK);
+use Apache::Constants qw(OK NOT_FOUND);
 use Socket qw(inet_ntoa);
 use Net::NTP;
 use Geo::IP;
@@ -14,13 +14,14 @@ sub render {
     my $self = shift;
     
     if ($self->request->uri =~ m!^/manage/logout!) {
-        $self->cookie($NTPPool::Control::cookie_name, 0);
+        $self->cookie($Combust::Control::Bitcard::cookie_name, 0);
         $self->redirect( $self->bitcard->logout_url( r => $self->config->base_url('ntppool') ));
     }
     
     return $self->login unless $self->user;
     
     return $self->handle_add if $self->request->uri =~ m!^/manage/add!;
+    return $self->handle_update if $self->request->uri =~ m!^/manage/update!;
     return $self->show_manage;
 }
 
@@ -109,6 +110,49 @@ sub get_server_info {
     $server{zones} = \@zones;
 
     return \%server;
+}
+
+sub handle_update {
+    my $self = shift;
+
+    return $self->handle_update_profile  if $self->request->uri =~ m!^/manage/update/profile!;
+    return $self->handle_update_netspeed if $self->request->uri =~ m!^/manage/update/netspeed!;
+
+    return NOT_FOUND;
+}
+
+sub handle_update_netspeed {
+    my $self = shift;
+    my $server_id = $self->req_param('server');
+    my $server = NTPPool::Server->retrieve($server_id);
+    return NOT_FOUND unless $server and $server->admin == $self->user;
+    if (my $netspeed = $self->req_param('netspeed')) {
+        $server->netspeed($netspeed) if $netspeed =~ m/^\d+$/;
+        $server->update;
+    }
+
+    return $self->show_manage if $self->req_param('noscript');
+
+    return OK, $self->netspeed_human($server->netspeed);
+
+}
+
+sub handle_update_profile {
+    my $self = shift;
+
+    my $public = ($self->request->uri =~ m/public/) ? 1 : 0;
+    $self->user->public_profile($public);
+    $self->user->update;
+
+    $self->tpl_param('user' => $self->user );
+
+    return $self->show_manage if $self->r->method eq 'GET';
+    return OK, $self->evaluate_template('tpl/manage/profile_link.html', { style => 'bare.html' });
+}
+
+sub netspeed_human {
+    my ($self, $netspeed) = @_;
+    NTPPool::Server::_netspeed_human($netspeed);
 }
 
 1;

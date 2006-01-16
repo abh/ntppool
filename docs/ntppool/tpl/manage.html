@@ -1,13 +1,24 @@
+[% # <script src="http://test.wd.askask.com/javascripts/DP_Debug.js"></script> %]
+<script src="/js/ntppool.js" type="text/javascript"></script>
+
 <a href="/manage/logout">Logout</a> | <a href="[% combust.account_url %]">Bitcard Account</a>
 
+[% prototype_js = 1 %]
 
 <h3>Admin information</h3>
 <p>
 [% user = combust.user %]
-Username: <b>[% user.username %]</b><br />
-Email: <b>[% user.email %]</b><br/><br/>
+Username: <b>[% user.username %]</b>
+&mdash; [% PROCESS tpl/manage/profile_link.html %]
 
+<br />
+Email: <b>[% user.email %]</b><br/>
+<br/>
 (change your email address in your <a href="[% combust.account_url %]">Bitcard Account</a>)
+
+[% IF user.servers.size > 1 %]
+<p><a href="#add">Add a server</a></p>
+[% END %]
 
 </p>
 
@@ -15,28 +26,22 @@ Email: <b>[% user.email %]</b><br/><br/>
 <p>
 [% servers = user.servers; 
    FOR server = servers; %] 
-[% IF server.hostname %]Hostname: <b>[% server.hostname | html %]</b><br />[% END %]
-IP: <b>[% server.ip | html %]</b><br />
-Current score: <b>[% server.score %]</b><br />
-[% IF server.stratum %]Stratum: <b>[% server.stratum %]</b><br/>[% END %]
 
-Zones:
-[% FOR zone = server.zones %]
-<a href="[% zone.url %]">[% zone.name %]</a>
-[% END  %]<br />
+[% PROCESS tpl/manage/server.html, server => server %]
 
-<a href="/scores/?ip=[% server.ip | uri %]">Trend</a>: [% FOR h = server.history(60).reverse -%]
-<span class="[% h.history_css_class %]" title="[% h.ts | html %]">[% h.history_symbol  %]</span>
-[%- END %]
-<br />
-
-<br />
 [% END %]
 
 </p>
 [% IF servers %]
+
 <p>
-The "availability score" goes up to 20.  It must be higher than 5 for the server to be included in the cluster.
+<a name="netspeed"></a>The <b>net speed</b> is used to balance the
+load between the pool servers.  If your connection is asynchronous
+(like most DSL connections) you should use the <i>lower</i> speed.
+</p>
+
+<p>
+The "availability <b>score</b>" goes up to 20.  It must be higher than 5 for the server to be included in the cluster.
 </p>
 
 <p>
@@ -48,6 +53,7 @@ The "availability score" goes up to 20.  It must be higher than 5 for the server
 
 [% END %]
 
+<a name="add"></a>
 [% PROCESS tpl/manage/add_form.html %]
 
 <p>

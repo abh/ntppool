@@ -12,3 +12,9 @@ Comment:
 
 
 [% scores_url %]
+
+
+[%- FOR s = combust.user.servers %]
+[% combust.config.base_url('ntppool') %]/scores/[% s.id %] [% s.ip %]
+[%- END %]
+[% combust.config.base_url('ntppool') %]/user/[% combust.user.username %]
