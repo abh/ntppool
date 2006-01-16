@@ -12,6 +12,8 @@ use Email::Date qw();
 
 sub render {
     my $self = shift;
+
+    $self->r->no_cache(1);
     
     if ($self->request->uri =~ m!^/manage/logout!) {
         $self->cookie($Combust::Control::Bitcard::cookie_name, 0);
