@@ -1,0 +1,95 @@
+
+<h2>Configuration recommendations</h2>
+
+<p>
+The <a href="http://ntp.isc.org/bin/view/Support/WebHome">Support
+section</a> on <a href="http://ntp.isc.org/">ntp.isc.org</a> has a lot
+of useful information.
+</p>
+
+<p>
+The <a
+href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a>
+newsgroup is the best place to get help with the ntpd software.
+</p>
+
+<p>
+Below are some things of particular importance if you are going to
+join the NTP Pool with your server.
+</p>
+
+<h4>Setup about 5 servers</h4>
+
+<p>
+To work properly ntpd needs to talk to at least 3 servers ("A man with
+a watch knows what time it is. A man with two watches is never sure").
+If you configure your ntpd with five then it'll work well even if one
+or two "goes out" for an extended period.  If you configure too many
+you are just wasting resources (or eventually confusing your ntpd!)
+</p>
+
+<h4>Don't use *.pool.ntp.org servers</h4>
+
+<p>
+Ironically to make sure the pool service is the best it can be you
+shouldn't use the *.pool.ntp.org aliases in your configuration when
+you are going to add your server to the pool.
+</p>
+
+<p>
+We don't want to risk having the pool servers just sync time "amongst
+themselves".  For the robustness of the pool it's healthier if all
+pool operators "hand pick" good local (network wise) time servers.
+The <a href="http://ntp.isc.org/bin/view/Support/WebHome">NTP
+Community Site</a> maintains a <a
+href="http://ntp.isc.org/bin/view/Servers/WebHome">list of public
+servers</a>.
+</p>
+
+
+<h4>Use the standard ntpd</h4>
+
+<p>
+We are all for software diversity, but a significant percentage of the
+"it's not working" questions that come in are for software other than
+ntpd.
+</p>
+
+<p>
+You can <i>use</i> the pool with any program speaking NTP, but if you are going to join the pool we recommend you use <a href="http://ntp.isc.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
+</p>
+
+<h4>Don't use the LOCAL clock driver</h4>
+
+<p>In most scenarios it's not correct to have the LOCAL clock driver
+configured.</p>
+
+<p>You should only configure the LOCAL clock driver if you want your
+ntpd to serve time to your local network in the case of a network
+outage (to keep all local systems in sync even if they drift from the
+UTC time).
+</p>
+
+<h3>Typical problems</h3>
+
+<h4> "Out of memory" </h4>
+
+<p>
+Some linux distributions defaults to only allowing an application to lock 32KB memory.   An ntpd in the pool requires more than that.  In the ntpd startup script (often <tt>/etc/init.d/ntpd</tt>) add this before ntpd is started:
+<blockquote>
+<tt>ulimit -l 8192</tt>
+</blockquote>
+
+
+</p>
+
+<h4>RHEL4 x86_64 configuration</h4>
+
+<p>
+There's a <a
+href="https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=158541">known
+problem</a> with the x86_64 package in RHEL4 U2.  There's a link to an
+updated .src.rpm in that bug posting.  (Or you can download a build
+rpm: <a href="http://tmp.askask.com/2006/01/ntp-4.2.0.a.20050816-10.x86_64.rpm"
+>ntp-4.2.0.a.20050816-10.x86_64.rpm</a> (no warranty, etc etc).
+</p>
