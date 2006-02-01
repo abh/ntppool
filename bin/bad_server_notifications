@@ -50,7 +50,7 @@ while (my $admin = $admins->next) {
     }
 
     #last;
-    #last if ++$i == 4;
+    last if ++$i == 3;
 }
 
 1;
