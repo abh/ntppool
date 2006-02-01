@@ -90,7 +90,7 @@ if ($cmd eq "add") {
     my $email = shift @ARGV;
     my ($user) = NTPPool::Admin->search(email => $email);
     ($user) = NTPPool::Admin->search(username => $email) unless $user;
-    die "No $email user\n" unless $user;
+    $user = NTPPool::Admin->create({ email => $email} ) unless $user;
 
     # do we have a hostname or an IP?
     my $hostname = shift @ARGV;
@@ -119,24 +119,21 @@ if ($cmd eq "add") {
     if ($#row != -1) {
         die "server $ip already in database for $row[0]\n";
     }
-    $db->do("INSERT INTO servers (ip, admin, hostname, in_pool) VALUES (?,?,?,1)",
-            {}, $ip, $user->id, $hostname);
-    my $serverid = $db->{'mysql_insertid'};
 
-    # insert into zones
-    foreach (@ARGV) {
-        my $zone = $db->quote($_);
-        @row = $db->selectrow_array("SELECT id FROM zones WHERE name = $zone");
-        if (not @row or not $row[0]) {
-            die "No such zone: $zone\n";
-        }
-        $db->do(  "INSERT INTO locations (server, zone) "
-                . "VALUES ($serverid, $row[0])");
+    my $s = NTPPool::Server->create
+      ({ ip       => $ip,
+         hostname => $hostname,
+         admin    => $user->id,
+         in_pool  => 1,
+       });
+    for my $country (@ARGV) {
+        my $zone = NTPPool::Zone->retrieve_by_name($country);
+        $s->add_to_locations({ zone => $zone });
     }
-
+        
     unless (defined $hostname) { $hostname = $ip; }
     my $z = join " ", @ARGV;
-    logsay("$serverid add $email $hostname $z");
+    logsay($s->id . " add $email $hostname $z");
 
 }
 elsif ($cmd eq "zones") {
