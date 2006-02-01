@@ -1,7 +1,6 @@
 [% page.style = 'bare.html' -%]
 From: Ask Bjoern Hansen <ask@develooper.com>
 To: [% admin.username %] <[% admin.email %]>
-Cc: ask@develooper.com
 Subject: NTP Pool: Problems with your NTP service ([% bad_servers.0.ip %])
 
 Hi [% admin.username || admin.email %],

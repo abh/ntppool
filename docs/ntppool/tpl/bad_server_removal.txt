@@ -2,14 +2,14 @@
 From: Ask Bjoern Hansen <ask@develooper.com>
 To: [% admin.username %] <[% admin.email %]>
 Cc: ask@develooper.com
-Subject: NTP Pool: Problems with your NTP service ([% server. %])
+Subject: NTP Pool: [% server.ip %] - Your server is being removed from the pool.ntp.org project
 
 Hi [% admin.username || admin.email %],
 
 Due to unresolved problems with your timeserver it is being removed
 from the pool.ntp.org project.
 
-Server IP: [% server.ip %] [% IF server.hostname %] ([% server.hostname %])[% END %]
+Server IP: [% server.ip %][% IF server.hostname %] ([% server.hostname %])[% END %]
 
 If you perceive this to be in error (or fixed the server problem) and
 want to add the server to the project again, please contact me or go

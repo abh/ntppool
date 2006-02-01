@@ -18,8 +18,6 @@ my $config = Combust::Config->new;
 
 my $production = $config->site->{ntppool}->{servername} eq 'www.pool.ntp.org';
 
-$production = 0;
-
 NTPPool::DBI->dbh->selectrow_array(q[SELECT GET_LOCK("notifications", 0)]) or exit;
 
 my $servers = NTPPool::Server->search_bad_servers_to_remove;
@@ -38,12 +36,11 @@ while (my $server = $servers->next) {
 
     if ($production) {
       my $return = send SMTP => $email, 'localhost';
+      $server->delete;
     }
     else {
       print $email->as_string;
     }
-
-    $server->delete if $production;
 
     last if ++$i == 2;
 }
