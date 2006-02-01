@@ -19,6 +19,11 @@ __PACKAGE__->has_a('ts' => 'Time::Piece',
                      deflate => 'mysql_datetime',
                   );
 
+#__PACKAGE__->set_sql( last_ok_score => qq {
+#    SELECT * from log_scores where score >= 5 and server = ?
+#    ORDER BY ts DESC LIMIT 1 
+#}); 
+
 __PACKAGE__->add_trigger( after_create => \&update_rrd );
 
 sub update_rrd {
@@ -73,7 +78,6 @@ sub create_rrd {
         die "$0: unable to create '$path': $ERROR\n";
     }
 }
-
 
 sub history_symbol {
   my $self = shift;

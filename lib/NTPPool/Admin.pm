@@ -17,6 +17,7 @@ __PACKAGE__->set_sql(admins_to_notify => qq{
                            LEFT JOIN server_alerts sa ON(sa.server=s.id)
                          WHERE
                            sc.score <= $BAD_THRESHOLD
+                            AND s.in_pool = 1
                             AND (sa.last_email_time IS NULL
                                  OR (DATE_SUB(NOW(), INTERVAL 14 DAY) > sa.last_email_time
                                      AND (sa.last_score+10) >= sc.score

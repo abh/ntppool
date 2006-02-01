@@ -1,0 +1,26 @@
+[% page.style = 'bare.html' -%]
+From: Ask Bjoern Hansen <ask@develooper.com>
+To: [% admin.username %] <[% admin.email %]>
+Cc: ask@develooper.com
+Subject: NTP Pool: Problems with your NTP service ([% server. %])
+
+Hi [% admin.username || admin.email %],
+
+Due to unresolved problems with your timeserver it is being removed
+from the pool.ntp.org project.
+
+Server IP: [% server.ip %] [% IF server.hostname %] ([% server.hostname %])[% END %]
+
+If you perceive this to be in error (or fixed the server problem) and
+want to add the server to the project again, please contact me or go
+to [% config.base_url('ntppool') %]/manage to use the automated admin 
+interface.
+
+You can see the stats for all your servers in the pool at 
+    [% config.base_url('ntppool') %]/manage
+
+
+  - ask
+
+-- 
+[% config.base_url('ntppool') %]/ | http://askask.com/ | http://develooper.com/

@@ -6,9 +6,9 @@ Subject: NTP Pool: Problems with your NTP service ([% bad_servers.0.ip %])
 
 Hi [% admin.username || admin.email %],
 
-Because your timeserver is being detected as either unreachable or as
-keeping bad time, it is not being included in the pool.ntp.org DNS
-zones.
+The automated NTP Pool system has marked your timeserver as either
+unreachable or keeping bad time.  Until the issue has been addressed,
+it will not be included in the pool.ntp.org DNS zones.
 
 Unless you have questions then you don't need to notify me that the
 problem has been resolved; the system will figure that out by itself.

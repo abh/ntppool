@@ -1,0 +1,51 @@
+# -*- cperl -*-
+eval 'exec $CBROOT/bin/perl $0 ${1+"$@"}'
+  unless $running_under_some_shell;
+use strict;
+use warnings;
+use lib "$ENV{CBROOTLOCAL}/lib";
+use lib "$ENV{CBROOT}/lib";
+use Combust::Config;
+use Combust::Template;
+
+use NTPPool::Admin;
+use Email::Send;
+use Email::Simple;
+use Email::Date;
+use Sys::Hostname qw(hostname);
+
+my $config = Combust::Config->new;
+
+my $production = $config->site->{ntppool}->{servername} eq 'www.pool.ntp.org';
+
+$production = 0;
+
+NTPPool::DBI->dbh->selectrow_array(q[SELECT GET_LOCK("notifications", 0)]) or exit;
+
+my $servers = NTPPool::Server->search_bad_servers_to_remove;
+my $tpl = Combust::Template->new;
+
+my $i = 0;
+
+while (my $server = $servers->next) {
+    my $param = { server => $server,
+                  admin  => $server->admin,
+                };
+    my $txt = $tpl->process('tpl/bad_server_removal.txt', $param, { site => 'ntppool' });
+    my $email = Email::Simple->new($txt);
+    $email->header_set("Date" => Email::Date::format_date());
+    $email->header_set('Message-ID' => join(".", int(rand(1000)), $$, time) . '@' . hostname);
+
+    if ($production) {
+      my $return = send SMTP => $email, 'localhost';
+    }
+    else {
+      print $email->as_string;
+    }
+
+    $server->delete if $production;
+
+    last if ++$i == 2;
+}
+
+1;
