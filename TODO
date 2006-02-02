@@ -1,6 +1,12 @@
 
 update use.html page (be more explicit about number of zones)
 
+make the country zones alias to the continent zones when they are otherwise too small
+
+make in_pool checks everywhere it's relevant.
+
+make server page and user profile show when the server is not in the pool
+
 allow an organization name and http link for each user for attribution
 
 document the growth target thing

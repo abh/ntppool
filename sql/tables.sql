@@ -11,6 +11,8 @@ CREATE TABLE `users` (
   `bitcard_id` char(40) default NULL,
   `username` varchar(40) default NULL,
   `public_profile` tinyint(1) not null default 0,
+  `organization_name` varchar(150) default NULL,
+  `organization_url` varchar(150) default NULL,
   PRIMARY KEY  (`id`),
   UNIQUE KEY `email` (`email`),
   UNIQUE KEY `users_email_key` (`email`)
