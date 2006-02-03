@@ -16,9 +16,6 @@ want to add the server to the project again, please contact me or go
 to [% config.base_url('ntppool') %]/manage to use the automated admin 
 interface.
 
-You can see the stats for all your servers in the pool at 
-    [% config.base_url('ntppool') %]/manage
-
 
   - ask
 
