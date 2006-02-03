@@ -4,12 +4,19 @@ This is the code for the NTP Pool project, http://www.pool.ntp.org/
 See the LICENSE file for copyright and licensing information.
 
 -------------------------------------------------------------------------
-Quick and dirty install instructions; email ask@develooper.com for help.
+Quick and dirty install instructions; email ask@develooper.com for
+help.  For Combust installation instructions, see also the following
+URL.  It doesn't apply 100% to the pool setup, but it might be
+helpful.
+        http://combust.develooper.com/install-osx.html
 
 CPAN modules needed:
    Bundle::Combust DBI DBD::mysql Class::DBI Class::DBI::mysql Class::DBI::Plugin::AbstractCount
    Class::DBI::Plugin::Pager Class::DBI::AbstractSearch Time::Piece Time::Piece::MySQL
    Time::Duration RRDs Text::CSV_XS Net::NTP Geo::IP
+
+You'll need Class::DBI 3.0.7 (or older) or 3.0.15 (not yet released) or 3.0.14 with this patch applied:
+        http://rt.cpan.org/Ticket/Display.html?id=17453
 
 DIR=~/ntppool
 mkdir $DIR; cd $DIR
@@ -20,7 +27,10 @@ export CBROOTLOCAL=$DIR
 export CBROOT=$DIR/combust
 
 cp combust/combust.conf.sample combust.conf
-edit combust.conf  # setup the database section with an "ntppool" database
+edit combust.conf 
+   # setup the database section with an "ntppool" database
+   # add "ntppool" to the "sites = ... " list.
+   # setup a [ntppool] section at the bottom
 
 mkdir -p $DIR/rrd/server/graph
 mkdir -p $DIR/rrd/zone/graph
