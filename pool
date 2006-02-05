@@ -90,6 +90,7 @@ if ($cmd eq "add") {
     my $email = shift @ARGV;
     my ($user) = NTPPool::Admin->search(email => $email);
     ($user) = NTPPool::Admin->search(username => $email) unless $user;
+    ($user) = NTPPool::Admin->search(id => $email) unless $user;
     $user = NTPPool::Admin->create({ email => $email} ) unless $user;
 
     # do we have a hostname or an IP?
