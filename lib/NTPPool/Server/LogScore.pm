@@ -26,6 +26,14 @@ __PACKAGE__->has_a('ts' => 'Time::Piece',
 
 __PACKAGE__->add_trigger( after_create => \&update_rrd );
 
+sub delete_server {
+    my ($class, $server) = @_;
+    #use Data::Dumper::Simple;
+    #warn Dumper(\$server);
+    my $dbh = $class->dbh;
+    $dbh->do(q[delete from log_scores where server=?], {}, $server->id);
+}
+
 sub update_rrd {
     my $self = shift;
     my $server = $self->server->id;

@@ -25,6 +25,11 @@ __PACKAGE__->has_a('created_on' => 'Time::Piece',
 
 __PACKAGE__->add_trigger(before_create => sub{ $_[0]->set(created_on => Time::Piece->new() ) } );
 
+__PACKAGE__->add_trigger(before_delete =>
+                         sub { NTPPool::Server::LogScore->delete_server($_[0])  }
+                         );
+
+
 __PACKAGE__->set_sql(check_due => qq{
 SELECT s.id
 FROM servers s left join scores sc ON(s.id=sc.server)
