@@ -1,12 +1,12 @@
 [% page.title = 'NTP Servers in ' _ zone.description _ ', ' _ zone.fqdn %]
 
-<h3>[% zone.description %] &#8212; [% zone.fqdn %]</h3>
+<h3>[% zone.description %] [% IF zone.dns %] &#8212; [% zone.fqdn %][% END %]</h3>
 
 <p>
 There [% zone.server_count==1 ? 'is' : 'are' %] [% zone.server_count %] active server[% zone.server_count==1 ? '' : 's' %] in this zone.
 </p>
 
-[% IF !zone.children and zone.server_count < 39 %]
+[% IF zone.dns and !zone.children and zone.server_count < 39 %]
 <p>
 We can use more servers in this country.  If you have a server with a static IP, please consider <a href="/join.html">joining the pool</a>!
 </p>

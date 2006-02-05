@@ -37,7 +37,10 @@ CREATE TABLE zones (
     id int unsigned primary key auto_increment,
     name varchar(255) NOT NULL UNIQUE,
     description varchar(255) default NULL,
-    parent int(10) unsigned default NULL
+    parent int(10) unsigned default NULL,
+    dns tinyint(1) NOT NULL DEFAULT 1,
+    KEY (parent),
+    FOREIGN KEY (parent) REFERENCES zones(id)
 ) ENGINE=INNODB;
 
 CREATE TABLE locations (

@@ -325,9 +325,9 @@ elsif ($cmd eq "zone") {
 
     my $ttl = 2100;
 
-    my $zones = $db->selectall_arrayref("SELECT id, name FROM zones", {Columns => {}});
-    for my $zone (@$zones) {
-        my $name = $zone->{name};
+    my $zones = NTPPool::Zone->search( dns => 1 );
+    while (my $zone = $zones->next) {
+        my $name = $zone->name;
 	$name = '' if $name eq '@';
 	$name = "$name." if $name;
 
@@ -335,7 +335,7 @@ elsif ($cmd eq "zone") {
           $db->selectall_arrayref("SELECT s.ip "
                                . "FROM servers s, scores sc, locations l "
                                . "WHERE l.server = s.id AND l.zone = ? AND s.in_pool = 1 "
-                               . "AND sc.server = s.id AND sc.score > 5", undef, $zone->{id});
+                               . "AND sc.server = s.id AND sc.score > 5", undef, $zone->id);
 
         next unless $entries and @$entries;
 
@@ -345,10 +345,10 @@ elsif ($cmd eq "zone") {
           if (@$entries / 4 > $min_non_duplicate_size);
         $min_non_duplicate_size = 12 if $min_non_duplicate_size > 12;
 
-        print $fh "# " . scalar @$entries . " active servers in $zone->{name}\n";
+        print $fh "# " . scalar @$entries . " active servers in ", $zone->name, "\n";
 
         if ($#$entries < ($min_non_duplicate_size*4 - 1)) {
-            print $fh "# possible duplicates in the zones below ($zone->{name})\n";
+            print $fh "# possible duplicates in the zones below (", $zone->name, ")\n";
             foreach my $z (("", "0.", "1.", "2.")) {
                 @$entries = shuffle(@$entries);
                 my $i;
@@ -360,7 +360,7 @@ elsif ($cmd eq "zone") {
             }
         }
         else {
-            print $fh "# 'big' zone without duplicates below ($zone->{name})\n";
+            print $fh "# 'big' zone without duplicates below (", $zone->name, ")\n";
             @$entries = shuffle(@$entries);
             foreach my $z (("", "0.", "1.", "2.")) {
                 for (my $i = 0 ; $i < $min_non_duplicate_size; $i++) {

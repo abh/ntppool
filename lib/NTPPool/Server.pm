@@ -17,6 +17,7 @@ __PACKAGE__->might_have('_score'  => 'NTPPool::Server::Score');
 __PACKAGE__->might_have('_alert'  => 'NTPPool::Server::Alert');
 
 __PACKAGE__->add_trigger( after_create => \&setup_rrd );
+__PACKAGE__->add_trigger( after_create => \&setup_zones );
 
 __PACKAGE__->has_a('created_on' => 'Time::Piece', 
                    inflate => 'from_mysql_datetime',
@@ -69,6 +70,12 @@ __PACKAGE__->set_sql( bad_servers_to_remove => qq{
                             AND (sa.last_score+10) >= sc.score
                });
 
+sub setup_zones {
+    my $self = shift;
+    my ($zone) = NTPPool::Zone->search(name => '.');
+    $self->add_to_locations({ zone => $zone });
+}
+
 sub setup_rrd {
     my $self = shift;
     my $start_score = -5;
@@ -79,7 +86,7 @@ sub setup_rrd {
 
 sub zones {
   my $self = shift;
-  sort { $a->name cmp $b->name } map { $_->zone } $self->locations;
+  grep { $_->name ne '.' } sort { $a->name cmp $b->name } map { $_->zone } $self->locations;
 }
 
 sub country {

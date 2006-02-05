@@ -20,7 +20,7 @@ sub cache_info {
 sub zone_name {
   my $self = shift;
   my ($zone_name) = ($self->request->uri =~ m!^/zone/([^/]+)!);
-  $zone_name ||= '@';
+  $zone_name ||= '.';
   $zone_name;
 }
 

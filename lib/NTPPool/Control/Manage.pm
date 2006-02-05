@@ -107,8 +107,7 @@ sub get_server_info {
     my @zones;
     push @zones, $country_zone if $country_zone;
     @zones = NTPPool::Zone->search(name => '@') unless @zones;
-    unshift @zones, $zones[0]->parent while ($zones[0]->parent);
-
+    unshift @zones, $zones[0]->parent while ($zones[0]->parent and $zones[0]->parent->dns);
     $server{zones} = \@zones;
 
     return \%server;

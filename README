@@ -13,7 +13,7 @@ helpful.
 CPAN modules needed:
    Bundle::Combust DBI DBD::mysql Class::DBI Class::DBI::mysql Class::DBI::Plugin::AbstractCount
    Class::DBI::Plugin::Pager Class::DBI::AbstractSearch Time::Piece Time::Piece::MySQL
-   Time::Duration RRDs Text::CSV_XS Net::NTP Geo::IP
+   Time::Duration RRDs Text::CSV_XS Net::NTP Geo::IP Locale::Object
 
 You'll need Class::DBI 3.0.7 (or older) or 3.0.15 (not yet released) or 3.0.14 with this patch applied:
         http://rt.cpan.org/Ticket/Display.html?id=17453
