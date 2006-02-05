@@ -12,6 +12,55 @@ We can use more servers in this country.  If you have a server with a static IP,
 </p>
 [% END %]
 
+[% max_zone_number = zone.sub_zone_count - 1; %]
+
+[% IF zone.dns and zone.parent.dns and zone.server_count >= 6 %]
+<p>
+To use this pool zone, add the following to your ntp.conf file:
+
+[% IF zone.server_count >= 20  %]
+
+<pre>[% FOR i = [0..max_zone_number] %]
+   server [% i %].[% zone.fqdn %]
+[%- END %]
+</pre>
+
+[% ELSE # server count >= 6 and < 20  %]
+
+<pre>
+[%- i = zone.random_subzone_ids(1) %]
+   server [% i %].[% zone.fqdn %]
+[%- FOR i = zone.parent.random_subzone_ids(2) %]
+   server [% i %].[% zone.parent.fqdn %]
+[%- END %]
+</pre>
+
+[% END  # server_count >= 20 %]
+
+</p>
+[% ELSIF (zone.parent.dns)  %]
+<p>
+
+[% parent = zone.parent;
+   IF (parent.server_count < 10);
+     parent = parent.parent;
+   END;
+%]
+
+There are not enough servers in this zone, so we recommend you use the [% parent.description %] zone ([% parent.fqdn %]):
+
+<pre>[% FOR i = [0..max_zone_number] %]
+   server [% i %].[% parent.fqdn %]
+[%- END %]
+</pre>
+
+</p>
+
+
+</p>
+[% END %]
+
+
 <p>
 [% FOR days = [1,7,14,30,90,365,730];
    st = zone.stats_days_ago(days);

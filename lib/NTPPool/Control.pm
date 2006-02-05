@@ -83,6 +83,8 @@ sub count_by_continent {
     my @zones = sort { $a->description cmp $b->description }
       NTPPool::Zone->search(parent => $global);
     push @zones, $global;
+    my $total = NTPPool::Zone->retrieve_by_name('.');
+    push @zones, $total;
     \@zones
 }
 

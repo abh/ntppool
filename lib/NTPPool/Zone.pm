@@ -11,12 +11,30 @@ __PACKAGE__->has_many('_stats' => 'NTPPool::Zone::Stats', { order_by => 'date' }
 
 __PACKAGE__->columns(Essential => __PACKAGE__->columns);
 
+use constant SUB_ZONE_COUNT => 3;
+
+sub sub_zone_count {
+    SUB_ZONE_COUNT;
+}
+
 sub retrieve_by_name {
     my ($class, $name) = @_;
     my ($zone) = $class->search(name => $name);
     $zone;
 }
 
+sub random_subzone_ids {
+    my ($class, $count) = @_;
+    $count = SUB_ZONE_COUNT if $count > SUB_ZONE_COUNT;
+    my %ids;
+
+    do {
+        my $id = int(rand(SUB_ZONE_COUNT));
+        $ids{$id} = undef;
+    } until (keys %ids == $count);
+
+    return keys %ids;
+}
 
 sub url {
   my $self = shift;
