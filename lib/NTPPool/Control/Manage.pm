@@ -9,6 +9,9 @@ use Geo::IP;
 use Email::Send 'SMTP';
 use Sys::Hostname qw(hostname);
 use Email::Date qw();
+use JSON qw();
+
+my $json = JSON->new();
 
 sub render {
     my $self = shift;
@@ -129,12 +132,27 @@ sub handle_update_netspeed {
     return NOT_FOUND unless $server and $server->admin == $self->user;
     if (my $netspeed = $self->req_param('netspeed')) {
         $server->netspeed($netspeed) if $netspeed =~ m/^\d+$/;
+        if ($server->netspeed < 1000) {
+            $server->leave_zone('@');
+        }
+        else {
+            $server->join_zone('@');
+        }
         $server->update;
     }
 
     return $self->show_manage if $self->req_param('noscript');
 
-    return OK, $self->netspeed_human($server->netspeed);
+    my $return = { 
+        netspeed => $self->netspeed_human($server->netspeed),
+        zones    => join ", ", map { join "",
+                                     '<a href="/zone/',
+                                     $_->name, '">',
+                                     $_->name,
+                                     '</a>' } $server->zones,
+    };
+
+    return OK, $json->objToJson($return);
 
 }
 

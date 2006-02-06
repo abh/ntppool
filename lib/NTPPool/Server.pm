@@ -72,8 +72,20 @@ __PACKAGE__->set_sql( bad_servers_to_remove => qq{
 
 sub setup_zones {
     my $self = shift;
-    my ($zone) = NTPPool::Zone->search(name => '.');
-    $self->add_to_locations({ zone => $zone });
+    $self->join_zone('.');
+}
+
+sub leave_zone {
+    my ($self, $zone) = @_;
+    $zone = NTPPool::Zone->retrieve_by_name($zone) unless ref $zone;
+    my ($location) = NTPPool::Location->search( server => $self, zone => $zone );
+    $location->delete if $location;
+}
+
+sub join_zone {
+    my ($self, $zone) = @_;
+    $zone = NTPPool::Zone->retrieve_by_name($zone) unless ref $zone;
+    NTPPool::Location->find_or_create({ zone => $zone, server => $self });
 }
 
 sub setup_rrd {

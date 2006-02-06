@@ -1,14 +1,13 @@
 
-  var netspeeds = [];
-
-  function add_to_netspeeds(server) {
-    netspeeds[ netspeeds.size ] = server;
-  }
-
   function netspeed_updated(server_id, request) {
         try {
           // alert(request);
-          $('netspeed_' + server_id ).innerHTML = request.responseText;
+
+        var obj = JSON.parse(request.responseText);
+
+          $('netspeed_' + server_id ).innerHTML = obj.netspeed;
+          $('zones_' + server_id ).innerHTML = obj.zones;
+
           Element.setOpacity($('netspeed_' + server_id ), 0);
           $('netspeed_' + server_id ).style.visibility = 'visible';
           Effect.Appear('netspeed_' + server_id, { duration: 0.7 } );
@@ -27,12 +26,8 @@
   function update_netspeed(server_id, netspeed) {
 //     Object.dpDump(server_id);
 //     Object.dpDump(netspeed);
-     var pars = 'netspeed=' + netspeed + '&server=' + server_id;
 
-     add_to_netspeeds(server_id);
-     for ( i=0; i < netspeeds.size; i++ ) {
-//        $()
-     }
+     var pars = 'netspeed=' + netspeed + '&server=' + server_id;
 
      $('netspeed_' + server_id ).style.visibility = 'hidden';
 
