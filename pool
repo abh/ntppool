@@ -233,7 +233,7 @@ elsif ($cmd eq "scores") {
     $Net::NTP::CLIENT_TIME_SEND    = undef;
     $Net::NTP::CLIENT_TIME_RECEIVE = undef;
     my $mon_host = 'localhost';
-    $mon_host = 'miette' if hostname =~ m/bn.dev$/;
+    $mon_host = 'miette.bn.dev' if hostname =~ m/bn.dev$/;
     my %pkt = get_ntp_response($mon_host);
     if ($pkt{'Stratum'} == 0 or $pkt{'Stratum'} > 6) {
         die "monitoring server not synchronized\n";
@@ -300,7 +300,7 @@ elsif ($cmd eq "scores") {
 
             $server->stratum($pkt{Stratum}) if $pkt{Stratum};
         }
-        
+
         $server->score_raw( $server->score_raw + $step );
         $server->add_to_log_scores({ score  => $server->score, 
                                      step   => $step,

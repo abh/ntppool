@@ -33,6 +33,16 @@ CREATE TABLE servers (
     CONSTRAINT admin FOREIGN KEY (admin) REFERENCES users(id)
 ) engine=INNODB;
 
+CREATE TABLE server_notes (
+    id int unsigned primary key auto_increment,
+    server int unsigned not null,
+    name varchar(255) not null,
+    note text not null,
+    unique key (server,name),
+    key (name),
+    CONSTRAINT FOREIGN KEY (server) REFERENCES servers(id) ON DELETE CASCADE
+) ENGINE=INNODB;
+
 CREATE TABLE zones (
     id int unsigned primary key auto_increment,
     name varchar(255) NOT NULL UNIQUE,
