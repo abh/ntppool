@@ -1,3 +1,4 @@
+<a name="top"></a>
 
 <a href="/">Back to the front page</a>
 
@@ -46,6 +47,48 @@ Current score: [% server.score %] (only servers with a score higher than 5 are u
 <p>
 <img src="[% server.graph_uri('score') %]" alt="Server score graph" /><br />
 <img src="[% server.graph_uri('offset') %]" alt="Server offset graph" /><br />
-<span style="font-size:60%"># [% server.id %], <a href="[% server.ip %]?log=1">CSV log</a></span>
+<span style="font-size:60%"># [% server.id %], <a href="[% server.ip %]?log=1">CSV log</a>
+| <a href="#graph_explanation" onclick="show_graph_explanation();">What do the graphs mean?</a>
+</span>
 </p>
+
+<a name="graph_explanation"></a>
+<div id="graph_explanation">
+
+<h3>The Score graph</h3>
+<p>
+A couple of times an hour the pool system checks the time from your
+server and compares it to the local time.  Points are deducted if the
+server can't be reached or if offset is more than 100ms.  More points
+are deducted the bigger the offset is.
+</p>
+
+<p>
+When the score goes down the background color is the top part of the
+chart will reflect how severely.  It goes from blue (very little) to
+yellow to orange to red (the server is several seconds off or
+unreachable).  Because of how the graph is made, you can't always
+infer what happened from the color.  It's only meant as a tool to
+visualize trends.  (For more exact details of what the monitoring
+system found you can click on the CSV link).
+
+</p>
+
+<h3>The Offset graph</h3>
+
+<p>
+ The monitoring system works
+roughly like an <a
+href="http://www.ntp.org/ntpfaq/NTP-s-def.htm#AEN1242">SNTP</a> (<a
+href="http://www.eecis.udel.edu/~mills/database/rfc/rfc2030.txt">RFC
+2030</a>) client, so it is more susceptible by random network
+latencies between the server and the monitoring system than a regular
+ntpd client would be.  In other words: Don't be alarmed by the
+occasional large offset and please don't use the offset as an absolute
+performance metric.
+</p>
+
+<p><a href="#top">Back to top</a></p>
+
+</div>
 

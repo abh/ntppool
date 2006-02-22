@@ -89,3 +89,13 @@ p.serverurls {
   color: black;
   text-decoration: none;
 }
+
+
+#graph_explanation {
+  display: none;
+  width: 450px;
+  margin-left: 30px;
+  margin-top: 10px;
+  padding: 9px;
+  border: 1px dotted #999; 
+}
