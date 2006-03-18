@@ -30,7 +30,7 @@ Zpool.ntp.org:ns1.us.bitnames.com:pool.ntp.org:@VERSION@:1200:600:604800:300
 Cweb.pool.ntp.org:x3.develooper.com:28800
 Cwww.pool.ntp.org:x3.develooper.com:28800
 
-
++pool.ntp.org:216.52.237.153:2100
 
 
 

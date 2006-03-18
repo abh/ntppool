@@ -132,7 +132,7 @@ sub handle_update_netspeed {
     return NOT_FOUND unless $server and $server->admin == $self->user;
     if (my $netspeed = $self->req_param('netspeed')) {
         $server->netspeed($netspeed) if $netspeed =~ m/^\d+$/;
-        if ($server->netspeed < 1000) {
+        if ($server->netspeed < 768) {
             $server->leave_zone('@');
         }
         else {
@@ -145,7 +145,7 @@ sub handle_update_netspeed {
 
     my $return = { 
         netspeed => $self->netspeed_human($server->netspeed),
-        zones    => join ", ", map { join "",
+        zones    => join " ", map { join "",
                                      '<a href="/zone/',
                                      $_->name, '">',
                                      $_->name,

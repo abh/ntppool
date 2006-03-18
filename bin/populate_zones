@@ -15,7 +15,7 @@ my ($global) = NTPPool::Zone->search(name => '@')
   or die "No global zone setup in the zones table";
 
 while (my $zone = $zones->next) {
-  next if $zone->name eq '@';
+  next if length($zone->name) == 1;
   if (length($zone->name) > 2) {
     my $name = $zone->name;
     $name =~ s/-/ /;
@@ -30,7 +30,7 @@ while (my $zone = $zones->next) {
     my $country = Locale::Object::Country->new( code_alpha2 => $cc );
     my $country_name = $country->name;
     $country_name =~ s/,.*//;
-    $zone->description($country_name);
+    $zone->description($country_name) if $country_name;
     my ($continent) = NTPPool::Zone->search(description => $country->continent->name);
     $zone->parent($continent) if $continent;
   }

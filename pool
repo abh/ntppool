@@ -70,6 +70,25 @@ sub logsay {
     close LOG;
 }
 
+sub server_information {
+    my $server = shift;
+    my @zones  = $server->zones;
+    my @r;
+    push @r, sprintf "IP: %s, ID: %i, username: %s email: %s\n",
+      $server->ip,
+      $server->id,
+      $server->admin->username ? $server->admin->username : "-",
+      $server->admin->email; 
+    push @r, sprintf "score: %.1f, in pool: %i, in server list: %i\n", $server->score, $server->in_pool, $server->in_server_list;
+    my $gi = Geo::IP->new(GEOIP_STANDARD);
+    my $country = $gi->country_code_by_addr($server->ip);
+    $country = lc $country if $country;
+    push @r, "Country: $country\n" if $country;
+    push @r, "Zones: ", join (", ", map { $_->name } @zones), "\n";
+    push @r, sprintf "in_pool: %i, in_server_list: %i\n", $server->in_pool, $server->in_server_list;
+    @r;
+}
+
 if ($#ARGV < 0) {
     die "pool add|report|scores|zone [<args>]\n";
 }
@@ -137,21 +156,30 @@ if ($cmd eq "add") {
     logsay($s->id . " add $email $hostname $z");
 
 }
+elsif ($cmd eq "edit") {
+    my $arg = shift @ARGV or die "pool zones <host or IP>\n";
+    my $server = NTPPool::Server->find_server($arg);
+    die "Could not find server $arg\n" unless $server;
+    print server_information($server);
+    while (my $k = shift @ARGV) {
+        my $v = shift @ARGV;
+        last unless defined $v;
+        print "Set $k -> $v\n";
+        if ($server->can($k)) {
+            $server->$k($v);
+        }
+        else {
+            die "Don\'t know how to set $k\n";
+        }
+    }
+    $server->update;
+    print server_information($server);
+}
 elsif ($cmd eq "zones") {
     my $arg = shift @ARGV or die "pool zones <host or IP>\n";
     my $server = NTPPool::Server->find_server($arg);
     die "Could not find server $arg\n" unless $server;
-    my @zones  = $server->zones;
-    printf "IP: %s, ID: %i, username: %s email: %s\n",
-      $server->ip,
-      $server->id,
-      $server->admin->username ? $server->admin->username : "-",
-      $server->admin->email; 
-    printf "score: %.1f, in pool: %i, in server list: %i\n", $server->score, $server->in_pool, $server->in_server_list;
-    my $gi = Geo::IP->new(GEOIP_STANDARD);
-    my $country = $gi->country_code_by_addr($server->ip);
-    $country = lc $country if $country;
-    print "Country: $country\n" if $country;
+    print server_information($server);
     my @zones  = $server->zones;
     for my $zone_name (@ARGV) {
         my @locations = $server->locations;
@@ -315,7 +343,7 @@ elsif ($cmd eq "zone") {
     open(my $fh, ">$file.tmp") or die "Could not open $file.tmp: $!";
 
     open HEAD, "<header"
-      or die "Opening DNS zone file header ($ENV{HOME}/db/header): $!\n";
+      or die "Opening DNS zone file header (header): $!\n";
     print $fh "# ATTENTION\n# This is a generated file\n#\n";
     my $t = time;
     while (<HEAD>) {
@@ -340,17 +368,16 @@ elsif ($cmd eq "zone") {
 
         next unless $entries and @$entries;
 
-
-        my $min_non_duplicate_size = 5; 
-        $min_non_duplicate_size = int(@$entries / 4) 
-          if (@$entries / 4 > $min_non_duplicate_size);
+        my $min_non_duplicate_size = 4;
+        $min_non_duplicate_size = int(@$entries / 5) 
+          if (@$entries / 5 > $min_non_duplicate_size);
         $min_non_duplicate_size = 12 if $min_non_duplicate_size > 12;
 
         print $fh "# " . scalar @$entries . " active servers in ", $zone->name, "\n";
 
-        if ($#$entries < ($min_non_duplicate_size*4 - 1)) {
+        if ($#$entries < ($min_non_duplicate_size*5 - 1)) {
             print $fh "# possible duplicates in the zones below (", $zone->name, ")\n";
-            foreach my $z (("", "0.", "1.", "2.")) {
+            foreach my $z (("", "0.", "1.", "2.", "3.")) {
                 @$entries = shuffle(@$entries);
                 my $i;
                 foreach my $e (@$entries) {
@@ -363,7 +390,7 @@ elsif ($cmd eq "zone") {
         else {
             print $fh "# 'big' zone without duplicates below (", $zone->name, ")\n";
             @$entries = shuffle(@$entries);
-            foreach my $z (("", "0.", "1.", "2.")) {
+            foreach my $z (("", "0.", "1.", "2.", "3.")) {
                 for (my $i = 0 ; $i < $min_non_duplicate_size; $i++) {
                     print $fh "+$z${name}pool.ntp.org:", ${shift @$entries}[0], ":$ttl\n";
                 }
