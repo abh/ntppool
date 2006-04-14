@@ -3,8 +3,8 @@ use strict;
 use base qw(NTPPool::DBI);
 use RRDs;
 use Class::DBI::AbstractSearch;
-use Time::Piece;
-use Time::Piece::MySQL;
+use Time::Piece ();
+use Time::Piece::MySQL ();
 
 __PACKAGE__->set_up_table('log_scores');
 __PACKAGE__->columns(Essential => __PACKAGE__->columns);

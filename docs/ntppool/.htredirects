@@ -1,5 +1,8 @@
 /stats/.* / perm
 
+/vendor.html  /vendors.html  perm
+/vendors?/?   /vendors.html  perm
+
 /ordb.html /
 /rsbl.html /
 /duinv.html /

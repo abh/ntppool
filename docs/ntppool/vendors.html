@@ -1,0 +1,39 @@
+[% page.title = "The NTP Pool for vendors" %]
+<h2>The NTP Pool for vendors</h2>
+
+<h3>Audience</h3>
+<p>
+Anyone distributing an appliance, operating system or some other kind of
+software using NTP.
+    
+<ul>
+<li>Appliance vendors (Netgear, D-Link, Linksys, ...)</li>
+<li>Operating System vendors (Debian, RedHat, FreeBSD, m0n0wall, ...)</li>
+<li>Software vendors</li>
+</ul>
+</p>
+
+
+<h3>What not to do!</h3>
+
+<p> you must get approval from the server operator before you
+hardcode any IP addresses or hostnames. This is easy to get if your own
+organization runs the NTP servers you are planning to use. In most other cases
+you will not get it. </p>
+
+<p> Also, do not use the standard <b>pool.ntp.org</b> names as a default
+configuration in your system. </p>
+
+<h3>What you should do</h3>
+<p>
+The best solution is for your organization to setup your own cluster of NTP servers, for example ntp1.example.com, ntp2.example.com and ntp3.example.com and use those as the default in your configuration.
+</p>
+
+<p>
+Another option [ntp pool]
+
+</p>
+
+<h3>What the NTP Pool can offer</h3>
+
+<h3>Capacity</h3>

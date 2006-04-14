@@ -2,8 +2,8 @@ package NTPPool::Zone::Stats;
 use strict;
 use base qw(NTPPool::DBI);
 use Time::Duration qw();
-use Time::Piece;
-use Time::Piece::MySQL;
+use Time::Piece ();
+use Time::Piece::MySQL ();
 
 __PACKAGE__->set_up_table('zone_server_counts');
 __PACKAGE__->columns(Essential => __PACKAGE__->columns);

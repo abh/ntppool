@@ -5,8 +5,8 @@ use NTPPool::Server::Score;
 use NTPPool::Zone;
 use RRDs;
 use Text::CSV_XS;
-use Time::Piece;
-use Time::Piece::MySQL;
+use Time::Piece ();
+use Time::Piece::MySQL ();
 
 __PACKAGE__->set_up_table('servers');
 __PACKAGE__->has_a('admin' => 'NTPPool::Admin');
