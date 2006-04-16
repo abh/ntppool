@@ -1,20 +1,34 @@
 [% page.title = "The NTP Pool for vendors" %]
-<h2>The NTP Pool for vendors</h2>
+<h1>The NTP Pool for vendors</h1>
 
-<h3>Audience</h3>
+<p>
+<a href="http://www.ntp.org/ntpfaq/NTP-s-def.htm">What is NTP</a>?	
+</p>
+<blockquote>
+<p>Time usually just advances. If you have communicating programs running on different computers, time still should even advance if you switch from one computer to another. Obviously if one system is ahead of the others, the others are behind that particular one. From the perspective of an external observer, switching between these systems would cause time to jump forward and back, a non-desirable effect.</p>
+
+<p>As a consequence, isolated networks may run their own wrong time, but as soon as you connect to the Internet, effects will be visible. Just imagine some EMail message arrived five minutes before it was sent, and there even was a reply two minutes before the message was sent.</p>
+
+<p>Even on a single computer some applications have trouble when the time jumps backwards. For example, database systems using transactions and crash recovery like to know the time of the last good state.</p>
+
+<p>Therefore, air traffic control was one of the first applications for NTP.</p>
+
+</blockquote>
+
+<h2>Audience</h2>
 <p>
 Anyone distributing an appliance, operating system or some other kind of
 software using NTP.
-    
+</p>
 <ul>
 <li>Appliance vendors (Netgear, D-Link, Linksys, ...)</li>
 <li>Operating System vendors (Debian, RedHat, FreeBSD, m0n0wall, ...)</li>
 <li>Software vendors</li>
 </ul>
-</p>
 
 
-<h3>What not to do!</h3>
+
+<h2>What not to do!</h2>
 
 <p> you must get approval from the server operator before you
 hardcode any IP addresses or hostnames. This is easy to get if your own
@@ -24,16 +38,58 @@ you will not get it. </p>
 <p> Also, do not use the standard <b>pool.ntp.org</b> names as a default
 configuration in your system. </p>
 
-<h3>What you should do</h3>
+<h2>What you should do</h2>
 <p>
-The best solution is for your organization to setup your own cluster of NTP servers, for example ntp1.example.com, ntp2.example.com and ntp3.example.com and use those as the default in your configuration.
+The best solution is for your organization to setup your own cluster of NTP servers, for example ntp1.example.com, ntp2.example.com and ntp3.example.com and use those as the default in your configuration. 
+</p>
+
+<h2>What the NTP Pool can offer</h2>
+
+<p> The NTP Pool Project was started in 2003 as a response to the rapidly increasing resource consumption
+at the popular NTP servers and the problem of these servers then closing their operations.  Today it has grown to be central to the operation of millions of systems around the world.
 </p>
 
 <p>
-Another option [ntp pool]
-
+Rather than establish and maintain your own cluster of NTP servers or negotiate with individual server operators to use their server, you can use the NTP Pool. 
 </p>
 
-<h3>What the NTP Pool can offer</h3>
+<h3>Get your vendor zone</h3>
 
-<h3>Capacity</h3>
+<p>To allow you to use the pool as the default time service in your application, we will set you up with special hostnames, for example 1.vendor.pool.ntp.org and 2.vendor.pool.ntp.org.</p>
+	
+<p>
+You absolutely must not use the default pool.ntp.org zone names as the default configuration in your application or appliance.
+</p>
+
+<p>To get your vendor hostnames configured, email <a href="mailto:ask@develooper.com">ask@develooper.com</a>.  Please include a rough estimate of the number of systems that is going to use the pool.  Something like "less than 1000", "more than 100000" or "millions" is accurate enough.
+</p>
+
+<p>
+If you have an open source ntpd implementation or an operating system including ntpd, we ask that you make a reference in the configuration file or documentation encouraging people to <a href="/join.html">join the pool</a>.
+</p>
+
+<h3>Pool Capacity</h3>
+<p>The pool is currently keeping the time of an estimated 0.75-4 million systems accurate.</p>
+<p>With our technology and expertise we can as needed vastly expand the number of supported systems with relatively modest contributions.</p>
+
+<h3>Implementation specifics</h3>
+<p>
+	You can choose either to implement a full ntpd server or a simpler SNTP implementation.
+	
+	A few more pointers and ground-rules:
+</p>
+	<ul>
+		<li>Only use the pool.ntp.org hostnames designated to you (typically {0,1,2,3}.{vendor}.pool.ntp.org)</li>
+		<li>Do implement handling of the "KoD" response</li>
+		<li>Don't send excessively frequent queries.  Reasonable query intervals are typically from once or twice a day to a 4-5 times an hour depending on the application</li>
+	</ul>
+
+<p>	
+	We can refer you to consultants with vast expertise in the NTP protocol and time-keeping applications who can help.  Just email Ask Bjørn Hansen at <a href="mailto:ask@develooper.com">ask@develooper.com</a>.
+</p>
+
+
+<h3>Open source projects</h3>
+<p>
+
+</p>
