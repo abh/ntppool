@@ -48,7 +48,7 @@ Current score: [% server.score %] (only servers with a score higher than 5 are u
 <img src="[% server.graph_uri('score') %]" alt="Server score graph" /><br />
 <img src="[% server.graph_uri('offset') %]" alt="Server offset graph" /><br />
 <span style="font-size:60%"># [% server.id %], <a href="[% server.ip %]?log=1">CSV log</a>
-| <a href="#graph_explanation" onclick="show_graph_explanation();">What do the graphs mean?</a>
+| <a href="#graph_explanation" onclick="toggleDisplay('graph_explanation');">What do the graphs mean?</a>
 </span>
 </p>
 

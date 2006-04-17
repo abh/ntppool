@@ -15,7 +15,7 @@
 
 </blockquote>
 
-<h2>Audience</h2>
+<h2>Audience for this document</h2>
 <p>
 Anyone distributing an appliance, operating system or some other kind of
 software using NTP.
@@ -28,19 +28,23 @@ software using NTP.
 
 
 
-<h2>What not to do!</h2>
+<h2>Basic guidelines</h2>
 
-<p> you must get approval from the server operator before you
+<p>NTP is a service typically running quietly in the background. When servers are chosen they will typically remain in the
+configuration "forever". If the client traffic causes trouble for the server it is extremely difficult to mitigate if not carefully
+planned for in advance.
+</p>
+
+<p> You must get approval from the server operator before you
 hardcode any IP addresses or hostnames. This is easy to get if your own
 organization runs the NTP servers you are planning to use. In most other cases
 you will not get it. </p>
 
-<p> Also, do not use the standard <b>pool.ntp.org</b> names as a default
-configuration in your system. </p>
+<p> Do not use the standard <b>pool.ntp.org</b> names as a default configuration in your system. The NTP Pool can offer services for
+you, but it must be setup in advance (see below).</p>
 
-<h2>What you should do</h2>
 <p>
-The best solution is for your organization to setup your own cluster of NTP servers, for example ntp1.example.com, ntp2.example.com and ntp3.example.com and use those as the default in your configuration. 
+Typically the best solution is for your organization to setup your own cluster of NTP servers, for example ntp1.example.com, ntp2.example.com and ntp3.example.com and use those as the default in your configuration. 
 </p>
 
 <h2>What the NTP Pool can offer</h2>
