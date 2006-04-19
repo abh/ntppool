@@ -86,6 +86,8 @@ sub get_server_info {
     $server{ip} = inet_ntoa($iaddr);
     $server{hostname} = $host if $host ne $server{ip};
 
+    die "Bad IP address\n" if $server{ip} =~ m/^(127|10|192.168)\./;
+
     if (my ($s) = NTPPool::Server->search(ip => $server{ip})) {
         my $other = $s->admin eq $self->user ? "" : "Email us your username to have it moved to this account";
         die "$server{ip} is already listed in the pool. $other\n";

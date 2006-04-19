@@ -80,6 +80,7 @@ sub server_information {
       $server->admin->username ? $server->admin->username : "-",
       $server->admin->email; 
     push @r, sprintf "score: %.1f, in pool: %i, in server list: %i\n", $server->score, $server->in_pool, $server->in_server_list;
+    push @r, "Hostname: " . $server->hostname . "\n";
     my $gi = Geo::IP->new(GEOIP_STANDARD);
     my $country = $gi->country_code_by_addr($server->ip);
     $country = lc $country if $country;
@@ -162,9 +163,10 @@ elsif ($cmd eq "edit") {
     die "Could not find server $arg\n" unless $server;
     print server_information($server);
     while (my $k = shift @ARGV) {
+        print "\n";
         my $v = shift @ARGV;
         last unless defined $v;
-        print "Set $k -> $v\n";
+        print "Set $k -> $v";
         if ($server->can($k)) {
             $server->$k($v);
         }
@@ -172,8 +174,10 @@ elsif ($cmd eq "edit") {
             die "Don\'t know how to set $k\n";
         }
     }
-    $server->update;
-    print server_information($server);
+    if ($server->update > 0) {
+        print "\n\nUpdated =============\n";
+        print server_information($server);
+    }
 }
 elsif ($cmd eq "zones") {
     my $arg = shift @ARGV or die "pool zones <host or IP>\n";
