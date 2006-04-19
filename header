@@ -32,5 +32,13 @@ Cwww.pool.ntp.org:x3.develooper.com:28800
 
 +pool.ntp.org:216.52.237.153:2100
 
+# debian-ntp@gag.com
+# http://packages.qa.debian.org/n/ntp.html
+C0.debian.pool.ntp.org:0.pool.ntp.org:28800
+C1.debian.pool.ntp.org:1.pool.ntp.org:28800
+C2.debian.pool.ntp.org:2.pool.ntp.org:28800
+C3.debian.pool.ntp.org:3.pool.ntp.org:28800
+
+
 
 

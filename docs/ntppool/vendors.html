@@ -1,8 +1,33 @@
 [% page.title = "The NTP Pool for vendors" %]
 <h1>The NTP Pool for vendors</h1>
 
+<h2>Contents</h2>
+<ul>
+<li><a href="#audience">Audience</a></li>
+<li><a href="#why-sync-time">Why NTP?</a></li>
+<li><a href="#basic-guidelines">Basic guidelines</a></li>
+<li><a href="#ntp-pool-offer">What the NTP Pool can offer</a></li>
+<li><a href="#vendor-zone">Get your vendor zone</a></li>
+<li><a href="#pool-capacity">Pool capacitty</a></li>
+<li><a href="#open-source">For Open Source projects</a></li>
+</ul>
+
+<a name="audience"></a>
+<h2>Audience for this document</h2>
 <p>
-<a href="http://www.ntp.org/ntpfaq/NTP-s-def.htm">What is NTP</a>?	
+Anyone distributing an appliance, operating system or some other kind of
+software using NTP.
+</p>
+<ul>
+<li>Appliance vendors (Netgear, D-Link, Linksys, ...)</li>
+<li>Operating System vendors (Debian, RedHat, FreeBSD, m0n0wall, ...)</li>
+<li>Software vendors</li>
+</ul>
+
+<a name="why-sync-time"></a>
+<h2>Why use NTP?</h2>
+<p>
+From <a href="http://www.ntp.org/ntpfaq/NTP-s-def.htm">What is NTP?</a> at ntp.org.
 </p>
 <blockquote>
 <p>Time usually just advances. If you have communicating programs running on different computers, time still should even advance if you switch from one computer to another. Obviously if one system is ahead of the others, the others are behind that particular one. From the perspective of an external observer, switching between these systems would cause time to jump forward and back, a non-desirable effect.</p>
@@ -15,24 +40,16 @@
 
 </blockquote>
 
-<h2>Audience for this document</h2>
-<p>
-Anyone distributing an appliance, operating system or some other kind of
-software using NTP.
-</p>
-<ul>
-<li>Appliance vendors (Netgear, D-Link, Linksys, ...)</li>
-<li>Operating System vendors (Debian, RedHat, FreeBSD, m0n0wall, ...)</li>
-<li>Software vendors</li>
-</ul>
-
-
-
+<a name="basic-guidelines"></a>
 <h2>Basic guidelines</h2>
 
 <p>NTP is a service typically running quietly in the background. When servers are chosen they will typically remain in the
 configuration "forever". If the client traffic causes trouble for the server it is extremely difficult to mitigate if not carefully
 planned for in advance.
+</p>
+
+<p>
+A couple of examples in the past years are <a href="http://www.cs.wisc.edu/~plonka/netgear-sntp/">Flawed Routers Flood University of Wisconsin Internet Time Server</a> in 2003 and the <a href="http://people.freebsd.org/~phk/dlink/">D-Link misconfiguration incident</a> in 2006.
 </p>
 
 <p> You must get approval from the server operator before you
@@ -47,6 +64,7 @@ you, but it must be setup in advance (see below).</p>
 Typically the best solution is for your organization to setup your own cluster of NTP servers, for example ntp1.example.com, ntp2.example.com and ntp3.example.com and use those as the default in your configuration. 
 </p>
 
+<a name="ntp-pool-offer"></a>
 <h2>What the NTP Pool can offer</h2>
 
 <p> The NTP Pool Project was started in 2003 as a response to the rapidly increasing resource consumption
@@ -57,12 +75,17 @@ at the popular NTP servers and the problem of these servers then closing their o
 Rather than establish and maintain your own cluster of NTP servers or negotiate with individual server operators to use their server, you can use the NTP Pool. 
 </p>
 
+<p>Using the pool is usually free. If you have a very large number of clients we might ask for
+contributions to help scaling the pool to meet the demands.</p>
+
+
+<a name="vendor-zone"></a>
 <h3>Get your vendor zone</h3>
 
-<p>To allow you to use the pool as the default time service in your application, we will set you up with special hostnames, for example 1.vendor.pool.ntp.org and 2.vendor.pool.ntp.org.</p>
+<p>To allow you to use the pool as the default time service in your application, we will set you up with special hostnames, for example <tt>1.vendor.pool.ntp.org</tt>, <tt>2.vendor.pool.ntp.org</tt> and <tt>3.vendor.pool.ntp.org</tt>.</p>
 	
 <p>
-You absolutely must not use the default pool.ntp.org zone names as the default configuration in your application or appliance.
+You must absolutely not use the default pool.ntp.org zone names as the default configuration in your application or appliance.
 </p>
 
 <p>To get your vendor hostnames configured, email <a href="mailto:ask@develooper.com">ask@develooper.com</a>.  Please include a rough estimate of the number of systems that is going to use the pool.  Something like "less than 1000", "more than 100000" or "millions" is accurate enough.
@@ -72,8 +95,9 @@ You absolutely must not use the default pool.ntp.org zone names as the default c
 If you have an open source ntpd implementation or an operating system including ntpd, we ask that you make a reference in the configuration file or documentation encouraging people to <a href="/join.html">join the pool</a>.
 </p>
 
+<a name="pool-capacity"></a>
 <h3>Pool Capacity</h3>
-<p>The pool is currently keeping the time of an estimated 0.75-4 million systems accurate.</p>
+<p>The pool is currently keeping the time of an estimated 1-4 million systems accurate.</p>
 <p>With our technology and expertise we can as needed vastly expand the number of supported systems with relatively modest contributions.</p>
 
 <h3>Implementation specifics</h3>
@@ -92,8 +116,8 @@ If you have an open source ntpd implementation or an operating system including 
 	We can refer you to consultants with vast expertise in the NTP protocol and time-keeping applications who can help.  Just email Ask Bjørn Hansen at <a href="mailto:ask@develooper.com">ask@develooper.com</a>.
 </p>
 
-
-<h3>Open source projects</h3>
+<a name="open-source"></a>
+<h2>Open source projects</h2>
 <p>
-
+Open Source projects are of course particularly welcome to use the pool in their default setup, but we ask that you <a href="#vendor-zone">get a vendor zone</a> when using the pool as a default configuration.
 </p>
