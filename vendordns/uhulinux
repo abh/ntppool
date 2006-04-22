@@ -1,0 +1,33 @@
+# http://www.uhulinux.hu/
+C0.uhulinux.pool.ntp.org:1.hu.pool.ntp.org:28800
+C1.uhulinux.pool.ntp.org:2.hu.pool.ntp.org:28800
+C2.uhulinux.pool.ntp.org:1.europe.pool.ntp.org:28800
+C3.uhulinux.pool.ntp.org:3.europe.pool.ntp.org:28800
+
+
+--
+        From:     egmont@uhulinux.hu
+        Subject:        ntp vendor zone for UHU-Linux
+        Date:   April 20, 2006 5:33:21 AM PDT
+        To:       ask@develooper.com
+
+Dear admins,
+
+I'm writing to you as a developer of a Hungarian Linux distribution called
+"UHU-Linux". We launch isc ntpd by default (currently version 4.2.0) and so
+far we had several fixed IPs in our default config. Now I see that it's the
+wrong approach so I'd like to as you to set up a vendor zone for us. The
+preferred domain name would be *.uhulinux.pool.ntp.org if possible. Our
+guess for the number of users is somewhere between 10.000 and 100.000, and
+since our distro is focused on supporting the Hungarian language, most of
+the machines running UHU-Linux are physically located in Hungary or near
+Hungary, so if possible, time servers from this region would be preferred.
+
+In the mean time, we have 2 servers with fixed IP addresses located at
+different ISPs, so most likely I'll set up a public ntp server on them and
+join the pool.
+
+
+Thanks very much:
+
+Egmont
