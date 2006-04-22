@@ -10,6 +10,7 @@
 <li><a href="#vendor-zone">Get your vendor zone</a></li>
 <li><a href="#pool-capacity">Pool capacity</a></li>
 <li><a href="#open-source">For Open Source projects</a></li>
+<li><a href="#faq">Frequently Asked Questions</a></li>
 </ul>
 
 <a name="audience"></a>
@@ -110,6 +111,7 @@ If you have an open source ntpd implementation or an operating system including 
 		<li>Only use the pool.ntp.org hostnames designated to you (typically {0,1,2,3}.{vendor}.pool.ntp.org)</li>
 		<li>Do implement handling of the "KoD" response</li>
 		<li>Don't send excessively frequent queries.  Reasonable query intervals are typically from once or twice a day to a 4-5 times an hour depending on the application</li>
+                <li>Do have your devices query the NTP servers at random times of the day.  For example every 43200 seconds since boot is good, at midnight every day is bad.</li>
 	</ul>
 
 <p>	
@@ -121,3 +123,23 @@ If you have an open source ntpd implementation or an operating system including 
 <p>
 Open Source projects are of course particularly welcome to use the pool in their default setup, but we ask that you <a href="#vendor-zone">get a vendor zone</a> when using the pool as a default configuration.
 </p>
+
+
+<a name="faq"></a>
+<h2>Vendor FAQ</h2>
+
+<p>
+Most questions should be answered elsewhere on the page.  Here are some that didn't fit in above.
+</p>
+
+<dl id="faq">
+
+<dt>Why use special hostnames for vendors?</dt>
+
+<dd>The special hostnames allows us some control of the traffic so we
+can optimize our load distribution and match clients to the best
+servers.  It also gives better options for continuing support in case
+of problems with segments of the client population.  (See the links in
+the <a href="#basic-guidelines">basic guidelines</a> section).  </dd>
+
+</dl>

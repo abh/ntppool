@@ -99,3 +99,8 @@ p.serverurls {
   padding: 9px;
   border: 1px dotted #999; 
 }
+
+#faq dt {
+   margin-top: 10px;
+   font-weight: bold;
+}
