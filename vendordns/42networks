@@ -6,6 +6,8 @@ C3.42networks.pool.ntp.org:0.pool.ntp.org:28800
 
 --
 
+RT#520 - http://rt.develooper.com/rt/Ticket/Display.html?id=520
+
         From:     charles.foster@42networks.com
         Subject:        vendor.pool.ntp.org use
         Date:   May 9, 2006 4:06:43 AM PDT
