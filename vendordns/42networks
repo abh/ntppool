@@ -1,0 +1,32 @@
+
+C0.42networks.pool.ntp.org:3.pool.ntp.org:28800
+C1.42networks.pool.ntp.org:2.pool.ntp.org:28800
+C2.42networks.pool.ntp.org:1.pool.ntp.org:28800
+C3.42networks.pool.ntp.org:0.pool.ntp.org:28800
+
+--
+
+        From:     charles.foster@42networks.com
+        Subject:        vendor.pool.ntp.org use
+        Date:   May 9, 2006 4:06:43 AM PDT
+        To:       ask@develooper.com
+
+Hi,
+
+42Networks manufactures VoIP-enabled SoHo/SMB type switches and
+routers. We use NTP in our products to get time information for
+various functions, not least caller id info.
+
+We would like to consider using the NTP pool as our default mechanism
+to define which NTP servers to use (customers do then have the option
+to define their own NTP servers, usually our customers are network or
+voice operators who have their own NTP servers).
+
+Per the pool.ntp.org website, I'd like to investigate whether we can
+get one or more vendor-specific hostnames for our use. We produce
+approximately 100k units per annum, and have approx 200k units in the
+field (which would be upgraded to use the new hostname). Most of our
+customers are in Europe, but we have increasing sales in Asia too.
+
+Thanks, regards,
+Charles

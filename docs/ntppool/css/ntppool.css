@@ -104,3 +104,19 @@ p.serverurls {
    margin-top: 10px;
    font-weight: bold;
 }
+
+#vendor_list {
+  border: 1px dotted #999;
+  align: right;
+  margin: auto;
+  width: 250px;
+}
+
+#vendor_list li {
+  background: red;
+}
+
+#vendor_content {
+  float: left;
+}
+
