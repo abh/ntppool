@@ -55,8 +55,8 @@ href="http://www.pool.ntp.org/use.html">using the pool</a>.
 </p>
 
 <p>
-The pool is now enormously popular, being used by at least hundreds of
-thousands and maybe even millions of systems around the world.
+The pool is now enormously popular, being used by millions of systems
+around the world.
 </p>
 
 <p>
@@ -70,6 +70,41 @@ lists</a>.
 <div style="text-align:right"><a href="#top">go up</a></div>
 <h2><a name="news">News</a></h2>
 <table cellpadding="4">
+
+<tr>
+<td align="center" valign="top"><b>2006-05-01</b></td>
+<td>
+The NTP Pool project now has a <a
+href="http://en.wikipedia.org/wiki/NTP_pool">wikipedia</a> entry.
+</td></tr>
+
+<tr>
+<td align="center" valign="top"><b>2006-04-24</b></td>
+<td>
+The system has been changed a little so we now have separate counts
+for "all servers" (almost 700 servers!) and servers in the global pool
+(+600 servers!).  The global is by far the busiest, most users don't
+pick a country or continent zone.
+<p>
+I've also done some more measuring and estimating of the client
+population and my best guess is that somewhere between 2 and 6 million
+client systems are using the pool.
+</td></tr>
+
+
+
+<tr>
+<td align="center" valign="top"><b>2006-04-22</b></td>
+<td>
+
+The new <a href="/vendors.html">information for vendors</a> page is up!  Please <a
+href="mailto:ask@develooper.com">let me know</a> if your operating
+system/appliance/software vendor is using the NTP Pool but isn't using
+a vendor zone.
+
+</td></tr>
+
+
 
 <tr>
 <td align="center" valign="top"><b>2006-01-15</b></td>

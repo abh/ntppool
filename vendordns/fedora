@@ -1,0 +1,8 @@
+
+C0.fedora.pool.ntp.org:3.pool.ntp.org:28800
+C1.fedora.pool.ntp.org:2.pool.ntp.org:28800
+C2.fedora.pool.ntp.org:1.pool.ntp.org:28800
+C3.fedora.pool.ntp.org:0.pool.ntp.org:28800
+
+-- 
+https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=189667

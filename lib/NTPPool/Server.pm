@@ -53,6 +53,7 @@ __PACKAGE__->set_sql(urls => qq{
                      SELECT DISTINCT s.id
                          FROM servers s, server_urls u
                          WHERE s.id=u.server
+                         and (s.in_pool = 1 OR s.in_server_list = 1)
                          ORDER BY s.id
                });
 
