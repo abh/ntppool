@@ -1,0 +1,17 @@
+
+C0.debian.pool.ntp.org:3.pool.ntp.org:28800
+C1.debian.pool.ntp.org:2.pool.ntp.org:28800
+C2.debian.pool.ntp.org:1.pool.ntp.org:28800
+C3.debian.pool.ntp.org:0.pool.ntp.org:28800
+
+
+--
+        From:     petere@debian.org
+        Subject:        NTP vendor zone for Debian
+        Date:   June 6, 2006 3:44:55 AM PDT
+        To:       ask@develooper.com
+        Cc:       367646@bugs.debian.org, 349392@bugs.debian.org
+
+The Debian project would like to have an NTP vendor zone for use by its 
+operating system distribution (presumably named debian.pool.ntp.org).  The 
+number of users is in the millions.  Thank you.
