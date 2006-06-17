@@ -1,0 +1,36 @@
+
+C0.shariflinux.pool.ntp.org:2.pool.ntp.org:28800
+C1.shariflinux.pool.ntp.org:1.pool.ntp.org:28800
+C2.shariflinux.pool.ntp.org:1.europe.pool.ntp.org:28800
+C3.shariflinux.pool.ntp.org:3.europe.pool.ntp.org:28800
+
+
+--
+
+http://rt.develooper.com/rt/Ticket/Display.html?id=593
+
+CC:     Hamed Malek <hamed@farsiweb.info>
+Subject:        Asking for a vendor zone for Sharif Linux
+Date:   Thu, 08 Jun 2006 21:03:24 +0330
+To:     ask@develooper.com
+From:   Roozbeh Pournader <roozbeh@farsiweb.info>
+Download (untitled)
+text/plain 688b
+Hi.
+
+I was just reading your FTP pool for vendors document,
+http://www.pool.ntp.org/vendors.html
+
+Apparently, we need to ask for a pool.ntp.org hostname for our product.
+We are using fedora.pool.ntp.org at the moment, but will push the new
+NTP server details in updates and the next version of the product.
+
+This is for use in Sharif Linux, our Fedora-based GNU/Linux distribution
+customized for the Iranian market. We can't easily predict the number of
+NTP users as it's not the default option and the CDs can be legally
+copied by a user, but my rough estimate of Sharif Linux users of NTP in
+the next year is under 3000 machines.
+
+Thanks a lot,
+Roozbeh Pournader
+Sharif FarsiWeb, Inc.

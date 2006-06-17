@@ -371,7 +371,7 @@ elsif ($cmd eq "zone") {
     }
 
 
-    my $ttl = 2100;
+    my $ttl = 2700;
 
     my $zones = NTPPool::Zone->search( dns => 1 );
     while (my $zone = $zones->next) {
