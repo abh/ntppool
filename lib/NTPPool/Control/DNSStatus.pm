@@ -3,6 +3,8 @@ use strict;
 use base qw(NTPPool::Control);
 use Net::DNS::Resolver;
 use Apache::Constants qw(OK);
+use DateTime::Duration;
+use DateTime::Format::Duration;
 
 sub render {
   my $self = shift;
@@ -20,6 +22,10 @@ sub render {
     }
   }
 
+  { my $name = 'ns1.eu.bitnames.com';
+    $servers{$name} = { name => $name };
+  }
+            
   $res->tcp_timeout(3);
   $res->udp_timeout(3);
 
@@ -76,10 +82,22 @@ sub render {
 }
 
 sub hour_min_sec {
-  my $d = shift;
-  my $min = $d ? int($d / 60) : 0;
-  $d -= $min * 60;
-  "$min " . ($min == 1 ? 'minute ' : 'minutes ');
+  my $sec = shift;
+
+  my $dur = DateTime::Duration->new(seconds => $sec);
+  my $durf = DateTime::Format::Duration->new
+      (pattern => '%e days, %k hours, %M minutes', # , %S seconds',
+       normalize => 1,
+       );
+
+  my %deltas = $durf->normalise($dur);
+  #warn Data::Dumper->Dump([\%deltas], [qw(deltas)]);
+
+  my $s = $durf->format_duration_from_deltas(%deltas);
+
+  $s = join ", ", grep { $_ !~ m/^0\s/ } map { s/^0(\d)/$1/; $_ } split /, /, $s;
+  $s eq '0 hours' ? '0 minutes' : $s;
+ 
 }
 
 1;
