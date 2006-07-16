@@ -84,7 +84,8 @@ sub server_information {
     my $gi = Geo::IP->new(GEOIP_STANDARD);
     my $country = $gi->country_code_by_addr($server->ip);
     $country = lc $country if $country;
-    push @r, "Country: $country\n" if $country;
+    push @r, "Country: $country  -  " if $country;
+    push @r, "Netspeed: " . $server->netspeed . "\n";
     push @r, "Zones: ", join (", ", map { $_->name } @zones), "\n";
     push @r, sprintf "in_pool: %i, in_server_list: %i\n", $server->in_pool, $server->in_server_list;
     @r;

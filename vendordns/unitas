@@ -1,0 +1,56 @@
+C0.unitas.pool.ntp.org:3.europe.pool.ntp.org:28800
+C1.unitas.pool.ntp.org:2.europe.pool.ntp.org:28800
+C2.unitas.pool.ntp.org:1.europe.pool.ntp.org:28800
+C3.unitas.pool.ntp.org:0.europe.pool.ntp.org:28800
+
+--
+
+http://rt.develooper.com/rt/Ticket/Display.html?id=670
+
+Hi,
+
+I'm currently experimenting with NTP in our application. We're a  
+small ISV developing customs declaration software (in the  
+Netherlands) and air and sea logistics management software  
+(worldwide). I would like to use a pool of (mostly/only European)  
+servers. The number of client applications is less than 1000, and  
+will likely remain so for at least another two years.
+
+
+My SNTP client implementation is not complete yet, but I will  
+implement KoD before initial public release. The accuracy our  
+application needs is roughly 5-30 seconds, I guess polling once every  
+three days would be enough. However, as our application runs on  
+desktop PCs, restarted daily, it will likely follow euro business  
+hours (as people start their machines in the CET morning, and I  
+probably won't be able to adjust the PC hardware clock itself).
+
+
+
+To mitigate NTP server load, and increase inter-application accuracy  
+(more important than absolute accuracy), clients will mostly sync  
+among each other. I still have to implement that, too.
+
+We don't own a colo-machine at the moment, when that changes I am  
+quite willing to add a stratum 2+ server to the pool.
+
+The Big Question is - do we need a vendor pool, or can I just use  
+x.europe.pool.ntp.org and promise to contact you again when the  
+number of clients grows bigger? Or is there some other way to  
+announce my application (using the reference ID in the request packets).
+
+
+
+
+
+Met vriendelijke groet
+
+Pascal Scheffers
+Unitas Software B.V.
+
+e-mail: pascal@unitas.nl
+
+
+telefoon: +31 (0)10 - 44 20 617
+telefax:  +31 (0)10 - 44 20 619
+
