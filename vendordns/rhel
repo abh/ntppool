@@ -1,0 +1,9 @@
+
+C0.rhel.pool.ntp.org:3.pool.ntp.org:28800
+C1.rhel.pool.ntp.org:2.pool.ntp.org:28800
+C2.rhel.pool.ntp.org:1.pool.ntp.org:28800
+C3.rhel.pool.ntp.org:0.pool.ntp.org:28800
+
+-- 
+
+RT#672

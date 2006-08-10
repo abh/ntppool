@@ -1,0 +1,46 @@
+C0.intra2net.pool.ntp.org:3.de.pool.ntp.org:28800
+C1.intra2net.pool.ntp.org:2.europe.pool.ntp.org:28800
+C2.intra2net.pool.ntp.org:1.europe.pool.ntp.org:28800
+C3.intra2net.pool.ntp.org:0.de.pool.ntp.org:28800
+
+--
+
+RT#748 - http://rt.develooper.com/rt/Ticket/Display.html?id=748
+
+Hi,
+
+we develop and sell internet security, mail and groupware appliances  
+("Intranator" brand). Our systems include an ntp deamon (openntpd)  
+for local system time but also for use as time source in the LAN of  
+the customer.
+
+Currently our system is only available in german localisation and is  
+only sold in Germany, Austria and Swiss. We already have sold about  
+1000 systems. We plan to sell an english version throughout europe in  
+the next year.
+
+Currently these systems come configured with 0.de.pool.ntp.org to  
+2.de...
+
+I just read that this is bad practice and we should switch to a  
+vendor zone. I hereby request a vendor zone, preferrably  
+intra2net.pool.ntp.org.
+We can switch our customers to the new zone using our update  
+technology. Our customers usually apply updates within 3 month so the  
+usage of the old zone can be dropped quickly.
+
+Currently we use the de pool to give our customers servers that are  
+nearby. Is this possible with vendor zones too? Like  
+0.de.intra2net.pool.ntp.org or at least with the regions like  
+0.europe.intra2net.pool.ntp.org and 0.asia.intra2net.pool.ntp.org.
+
+Kind regards,
+
+Gerd
+
+-- 
+Gerd v. Egidy
+Leiter Entwicklung
+
+Intra2net AG
+[...]

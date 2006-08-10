@@ -1,0 +1,38 @@
+
+C0.fsc.pool.ntp.org:3.pool.ntp.org:28800
+C1.fsc.pool.ntp.org:2.pool.ntp.org:28800
+C2.fsc.pool.ntp.org:1.pool.ntp.org:28800
+C3.fsc.pool.ntp.org:0.pool.ntp.org:28800
+
+--
+
+RT#811 - http://rt.develooper.com/rt/Ticket/Display.html?id=811
+
+Dear NTP pool team.
+I'm Peter Heumann, project manager for Digital Home accessory devices  
+in the R&D department of Fujitsu Siemens Computers.
+
+We are currently developing a range of products that will incorporate  
+time syncronizing functions using NTP client services. In order to  
+make configuration and use of time syncronization easy for our  
+customers, we would like to use the NTP pool service that you are  
+offering.
+
+The volume of untis affected by this would be between 10 000 and 100  
+000 units after several years, starting with around 10 000 over the  
+next months.
+
+Please let me know if it is possible to set up a vendor pool address  
+(preferably fsc.pool.ntp.org) and please let me know the terms and  
+conditions for use.
+
+Looking forward to receiving your feedback.
+
+Thanks a lot.
+Best regards
+
+-- 
+Peter Heumann
+FSC VP CP PE BB - Engineering Digital Home Products
+Fujitsu Siemens Computers
+[...]
