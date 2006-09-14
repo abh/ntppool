@@ -1,0 +1,51 @@
+# -*- cperl -*-
+eval 'exec $CBROOT/bin/perl $0 ${1+"$@"}'
+  unless $running_under_some_shell;
+use strict;
+use warnings;
+use lib "$ENV{CBROOTLOCAL}/lib";
+use lib "$ENV{CBROOT}/lib";
+
+my $name = shift or die "$0 [name]";
+
+my $filename = "$ENV{CBROOTLOCAL}/vendordns/$name";
+
+die "vendor $name already exists" if -e $filename;
+
+open my $fh, '>', $filename or die "Could not create $filename: $!";
+
+print $fh <<EOH;
+
+C0.$name.pool.ntp.org:3.pool.ntp.org:28800
+C1.$name.pool.ntp.org:2.pool.ntp.org:28800
+C2.$name.pool.ntp.org:1.pool.ntp.org:28800
+C3.$name.pool.ntp.org:0.pool.ntp.org:28800
+
+---
+EOH
+
+print <<EOR;
+
+Hi,
+
+Your vendor pool zone has been setup.  The hostnames are below.
+They will be active within a few hours.
+
+Please consider contributing back to the pool so we can keep the
+service sustainable even with the commercial usage: 
+    http://www.pool.ntp.org/vendors/contribute.html
+
+EOR
+
+for my $i (0..3) {
+   print "    $i.$name.pool.ntp.org\n";
+}
+
+
+
+close $fh;
+
+print "\n\nDone!\n\n";
+print "Now run\nemacs $filename\n\n";
+
+

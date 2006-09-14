@@ -1,0 +1,17 @@
+
+C0.appgate.pool.ntp.org:3.pool.ntp.org:28800
+C1.appgate.pool.ntp.org:2.pool.ntp.org:28800
+C2.appgate.pool.ntp.org:1.pool.ntp.org:28800
+C3.appgate.pool.ntp.org:0.pool.ntp.org:28800
+
+---
+
+http://rt.develooper.com/rt/Ticket/Display.html?id=753
+
+I think that we at AppGate need to preconfigure our shipped units with
+NTP-servers. As far as I could see from the website I should send an
+email here and ask nicely for appgate.pool.ntp.org. I estimate that
+there will be less than 1000 systems using this.
+
+        /MaF
+

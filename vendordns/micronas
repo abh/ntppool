@@ -1,0 +1,28 @@
+
+C0.micronas.pool.ntp.org:3.pool.ntp.org:28800
+C1.micronas.pool.ntp.org:2.pool.ntp.org:28800
+C2.micronas.pool.ntp.org:1.pool.ntp.org:28800
+C3.micronas.pool.ntp.org:0.pool.ntp.org:28800
+
+---
+
+http://rt.develooper.com/rt/Ticket/Display.html?id=949
+
+Hello,
+
+I am writing to request assignment of vendor-specific hostnames to  
+provide pooled NTP service for the Micronas USA System-on-Chip  
+reference designs.  These hostnames would be used as the default NTP  
+servers for the Linux SDK that is shipped to ODMs who design consumer  
+products based on these chips.  The number of such devices that  
+Micronas USA ships would remain small; almost certainly fewer than  
+1000 would be online at any given time.  (However, we cannot  
+guarantee that ODMs will change the NTP server names when creating  
+retail products.)
+
+If possible, please use the vendor name "micronas" when creating  
+these hostnames.
+
+Thank you.  -Nathan
+
+

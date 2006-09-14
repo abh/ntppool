@@ -1,0 +1,33 @@
+
+C0.tvblob.pool.ntp.org:3.pool.ntp.org:28800
+C1.tvblob.pool.ntp.org:2.pool.ntp.org:28800
+C2.tvblob.pool.ntp.org:1.pool.ntp.org:28800
+C3.tvblob.pool.ntp.org:0.pool.ntp.org:28800
+
+---
+
+http://rt.develooper.com/rt/Ticket/Display.html?id=918
+
+Hi,
+
+I sent you an email yesterday asking for a vendor zone but because of  
+a mail server failure my mail might have been lost or I might have  
+lost your reply.
+Mi company produces videocommunication devices. We would like to use  
+the pool ntp services on our devices.
+We plan to deliver 1000 unit within one year.
+We would also like to join the pool with our ntp server.
+
+As our company name is tvblob the zone name tvblob would be appropriate.
+
+One question: is authentication supported by the pool?
+
+Thanks
+Rodolfo
+
+-- 
+
+Rodolfo Saccani
+Consumer Product Manager
+
+
