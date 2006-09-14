@@ -11,7 +11,13 @@ sub render {
 
   my $res   = Net::DNS::Resolver->new;
 
+  alarm(10);
+
+  $res->tcp_timeout(3);
+  $res->udp_timeout(3);
+
   $res->nameserver('ns1.us.bitnames.com', 'ns2.us.bitnames.com');
+
   my $query = $res->query("pool.ntp.org", "NS");
 
   my %servers;
@@ -26,9 +32,6 @@ sub render {
     $servers{$name} = { name => $name };
   }
             
-  $res->tcp_timeout(3);
-  $res->udp_timeout(3);
-
   my $prim = 'ns3.rbl.bitnames.com';
 
   $servers{$prim} = { name => $prim };
@@ -76,6 +79,8 @@ sub render {
 
   my @servers = sort { $a->{name} cmp $b->{name} } values %servers;
   $self->tpl_param('servers' => \@servers);
+
+  alarm(0);
 
   return OK, $self->evaluate_template('tpl/dns.html');
 

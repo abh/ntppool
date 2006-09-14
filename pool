@@ -295,6 +295,16 @@ elsif ($cmd eq "scores") {
 
         #printf "testing %s\n", $server->ip;
 
+        # do multiple requests to trigger servers with too agressive anti-abuse measures
+        #eval {
+        #    get_ntp_response($server->ip);
+        #    sleep rand(1);
+        #    get_ntp_response($server->ip); 
+        #    sleep rand(2);
+        #    get_ntp_response($server->ip); 
+        #    sleep rand(1);
+        #}; 
+
         # fetch offset by ntp
         # if a server is not good, query a second time
         # and use the second result - this is said to solve problems with some
@@ -306,7 +316,7 @@ elsif ($cmd eq "scores") {
             $Net::NTP::CLIENT_TIME_SEND = $time_then;
 
             my %pkt      = eval { 
-                get_ntp_response($server->ip) 
+                get_ntp_response($server->ip);
             };
             my $time_now = Time::HiRes::time;
 
