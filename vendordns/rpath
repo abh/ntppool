@@ -1,0 +1,20 @@
+
+C0.rpath.pool.ntp.org:3.pool.ntp.org:28800
+C1.rpath.pool.ntp.org:2.pool.ntp.org:28800
+C2.rpath.pool.ntp.org:1.pool.ntp.org:28800
+C3.rpath.pool.ntp.org:0.pool.ntp.org:28800
+
+---
+
+http://rt.develooper.com/rt/Ticket/Display.html?id=1009
+
+I would like to request a NTP vendor pool on behalf of rPath, Inc.
+(http://www.rpath.com). This pool will be included in our default NTP
+configuration that we ship with rPath Linux.
+
+We roughly expect to have more than 1000 machines.
+
+Elliot
+
+-- 
+Elliot Peele
