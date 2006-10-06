@@ -58,14 +58,27 @@ even better.
 If you're using <b>a recent Windows version</b>, you can also use the ntp
 client that is built into the system. Just execute:</p>
 <pre style="background-color:#e0e0e0;">
-net time /setsntp:pool.ntp.org
+  net time /setsntp:pool.ntp.org
 </pre>
+
+With some versions of Windows you can also specify more than one server
+
+<pre style="background-color:#e0e0e0;">
+  net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
+</pre>
+</p>
+
 <p>
 at the command prompt. This is known to work on Windows 2000/XP/2003.  The same
 can be achieved by, as administrator, right-clicking the clock in the taskbar,
 selecting 'Adjust Date/Time' and entering the server name in the 'Internet Time'
 tab.
 </p>
+
+<p>
+If your Windows system is part of a domain, you might not be able to independently update your computer time.  See <a href="http://technet2.microsoft.com/WindowsServer/en/library/71e76587-28f4-4272-a3d7-7f44ca50c0181033.mspx?mfr=true">How Windows Time Service Works</a>.
+</p>
+
 <div>
 Additional notes:
 </div>
