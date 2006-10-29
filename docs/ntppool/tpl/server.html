@@ -18,6 +18,10 @@ IP <input type="text" name="ip">
 
 
 <p>
+[% UNLESS server.in_pool%]
+<i>Not active in the pool, monitoring only</i><br/>
+[% END %]
+
 [% IF server.admin.public_profile 
        OR  combust.user.id == server.admin.id
        OR combust.user.privileges.see_all_user_profiles %]
@@ -27,7 +31,8 @@ Server admin: <a href="/user/[% (server.admin.username || server.admin.id) | htm
 Zones:
 [% FOR zone = server.zones %]
 <a href="[% zone.url %]">[% zone.name %]</a>
-[% END  %]
+[% END  %]<br/>
+
 </p>
 
 [% IF server.urls;
