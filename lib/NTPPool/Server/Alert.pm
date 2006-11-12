@@ -14,7 +14,7 @@ sub mark_sent {
   $self->update;
 }
 
-sub accessor_name {
+sub accessor_name_for {
   my ($class, $column) = @_;
   return "_$column" if $column eq 'server';
   $column;

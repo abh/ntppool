@@ -266,7 +266,7 @@ elsif ($cmd eq "scores") {
     $Net::NTP::CLIENT_TIME_SEND    = undef;
     $Net::NTP::CLIENT_TIME_RECEIVE = undef;
     my $mon_host = 'localhost';
-    $mon_host = 'miette.bn.dev' if hostname =~ m/bn.dev$/;
+    $mon_host = 'miette.bn.dev' if hostname =~ m/bn.dev$/; # development only
     my %pkt = get_ntp_response($mon_host);
     if ($pkt{'Stratum'} == 0 or $pkt{'Stratum'} > 6) {
         die "monitoring server not synchronized\n";
@@ -296,14 +296,21 @@ elsif ($cmd eq "scores") {
         #printf "testing %s\n", $server->ip;
 
         # do multiple requests to trigger servers with too agressive anti-abuse measures
-        #eval {
-        #    get_ntp_response($server->ip);
-        #    sleep rand(1);
-        #    get_ntp_response($server->ip); 
-        #    sleep rand(2);
-        #    get_ntp_response($server->ip); 
-        #    sleep rand(1);
-        #}; 
+        if ($server->ip eq '84.92.75.21' or $server->ip eq '131.107.1.10') {
+            eval {
+                get_ntp_response($server->ip);
+                sleep rand(2);
+                get_ntp_response($server->ip);
+                sleep rand(1);
+                get_ntp_response($server->ip); 
+                get_ntp_response($server->ip); 
+                get_ntp_response($server->ip); 
+                if (rand(10) > 4) {
+                    get_ntp_response($server->ip); 
+                    get_ntp_response($server->ip); 
+                }
+        }; 
+    }
 
         # fetch offset by ntp
         # if a server is not good, query a second time

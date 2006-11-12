@@ -4,7 +4,7 @@ use base qw(NTPPool::DBI);
 
 __PACKAGE__->set_up_table('scores');
 
-sub accessor_name {
+sub accessor_name_for {
   my ($class, $column) = @_;
   return "_$column" if $column eq 'server';
   $column;
