@@ -1,4 +1,17 @@
 
+Convert the model classes to use Rose::DB::Object instead of Class::DBI
+
+- New log table
+  - log monitoring failures
+  - log all changes done by the system or by the users
+
+- Deletion / inactivation
+  - Change the schema to have a flag for "this should get deleted" so a batch process
+    can do the deletes
+  - Allow users to schedule their own deletes
+  - The server should keep being monitored up until the delete but stop being 
+    in the pool say 3 weeks before
+
 update use.html page (be more explicit about number of zones)
 
 make the country zones alias to the continent zones when they are otherwise too small
