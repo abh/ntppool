@@ -16,15 +16,26 @@ update use.html page (be more explicit about number of zones)
 
 make the country zones alias to the continent zones when they are otherwise too small
 
-make in_pool checks everywhere it's relevant.
+implement a database_update script to make it easier to track schema changes
 
-make server page and user profile show when the server is not in the pool
+check that we have in_pool checks everywhere it's relevant.
+
+de-couple the monitoring from the database (So it can work remotely)
+
+Change the schema so we can support multiple monitoring systems
+
+Make an API so the monitoring systems can pull configuration (list of servers) and post back
+monitoring results via HTTP (or jabber?)
+
+Make the monitoring servers use ntpd (noselect) to test the servers 
+  - figure out the magic ntpdc commands to add and remove noselect servers
+    (is that even possible?)
+
+make server page and user profile show when the server is not in the pool (50% done)
 
 allow an organization name and http link for each user for attribution
 
 document the growth target thing
-
-make a graph for the total server counts
 
 check that servers that are not in_pool won't be counted in the active
 server counts.
