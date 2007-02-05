@@ -1,5 +1,7 @@
 -- the static part: the servers etc.
 
+
+
 alter database default character set 'utf8';
 
 CREATE TABLE `users` (

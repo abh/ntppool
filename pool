@@ -20,7 +20,7 @@ use Email::Send 'SMTP';
 
 my $gi = Geo::IP->new(GEOIP_STANDARD);
 
-use NTPPool::Server;
+use NP::Model;
 
 use constant LOGFILE => "$ENV{CBROOTLOCAL}/log";
 
@@ -259,14 +259,14 @@ EOT
 }
 elsif ($cmd eq "scores") {
 
-    my $dbh = NTPPool::DBI->dbh;
+    my $dbh = NP::Model->dbh;
     $dbh->selectrow_array(q[SELECT GET_LOCK("scores", 0)]) or exit;
 
     # check if this machine has good time.
     $Net::NTP::CLIENT_TIME_SEND    = undef;
     $Net::NTP::CLIENT_TIME_RECEIVE = undef;
     my $mon_host = 'localhost';
-    $mon_host = 'miette.bn.dev' if hostname =~ m/bn.dev$/; # development only
+    $mon_host = 'gw.bn.dev' if hostname =~ m/bn.dev$/; # development only
     my %pkt = get_ntp_response($mon_host);
     if ($pkt{'Stratum'} == 0 or $pkt{'Stratum'} > 6) {
         die "monitoring server not synchronized\n";
@@ -286,12 +286,13 @@ elsif ($cmd eq "scores") {
     }
 
     # go through server array and fetch offset for all servers
-    my $servers = NTPPool::Server->search_check_due;
+    my $servers = NP::Model->server->get_check_due;
 
-    while (my $server = $servers->next) { 
+    for my $server (@$servers) { 
+
         my $step = 0;
 
-        $server->score_raw( $server->score_raw * 0.95 );
+        $server->score( $server->score * 0.95 );
 
         #printf "testing %s\n", $server->ip;
 

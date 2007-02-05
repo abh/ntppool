@@ -1,0 +1,88 @@
+#1
+insert into schema_revision values (1);
+#2
+alter table server_notes 
+  drop foreign key `server_notes_ibfk_1`;
+
+alter table server_notes
+  change server server_id int unsigned not null,
+  add CONSTRAINT `server_notes_ibfk_1` FOREIGN KEY (`server_id`) REFERENCES `servers` (`id`) ON DELETE CASCADE; 
+
+#3
+
+alter table servers
+  drop foreign key `admin`;
+
+alter table servers
+  change created_on created_on datetime not null,
+  change admin user_id int unsigned not null,
+  add constraint `servers_user_ibfk` foreign key (user_id) references users(id)
+;
+
+#4
+
+alter table locations 
+   drop foreign key locations_server,
+   drop foreign key locations_zone;
+
+alter table locations
+   change server server_id int unsigned not null,
+   change zone   zone_id   int unsigned not null,
+   add CONSTRAINT `locations_server` FOREIGN KEY (`server_id`) REFERENCES `servers` (`id`) ON DELETE CASCADE,
+   add CONSTRAINT `locations_zone` FOREIGN KEY (`zone_id`) REFERENCES `zones` (`id`) ON DELETE CASCADE;
+
+#5
+alter table log_scores 
+   drop foreign key log_scores_server;
+
+alter table log_scores 
+   change server server_id int unsigned not null,
+   add CONSTRAINT `log_scores_server` FOREIGN KEY (`server_id`) REFERENCES `servers` (`id`) ON DELETE CASCADE;
+
+#6
+alter table scores 
+   drop foreign key scores_server;
+
+alter table scores 
+   change server server_id int unsigned not null,
+   add CONSTRAINT `scores_server` FOREIGN KEY (`server_id`) REFERENCES `servers` (`id`) ON DELETE CASCADE
+
+#7
+
+alter table server_alerts
+   drop foreign key unusable_servers_server;
+
+alter table server_alerts
+   change server server_id int unsigned not null,
+   add CONSTRAINT `server_alerts_server` FOREIGN KEY (`server_id`) REFERENCES `servers` (`id`) ON DELETE CASCADE;
+
+
+#8
+
+alter table zone_server_counts
+  drop foreign key zone_server_counts;
+
+alter table zone_server_counts
+   change zone   zone_id   int unsigned not null,
+   add CONSTRAINT `zone_server_counts` FOREIGN KEY (`zone_id`) REFERENCES `zones` (`id`) ON DELETE CASCADE
+
+#9
+alter table user_privileges
+   drop foreign key user_privileges;
+
+alter table user_privileges
+   change user   user_id   int unsigned not null,
+   add constraint `user_privileges_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+#10
+alter table server_urls 
+   drop foreign key server_urls_server;
+
+alter table server_urls 
+   change server server_id int unsigned not null,
+   add CONSTRAINT `server_urls_server` FOREIGN KEY (`server_id`) REFERENCES `servers` (`id`) ON DELETE CASCADE
+
+#11
+alter table scores drop key `server`, add primary key (server_id);
+alter table scores change score score_raw double NOT NULL default '0';
+
