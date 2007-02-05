@@ -42,7 +42,7 @@ To use this pool zone, add the following to your ntp.conf file:
 <p>
 
 [% parent = zone.parent;
-   IF (parent.server_count < 10);
+   IF (parent.server_count < 10 AND parent.parent.in_dns);
      parent = parent.parent;
    END;
 %]

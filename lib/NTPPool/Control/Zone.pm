@@ -6,6 +6,9 @@ use Apache::Constants qw(OK);
 
 sub cache_info {
   my $self = shift;
+
+  return {} if $self->deployment_mode eq 'devel';
+
   return +{ expires => 3600,
             id => join(";",
                        "zonepage",

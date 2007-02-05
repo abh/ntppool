@@ -109,3 +109,9 @@ update servers s, scores sc set s.score_raw=sc.score_raw, s.score_ts=sc.ts where
 
 #15
 drop table scores;
+
+#16
+alter table zones drop foreign key zones_ibfk_1;
+alter table zones
+   change parent parent_id int unsigned,
+   add constraint `zones_parent` foreign key (parent_id) references zones (id);

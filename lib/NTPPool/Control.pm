@@ -22,28 +22,28 @@ sub init {
       warn $bc->errstr;
     }
     if ($bc_user and $bc_user->{id} and $bc_user->{username}) {
-      my ($email_user) = NTPPool::Admin->search({ email => $bc_user->{email} });
-#      ($email_user) = NTPPool::Admin->search({ username => $bc_user->{username} })
+      my ($email_user) = NP::Model->user->fetch(email => $bc_user->{email});
+#      ($email_user) = NP::Model->user->fetch(username => $bc_user->{username})
 #        unless $email_user;
-      my ($user) = NTPPool::Admin->search({ bitcard_id => $bc_user->{id} });
+      my ($user) = NP::Model->user->fetch(bitcard_id => $bc_user->{id});
       $user = $email_user if ($email_user and !$user);
       if ($user and $email_user and $user->id != $email_user->id) {
-	my @servers = NTPPool::Server->search( admin => $email_user );
+	my @servers = NP::Model->server->get_servers(query => [ admin => $email_user ]);
 	for my $server (@servers) {
 	  $server->admin($user);
-	  $server->update;
+	  $server->save;
 	}
 	$email_user->delete;
       }
       unless ($user) {
-	($user) = NTPPool::Admin->create({ bitcard_id => $bc_user->{id} });
+	($user) = NP::Model->user->create(bitcard_id => $bc_user->{id});
       }
       my $uid = $user->id;
       $user->username($bc_user->{username});
       $user->email($bc_user->{email});
       $user->name($bc_user->{name});
       $user->bitcard_id($bc_user->{id});
-      $user->update;
+      $user->save;
       $self->cookie($Combust::Control::Bitcard::cookie_name, $uid);
       $self->user($user);
     }
@@ -64,7 +64,7 @@ sub is_logged_in {
 }
 
 sub bc_user_class {
-    'NTPPool::Admin';
+    NP::Model->user;
 }
 
 sub bc_info_required {

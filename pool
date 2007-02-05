@@ -149,7 +149,7 @@ if ($cmd eq "add") {
     $server->save;
     
     for my $country (@ARGV) {
-        $server->add_zone($country);
+        $server->join_zone($country);
     }
 
     unless (defined $hostname) { $hostname = $ip; }
@@ -199,7 +199,7 @@ elsif ($cmd eq "zones") {
             next if grep { $zone_name eq $_->name } @zones;
             my $zone = NP::Model->zone->fetch(name => $zone_name);
             print "Could not find '$zone_name'\n" and next unless $zone;
-            $server->add_zone($zone);
+            $server->join_zone($zone);
         }
     }
     $server->save(cascade => 1);

@@ -61,14 +61,16 @@ sub handle_add {
         my $return = send SMTP => $email, 'localhost';
         warn Data::Dumper->Dump([\$msg, \$email, \$return], [qw(msg amil return)]);
 
-        my $s = NTPPool::Server->create
-          ({ ip       => $server->{ip}, 
+        my $s = NP::Model->server->create
+            (ip       => $server->{ip}, 
              hostname => $server->{hostname} || '',
              admin    => $self->user,
              in_pool  => 1,
-           });
-        $s->add_to_locations({ zone => $_ }) for @{$server->{zones}};
-        return $self->show_manage;
+             );
+        $s->join_zone($_) for @{$server->{zones}};
+        #local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
+        $s->save(cascade => 1);
+        return $self->redirect('/manage#s-' . $s->ip);
     }
 
     return OK, $self->evaluate_template('tpl/manage/add.html');
@@ -86,10 +88,10 @@ sub get_server_info {
     $server{ip} = inet_ntoa($iaddr);
     $server{hostname} = $host if $host ne $server{ip};
 
-    die "Bad IP address\n" if $server{ip} =~ m/^(127|10|192.168)\./;
+    die "Bad IP address\n" if $server{ip} =~ m/^(127|11|192.168)\./;
 
-    if (my ($s) = NTPPool::Server->search(ip => $server{ip})) {
-        my $other = $s->admin eq $self->user ? "" : "Email us your username to have it moved to this account";
+    if (my $s = NP::Model->server->fetch(ip => $server{ip})) {
+        my $other = $s->admin->id eq $self->user->id ? "" : "Email us your username to have it moved to this account";
         die "$server{ip} is already listed in the pool. $other\n";
     }
     
@@ -105,13 +107,13 @@ sub get_server_info {
     $server{ntp} = \%ntp;
 
     my $geo_ip = Geo::IP->new(GEOIP_STANDARD);
-    my $country = $geo_ip->country_code_by_addr($server{ip});
+    my $country = $geo_ip->country_code_by_addr($server{ip}) || '';
     $country = 'UK' if $country eq 'GB';
     warn "Country: $country\n";
-    my $country_zone = NTPPool::Zone->retrieve_by_name($country);
+    my $country_zone = NP::Model->zone->fetch(name => $country);
     my @zones;
     push @zones, $country_zone if $country_zone;
-    @zones = NTPPool::Zone->search(name => '@') unless @zones;
+    push @zones, NP::Model->zone->fetch(name => '@') unless @zones;
     unshift @zones, $zones[0]->parent while ($zones[0]->parent and $zones[0]->parent->dns);
     $server{zones} = \@zones;
 
@@ -130,7 +132,7 @@ sub handle_update {
 sub handle_update_netspeed {
     my $self = shift;
     my $server_id = $self->req_param('server');
-    my $server = NTPPool::Server->retrieve($server_id);
+    my $server = NP::Model->server->fetch(id => $server_id);
     return NOT_FOUND unless $server and $server->admin == $self->user;
     if (my $netspeed = $self->req_param('netspeed')) {
         $server->netspeed($netspeed) if $netspeed =~ m/^\d+$/;
@@ -140,7 +142,7 @@ sub handle_update_netspeed {
         else {
             $server->join_zone('@');
         }
-        $server->update;
+        $server->save;
     }
 
     return $self->show_manage if $self->req_param('noscript');
@@ -173,7 +175,7 @@ sub handle_update_profile {
 
 sub netspeed_human {
     my ($self, $netspeed) = @_;
-    NTPPool::Server::_netspeed_human($netspeed);
+    NP::Model::Server::_netspeed_human($netspeed);
 }
 
 1;

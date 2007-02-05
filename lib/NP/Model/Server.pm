@@ -14,7 +14,7 @@ sub _resolve_zone {
     $zone
 }
 
-sub add_zone {
+sub join_zone {
     my ($self, $zone_name) = @_;
     my $zone = _resolve_zone($zone_name) or return;
     $self->add_zones($zone);
@@ -38,6 +38,20 @@ sub score {
 }
 
 sub admin { shift->user(@_) }
+
+sub netspeed_human {
+  my $self = shift;
+  my $netspeed = $self->netspeed;
+  _netspeed_human($netspeed);
+}
+
+sub _netspeed_human {
+  my $netspeed = shift;
+
+  return ($netspeed/1_000_000) . ' Gbit' if ($netspeed / 1_000_000 > 1);
+  return ($netspeed/1_000) . ' Mbit' if ($netspeed / 1_000 >= 1);
+  return "$netspeed Kbit";
+}
 
 
 package NP::Model::Server::Manager;

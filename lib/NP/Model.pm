@@ -356,7 +356,7 @@ __PACKAGE__->meta->setup(
     id          => { type => 'integer', not_null => 1 },
     name        => { type => 'varchar', default => '', length => 255, not_null => 1 },
     description => { type => 'varchar', length => 255 },
-    parent      => { type => 'integer' },
+    parent_id   => { type => 'integer' },
     dns         => { type => 'integer', default => 1, not_null => 1 },
   ],
 
@@ -367,7 +367,7 @@ __PACKAGE__->meta->setup(
   foreign_keys => [
     zone => {
       class       => 'NP::Model::Zone',
-      key_columns => { parent => 'id' },
+      key_columns => { parent_id => 'id' },
     },
   ],
 
@@ -389,7 +389,7 @@ __PACKAGE__->meta->setup(
   
     zones => {
       class      => 'NP::Model::Zone',
-      column_map => { id => 'parent' },
+      column_map => { id => 'parent_id' },
       type       => 'one to many',
     },
   ],
