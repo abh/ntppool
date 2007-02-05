@@ -86,3 +86,26 @@ alter table server_urls
 alter table scores drop key `server`, add primary key (server_id);
 alter table scores change score score_raw double NOT NULL default '0';
 
+#12
+alter table users
+   add unique key (username),
+   drop key users_email_key;
+
+#13
+alter table locations 
+   drop id,
+   add primary key (server_id, zone_id);
+
+alter table locations drop key `server`;
+
+rename table locations to server_zones;
+
+#14
+alter table servers
+  add score_ts datetime null,
+  add score_raw double not null default 0;
+
+update servers s, scores sc set s.score_raw=sc.score_raw, s.score_ts=sc.ts where s.id=sc.server_id;
+
+#15
+drop table scores;

@@ -7,53 +7,6 @@ use Combust::DB::Manager;
 
 our $SVN = q$Id$;
 
-{ package NP::Model::Location;
-
-use strict;
-
-use base qw(NP::DB::Object);
-
-__PACKAGE__->meta->setup(
-  table   => 'locations',
-
-  columns => [
-    id        => { type => 'integer', not_null => 1 },
-    server_id => { type => 'integer', default => '', not_null => 1 },
-    zone_id   => { type => 'integer', default => '', not_null => 1 },
-  ],
-
-  primary_key_columns => [ 'id' ],
-
-  unique_key => [ 'server_id', 'zone_id' ],
-
-  foreign_keys => [
-    server => {
-      class       => 'NP::Model::Server',
-      key_columns => { server_id => 'id' },
-    },
-  
-    zone => {
-      class       => 'NP::Model::Zone',
-      key_columns => { zone_id => 'id' },
-    },
-  ],
-);
-}
-
-{ package NP::Model::Location::Manager;
-
-use Combust::DB::Manager;
-our @ISA = qw(Combust::DB::Manager);
-
-sub object_class { 'NP::Model::Location' }
-
-__PACKAGE__->make_manager_methods('locations');
-}
-
-# Allow user defined methods to be added
-eval { require NP::Model::Location }
-  or $@ !~ m:^Can't locate NP/Model/Location.pm: and die $@;
-
 { package NP::Model::LogScore;
 
 use strict;
@@ -97,47 +50,6 @@ __PACKAGE__->make_manager_methods('log_scores');
 eval { require NP::Model::LogScore }
   or $@ !~ m:^Can't locate NP/Model/LogScore.pm: and die $@;
 
-{ package NP::Model::Score;
-
-use strict;
-
-use base qw(NP::DB::Object);
-
-__PACKAGE__->meta->setup(
-  table   => 'scores',
-
-  columns => [
-    server_id => { type => 'integer', not_null => 1 },
-    ts        => { type => 'timestamp', not_null => 1 },
-    score_raw => { type => 'scalar', default => '0', length => 64, not_null => 1 },
-  ],
-
-  primary_key_columns => [ 'server_id' ],
-
-  foreign_keys => [
-    server => {
-      class       => 'NP::Model::Server',
-      key_columns => { server_id => 'id' },
-      rel_type    => 'one to one',
-    },
-  ],
-);
-}
-
-{ package NP::Model::Score::Manager;
-
-use Combust::DB::Manager;
-our @ISA = qw(Combust::DB::Manager);
-
-sub object_class { 'NP::Model::Score' }
-
-__PACKAGE__->make_manager_methods('scores');
-}
-
-# Allow user defined methods to be added
-eval { require NP::Model::Score }
-  or $@ !~ m:^Can't locate NP/Model/Score.pm: and die $@;
-
 { package NP::Model::Server;
 
 use strict;
@@ -158,6 +70,8 @@ __PACKAGE__->meta->setup(
     netspeed       => { type => 'scalar', default => 1000, length => 8, not_null => 1 },
     created_on     => { type => 'datetime', default => 'now', not_null => 1 },
     updated_on     => { type => 'timestamp', not_null => 1 },
+    score_ts       => { type => 'datetime' },
+    score_raw      => { type => 'scalar', default => '0', length => 64, not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
@@ -172,22 +86,10 @@ __PACKAGE__->meta->setup(
   ],
 
   relationships => [
-    locations => {
-      class      => 'NP::Model::Location',
-      column_map => { id => 'server_id' },
-      type       => 'one to many',
-    },
-  
     log_scores => {
       class      => 'NP::Model::LogScore',
       column_map => { id => 'server_id' },
       type       => 'one to many',
-    },
-  
-    score => {
-      class      => 'NP::Model::Score',
-      column_map => { id => 'server_id' },
-      type       => 'one to one',
     },
   
     server_alert => {
@@ -200,6 +102,15 @@ __PACKAGE__->meta->setup(
       class      => 'NP::Model::ServerUrl',
       column_map => { id => 'server_id' },
       type       => 'one to many',
+    },
+  
+    zones => {
+      column_map    => { server_id => 'id' },
+      foreign_class => 'NP::Model::Zone',
+      map_class     => 'NP::Model::ServerZone',
+      map_from      => 'server',
+      map_to        => 'zone',
+      type          => 'many to many',
     },
   ],
 );
@@ -337,6 +248,50 @@ __PACKAGE__->make_manager_methods('server_urls');
 eval { require NP::Model::ServerUrl }
   or $@ !~ m:^Can't locate NP/Model/ServerUrl.pm: and die $@;
 
+{ package NP::Model::ServerZone;
+
+use strict;
+
+use base qw(NP::DB::Object);
+
+__PACKAGE__->meta->setup(
+  table   => 'server_zones',
+
+  columns => [
+    server_id => { type => 'integer', not_null => 1 },
+    zone_id   => { type => 'integer', not_null => 1 },
+  ],
+
+  primary_key_columns => [ 'server_id', 'zone_id' ],
+
+  foreign_keys => [
+    server => {
+      class       => 'NP::Model::Server',
+      key_columns => { server_id => 'id' },
+    },
+  
+    zone => {
+      class       => 'NP::Model::Zone',
+      key_columns => { zone_id => 'id' },
+    },
+  ],
+);
+}
+
+{ package NP::Model::ServerZone::Manager;
+
+use Combust::DB::Manager;
+our @ISA = qw(Combust::DB::Manager);
+
+sub object_class { 'NP::Model::ServerZone' }
+
+__PACKAGE__->make_manager_methods('server_zones');
+}
+
+# Allow user defined methods to be added
+eval { require NP::Model::ServerZone }
+  or $@ !~ m:^Can't locate NP/Model/ServerZone.pm: and die $@;
+
 { package NP::Model::User;
 
 use strict;
@@ -359,7 +314,10 @@ __PACKAGE__->meta->setup(
 
   primary_key_columns => [ 'id' ],
 
-  unique_key => [ 'email' ],
+  unique_keys => [
+    [ 'email' ],
+    [ 'username' ],
+  ],
 
   relationships => [
     servers => {
@@ -414,10 +372,13 @@ __PACKAGE__->meta->setup(
   ],
 
   relationships => [
-    locations => {
-      class      => 'NP::Model::Location',
-      column_map => { id => 'zone_id' },
-      type       => 'one to many',
+    servers => {
+      column_map    => { zone_id => 'id' },
+      foreign_class => 'NP::Model::Server',
+      map_class     => 'NP::Model::ServerZone',
+      map_from      => 'zone',
+      map_to        => 'server',
+      type          => 'many to many',
     },
   
     zone_server_counts => {
@@ -499,13 +460,12 @@ eval { require NP::Model::ZoneServerCount }
   sub db  { shift; NP::DB::Object->init_db(@_);      }
 
   my @classes = qw(
-    NP::Model::Location
     NP::Model::LogScore
-    NP::Model::Score
     NP::Model::Server
     NP::Model::ServerAlert
     NP::Model::ServerNote
     NP::Model::ServerUrl
+    NP::Model::ServerZone
     NP::Model::User
     NP::Model::Zone
     NP::Model::ZoneServerCount
@@ -514,12 +474,8 @@ eval { require NP::Model::ZoneServerCount }
     $_->meta->clear_object_cache for @classes;
   }
 
-  my $location;
-  sub location { $location ||= bless [], 'NP::Model::Location::Manager' }
   my $log_score;
   sub log_score { $log_score ||= bless [], 'NP::Model::LogScore::Manager' }
-  my $score;
-  sub score { $score ||= bless [], 'NP::Model::Score::Manager' }
   my $server;
   sub server { $server ||= bless [], 'NP::Model::Server::Manager' }
   my $server_alert;
@@ -528,6 +484,8 @@ eval { require NP::Model::ZoneServerCount }
   sub server_note { $server_note ||= bless [], 'NP::Model::ServerNote::Manager' }
   my $server_url;
   sub server_url { $server_url ||= bless [], 'NP::Model::ServerUrl::Manager' }
+  my $server_zone;
+  sub server_zone { $server_zone ||= bless [], 'NP::Model::ServerZone::Manager' }
   my $user;
   sub user { $user ||= bless [], 'NP::Model::User::Manager' }
   my $zone;

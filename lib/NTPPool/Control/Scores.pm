@@ -1,7 +1,6 @@
 package NTPPool::Control::Scores;
 use strict;
 use base qw(NTPPool::Control);
-use NTPPool::Server;
 use Apache::Constants qw(OK);
 
 sub render {

@@ -1,7 +1,7 @@
 package NTPPool::Control::Bulletin;
 use strict;
 use base qw(NTPPool::Control);
-use NTPPool::Server;
+use NP::Model;
 use Apache::Constants qw(OK);
 
 sub render {

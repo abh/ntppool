@@ -1,7 +1,7 @@
 package NTPPool::Control::Zone;
 use strict;
 use base qw(NTPPool::Control);
-use NTPPool::Server;
+use NP::Model;
 use Apache::Constants qw(OK);
 
 sub cache_info {
@@ -51,7 +51,7 @@ sub show_servers {
 sub render {
   my $self = shift;
   my $zone_name = $self->zone_name;
-  my ($zone) = NTPPool::Zone->search(name => $zone_name) or return 404;
+  my ($zone) = NP::Model->zone->fetch(name => $zone_name) or return 404;
   $self->tpl_param('zone' => $zone);
 
   $self->tpl_param('is_logged_in' => $self->show_servers_access );

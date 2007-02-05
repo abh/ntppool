@@ -1,7 +1,7 @@
 package NTPPool::Control::Manage;
 use strict;
 use base qw(NTPPool::Control);
-use NTPPool::Server;
+use NP::Model;
 use Apache::Constants qw(OK NOT_FOUND);
 use Socket qw(inet_ntoa);
 use Net::NTP;

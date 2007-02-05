@@ -2,7 +2,6 @@ package NTPPool::Control;
 use strict;
 use Apache::Constants qw(OK);
 use base qw(Combust::Control Combust::Control::Bitcard);
-use NTPPool::Server;
 use HTML::Prototype;
 
 $Combust::Control::Bitcard::cookie_name = 'npuid';
@@ -15,11 +14,6 @@ sub prototype {
 sub init {
   my $self = shift;
   
-  #my $lo = \%Class::DBI::Live_Objects;
-  #warn Data::Dumper->Dump([\$lo], [qw(lo)]) if defined $lo and %$lo;
-
-  Class::DBI->clear_object_index;
-
   if ($self->req_param('sig') or $self->req_param('bc_id')) {
     my $bc = $self->bitcard;
     my $bc_user = eval { $bc->verify($self->r) };
@@ -79,11 +73,10 @@ sub bc_info_required {
 
 sub count_by_continent {
     my $self = shift;
-    my $global = NTPPool::Zone->retrieve_by_name('@');
-    my @zones = sort { $a->description cmp $b->description }
-      NTPPool::Zone->search(parent => $global);
+    my $global = NP::Model->zone->fetch(name => '@');
+    my @zones = sort { $a->description cmp $b->description } $global->zones;
     push @zones, $global;
-    my $total = NTPPool::Zone->retrieve_by_name('.');
+    my $total =  NP::Model->zone->fetch(name => '.');
     push @zones, $total;
     \@zones
 }

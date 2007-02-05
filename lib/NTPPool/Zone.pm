@@ -17,12 +17,6 @@ sub sub_zone_count {
     SUB_ZONE_COUNT;
 }
 
-sub retrieve_by_name {
-    my ($class, $name) = @_;
-    my ($zone) = $class->search(name => $name);
-    $zone;
-}
-
 sub random_subzone_ids {
     my ($class, $count) = @_;
     $count = SUB_ZONE_COUNT if $count > SUB_ZONE_COUNT;

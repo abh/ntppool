@@ -109,10 +109,10 @@ if ($cmd eq "add") {
 
     # look if the email address is already registered
     my $email = shift @ARGV;
-    my ($user) = NTPPool::Admin->search(email => $email);
-    ($user) = NTPPool::Admin->search(username => $email) unless $user;
-    ($user) = NTPPool::Admin->search(id => $email) unless $user;
-    $user = NTPPool::Admin->create({ email => $email} ) unless $user;
+    my $user = NP::Model->user->fetch(email => $email);
+    $user = NP::Model->user->fetch(username => $email) unless $user;
+    $user = NP::Model->user->fetch(id => $email) unless $user;
+    $user = NP::Model->user->fetch_or_create(email => $email) unless $user;
 
     # do we have a hostname or an IP?
     my $hostname = shift @ARGV;
@@ -135,35 +135,36 @@ if ($cmd eq "add") {
     ntpdate $ip, "Bad server " . ($hostname ? $hostname : "") . "[$ip]:"
       or exit;
 
-    # insert into database
-    my @row = $db->selectrow_array("SELECT email FROM servers, users WHERE ip = '$ip' "
-                                   . "AND servers.admin = users.id");
-    if ($#row != -1) {
-        die "server $ip already in database for $row[0]\n";
+    my $server = NP::Model->server->fetch(ip => $ip); 
+    if ($server) {
+        die "server $ip already in database for ", $server->user->email, "\n";
     }
 
-    my $s = NTPPool::Server->create
-      ({ ip       => $ip,
-         hostname => $hostname,
-         admin    => $user->id,
-         in_pool  => 1,
-       });
+    $server = NP::Model->server->create
+      (ip       => $ip,
+       hostname => $hostname,
+       user_id  => $user->id,
+       in_pool  => 1,
+      );
+    $server->save;
+    
     for my $country (@ARGV) {
-        my $zone = NTPPool::Zone->retrieve_by_name($country);
-        $s->add_to_locations({ zone => $zone });
+        $server->add_zone($country);
     }
-        
+
     unless (defined $hostname) { $hostname = $ip; }
     my $z = join " ", @ARGV;
-    logsay($s->id . " add $email $hostname $z");
+    logsay($server->id . " add $email $hostname $z");
 
 }
 elsif ($cmd eq "edit") {
     my $arg = shift @ARGV or die "pool zones <host or IP>\n";
-    my $server = NTPPool::Server->find_server($arg);
+    my $server = NP::Model->server->find_server($arg);
     die "Could not find server $arg\n" unless $server;
     print server_information($server);
+    my $changes = 0;
     while (my $k = shift @ARGV) {
+        $changes++;
         print "\n";
         my $v = shift @ARGV;
         last unless defined $v;
@@ -175,56 +176,58 @@ elsif ($cmd eq "edit") {
             die "Don\'t know how to set $k\n";
         }
     }
-    if ($server->update > 0) {
+    if ($changes and $server->save(changes_only => 1) > 0) {
         print "\n\nUpdated =============\n";
         print server_information($server);
     }
 }
 elsif ($cmd eq "zones") {
     my $arg = shift @ARGV or die "pool zones <host or IP>\n";
-    my $server = NTPPool::Server->find_server($arg);
+    my $server = NP::Model->server->find_server($arg);
     die "Could not find server $arg\n" unless $server;
     print server_information($server);
     my @zones  = $server->zones;
     for my $zone_name (@ARGV) {
-        my @locations = $server->locations;
+        my @zones = $server->zones;
         if ($zone_name =~ s/^-//) {
-            my ($location) = grep { $_->zone->name eq $zone_name } @locations;
-            print "Could not find location '$zone_name' to delete\n" and next unless $location;
+            my ($zone) = grep { $_->name eq $zone_name } @zones;
+            print "Could not find location '$zone_name' to delete\n" and next unless $zone;
             $server->leave_zone($zone_name);
         }
         else {
             $zone_name =~ s/^\+//;
             next if grep { $zone_name eq $_->name } @zones;
-            my ($zone) = NTPPool::Zone->retrieve_by_name($zone_name);
+            my $zone = NP::Model->zone->fetch(name => $zone_name);
             print "Could not find '$zone_name'\n" and next unless $zone;
-            $server->join_zone($zone);
+            $server->add_zone($zone);
         }
     }
+    $server->save(cascade => 1);
     @zones  = $server->zones;
     print "Zones: ", join (", ", map { $_->name } @zones), "\n";
 }
 elsif ($cmd eq "rm") {
     my $arg = shift @ARGV
       or die "pool rm <host or IP>\n";
-    my $server = NTPPool::Server->find_server($arg);
+    my $server = NP::Model->server->find_server($arg);
     die "Could not find server $arg\n" unless $server;
     my $server_desc = (join " / ", grep { defined $_ } $server->ip, $server->hostname);
     logsay($server->id, "rm", $server_desc);
-    printf "%i, %s - %s\n", $server->id, $server_desc, $server->admin->email;
+    printf "%i, %s - %s\n", $server->id, $server_desc, $server->user->email;
     $server->delete;
 }
 elsif ($cmd eq "ip") {
     my ($from, $to) = @ARGV;
     $to or die "pool $cmd <host or IP> <IP>\n";
-    my $server = NTPPool::Server->find_server($from);
+    my $server = NP::Model->server->find_server($from);
     die "Could not find server $from\n" unless $server;
+    print server_information($server);
     my $server_desc = (join " / ", grep { defined $_ } $server->ip, $server->hostname);
     logsay($server->id, "ip", "$server_desc => $to");
     printf "%i, %s (%s) => %s\n", $server->id, $server_desc, $server->admin->email, $to;
     $server->ip($to);
     $server->score_raw(0);
-    $server->update;
+    $server->save;
 }
 elsif ($cmd eq "report") {
 
@@ -352,12 +355,17 @@ elsif ($cmd eq "scores") {
             $server->stratum($pkt{Stratum}) if $pkt{Stratum};
         }
 
+        local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
+
         $server->score_raw( $server->score_raw + $step );
-        $server->add_to_log_scores({ score  => $server->score, 
-                                     step   => $step,
-                                     offset => $offset,
-                                   });
-        $server->update;
+        $server->score_ts('now');
+
+        $server->add_log_scores({score  => $server->score_raw,
+                                 step   => $step,
+                                 offset => $offset,
+                                });
+        $server->save(cascade => 1);
+
     }
 }
 elsif ($cmd eq "zone") {
@@ -392,7 +400,8 @@ elsif ($cmd eq "zone") {
 
     my $ttl = 2700;
 
-    my $zones = NTPPool::Zone->search( dns => 1 );
+    my $zones = NP::Model->zone->get_zones_iterator( query => [ dns => 1 ] );
+
     while (my $zone = $zones->next) {
         my $name = $zone->name;
 	$name = '' if $name eq '@';
@@ -400,9 +409,9 @@ elsif ($cmd eq "zone") {
 
         my $entries =
           $db->selectall_arrayref("SELECT s.ip "
-                               . "FROM servers s, scores sc, locations l "
-                               . "WHERE l.server = s.id AND l.zone = ? AND s.in_pool = 1 "
-                               . "AND sc.server = s.id AND sc.score > 5", undef, $zone->id);
+                               . "FROM servers s, server_zones l "
+                               . "WHERE l.server_id = s.id AND l.zone_id = ? AND s.in_pool = 1 "
+                               . "AND s.score_raw > 5", undef, $zone->id);
 
         next unless $entries and @$entries;
 

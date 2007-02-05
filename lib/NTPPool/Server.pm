@@ -32,13 +32,6 @@ __PACKAGE__->add_trigger(before_delete =>
                          );
 
 
-__PACKAGE__->set_sql(check_due => qq{
-SELECT s.id
-FROM servers s left join scores sc ON(s.id=sc.server)
-WHERE
-  sc.score IS NULL or sc.ts < DATE_SUB( NOW(), INTERVAL 24 minute)
-ORDER BY sc.ts
-               });
 
 __PACKAGE__->set_sql(bad_score => qq{
                      SELECT s.id
@@ -132,22 +125,6 @@ sub _netspeed_human {
   return "$netspeed Kbit";
 }
 
-sub score_raw {
-  my $self = shift;
-  my ($score) = $self->_score;
-  if (@_) {
-      $score ||= NTPPool::Server::Score->create({ server => $self });
-      $score->score(shift @_);
-      $score->update;
-  }
-  $score = $score ? $score->score : 0;
-}
-
-sub score {
-  my $self = shift;
-  sprintf "%0.1f", $self->score_raw;
-}
-
 sub alert {
   my $self = shift;
   return $self->_alert || NTPPool::Server::Alert->create({server => $self});
@@ -181,15 +158,6 @@ sub log_scores_csv {
         $out .= $csv->string . "\n";
     }
     $out;
-}
-
-sub find_server {
-  my ($class, $arg) = @_;
-  my $server;
-  ($server) = $class->retrieve($arg) if ($arg =~ m/^\d+$/);
-  ($server) = $class->search(ip => $arg) unless $server; 
-  ($server) = $class->search(hostname => $arg) unless $server;
-  $server;
 }
 
 my $rrd_path = "$ENV{CBROOTLOCAL}/rrd/server";
