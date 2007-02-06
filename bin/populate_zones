@@ -7,11 +7,11 @@ use lib "$ENV{CBROOT}/lib";
 use Data::Dumper;
 use Locale::Object;
 
-use NTPPool::Zone;
+use NP::Model;
 
-my $zones = NTPPool::Zone->retrieve_all;
+my $zones = NP::Model->zone->get_zones_iterator;
 
-my ($global) = NTPPool::Zone->search(name => '@')
+my ($global) = NP::Model->zone->fetch(name => '@')
   or die "No global zone setup in the zones table";
 
 while (my $zone = $zones->next) {
@@ -31,9 +31,9 @@ while (my $zone = $zones->next) {
     my $country_name = $country->name;
     $country_name =~ s/,.*//;
     $zone->description($country_name) if $country_name;
-    my ($continent) = NTPPool::Zone->search(description => $country->continent->name);
-    $zone->parent($continent) if $continent;
+    my $continent = NP::Model->zone->get_zones(query => [ description => $country->continent->name ]);
+    $zone->parent_id($continent->[0]->id) if $continent and $continent->[0];
   }
 
-  $zone->update;
+  $zone->save;
 }

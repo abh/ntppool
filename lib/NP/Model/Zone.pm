@@ -35,13 +35,26 @@ sub random_subzone_ids {
 # because the relationship name didn't get setup right...
 sub parent { shift->zone(@_); }
 
-#sub stats_days_ago {
-#    NTPPool::Zone::Stats->search_days_ago(@_);
-#}
+sub stats_days_ago {
+    my ($self, $days_ago) = @_;
 
-#sub first_stats {
-#    NTPPool::Zone::Stats->first_stats(@_);
-#}
+    # local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
+
+    my $stats = NP::Model->zone_server_count->get_objects_from_sql
+        ( args => [$self->id, $days_ago],
+          sql  => q[SELECT *
+                    FROM zone_server_counts
+                    WHERE 
+                      zone_id = ? AND
+                      date = DATE_SUB(CURDATE(), INTERVAL ? DAY)
+                    ]
+          );
+    $stats && $stats->[0];
+}
+
+sub first_stats {
+    NP::Model->zone_server_count->first_stats(@_);
+}
 
 sub server_count {
   my $self = shift;

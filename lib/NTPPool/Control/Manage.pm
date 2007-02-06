@@ -67,6 +67,7 @@ sub handle_add {
              admin    => $self->user,
              in_pool  => 1,
              );
+        $s->join_zone('.');
         $s->join_zone($_) for @{$server->{zones}};
         #local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
         $s->save(cascade => 1);
@@ -133,7 +134,7 @@ sub handle_update_netspeed {
     my $self = shift;
     my $server_id = $self->req_param('server');
     my $server = NP::Model->server->fetch(id => $server_id);
-    return NOT_FOUND unless $server and $server->admin == $self->user;
+    return NOT_FOUND unless $server and $server->admin->id == $self->user->id;
     if (my $netspeed = $self->req_param('netspeed')) {
         $server->netspeed($netspeed) if $netspeed =~ m/^\d+$/;
         if ($server->netspeed < 768) {
@@ -156,6 +157,8 @@ sub handle_update_netspeed {
                                      '</a>' } $server->zones,
     };
 
+    #warn Data::Dumper->Dump([\$return],[qw(return)]);
+    
     return OK, $json->objToJson($return);
 
 }

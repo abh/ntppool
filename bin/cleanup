@@ -6,10 +6,11 @@ BEGIN { die "CBROOT required" unless $ENV{CBROOT}; }
 BEGIN { if ($ENV{CBROOTLOCAL}) { use lib "$ENV{CBROOTLOCAL}/lib" } }
 use lib "$ENV{CBROOT}/lib";
 
-use NTPPool::DBI;
+use NP::Model;
 
-my $dbh = NTPPool::DBI->dbh;
+my $dbh = NP::Model->dbh;
 
 $dbh->do(q[delete from log_scores where ts < date_sub( NOW(), interval 220 day) limit 5000]);
+
 
 

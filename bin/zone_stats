@@ -15,18 +15,18 @@ my $target_path = "$ENV{CBROOTLOCAL}/rrd/zonetargets";
 
 my $time = time;
  
-use NTPPool::Zone;
+use NP::Model;
 
 my %growth_targets = 
   (
    2005 => 0.45,
-   2006 => 0.75,
-   2007 => 0.70,
+   2006 => 0.60,
+   2007 => 0.60,
+   2008 => 0.60,
   );
 
-my $zones = NTPPool::Zone->retrieve_all;
-
-my $dbh = NTPPool::Zone->db_Main;
+my $zones = NP::Model->zone->get_zones_iterator;
+my $dbh   = NP::Model->dbh;
 
 if (@ARGV and $ARGV[0] eq "populate_all") {
     populate_all();
@@ -37,7 +37,7 @@ while (my $zone = $zones->next) {
     my $count_all    = $zone->server_count_all;
     #printf "%-8s %3i %3i\n", $zone->name, $count_active, $count_all;
     my $now = time;
-    $dbh->do(q[replace into zone_server_counts (zone,date,count_active,count_registered) 
+    $dbh->do(q[replace into zone_server_counts (zone_id,date,count_active,count_registered) 
                values (?,NOW(),?,?)],
              undef,
              $zone->id, $count_active, $count_all
@@ -166,7 +166,7 @@ sub update_target_rrd {
     my $last = DateTime->from_epoch( epoch => (RRDs::last target_path($zone) || 0));
 
     if ($last < $now) { 
-        my $z = NTPPool::Zone->retrieve_by_name($zone);
+        my $z = NP::Model->zone->fetch(name => $zone);
         my $first_stats = $z->first_stats;
         my $first_stats_date = $first_stats->date;
         my $start_year = ($first_stats_date->year < $last->year ? $last->year : $first_stats_date->year);

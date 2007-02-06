@@ -17,6 +17,7 @@ sub _resolve_zone {
 sub join_zone {
     my ($self, $zone_name) = @_;
     my $zone = _resolve_zone($zone_name) or return;
+    return if grep { $zone->id == $_->id } $self->zones;
     $self->add_zones($zone);
     return;
 }
