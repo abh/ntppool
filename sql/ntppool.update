@@ -115,3 +115,8 @@ alter table zones drop foreign key zones_ibfk_1;
 alter table zones
    change parent parent_id int unsigned,
    add constraint `zones_parent` foreign key (parent_id) references zones (id);
+
+#17
+alter table user_privileges add primary key (user_id);
+alter table user_privileges drop key `user`;
+

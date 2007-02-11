@@ -325,6 +325,12 @@ __PACKAGE__->meta->setup(
       column_map => { id => 'user_id' },
       type       => 'one to many',
     },
+  
+    user_privilege => {
+      class      => 'NP::Model::UserPrivilege',
+      column_map => { id => 'user_id' },
+      type       => 'one to one',
+    },
   ],
 );
 }
@@ -342,6 +348,47 @@ __PACKAGE__->make_manager_methods('users');
 # Allow user defined methods to be added
 eval { require NP::Model::User }
   or $@ !~ m:^Can't locate NP/Model/User.pm: and die $@;
+
+{ package NP::Model::UserPrivilege;
+
+use strict;
+
+use base qw(NP::DB::Object);
+
+__PACKAGE__->meta->setup(
+  table   => 'user_privileges',
+
+  columns => [
+    user_id               => { type => 'integer', not_null => 1 },
+    see_all_servers       => { type => 'integer', default => '0', not_null => 1 },
+    see_all_user_profiles => { type => 'integer', default => '0', not_null => 1 },
+  ],
+
+  primary_key_columns => [ 'user_id' ],
+
+  foreign_keys => [
+    user => {
+      class       => 'NP::Model::User',
+      key_columns => { user_id => 'id' },
+      rel_type    => 'one to one',
+    },
+  ],
+);
+}
+
+{ package NP::Model::UserPrivilege::Manager;
+
+use Combust::DB::Manager;
+our @ISA = qw(Combust::DB::Manager);
+
+sub object_class { 'NP::Model::UserPrivilege' }
+
+__PACKAGE__->make_manager_methods('user_privileges');
+}
+
+# Allow user defined methods to be added
+eval { require NP::Model::UserPrivilege }
+  or $@ !~ m:^Can't locate NP/Model/UserPrivilege.pm: and die $@;
 
 { package NP::Model::Zone;
 
@@ -467,6 +514,7 @@ eval { require NP::Model::ZoneServerCount }
     NP::Model::ServerUrl
     NP::Model::ServerZone
     NP::Model::User
+    NP::Model::UserPrivilege
     NP::Model::Zone
     NP::Model::ZoneServerCount
     );
@@ -488,6 +536,8 @@ eval { require NP::Model::ZoneServerCount }
   sub server_zone { $server_zone ||= bless [], 'NP::Model::ServerZone::Manager' }
   my $user;
   sub user { $user ||= bless [], 'NP::Model::User::Manager' }
+  my $user_privilege;
+  sub user_privilege { $user_privilege ||= bless [], 'NP::Model::UserPrivilege::Manager' }
   my $zone;
   sub zone { $zone ||= bless [], 'NP::Model::Zone::Manager' }
   my $zone_server_count;
