@@ -9,10 +9,23 @@ use Locale::Object;
 
 use NP::Model;
 
-my $zones = NP::Model->zone->get_zones_iterator;
+my $total = NP::Model->zone->fetch_or_create(name => '.');
+$total->description('All Pool Servers');
+$total->dns(0);
+$total->save;
 
-my ($global) = NP::Model->zone->fetch(name => '@')
-  or die "No global zone setup in the zones table";
+my $global = NP::Model->zone->fetch_or_create(name => '@');
+$global->description('Global');
+$global->parent($total);
+$global->save;
+
+while (<DATA>) {
+    chomp;
+    next unless $_ =~ m/\S/;
+    NP::Model->zone->fetch_or_create(name => $_)->save;
+}
+
+my $zones = NP::Model->zone->get_zones_iterator;
 
 while (my $zone = $zones->next) {
   next if length($zone->name) == 1;
@@ -37,3 +50,70 @@ while (my $zone = $zones->next) {
 
   $zone->save;
 }
+
+
+__DATA__
+africa
+asia
+europe
+north-america
+oceania
+south-america
+ae
+ar
+at
+au
+bd
+be
+bg
+br
+by
+ca
+ch
+cl
+cn
+cz
+de
+dk
+ee
+es
+fi
+fr
+gr
+gt
+hk
+hu
+id
+ie
+il
+in
+ir
+it
+jp
+kr
+lt
+lu
+mx
+my
+nl
+no
+nz
+ph
+pl
+pt
+ro
+ru
+se
+sg
+si
+sk
+th
+tr
+tw
+tz
+ua
+uk
+us
+yu
+za
+

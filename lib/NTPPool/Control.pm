@@ -74,6 +74,10 @@ sub bc_info_required {
 sub count_by_continent {
     my $self = shift;
     my $global = NP::Model->zone->fetch(name => '@');
+    unless ($global) {
+        warn "zones appear not to be setup, run ./bin/populate_zones!";
+        return;
+    }
     my @zones = sort { $a->description cmp $b->description } $global->zones;
     push @zones, $global;
     my $total =  NP::Model->zone->fetch(name => '.');
