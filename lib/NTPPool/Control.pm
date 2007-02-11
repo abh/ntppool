@@ -87,7 +87,7 @@ use base qw(NTPPool::Control Combust::Control::Basic);
 sub servers_with_urls {
     my $self = shift;
 
-    local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
+    # local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
 
     my $servers = NP::Model->server->get_servers
         (query => [ or =>

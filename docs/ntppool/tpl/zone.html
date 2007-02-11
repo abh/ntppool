@@ -112,6 +112,7 @@ See all zones in <a href="[% zone.parent.url %]">[% zone.parent.description %]</
 <td>[% server.stratum %]</td>
 <td>[% server.netspeed %]</td>
 <td>[% server.admin.username %]</td>
+<td>pool: [% server.in_pool ? 'yes' : 'no'%]</td>
 <td>
 [% FOR szone = server.zones %]
 <a href="[% szone.url %]">[% szone.name %]</a>

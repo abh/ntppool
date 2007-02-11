@@ -42,7 +42,9 @@ sub score {
 sub admin { shift->user(@_) }
 
 sub urls {
-    [ map { $_->url } shift->server_urls ]
+    my $urls = shift->server_urls;
+    return unless $urls and @$urls;
+    [ map { $_->url } @$urls ]
 }
 
 sub history {
