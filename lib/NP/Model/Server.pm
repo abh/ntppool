@@ -1,5 +1,6 @@
 package NP::Model::Server;
 use strict;
+use Text::CSV_XS;
 
 sub _resolve_zone {
     my ($zone_name) = @_;
@@ -40,6 +41,36 @@ sub score {
 
 sub admin { shift->user(@_) }
 
+sub urls {
+    [ map { $_->url } shift->server_urls ]
+}
+
+sub history {
+  my ($self, $count) = @_;
+
+  $count ||= 50;
+
+  my $history = NP::Model->log_score->get_log_scores_iterator
+      (query   => [ server_id => $self->id ],
+       sort_by => 'ts desc',
+       limit   => $count,
+       );
+}
+
+sub log_scores_csv {
+    my ($self, $count) = @_;
+    my $history = $self->history($count);
+    my $csv = Text::CSV_XS->new();
+    $csv->combine(qw(ts_epoch ts offset step score));
+    my $out = $csv->string . "\n";
+    while (my $l = $history->next) {
+        $csv->combine($l->ts->epoch, $l->ts->strftime("%F %T"), map { $l->$_ } qw(offset step score));
+        $out .= $csv->string . "\n";
+    }
+    $out;
+}
+
+
 sub netspeed_human {
   my $self = shift;
   my $netspeed = $self->netspeed;
@@ -53,6 +84,7 @@ sub _netspeed_human {
   return ($netspeed/1_000) . ' Mbit' if ($netspeed / 1_000 >= 1);
   return "$netspeed Kbit";
 }
+
 
 
 package NP::Model::Server::Manager;

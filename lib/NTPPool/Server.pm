@@ -4,7 +4,6 @@ use base qw(NTPPool::DBI);
 use NTPPool::Server::Score;
 use NTPPool::Zone;
 use RRDs;
-use Text::CSV_XS;
 use Time::Piece ();
 use Time::Piece::MySQL ();
 
@@ -123,30 +122,6 @@ sub alert {
 #  NTPPool::Server::LogScore->search_last_ok_score($self->id);
 #}
 
-sub history {
-  my ($self, $count) = @_;
-
-  $count ||= 50;
-
-  my $pager = NTPPool::Server::LogScore->pager;
-  $pager->page(1);
-  $pager->per_page($count);
-  $pager->order_by('ts desc');
-  $pager->search_where({ server => $self->id });
-}
-
-sub log_scores_csv {
-    my ($self, $count) = @_;
-    my $history = $self->history($count);
-    my $csv = Text::CSV_XS->new();
-    $csv->combine(qw(ts_epoch ts offset step score));
-    my $out = $csv->string . "\n";
-    while (my $l = $history->next) {
-        $csv->combine($l->ts->epoch, $l->ts->strftime("%F %T"), map { $l->$_ } qw(offset step score));
-        $out .= $csv->string . "\n";
-    }
-    $out;
-}
 
 my $rrd_path = "$ENV{CBROOTLOCAL}/rrd/server";
 sub rrd_path {

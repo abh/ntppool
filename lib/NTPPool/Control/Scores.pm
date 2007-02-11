@@ -2,6 +2,7 @@ package NTPPool::Control::Scores;
 use strict;
 use base qw(NTPPool::Control);
 use Apache::Constants qw(OK);
+use NP::Model;
 
 sub render {
   my $self = shift;
@@ -14,14 +15,14 @@ sub render {
   }
 
   if (my $ip = ($self->req_param('ip') || $self->req_param('server_ip'))) {
-      my $server = NTPPool::Server->find_server($ip) or return 404;
+      my $server = NP::Model->server->find_server($ip) or return 404;
       return $self->redirect('/scores/' . $server->ip) if $server;
   }
 
   if ($self->request->uri =~ m!^/scores/(.+)?!) {
       my $p = $1;
       if ($p) {
-          my ($server) = NTPPool::Server->find_server($p);
+          my ($server) = NP::Model->server->find_server($p);
           return 404 unless $server;
           return $self->redirect('/scores/' . $server->ip) unless $p eq $server->ip;
           return OK, $server->log_scores_csv(500), 'text/plain' if $self->req_param('log');

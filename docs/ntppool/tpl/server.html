@@ -35,9 +35,9 @@ Zones:
 
 </p>
 
-[% IF server.urls;
+[% IF (urls = server.urls);
   '<p class="serverurls">Server traffic/load stats and graphs:';
-     FOR url = server.urls %]
+     FOR url = urls %]
 <a rel="nofollow" href="[% url | html %]">[% url | html %]</a><br />
 [%   END;
    '</p>';
