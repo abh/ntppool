@@ -5,6 +5,7 @@ use Net::DNS::Resolver;
 use Apache::Constants qw(OK);
 use DateTime::Duration;
 use DateTime::Format::Duration;
+use Combust::Config;
 
 sub render {
   my $self = shift;
@@ -18,7 +19,8 @@ sub render {
 
   $res->nameserver('ns1.us.bitnames.com', 'ns2.us.bitnames.com');
 
-  my $pool_domain = $config->site->{ntppool}->{pool_domain} or die "pool_domain configuration not setup";
+  my $pool_domain = Combust::Config->new->site->{ntppool}->{pool_domain}
+    or die "pool_domain configuration not setup";
 
   my $query = $res->query($pool_domain, "NS");
 
