@@ -1,5 +1,7 @@
 package NP::Model::Zone;
 use strict;
+use Combust::Config;
+my $config = Combust::Config->new;
 
 sub url {
   my $self = shift;
@@ -8,9 +10,9 @@ sub url {
 
 sub fqdn {
   my $self = shift;
-  my $pool_name = 'pool.ntp.org';
+  my $pool_name = $config->site->{ntppool}->{pool_domain} or die "pool_domain configuration not setup";
   return $pool_name if $self->name eq '@';
-  join ".", $self->name, 'pool.ntp.org';
+  join ".", $self->name, $pool_name;
 }
 
 use constant SUB_ZONE_COUNT => 3;

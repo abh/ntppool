@@ -5,6 +5,7 @@ use strict;
 use lib "$ENV{CBROOTLOCAL}/lib";
 use lib "$ENV{CBROOT}/lib";
 use Combust::DB;
+use Combust::Config;
 use List::Util qw(shuffle);
 use Net::hostent;
 use Net::NTP;
@@ -23,6 +24,9 @@ my $gi = Geo::IP->new(GEOIP_STANDARD);
 use NP::Model;
 
 use constant LOGFILE => "$ENV{CBROOTLOCAL}/log";
+
+my $pool_domain = Combust::Config->new->site->{ntppool}->{pool_domain}
+  or die "pool_domain configuration not setup";
 
 $Net::NTP::TIMEOUT = 2;
 
@@ -244,7 +248,7 @@ elsif ($cmd eq "report") {
     my $head = "";
 
     $rcpt and $head = <<EOT;
-From: pool.ntp.org monitoring script <clockmaster\@fortytwo.ch>
+From: $pool_domain monitoring script <clockmaster\@fortytwo.ch>
 To: <$rcpt>
 EOT
 
@@ -357,7 +361,7 @@ elsif ($cmd eq "scores") {
             $server->stratum($pkt{Stratum}) if $pkt{Stratum};
         }
 
-        local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
+        # local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
 
         $server->score_raw( $server->score_raw + $step );
         $server->score_ts('now');
@@ -372,7 +376,7 @@ elsif ($cmd eq "scores") {
 }
 elsif ($cmd eq "zone") {
 
-    my $file = "bsb-out/pool.ntp.org";
+    my $file = "$ENV{CBROOTLOCAL}/dns/$pool_domain";
     open(my $fh, ">$file.tmp") or die "Could not open $file.tmp: $!";
 
     open HEAD, "<header"
@@ -389,6 +393,10 @@ elsif ($cmd eq "zone") {
     opendir my $dir, $vendordir or die "could not open '$vendordir' dir: $!";
     my @vendor_files = grep { $_ !~ /\~$/ and -f $_ } map { "$vendordir/$_" } readdir($dir);
     closedir $dir;
+    
+    # temporary hack to disable the hardcoded vendor files for
+    # development sandboxes
+    @vendor_files = () unless $pool_domain eq 'pool.ntp.org'; 
 
     for my $file (@vendor_files) {
        open my $vfh, $file or die "could not open $file: $!";
@@ -430,7 +438,7 @@ elsif ($cmd eq "zone") {
                 @$entries = shuffle(@$entries);
                 my $i;
                 foreach my $e (@$entries) {
-                    print $fh "+$z${name}pool.ntp.org:$$e[0]:$ttl\n";
+                    print $fh "+$z${name}${pool_domain}:$$e[0]:$ttl\n";
                     $i++;
                     last if ($i >= 14);
                 }
@@ -441,7 +449,7 @@ elsif ($cmd eq "zone") {
             @$entries = shuffle(@$entries);
             foreach my $z (("", "0.", "1.", "2.", "3.")) {
                 for (my $i = 0 ; $i < $min_non_duplicate_size; $i++) {
-                    print $fh "+$z${name}pool.ntp.org:", ${shift @$entries}[0], ":$ttl\n";
+                    print $fh "+$z${name}${pool_domain}:", ${shift @$entries}[0], ":$ttl\n";
                 }
             }
         }

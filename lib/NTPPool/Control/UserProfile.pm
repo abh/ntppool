@@ -14,8 +14,9 @@ sub profile_user {
     my $self = shift;
     return $self->{_profile_user} if $self->{_profile_user};
     my $username = $self->uri_username;
-    my ($user) = NTPPool::Admin->search(username => $username);
-    ($user) = NTPPool::Admin->search(id => $username) unless $user;
+    my $user = NP::Model->user->get_users(query => [ username => $username ]);
+    $user = $user && $user->[0];
+    $user = NP::Model->user->fetch(id => $username) unless $user;
     $self->{_profile_user} = $user;
 }
 

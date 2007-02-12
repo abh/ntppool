@@ -18,7 +18,9 @@ sub render {
 
   $res->nameserver('ns1.us.bitnames.com', 'ns2.us.bitnames.com');
 
-  my $query = $res->query("pool.ntp.org", "NS");
+  my $pool_domain = $config->site->{ntppool}->{pool_domain} or die "pool_domain configuration not setup";
+
+  my $query = $res->query($pool_domain, "NS");
 
   my %servers;
   if ($query) {
@@ -38,7 +40,7 @@ sub render {
 
   for my $ns (keys %servers) {
     $res->nameserver($ns);
-    $servers{$ns}->{socket} = $res->bgsend('pool.ntp.org', 'SOA');
+    $servers{$ns}->{socket} = $res->bgsend($pool_domain, 'SOA');
   }
 
   for my $ns (sort keys %servers) {
