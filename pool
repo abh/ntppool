@@ -193,6 +193,7 @@ elsif ($cmd eq "zones") {
     my $arg = shift @ARGV or die "pool zones <host or IP>\n";
     my $server = NP::Model->server->find_server($arg);
     die "Could not find server $arg\n" unless $server;
+    print "\n";
     print server_information($server);
     my @zones  = $server->zones;
     for my $zone_name (@ARGV) {
@@ -210,7 +211,8 @@ elsif ($cmd eq "zones") {
             $server->join_zone($zone);
         }
     }
-    $server->save(cascade => 1);
+    $server->save;
+
     @zones  = $server->zones;
     print "Zones: ", join (", ", map { $_->name } @zones), "\n";
 }

@@ -18,18 +18,19 @@ sub _resolve_zone {
 sub join_zone {
     my ($self, $zone_name) = @_;
     my $zone = _resolve_zone($zone_name) or return;
-    return if grep { $zone->id == $_->id } $self->zones;
-    $self->add_zones($zone);
-    return;
+    my $zones = $self->zones;
+    return if grep { $zone->id == $_->id } @$zones;
+    push @$zones, $zone;
+    $self->zones($zones);
 }
 
 sub leave_zone {
     my ($self, $zone_name) = @_;
     my $zone = _resolve_zone($zone_name) or return;
     # TODO: figure out how to do this on the $self object... :-/
-    my $server_zone = NP::Model->server_zone->fetch
-      ( zone_id => $zone->id, server_id => $self->id );
-    $server_zone && $server_zone->delete;
+    my $zones = $self->zones;
+    $zones = [ grep { $zone->id != $_->id } @$zones ];
+    $self->zones($zones);
 }
 
 #  local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
