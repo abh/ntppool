@@ -53,7 +53,7 @@ sub history {
 
   $count ||= 50;
 
-  my $history = NP::Model->log_score->get_log_scores_iterator
+  my $history = NP::Model->log_score->get_log_scores
       (query   => [ server_id => $self->id ],
        sort_by => 'ts desc',
        limit   => $count,
@@ -66,7 +66,7 @@ sub log_scores_csv {
     my $csv = Text::CSV_XS->new();
     $csv->combine(qw(ts_epoch ts offset step score));
     my $out = $csv->string . "\n";
-    while (my $l = $history->next) {
+    for my $l (@$history) {
         $csv->combine($l->ts->epoch, $l->ts->strftime("%F %T"), map { $l->$_ } qw(offset step score));
         $out .= $csv->string . "\n";
     }
