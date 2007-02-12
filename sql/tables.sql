@@ -124,4 +124,16 @@ CREATE TABLE server_urls (
   constraint server_urls_server foreign key (server) REFERENCES servers(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE event_log (
+  `id` int(10) unsigned NOT NULL auto_increment primary key,
+  event_time datetime not null,
+  object_id int unsigned not null,
+  object_type varchar(255) not null,
+  `event` varchar(255) not null,
+  message varchar(255) not null,
+  key (event_time),
+  key (object_id, object_type),
+  key (event)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 
