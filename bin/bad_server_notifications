@@ -8,27 +8,30 @@ use lib "$ENV{CBROOT}/lib";
 use Combust::Config;
 use Combust::Template;
 
-use NTPPool::Admin;
 use Email::Send;
 use Email::Simple;
 use Email::Date;
 use Sys::Hostname qw(hostname);
 
+use NP::Model;
+
 my $config = Combust::Config->new;
 
 my $production = $config->site->{ntppool}->{servername} eq 'www.pool.ntp.org';
 
-NTPPool::DBI->dbh->selectrow_array(q[SELECT GET_LOCK("notifications", 0)]) or exit;
+my $dbh = NP::Model->dbh;
 
-NTPPool::DBI->dbh->do(q[delete from sa using server_alerts sa inner join scores sc using (server) where sc.score > 0]);
+$dbh->selectrow_array(q[SELECT GET_LOCK("notifications", 0)]) or exit;
 
-my $admins = NTPPool::Admin->search_admins_to_notify;
+$dbh->do(q[delete from sa using server_alerts sa inner join servers s on (s.id=sa.server_id) where s.score_raw > 0]);
+
+my $admins = NP::Model->user->admins_to_notify;
 
 my $tpl = Combust::Template->new;
 
 my $i = 0;
 
-while (my $admin = $admins->next) {
+for my $admin (@$admins) {
     my $param = {admin => $admin};
     my @bad_servers = $admin->bad_servers;
     $param->{bad_servers} = \@bad_servers;
