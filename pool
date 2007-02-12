@@ -117,6 +117,7 @@ if ($cmd eq "add") {
     $user = NP::Model->user->fetch(username => $email) unless $user;
     $user = NP::Model->user->fetch(id => $email) unless $user;
     $user = NP::Model->user->fetch_or_create(email => $email) unless $user;
+    $user->save;
 
     # do we have a hostname or an IP?
     my $hostname = shift @ARGV;
@@ -150,13 +151,14 @@ if ($cmd eq "add") {
        user_id  => $user->id,
        in_pool  => 1,
       );
-    $server->save;
 
     $server->join_zone('.');
     
     for my $country (@ARGV) {
         $server->join_zone($country);
     }
+
+    $server->save;
 
     unless (defined $hostname) { $hostname = $ip; }
     my $z = join " ", @ARGV;

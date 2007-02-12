@@ -115,6 +115,7 @@ sub get_server_info {
     my @zones;
     push @zones, $country_zone if $country_zone;
     push @zones, NP::Model->zone->fetch(name => '@') unless @zones;
+    die "the server admin forgot to run ./bin/populate_zones" unless @zones;
     unshift @zones, $zones[0]->parent while ($zones[0]->parent and $zones[0]->parent->dns);
     $server{zones} = \@zones;
 
