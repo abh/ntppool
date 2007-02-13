@@ -120,3 +120,8 @@ alter table zones
 alter table user_privileges add primary key (user_id);
 alter table user_privileges drop key `user`;
 
+#18
+alter table users change email email varchar(255) not null;
+
+
+

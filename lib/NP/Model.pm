@@ -91,19 +91,25 @@ __PACKAGE__->meta->setup(
       column_map => { id => 'server_id' },
       type       => 'one to many',
     },
-  
+
     server_alert => {
       class      => 'NP::Model::ServerAlert',
       column_map => { id => 'server_id' },
       type       => 'one to one',
     },
-  
+
+    server_notes => {
+      class      => 'NP::Model::ServerNote',
+      column_map => { id => 'server_id' },
+      type       => 'one to many',
+    },
+
     server_urls => {
       class      => 'NP::Model::ServerUrl',
       column_map => { id => 'server_id' },
       type       => 'one to many',
     },
-  
+
     zones => {
       column_map    => { server_id => 'id' },
       foreign_class => 'NP::Model::Zone',
@@ -191,6 +197,13 @@ __PACKAGE__->meta->setup(
   primary_key_columns => [ 'id' ],
 
   unique_key => [ 'server_id', 'name' ],
+
+  foreign_keys => [
+    server => {
+      class       => 'NP::Model::Server',
+      key_columns => { server_id => 'id' },
+    },
+  ],
 );
 }
 
@@ -269,7 +282,7 @@ __PACKAGE__->meta->setup(
       class       => 'NP::Model::Server',
       key_columns => { server_id => 'id' },
     },
-  
+
     zone => {
       class       => 'NP::Model::Zone',
       key_columns => { zone_id => 'id' },
@@ -302,14 +315,16 @@ __PACKAGE__->meta->setup(
   table   => 'users',
 
   columns => [
-    id             => { type => 'integer', not_null => 1 },
-    email          => { type => 'varchar', default => '', length => 255, not_null => 1 },
-    name           => { type => 'varchar', length => 255 },
-    pass           => { type => 'varchar', length => 255 },
-    nomail         => { type => 'enum', default => '0', not_null => 1, values => [ '0', 1 ] },
-    bitcard_id     => { type => 'character', length => 40 },
-    username       => { type => 'varchar', length => 40 },
-    public_profile => { type => 'integer', default => '0', not_null => 1 },
+    id                => { type => 'integer', not_null => 1 },
+    email             => { type => 'varchar', default => '', length => 255, not_null => 1 },
+    name              => { type => 'varchar', length => 255 },
+    pass              => { type => 'varchar', length => 255 },
+    nomail            => { type => 'enum', default => '0', not_null => 1, values => [ '0', 1 ] },
+    bitcard_id        => { type => 'character', length => 40 },
+    username          => { type => 'varchar', length => 40 },
+    public_profile    => { type => 'integer', default => '0', not_null => 1 },
+    organization_name => { type => 'varchar', length => 150 },
+    organization_url  => { type => 'varchar', length => 150 },
   ],
 
   primary_key_columns => [ 'id' ],
@@ -325,7 +340,7 @@ __PACKAGE__->meta->setup(
       column_map => { id => 'user_id' },
       type       => 'one to many',
     },
-  
+
     user_privilege => {
       class      => 'NP::Model::UserPrivilege',
       column_map => { id => 'user_id' },
@@ -412,7 +427,7 @@ __PACKAGE__->meta->setup(
   unique_key => [ 'name' ],
 
   foreign_keys => [
-    zone => {
+    parent => {
       class       => 'NP::Model::Zone',
       key_columns => { parent_id => 'id' },
     },
@@ -427,13 +442,13 @@ __PACKAGE__->meta->setup(
       map_to        => 'server',
       type          => 'many to many',
     },
-  
+
     zone_server_counts => {
       class      => 'NP::Model::ZoneServerCount',
       column_map => { id => 'zone_id' },
       type       => 'one to many',
     },
-  
+
     zones => {
       class      => 'NP::Model::Zone',
       column_map => { id => 'parent_id' },
