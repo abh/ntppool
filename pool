@@ -76,7 +76,7 @@ sub logsay {
 
 sub server_information {
     my $server = shift;
-    my @zones  = $server->zones;
+    my @zones  = $server->zones_display;
     my @r;
     push @r, sprintf "IP: %s, ID: %i, username: %s email: %s\n",
       $server->ip,
@@ -211,7 +211,7 @@ elsif ($cmd eq "zones") {
     }
     $server->save;
 
-    @zones  = $server->zones;
+    @zones  = $server->zones_display;
     print "Zones: ", join (", ", map { $_->name } @zones), "\n";
 }
 elsif ($cmd eq "rm") {

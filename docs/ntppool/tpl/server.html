@@ -29,7 +29,7 @@ Server admin: <a href="/user/[% (server.admin.username || server.admin.id) | htm
 >[% server.admin.username || server.admin.email %]</a><br/>
 [% END %]
 Zones:
-[% FOR zone = server.zones %]
+[% FOR zone = server.zones_display %]
 <a href="[% zone.url %]">[% zone.name %]</a>
 [% END  %]<br/>
 

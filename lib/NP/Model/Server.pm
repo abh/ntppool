@@ -51,6 +51,13 @@ sub leave_zone {
 
 #  local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
 
+sub zones_display {
+    my $self = shift;
+    my $zones = [ grep { $_->name ne '.' } sort { $a->name cmp $b->name } @{ $self->zones } ];
+    wantarray ? @$zones : $zones;
+}
+
+
 sub score {
   my $self = shift;
   sprintf "%0.1f", $self->score_raw;
