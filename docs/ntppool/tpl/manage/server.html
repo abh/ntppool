@@ -9,7 +9,7 @@ Current score: <b>[% server.score %]</b><br />
 
 Zones:
 <span id="zones_[% server.id %]">
-[% FOR zone = server.zones %]
+[% FOR zone = server.zones_display %]
 <a href="[% zone.url %]">[% zone.name %]</a>
 [% END  %]
 </span>

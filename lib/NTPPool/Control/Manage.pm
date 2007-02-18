@@ -154,7 +154,7 @@ sub handle_update_netspeed {
                                      '<a href="/zone/',
                                      $_->name, '">',
                                      $_->name,
-                                     '</a>' } $server->zones,
+                                     '</a>' } $server->zones_display,
     };
 
     #warn Data::Dumper->Dump([\$return],[qw(return)]);
