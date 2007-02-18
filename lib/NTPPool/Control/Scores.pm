@@ -10,7 +10,7 @@ sub render {
   return $self->redirect('/scores/') if ($self->request->uri =~ m!^/s/?$!);
 
   if ($self->request->uri =~ m!^/s/([^/]+)!) {
-    my $server = NTPPool::Server->find_server($1) or return 404;
+    my $server = NP::Model->server->find_server($1) or return 404;
     return $self->redirect('/scores/' . $server->ip);
   }
 

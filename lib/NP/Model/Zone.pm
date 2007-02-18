@@ -34,9 +34,6 @@ sub random_subzone_ids {
     return keys %ids;
 }
 
-# because the relationship name didn't get setup right...
-sub parent { shift->zone(@_); }
-
 sub stats_days_ago {
     my ($self, $days_ago) = @_;
 

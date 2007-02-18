@@ -17,12 +17,12 @@ while (my $server = $servers->next) {
     if ($populate_all) {
         #warn "Server: ", $server->id, " / ", $server->ip;
         my $scores = NP::Model->log_score->get_log_scores_iterator
-          (query => [ server => $server ], 
+          (query => [ server_id => $server->id ], 
            # ts => { '>', '2005-08-22 04:40:00' },
            sort_by => 'ts'
           );
         while (my $ls = $scores->next) {
-            warn "got ls, ts: ", $ls->ts;
+            # warn "got ls, ts: ", $ls->ts;
             $ls->update_rrd;
         } 
     }

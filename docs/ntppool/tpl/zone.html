@@ -91,9 +91,9 @@ See all zones in <a href="[% zone.parent.url %]">[% zone.parent.description %]</
   END;
 %]
 
-[% IF zone.children %]
+[% IF zone.zones %]
 <p>
-[% FOR child = zone.children %]
+[% FOR child = zone.zones %]
 <a href="[% child.url %][% show_servers ? '?show_servers=1' : '' %]">[% child.description %]</a> &#8212; [% child.fqdn %] ([% child.server_count %])<br />
 
 [% END %]

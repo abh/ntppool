@@ -42,9 +42,7 @@ sub update_rrd {
 
     $self->create_rrd;
 
-    warn join " / ", $self->id, $self->ts; #, $self->ts->epoch;
-
-    warn "REF TS: ", ref $self->ts;
+    #warn join " / ", $self->id, $self->ts; #, $self->ts->epoch;
 
     RRDs::update $self->server->rrd_path,
         (
