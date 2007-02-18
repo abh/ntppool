@@ -17,12 +17,6 @@ __PACKAGE__->might_have('_score'  => 'NTPPool::Server::Score');
 __PACKAGE__->might_have('_alert'  => 'NTPPool::Server::Alert');
 
 __PACKAGE__->add_trigger( after_create => \&setup_rrd );
-__PACKAGE__->add_trigger( after_create => \&setup_zones );
-
-__PACKAGE__->has_a('created_on' => 'Time::Piece', 
-                   inflate => 'from_mysql_datetime',
-                   deflate => 'mysql_datetime',
-                   );
 
 __PACKAGE__->add_trigger(before_create => sub{ $_[0]->set(created_on => Time::Piece->new() ) } );
 
@@ -64,10 +58,6 @@ __PACKAGE__->set_sql( bad_servers_to_remove => qq{
                             AND (sa.last_score+10) >= sc.score
                });
 
-sub setup_zones {
-    my $self = shift;
-    $self->join_zone('.');
-}
 
 sub note {
     my ($self, $name) = @_;
@@ -79,163 +69,17 @@ sub note {
     $note->note;
 }
 
-sub leave_zone {
-    my ($self, $zone) = @_;
-    $zone = NTPPool::Zone->retrieve_by_name($zone) unless ref $zone;
-    my ($location) = NTPPool::Location->search( server => $self, zone => $zone );
-    $location->delete if $location;
-}
-
-sub join_zone {
-    my ($self, $zone) = @_;
-    $zone = NTPPool::Zone->retrieve_by_name($zone) unless ref $zone;
-    NTPPool::Location->find_or_create({ zone => $zone, server => $self });
-}
-
-sub setup_rrd {
-    my $self = shift;
-    my $start_score = -5;
-    my $ls = $self->add_to_log_scores({ step => 1, score => $start_score, offset => 0 });
-    $self->score_raw($start_score);
-    $self->update_graphs;
-}
-
-sub zones {
-  my $self = shift;
-  grep { $_->name ne '.' } sort { $a->name cmp $b->name } map { $_->zone } $self->locations;
-}
-
 sub country {
   my $self = shift;
   my ($country) = grep { length $_->name == 2 } $self->zones;
   $country && $country->name;
 }
 
-
 sub alert {
   my $self = shift;
   return $self->_alert || NTPPool::Server::Alert->create({server => $self});
 } 
 
-#sub last_ok_score {
-#  my $self = shift;
-#  NTPPool::Server::LogScore->search_last_ok_score($self->id);
-#}
-
-
-my $rrd_path = "$ENV{CBROOTLOCAL}/rrd/server";
-sub rrd_path {
-    my $self = shift;
-    "$rrd_path/" . $self->id . ".rrd";
-}
-
-sub graph_filename {
-    my ($self, $name) = @_;
-    $self->id . ($name ? "-$name" : "") . ".png";
-}
-
-sub graph_path {
-    my $self = shift;
-   "$rrd_path/graph/" . $self->graph_filename(@_);
-}
-
-sub graph_uri {
-    my $self = shift;
-    "/scores/graph/" . $self->graph_filename(@_);
-} 
-
-sub update_graphs {
-    my $server = shift;
-
-    my @defaults = (
-                    '--lazy',
-                    '--end'    => 'now',
-                    '--start'  => 'end-10d',
-                    '--width'  => 420,
-                    '--height' => 130,
-                   );
-
-    offset_graph($server, \@defaults);
-    score_graph($server, \@defaults);
-}
-
-sub score_graph {
-    my ($server, $defaults) = @_;
-
-    my $path = $server->graph_path('score');
-    my $rrd  = $server->rrd_path;
-
-    my $title = "Score history for " . $server->ip;
-
-    my @options = (@$defaults,
-                   '--height' => 160,
-                   '--title'  => $title,
-                   '--lower-limit' => -10,
-                   '--upper-limit' => 20,
-#                   '--alt-autoscale-max',
-                   '--slope-mode',
-                   qq[DEF:score=$rrd:score:AVERAGE],
-                   qq[DEF:step=$rrd:step:AVERAGE],
-                   q[CDEF:step_blue=step,1,LT,INF,0,IF],
-                   q[CDEF:step_yellow=step,0.6,LT,INF,0,IF],
-                   q[CDEF:step_orange=step,-0.9,LT,INF,0,IF],
-                   q[CDEF:step_red=step,-3.9,LT,INF,0,IF],
-                   q[CDEF:step_white=step,0,EQ,INF,0,IF],
-
-                   qq[AREA:step_blue#9999FF:],
-                   qq[AREA:step_yellow#EEEE33:],
-                   qq[AREA:step_orange#FFAA22:],
-                   qq[AREA:step_red#FF6666:],
-                   qq[AREA:step_white#FFFFFF],
-                   q[LINE2:5#660000:Bad server cutoff],
-                   q[LINE1:20#000000:],
-                   qq[LINE2:score#00BB00:Score],
-#                   qq[LINE1:step#001100:Step],
-                  );
-
-    RRDs::graph($path, @options);
-    my $ERROR = RRDs::error();
-    if ($ERROR) {
-        warn "$0: unable to create '$path': $ERROR\n";
-    }
-}
-
-
-sub offset_graph {
-    my ($server, $defaults) = @_;
-
-    my $path = $server->graph_path('offset');
-    my $rrd  = $server->rrd_path;
-
-    my $title = "Offset history for " . $server->ip;
-
-    my @options = (@$defaults,
-                   '--width'  => 420,
-                   '--height' => 130,
-                   '--title'  => $title,
-                   '--alt-autoscale-max',
-                    '--slope-mode',
-                   #'--logarithmic', # get empty graphs with this enabled
-                   #'--no-gridfit',
-                   #qq[DEF:score=$rrd:score:AVERAGE],
-                   qq[DEF:offset_avg=$rrd:offset:AVERAGE],
-                   qq[DEF:offset_top=$rrd:offset:MAX],
-                   qq[DEF:offset_bot=$rrd:offset:MIN],
-                   
-                   q[CDEF:offset_area=offset_top,offset_bot,-],
-
-                   q[LINE1:offset_bot#00FF00:Minimum offset],
-                   q[AREA:offset_area#FFBFBF::STACK],  
-                   q[LINE1:offset_top#FF0000:Maximum offset],
-                   q[LINE1:offset_avg#000000:Offset],
-                  );
-
-    RRDs::graph($path, @options);
-    my $ERROR = RRDs::error();
-    if ($ERROR) {
-        warn "$0: unable to create '$path': $ERROR\n";
-    }
-}
 
 
 1;

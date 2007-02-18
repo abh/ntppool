@@ -152,8 +152,6 @@ if ($cmd eq "add") {
        in_pool  => 1,
       );
 
-    $server->join_zone('.');
-    
     for my $country (@ARGV) {
         $server->join_zone($country);
     }

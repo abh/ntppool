@@ -19,7 +19,7 @@ __PACKAGE__->meta->setup(
   columns => [
     id        => { type => 'integer', not_null => 1 },
     server_id => { type => 'integer', default => '', not_null => 1 },
-    ts        => { type => 'timestamp', not_null => 1 },
+    ts        => { type => 'datetime', default => 'now', not_null => 1 },
     score     => { type => 'scalar', default => '', length => 64, not_null => 1 },
     step      => { type => 'scalar', default => '', length => 64, not_null => 1 },
     offset    => { type => 'scalar', length => 64 },

@@ -67,7 +67,6 @@ sub handle_add {
              admin    => $self->user,
              in_pool  => 1,
              );
-        $s->join_zone('.');
         $s->join_zone($_) for @{$server->{zones}};
         #local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
         $s->save(cascade => 1);
