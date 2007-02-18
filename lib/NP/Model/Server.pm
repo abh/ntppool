@@ -61,7 +61,7 @@ sub zones_display {
 
 sub score {
   my $self = shift;
-  croak "Can't set 'score' - use 'score_raw' if @_;
+  croak "Can't set 'score' - use 'score_raw'" if @_;
   sprintf "%0.1f", $self->score_raw;
 }
 
@@ -146,7 +146,7 @@ sub update_graphs {
     my @defaults = (
                     '--lazy',
                     '--end'    => 'now',
-                    '--start'  => 'end-10d',
+                    '--start'  => 'end-3d',
                     '--width'  => 420,
                     '--height' => 130,
                    );
