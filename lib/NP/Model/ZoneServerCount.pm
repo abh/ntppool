@@ -1,6 +1,11 @@
 package NP::Model::ZoneServerCount;
 use strict;
+use Time::Duration;
 
+sub ago {
+    my $self = shift;
+    Time::Duration::ago(DateTime->today->epoch - $self->date->epoch, 2);
+}
 
 package NP::Model::ZoneServerCount::Manager;
 use strict;
@@ -24,12 +29,6 @@ sub first_stats {
     return unless $id;
     $class->fetch(id => $id);
 } 
-
-sub ago {
-    my $self = shift;
-    Time::Duration::ago(DateTime->now->epoch - $self->date->epoch, 2);
-}
-
 
 
 1;
