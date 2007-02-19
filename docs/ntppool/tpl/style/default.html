@@ -25,6 +25,16 @@
 <body>
 [% PROCESS tpl/navigation.html %]
 <div id="content">
+[% IF combust.deployment_mode != 'prod' %]
+<p class="develwarning">Note: This is a development/test version of
+the NTP Pool system!  For the real site with real data, go to <a
+href="http://www.pool.ntp.org/">www.pool.ntp.org</a>.  Discussion and
+bug reports for the beta/test site here, see <a
+href="http://fortytwo.ch/cgi-bin/mailman/listinfo/timekeepers-dev">timekeepers-dev</a>.
+</p>
+[% END %]
+
+
 [% content %]
 </div>
 

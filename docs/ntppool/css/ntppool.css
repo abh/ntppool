@@ -107,6 +107,14 @@ p.serverurls {
    font-weight: bold;
 }
 
+p.develwarning {
+    border: 1px dotted #555555;
+    background: #DDDDDD;
+    padding: 15px;
+    width: 560px;
+    margin: 10px;
+}
+
 #vendor_list {
   border: 1px dotted #999;
   align: right;
