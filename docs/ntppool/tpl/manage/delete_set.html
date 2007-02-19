@@ -1,0 +1,17 @@
+
+<h3>[% server.ip %] has been scheduled for deletion</h3>
+
+<p>
+[% server.ip %] will be deleted from the pool system on [%
+server.deletion_on.strftime("%B %d, %Y") %].  The IP will stop being
+in rotation about two weeks prior to this date.
+</p>
+
+<p>
+<form method="post">
+<input type="hidden" name="server" value="[% server.id %]" />
+<input type="submit" name="cancel_deletion" value="Cancel deletion of [% server.ip %]" />
+</form>
+</p>
+
+<p><a href="/manage">Return to overview page</a></p>

@@ -1,9 +1,14 @@
 <a name="s-[% server.ip %]"></a>
 <span id="server_[% server.id %]">
-<form method="post" action="/manage/update/netspeed">
+<form method="post" action="/manage/update/server">
 
 [% IF server.hostname %]Hostname: <b>[% server.hostname | html %]</b><br />[% END %]
 IP: <b>[% server.ip | html %]</b><br />
+[% IF server.deletion_on %]
+This server is <span class="deletion">scheduled for deletion</span>
+on [% server.deletion_on.strftime("%B %d, %Y") %].
+<br/>
+[% END %]
 Current score: <b>[% server.score %]</b><br />
 [% IF server.stratum %]Stratum: <b>[% server.stratum %]</b><br/>[% END %]
 
@@ -30,16 +35,16 @@ Zones:
 [%- END %]
 </select>
 <noscript>
-<input type="submit" value="Update">
+<input type="submit" name="Update" value="Update">
 </noscript>
+<input type="submit" name="Delete" value="Delete">
 
 
 <br/>
 
 <a href="/scores/[% server.ip | uri %]">Trend</a>: [% FOR h = server.history(60).reverse -%]
 <span class="[% h.history_css_class %]" title="[% h.ts | html %]">[% h.history_symbol  %]</span>
-[%- END %]
-<br />
+[%- END %]<br/>
 <br />
 
 </form>

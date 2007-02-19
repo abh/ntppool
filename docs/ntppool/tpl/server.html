@@ -33,6 +33,12 @@ Zones:
 <a href="[% zone.url %]">[% zone.name %]</a>
 [% END  %]<br/>
 
+[% IF server.deletion_on %]
+This server is <span class="deletion">scheduled for deletion</span>
+on [% server.deletion_on.strftime("%B %d, %Y") %].
+<br/>
+[% END %]
+
 </p>
 
 [% IF (urls = server.urls);

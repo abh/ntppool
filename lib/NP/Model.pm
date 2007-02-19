@@ -72,6 +72,7 @@ __PACKAGE__->meta->setup(
     updated_on     => { type => 'timestamp', not_null => 1 },
     score_ts       => { type => 'datetime' },
     score_raw      => { type => 'scalar', default => '0', length => 64, not_null => 1 },
+    deletion_on    => { type => 'date' },
   ],
 
   primary_key_columns => [ 'id' ],

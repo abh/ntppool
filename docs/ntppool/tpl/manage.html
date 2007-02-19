@@ -42,7 +42,20 @@ load between the pool servers.  If your connection is asymmetric
 </p>
 
 <p>
+The speed setting is used to give servers on faster connections
+relatively more traffic.  Currently this load balancing logic is very
+crude (basically we only put your server in the global zone if the
+speed is 786Kbit or higher).
+</p>
+
+<p>
 The "availability <b>score</b>" goes up to 20.  It must be higher than 5 for the server to be included in the cluster.
+</p>
+
+<p>As noted on the <a href="/join.html">join information> page adding
+your IP to the pool is a long term commitment.  If you need to remove
+your server from the pool you can schedule the removal with the
+<b>delete</b> button (up to 3 months in advance!).
 </p>
 
 <p>
@@ -58,7 +71,7 @@ The "availability <b>score</b>" goes up to 20.  It must be higher than 5 for the
 [% PROCESS tpl/manage/add_form.html %]
 
 <p>
-To delete a server or change server information (say the IP), email <a
+To change server information (say the IP), email <a
 href="mailto:ntppool-server-support@develooper.com">ntppool-server-support@develooper.com</a>.
 </p>
 

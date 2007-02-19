@@ -63,6 +63,8 @@ span.s_his_down { color: red;    }  /* _ */
 
 span.error      { color: red; }
 
+span.deletion   { color: red; } 
+
 .server_history_legend { font-size: 0.85em; }
 
 h4 {

@@ -1,0 +1,28 @@
+
+<h3>Schedule removal of [% server.ip %] from the NTP Pool</h3>
+
+<p>
+Please schedule removal of your server as early as possible.  We will
+stop putting your server in the pool three weeks before the scheduled
+removal date and stop monitoring and remove the server from the system
+on the removal date.
+</p>
+
+<form method="post">
+
+<input type="hidden" name="server" value="[% server.id %]" />
+
+<p>[% server.ip %] - date of deletion: <br/>
+<select name="deletion_date">
+<option>Select a date ...</option>
+[% FOR date = dates %]
+<option value="[% date.strftime("%Y-%m-%d") %]">[% date.strftime("%B %d, %Y") %]</option>
+[% END %]
+</select>
+</p>
+
+<input type="submit" name="submitbtn" value="Schedule Deletion" />
+
+</form>
+
+<p><a href="/manage">Cancel</a> and return to overview page</p>

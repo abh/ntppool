@@ -129,3 +129,6 @@ alter table log_scores change ts ts datetime not null;
 #20
 alter table server_notes
   add CONSTRAINT `server_notes_ibfk_1` FOREIGN KEY (`server_id`) REFERENCES `servers` (`id`) ON DELETE CASCADE;
+
+#21
+alter table servers add deletion_on date;

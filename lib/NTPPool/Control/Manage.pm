@@ -27,6 +27,7 @@ sub render {
     
     return $self->handle_add if $self->request->uri =~ m!^/manage/add!;
     return $self->handle_update if $self->request->uri =~ m!^/manage/update!;
+    return $self->handle_delete if $self->request->uri =~ m!^/manage/delete!;
     return $self->show_manage;
 }
 
@@ -121,20 +122,32 @@ sub get_server_info {
     return \%server;
 }
 
+sub req_server {
+    my $self = shift;
+    my $server_id = $self->req_param('server');
+    my $server = NP::Model->server->fetch
+        (($server_id =~ m/\./ ? 'ip' : 'id') => $server_id);
+    return unless $server and $server->admin->id == $self->user->id;
+    $server;
+}
+
 sub handle_update {
     my $self = shift;
 
     return $self->handle_update_profile  if $self->request->uri =~ m!^/manage/update/profile!;
-    return $self->handle_update_netspeed if $self->request->uri =~ m!^/manage/update/netspeed!;
-
+    if ($self->request->uri =~ m!^/manage/update/server!) {
+        return $self->handle_update_netspeed if $self->req_param('Update');
+        if ($self->req_param('Delete')) {
+            my $server = $self->req_server or return NOT_FOUND;
+            return $self->redirect("/manage/delete?server=" . $server->ip);
+        }
+    }
     return NOT_FOUND;
 }
 
 sub handle_update_netspeed {
     my $self = shift;
-    my $server_id = $self->req_param('server');
-    my $server = NP::Model->server->fetch(id => $server_id);
-    return NOT_FOUND unless $server and $server->admin->id == $self->user->id;
+    my $server = $self->req_server or return NOT_FOUND;
     if (my $netspeed = $self->req_param('netspeed')) {
         $server->netspeed($netspeed) if $netspeed =~ m/^\d+$/;
         if ($server->netspeed < 768) {
@@ -146,7 +159,7 @@ sub handle_update_netspeed {
         $server->save;
     }
 
-    return $self->show_manage if $self->req_param('noscript');
+    return $self->redirect('/manage') if $self->req_param('noscript');
 
     my $return = { 
         netspeed => $self->netspeed_human($server->netspeed),
@@ -172,8 +185,50 @@ sub handle_update_profile {
 
     $self->tpl_param('user' => $self->user );
 
-    return $self->show_manage if $self->r->method eq 'GET';
+    return $self->redirect('/manage') if $self->r->method eq 'GET';
     return OK, $self->evaluate_template('tpl/manage/profile_link.html', { style => 'bare.html' });
+}
+
+sub handle_delete {
+    my $self = shift;
+    my $server = $self->req_server or return NOT_FOUND;
+    $self->tpl_param(server => $server);
+
+    if ($self->request->method eq 'post') {
+        if (my $date = $self->req_param('deletion_date')) {
+            my @date = split /-/, $date;
+            $date = DateTime->new( year  => $date[0],
+                                   month => $date[1],
+                                   day   => $date[2],
+                                   time_zone => 'UTC'
+                                   );
+            if ($date and $date > DateTime->now) {
+                $server->deletion_on($date);
+                $server->update;
+            }
+        }
+        if ($self->req_param('cancel_deletion')) {
+            warn "calcene!!";
+            $server->deletion_on(undef);
+            $server->update;
+        }
+    }
+
+    if ($server->deletion_on) {
+        return OK, $self->evaluate_template('tpl/manage/delete_set.html');
+    }
+    else {
+        my @dates;
+        my $dt = DateTime->now( time_zone => 'UTC' );
+        $dt->add( days => 4 );
+        for (1..90) {
+            push @dates, $dt->clone;
+            $dt->add(days => 1);
+        }
+        $self->tpl_param('dates' => \@dates);
+
+        return OK, $self->evaluate_template('tpl/manage/delete_instructions.html');
+    }
 }
 
 sub netspeed_human {
