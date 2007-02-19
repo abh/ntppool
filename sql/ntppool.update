@@ -152,6 +152,9 @@ create table logs (
   CONSTRAINT `server_logs_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+#24
+alter table server_alerts
+  change first_email_time first_email_time datetime not null;
 
 
 

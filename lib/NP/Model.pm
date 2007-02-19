@@ -204,7 +204,7 @@ __PACKAGE__->meta->setup(
   columns => [
     server_id        => { type => 'integer', not_null => 1 },
     last_score       => { type => 'scalar', default => '0', length => 64, not_null => 1 },
-    first_email_time => { type => 'datetime' },
+    first_email_time => { type => 'datetime', default => 'now', not_null => 1 },
     last_email_time  => { type => 'datetime' },
   ],
 

@@ -250,11 +250,30 @@ sub find_server {
     $server && @$server ? $server->[0] : ();
 }
 
+sub get_bad_servers_to_remove {
+    my $class = shift;
+    $class->get_objects_from_sql
+        (sql => q[
+                  SELECT s.*
+                    FROM
+                      servers s
+                      LEFT JOIN server_alerts sa ON(sa.server_id=s.id)
+                    WHERE
+                      s.score_raw < 0
+                       AND s.in_pool = 1
+                       AND s.deletion_on IS NULL
+                       AND (sa.first_email_time < DATE_SUB(NOW(), INTERVAL 62 DAY))
+                       AND (sa.last_email_time  < DATE_SUB(NOW(), INTERVAL 5 DAY))
+                       AND (sa.last_score+10) >= s.score_raw
+                  ]
+         );
+}
+
 sub get_check_due {
     my $class = shift;
 
-    my ($now, $now24) = NP::Model->dbh->selectrow_array(q[select now(), DATE_SUB( NOW(), INTERVAL 24 minute)]);
-    warn "NOW: $now - NOW24: $now24";
+    #my ($now, $now24) = NP::Model->dbh->selectrow_array(q[select now(), DATE_SUB( NOW(), INTERVAL 24 minute)]);
+    #warn "NOW: $now - NOW24: $now24";
 
     $class->get_objects_from_sql
       (

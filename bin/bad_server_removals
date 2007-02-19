@@ -8,7 +8,8 @@ use lib "$ENV{CBROOT}/lib";
 use Combust::Config;
 use Combust::Template;
 
-use NTPPool::Admin;
+use NP::Model;
+
 use Email::Send;
 use Email::Simple;
 use Email::Date;
@@ -18,9 +19,9 @@ my $config = Combust::Config->new;
 
 my $production = $config->site->{ntppool}->{servername} eq 'www.pool.ntp.org';
 
-NTPPool::DBI->dbh->selectrow_array(q[SELECT GET_LOCK("notifications", 0)]) or exit;
+NP::Model->dbh->selectrow_array(q[SELECT GET_LOCK("notifications", 0)]) or exit;
 
-my $servers = NTPPool::Server->search_bad_servers_to_remove;
+my $servers = NP::Model->server->get_bad_servers_to_remove;
 my $tpl = Combust::Template->new;
 
 my $i = 0;
@@ -28,7 +29,7 @@ my $i = 0;
 my $deletion_date = DateTime->today;
 $deletion_date->add(days => 7);
 
-while (my $server = $servers->next) {
+for my $server (@$servers) {
     my $param = { server => $server,
                   admin  => $server->admin,
                 };

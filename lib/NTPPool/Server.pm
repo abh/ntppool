@@ -44,20 +44,6 @@ __PACKAGE__->set_sql(urls => qq{
                });
 
 
-__PACKAGE__->set_sql( bad_servers_to_remove => qq{
-                     SELECT DISTINCT s.id, s.admin
-                         FROM
-                           servers s
-                           JOIN scores sc ON(sc.server=s.id)
-                           LEFT JOIN server_alerts sa ON(sa.server=s.id)
-                         WHERE
-                           sc.score < 0
-                            AND s.in_pool = 1
-                            AND (sa.first_email_time < DATE_SUB(NOW(), INTERVAL 62 DAY))
-                            AND (sa.last_email_time  < DATE_SUB(NOW(), INTERVAL 5 DAY))
-                            AND (sa.last_score+10) >= sc.score
-               });
-
 
 sub note {
     my ($self, $name) = @_;
