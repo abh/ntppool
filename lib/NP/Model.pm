@@ -7,6 +7,55 @@ use Combust::DB::Manager;
 
 our $SVN = q$Id$;
 
+{ package NP::Model::Log;
+
+use strict;
+
+use base qw(NP::DB::Object);
+
+__PACKAGE__->meta->setup(
+  table   => 'logs',
+
+  columns => [
+    id         => { type => 'integer', not_null => 1 },
+    server_id  => { type => 'integer', default => '', not_null => 1 },
+    user_id    => { type => 'integer' },
+    type       => { type => 'varchar', length => 50 },
+    title      => { type => 'varchar', length => 255 },
+    message    => { type => 'text', length => 65535 },
+    created_on => { type => 'datetime', default => 'now', not_null => 1 },
+  ],
+
+  primary_key_columns => [ 'id' ],
+
+  foreign_keys => [
+    server => {
+      class       => 'NP::Model::Server',
+      key_columns => { server_id => 'id' },
+    },
+
+    user => {
+      class       => 'NP::Model::User',
+      key_columns => { user_id => 'id' },
+    },
+  ],
+);
+}
+
+{ package NP::Model::Log::Manager;
+
+use Combust::DB::Manager;
+our @ISA = qw(Combust::DB::Manager);
+
+sub object_class { 'NP::Model::Log' }
+
+__PACKAGE__->make_manager_methods('logs');
+}
+
+# Allow user defined methods to be added
+eval { require NP::Model::Log }
+  or $@ !~ m:^Can't locate NP/Model/Log.pm: and die $@;
+
 { package NP::Model::LogScore;
 
 use strict;
@@ -89,6 +138,12 @@ __PACKAGE__->meta->setup(
   relationships => [
     log_scores => {
       class      => 'NP::Model::LogScore',
+      column_map => { id => 'server_id' },
+      type       => 'one to many',
+    },
+
+    logs => {
+      class      => 'NP::Model::Log',
       column_map => { id => 'server_id' },
       type       => 'one to many',
     },
@@ -189,10 +244,11 @@ __PACKAGE__->meta->setup(
   table   => 'server_notes',
 
   columns => [
-    id        => { type => 'integer', not_null => 1 },
-    server_id => { type => 'integer', default => '', not_null => 1 },
-    name      => { type => 'varchar', default => '', length => 255, not_null => 1 },
-    note      => { type => 'text', default => '', length => 65535, not_null => 1 },
+    id         => { type => 'integer', not_null => 1 },
+    server_id  => { type => 'integer', default => '', not_null => 1 },
+    name       => { type => 'varchar', default => '', length => 255, not_null => 1 },
+    note       => { type => 'text', default => '', length => 65535, not_null => 1 },
+    created_on => { type => 'datetime', default => 'now', not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
@@ -336,6 +392,12 @@ __PACKAGE__->meta->setup(
   ],
 
   relationships => [
+    logs => {
+      class      => 'NP::Model::Log',
+      column_map => { id => 'user_id' },
+      type       => 'one to many',
+    },
+
     servers => {
       class      => 'NP::Model::Server',
       column_map => { id => 'user_id' },
@@ -523,6 +585,7 @@ eval { require NP::Model::ZoneServerCount }
   sub db  { shift; NP::DB::Object->init_db(@_);      }
 
   my @classes = qw(
+    NP::Model::Log
     NP::Model::LogScore
     NP::Model::Server
     NP::Model::ServerAlert
@@ -538,6 +601,8 @@ eval { require NP::Model::ZoneServerCount }
     $_->meta->clear_object_cache for @classes;
   }
 
+  my $log;
+  sub log { $log ||= bless [], 'NP::Model::Log::Manager' }
   my $log_score;
   sub log_score { $log_score ||= bless [], 'NP::Model::LogScore::Manager' }
   my $server;

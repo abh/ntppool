@@ -15,7 +15,7 @@ sub fqdn {
   join ".", $self->name, $pool_name;
 }
 
-use constant SUB_ZONE_COUNT => 3;
+use constant SUB_ZONE_COUNT => 4;
 
 sub sub_zone_count {
     SUB_ZONE_COUNT;
@@ -55,6 +55,8 @@ sub first_stats {
     NP::Model->zone_server_count->first_stats(@_);
 }
 
+use constant deletion_grace_days => 14; 
+
 sub server_count {
   my $self = shift;
   my $dbh = $self->dbh;
@@ -63,8 +65,11 @@ sub server_count {
     from servers s
       inner join server_zones l on(s.id=l.server_id)
       inner join zones z on(z.id=l.zone_id)
-    where z.id=? and s.score_raw >= 5 and s.in_pool = 1
-  ], undef, $self->id);
+    where z.id=?
+      and s.score_raw >= 5
+      and s.in_pool = 1
+      and (s.deletion_on IS NULL OR s.deletion_on > DATE_ADD(NOW(), interval ? day))
+  ], undef, $self->id, deletion_grace_days());
 }
 
 sub server_count_all {
@@ -75,8 +80,11 @@ sub server_count_all {
     from servers s
       inner join server_zones l on(s.id=l.server_id)
       inner join zones z on(z.id=l.zone_id)
-    where z.id=? and s.in_pool = 1
-  ], undef, $self->id);
+    where
+      z.id=?
+      and s.in_pool = 1
+      and (s.deletion_on IS NULL OR s.deletion_on > DATE_ADD(NOW(), interval ? day))
+  ], undef, $self->id, deletion_grace_days());
 }
 
 

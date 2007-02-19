@@ -1,13 +1,16 @@
 [% page.style = 'bare.html' -%]
 From: Ask Bjoern Hansen <ask@develooper.com>
 To: [% admin.username %] <[% admin.email %]>
+Reply-To: ntppool-server-support@develooper.com
 Subject: NTP Pool: Problems with your NTP service ([% bad_servers.0.ip %])
 
 Hi [% admin.username || admin.email %],
 
-The automated NTP Pool system has marked your timeserver as either
-unreachable or keeping bad time.  Until the issue has been addressed,
-it will not be included in the pool.ntp.org DNS zones.
+This is an automated email.
+
+The NTP Pool system has marked your timeserver as either unreachable
+or keeping bad time.  Until the issue has been addressed, it will not
+be included in the pool.ntp.org DNS zones.
 
 Unless you have questions then you don't need to notify me that the
 problem has been resolved; the system will figure that out by itself.
@@ -20,16 +23,14 @@ If the IP of the server changed, just reply with the new IP address.
 [%- END %]
 [% FILTER repeat(70) %]-[% END %]
 
-A common configuration problem (that makes ntpd crash!) is a too low
-ulimit for "memory that may be locked into memory".  The easiest fix
-is to add "ulimit -l 8192" to /etc/init.d/ntpd (or the equivalent file
-on your system) somewhere before ntpd is started.
-
 You can see the stats for all your servers in the pool at 
     [% config.base_url('ntppool') %]/manage
 
+If you have any questions, just reply to this email.  Otherwise no
+response is necessary.
 
 Thank you for offering your ntp service to the pool!
+
 
   - ask
 

@@ -1,6 +1,11 @@
 package NP::Model::User;
 use strict;
 
+sub who {
+    my $self = shift;
+    $self->username || $self->email;
+}
+
 sub privileges {
     shift->user_privilege(@_);
 }

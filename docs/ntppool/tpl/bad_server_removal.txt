@@ -11,10 +11,12 @@ from the pool.ntp.org project.
 
 Server IP: [% server.ip %][% IF server.hostname %] ([% server.hostname %])[% END %]
 
+The server has been scheduled for removal on [% server.deletion_on.strftime("%B %d, %Y") %].
+
 If you perceive this to be in error (or fixed the server problem) and
 want to add the server to the project again, please contact me or go
 to [% config.base_url('ntppool') %]/manage to use the automated admin 
-interface.
+interface to cancel the deletion.
 
 
   - ask

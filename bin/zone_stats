@@ -21,8 +21,8 @@ my %growth_targets =
   (
    2005 => 0.45,
    2006 => 0.60,
-   2007 => 0.60,
-   2008 => 0.60,
+   2007 => 0.45,
+   2008 => 0.45,
   );
 
 my $zones = NP::Model->zone->get_zones_iterator;

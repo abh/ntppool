@@ -25,6 +25,9 @@ my $tpl = Combust::Template->new;
 
 my $i = 0;
 
+my $deletion_date = DateTime->today;
+$deletion_date->add(days => 7);
+
 while (my $server = $servers->next) {
     my $param = { server => $server,
                   admin  => $server->admin,
@@ -36,7 +39,8 @@ while (my $server = $servers->next) {
 
     if ($production) {
       my $return = send SMTP => $email, 'localhost';
-      $server->delete;
+      $server->deletion_on($deletion_date);
+      $server->update;
     }
     else {
       print $email->as_string;

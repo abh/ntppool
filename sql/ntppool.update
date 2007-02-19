@@ -132,3 +132,27 @@ alter table server_notes
 
 #21
 alter table servers add deletion_on date;
+
+#22
+alter table server_notes
+  add created_on datetime not null;
+
+#23
+
+create table logs (
+  id int unsigned not null primary key auto_increment,
+  server_id int unsigned not null,
+  user_id   int unsigned,
+  type      varchar(50),
+  title     varchar(255),
+  message   text,
+  created_on datetime not null,
+  key (server_id, type),
+  CONSTRAINT `server_logs_server_id` FOREIGN KEY (`server_id`) REFERENCES `servers` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `server_logs_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+
+
+

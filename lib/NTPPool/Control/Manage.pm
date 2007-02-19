@@ -51,8 +51,8 @@ sub handle_add {
     $self->tpl_param(server => $server);
 
     if ($self->req_param('yes')) {
-
-        $self->tpl_param('comment', $self->req_param('comment'));
+        my $comment = $self->req_param('comment');
+        $self->tpl_param('comment', $comment);
         $self->tpl_param('scores_url', $self->config->base_url('ntppool') . '/scores/' . $server->{ip});
 
         my $msg = $self->evaluate_template('tpl/manage/add_email.txt');
@@ -69,6 +69,11 @@ sub handle_add {
              in_pool  => 1,
              );
         $s->join_zone($_) for @{$server->{zones}};
+        $s->add_logs
+            ({ user_id => $self->user->id, 
+               type    => 'create',
+               message => "Server added." . ($comment =~ m/\S/ ? "\n\n$comment" : ""),
+           });
         #local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
         $s->save(cascade => 1);
         return $self->redirect('/manage#s-' . $s->ip);
@@ -135,6 +140,8 @@ sub handle_update {
     my $self = shift;
 
     return $self->handle_update_profile  if $self->request->uri =~ m!^/manage/update/profile!;
+    return $self->handle_update_netspeed if $self->request->uri =~ m!^/manage/update/netspeed!;
+    # deletion and non-js netspeed
     if ($self->request->uri =~ m!^/manage/update/server!) {
         return $self->handle_update_netspeed if $self->req_param('Update');
         if ($self->req_param('Delete')) {
@@ -197,20 +204,29 @@ sub handle_delete {
     if ($self->request->method eq 'post') {
         if (my $date = $self->req_param('deletion_date')) {
             my @date = split /-/, $date;
-            $date = DateTime->new( year  => $date[0],
+            $date = $date[1] && DateTime->new( year  => $date[0],
                                    month => $date[1],
                                    day   => $date[2],
                                    time_zone => 'UTC'
                                    );
             if ($date and $date > DateTime->now) {
                 $server->deletion_on($date);
-                $server->update;
+                $server->add_logs
+                    ({ user_id => $self->user->id, 
+                       type    => 'delete',
+                       message => "Deletion scheduled for " . $date->ymd . " by " . $self->user->who,
+                   });
+                $server->save;
             }
         }
         if ($self->req_param('cancel_deletion')) {
-            warn "calcene!!";
             $server->deletion_on(undef);
-            $server->update;
+            $server->add_logs
+                ({ user_id => $self->user->id, 
+                   type    => 'delete',
+                   message => "Deletion cancelled by " . $self->user->who,
+               });
+            $server->save;
         }
     }
 
