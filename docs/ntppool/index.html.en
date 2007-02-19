@@ -72,6 +72,21 @@ lists</a>.
 <table cellpadding="4">
 
 <tr>
+<td align="center" valign="top"><b>2007-02-28</b></td>
+
+<td>We are getting close to one thousand active servers in the pool
+system!  The pool system has gotten a major software upgrade, most
+notably safely letting the server operators do more without having to
+involve me.
+
+<br/>Coming up on the todo list is revamping the monitoring system.  With the help of a donated <a
+href="http://www.meinberg.de/english/products/time-server.htm">time server</a> generously donated by
+<a href="http://www.meinberg.de/english/">Meinberg</a> I am working on a better and distributed
+monitoring system.
+</td></tr>
+
+
+<tr>
 <td align="center" valign="top"><b>2006-05-01</b></td>
 <td>
 The NTP Pool project now has a <a
@@ -225,6 +240,11 @@ newsgroup.
 <li>
 <a href="http://www.ntp.org">NTP home</a> - <i>the</i> website about ntp
 </li>
+
+<li><a href="http://www.meinberg.de/english/">Meinberg</a>, makers of incredibly fine 
+<a href="http://www.meinberg.de/english/products/time-server.htm">time server</a> systems.
+</li>
+
 <li>
 The <a
 href="http://groups.google.com/groups?threadm=3E2DBFF7.F9A51614%40udel.edu"
@@ -235,13 +255,8 @@ href="news:comp.protocols.time.ntp"
 >comp.protocols.time.ntp</a> newsgroup have caused this project to be started.
 </li>
 <li>
-Federico Sevilla III also has a <a href="http://marc.free.net.ph" >mailing
+Federico Sevilla III also has a <a href="http://archives.free.net.ph/list/timekeepers.en.html">mailing
 list archive</a> of the timekeepers list - this one is searchable.
-</li>
-<li>
-More hints and a list of NTP servers can be found in the article <a
-href="http://robertkehl.de/ntp.php">NTP-Server im Internet</a> (german) on the
-website of Robert Kehl.
 </li>
 </ul>
 <div style="text-align:right"><a href="#top">go up</a></div>

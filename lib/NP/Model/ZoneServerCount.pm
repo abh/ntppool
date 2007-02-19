@@ -1,6 +1,6 @@
 package NP::Model::ZoneServerCount;
 use strict;
-use Time::Duration;
+use Time::Duration qw();
 
 sub ago {
     my $self = shift;
