@@ -16,15 +16,6 @@ __PACKAGE__->has_many('urls'      => [ 'NTPPool::Server::URL' => 'url' ]);
 __PACKAGE__->might_have('_score'  => 'NTPPool::Server::Score');
 __PACKAGE__->might_have('_alert'  => 'NTPPool::Server::Alert');
 
-__PACKAGE__->add_trigger( after_create => \&setup_rrd );
-
-__PACKAGE__->add_trigger(before_create => sub{ $_[0]->set(created_on => Time::Piece->new() ) } );
-
-__PACKAGE__->add_trigger(before_delete =>
-                         sub { NTPPool::Server::LogScore->delete_server($_[0])  }
-                         );
-
-
 
 __PACKAGE__->set_sql(bad_score => qq{
                      SELECT s.id
@@ -60,12 +51,6 @@ sub country {
   my ($country) = grep { length $_->name == 2 } $self->zones;
   $country && $country->name;
 }
-
-sub alert {
-  my $self = shift;
-  return $self->_alert || NTPPool::Server::Alert->create({server => $self});
-} 
-
 
 
 1;
