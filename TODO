@@ -1,16 +1,24 @@
 
-Convert the model classes to use Rose::DB::Object instead of Class::DBI
+- Finish converting the model classes to use Rose::DB::Object instead of Class::DBI
 
 - New log table
   - log monitoring failures
   - log all changes done by the system or by the users
 
 - Deletion / inactivation
-  - Change the schema to have a flag for "this should get deleted" so a batch process
+  x Change the schema to have a flag for "this should get deleted" so a batch process
     can do the deletes
-  - Allow users to schedule their own deletes
+  x Allow users to schedule their own deletes
   - The server should keep being monitored up until the delete but stop being 
     in the pool say 3 weeks before
+
+allow an organization name and http link for each user for attribution
+  - schema change
+  - UI to update it on the manage page
+  - Logic on the zone pages to show the organization url relative to
+    the current total score for the user or some such
+
+update traffic numbers on the join.html page
 
 update use.html page (be more explicit about number of zones)
 
@@ -33,8 +41,6 @@ Make the monitoring servers use ntpd (noselect) to test the servers
 
 make server page and user profile show when the server is not in the pool (50% done)
 
-allow an organization name and http link for each user for attribution
-
 document the growth target thing
 
 check that servers that are not in_pool won't be counted in the active
@@ -42,10 +48,4 @@ server counts.
 
 make the country zones alias to the continent zones when they are
 otherwise too small
-
-alter table zones add parent id int unsigned;
-alter table zones add description varchar(255);
-insert into zones (name,description) values ('@', 'Global');
-
-insert into locations (server,zone) select id, 49 from servers;
 
