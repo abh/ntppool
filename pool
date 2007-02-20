@@ -14,6 +14,7 @@ use Time::HiRes;
 use Data::Dumper;
 use Sys::Hostname qw(hostname);
 use Geo::IP;
+use Net::IP;
 use LWP::Simple;
 use Email::Simple;
 use Email::Date;
@@ -122,8 +123,7 @@ if ($cmd eq "add") {
     # do we have a hostname or an IP?
     my $hostname = shift @ARGV;
     my $ip;
-    require Net::IPv4Addr;
-    if (Net::IPv4Addr::ipv4_chkip($hostname)) {
+    if (Net::IP::ip_is_ipv4($hostname)) {
         $ip       = $hostname;
         $hostname = undef;
     }

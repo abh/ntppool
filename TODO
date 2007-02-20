@@ -1,14 +1,6 @@
 
-- New log table
-  - log monitoring failures
-  - log all changes done by the system or by the users
-
-- Deletion / inactivation
-  x Change the schema to have a flag for "this should get deleted" so a batch process
-    can do the deletes
-  x Allow users to schedule their own deletes
-  x The server should keep being monitored up until the delete but stop being 
-    in the pool say 3 weeks before
+ - allow re-adding a deleted server
+ - allow changing IPs N times a year
 
 allow an organization name and http link for each user for attribution
   - schema change

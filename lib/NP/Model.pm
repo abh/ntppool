@@ -398,7 +398,7 @@ __PACKAGE__->meta->setup(
       type       => 'one to many',
     },
 
-    servers => {
+    servers_all => {
       class      => 'NP::Model::Server',
       column_map => { id => 'user_id' },
       type       => 'one to many',

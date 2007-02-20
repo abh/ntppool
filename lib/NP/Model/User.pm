@@ -1,5 +1,6 @@
 package NP::Model::User;
 use strict;
+use Net::IP;
 
 sub BAD_SERVER_THRESHOLD { -20 }
 
@@ -16,6 +17,25 @@ sub bad_servers {
     my $s = [ grep { $_->score < BAD_SERVER_THRESHOLD } shift->servers ];
     wantarray ? @$s : $s;
 }
+
+sub servers {
+    my $self = shift;
+    local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
+    my $s = NP::Model->server->get_servers
+        ( query =>
+          [ user_id     => $self->id,
+            or =>
+              [ deletion_on => undef, # not deleted
+                deletion_on => { 'gt' => DateTime->today } # deleted in the future
+              ],
+          ],
+        );
+    $s = [ map { $_->[1] }
+           sort { $a->[0]->bincomp('gt', $b->[0])  }
+           map { [ Net::IP->new($_->ip), $_] }
+           @$s ];
+    wantarray ? @$s : $s;
+} 
 
 package NP::Model::User::Manager;
 use strict;
