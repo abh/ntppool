@@ -39,12 +39,17 @@ for my $server (@$servers) {
     $email->header_set('Message-ID' => '<' . join(".", int(rand(1000)), $$, time) . '@' . hostname . '>');
 
     if ($production) {
-      my $return = send SMTP => $email, 'localhost';
-      $server->deletion_on($deletion_date);
-      $server->update;
+        $server->deletion_on($deletion_date);
+        $server->add_logs
+          ({ user_id => undef,
+             type    => 'delete',
+             message => "Deletion scheduled for " . $date->ymd . " by the system",
+           });
+        $server->save;
+        my $return = send SMTP => $email, 'localhost';
     }
     else {
-      print $email->as_string;
+        print $email->as_string;
     }
 
     last if ++$i == 2;

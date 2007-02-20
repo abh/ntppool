@@ -23,8 +23,6 @@ sub init {
     }
     if ($bc_user and $bc_user->{id} and $bc_user->{username}) {
       my ($email_user) = NP::Model->user->fetch(email => $bc_user->{email});
-#      ($email_user) = NP::Model->user->fetch(username => $bc_user->{username})
-#        unless $email_user;
       my ($user) = NP::Model->user->fetch(bitcard_id => $bc_user->{id});
       $user = $email_user if ($email_user and !$user);
       if ($user and $email_user and $user->id != $email_user->id) {
