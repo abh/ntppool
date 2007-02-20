@@ -62,12 +62,21 @@ sub handle_add {
         my $return = send SMTP => $email, 'localhost';
         warn Data::Dumper->Dump([\$msg, \$email, \$return], [qw(msg amil return)]);
 
-        my $s = NP::Model->server->create
-            (ip       => $server->{ip}, 
-             hostname => $server->{hostname} || '',
-             admin    => $self->user,
-             in_pool  => 1,
-             );
+        my $s;
+
+        if ($s = NP::Model->server->fetch(ip => $server->{ip})) {
+            $s->setup_server;
+        }
+        else {
+            $s = NP::Model->server->create
+              (ip       => $server->{ip});
+        }
+
+        $s->hostname($server->{hostname} || '');
+        $s->admin($self->user);
+        $s->in_pool(1);
+        $s->zones([]);
+
         $s->join_zone($_) for @{$server->{zones}};
         $s->add_logs
             ({ user_id => $self->user->id, 
@@ -94,11 +103,11 @@ sub get_server_info {
     $server{ip} = inet_ntoa($iaddr);
     $server{hostname} = $host if $host ne $server{ip};
 
-    die "Bad IP address\n" if $server{ip} =~ m/^(127|11|192.168)\./;
+    die "Bad IP address\n" if $server{ip} =~ m/^(127|10|192.168)\./;
 
     if (my $s = NP::Model->server->fetch(ip => $server{ip})) {
         my $other = $s->admin->id eq $self->user->id ? "" : "Email us your username to have it moved to this account";
-        die "$server{ip} is already listed in the pool. $other\n";
+        die "$server{ip} is already listed in the pool. $other\n" unless $s->deleted;
     }
     
     local $Net::NTP::TIMEOUT = 2;

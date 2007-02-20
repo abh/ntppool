@@ -11,12 +11,18 @@ sub insert {
 
     $self->SUPER::insert(@_);
 
+    $self->setup_server;
+}
+
+sub setup_server {
+    my $self = shift;
+
     my $start_score = -5;
     my $ls = $self->add_log_scores({ step => 1, score => $start_score, offset => 0 });
+    $self->deletion_on(undef);
     $self->score_raw($start_score);
     $self->save(cascade => 1);
     $self->update_graphs;
-
 }
 
 sub _resolve_zone {
@@ -58,6 +64,10 @@ sub zones_display {
     wantarray ? @$zones : $zones;
 }
 
+sub deleted {
+    my $self = shift;
+    $self->deletion_on and $self->deletion_on <= DateTime->today;
+}
 
 sub score {
   my $self = shift;
