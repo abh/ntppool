@@ -1,14 +1,14 @@
-<!-- 
-need to get these updated ...
 <div>
 <a name="top">Translations:</a>
+<!-- 
+need to get these updated ...
 <a href="http://ntp.robertkehl.de/" title="german">deutsch</a> |
 <a href="http://pool.ntp.bitic.net/" title="spanish">español</a> |
 <a href="http://ntp.vuntz.net/" title="french">français</a> |
-<a href="http://ntp.rondom.org/" title="dutch">nederlands</a>
-
-</div>
 -->
+<a href="http://ntp.rondom.org/" title="dutch">nederlands</a>
+</div>
+
 <hr/>
 <h1>pool.ntp.org: public ntp time server for everyone</h1>
 <hr/>
