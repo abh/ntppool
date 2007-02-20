@@ -16,6 +16,7 @@ implement a database_update script to make it easier to track schema changes
 check that we have in_pool checks everywhere it's relevant.
 
 de-couple the monitoring from the database (So it can work remotely)
+  - API for entering monitoring results?
 
 Change the schema so we can support multiple monitoring systems
 
@@ -29,9 +30,6 @@ Make the monitoring servers use ntpd (noselect) to test the servers
 make server page and user profile show when the server is not in the pool (50% done)
 
 document the growth target thing
-
-check that servers that are not in_pool won't be counted in the active
-server counts.
 
 make the country zones alias to the continent zones when they are
 otherwise too small
