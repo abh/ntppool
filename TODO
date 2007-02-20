@@ -1,5 +1,4 @@
 
- - allow re-adding a deleted server
  - allow changing IPs N times a year
 
 allow an organization name and http link for each user for attribution
@@ -7,8 +6,6 @@ allow an organization name and http link for each user for attribution
   - UI to update it on the manage page
   - Logic on the zone pages to show the organization url relative to
     the current total score for the user or some such
-
-update traffic numbers on the join.html page
 
 update use.html page (be more explicit about number of zones)
 

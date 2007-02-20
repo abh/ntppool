@@ -20,7 +20,7 @@ sub bad_servers {
 
 sub servers {
     my $self = shift;
-    local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
+    #local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
     my $s = NP::Model->server->get_servers
         ( query =>
           [ user_id     => $self->id,
