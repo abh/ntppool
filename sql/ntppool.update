@@ -93,7 +93,6 @@ alter table users
 
 #13
 alter table locations 
-   drop id,
    add primary key (server_id, zone_id);
 
 alter table locations drop key `server`;
@@ -127,8 +126,9 @@ alter table users change email email varchar(255) not null;
 alter table log_scores change ts ts datetime not null;
 
 #20
-alter table server_notes
-  add CONSTRAINT `server_notes_ibfk_1` FOREIGN KEY (`server_id`) REFERENCES `servers` (`id`) ON DELETE CASCADE;
+select 1;
+#alter table server_notes
+#  add CONSTRAINT `server_notes_ibfk_1` FOREIGN KEY (`server_id`) REFERENCES `servers` (`id`) ON DELETE CASCADE;
 
 #21
 alter table servers add deletion_on date;
@@ -156,6 +156,27 @@ create table logs (
 alter table server_alerts
   change first_email_time first_email_time datetime not null;
 
+#25 try=1
+alter table log_scores drop key `server`, add key `log_scores_server_ts_idx` (`server_id`, `ts`), add key `ts` (`ts`);
+alter table log_scores modify id int not null auto_increment first;
+alter table users add unique key (`bitcard_id`);
 
+#26
+alter table log_scores   change score score double NOT NULL, change step step double NOT NULL;
+alter table zones        change name `name` varchar(255) NOT NULL;
+alter table users        change bitcard_id bitcard_id varchar(40) default NULL;
+alter table server_notes change name `name` varchar(255) NOT NULL;
+alter table server_urls  change url `url` varchar(255) NOT NULL;
+alter table servers
+   change ip `ip` varchar(15) NOT NULL,
+   change in_pool `in_pool` tinyint(3) unsigned NOT NULL default '0',
+   change in_server_list `in_server_list` tinyint(3) unsigned NOT NULL default '0';
+alter table zone_server_counts 
+   change date `date` date NOT NULL,
+   change count_active `count_active` mediumint(8) unsigned NOT NULL,
+   change count_registered `count_registered` mediumint(8) unsigned NOT NULL;
+
+#27
+alter table combust_cache change id id varchar(128) not null;
 
 

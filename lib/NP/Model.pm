@@ -114,8 +114,8 @@ __PACKAGE__->meta->setup(
     user_id        => { type => 'integer', default => '', not_null => 1 },
     hostname       => { type => 'varchar', length => 255 },
     stratum        => { type => 'integer' },
-    in_pool        => { type => 'integer', default => '', not_null => 1 },
-    in_server_list => { type => 'integer', default => '', not_null => 1 },
+    in_pool        => { type => 'integer', default => '0', not_null => 1 },
+    in_server_list => { type => 'integer', default => '0', not_null => 1 },
     netspeed       => { type => 'scalar', default => 1000, length => 8, not_null => 1 },
     created_on     => { type => 'datetime', default => 'now', not_null => 1 },
     updated_on     => { type => 'timestamp', not_null => 1 },
@@ -377,7 +377,7 @@ __PACKAGE__->meta->setup(
     name              => { type => 'varchar', length => 255 },
     pass              => { type => 'varchar', length => 255 },
     nomail            => { type => 'enum', default => '0', not_null => 1, values => [ '0', 1 ] },
-    bitcard_id        => { type => 'character', length => 40 },
+    bitcard_id        => { type => 'varchar', length => 40 },
     username          => { type => 'varchar', length => 40 },
     public_profile    => { type => 'integer', default => '0', not_null => 1 },
     organization_name => { type => 'varchar', length => 150 },
@@ -387,6 +387,7 @@ __PACKAGE__->meta->setup(
   primary_key_columns => [ 'id' ],
 
   unique_keys => [
+    [ 'bitcard_id' ],
     [ 'email' ],
     [ 'username' ],
   ],

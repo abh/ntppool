@@ -54,10 +54,11 @@ sub admins_to_notify {
               AND s.in_pool = 1
               AND (s.deletion_on IS NULL 
                    OR s.deletion_on > DATE_ADD(NOW(), INTERVAL ? DAY)
+                  )
               AND (sa.last_email_time IS NULL
                    OR (DATE_SUB(NOW(), INTERVAL 14 DAY) > sa.last_email_time
                        AND (sa.last_score+10) >= s.score_raw
-                     ) 
+                      )
                   )
           ORDER BY s.user_id
         ],
