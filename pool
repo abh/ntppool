@@ -368,7 +368,7 @@ elsif ($cmd eq "scores") {
         $server->score_raw( $server->score_raw + $step );
         $server->score_ts('now');
 
-        $server->add_log_scores({score  => $server->score_raw,
+        $server->add_log_scores({score  => $server->score,
                                  step   => $step,
                                  offset => $offset,
                                 });
