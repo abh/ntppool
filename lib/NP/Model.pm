@@ -373,7 +373,7 @@ __PACKAGE__->meta->setup(
 
   columns => [
     id                => { type => 'integer', not_null => 1 },
-    email             => { type => 'varchar', default => '', length => 255, not_null => 1 },
+    email             => { type => 'varchar', length => 255, not_null => 1 },
     name              => { type => 'varchar', length => 255 },
     pass              => { type => 'varchar', length => 255 },
     nomail            => { type => 'enum', default => '0', not_null => 1, values => [ '0', 1 ] },
