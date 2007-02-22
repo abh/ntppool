@@ -2,7 +2,7 @@ package NP::Model::User;
 use strict;
 use Net::IP;
 
-sub BAD_SERVER_THRESHOLD { -20 }
+sub BAD_SERVER_THRESHOLD { -15 }
 
 sub who {
     my $self = shift;
