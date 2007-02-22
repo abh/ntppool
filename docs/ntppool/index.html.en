@@ -75,12 +75,12 @@ lists</a>.
 <table cellpadding="4">
 
 <tr>
-<td align="center" valign="top"><b>2007-02-19</b></td>
+<td align="center" valign="top"><b>2007-02-22</b></td>
 
 <td>We are getting close to one thousand active servers in the pool
 system!  The pool system has gotten a major software upgrade, most
 notably safely letting the server operators do more without having to
-involve me.
+involve me. Please email ask@develooper.com if you see anything odd.
 
 <br/>Coming up on the todo list is revamping the monitoring system.  With the help of a donated <a
 href="http://www.meinberg.de/english/products/ntp-time-server.htm">time server</a> generously donated by
