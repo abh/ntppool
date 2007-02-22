@@ -1,0 +1,10 @@
+
+C0.philips.pool.ntp.org:3.pool.ntp.org:28800
+C1.philips.pool.ntp.org:2.pool.ntp.org:28800
+C2.philips.pool.ntp.org:1.pool.ntp.org:28800
+C3.philips.pool.ntp.org:0.pool.ntp.org:28800
+
+---
+
+http://rt.develooper.com/rt/Ticket/Display.html?id=1092
+

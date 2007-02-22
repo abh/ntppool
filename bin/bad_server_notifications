@@ -38,6 +38,7 @@ for my $admin (@$admins) {
     my $txt = $tpl->process('tpl/bad_server_notification.txt', $param, { site => 'ntppool' });
     my $email = Email::Simple->new($txt);
     $email->header_set("Date" => Email::Date::format_date());
+    $email->header_set('Bcc'  => 'ask@develooper.com');
     $email->header_set('Message-ID' => '<' . join(".", int(rand(1000)), $$, time) . '@' . hostname . '>');
 
     if ($production) {

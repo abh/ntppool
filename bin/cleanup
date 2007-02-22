@@ -10,7 +10,10 @@ use NP::Model;
 
 my $dbh = NP::Model->dbh;
 
-$dbh->do(q[delete from log_scores where ts < date_sub( NOW(), interval 220 day) limit 5000]);
+for (1..5) {
+  my $rv = $dbh->do(q[delete from log_scores where ts < date_sub( NOW(), interval 90 day) limit 7500]);
+  last unless $rv;
+}
 
 
 

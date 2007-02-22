@@ -254,7 +254,8 @@ sub find_server {
     my ($class, $arg) = @_;
     my $server;
     $server   = $class->fetch(id => $arg) if ($arg =~ m/^\d+$/);
-    $server   = $class->fetch(ip => $arg) unless $server; 
+    # TODO: normalize IP properly with Net::IP
+    $server   = $class->fetch(ip => $arg) if (!$server and $arg =~ /^[\d.]+$/); 
     return $server if $server;
     $server = $class->get_servers(query => [ hostname => $arg ]) unless $server;
     $server && @$server ? $server->[0] : ();

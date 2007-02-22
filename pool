@@ -93,6 +93,7 @@ sub server_information {
     push @r, "Netspeed: " . $server->netspeed . "\n";
     push @r, "Zones: ", join (", ", map { $_->name } @zones), "\n";
     push @r, sprintf "in_pool: %i, in_server_list: %i\n", $server->in_pool, $server->in_server_list;
+    push @r, "Deletion on: ", $server->deletion_on->ymd, "\n" if $server->deletion_on;
     @r;
 }
 
@@ -222,7 +223,14 @@ elsif ($cmd eq "rm") {
     my $server_desc = (join " / ", grep { defined $_ } $server->ip, $server->hostname);
     logsay($server->id, "rm", $server_desc);
     printf "%i, %s - %s\n", $server->id, $server_desc, $server->user->email;
-    $server->delete;
+    my $date = DateTime->today;
+    $server->deletion_on($date);
+    $server->add_logs
+      ({ user_id => undef, 
+         type    => 'delete',
+         message => "Deletion scheduled for " . $date->ymd . " by pool admin"
+       });
+    $server->update;
 }
 elsif ($cmd eq "ip") {
     my ($from, $to) = @ARGV;
@@ -233,6 +241,11 @@ elsif ($cmd eq "ip") {
     my $server_desc = (join " / ", grep { defined $_ } $server->ip, $server->hostname);
     logsay($server->id, "ip", "$server_desc => $to");
     printf "%i, %s (%s) => %s\n", $server->id, $server_desc, $server->admin->email, $to;
+    $server->add_logs
+      ({ user_id => undef, 
+         type    => 'ip_change',
+         message => "IP change from " . $server->ip . " to $to",
+       });
     $server->ip($to);
     $server->score_raw(0);
     $server->save;
@@ -345,15 +358,16 @@ elsif ($cmd eq "scores") {
             else {
                 my $recv_org   = $pkt{'Receive Timestamp'} - $time_now;
                 my $trans_dest = $pkt{'Transmit Timestamp'} - $time_then;
-                $offset = abs(($recv_org + $trans_dest) / 2);
-                if ($offset > 3 or $pkt{Stratum} > 5) {
+                $offset = ($recv_org + $trans_dest) / 2;
+                my $offset_abs = abs($offset);
+                if ($offset_abs > 3 or $pkt{Stratum} > 5) {
                     $step = -4;
                 }
-                elsif ($offset > 1.5) {
+                elsif ($offset_abs > 1.5) {
                     $step = -2;
                 }
-                elsif ($offset > 0.1) {
-                    $step = -2 * $offset + 1;
+                elsif ($offset_abs > 0.1) {
+                    $step = -2 * $offset_abs + 1;
                 }
                 else {
                     $step = 1;

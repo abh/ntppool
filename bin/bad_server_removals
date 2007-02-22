@@ -43,7 +43,7 @@ for my $server (@$servers) {
         $server->add_logs
           ({ user_id => undef,
              type    => 'delete',
-             message => "Deletion scheduled for " . $date->ymd . " by the system",
+             message => "Deletion scheduled for " . $deletion_date->ymd . " by the system",
            });
         $server->save;
         my $return = send SMTP => $email, 'localhost';
