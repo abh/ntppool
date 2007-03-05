@@ -37,7 +37,12 @@ Zones:
 <noscript>
 <input type="submit" name="Update" value="Update">
 </noscript>
+
+[% IF server.deletion_on %]
+<input type="submit" name="Delete" value="Cancel Deletion">
+[% ELSE %]
 <input type="submit" name="Delete" value="Delete">
+[% END %]
 
 
 <br/>
