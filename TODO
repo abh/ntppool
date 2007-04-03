@@ -1,3 +1,22 @@
+  * Make a system on the website for vendors to sign up for a "vendor zone" and for me to approve it etc
+       (http://www.pool.ntp.org/vendors.html)
+
+  * Change the DNS system to use pgeodns (or similar) to distribute requests rather than than regenerating the zone.   (Better use the "bandwidth" setting the admins have;  distribute requests to a "nearby" server automatically; ...)
+
+  * Something else important I can't think of right now ... :-)
+
+After that then some of the things I have on my list are (not necessarily in order of priority)
+
+  * Improve the scoring mechanism to better track long term stability (right now the score is basically based on your last couple of days)
+
+  * Let people mark their server as "available to other pool members".   Use the long term scores to include / recommend / ... servers from that list to new admins who want to join the pool.
+
+   * Improve the monitoring system to have multiple monitoring stations around the world.
+
+   * Make a system to allow translations of the pool website, ideally including the manage interface.
+
+   * Deploy more Soekris/WRAP boxes for monitoring stations and "super nodes"
+
 
  - allow changing IPs N times a year
 
