@@ -179,4 +179,30 @@ alter table zone_server_counts
 #27
 alter table combust_cache change id id varchar(128) not null first;
 
+#28
+CREATE TABLE vendor_zones (
+    id int unsigned primary key auto_increment,
+    name varchar(255) NOT NULL UNIQUE,
+    user_id   int unsigned,
+    description  varchar(255) default NULL,
+    application  text null,
+    devices      int unsigned null,
+    rt_ticket    smallint unsigned,
+    approved_on  datetime,
+    created_on   datetime not null,
+    modified_on  timestamp not null,
+    CONSTRAINT `vendor_zones_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=INNODB;
+
+alter table logs 
+  modify server_id      int unsigned null,
+  add vendor_zone_id int unsigned null after user_id,
+  add CONSTRAINT `logs_vendor_zone_id` FOREIGN KEY (`vendor_zone_id`)
+    REFERENCES `vendor_zones` (`id`) ON DELETE CASCADE;
+
+#29
+alter table vendor_zones 
+   change application request_information text null,
+   add vendor_cluster tinyint unsigned not null default 0 after user_id,
+   add contact_information text null after description;
 

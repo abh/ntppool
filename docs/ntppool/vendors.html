@@ -76,24 +76,42 @@ at the popular NTP servers and the problem of these servers then closing their o
 Rather than establish and maintain your own cluster of NTP servers or negotiate with individual server operators to use their server, you can use the NTP Pool. 
 </p>
 
-<p>Using the pool is usually free. If you have a very large number of clients we might ask for
-contributions to help scaling the pool to meet the demands.</p>
+[% # <p>Using the pool is usually free. If you have a very large number of clients we might ask for
+   # contributions to help scaling the pool to meet the demands.</p>
+%]
 
 
 <a name="vendor-zone"></a>
 <h3>Get your vendor zone</h3>
 
-<p>To allow you to use the pool as the default time service in your application, we will set you up with special hostnames, for example <tt>1.vendor.pool.ntp.org</tt>, <tt>2.vendor.pool.ntp.org</tt> and <tt>3.vendor.pool.ntp.org</tt>.</p>
+<p>To allow you to use the pool as the default time service in your
+application, we will set you up with special hostnames, for example
+<tt>1.vendor.pool.ntp.org</tt>, <tt>2.vendor.pool.ntp.org</tt> and
+<tt>3.vendor.pool.ntp.org</tt>.</p>
 	
 <p>
-You must absolutely not use the default pool.ntp.org zone names as the default configuration in your application or appliance.
-</p>
-
-<p>To get your vendor hostnames configured, email <a href="mailto:ask@develooper.com">ask@develooper.com</a> with a rough estimate of the number of systems that is going to use the pool.  Something like "less than 1000", "more than 100000" or "millions" is accurate enough.
+You <b>must absolutely not use the default pool.ntp.org zone names</b> as the default configuration in your application or appliance.
 </p>
 
 <p>
-If you have an open source ntpd implementation or an operating system including ntpd, we ask that you make a reference in the configuration file or documentation encouraging people to <a href="/join.html">join the pool</a>.
+You can <a href="/manage/vendor">apply for a vendor zone</a> here on the site.
+</p>
+
+<p>
+If you have an open source ntpd implementation or an operating system
+including ntpd, we ask that you make a reference in the configuration
+file or documentation encouraging people to <a href="/join.html">join
+the pool</a>.
+</p>
+
+<p>
+If you are a commercial / closed-source vendor we will ask for a <a
+href="/vendors/contribute.html">small contribution</a> to help scaling
+the pool to meet demands.
+</p>
+
+<p>
+Questions?  Email <a href="mailto:ask@develooper.com">ask@develooper.com</a>.
 </p>
 
 <a name="pool-capacity"></a>

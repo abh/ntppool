@@ -22,13 +22,19 @@ sub render {
         $self->cookie($Combust::Control::Bitcard::cookie_name, 0);
         $self->redirect( $self->bitcard->logout_url( r => $self->config->base_url('ntppool') ));
     }
-    
+
     return $self->login unless $self->user;
-    
-    return $self->handle_add if $self->request->uri =~ m!^/manage/add!;
-    return $self->handle_update if $self->request->uri =~ m!^/manage/update!;
-    return $self->handle_delete if $self->request->uri =~ m!^/manage/delete!;
-    return $self->show_manage;
+
+    return $self->manage_dispatch;
+}
+
+sub manage_dispatch {
+    my $self = shift;
+    return $self->handle_add    if $self->request->uri =~ m!^/manage/server/add!;
+    return $self->handle_update if $self->request->uri =~ m!^/manage/server/update!;
+    return $self->handle_delete if $self->request->uri =~ m!^/manage/server/delete!;
+    return $self->show_manage   if $self->request->uri =~ m!^/manage/servers!;
+    return $self->redirect('/manage/servers');
 }
 
 sub show_manage {
@@ -85,7 +91,7 @@ sub handle_add {
            });
         #local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
         $s->save(cascade => 1);
-        return $self->redirect('/manage#s-' . $s->ip);
+        return $self->redirect('/manage/servers#s-' . $s->ip);
     }
 
     return OK, $self->evaluate_template('tpl/manage/add.html');
@@ -148,14 +154,14 @@ sub req_server {
 sub handle_update {
     my $self = shift;
 
-    return $self->handle_update_profile  if $self->request->uri =~ m!^/manage/update/profile!;
-    return $self->handle_update_netspeed if $self->request->uri =~ m!^/manage/update/netspeed!;
+    return $self->handle_update_profile  if $self->request->uri =~ m!^/manage/server/update/profile!;
+    return $self->handle_update_netspeed if $self->request->uri =~ m!^/manage/server/update/netspeed!;
     # deletion and non-js netspeed
-    if ($self->request->uri =~ m!^/manage/update/server!) {
+    if ($self->request->uri =~ m!^/manage/server/update/server!) {
         return $self->handle_update_netspeed if $self->req_param('Update');
         if ($self->req_param('Delete')) {
             my $server = $self->req_server or return NOT_FOUND;
-            return $self->redirect("/manage/delete?server=" . $server->ip);
+            return $self->redirect("/manage/server/delete?server=" . $server->ip);
         }
     }
     return NOT_FOUND;
@@ -175,7 +181,7 @@ sub handle_update_netspeed {
         $server->save;
     }
 
-    return $self->redirect('/manage') if $self->req_param('noscript');
+    return $self->redirect('/manage/servers') if $self->req_param('noscript');
 
     my $return = { 
         netspeed => $self->netspeed_human($server->netspeed),

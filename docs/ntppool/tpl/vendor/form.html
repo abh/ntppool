@@ -1,0 +1,29 @@
+<form action="/manage/vendor/zone" method="post" accept-charset="utf-8">
+
+
+<strong>Zone name</strong> for DNS (keep it short; no spaces, no punctuation)<br/>
+<input type="text" name="name" value="[% vz.name | html %]" id="name" size="40" maxsize="50">
+
+
+<br/>
+<br>
+<strong>Short description</strong><br> (who is the organization using this zone?)<br>
+<input type="text" name="description" value="[% vz.description | html %]" id="description" size="65">
+<br>
+
+<br>
+
+<strong>Vendor zone information</strong><br>
+What devices will use the pool?  How often will they poll?  (only visible to the NTP Pool admins)<br>
+<textarea name="application" rows="12" cols="65">[% vz.request_information | html %]</textarea>
+
+<br><br>
+
+<strong>Contact information</strong><br>
+Email addresses, direct phone numbers for your NOC or network/engineering technical support  (only visible to the NTP Pool admins)<br>
+<textarea name="application" rows="12" cols="65">[% vz.contact_information | html %]</textarea>
+
+<br>
+
+<p><input type="submit" value="Continue &rarr;"></p>
+</form>

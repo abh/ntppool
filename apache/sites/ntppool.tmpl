@@ -22,6 +22,11 @@
        PerlHandler NTPPool::Control::Manage->super
     </Location>
 
+    <Location /manage/vendor>
+       SetHandler perl-script
+       PerlHandler NTPPool::Control::Vendor->super
+    </Location>
+
     <Location /dns.html>
        SetHandler perl-script
        PerlHandler NTPPool::Control::DNSStatus->super

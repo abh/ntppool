@@ -45,13 +45,14 @@ __PACKAGE__->meta->setup(
   table   => 'logs',
 
   columns => [
-    id         => { type => 'integer', not_null => 1 },
-    server_id  => { type => 'integer', default => '', not_null => 1 },
-    user_id    => { type => 'integer' },
-    type       => { type => 'varchar', length => 50 },
-    title      => { type => 'varchar', length => 255 },
-    message    => { type => 'text', length => 65535 },
-    created_on => { type => 'datetime', default => 'now', not_null => 1 },
+    id             => { type => 'integer', not_null => 1 },
+    server_id      => { type => 'integer' },
+    user_id        => { type => 'integer' },
+    vendor_zone_id => { type => 'integer' },
+    type           => { type => 'varchar', length => 50 },
+    title          => { type => 'varchar', length => 255 },
+    message        => { type => 'text', length => 65535 },
+    created_on     => { type => 'datetime', default => 'now', not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
@@ -65,6 +66,11 @@ __PACKAGE__->meta->setup(
     user => {
       class       => 'NP::Model::User',
       key_columns => { user_id => 'id' },
+    },
+
+    vendor_zone => {
+      class       => 'NP::Model::VendorZone',
+      key_columns => { vendor_zone_id => 'id' },
     },
   ],
 );
@@ -459,6 +465,12 @@ __PACKAGE__->meta->setup(
       column_map => { id => 'user_id' },
       type       => 'one to one',
     },
+
+    vendor_zones => {
+      class      => 'NP::Model::VendorZone',
+      column_map => { id => 'user_id' },
+      type       => 'one to many',
+    },
   ],
 );
 
@@ -517,6 +529,68 @@ our @ISA = qw(Combust::RoseDB::Manager);
 sub object_class { 'NP::Model::UserPrivilege' }
 
 __PACKAGE__->make_manager_methods('user_privileges');
+}
+
+
+# Allow user defined methods to be added
+eval { require NP::Model::VendorZone }
+  or $@ !~ m:^Can't locate NP/Model/VendorZone.pm: and die $@;
+
+{ package NP::Model::VendorZone;
+
+use strict;
+
+use base qw(NP::Model::_Object);
+
+__PACKAGE__->meta->setup(
+  table   => 'vendor_zones',
+
+  columns => [
+    id                  => { type => 'integer', not_null => 1 },
+    name                => { type => 'varchar', default => '', length => 255, not_null => 1 },
+    user_id             => { type => 'integer' },
+    vendor_cluster      => { type => 'integer', default => '0', not_null => 1 },
+    description         => { type => 'varchar', length => 255 },
+    contact_information => { type => 'text', length => 65535 },
+    request_information => { type => 'text', length => 65535 },
+    devices             => { type => 'integer' },
+    rt_ticket           => { type => 'integer' },
+    approved_on         => { type => 'datetime' },
+    created_on          => { type => 'datetime', default => 'now', not_null => 1 },
+    modified_on         => { type => 'timestamp', not_null => 1 },
+  ],
+
+  primary_key_columns => [ 'id' ],
+
+  unique_key => [ 'name' ],
+
+  foreign_keys => [
+    user => {
+      class       => 'NP::Model::User',
+      key_columns => { user_id => 'id' },
+    },
+  ],
+
+  relationships => [
+    logs => {
+      class      => 'NP::Model::Log',
+      column_map => { id => 'vendor_zone_id' },
+      type       => 'one to many',
+    },
+  ],
+);
+
+push @table_classes, __PACKAGE__;
+}
+
+{ package NP::Model::VendorZone::Manager;
+
+use Combust::RoseDB::Manager;
+our @ISA = qw(Combust::RoseDB::Manager);
+
+sub object_class { 'NP::Model::VendorZone' }
+
+__PACKAGE__->make_manager_methods('vendor_zones');
 }
 
 
@@ -654,6 +728,7 @@ __PACKAGE__->make_manager_methods('zone_server_counts');
   sub server_zone { our $server_zone ||= bless [], 'NP::Model::ServerZone::Manager' }
   sub user { our $user ||= bless [], 'NP::Model::User::Manager' }
   sub user_privilege { our $user_privilege ||= bless [], 'NP::Model::UserPrivilege::Manager' }
+  sub vendor_zone { our $vendor_zone ||= bless [], 'NP::Model::VendorZone::Manager' }
   sub zone { our $zone ||= bless [], 'NP::Model::Zone::Manager' }
   sub zone_server_count { our $zone_server_count ||= bless [], 'NP::Model::ZoneServerCount::Manager' }
 
