@@ -81,6 +81,11 @@ Digest::HMAC_MD5
 Net::IP
 Net::DNS
 
+Test::Pod
+Pod::Coverage
+Test::Pod::Coverage
+Time::Duration
+
 DateTime::Format::Duration
 
 Net::NTP
