@@ -20,9 +20,10 @@ use NP::Model;
 my %growth_targets = 
   (
    2005 => 0.45,
-   2006 => 0.60,
-   2007 => 0.45,
-   2008 => 0.45,
+   2006 => 0.50,
+   2007 => 0.35,
+   2008 => 0.35,
+   2009 => 0.30,
   );
 
 my $zones = NP::Model->zone->get_zones_iterator;
@@ -53,7 +54,7 @@ sub populate_all {
     while (my $zone = $zones->next) {
         my $data = $dbh->selectall_arrayref(q[select unix_timestamp(date) as time, count_active, count_registered
                                               from zone_server_counts
-                                              where zone=? order by date], 
+                                              where zone_id=? order by date], 
                                             {Columns=>{}}, $zone->id);
         create_rrd($zone->name);
         for my $d (@$data) {
