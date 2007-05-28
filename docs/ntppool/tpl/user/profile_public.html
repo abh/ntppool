@@ -1,6 +1,10 @@
 [% page.title = (user.username || user.email) _ "'s pool servers" %]
 
-<h3>[% user.username || user.email %]'s pool servers</h3>
+<h3>[% user.username || user.email | html %]'s pool servers</h3>
+
+[% IF combust.user.privileges.see_all_user_profiles %]
+<p>[% user.email | html %]</p>
+[% END %]
 
 [% UNLESS user.public_profile %]
 <p><i>This profile is not public.</i></p>
