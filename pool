@@ -460,7 +460,7 @@ elsif ($cmd eq "zone") {
                 foreach my $e (@$entries) {
                     print $fh "+$z${name}${pool_domain}:$$e[0]:$ttl\n";
                     $i++;
-                    last if ($i >= 14);
+                    last if ($i >= 12);
                 }
             }
         }
