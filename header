@@ -1,20 +1,32 @@
 Zpool.ntp.org:ns1.us.bitnames.com:pool.ntp.org:@VERSION@:1600:600:604800:240
 
 &pool.ntp.org::ns1.us.bitnames.com:259200
-#&pool.ntp.org::ns3.us.bitnames.com:259200
-#&pool.ntp.org::ns1.eu.bitnames.com:259200
-&pool.ntp.org::zbasel.fortytwo.ch:259200
+#&pool.ntp.org::a.ntpns.org:259200
+
+# &pool.ntp.org::ns3.us.bitnames.com:259200
+&pool.ntp.org::b.ntpns.org:259200
+
+# &pool.ntp.org::zbasel.fortytwo.ch:259200
+&pool.ntp.org::c.ntpns.org:259200
 
 # secondary DNS provided by Bart-Jan Vrielink <bartjan at vrielink.net>
-&pool.ntp.org::aventura.bhms-groep.nl:259200
+#&pool.ntp.org::aventura.bhms-groep.nl:86400
+&pool.ntp.org::d.ntpns.org:259200
+
 #&pool.ntp.org::slartibartfast.bhms-groep.nl.:86400
 #&pool.ntp.org::superzooi.bhms-groep.nl.:86400
 
-#; in nz offered by Simon Lyall <simon.lyall@ihug.co.nz>
-&pool.ntp.org::usenet.net.nz.:259200
-
 # in us, provided by "Jeff Schmidt" <jschmidt@jschmidt.org>
-&pool.ntp.org::ns1.mailworx.net.:259200
+#&pool.ntp.org::ns1.mailworx.net.:86400
+&pool.ntp.org::e.ntpns.org:259200
+
+
+#&pool.ntp.org::ns1.eu.bitnames.com:259200
+
+
+#; in nz offered by Simon Lyall <simon.lyall@ihug.co.nz>
+# &pool.ntp.org::usenet.net.nz.:259200
+
 
 # another backup MX offered by Olivier Macchioni <mac@tuxfinder.com>
 # offered by Sanjeev "Ghane" Gupta <ghane@dotxtra.com>
