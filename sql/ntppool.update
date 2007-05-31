@@ -206,3 +206,9 @@ alter table vendor_zones
    add vendor_cluster tinyint unsigned not null default 0 after user_id,
    add contact_information text null after description;
 
+#30
+alter table vendor_zones
+   change description organization_name varchar(255) default NULL,
+   change name zone_name varchar(90) NOT NULL UNIQUE,
+   add status enum('New', 'Pending', 'Approved', 'Rejected') not null default 'New' after zone_name,
+   change devices device_count int unsigned null;

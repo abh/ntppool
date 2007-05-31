@@ -53,7 +53,9 @@ h1,h2,h3 {
   padding-top: 10px;
 }
 
-
+blockquote { border-left: 1px dotted #555;
+             padding: 0 10px;
+           }
 
 span.s_his      { font-family: monospace; }
 span.s_his_ok   { color: green; font-size:80%; }  /* # */
@@ -62,6 +64,7 @@ span.s_his_big  { color: #ffa500; }  /* o */
 span.s_his_down { color: red;    }  /* _ */
 
 span.error      { color: red; }
+div.error       { color: red; }
 
 span.deletion   { color: red; } 
 

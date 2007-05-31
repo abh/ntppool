@@ -8,10 +8,16 @@
 
 </p>
 
-[% FOR vz = user.vendor_zones %]
-<h3>[% vz.name | html %]</h3>
+[% FOR vz = combust.user.vendor_zones %]
+<h3>[% vz.zone_name | html %]</h3>
 <p>
-
+Organization: [% vz.organization_name | html %]<br/>
+Status: <i>[% vz.status %]</i><br/>
+[% IF vz.status == 'New' %]
+<a href="/manage/vendor/zone?id=[% vz.id %]">Edit and submit</a>
+[% ELSE %]
+<a href="/manage/vendor/zone?id=[% vz.id %]">View details</a>
+[% END %]
 </p>
 [% END %]
 

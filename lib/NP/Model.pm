@@ -547,13 +547,14 @@ __PACKAGE__->meta->setup(
 
   columns => [
     id                  => { type => 'integer', not_null => 1 },
-    name                => { type => 'varchar', default => '', length => 255, not_null => 1 },
+    zone_name           => { type => 'varchar', default => '', length => 90, not_null => 1 },
+    status              => { type => 'enum', default => 'New', not_null => 1, values => [ 'New', 'Pending', 'Approved', 'Rejected' ] },
     user_id             => { type => 'integer' },
     vendor_cluster      => { type => 'integer', default => '0', not_null => 1 },
-    description         => { type => 'varchar', length => 255 },
+    organization_name   => { type => 'varchar', length => 255 },
     contact_information => { type => 'text', length => 65535 },
     request_information => { type => 'text', length => 65535 },
-    devices             => { type => 'integer' },
+    device_count        => { type => 'integer' },
     rt_ticket           => { type => 'integer' },
     approved_on         => { type => 'datetime' },
     created_on          => { type => 'datetime', default => 'now', not_null => 1 },
@@ -562,7 +563,7 @@ __PACKAGE__->meta->setup(
 
   primary_key_columns => [ 'id' ],
 
-  unique_key => [ 'name' ],
+  unique_key => [ 'zone_name' ],
 
   foreign_keys => [
     user => {
