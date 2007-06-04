@@ -189,9 +189,10 @@ __PACKAGE__->meta->setup(
     },
 
     server_alert => {
-      class      => 'NP::Model::ServerAlert',
-      column_map => { id => 'server_id' },
-      type       => 'one to one',
+      class                => 'NP::Model::ServerAlert',
+      column_map           => { id => 'server_id' },
+      type                 => 'one to one',
+      with_column_triggers => '0',
     },
 
     server_notes => {
@@ -461,9 +462,10 @@ __PACKAGE__->meta->setup(
     },
 
     user_privilege => {
-      class      => 'NP::Model::UserPrivilege',
-      column_map => { id => 'user_id' },
-      type       => 'one to one',
+      class                => 'NP::Model::UserPrivilege',
+      column_map           => { id => 'user_id' },
+      type                 => 'one to one',
+      with_column_triggers => '0',
     },
 
     vendor_zones => {
@@ -505,6 +507,7 @@ __PACKAGE__->meta->setup(
     user_id               => { type => 'integer', not_null => 1 },
     see_all_servers       => { type => 'integer', default => '0', not_null => 1 },
     see_all_user_profiles => { type => 'integer', default => '0', not_null => 1 },
+    vendor_admin          => { type => 'integer', default => '0', not_null => 1 },
   ],
 
   primary_key_columns => [ 'user_id' ],

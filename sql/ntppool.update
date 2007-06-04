@@ -212,3 +212,7 @@ alter table vendor_zones
    change name zone_name varchar(90) NOT NULL UNIQUE,
    add status enum('New', 'Pending', 'Approved', 'Rejected') not null default 'New' after zone_name,
    change devices device_count int unsigned null;
+
+#31
+alter table user_privileges add vendor_admin tinyint not null default 0;
+

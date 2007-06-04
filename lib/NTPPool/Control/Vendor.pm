@@ -21,6 +21,8 @@ sub manage_dispatch {
       if ($self->request->uri =~ m!^/manage/vendor/submit$!
           and $self->request->method eq 'post');
 
+    return $self->render_admin if $self->request->uri =~ m!^/manage/vendor/admin$!;
+
     return $self->redirect('/manage/vendor/new') unless @{$self->user->vendor_zones};
     return OK, $self->evaluate_template('tpl/vendor.html') if $self->request->uri =~ m!^/manage/vendor/?$!;
     return NOT_FOUND;
@@ -124,6 +126,14 @@ sub render_edit {
 
     return $self->render_zone($vz->id, 'show');
 
+}
+
+sub render_admin {
+    my $self = shift;
+    return $self->redirect("/manage/vendor") unless 
+       $self->user->privileges->vendor_admin;
+
+    return OK, 'foo';
 }
 
 1;
