@@ -33,7 +33,7 @@
 
    // 'netspeed_' + server_id
      var onComp = function(request) { netspeed_updated(server_id, request) }
-     new Ajax.Request( '/manage/update/netspeed', { parameters: pars,asynchronous: 1,onComplete: onComp } );
+     new Ajax.Request( '/manage/server/update/netspeed', { parameters: pars,asynchronous: 1,onComplete: onComp } );
   }
 
 Ajax.Responders.register({
