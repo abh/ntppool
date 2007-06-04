@@ -50,6 +50,7 @@ SQL::ReservedWords
 DBI
 DBD::mysql
 
+List::MoreUtils
 Rose::Object
 Rose::DateTime
 Time::Clock
@@ -64,8 +65,10 @@ Text::CSV_XS
 
 JSON
 
-Digest::SHA1
 Math::BigInt
+Math::BigRat
+bignum
+Digest::SHA1
 Class::ErrorHandler
 Authen::Bitcard
 
@@ -76,6 +79,7 @@ Email::Address
 Email::Send
 Email::Abstract
 Email::Date
+Email::Simple::Creator
 
 Digest::HMAC_MD5
 Net::IP
