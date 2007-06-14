@@ -1,12 +1,15 @@
+High priority things:
+
   * Make a system on the website for vendors to sign up for a "vendor
     zone" and for me to approve it etc (http://www.pool.ntp.org/vendors.html)
+    (90% done)
 
   * Change the DNS system to use pgeodns (or similar) to distribute
     requests rather than than regenerating the zone.  (Better use the
     "bandwidth" setting the admins have; distribute requests to a "nearby"
     server automatically; ...)
 
-  * Something else important I can't think of right now ... :-)
+  * Whatever else ...
 
 After that then some of the things I have on my list are (not necessarily in order of priority)
 
@@ -19,10 +22,11 @@ After that then some of the things I have on my list are (not necessarily in ord
 
    * Improve the monitoring system to have multiple monitoring stations around the world.
 
+   * Make each monitoring station exchange information with each other and the DNS servers able to get the information from any one of them.
+
    * Make a system to allow translations of the pool website, ideally including the manage interface.
 
    * Deploy more Soekris/WRAP boxes for monitoring stations and "super nodes"
-
 
  - allow changing IPs N times a year
 
@@ -37,6 +41,10 @@ check if the servers do HTTP redirects
   - ok if redirect to www.pool.ntp.org
   - ok if none
   - warning if redirect somewhere else
+
+IPv6 support
+  - update database schema
+  - figure out if each IP is treated individually or together with the IPv4 entry
 
 update use.html page (be more explicit about number of zones)
 

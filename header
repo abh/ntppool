@@ -1,7 +1,7 @@
 Zpool.ntp.org:ns1.us.bitnames.com:pool.ntp.org:@VERSION@:1600:600:604800:240
 
-&pool.ntp.org::ns1.us.bitnames.com:259200
-#&pool.ntp.org::a.ntpns.org:259200
+#&pool.ntp.org::ns1.us.bitnames.com:259200
+&pool.ntp.org::a.ntpns.org:259200
 
 # &pool.ntp.org::ns3.us.bitnames.com:259200
 &pool.ntp.org::b.ntpns.org:259200
