@@ -31,7 +31,7 @@ sub render {
 sub manage_dispatch {
     my $self = shift;
     return $self->handle_add    if $self->request->uri =~ m!^/manage/server/add!;
-    return $self->handle_update if $self->request->uri =~ m!^/manage/server/update!;
+    return $self->handle_update if $self->request->uri =~ m!^/manage/(server|profile)/update!;
     return $self->handle_delete if $self->request->uri =~ m!^/manage/server/delete!;
     return $self->show_manage   if $self->request->uri =~ m!^/manage/servers!;
     return $self->redirect('/manage/servers');
@@ -154,7 +154,7 @@ sub req_server {
 sub handle_update {
     my $self = shift;
 
-    return $self->handle_update_profile  if $self->request->uri =~ m!^/manage/server/update/profile!;
+    return $self->handle_update_profile  if $self->request->uri =~ m!^/manage/profile/update!;
     return $self->handle_update_netspeed if $self->request->uri =~ m!^/manage/server/update/netspeed!;
     # deletion and non-js netspeed
     if ($self->request->uri =~ m!^/manage/server/update/server!) {
