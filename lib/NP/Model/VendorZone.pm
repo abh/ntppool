@@ -10,6 +10,9 @@ my %reserved_zone_names = map { $_ => 1 }
      america
      asia
      africa
+
+     ntppool
+     vendor
   );
 
 sub validate {
