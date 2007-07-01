@@ -8,5 +8,6 @@ use NTPPool::Control::Vendor;
 use NTPPool::Control::Zone;
 use NTPPool::Control::Bulletin;
 use NTPPool::Control::UserProfile;
+use NTPPool::Control::Static;
 
 1;

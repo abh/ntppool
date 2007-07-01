@@ -3,6 +3,9 @@ use strict;
 use Apache::Constants qw(OK);
 use base qw(Combust::Control Combust::Control::Bitcard);
 use HTML::Prototype;
+use Carp qw(cluck);
+use Storable qw(retrieve);
+use List::Util qw(max);
 
 $Combust::Control::Bitcard::cookie_name = 'npuid';
 
@@ -82,6 +85,33 @@ sub count_by_continent {
     push @zones, $total;
     \@zones
 }
+
+my $static_directory = $ENV{CBROOTLOCAL} . '/docs/ntppool/st';  
+my $static_files = eval { retrieve("${static_directory}/.versions.store") }
+or die "bin/deploy/static_version_cache not yet run: $@";
+
+my $startup_time = time;
+
+sub static_url {
+    my ($self, $file) = @_;
+    $file or cluck "no filename specified to static_url" and return "";
+    $file = "/$file" unless $file =~ m!^/!;
+    my $regexp = qr/(\.(js|css|gif|png|jpg|ico))$/;
+    if ($file =~ m/$regexp/) {
+        my $version;
+        if ($self->deployment_mode eq 'devel') {
+            $version = max($startup_time, (stat("${static_directory}$file"))[9]);
+        }
+        else {
+            $version = $static_files->{$file};
+        }
+
+        $file =~ s!$regexp!.v$version$1! if $version;
+    }
+
+    return '/st' . $file;
+}
+
 
 package NTPPool::Control::Basic;
 use base qw(NTPPool::Control Combust::Control::Basic);
