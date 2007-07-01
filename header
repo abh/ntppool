@@ -1,4 +1,7 @@
-Zpool.ntp.org:ns1.us.bitnames.com:pool.ntp.org:@VERSION@:1600:600:604800:240
+Zpool.ntp.org:a.ntpns.org:pool.ntp.org:@VERSION@:1600:600:604800:240
+
+# zone transfers are from 216.52.237.171 (on x7)
+
 
 #&pool.ntp.org::ns1.us.bitnames.com:259200
 &pool.ntp.org::a.ntpns.org:259200
@@ -27,6 +30,7 @@ Zpool.ntp.org:ns1.us.bitnames.com:pool.ntp.org:@VERSION@:1600:600:604800:240
 #; in nz offered by Simon Lyall <simon.lyall@ihug.co.nz>
 # &pool.ntp.org::usenet.net.nz.:259200
 
+# boyan@krosnov.org - traffic analysis - 85.130.111.169
 
 # another backup MX offered by Olivier Macchioni <mac@tuxfinder.com>
 # offered by Sanjeev "Ghane" Gupta <ghane@dotxtra.com>

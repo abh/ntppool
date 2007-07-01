@@ -448,7 +448,7 @@ elsif ($cmd eq "zone") {
         my $min_non_duplicate_size = 4;
         $min_non_duplicate_size = int(@$entries / 5) 
           if (@$entries / 5 > $min_non_duplicate_size);
-        $min_non_duplicate_size = 12 if $min_non_duplicate_size > 12;
+        $min_non_duplicate_size = 14 if $min_non_duplicate_size > 14;
 
         print $fh "# " . scalar @$entries . " active servers in ", $zone->name, "\n";
 
