@@ -2,10 +2,12 @@
 <script src="/js/jsonmin.js" type="text/javascript"></script>
 <script src="/js/ntppool.js" type="text/javascript"></script>
 
-<a href="/manage/logout">Logout</a> | <a href="[% combust.account_url %]">Bitcard Account</a>
+[% PROCESS tpl/manage/navigation.html %]
 
 <p>
-
+Anyone distributing an appliance, operating system or some other kind
+of software using NTP needs a "vendor zone" if the default
+configuration is to use the pool system.
 </p>
 
 [% FOR vz = combust.user.vendor_zones %]
