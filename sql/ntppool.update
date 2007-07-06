@@ -216,3 +216,11 @@ alter table vendor_zones
 #31
 alter table user_privileges add vendor_admin tinyint not null default 0;
 
+#32
+create table user_equipment_applications (
+  id int unsigned not null primary key auto_increment,
+  user_id int unsigned not null,
+  application text,
+  status enum('New', 'Good', 'Maybe', 'No') not null default 'New',
+  CONSTRAINT `user_equipment_applications_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
