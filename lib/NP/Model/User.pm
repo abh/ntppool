@@ -10,7 +10,8 @@ sub who {
 }
 
 sub privileges {
-    shift->user_privilege(@_);
+    my $self = shift;
+    $self->user_privilege(@_) || $self->user_privilege({ user_id => $self->id })->save;
 }
 
 sub bad_servers {

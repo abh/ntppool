@@ -424,9 +424,22 @@ elsif ($cmd eq "zone") {
     }
 
 
+    my $zones = NP::Model->vendor_zone->get_vendor_zones_iterator
+      ( query => [ status => 'Approved' ],
+        order => 'approved_on', 
+      );
+
+
     my $ttl = 2700;
 
-    my $zones = NP::Model->zone->get_zones_iterator( query => [ dns => 1 ] );
+    while (my $zone = $zones->next) {
+        my $name = $zone->zone_name;
+        for my $i (0..3) {
+            print $fh "$i.$name.${pool_domain}:$i.vendors.${pool_domain}:$ttl\n";
+        }
+    }
+
+    $zones = NP::Model->zone->get_zones_iterator( query => [ dns => 1 ] );
 
     while (my $zone = $zones->next) {
         my $name = $zone->name;

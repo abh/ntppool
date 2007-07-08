@@ -10,4 +10,6 @@ use NTPPool::Control::Bulletin;
 use NTPPool::Control::UserProfile;
 use NTPPool::Control::Static;
 
+use Template::Plugin::Number::Format;
+
 1;

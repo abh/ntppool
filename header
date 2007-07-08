@@ -46,6 +46,12 @@ Zpool.ntp.org:a.ntpns.org:pool.ntp.org:@VERSION@:1600:600:604800:240
 Cweb.pool.ntp.org:x3.develooper.com:28800
 Cwww.pool.ntp.org:x3.develooper.com:28800
 
+C0.vendors.pool.ntp.org:3.pool.ntp.org:3600
+C1.vendors.pool.ntp.org:2.pool.ntp.org:3600
+C2.vendors.pool.ntp.org:1.pool.ntp.org:3600
+C3.vendors.pool.ntp.org:0.pool.ntp.org:3600
+
+
 #+pool.ntp.org:216.52.237.153:2100
 
 

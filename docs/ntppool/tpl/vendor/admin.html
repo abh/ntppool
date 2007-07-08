@@ -1,0 +1,11 @@
+[% PROCESS tpl/manage/navigation.html %]
+
+[% IF msg %]
+<div style="border: 1px dotted #555; padding:4px; background: #EEDD82">
+[% msg %]
+</div>
+[% END %]
+
+[% FOR vz = pending_zones %]
+<a href="admin?show=1;id=[% vz.id %]">[% vz.zone_name | html %]</a> (modified: [% vz.modified_on %])<br/>
+[% END %]

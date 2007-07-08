@@ -461,6 +461,12 @@ __PACKAGE__->meta->setup(
       type       => 'one to many',
     },
 
+    user_equipment_applications => {
+      class      => 'NP::Model::UserEquipmentApplication',
+      column_map => { id => 'user_id' },
+      type       => 'one to many',
+    },
+
     user_privilege => {
       class                => 'NP::Model::UserPrivilege',
       column_map           => { id => 'user_id' },
@@ -487,6 +493,50 @@ our @ISA = qw(Combust::RoseDB::Manager);
 sub object_class { 'NP::Model::User' }
 
 __PACKAGE__->make_manager_methods('users');
+}
+
+
+# Allow user defined methods to be added
+eval { require NP::Model::UserEquipmentApplication }
+  or $@ !~ m:^Can't locate NP/Model/UserEquipmentApplication.pm: and die $@;
+
+{ package NP::Model::UserEquipmentApplication;
+
+use strict;
+
+use base qw(NP::Model::_Object);
+
+__PACKAGE__->meta->setup(
+  table   => 'user_equipment_applications',
+
+  columns => [
+    id          => { type => 'integer', not_null => 1 },
+    user_id     => { type => 'integer', default => '', not_null => 1 },
+    application => { type => 'text', length => 65535 },
+    status      => { type => 'enum', default => 'New', not_null => 1, values => [ 'New', 'Good', 'Maybe', 'No' ] },
+  ],
+
+  primary_key_columns => [ 'id' ],
+
+  foreign_keys => [
+    user => {
+      class       => 'NP::Model::User',
+      key_columns => { user_id => 'id' },
+    },
+  ],
+);
+
+push @table_classes, __PACKAGE__;
+}
+
+{ package NP::Model::UserEquipmentApplication::Manager;
+
+use Combust::RoseDB::Manager;
+our @ISA = qw(Combust::RoseDB::Manager);
+
+sub object_class { 'NP::Model::UserEquipmentApplication' }
+
+__PACKAGE__->make_manager_methods('user_equipment_applications');
 }
 
 
@@ -731,6 +781,7 @@ __PACKAGE__->make_manager_methods('zone_server_counts');
   sub server_url { our $server_url ||= bless [], 'NP::Model::ServerUrl::Manager' }
   sub server_zone { our $server_zone ||= bless [], 'NP::Model::ServerZone::Manager' }
   sub user { our $user ||= bless [], 'NP::Model::User::Manager' }
+  sub user_equipment_application { our $user_equipment_application ||= bless [], 'NP::Model::UserEquipmentApplication::Manager' }
   sub user_privilege { our $user_privilege ||= bless [], 'NP::Model::UserPrivilege::Manager' }
   sub vendor_zone { our $vendor_zone ||= bless [], 'NP::Model::VendorZone::Manager' }
   sub zone { our $zone ||= bless [], 'NP::Model::Zone::Manager' }

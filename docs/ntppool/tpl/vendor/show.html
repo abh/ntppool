@@ -1,3 +1,5 @@
+[% PROCESS tpl/manage/navigation.html %]
+
 <h2>"[% vz.zone_name | html %]" zone</h2>
 
 <h3>Organization</h3>
@@ -25,13 +27,27 @@
 [% IF vz.can_edit(combust.user) %]
  <form method="edit" action="/manage/vendor/zone" style="display:inline">
   <input type="hidden" name="id" value="[% vz.id %]" />
-  <input type="submit" value="&larr; Edit" /></form> 
+  <input type="submit" value="&larr; Edit" />
+</form> 
 [% END %]
 
 [% IF vz.status == 'New' %]
  <form method="post" action="/manage/vendor/submit" style="display:inline">
   <input type="hidden" name="id" value="[% vz.id %]" />
   <input type="submit" value="Submit application &rarr;" /></form> 
+[% END %]
+
+[% IF combust.user.privileges.vendor_admin %]
+<br/><br/>
+ <form method="post" action="/manage/vendor/admin" style="display:inline">
+  <input type="hidden" name="id" value="[% vz.id %]" />
+  [% IF vz.status == 'Pending' or vz.status == 'Rejected' %]
+    <input type="submit" name="status_change" value="Approve" />
+  [% END %]
+  [% IF vz.status == 'Pending' %]
+    <input type="submit" name="status_change" value="Reject" />
+  [% END %]
+</form>
 [% END %]
 
 <p>

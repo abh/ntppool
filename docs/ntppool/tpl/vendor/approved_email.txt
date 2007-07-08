@@ -1,0 +1,31 @@
+[%- page.style='bare.html' %]From: (Ask Bjoern Hansen) ntppool-vendors@develooper.com
+To: ([% vz.user.username %]) [% vz.user.email %]
+Subject: Vendor zone activated: [% vz.zone_name %]
+
+Hi [% vz.user.name %],
+
+Your vendor pool zone "[% vz.zone_name %]" has been setup.  The
+hostnames are below.  They will be active within a few hours.
+
+[%- FOR i = [0..3] -%]
+   [% i %].[% vz.zone_name %].pool.ntp.org
+[% END %]
+
+Please consider contributing back to the pool so we can keep the
+service sustainable even with the commercial usage: 
+    http://www.pool.ntp.org/vendors/contribute.html
+
+If you do not, you seriously diminish the chances that we can continue
+to offer this service.
+
+Also - please subscribe to the (announce-only, very low traffic)
+ntppool-vendors list at Google Groups.  We recommend everyone in your
+organization involved with this is subscribed there.
+    http://groups.google.com/group/ntppool-vendors
+
+
+
+Kind regards,
+
+Ask Bjoern Hansen
+(ask@develooper.com)

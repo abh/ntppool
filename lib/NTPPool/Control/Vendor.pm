@@ -133,7 +133,46 @@ sub render_admin {
     return $self->redirect("/manage/vendor") unless 
        $self->user->privileges->vendor_admin;
 
-    return OK, 'foo';
+    if (my $id = $self->req_param('id')) {
+      my $vz = $id ? NP::Model->vendor_zone->fetch(id => $id) : undef;
+      return 404 unless $vz;
+    
+      if ($self->req_param('show')) {
+          return $self->render_zone($id, 'show');
+      }
+      
+      if (my $status = $self->req_param('status_change')) {
+          if ($vz->status eq 'Pending' and $status =~ m/^Reject/) {
+              $vz->status('Rejected');
+              $vz->save;
+              $self->tpl_param("msg" => $vz->zone_name . ' rejected');
+          }
+          elsif ($vz->status =~ m/(Pending|Rejected)/) {
+              $vz->status('Approved');
+              $vz->save;
+
+              $self->tpl_param('vz' => $vz); 
+
+              my $msg = $self->evaluate_template('tpl/vendor/approved_email.txt');
+              my $email = Email::Simple->new(ref $msg ? $$msg : $msg); # until we decide what eval_tpl should return :)
+              $email->header_set('Message-ID' => join("-", int(rand(1000)), $$, time) . '@' . hostname);
+              $email->header_set('Date'       => Email::Date::format_date);
+              my $return = send SMTP => $email, 'localhost';
+              warn Data::Dumper->Dump([\$msg, \$email, \$return], [qw(msg amil return)]);
+
+              $self->tpl_param("msg" => $vz->zone_name . ' approved');
+
+          }
+      }
+    }
+
+    my $pending = NP::Model->vendor_zone->get_vendor_zones
+      ( query => [ status => 'Pending' ],
+      );
+    
+    $self->tpl_param(pending_zones => $pending);
+
+    return OK, $self->evaluate_template('tpl/vendor/admin.html');
 }
 
 1;
