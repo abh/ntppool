@@ -52,7 +52,7 @@ sub validation_errors {
 sub can_edit {
     my ($self, $user) = @_;
     return 0 unless $user;
-    return 1 if $user->user->privileges->vendor_admin;
+    return 1 if $user->privileges->vendor_admin;
     return 1 if $self->status eq 'New'
         and $user->id == $self->user_id; # TODO: many<->many
     return 0;
@@ -61,7 +61,7 @@ sub can_edit {
 sub can_view {
     my ($self, $user) = @_;
     return 0 unless $user;
-    return 1 if $user->user->privileges->vendor_admin;
+    return 1 if $user->privileges->vendor_admin;
     return 1 if $user->id == $self->user_id; # TODO: many<->many
     return 0;
 }

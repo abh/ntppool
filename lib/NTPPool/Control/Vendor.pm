@@ -3,6 +3,7 @@ use strict;
 use base qw(NTPPool::Control::Manage);
 use NP::Model;
 use Apache::Constants qw(OK NOT_FOUND);
+use Email::Send;
 use Email::Simple;
 use Email::Simple::Creator;
 use Sys::Hostname qw(hostname);
@@ -77,7 +78,9 @@ sub render_submit {
     my $email = Email::Simple->new(ref $msg ? $$msg : $msg); # until we decide what eval_tpl should return :)
     $email->header_set('Message-ID' => join("-", int(rand(1000)), $$, time) . '@' . hostname);
     $email->header_set('Date'       => Email::Date::format_date);
-    my $return = send SMTP => $email, 'localhost';
+    my $sender = Email::Send->new({ mailer => 'SMTP' });
+    $sender->mailer_args([Host => 'localhost']);
+    my $return = $sender->send($email);
     warn Data::Dumper->Dump([\$msg, \$email, \$return], [qw(msg amil return)]);
 
     return OK, $self->evaluate_template('tpl/vendor/submitted.html');
@@ -157,7 +160,9 @@ sub render_admin {
               my $email = Email::Simple->new(ref $msg ? $$msg : $msg); # until we decide what eval_tpl should return :)
               $email->header_set('Message-ID' => join("-", int(rand(1000)), $$, time) . '@' . hostname);
               $email->header_set('Date'       => Email::Date::format_date);
-              my $return = send SMTP => $email, 'localhost';
+              my $sender = Email::Send->new({ mailer => 'SMTP' });
+              $sender->mailer_args([Host => 'localhost']);
+              my $return = $sender->send($email);
               warn Data::Dumper->Dump([\$msg, \$email, \$return], [qw(msg amil return)]);
 
               $self->tpl_param("msg" => $vz->zone_name . ' approved');
