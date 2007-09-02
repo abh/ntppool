@@ -23,19 +23,24 @@
 	</blockquote>
 
 	<h3>Status</h3>
-	<p>[% vz.status %]</p>
+	<blockquote>[% vz.status %]</blockquote>
 
 	[% IF vz.can_edit(combust.user) %]
 	 <form method="edit" action="/manage/vendor/zone" style="display:inline">
+	 <fieldset style="display: inline;">
 	  <input type="hidden" name="id" value="[% vz.id %]" />
-	  <input type="submit" value="&larr; Edit" />
+	  <input type="submit" class="button" value="&larr; Edit" />
+	</fieldset>
 	</form> 
 	[% END %]
 
 	[% IF vz.status == 'New' %]
 	 <form method="post" action="/manage/vendor/submit" style="display:inline">
+	 <fieldset style="display: inline;">
 	  <input type="hidden" name="id" value="[% vz.id %]" />
-	  <input type="submit" value="Submit application &rarr;" /></form> 
+	  <input type="submit" class="button" value="Submit application &rarr;" />
+	</fieldset>
+	</form> 
 	[% END %]
 
 	[% IF combust.user.privileges.vendor_admin %]
