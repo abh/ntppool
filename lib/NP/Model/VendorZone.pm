@@ -1,6 +1,6 @@
 package NP::Model::VendorZone;
 use strict;
-use HTML::Entities qw(encode_entities);
+use NP::Util qw(convert_to_html);
 
 my %reserved_zone_names = map { $_ => 1 } 
   qw(
@@ -69,16 +69,5 @@ sub can_view {
 sub contact_information_html { convert_to_html(shift->contact_information) }
 sub request_information_html { convert_to_html(shift->request_information) }
 
-
-sub convert_to_html {
-    my $str = shift;
-
-    encode_entities($str, '<>&"');  # how can we encode everything without messing up UTF8?
-    $str =~ s!(https?://.+?)(\s|$)!<a href="$1">$1</a>$2!g;
-                             $str =~ s!\n\s*[\n\s]+!<br/><br/>!g;
-                             $str =~ s!\n!<br/>\n!g;
-
-                             $str;
-                         }
 
 1;

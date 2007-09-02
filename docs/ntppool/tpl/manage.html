@@ -8,20 +8,48 @@
 [% prototype_js = 1 %]
 
 <div id="admin" class="block">
-	<h3>Admin information <img id="busy" style="display: none;"  src="/images/progress.gif"></h3>
+	<h3>Admin information <img id="busy" style="display: none;"  src="/st/images/progress.gif"></h3>
 	[% user = combust.user %]	
 	<div class="profile yui-g">
 		<div class="yui-u first">
-			<label>Username</label>
+			<label>Username:</label>
 			[% user.username %] <br />
 			[% PROCESS tpl/manage/profile_link.html %]
 		</div>
 		<div class="yui-u">
-			<label>Email</label>
+			<label>Email:</label>
 				[% user.email %] <br />
 					<span>(change your email address in your <a href="[% combust.account_url %]">Bitcard Account</a>)</span>
 		</div>
 	</div>
+
+	<div class="profile yui-g">
+          <strong><a href="http://www.meinberg.de/english/">Meinberg</a> <a href="/meinberg.html">equipment giveaway</a></strong>! 
+
+          [% UNLESS combust.user.user_equipment_applications %]
+          <p>
+            Before continuing, be sure to carefully <a href="/meinberg.html">carefully read the requirements</a>.
+          </p>
+
+          <p>
+             <a href="/manage/equipment/new">Submit a new application</a>
+          </p>
+
+          [% ELSE;
+            ea = combust.user.user_equipment_applications;
+          %]
+
+          <p> You have already submitted an application.</p> 
+
+          <p>
+            <a href="/manage/equipment/application?id=[% ea.id %]">[% ea.can_edit(combust.user) ? 'Edit/Submit' : 'Show' %]
+               your application</a>
+          </p>
+
+          [% END %]
+
+	</div>
+
 	
 	<div class="servers" >
 		<h3>Your Servers</h3>

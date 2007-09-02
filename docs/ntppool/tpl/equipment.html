@@ -1,0 +1,25 @@
+
+[% PROCESS tpl/manage/navigation.html %]
+
+[% UNLESS combust.user.user_equipment_applications %]
+
+<p>
+Before continuing, be sure to carefully read about the <a href="/meinberg.html">Meinberg equipment give-away</a>.
+</p>
+
+
+<p>
+<a href="/manage/equipment/new">Submit a new application</a>
+</p>
+
+[% ELSE;
+    ea = combust.user.user_equipment_applications;
+ %]
+
+<p> You have already submitted an application.</p> 
+
+<p>
+<a href="/manage/equipment/application?id=[% ea.id %]">[% ea.can_edit(combust.user) ? 'Edit/Submit' : 'Show' %] your application</a>
+</p>
+
+[% END %]

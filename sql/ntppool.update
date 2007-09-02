@@ -227,3 +227,47 @@ create table user_equipment_applications (
   status enum('New', 'Good', 'Maybe', 'No') not null default 'New',
   CONSTRAINT `user_equipment_applications_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+#33
+alter table user_equipment_applications
+  add contact_information text after application;
+
+alter table user_privileges add equipment_admin tinyint not null default 0;
+
+alter table user_equipment_applications
+  modify status enum('New', 'Pending', 'Maybe', 'No', 'Approved') not null default 'New';
+
+#34
+
+alter table server_notes
+  modify created_on datetime not null,
+  modify `server_id` int(10) unsigned NOT NULL;
+
+alter table server_urls
+  modify `server_id` int(10) unsigned NOT NULL;
+
+alter table log_scores
+  modify `server_id` int(10) unsigned NOT NULL,
+  modify `ts` datetime not null;
+
+alter table servers
+  modify created_on datetime not null,
+  modify `user_id` int(10) unsigned NOT NULL;
+
+alter table server_alerts 
+   modify first_email_time datetime not null,
+   modify `last_score` double NOT NULL;
+
+alter table zone_server_counts 
+   modify `zone_id` int(10) unsigned NOT NULL,
+   modify `date` date not null,
+   modify `count_registered` mediumint(8) unsigned NOT NULL,
+   modify `count_active` mediumint(8) unsigned NOT NULL,
+   add    `netspeed_active` int unsigned not null
+;
+
+
+
+
+
+

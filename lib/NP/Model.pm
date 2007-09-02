@@ -52,7 +52,7 @@ __PACKAGE__->meta->setup(
     type           => { type => 'varchar', length => 50 },
     title          => { type => 'varchar', length => 255 },
     message        => { type => 'text', length => 65535 },
-    created_on     => { type => 'datetime', default => 'now', not_null => 1 },
+    created_on     => { type => 'datetime', default => '0000-00-00 00:00:00', not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
@@ -106,8 +106,8 @@ __PACKAGE__->meta->setup(
     id        => { type => 'integer', not_null => 1 },
     server_id => { type => 'integer', default => '', not_null => 1 },
     ts        => { type => 'datetime', default => 'now', not_null => 1 },
-    score     => { type => 'scalar', default => '', length => 64, not_null => 1 },
-    step      => { type => 'scalar', default => '', length => 64, not_null => 1 },
+    score     => { type => 'scalar', default => '0', length => 64, not_null => 1 },
+    step      => { type => 'scalar', default => '0', length => 64, not_null => 1 },
     offset    => { type => 'scalar', length => 64 },
   ],
 
@@ -132,6 +132,41 @@ our @ISA = qw(Combust::RoseDB::Manager);
 sub object_class { 'NP::Model::LogScore' }
 
 __PACKAGE__->make_manager_methods('log_scores');
+}
+
+
+# Allow user defined methods to be added
+eval { require NP::Model::SchemaRevision }
+  or $@ !~ m:^Can't locate NP/Model/SchemaRevision.pm: and die $@;
+
+{ package NP::Model::SchemaRevision;
+
+use strict;
+
+use base qw(NP::Model::_Object);
+
+__PACKAGE__->meta->setup(
+  table   => 'schema_revision',
+
+  columns => [
+    revision    => { type => 'integer', default => '0', not_null => 1 },
+    schema_name => { type => 'varchar', length => 30, not_null => 1 },
+  ],
+
+  primary_key_columns => [ 'schema_name' ],
+);
+
+push @table_classes, __PACKAGE__;
+}
+
+{ package NP::Model::SchemaRevision::Manager;
+
+use Combust::RoseDB::Manager;
+our @ISA = qw(Combust::RoseDB::Manager);
+
+sub object_class { 'NP::Model::SchemaRevision' }
+
+__PACKAGE__->make_manager_methods('schema_revisions');
 }
 
 
@@ -247,7 +282,7 @@ __PACKAGE__->meta->setup(
 
   columns => [
     server_id        => { type => 'integer', not_null => 1 },
-    last_score       => { type => 'scalar', default => '0', length => 64, not_null => 1 },
+    last_score       => { type => 'scalar', default => '', length => 64, not_null => 1 },
     first_email_time => { type => 'datetime', default => 'now', not_null => 1 },
     last_email_time  => { type => 'datetime' },
   ],
@@ -510,10 +545,11 @@ __PACKAGE__->meta->setup(
   table   => 'user_equipment_applications',
 
   columns => [
-    id          => { type => 'integer', not_null => 1 },
-    user_id     => { type => 'integer', default => '', not_null => 1 },
-    application => { type => 'text', length => 65535 },
-    status      => { type => 'enum', default => 'New', not_null => 1, values => [ 'New', 'Good', 'Maybe', 'No' ] },
+    id                  => { type => 'integer', not_null => 1 },
+    user_id             => { type => 'integer', default => '', not_null => 1 },
+    application         => { type => 'text', length => 65535 },
+    contact_information => { type => 'text', length => 65535 },
+    status              => { type => 'enum', default => 'New', not_null => 1, values => [ 'New', 'Pending', 'Maybe', 'No', 'Approved' ] },
   ],
 
   primary_key_columns => [ 'id' ],
@@ -558,6 +594,7 @@ __PACKAGE__->meta->setup(
     see_all_servers       => { type => 'integer', default => '0', not_null => 1 },
     see_all_user_profiles => { type => 'integer', default => '0', not_null => 1 },
     vendor_admin          => { type => 'integer', default => '0', not_null => 1 },
+    equipment_admin       => { type => 'integer', default => '0', not_null => 1 },
   ],
 
   primary_key_columns => [ 'user_id' ],
@@ -737,6 +774,7 @@ __PACKAGE__->meta->setup(
     date             => { type => 'date', default => '', not_null => 1 },
     count_active     => { type => 'scalar', default => '', length => 8, not_null => 1 },
     count_registered => { type => 'scalar', default => '', length => 8, not_null => 1 },
+    netspeed_active  => { type => 'integer', default => '', not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
@@ -775,6 +813,7 @@ __PACKAGE__->make_manager_methods('zone_server_counts');
 
   sub log { our $log ||= bless [], 'NP::Model::Log::Manager' }
   sub log_score { our $log_score ||= bless [], 'NP::Model::LogScore::Manager' }
+  sub schema_revision { our $schema_revision ||= bless [], 'NP::Model::SchemaRevision::Manager' }
   sub server { our $server ||= bless [], 'NP::Model::Server::Manager' }
   sub server_alert { our $server_alert ||= bless [], 'NP::Model::ServerAlert::Manager' }
   sub server_note { our $server_note ||= bless [], 'NP::Model::ServerNote::Manager' }
