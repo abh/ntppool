@@ -150,7 +150,7 @@ sub render_admin {
               $vz->save;
               $self->tpl_param("msg" => $vz->zone_name . ' rejected');
           }
-          elsif ($vz->status =~ m/(Pending|Rejected)/) {
+          elsif ($vz->status =~ m/(Pending|Rejected)/ and $status =~ m/^Approved/) {
               $vz->status('Approved');
               $vz->save;
 

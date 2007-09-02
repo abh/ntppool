@@ -34,6 +34,8 @@ sub render {
           return OK, $self->history_sparkline_png($server), 'image/png'
              if $mode eq 'spark';
 
+          $self->tpl_param('graph_explanation' => 1) if $self->req_param('graph_explanation');
+
           $self->tpl_param('server' => $server);
       }
   }
