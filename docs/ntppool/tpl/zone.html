@@ -1,128 +1,131 @@
 [% page.title = 'NTP Servers in ' _ zone.description _ ', ' _ zone.fqdn %]
 
-<h3>[% zone.description %] [% IF zone.dns %] &#8212; [% zone.fqdn %][% END %]</h3>
+<div class="block">
+	<h1>[% zone.description %] [% IF zone.dns %] &#8212; [% zone.fqdn %][% END %]</h1>
 
-[% IF zone.dns and !zone.children and zone.server_count < 39 %]
-<p>
-We can use more servers in this country.  If you have a server with a static IP, please consider <a href="/join.html">joining the pool</a>!
-</p>
-[% END %]
+	[% IF zone.dns and !zone.children and zone.server_count < 39 %]
+	<p>
+	We can use more servers in this country.  If you have a server with a static IP, please consider <a href="/join.html">joining the pool</a>!
+	</p>
+	[% END %]
 
-[% max_zone_number = zone.sub_zone_count - 1; %]
+	[% max_zone_number = zone.sub_zone_count - 1; %]
 
-[% IF zone.dns and zone.parent.dns and zone.server_count >= 6 %]
-<p>
-To use this pool zone, add the following to your ntp.conf file:
+	[% IF zone.dns and zone.parent.dns and zone.server_count >= 6 %]
+	<p>
+	To use this pool zone, add the following to your ntp.conf file:
 
-[% IF zone.server_count >= 20  %]
+	[% IF zone.server_count >= 20  %]
 
-<pre>[% FOR i = [0..max_zone_number] %]
-   server [% i %].[% zone.fqdn %]
-[%- END %]
-</pre>
+	<pre>[% FOR i = [0..max_zone_number] %]
+	   server [% i %].[% zone.fqdn %]
+	[%- END %]
+	</pre>
 
-[% ELSE # server count >= 6 and < 20  %]
+	[% ELSE # server count >= 6 and < 20  %]
 
-<pre>
-[%- i = zone.random_subzone_ids(1) %]
-   server [% i %].[% zone.fqdn %]
-[%- FOR i = zone.parent.random_subzone_ids(2) %]
-   server [% i %].[% zone.parent.fqdn %]
-[%- END %]
-</pre>
+	<pre>
+	[%- i = zone.random_subzone_ids(1) %]
+	   server [% i %].[% zone.fqdn %]
+	[%- FOR i = zone.parent.random_subzone_ids(2) %]
+	   server [% i %].[% zone.parent.fqdn %]
+	[%- END %]
+	</pre>
 
-[% END  # server_count >= 20 %]
+	[% END  # server_count >= 20 %]
 
-</p>
-[% ELSIF (zone.parent.dns)  %]
-<p>
+	</p>
+	[% ELSIF (zone.parent.dns)  %]
+	<p>
 
-[% parent = zone.parent;
-   IF (parent.server_count < 10 AND parent.parent.in_dns);
-     parent = parent.parent;
-   END;
-%]
+	[% parent = zone.parent;
+	   IF (parent.server_count < 10 AND parent.parent.in_dns);
+	     parent = parent.parent;
+	   END;
+	%]
 
-There are not enough servers in this zone, so we recommend you use the [% parent.description %] zone ([% parent.fqdn %]):
+	There are not enough servers in this zone, so we recommend you use the [% parent.description %] zone ([% parent.fqdn %]):
 
-<pre>[% FOR i = [0..max_zone_number] %]
-   server [% i %].[% parent.fqdn %]
-[%- END %]
-</pre>
+	<pre>[% FOR i = [0..max_zone_number] %]
+	   server [% i %].[% parent.fqdn %]
+	[%- END %]
+	</pre>
 
-</p>
+	</p>
 
 
-</p>
-[% END %]
+	</p>
+	[% END %]
 
-<p>
-There [% zone.server_count==1 ? 'is' : 'are' %] [% zone.server_count %] active server[% zone.server_count==1 ? '' : 's' %] in this zone.
-</p>
+	<p>
+	There [% zone.server_count==1 ? 'is' : 'are' %] [% zone.server_count %] active server[% zone.server_count==1 ? '' : 's' %] in this zone.
+	</p>
 
-<p>
-[% FOR days = [1,7,14,30,90,180,365,730];
-   st = zone.stats_days_ago(days);
-   NEXT UNLESS st;
-   diff = zone.server_count - st.count_active;
-   color = diff > 0 ? 'green' : 'red';
- %]
-  
-[% st.count_active; IF diff; %] (<span style="color: [% color %]">[% diff > 0 ? '+' : ''; diff %]</span>)[% END %]
- active [% st.ago %]<br />
+	<p>
+	[% FOR days = [1,7,14,30,90,180,365,730];
+	   st = zone.stats_days_ago(days);
+	   NEXT UNLESS st;
+	   diff = zone.server_count - st.count_active;
+	   color = diff > 0 ? 'green' : 'red';
+	 %]
 
-[% END %]
-</p>
+	[% st.count_active; IF diff; %] (<span style="color: [% color %]">[% diff > 0 ? '+' : ''; diff %]</span>)[% END %]
+	 active [% st.ago %]<br />
 
-[% IF zone.parent %]
-<p>
-See all zones in <a href="[% zone.parent.url %]">[% zone.parent.description %]</a>.
-</p>
-[% END %]
+	[% END %]
+	</p>
 
-[% IF is_logged_in;
-     IF show_servers;
- %]
-<a href="[% zone.url %]">Don't show servers</a>
-[%   ELSE %]
-<a href="[% zone.url %]?show_servers=1">Show servers</a> (only available by request from server admins)
-[%   END;
-  END;
-%]
+	[% IF zone.parent %]
+	<p>
+	See all zones in <a href="[% zone.parent.url %]">[% zone.parent.description %]</a>.
+	</p>
+	[% END %]
 
-[% IF zone.zones %]
-<p>
-[% FOR child = zone.zones %]
-<a href="[% child.url %][% show_servers ? '?show_servers=1' : '' %]">[% child.description %]</a> &#8212; [% child.fqdn %] ([% child.server_count %])<br />
+	[% IF is_logged_in;
+	     IF show_servers;
+	 %]
+	<a href="[% zone.url %]">Don't show servers</a>
+	[%   ELSE %]
+	<a href="[% zone.url %]?show_servers=1">Show servers</a> (only available by request from server admins)
+	[%   END;
+	  END;
+	%]
 
-[% END %]
-</p>
-[% END %]
+	[% IF zone.zones %]
+	<p>
+	[% FOR child = zone.zones %]
+	<a href="[% child.url %][% show_servers ? '?show_servers=1' : '' %]">[% child.description %]</a> &#8212; [% child.fqdn %] ([% child.server_count %])<br />
 
-[% IF servers %]
-<p>
-<table class="servertable">
-[% FOR server = servers %]
-<tr>
-<!-- <td>[% server.id %]</td> -->
-<td><a href="/scores/[% server.ip %]">[% server.ip %]</a></td>
-<td>[% server.hostname %]</td>
-<td>[% server.score %]</td>
-<td>[% server.stratum %]</td>
-<td>[% server.netspeed %]</td>
-<td>[% server.admin.username %]</td>
-<td>pool: [% server.in_pool ? 'yes' : 'no'%]</td>
-<td>
-[% FOR szone = server.zones_display %]
-<a href="[% szone.url %]">[% szone.name %]</a>
-[% END  %]
-</td>
-</tr>
-[% END %]
-</table>
-[% END %]
+	[% END %]
+	</p>
+	[% END %]
 
-<p>
-<img src="/zone/graph/[% zone.name %].png" alt="server count graphs for [% zone.name %].pool.ntp.org"/>
-</p>
+	[% IF servers %]
+	<p>
+	<table class="servertable">
+	[% FOR server = servers %]
+	<tr>
+	<!-- <td>[% server.id %]</td> -->
+	<td><a href="/scores/[% server.ip %]">[% server.ip %]</a></td>
+	<td>[% server.hostname %]</td>
+	<td>[% server.score %]</td>
+	<td>[% server.stratum %]</td>
+	<td>[% server.netspeed %]</td>
+	<td>[% server.admin.username %]</td>
+	<td>pool: [% server.in_pool ? 'yes' : 'no'%]</td>
+	<td>
+	[% FOR szone = server.zones_display %]
+	<a href="[% szone.url %]">[% szone.name %]</a>
+	[% END  %]
+	</td>
+	</tr>
+	[% END %]
+	</table>
+	[% END %]
 
+	<p>
+	<img src="/zone/graph/[% zone.name %].png" alt="server count graphs for [% zone.name %].pool.ntp.org"/>
+	</p>
+
+
+</div>

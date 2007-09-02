@@ -10,11 +10,23 @@
 		margin-bottom: 2px;
 	}
 .block {margin-bottom: 10px;}
+	.block h1, h2, h3 {padding: 3px 0;}
+	.block h1 {
+		font-size: 186%;
+	}
+	.block h2 {
+		font-size: 167%;
+	}
 	.block h3 {
 		font-size: 154%;
-		padding: 3px 0;
 		color: #7B7A7D;
 	}
+		.block ul {
+			margin-left: 20px;
+		}
+			.block ul li {
+				list-style-type: disc;
+			}
 p {margin-bottom: 7px; line-height: 1.3; font-size: 109%;}
 pre.code {background-color: #eee; padding: 10px; margin: 5px 0;}
 a.up {display: block; text-align: right; font-variant: small-caps;}
@@ -78,5 +90,61 @@ p.thanks {font-style: italic; font-weight: bold;}
 		margin: 0 0 10px 10px;
 	}
 		#admin .value span {font-size: 88%; color: #999;}
+		
+	
 
+/* misc.prev */
+.graph_explanation {
+  display: none;
+  width: 450px;
+  margin-left: 30px;
+  margin-top: 10px;
+  padding: 9px;
+  border: 1px dotted #999;
+}
+
+.visible {
+   display: block;
+}
+
+#faq dt {
+   margin-top: 10px;
+   font-weight: bold;
+}
+
+p.develwarning {
+    border: 1px dotted #555555;
+    background: #DDDDDD;
+    padding: 15px;
+    width: 750px;
+    margin: 0 10px 10px 10px;
+}
+
+#vendor_list {
+  border: 1px dotted #999;
+  text-align: right;
+  margin: auto;
+  width: 250px;
+}
+
+#vendor_list li {
+  background: red;
+}
+
+#vendor_content {
+  float: left;
+}
+
+span.s_his      { font-family: monospace; }
+span.s_his_ok   { color: green; font-size:80%; }  /* # */
+span.s_his_tol  { color: yellow; }  /* x */
+span.s_his_big  { color: #ffa500; }  /* o */
+span.s_his_down { color: red;    }  /* _ */
+
+span.error      { color: red; }
+div.error       { color: red; }
+
+span.deletion   { color: red; } 
+
+.server_history_legend { font-size: 0.85em; }
 
