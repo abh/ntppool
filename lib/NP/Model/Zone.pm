@@ -87,5 +87,38 @@ sub server_count_all {
   ], undef, $self->id, deletion_grace_days());
 }
 
+sub netspeed_active {
+  my $self = shift;
+  my $dbh = $self->dbh;
+  $dbh->selectrow_array(q[
+    select sum(s.netspeed) as netspeed
+    from servers s
+      inner join server_zones l on(s.id=l.server_id)
+      inner join zones z on(z.id=l.zone_id)
+    where z.id=?
+      and s.score_raw >= 5
+      and s.in_pool = 1
+      and (s.deletion_on IS NULL OR s.deletion_on > DATE_ADD(NOW(), interval ? day))
+  ], undef, $self->id, deletion_grace_days());
+}
+
 
 1;
+
+
+__END__
+
+all netspeeds:
+
+select z.id,z.name,sum(s.netspeed) as netspeed_active 
+  from servers s
+    inner join server_zones l on(s.id=l.server_id)
+    inner join zones z on(z.id=l.zone_id)
+  where 
+    s.score_raw >= 5
+    and s.in_pool = 1
+    and (s.deletion_on IS NULL OR s.deletion_on > DATE_ADD(NOW(), interval 15 day))
+  group by z.id
+  order by netspeed_active desc
+;
+

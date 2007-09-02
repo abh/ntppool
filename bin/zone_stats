@@ -36,17 +36,18 @@ if (@ARGV and $ARGV[0] eq "populate_all") {
 while (my $zone = $zones->next) {
     my $count_active = $zone->server_count;
     my $count_all    = $zone->server_count_all;
+    my $netspeed_active = $zone->netspeed_active || 0;
     #printf "%-8s %3i %3i\n", $zone->name, $count_active, $count_all;
     my $now = time;
-    $dbh->do(q[replace into zone_server_counts (zone_id,date,count_active,count_registered) 
-               values (?,NOW(),?,?)],
+    $dbh->do(q[replace into zone_server_counts (zone_id,date,count_active,count_registered,netspeed_active) 
+               values (?,NOW(),?,?,?)],
              undef,
-             $zone->id, $count_active, $count_all
+             $zone->id, $count_active, $count_all, $netspeed_active
             );
     create_rrd($zone->name);
     create_target_rrd($zone->name);
     update_target_rrd($zone->name);
-    update_rrd($zone->name, $now, $count_active, $count_all);
+    update_rrd($zone->name, $now, $count_active, $count_all, $netspeed_active);
     update_graph($zone->name);
 }
 
@@ -58,16 +59,16 @@ sub populate_all {
                                             {Columns=>{}}, $zone->id);
         create_rrd($zone->name);
         for my $d (@$data) {
-            update_rrd($zone->name, $d->{time}, $d->{count_active}, $d->{count_registered});
+            update_rrd($zone->name, $d->{time}, $d->{count_active}, $d->{count_registered}, $d->{netspeed_active});
         }
     }
 }
 
 sub update_rrd {
-    my ($zone, $time, $active, $registered) = @_;
+    my ($zone, $time, $active, $registered, $netspeed) = @_;
     my $path = rrd_path($zone);
-    my @options = ('--template' => 'active:registered',
-                   "$time:$active:$registered",
+    my @options = ('--template' => 'active:registered:netspeed',
+                   "$time:$active:$registered:$netspeed",
                   );
     RRDs::update "$path", @options;
     if (my $ERROR = RRDs::error) {
@@ -142,6 +143,7 @@ sub create_rrd {
                  "--start", $START, "--step", 21600, # 6 hours interval
                  "DS:active:GAUGE:180000:0:20000",  # heartbeat of ~2 days, min value = 0, max = 20000
                  "DS:registered:GAUGE:180000:0:20000",
+                 "DS:netspeed:GAUGE:180000:0:400000000",
                  "RRA:AVERAGE:0.5:1:1024",   # 6 hours, 170 days
                  "RRA:AVERAGE:0.5:4:1024",   # 1 day, ~3 years
                  "RRA:AVERAGE:0.5:12:1024",  # 3 days, ~9 years
