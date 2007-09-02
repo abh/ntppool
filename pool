@@ -398,12 +398,19 @@ elsif ($cmd eq "zone") {
     open HEAD, "<header"
       or die "Opening DNS zone file header (header): $!\n";
     print $fh "# ATTENTION\n# This is a generated file\n#\n";
-    my $t = time;
+    my $time = time;
     while (<HEAD>) {
-        s/\@VERSION\@/$t/;
+        s/\@VERSION\@/$time/;
         print $fh $_;
     }
     close HEAD;
+
+    my $ttl = 2700;
+    my $pgeodns = { serial => $time,
+                    ttl    => $ttl,
+                  };
+
+    $pgeodns->{groups}->{www}->{cname} = "x3.develooper.com.";
 
     my $vendordir = "vendordns";
     opendir my $dir, $vendordir or die "could not open '$vendordir' dir: $!";
@@ -423,18 +430,16 @@ elsif ($cmd eq "zone") {
        close $vfh;
     }
 
-
     my $zones = NP::Model->vendor_zone->get_vendor_zones_iterator
       ( query => [ status => 'Approved' ],
         order => 'approved_on', 
       );
 
 
-    my $ttl = 2700;
-
     while (my $zone = $zones->next) {
         my $name = $zone->zone_name;
         for my $i (0..3) {
+            $pgeodns->{groups}->{"$i.$name"}->{alias} = "$i.${pool_domain}";
             print $fh "C$i.$name.${pool_domain}:$i.vendors.${pool_domain}:$ttl\n";
         }
     }
@@ -449,7 +454,7 @@ elsif ($cmd eq "zone") {
         my $entries =
           $db->selectall_arrayref
             (
-             q[SELECT s.ip 
+             q[SELECT s.ip, s.netspeed
                FROM servers s, server_zones l 
                WHERE l.server_id = s.id AND l.zone_id = ? AND s.in_pool = 1 
                AND s.score_raw > 5
@@ -461,19 +466,20 @@ elsif ($cmd eq "zone") {
         my $min_non_duplicate_size = 4;
         $min_non_duplicate_size = int(@$entries / 5) 
           if (@$entries / 5 > $min_non_duplicate_size);
-        $min_non_duplicate_size = 14 if $min_non_duplicate_size > 14;
 
         print $fh "# " . scalar @$entries . " active servers in ", $zone->name, "\n";
 
         if ($#$entries < ($min_non_duplicate_size*5 - 1)) {
             print $fh "# possible duplicates in the zones below (", $zone->name, ")\n";
             foreach my $z (("", "0.", "1.", "2.", "3.")) {
+                (my $pgeodns_group = "$z${name}") =~ s/\.$//;
+                $pgeodns->{groups}->{$pgeodns_group}->{servers} = [];
                 @$entries = shuffle(@$entries);
                 my $i;
                 foreach my $e (@$entries) {
-                    print $fh "+$z${name}${pool_domain}:$$e[0]:$ttl\n";
                     $i++;
-                    last if ($i >= 12);
+                    print $fh "+$z${name}${pool_domain}:$$e[0]:$ttl\n" if $i < 12;
+                    push @{$pgeodns->{groups}->{$pgeodns_group}->{servers}}, $e;
                 }
             }
         }
@@ -481,14 +487,28 @@ elsif ($cmd eq "zone") {
             print $fh "# 'big' zone without duplicates below (", $zone->name, ")\n";
             @$entries = shuffle(@$entries);
             foreach my $z (("", "0.", "1.", "2.", "3.")) {
+                (my $pgeodns_group = "$z${name}") =~ s/\.$//;
+                $pgeodns->{groups}->{$pgeodns_group}->{servers} = [];
                 for (my $i = 0 ; $i < $min_non_duplicate_size; $i++) {
-                    print $fh "+$z${name}${pool_domain}:", ${shift @$entries}[0], ":$ttl\n";
+                    my $e = shift @$entries;
+                    print $fh "+$z${name}${pool_domain}:", $e->[0], ":$ttl\n" if $i < 14;
+                    push @{$pgeodns->{groups}->{$pgeodns_group}->{servers}}, $e;
                 }
             }
         }
     }
+
     close $fh or die "could not close $file.tmp: $!";
     rename "$file.tmp", "$file.tinydns" or die "could not rename $file.tmp to $file.tinydns: $!";
+
+    my $json = JSON->new( pretty => 1 );
+    my $js = $json->objToJson($pgeodns);
+    my $file = "$ENV{CBROOTLOCAL}/dns/$pool_domain.json";
+    open(my $js_fh, ">$file.tmp") or die "Could not open $file.tmp: $!";
+    print $js_fh $js;
+    close $js_fh or die "could not close $file.json.tmp: $!";
+    rename "$file.tmp", "$file" or die "could not rename $file.tmp to $file: $!";
+
 }
 else {
     die "Unknown command: $cmd\n";
