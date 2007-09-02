@@ -4,6 +4,14 @@
 <div class="block">
 	<h1>GPS time equipment giveaway!</h1>
 
+[% IF combust.deployment_mode == 'prod' OR combust.deployment_mode == 'devel' %]
+    <p style="float:right; margin:5px;">
+ <script src="http://digg.com/tools/diggthis.js" type="text/javascript"></script>
+<br /><br />
+       <a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"> Save to <br/>del.icio.us </a>     </p>
+[% END %]
+
+
     <p>Since 1979 the German company <a href="http://www.meinberg.de/english/">Meinberg</a> have developed and manufactured <a href="http://www.meinberg.de/english/products/index.htm">devices and systems for synchronization of time and frequency</a>.
     </p>
 
