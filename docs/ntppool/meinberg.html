@@ -2,22 +2,43 @@
 [% page.title = "Meinberg equipment giveaway" %]
 
 <div class="block">
-	<h1>GPS time equipment giveaway</h1>
+	<h1>GPS time equipment giveaway!</h1>
 
+    <p>Since 1979 the German company <a href="http://www.meinberg.de/english/">Meinberg</a> have developed and manufactured <a href="http://www.meinberg.de/english/products/index.htm">devices and systems for synchronization of time and frequency</a>.
+    </p>
+
+    <p>
+       They have generously donated equipment to use in the NTP Pool!  For now they have given us 3 PCI cards (with antennas) and a <a href="#time-server">LANTIME M300</a> to put to use.  Last year they also gave us another LANTIME server which is already in use.
+       We are now taking applications from server operators who can put the equipment to use to improve the NTP Pool.
+    </p>
+
+    <h2>Meinberg GPS 170 PCI (PCI/PCI-X Bus)</h2>
 	<p>
-	description of PCI cards and antennas
+	The <a href="http://www.meinberg.de/english/products/gps170pci.htm">GPS PC Radio Clock GPS170PCI</a> board syncronizes the time of the system where it's installed to great accuracy.  Follow the link for full specs.
+	</p>
+
+    <p>
+    The driver package for Linux contains a kernel driver which allows the board to be used as a reference time source for the NTP daemon which is shipped with most Linux distributions. This also turns the computer into a NTP time server which can also provide accurate time to other NTP clients on the network. Some command line tools can be used to setup configurable parameters and monitor the status of the board.
+    </p>
+
+    <p>There are also drivers for Windows, DOS, Novell Netware and OS/2.</p>
+
+    <p>The device's serial port can be used to update the card's firmware. Additionally it can be connected to the serial port of a computer to use the card as reference time source under operating systems where a serial time string is supported, e.g. by NTP, but no kernel device driver is available.</p>
+
+    <h3>GPS Antenna</h3>
+
+    <p>The PCI/PCI-X card (and the LANTIME GPS Time Server) comes with a smart <a href="http://www.meinberg.de/english/products/gpsant.htm">GPS antenna</a> and a 20m (~60ft) cable.</p>
+    
+    <p>GPS reception can only be reliable if the antenna has a free view of the sky, therefore it needs to be installed at a suitable location, e.g. on a rooftop. The unit is remotely powered by the connected GPS receiver (via the antenna cable) and can be used only with GPS equipment from Meinberg.</p>
+
+    <a name="time-server"></a>
+    <h2>Meinberg LANTIME M300</h2>
+	<p>
+        The <a href="http://www.meinberg.de/english/products/lantime-m300-gps.htm">LANTIME M300/GPS time server</a> is a stand-alone high-precision 1U NTP and SNTP server.  You manage it via SSH, SNMP or HTTP or the front panel.  The pool doesn't yet support IPv6, but this time-server does!   This is a wonderful piece of equipment.  The full specs are quite impressive, be sure to <a href="http://www.meinberg.de/english/products/lantime-m300-gps.htm">check them out</a>.
 	</p>
 
 	<p>
-	description of the time server
-	</p>
-
-	<p>
-	Great support.
-	</p>
-
-	<p>
-	... North american distributor
+        Meinberg Germany and <a href="http://www.meinberg-usa.com/">Meinberg USA</a> are giving great support on their units - these are industrial strength devices with industrial strength support.  :-)
 	</p>
 
 	<h2>Application process for free equipment</h2>
@@ -66,6 +87,8 @@
 	ask that you return it so we can get it hosted somewhere else.  In
 	other words, if you volunteer to host the time server we're looking
 	for extreme longevity.</li>
+
+    </ul>
 
 	<a href="/manage/equipment">Volunteer to host the LAN time server</a>.
 </div>
