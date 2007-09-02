@@ -1,96 +1,96 @@
 [% page.title = 'Join the NTP Pool!'  %]
 
-<h2><a name="join">How do I join pool.ntp.org?</a></h2>
+<div class="block">
+	<h3><a name="join">How do I join pool.ntp.org?</a></h3>
+	<p>
+	First: Thanks for your interest.  Usage of the pool has grown
+	enormously and the only way we can keep it easy for everyone to run a
+	pool server is to also grow the number of servers participating.
+	</p>
 
-<p>
-First: Thanks for your interest.  Usage of the pool has grown
-enormously and the only way we can keep it easy for everyone to run a
-pool server is to also grow the number of servers participating.
-</p>
+	<p>
+	Your computer <b>must have a static IP address</b> and a permanent
+	internet connection.  It's very imporant that your IP address doesn't
+	change or only does so extremely infrequently (say once a year or
+	less).  The required bandwidth is relatively low.  Each client will
+	only send a couple of UDP packets every few to every 20 minutes.
+	</p>
 
-<p>
-Your computer <b>must have a static IP address</b> and a permanent
-internet connection.  It's very imporant that your IP address doesn't
-change or only does so extremely infrequently (say once a year or
-less).  The required bandwidth is relatively low.  Each client will
-only send a couple of UDP packets every few to every 20 minutes.
-</p>
+	<p>
+	Currently most servers get about 5-15 NTP packets per second with
+	spikes a couple of times a day of 60-120 packets per second.  This is
+	roughly equivalent to 10-15Kbit/sec with spikes of 50-120Kbit/sec.
+	The project steadily acquires more timeservers, so the load should not
+	increase dramatically for each server.  Since late 2006 the load for
+	most servers have been going up steadily, so we really really need
+	your help!
+	</p>
+	<p>
+	Here are a few servers with traffic/load graphs: [% i = 0; FOR server = combust.servers_with_urls; %]
+	<a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
+	[% END %]
+	</p>
 
-<p>
-Currently most servers get about 5-15 NTP packets per second with
-spikes a couple of times a day of 60-120 packets per second.  This is
-roughly equivalent to 10-15Kbit/sec with spikes of 50-120Kbit/sec.
-The project steadily acquires more timeservers, so the load should not
-increase dramatically for each server.  Since late 2006 the load for
-most servers have been going up steadily, so we really really need
-your help!
-</p>
+	<p>
+	The servers joining should not have <tt>pool.ntp.org</tt> as their upstream
+	server(s), but should configure some <a href="http://ntp.isc.org/bin/view/Servers/StratumTwoTimeServers">good servers</a> manually (those servers
+	<b>may</b> be chosen from the pool. The point is that they are chosen
+	statically instead of assigned randomly at each server restart.  This
+	will help providing an acceptable quality of service.)
 
-<p>
+	Note that it is not required that your server is a stratum 1 or 2
+	server - as this project is about load distribution mostly, there is
+	no reason why a stratum 3 or even stratum 4 server shouldn't join.
+	</p>
 
-Here are a few servers with traffic/load graphs: [% i = 0; FOR server = combust.servers_with_urls; %]
-<a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
-[% END %]
+	<p>
+	We have a page with <a href="/join/configuration.html">configuration recommendations for servers joining the pool</a>.
+	</p>
+	<p>Finally, I must emphasize that joining the pool is a <b>long term
+	commitment</b>.  We are happy to take you out of the pool again if your
+	circumstances change, but because of how the ntp clients operate <b>it
+	will take weeks or even months before the traffic goes away</b>.
+	</p>
 
-</p>
+	<p>
+	If this is all ok, login to the
+	<a href="/manage">server management</a> page and request your server to be added. 
+	If you have any trouble with the system, email me at <a
+	href="mailto:ask@develooper.com">ask@develooper.com</a>.
+	</p>
+	<p>
+	I'd ask you to also subscribe to the <a
+	href="mailto:timekeepers-announce-request@fortytwo.ch?subject=subscribe"
+	>timekeepers-announce@fortytwo.ch</a> mailing list so you keep up with newest
+	developments (I try to keep the mail volume down at around one message per
+	month).
+	</p>
+	<p>
+	It would be nice (but it's not necessary) if you could redirect web requests
+	on port 80 of your time server to the official web page of the project at
+	<tt>http://www.pool.ntp.org</tt>. If you run Apache, you could do this with:
+	</p>
+	
+	<pre class="code">
+	&lt;VirtualHost *:80&gt;
+	    ServerName pool.ntp.org
+	    ServerAlias *.pool.ntp.org
+	    Redirect permanent / http://www.pool.ntp.org/
+	&lt;/VirtualHost&gt;</pre>
+	<p>
+	Again, this is only if you run a webserver anyway. The official project web 
+	page will always be given with the 'www' at the beginning - but sometimes
+	people are lazy and just type <tt>pool.ntp.org</tt> and are then surprised
+	to just get a random web page.
+	</p>
+	<p>
+	Once added to the pool the server is
+	constantly monitored for quality, using a scoring algorithm described in <a
+	href="https://fortytwo.ch/mailman/pipermail/timekeepers-announce/2003/000006.html"
+	>this email</a>.  You can watch your server's performance using the <a
+	href="scores">web frontend</a> or the <a href="/manage">management page</a>.
+	</p>
+</div>
 
-<p>
-The servers joining should not have <tt>pool.ntp.org</tt> as their upstream
-server(s), but should configure some <a href="http://ntp.isc.org/bin/view/Servers/StratumTwoTimeServers">good servers</a> manually (those servers
-<b>may</b> be chosen from the pool. The point is that they are chosen
-statically instead of assigned randomly at each server restart.  This
-will help providing an acceptable quality of service.)
 
-Note that it is not required that your server is a stratum 1 or 2
-server - as this project is about load distribution mostly, there is
-no reason why a stratum 3 or even stratum 4 server shouldn't join.
-</p>
 
-<p>
-We have a page with <a href="/join/configuration.html">configuration recommendations for servers joining the pool</a>.
-</p>
-
-<p>Finally, I must emphasize that joining the pool is a <b>long term
-commitment</b>.  We are happy to take you out of the pool again if your
-circumstances change, but because of how the ntp clients operate <b>it
-will take weeks or even months before the traffic goes away</b>.
-</p>
-
-<p>
-If this is all ok, login to the
-<a href="/manage">server management</a> page and request your server to be added. 
-If you have any trouble with the system, email me at <a
-href="mailto:ask@develooper.com">ask@develooper.com</a>.
-</p>
-<p>
-I'd ask you to also subscribe to the <a
-href="mailto:timekeepers-announce-request@fortytwo.ch?subject=subscribe"
->timekeepers-announce@fortytwo.ch</a> mailing list so you keep up with newest
-developments (I try to keep the mail volume down at around one message per
-month).
-</p>
-<p>
-It would be nice (but it's not necessary) if you could redirect web requests
-on port 80 of your time server to the official web page of the project at
-<tt>http://www.pool.ntp.org</tt>. If you run Apache, you could do this with:
-</p>
-<pre style="background-color:#e0e0e0;">
-&lt;VirtualHost *:80&gt;
-    ServerName pool.ntp.org
-    ServerAlias *.pool.ntp.org
-    Redirect permanent / http://www.pool.ntp.org/
-&lt;/VirtualHost&gt;
-</pre>
-<p>
-Again, this is only if you run a webserver anyway. The official project web 
-page will always be given with the 'www' at the beginning - but sometimes
-people are lazy and just type <tt>pool.ntp.org</tt> and are then surprised
-to just get a random web page.
-</p>
-<p>
-Once added to the pool the server is
-constantly monitored for quality, using a scoring algorithm described in <a
-href="https://fortytwo.ch/mailman/pipermail/timekeepers-announce/2003/000006.html"
->this email</a>.  You can watch your server's performance using the <a
-href="scores">web frontend</a> or the <a href="/manage">management page</a>.
-</p>

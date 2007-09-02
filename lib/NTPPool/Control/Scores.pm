@@ -3,6 +3,8 @@ use strict;
 use base qw(NTPPool::Control);
 use Apache::Constants qw(OK);
 use NP::Model;
+use Imager ();
+use List::Util qw(min);
 
 sub render {
   my $self = shift;
@@ -19,17 +21,101 @@ sub render {
       return $self->redirect('/scores/' . $server->ip) if $server;
   }
 
-  if ($self->request->uri =~ m!^/scores/(.+)?!) {
-      my $p = $1;
+  if (my ($p, $mode) = $self->request->uri =~ m!^/scores/([^/]+)(?:/(\w+))?!) {
+      $mode ||= '';
       if ($p) {
           my ($server) = NP::Model->server->find_server($p);
           return 404 unless $server;
           return $self->redirect('/scores/' . $server->ip) unless $p eq $server->ip;
-          return OK, $server->log_scores_csv(500), 'text/plain' if $self->req_param('log');
+
+          return OK, $server->log_scores_csv(50), 'text/plain' 
+             if $mode eq 'log' or $self->req_param('log');
+
+          return OK, $self->history_sparkline_png($server), 'image/png'
+             if $mode eq 'spark';
+
           $self->tpl_param('server' => $server);
       }
   }
   return OK, $self->evaluate_template('tpl/server.html');
 }
+
+sub history_sparkline_png {
+    my ($self, $server) = @_;
+
+    my $width  = 160;
+    my $height = 64;
+
+    my $history = $server->history(80);
+    my @d;
+    
+    # @d = (0,1,2.1,3.2,4.4,5.5,7,8.5,10,11.5,13,15,16,11,6,1,-4,-3,-2,-1);
+
+    @$history = reverse @$history;
+
+    my $score_count = @$history;
+
+    my $min = min(-5,map { $_->score } @$history);
+
+    $score_count ||= 1;
+
+    my $x_scale = $width / $score_count;
+    my $left_x = 0 + ($width - $score_count * $x_scale);
+
+    my $y_scale = $height / (20 - $min);
+
+    my $img = Imager->new(xsize => $width, ysize => $height);
+    $img->box(color => [255,255,255], filled => 1);
+
+    $img->line(color => [192,192,192],
+               x1 => 0,
+               x2 => $width,
+               y1 => 15 * $y_scale,
+               y2 => 15 * $y_scale, 
+               aa => 1,
+               endp => 0, 
+              );
+
+    my $left_h = shift @$history;
+    my $left_y = $y_scale * ($left_h ? _calc_y($left_h) : 1);
+
+    for my $h (@$history) {
+
+        my $y = $y_scale * _calc_y($h);
+        my $x = $left_x + $x_scale;
+
+        my $colors = [ [0,180,0], 'green' ];
+        $colors = [ [0, 128,128], 'yellow' ] if $h->step < .5;
+        $colors = [ [180, 0,0 ], 'red' ]     if $h->step < -0.5;
+
+        $img->line(color => $colors->[0],
+                   x1 => $left_x,
+                   x2 => $x,
+                   y1 => $left_y,
+                   y2 => $y, 
+                   aa => 1,
+                   endp => 0 );
+
+        $img->setpixel(x => $x, y => $y, color => $colors->[1]);
+
+        $left_h = $h;
+        $left_x = $x;
+        $left_y = $y;
+    }
+
+    my $output;
+    $img->scale(scalefactor => .25)->
+          filter(type=>'autolevels', usat => 0.001, lsat => 0.001)->
+          write(data => \$output, type => 'png');
+
+    return $output;
+
+}
+
+sub _calc_y {
+    my $h = shift;
+    (($h->score - 20) * -1) + 1;
+}
+
 
 1;

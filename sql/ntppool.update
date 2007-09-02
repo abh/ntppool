@@ -1,5 +1,5 @@
 #1
-insert into schema_revision values (1);
+select now();
 #2
 alter table server_notes 
   drop foreign key `server_notes_ibfk_1`;
@@ -92,7 +92,9 @@ alter table users
    drop key users_email_key;
 
 #13
-alter table locations 
+alter table locations
+   modify id int unsigned not null,
+   drop primary key,
    add primary key (server_id, zone_id);
 
 alter table locations drop key `server`;
@@ -177,7 +179,8 @@ alter table zone_server_counts
    change count_registered `count_registered` mediumint(8) unsigned NOT NULL;
 
 #27
-alter table combust_cache change id id varchar(128) not null first;
+select now();
+#alter table combust_cache change id id varchar(128) not null first;
 
 #28
 CREATE TABLE vendor_zones (

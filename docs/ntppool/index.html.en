@@ -1,265 +1,238 @@
-<div>
-<a name="top">Translations:</a>
-<!-- 
-need to get these updated ...
-<a href="http://ntp.robertkehl.de/" title="german">deutsch</a> |
-<a href="http://pool.ntp.bitic.net/" title="spanish">español</a> |
-<a href="http://ntp.vuntz.net/" title="french">français</a> |
--->
-<a href="http://ntp.rondom.org/" title="dutch">nederlands</a>
+
+<h1 id="tagline">pool.ntp.org: public ntp time server for everyone</h1>
+
+<div class="block">
+	<h3>Introduction</h3>
+		<div id="activity">
+			<h3>Active Servers</h3>
+			<ul id="servers">
+				[% FOR zone = combust.count_by_continent %]
+				<li class="area">
+					<span class="location [% zone.name %] [% IF zone.name == '@' || zone.name == '.'; "global"; END  %]">[% zone.name == '@' ? '<b>' : '' %]
+					<a href="[% zone.url %]">[% zone.description %]</a>
+					[% zone.name == '@' ? '</b>' : '' %]</span>&nbsp;[% zone.server_count %]
+				</li>
+				[% END %]
+			</ul>
+			<span class="date">As of [% USE date; date.format(date.now, '%Y-%m-%d'); %]</span>
+		</div>
+	<p>
+	The pool.ntp.org project is a big virtual cluster of timeservers
+	striving to provide reliable easy to use NTP service for millions of
+	clients without putting a strain on the big popular timeservers.
+	</p>
+	<p>
+	<a href="http://fortytwo.ch/">Adrian von Bidder</a> created this
+	project after a <a
+	href="http://groups.google.com/groups?threadm=3E2DBFF7.F9A51614%40udel.edu"
+	>discussion</a> about resource consumption on the big timeservers,
+	with the idea that for everyday use a DNS round robin would be good
+	enough, and would allow spreading the load over many servers. The
+	disadvantage is, of course, that you may occasionally get a bad server
+	and that you usually won't get the server closest to you.  The
+	workarounds for this is respectively to make sure you configure at
+	least three servers in your ntp.conf and to use the country zones (for
+	example 0.us.pool.ntp.org) rather than the global zone (for example
+	0.pool.ntp.org).  Read more on <a
+	href="http://www.pool.ntp.org/use.html">using the pool</a>.
+	</p>
+	<p>
+	The pool is now enormously popular, being used by millions of systems
+	around the world.
+	</p>
+	<p>
+	The pool project is now being maintained by <a
+	href="http://www.askbjoernhansen.com/">Ask Bj&oslash;rn Hansen</a> and
+	a great group of contributors on the <a href="#mail">mailing
+	lists</a>.
+	</p>
+	<a href="#top" class="up">go up</a>
 </div>
 
-<hr/>
-<h1>pool.ntp.org: public ntp time server for everyone</h1>
-<hr/>
-<ol>
-<li><a href="#news">News</a></li>
-<li><a href="/use.html">How do I <i>use</i> pool.ntp.org?</a></li>
-<li><a href="/join.html">How do I <i>join</i> pool.ntp.org?</a></li>
-<li><a href="/vendors.html">Information for vendors</a></li>
-<li><a href="#mail">The mailing lists</a></li>
-</ol>
-<hr/>
-<h2>Introduction</h2>
-<div id="server_count">
-Active server count on [% USE date; date.format(date.now, '%Y-%m-%d'); %] <br/>
-<table>
-[% FOR zone = combust.count_by_continent %]
-<tr>
-<td>[% zone.name == '@' ? '<b>' : '' %]
-<a href="[% zone.url %]">[% zone.description %]</a>
-[% zone.name == '@' ? '</b>' : '' %]
-</td>
-<td>[% zone.server_count %]</td>
-</tr>
-[% END%]
-</table>
+<div class="block">
+	<a name="news"></a>
+	<h3>News</h3>
+	<ul id="news">
+		<li class="latest">
+			<p>
+			<div class="date">2007-02-22</div>
+			We are getting close to one thousand active servers in the pool
+			system!  The pool system has gotten a major software upgrade, most
+			notably safely letting the server operators do more without having to
+			involve me. Please email ask@develooper.com if you see anything odd.
+			</p>
+			<p>
+			Coming up on the todo list is revamping the monitoring system.  With the help of a donated <a
+			href="http://www.meinberg.de/english/products/ntp-time-server.htm">time server</a> generously donated by <a href="http://www.meinberg.de/english/">Meinberg</a> I am working on a better and distributed
+			monitoring system.
+			</p>
+		</li>
+		<li>
+			<p>
+			<div class="date">2006-05-01</div>
+			The NTP Pool project now has a <a href="http://en.wikipedia.org/wiki/NTP_pool">wikipedia</a> entry.
+			</p>
+		</li>
+		<li>
+			<p>
+			<div class="date">2006-04-24</div>
+			The system has been changed a little so we now have separate counts
+			for "all servers" (almost 700 servers!) and servers in the global pool
+			(+600 servers!).  The global is by far the busiest, most users don't
+			pick a country or continent zone.
+			</p>
+			<p>
+			I've also done some more measuring and estimating of the client
+			population and my best guess is that somewhere between 2 and 6 million
+			client systems are using the pool.
+			</p>
+		</li>
+		<li>
+			<p>
+			<div class="date">2006-04-22</div>
+			The new <a href="/vendors.html">information for vendors</a> page is up!  Please <a
+			href="mailto:ask@develooper.com">let me know</a> if your operating
+			system/appliance/software vendor is using the NTP Pool but isn't using
+			a vendor zone.
+			</p>
+		</li>
+		<li>
+			<p>
+			<div class="date">2006-01-15</div>
+			Welcome <a
+			href="http://it.slashdot.org/it/06/01/14/1550221.shtml">Slashdot
+			readers</a>.  The Slashdot story was that we had reached 500 active
+			servers, but since the story was posted another 50 or so servers
+			joined us!  This is great, thank you everyone.  The only way we can
+			keep the load on each server reasonable is by adding more servers
+			quickly.  If you can, please <a
+			href="http://www.pool.ntp.org/join.html">join</a>.  More than 500
+			servers in the pool might sound like a lot, but our best guestimates
+			puts the number of clients at either hundreds of thousands or millions
+			of computers.
+			</p>
+		</li>
+		<li>
+			<p>
+			<div class="date">2005-08-10</div>
+			You can now add your NTP servers (and only your own, please) via the
+			new <a href="/manage">web interface</a>.  Please <a
+			href="mailto:ask@develooper.com">email me</a> if it doesn't work as expected.
+			</p>
+		</li>
+		<li>
+			<p>
+			<div class="date">2005-08-09</div>
+			You can now <a href="/zone">browse the available zones</a>. Also, I
+			split up the front page into a few smaller pages. I've fallen a little
+			behind on adding servers.  I'll catch up soon and get the self-service
+			web interface done.
+			</p>
+		</li>
+		<li>
+			<p>
+			<div class="date">2005-07-28</div>
+			I've added a page for server admins to <a href="/manage">login</a> and
+			see their servers as they are listed in the pool system.  I'm using <a
+			href="http://www.bitcard.org/">Bitcard</a> for the authentication, so
+			don't be alarmed when you get redirected over there.  In the not too
+			far future I'll add functionality so new servers can be registered
+			via the manage page too.
+			</p>
+		</li>
+		<li>
+			<p>
+			<div class="date">2005-07-25</div>
+			If you see this message you are fetching this page from the new
+			server.  I added a page to keep track of the <a href="dns.html">dns
+			servers</a>.
+			</p>
+		</li>
+		<li class="last">
+			<p>
+			<div class="date">2005-07-24</div>
+			No news for almost a year... It's time to say good bye.  I'll hand over the
+			project to  Ask Bjørn Hansen effective tomorrow morning.  Details are, of
+			course, in the <a
+			href="http://fortytwo.ch/mailman/pipermail/timekeepers-announce/2005/000014.html">list
+			archives</a>.
+			</p>
+		</li>
+		<!-- copy here for new news items
+		<li>
+			<p>
+			<div class="date"></div>
+			</p>
+		</li>
+		 -->
+		<li class="last">
+			<a href="older_news.html">Older news...</a>
+		</li>
+	</ul>
 </div>
-<p>
-The pool.ntp.org project is a big virtual cluster of timeservers
-striving to provide reliable easy to use NTP service for millions of
-clients without putting a strain on the big popular timeservers.
-</p>
 
-<p>
-<a href="http://fortytwo.ch/">Adrian von Bidder</a> created this
-project after a <a
-href="http://groups.google.com/groups?threadm=3E2DBFF7.F9A51614%40udel.edu"
->discussion</a> about resource consumption on the big timeservers,
-with the idea that for everyday use a DNS round robin would be good
-enough, and would allow spreading the load over many servers. The
-disadvantage is, of course, that you may occasionally get a bad server
-and that you usually won't get the server closest to you.  The
-workarounds for this is respectively to make sure you configure at
-least three servers in your ntp.conf and to use the country zones (for
-example 0.us.pool.ntp.org) rather than the global zone (for example
-0.pool.ntp.org).  Read more on <a
-href="http://www.pool.ntp.org/use.html">using the pool</a>.
-</p>
-
-<p>
-The pool is now enormously popular, being used by millions of systems
-around the world.
-</p>
-
-<p>
-
-The pool project is now being maintained by <a
-href="http://www.askbjoernhansen.com/">Ask Bj&oslash;rn Hansen</a> and
-a great group of contributors on the <a href="#mail">mailing
-lists</a>.
-</p>
-
-<div style="text-align:right"><a href="#top">go up</a></div>
-<h2><a name="news">News</a></h2>
-<table cellpadding="4">
-
-<tr>
-<td align="center" valign="top"><b>2007-02-22</b></td>
-
-<td>We are getting close to one thousand active servers in the pool
-system!  The pool system has gotten a major software upgrade, most
-notably safely letting the server operators do more without having to
-involve me. Please email ask@develooper.com if you see anything odd.
-
-<br/>Coming up on the todo list is revamping the monitoring system.  With the help of a donated <a
-href="http://www.meinberg.de/english/products/ntp-time-server.htm">time server</a> generously donated by
-<a href="http://www.meinberg.de/english/">Meinberg</a> I am working on a better and distributed
-monitoring system.
-</td></tr>
+<div class="block">
+	<a name="mail"></a>
+	<h3>The mailing lists</h3>
+	<p>
+	Currently, there are three mailing lists for the pool.ntp.org project: the
+	discussion list <a
+	href="https://fortytwo.ch/mailman/cgi-bin/listinfo/timekeepers"
+	>timekeepers@fortytwo.ch</a> (<a
+	href="mailto:timekeepers-request@fortytwo.ch?subject=subscribe" >subscribe</a>,
+	<a href="https://fortytwo.ch/mailman/pipermail/timekeepers/" >archive</a>),
+	the announcement list <a
+	href="https://fortytwo.ch/mailman/cgi-bin/listinfo/timekeepers-announce"
+	>timekeepers-announce@fortytwo.ch</a> (<a
+	href="mailto:timekeepers-announce-request@fortytwo.ch?subject=subscribe"
+	>subscribe</a>,
+	<a href="http://fortytwo.ch/mailman/pipermail/timekeepers-announce/"
+	>archive</a>) and the bulletins list <a
+	href="https://fortytwo.ch/mailman/cgi-bin/listinfo/timekeepers-bulletin"
+	>timekeepers-bulletin@fortytwo.ch</a> (<a
+	href="mailto:timekeepers-bulletin-request@fortytwo.ch?subject=subscribe"
+	>subscribe</a>, <a
+	href="https://fortytwo.ch/mailman/pipermail/timekeepers-bulletin">archive</a>).
+	The discussion list is, of course, mainly for those interested in the project,
+	while the announcements list is intended for server operators (or users of the
+	pool.ntp.org service) who do not wish to be more deeply involved with the
+	development and maintenance of the project. <i>There is no need to subscribe to
+	both lists - announcements will be sent to both lists</i> (if I don't forget
+	it, that is). Of course, general discussions about ntp should take place on the
+	<a href="news:comp.protocols.time.ntp">comp.protocols.time.ntp</a> Usenet
+	newsgroup.
+	</p>
+	<a href="#top" class="up">go up</a>
+</div>
 
 
-<tr>
-<td align="center" valign="top"><b>2006-05-01</b></td>
-<td>
-The NTP Pool project now has a <a
-href="http://en.wikipedia.org/wiki/NTP_pool">wikipedia</a> entry.
-</td></tr>
+<div class="block">
+	<a name="links"></a>
+	<h3>Links</h3>
+	<ul>
+	<li>
+	<a href="http://www.ntp.org">NTP home</a> - <i>the</i> website about ntp
+	</li>
 
-<tr>
-<td align="center" valign="top"><b>2006-04-24</b></td>
-<td>
-The system has been changed a little so we now have separate counts
-for "all servers" (almost 700 servers!) and servers in the global pool
-(+600 servers!).  The global is by far the busiest, most users don't
-pick a country or continent zone.
-<p>
-I've also done some more measuring and estimating of the client
-population and my best guess is that somewhere between 2 and 6 million
-client systems are using the pool.
-</td></tr>
+	<li><a href="http://www.meinberg.de/english/">Meinberg</a>, makers of incredibly fine 
+	<a href="http://www.meinberg.de/english/products/ntp-time-server.htm">time server</a> systems.
+	</li>
 
-
-
-<tr>
-<td align="center" valign="top"><b>2006-04-22</b></td>
-<td>
-
-The new <a href="/vendors.html">information for vendors</a> page is up!  Please <a
-href="mailto:ask@develooper.com">let me know</a> if your operating
-system/appliance/software vendor is using the NTP Pool but isn't using
-a vendor zone.
-
-</td></tr>
+	<li>
+	The <a
+	href="http://groups.google.com/groups?threadm=3E2DBFF7.F9A51614%40udel.edu"
+	>Public servers abuse</a> and the <a
+	href="http://groups.google.com/groups?threadm=cpaznpnzrb1.fsf%40cabernet.nelson.monkey.org"
+	>Fixing the NTP server abuse problem</a> threads on the <a
+	href="news:comp.protocols.time.ntp"
+	>comp.protocols.time.ntp</a> newsgroup have caused this project to be started.
+	</li>
+	<li>
+	Federico Sevilla III also has a <a href="http://archives.free.net.ph/list/timekeepers.en.html">mailing
+	list archive</a> of the timekeepers list - this one is searchable.
+	</li>
+	</ul>
+	<a href="#top" class="up">go up</a>
+</div>
 
 
-
-<tr>
-<td align="center" valign="top"><b>2006-01-15</b></td>
-<td>
-
-Welcome <a
-href="http://it.slashdot.org/it/06/01/14/1550221.shtml">Slashdot
-readers</a>.  The Slashdot story was that we had reached 500 active
-servers, but since the story was posted another 50 or so servers
-joined us!  This is great, thank you everyone.  The only way we can
-keep the load on each server reasonable is by adding more servers
-quickly.  If you can, please <a
-href="http://www.pool.ntp.org/join.html">join</a>.  More than 500
-servers in the pool might sound like a lot, but our best guestimates
-puts the number of clients at either hundreds of thousands or millions
-of computers.
-
-</td></tr>
-
-
-<tr>
-<td align="center" valign="top"><b>2005-08-10</b></td>
-<td>
-
-You can now add your NTP servers (and only your own, please) via the
-new <a href="/manage">web interface</a>.  Please <a
-href="mailto:ask@develooper.com">email me</a> if it doesn't work as expected.
-
-</td></tr>
-
-
-
-<tr>
-<td align="center" valign="top"><b>2005-08-09</b></td>
-<td>
-
-You can now <a href="/zone">browse the available zones</a>. Also, I
-split up the front page into a few smaller pages. I've fallen a little
-behind on adding servers.  I'll catch up soon and get the self-service
-web interface done.
-
-</td>
-</tr>
-
-<tr>
-<td align="center" valign="top"><b>2005-07-28</b></td>
-<td>
-
-I've added a page for server admins to <a href="/manage">login</a> and
-see their servers as they are listed in the pool system.  I'm using <a
-href="http://www.bitcard.org/">Bitcard</a> for the authentication, so
-don't be alarmed when you get redirected over there.  In the not too
-far future I'll add functionality so new servers can be registered
-via the manage page too.
-</td>
-</tr>
-
-
-<tr>
-<td align="center" valign="top"><b>2005-07-25</b></td>
-<td>
-If you see this message you are fetching this page from the new
-server.  I added a page to keep track of the <a href="dns.html">dns
-servers</a>.
-</td>
-</tr>
-
-<tr>
-<td align="center" valign="top"><b>2005-07-24</b></td>
-<td>
-No news for almost a year... It's time to say good bye.  I'll hand over the
-project to  Ask Bjørn Hansen effective tomorrow morning.  Details are, of
-course, in the <a
-href="http://fortytwo.ch/mailman/pipermail/timekeepers-announce/2005/000014.html">list
-archives</a>.
-</td>
-</tr>
-
-</table>
-<p>
-<a href="older_news.html">Older news...</a>
-</p>
-
-
-<div style="text-align:right"><a href="#top">go up</a></div>
-<h2><a name="mail">The mailing lists</a></h2>
-<p>
-Currently, there are three mailing lists for the pool.ntp.org project: the
-discussion list <a
-href="https://fortytwo.ch/mailman/cgi-bin/listinfo/timekeepers"
->timekeepers@fortytwo.ch</a> (<a
-href="mailto:timekeepers-request@fortytwo.ch?subject=subscribe" >subscribe</a>,
-<a href="https://fortytwo.ch/mailman/pipermail/timekeepers/" >archive</a>),
-the announcement list <a
-href="https://fortytwo.ch/mailman/cgi-bin/listinfo/timekeepers-announce"
->timekeepers-announce@fortytwo.ch</a> (<a
-href="mailto:timekeepers-announce-request@fortytwo.ch?subject=subscribe"
->subscribe</a>,
-<a href="http://fortytwo.ch/mailman/pipermail/timekeepers-announce/"
->archive</a>) and the bulletins list <a
-href="https://fortytwo.ch/mailman/cgi-bin/listinfo/timekeepers-bulletin"
->timekeepers-bulletin@fortytwo.ch</a> (<a
-href="mailto:timekeepers-bulletin-request@fortytwo.ch?subject=subscribe"
->subscribe</a>, <a
-href="https://fortytwo.ch/mailman/pipermail/timekeepers-bulletin">archive</a>).
-The discussion list is, of course, mainly for those interested in the project,
-while the announcements list is intended for server operators (or users of the
-pool.ntp.org service) who do not wish to be more deeply involved with the
-development and maintenance of the project. <i>There is no need to subscribe to
-both lists - announcements will be sent to both lists</i> (if I don't forget
-it, that is). Of course, general discussions about ntp should take place on the
-<a href="news:comp.protocols.time.ntp">comp.protocols.time.ntp</a> Usenet
-newsgroup.
-</p>
-<div style="text-align:right"><a href="#top">go up</a></div>
-<h2>Links</h2>
-<ul>
-<li>
-<a href="http://www.ntp.org">NTP home</a> - <i>the</i> website about ntp
-</li>
-
-<li><a href="http://www.meinberg.de/english/">Meinberg</a>, makers of incredibly fine 
-<a href="http://www.meinberg.de/english/products/ntp-time-server.htm">time server</a> systems.
-</li>
-
-<li>
-The <a
-href="http://groups.google.com/groups?threadm=3E2DBFF7.F9A51614%40udel.edu"
->Public servers abuse</a> and the <a
-href="http://groups.google.com/groups?threadm=cpaznpnzrb1.fsf%40cabernet.nelson.monkey.org"
->Fixing the NTP server abuse problem</a> threads on the <a
-href="news:comp.protocols.time.ntp"
->comp.protocols.time.ntp</a> newsgroup have caused this project to be started.
-</li>
-<li>
-Federico Sevilla III also has a <a href="http://archives.free.net.ph/list/timekeepers.en.html">mailing
-list archive</a> of the timekeepers list - this one is searchable.
-</li>
-</ul>
-<div style="text-align:right"><a href="#top">go up</a></div>

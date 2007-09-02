@@ -1,78 +1,86 @@
 <script src="[% combust.static_url("/js/jsonmin.js") %]" type="text/javascript"></script>
 <script src="[% combust.static_url("/js/ntppool.js") %]" type="text/javascript"></script>
 
+
+
 [% PROCESS tpl/manage/navigation.html %]
 
 [% prototype_js = 1 %]
 
-<h3>Admin information <img id="busy" style="display: none;"  src="/images/progress.gif"></h3>
-<p>
-[% user = combust.user %]
-Username: <b>[% user.username %]</b>
-&mdash; [% PROCESS tpl/manage/profile_link.html %]
+<div id="admin" class="block">
+	<h3>Admin information <img id="busy" style="display: none;"  src="/images/progress.gif"></h3>
+	[% user = combust.user %]	
+	<div class="profile yui-g">
+		<div class="yui-u first">
+			<label>Username</label>
+			[% user.username %] <br />
+			[% PROCESS tpl/manage/profile_link.html %]
+		</div>
+		<div class="yui-u">
+			<label>Email</label>
+				[% user.email %] <br />
+					<span>(change your email address in your <a href="[% combust.account_url %]">Bitcard Account</a>)</span>
+		</div>
+	</div>
+	
+	<div class="servers" >
+		<h3>Your Servers</h3>
+		<div class="value">
+			<span class="add"><a href="#add">Add a server</a></span>
+			[% servers = user.servers; 
+			   FOR server = servers; %] 
+			[% PROCESS tpl/manage/server.html, server => server %]
+			[% END %]
+			[% IF user.servers.size > 1 %]
+			<p></p>
+			[% END %]
+		</div>
+	</div>
+	
+	[% IF servers %]
+	<p>
+	<a name="netspeed"></a>The <b>net speed</b> is used to balance the
+	load between the pool servers.  If your connection is asymmetric
+	(like most DSL connections) you should use the <i>lower</i> speed.
+	</p>
 
-<br />
-Email: <b>[% user.email %]</b><br/>
-<br/>
-(change your email address in your <a href="[% combust.account_url %]">Bitcard Account</a>)
+	<p>
+	The speed setting is used to give servers on faster connections
+	relatively more traffic.  Currently this load balancing logic is very
+	crude (basically we only put your server in the global zone if the
+	speed is 786Kbit or higher).
+	</p>
 
-[% IF user.servers.size > 1 %]
-<p><a href="#add">Add a server</a></p>
-[% END %]
+	<p>
+	The "availability <b>score</b>" goes up to 20.  It must be higher than 5 for the server to be included in the cluster.
+	</p>
 
-</p>
+	<p>As noted on the <a href="/join.html">join information</a> page adding
+	your IP to the pool is a long term commitment.  If you need to remove
+	your server from the pool you can schedule the removal with the
+	<b>delete</b> button (up to 3 months in advance!).
+	</p>
 
-<h3>Your servers</h3>
-<p>
-[% servers = user.servers; 
-   FOR server = servers; %] 
+	<p>
+	[% PROCESS tpl/server_trend_legend.html %]
+	</p>
+	[% ELSE %]
 
-[% PROCESS tpl/manage/server.html, server => server %]
+	<i>No servers registered to your email address. Send  a mail if that was not what you expected!</i> 
 
-[% END %]
+	[% END %]
 
-</p>
-[% IF servers %]
+	<a name="add"></a>
+	[% PROCESS tpl/manage/add_form.html %]
 
-<p>
-<a name="netspeed"></a>The <b>net speed</b> is used to balance the
-load between the pool servers.  If your connection is asymmetric
-(like most DSL connections) you should use the <i>lower</i> speed.
-</p>
+	<p>
+	To change server information (say the IP), email <a
+	href="mailto:ntppool-server-support@develooper.com">ntppool-server-support@develooper.com</a>.
+	</p>
+	
+</div>
 
-<p>
-The speed setting is used to give servers on faster connections
-relatively more traffic.  Currently this load balancing logic is very
-crude (basically we only put your server in the global zone if the
-speed is 786Kbit or higher).
-</p>
 
-<p>
-The "availability <b>score</b>" goes up to 20.  It must be higher than 5 for the server to be included in the cluster.
-</p>
-
-<p>As noted on the <a href="/join.html">join information</a> page adding
-your IP to the pool is a long term commitment.  If you need to remove
-your server from the pool you can schedule the removal with the
-<b>delete</b> button (up to 3 months in advance!).
-</p>
-
-<p>
-[% PROCESS tpl/server_trend_legend.html %]
-</p>
-[% ELSE %]
-
-<i>No servers registered to your email address. Send  a mail if that was not what you expected!</i> 
-
-[% END %]
-
-<a name="add"></a>
-[% PROCESS tpl/manage/add_form.html %]
-
-<p>
-To change server information (say the IP), email <a
-href="mailto:ntppool-server-support@develooper.com">ntppool-server-support@develooper.com</a>.
-</p>
 
 
 

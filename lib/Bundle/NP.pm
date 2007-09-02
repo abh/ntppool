@@ -96,6 +96,15 @@ Net::NTP
 
 Geo::IP
 
+Class::Accessor::Class
+
+Data::Dumper::Simple
+
+Number::Format
+Template::Plugin::Number::Format
+
+Email::Valid
+
 Test::Pod
 Locale::Object
 

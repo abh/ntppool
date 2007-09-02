@@ -1,0 +1,47 @@
+body {
+	color: #333;
+}
+
+a {color: #3885B4;}
+h1, h2, h3, h4, h5 {color: #7B7A7D;}
+
+#hd {min-height: 10px;}
+	#hd h1 {display: none;}
+	#hd p.develwarning {
+		padding: 3px; margin-bottom: 10px; text-align: center;
+		font-size: 88%; border: 1px solid #f00; border-top: 0;
+		 background-color: #fafafa;}
+
+#sidebar h1 {
+	width: 125px;
+	height: 138px;
+	background: no-repeat url(../images/logo.png);
+	text-indent: -9000px;
+	margin: auto;
+	margin-bottom: 15px;
+}
+
+ul#nav li {
+	font: 150% Copperplate, sans-serif;font-variant: small-caps;}
+	ul#nav li a {
+		float: left;
+		display: block; 
+		width: 150px;
+		height: 45px; 
+		color: #7B7A7D; 
+		padding: 5px 0 0 40px;
+		text-decoration: none;
+	}
+		ul#nav li a:hover {color: #3885B4;}
+	ul#nav li.join a {
+		width: 145px;
+		background: no-repeat url(../images/join_pool.png);}
+	ul#nav li.use a {
+		width: 140px; 
+		background: no-repeat url(../images/use_pool.png);}
+	ul#nav li.manage a {background: no-repeat url(../images/manage_servers.png);}
+		
+#ft {
+	text-align: right;
+	font-size: 88%;
+}	
