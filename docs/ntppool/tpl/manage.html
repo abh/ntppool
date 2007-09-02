@@ -23,8 +23,8 @@
 		</div>
 	</div>
 
-	<div class="profile yui-g">
-          <strong><a href="http://www.meinberg.de/english/">Meinberg</a> <a href="/meinberg.html">equipment giveaway</a></strong>! 
+	<div class="adspace">
+          <h3><b><a href="http://www.meinberg.de/english/">Meinberg</a> <a href="/meinberg.html">equipment giveaway</a></b>!</h3> 
 
           [% UNLESS combust.user.user_equipment_applications %]
           <p>
@@ -66,32 +66,34 @@
 	</div>
 	
 	[% IF servers %]
-	<p>
-	<a name="netspeed"></a>The <b>net speed</b> is used to balance the
-	load between the pool servers.  If your connection is asymmetric
-	(like most DSL connections) you should use the <i>lower</i> speed.
-	</p>
+	<div class="server_desc">
+		<p>
+		<a name="netspeed"></a>The <b>net speed</b> is used to balance the
+		load between the pool servers.  If your connection is asymmetric
+		(like most DSL connections) you should use the <i>lower</i> speed.
+		</p>
 
-	<p>
-	The speed setting is used to give servers on faster connections
-	relatively more traffic.  Currently this load balancing logic is very
-	crude (basically we only put your server in the global zone if the
-	speed is 786Kbit or higher).
-	</p>
+		<p>
+		The speed setting is used to give servers on faster connections
+		relatively more traffic.  Currently this load balancing logic is very
+		crude (basically we only put your server in the global zone if the
+		speed is 786Kbit or higher).
+		</p>
 
-	<p>
-	The "availability <b>score</b>" goes up to 20.  It must be higher than 5 for the server to be included in the cluster.
-	</p>
+		<p>
+		The "availability <b>score</b>" goes up to 20.  It must be higher than 5 for the server to be included in the cluster.
+		</p>
 
-	<p>As noted on the <a href="/join.html">join information</a> page adding
-	your IP to the pool is a long term commitment.  If you need to remove
-	your server from the pool you can schedule the removal with the
-	<b>delete</b> button (up to 3 months in advance!).
-	</p>
+		<p>As noted on the <a href="/join.html">join information</a> page adding
+		your IP to the pool is a long term commitment.  If you need to remove
+		your server from the pool you can schedule the removal with the
+		<b>delete</b> button (up to 3 months in advance!).
+		</p>
 
-	<p>
-	[% PROCESS tpl/server_trend_legend.html %]
-	</p>
+		<p>
+		[% PROCESS tpl/server_trend_legend.html %]
+		</p>
+	</div>
 	[% ELSE %]
 
 	<i>No servers registered to your email address. Send  a mail if that was not what you expected!</i> 

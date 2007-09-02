@@ -78,18 +78,19 @@ pre.ntpq {width: 630px;}
 p.thanks {font-style: italic; font-weight: bold;}
 		
 /* manage */
-	#admin .profile {
+	#admin .profile, #admin .adspace {
 		padding: 10px;
 		border-bottom: 1px solid #ccc;
 		margin-bottom: 5px;
 	}
 	#admin .servers {
-		float: right;
+		float: left;
 		padding: 7px;
-		border-left: 1px solid #ccc;
-		margin: 0 0 10px 10px;
+		border-right: 1px solid #ccc;
+		margin: 0 10px 10px 0;
 	}
-		#admin .value span {font-size: 88%; color: #999;}
+		#admin .value span {font-size: 107%;}
+		#admin .server_desc {font-size: 88%;}
 		
 	
 
