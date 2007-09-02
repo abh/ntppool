@@ -1,55 +1,58 @@
 [% PROCESS tpl/manage/navigation.html %]
+<div class="block">
+	
+	<h2>"[% vz.zone_name | html %]" zone</h2>
 
-<h2>"[% vz.zone_name | html %]" zone</h2>
+	<h3>Organization</h3>
+	<blockquote>[% vz.organization_name | html %]</blockquote>
 
-<h3>Organization</h3>
-<blockquote>[% vz.organization_name | html %]</blockquote>
+	<h3>Application information</h3>
+	<blockquote>
+	[% vz.request_information_html %]
+	</blockquote>
 
-<h3>Application information</h3>
-<blockquote>
-[% vz.request_information_html %]
-</blockquote>
+	<h3>Number of devices</h3>
+	<blockquote>
+	[%  USE Number.Format;
+	    vz.device_count | format_number %]
+	</blockquote>
 
-<h3>Number of devices</h3>
-<blockquote>
-[%  USE Number.Format;
-    vz.device_count | format_number %]
-</blockquote>
+	<h3>Contact information</h3>
+	<blockquote>
+	[% vz.contact_information_html %]
+	</blockquote>
 
-<h3>Contact information</h3>
-<blockquote>
-[% vz.contact_information_html %]
-</blockquote>
+	<h3>Status</h3>
+	<p>[% vz.status %]</p>
 
-<h3>Status</h3>
-<p>[% vz.status %]</p>
+	[% IF vz.can_edit(combust.user) %]
+	 <form method="edit" action="/manage/vendor/zone" style="display:inline">
+	  <input type="hidden" name="id" value="[% vz.id %]" />
+	  <input type="submit" value="&larr; Edit" />
+	</form> 
+	[% END %]
 
-[% IF vz.can_edit(combust.user) %]
- <form method="edit" action="/manage/vendor/zone" style="display:inline">
-  <input type="hidden" name="id" value="[% vz.id %]" />
-  <input type="submit" value="&larr; Edit" />
-</form> 
-[% END %]
+	[% IF vz.status == 'New' %]
+	 <form method="post" action="/manage/vendor/submit" style="display:inline">
+	  <input type="hidden" name="id" value="[% vz.id %]" />
+	  <input type="submit" value="Submit application &rarr;" /></form> 
+	[% END %]
 
-[% IF vz.status == 'New' %]
- <form method="post" action="/manage/vendor/submit" style="display:inline">
-  <input type="hidden" name="id" value="[% vz.id %]" />
-  <input type="submit" value="Submit application &rarr;" /></form> 
-[% END %]
+	[% IF combust.user.privileges.vendor_admin %]
+	<br/><br/>
+	 <form method="post" action="/manage/vendor/admin" style="display:inline">
+	  <input type="hidden" name="id" value="[% vz.id %]" />
+	  [% IF vz.status == 'Pending' or vz.status == 'Rejected' %]
+	    <input type="submit" name="status_change" value="Approve" />
+	  [% END %]
+	  [% IF vz.status == 'Pending' %]
+	    <input type="submit" name="status_change" value="Reject" />
+	  [% END %]
+	</form>
+	[% END %]
 
-[% IF combust.user.privileges.vendor_admin %]
-<br/><br/>
- <form method="post" action="/manage/vendor/admin" style="display:inline">
-  <input type="hidden" name="id" value="[% vz.id %]" />
-  [% IF vz.status == 'Pending' or vz.status == 'Rejected' %]
-    <input type="submit" name="status_change" value="Approve" />
-  [% END %]
-  [% IF vz.status == 'Pending' %]
-    <input type="submit" name="status_change" value="Reject" />
-  [% END %]
-</form>
-[% END %]
+	<p>
+	<a href="/manage/vendor">Back to list</a>
+	</p>
 
-<p>
-<a href="/manage/vendor">Back to list</a>
-</p>
+</div>

@@ -4,25 +4,28 @@
 
 [% PROCESS tpl/manage/navigation.html %]
 
-<p>
-Anyone distributing an appliance, operating system or some other kind
-of software using NTP needs a "vendor zone" if the default
-configuration is to use the pool system.
-</p>
+<div class="block">
+	<p>
+	Anyone distributing an appliance, operating system or some other kind
+	of software using NTP needs a "vendor zone" if the default
+	configuration is to use the pool system.
+	</p>
 
-[% FOR vz = combust.user.vendor_zones %]
-<h3>[% vz.zone_name | html %]</h3>
-<p>
-Organization: [% vz.organization_name | html %]<br/>
-Status: <i>[% vz.status %]</i><br/>
-[% IF vz.status == 'New' %]
-<a href="/manage/vendor/zone?id=[% vz.id %]">Edit and submit</a>
-[% ELSE %]
-<a href="/manage/vendor/zone?id=[% vz.id %]">View details</a>
-[% END %]
-</p>
-[% END %]
+	[% FOR vz = combust.user.vendor_zones %]
+	<h3>[% vz.zone_name | html %]</h3>
+	<p>
+	Organization: [% vz.organization_name | html %]<br/>
+	Status: <i>[% vz.status %]</i><br/>
+	[% IF vz.status == 'New' %]
+	<a href="/manage/vendor/zone?id=[% vz.id %]">Edit and submit</a>
+	[% ELSE %]
+	<a href="/manage/vendor/zone?id=[% vz.id %]">View details</a>
+	[% END %]
+	</p>
+	[% END %]
 
-<p>
-<a href="/manage/vendor/new">Apply for a new vendor zone</a>
-</p>
+	<p>
+	<a href="/manage/vendor/new">Apply for a new vendor zone</a>
+	</p>
+	
+</div>

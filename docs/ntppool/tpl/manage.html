@@ -65,6 +65,10 @@
 		</div>
 	</div>
 	
+	
+	<a name="add"></a>
+	[% PROCESS tpl/manage/add_form.html %]
+	
 	[% IF servers %]
 	<div class="server_desc">
 		<p>
@@ -90,9 +94,7 @@
 		<b>delete</b> button (up to 3 months in advance!).
 		</p>
 
-		<p>
 		[% PROCESS tpl/server_trend_legend.html %]
-		</p>
 	</div>
 	[% ELSE %]
 
@@ -100,8 +102,6 @@
 
 	[% END %]
 
-	<a name="add"></a>
-	[% PROCESS tpl/manage/add_form.html %]
 
 	<p>
 	To change server information (say the IP), email <a

@@ -1,9 +1,9 @@
 body {
-	color: #333;
+	color: #222;
 }
 
 a {color: #3885B4;}
-h1, h2, h3, h4, h5 {color: #7B7A7D;}
+h1, h2, h3, h4, h5 {color: #454545;}
 
 #hd {min-height: 10px;}
 	#hd h1 {display: none;}
@@ -12,7 +12,8 @@ h1, h2, h3, h4, h5 {color: #7B7A7D;}
 		font-size: 88%; border: 1px solid #f00; border-top: 0;
 		 background-color: #fafafa;}
 
-#sidebar h1 {
+#sidebar h1 a {
+	display: block;
 	width: 125px;
 	height: 138px;
 	background: no-repeat url(../images/logo.png);
