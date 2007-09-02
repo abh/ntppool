@@ -79,15 +79,4 @@ p.thanks {font-style: italic; font-weight: bold;}
 	}
 		#admin .value span {font-size: 88%; color: #999;}
 
-		
-		
 
-
-#graph_explanation_box {
-  display: none;
-  width: 450px;
-  margin-left: 30px;
-  margin-top: 10px;
-  padding: 9px;
-  border: 1px dotted #999; 
-}

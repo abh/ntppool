@@ -1,3 +1,4 @@
+
 body {
   background-color: white;
   font-family: verdana, "Lucida Grande", arial, helvetica, sans-serif;
@@ -17,7 +18,7 @@ h1,h2,h3 {
   list-style: none;
   padding: 0;
   margin: 0;
-  display: inline;  /* inline-block ?  */
+  display: inline;
 }
 
 #nav li {
@@ -25,7 +26,7 @@ h1,h2,h3 {
   margin: 0 0.15em;
   padding: 0;
   text-align: center;
-  display: inline;  /* inline-block ? */
+  display: inline;
 }
 
 #nav li a {
@@ -41,7 +42,7 @@ h1,h2,h3 {
   color: #0d2474;
   text-decoration: none;
   text-align: center;
-  display: inline; /* inline-block ? */
+  display: inline;
 }
 
 #nav li a:hover {
@@ -95,14 +96,21 @@ p.serverurls {
   text-decoration: none;
 }
 
+/* #graph_explanation_box {
+  border: 3px dotted red;
+} */
 
-#graph_explanation_box {
+.graph_explanation {
   display: none;
   width: 450px;
   margin-left: 30px;
   margin-top: 10px;
   padding: 9px;
-  border: 1px dotted #999; 
+  border: 1px dotted #999;
+}
+
+.visible {
+   display: block;
 }
 
 #faq dt {
