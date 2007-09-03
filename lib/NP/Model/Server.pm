@@ -95,6 +95,24 @@ sub history {
        );
 }
 
+sub score_sparkline_url {
+    my $self = shift;
+    my $min = 0;
+    my $history = $self->history;
+    my @d;
+    for my $h (@$history) {
+        push @d, int($h->score);
+        $min = int($h->score) if $h->score < $min;
+    }
+
+    my $url = URI->new("http://bitworking.org/projects/sparklines/spark.cgi");
+    $url->query_param("limits" => "$min,20");
+    $url->query_param("d" => join ",", @d);
+    $url->query_param("type" => "smooth");
+    $url->query_param("last-m" => 'true');
+    $url->as_string;
+}
+
 sub log_scores_csv {
     my ($self, $count) = @_;
     my $history = $self->history($count);
