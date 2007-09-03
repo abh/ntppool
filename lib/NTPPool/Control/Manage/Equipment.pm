@@ -28,6 +28,11 @@ sub manage_dispatch {
 sub render_form {
     my $self = shift;
     my $ea   = shift;
+
+    if (!$ea and $self->user_has_active_applications) {
+        $self->redirect("/manage/equipment");
+    }
+
     $self->tpl_param('ea', $ea) if $ea;
     return OK, $self->evaluate_template('tpl/equipment/form.html');
 }
@@ -67,6 +72,7 @@ sub render_edit {
             if ($ea->status eq 'New' and $status eq 'Pending') {
                 $ea->status($status);
                 $ea->save;
+                $self->tpl_param(message => "Your application has been submitted, thanks!");
             }
         }
         else {
@@ -76,6 +82,11 @@ sub render_edit {
         }
     }
     else {
+
+        if ($self->user_has_active_applications) {
+            $self->redirect("/manage/equipment");
+        }
+
         $ea = NP::Model->user_equipment_application->create
           ( user_id   => $self->user->id,
             (map { $_ => ($self->req_param($_) || '')
@@ -143,6 +154,16 @@ sub render_admin {
     $self->tpl_param(pending_zones => $pending);
 
     return OK, $self->evaluate_template('tpl/vendor/admin.html');
+}
+
+sub user_has_active_applications {
+    my $self = shift;
+
+    my $count = NP::Model->user_equipment_application->get_user_equipment_applications_count
+      (
+       query => [ user_id => $self->user->id ]
+      );
+    $count
 }
 
 1;

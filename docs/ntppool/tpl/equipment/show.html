@@ -1,6 +1,11 @@
 [% PROCESS tpl/manage/navigation.html %]
 
 <div class="block">
+
+        [% IF message %]
+           <p>[% message %]</p>
+        [% END %]
+
 	<h3>Application information</h3>
 	<blockquote>
 	[% ea.application_html %]
@@ -15,6 +20,15 @@
 	<h3>Status</h3>
 	<blockquote>[% ea.status %]</blockquote>
 	[% END %]
+
+        [% IF ea.status == 'New' %]
+        <h3>Preview</h3>
+        <blockquote>
+          <i>Your application has not yet been
+          submitted</i>, please verify the information and submit.
+        </blockquote>
+        [% END %]
+
 
 	[% IF ea.can_edit(combust.user) %]
 	 <form method="edit" action="/manage/equipment/application" style="display:inline">
