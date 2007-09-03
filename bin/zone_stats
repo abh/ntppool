@@ -31,6 +31,7 @@ my $dbh   = NP::Model->dbh;
 
 if (@ARGV and $ARGV[0] eq "populate_all") {
     populate_all();
+    exit;
 }
 
 while (my $zone = $zones->next) {
@@ -53,12 +54,16 @@ while (my $zone = $zones->next) {
 
 sub populate_all {
     while (my $zone = $zones->next) {
-        my $data = $dbh->selectall_arrayref(q[select unix_timestamp(date) as time, count_active, count_registered
+        my $data = $dbh->selectall_arrayref(q[select unix_timestamp(date) as time, date,
+                                              count_active, count_registered, netspeed_active
                                               from zone_server_counts
                                               where zone_id=? order by date], 
                                             {Columns=>{}}, $zone->id);
         create_rrd($zone->name);
+
+        my $i = 0;
         for my $d (@$data) {
+            print $zone->name, " $d->{date} ($d->{count_active}, $d->{count_registered}, $d->{netspeed_active})\n";
             update_rrd($zone->name, $d->{time}, $d->{count_active}, $d->{count_registered}, $d->{netspeed_active});
         }
     }
@@ -137,7 +142,7 @@ sub create_rrd {
     my $path = rrd_path($zone);
     return if -e $path;
 
-    my $START = $time - 9450000;
+    my $START = 1123650000; # a few hours before the oldest data in prod
     
     my @graph = (
                  "--start", $START, "--step", 21600, # 6 hours interval
