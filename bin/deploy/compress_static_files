@@ -44,8 +44,8 @@ done
 
 for FO in `find $DOCROOT -name \*.js -or -name \*.html -or -name \*.css`; do
   # 
-  STAT_GZIP=`stat --printf="%Y" $FO.gzip 2> /dev/null`
-  STAT_ORIG=`stat --printf="%Y" $FO`
+  STAT_GZIP=`stat -c="%Y" $FO.gzip 2> /dev/null`
+  STAT_ORIG=`stat -c="%Y" $FO`
   if [ "x$STAT_GZIP" != "x$STAT_ORIG" ]; then
     compress $FO
   fi
