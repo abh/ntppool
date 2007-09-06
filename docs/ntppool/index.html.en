@@ -38,13 +38,15 @@
 	</p>
 	<p>
 	The pool is now enormously popular, being used by millions of systems
-	around the world.
+	around the world.  It's the default "time server" for most of the major 
+        Linux distributions (see <a href="/vendors">information for vendors</a>).
 	</p>
 	<p>
-	The pool project is now being maintained by <a
-	href="http://www.askbjoernhansen.com/">Ask Bj&oslash;rn Hansen</a> and
-	a great group of contributors on the <a href="/mailinglists.html">mailing
-	lists</a>.
+	The pool project has since 2005 been maintained by <a
+	href="http://www.askbjoernhansen.com/">Ask Bj&oslash;rn
+	Hansen</a>, <a href="http://develooper.com/">Develooper</a>
+	and a great group of contributors on the <a
+	href="/mailinglists.html">mailing lists</a>.
 	</p>
 	<a href="#top" class="up">go up</a>
 </div>
