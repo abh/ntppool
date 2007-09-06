@@ -1,5 +1,7 @@
 [% page.title = (user.username || user.email) _ "'s pool servers" %]
 
+<div class="block">
+
 <h3>[% user.username || user.email | html %]'s pool servers</h3>
 
 [% IF combust.user.privileges.see_all_user_profiles %]
@@ -34,3 +36,5 @@ Netspeed: [% server.netspeed_human %]<br/>
 
 </p> 
 [% END %]
+
+</div>
