@@ -1,9 +1,5 @@
 High priority things:
 
-  * Make a system on the website for vendors to sign up for a "vendor
-    zone" and for me to approve it etc (http://www.pool.ntp.org/vendors.html)
-    (90% done)
-
   * Change the DNS system to use pgeodns (or similar) to distribute
     requests rather than than regenerating the zone.  (Better use the
     "bandwidth" setting the admins have; distribute requests to a "nearby"
