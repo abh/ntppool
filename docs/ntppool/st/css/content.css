@@ -81,6 +81,7 @@ h1#tagline {font-size: 122%; font-style: italic; text-align: right;}
 		ul#news li div.date {
 			float: left; font-size: 122%; color: #3885B4;
 			padding: 3px 5px; margin: 0 7px 5px 0;}
+                ul#news li ul li { border: 0; list-style-type: disc; margin-left: 25px; }
 		
 /* use */	
 pre.ntpq {width: 630px;}

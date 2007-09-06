@@ -43,7 +43,7 @@
 	<p>
 	The pool project is now being maintained by <a
 	href="http://www.askbjoernhansen.com/">Ask Bj&oslash;rn Hansen</a> and
-	a great group of contributors on the <a href="#mail">mailing
+	a great group of contributors on the <a href="/mailinglists.html">mailing
 	lists</a>.
 	</p>
 	<a href="#top" class="up">go up</a>
@@ -54,6 +54,34 @@
 	<h3>News</h3>
 	<ul id="news">
 		<li class="latest">
+			<p>
+			<div class="date">2007-09-06</div>
+                        Three awesome news items today:
+
+                        <br/><br/><b>1:</b> We're announcing the great Meinberg GPS <a
+                        href="/meinberg.html">time equipment giveaway</a>.  Over the next
+                        months we're (thanks to <a href="http://www.meinberg.de/">Meinberg</a>)
+                        giving away thousands of dollars worth of high quality time-keeping devices.
+
+                        <br/><br/><b>2:</b>
+                        We got a brand new design and layout on the pool site!  Many more updates are coming. 
+
+                        <br/><br/><b>3:</b>
+                        The pool is the default ntp service in several of the big Linux
+                        distributions (Fedora, Debian, RHEL, CentOS and many more).  For
+                        this reason we really really need more servers to help with the
+                        traffic.  Hopefully the equipment giveaway will help on this.
+                        Please mention it in your weblog or wherever else appropriate.
+
+                        <br/><br/> 
+                        On a related sidenote we've started alpha-testing a new
+                        system for distributing traffic to the servers more evenly and
+                        with much less "spikes" in the traffic.
+                        </p>
+ 		</li>
+
+
+		<li>
 			<p>
 			<div class="date">2007-02-22</div>
 			We are getting close to one thousand active servers in the pool
@@ -170,41 +198,6 @@
 		</li>
 	</ul>
 </div>
-
-<div class="block">
-	<a name="mail"></a>
-	<h3>The mailing lists</h3>
-	<p>
-	Currently, there are three mailing lists for the pool.ntp.org project: the
-	discussion list <a
-	href="https://fortytwo.ch/mailman/cgi-bin/listinfo/timekeepers"
-	>timekeepers@fortytwo.ch</a> (<a
-	href="mailto:timekeepers-request@fortytwo.ch?subject=subscribe" >subscribe</a>,
-	<a href="https://fortytwo.ch/mailman/pipermail/timekeepers/" >archive</a>),
-	the announcement list <a
-	href="https://fortytwo.ch/mailman/cgi-bin/listinfo/timekeepers-announce"
-	>timekeepers-announce@fortytwo.ch</a> (<a
-	href="mailto:timekeepers-announce-request@fortytwo.ch?subject=subscribe"
-	>subscribe</a>,
-	<a href="http://fortytwo.ch/mailman/pipermail/timekeepers-announce/"
-	>archive</a>) and the bulletins list <a
-	href="https://fortytwo.ch/mailman/cgi-bin/listinfo/timekeepers-bulletin"
-	>timekeepers-bulletin@fortytwo.ch</a> (<a
-	href="mailto:timekeepers-bulletin-request@fortytwo.ch?subject=subscribe"
-	>subscribe</a>, <a
-	href="https://fortytwo.ch/mailman/pipermail/timekeepers-bulletin">archive</a>).
-	The discussion list is, of course, mainly for those interested in the project,
-	while the announcements list is intended for server operators (or users of the
-	pool.ntp.org service) who do not wish to be more deeply involved with the
-	development and maintenance of the project. <i>There is no need to subscribe to
-	both lists - announcements will be sent to both lists</i> (if I don't forget
-	it, that is). Of course, general discussions about ntp should take place on the
-	<a href="news:comp.protocols.time.ntp">comp.protocols.time.ntp</a> Usenet
-	newsgroup.
-	</p>
-	<a href="#top" class="up">go up</a>
-</div>
-
 
 <div class="block">
 	<a name="links"></a>
