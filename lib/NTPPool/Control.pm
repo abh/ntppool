@@ -2,12 +2,15 @@ package NTPPool::Control;
 use strict;
 use Apache::Constants qw(OK);
 use base qw(Combust::Control Combust::Control::Bitcard);
+use base qw(Class::Accessor::Class);
 use HTML::Prototype;
 use Carp qw(cluck);
 use Storable qw(retrieve);
 use List::Util qw(max);
 
 $Combust::Control::Bitcard::cookie_name = 'npuid';
+
+my $config = Combust::Config->new;
 
 my $prototype = HTML::Prototype->new;
 sub prototype {
@@ -90,6 +93,14 @@ my $static_directory = $ENV{CBROOTLOCAL} . '/docs/ntppool/st';
 my $static_files = eval { retrieve("${static_directory}/.versions.store") }
 or die "bin/deploy/static_version_cache not yet run: $@";
 
+sub static_base {
+    my ($class, $site) = @_;
+    my $base = $config->site->{$site} && $config->site->{$site}->{static_base};
+    $base ||= '/st';
+    $base =~ s!/$!!;
+    $base;
+}
+
 my $startup_time = time;
 
 sub static_url {
@@ -109,8 +120,22 @@ sub static_url {
         $file =~ s!$regexp!.v$version$1! if $version;
     }
 
-    return '/st' . $file;
+    return $self->tpl_config->{static_base} . $file;
 }
+
+__PACKAGE__->mk_class_accessors("tpl_config_cache");
+__PACKAGE__->tpl_config_cache({});
+
+sub tpl_config {
+    my $self = shift;
+    my $site = $self->site;
+    my $tpl_config = $self->tpl_config_cache->{$site};
+    return $tpl_config if $tpl_config;
+    $tpl_config = { static_base     => __PACKAGE__->static_base($site),
+                };
+    $self->tpl_config_cache->{$site} = $tpl_config;
+}
+
 
 
 package NTPPool::Control::Basic;
