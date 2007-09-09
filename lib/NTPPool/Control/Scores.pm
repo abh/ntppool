@@ -28,9 +28,12 @@ sub render {
           return 404 unless $server;
           return $self->redirect('/scores/' . $server->ip) unless $p eq $server->ip;
 
-          return OK, $server->log_scores_csv(50), 'text/plain' 
-             if $mode eq 'log' or $self->req_param('log');
-
+          if ($mode eq 'log' or $self->req_param('log')) {
+              my $limit = $self->req_param('limit') || 0;
+              $limit = 50 unless $limit and $limit !~ m/\D/;
+              $limit = 5000 if $limit > 5000;
+              return OK, $server->log_scores_csv($limit), 'text/plain';
+          }
           return OK, $self->history_sparkline_png($server), 'image/png'
              if $mode eq 'spark';
 
