@@ -16,7 +16,7 @@ h1, h2, h3, h4, h5 {color: #454545;}
 	display: block;
 	width: 125px;
 	height: 138px;
-	background: no-repeat url(../images/logo.png);
+	background: no-repeat url(../images/logo.v1.png);
 	text-indent: -9000px;
 	margin: auto;
 	margin-bottom: 15px;
@@ -36,11 +36,11 @@ ul#nav li {
 		ul#nav li a:hover {color: #3885B4;}
 	ul#nav li.join a {
 		width: 145px;
-		background: no-repeat url(../images/join_pool.png);}
+		background: no-repeat url(../images/join_pool.v1.png);}
 	ul#nav li.use a {
 		width: 140px; 
-		background: no-repeat url(../images/use_pool.png);}
-	ul#nav li.manage a {background: no-repeat url(../images/manage_servers.png);}
+		background: no-repeat url(../images/use_pool.v1.png);}
+	ul#nav li.manage a {background: no-repeat url(../images/manage_servers.v1.png);}
 		
 #ft {
 	text-align: right;
