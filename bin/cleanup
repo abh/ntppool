@@ -11,7 +11,7 @@ use NP::Model;
 my $dbh = NP::Model->dbh;
 
 for (1..5) {
-  my $rv = $dbh->do(q[delete from log_scores where ts < date_sub( NOW(), interval 90 day) limit 7500]);
+  my $rv = $dbh->do(q[delete from log_scores where ts < date_sub( NOW(), interval 180 day) limit 7500]);
   last unless $rv;
 }
 
