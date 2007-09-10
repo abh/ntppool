@@ -15,7 +15,10 @@ be included in the pool.ntp.org DNS zones.
 Unless you have questions then you don't need to notify me that the
 problem has been resolved; the system will figure that out by itself.
 (You can follow the status on the URL listed next to the server IP).
-If the IP of the server changed, just reply with the new IP address.
+The NTP system is entirely based on IPs, so if the IP changed it will
+consider it a new system.  You can schedule this the old IP for
+removal and add the new one on the management web site -
+http://www.pool.ntp.org/manage
 
 [% FILTER repeat(70) %]-[% END %]
 [%- FOR server = bad_servers %]
