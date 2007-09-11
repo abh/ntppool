@@ -122,7 +122,7 @@ sub get_server_info {
     warn Data::Dumper->Dump([\%ntp]);
 
     die "Didn't get an NTP response from $host\n" unless defined $ntp{Stratum};
-    die "Invalid stratum response from $host (Your server is in stratum $ntp{Stratum}).  Is your server configured properly? Is public access allowed?  If you just restarted your ntpd, then it might still be stabalizing the timesources - try again in 10-20 minutes.\n"
+    die "Invalid stratum response from $host (Your server is in stratum $ntp{Stratum}).  Is your server configured properly? Is public access allowed?  If you just restarted your ntpd, then it might still be stabilizing the timesources - try again in 10-20 minutes.\n"
       unless $ntp{Stratum} > 0 and $ntp{Stratum} < 6;
 
     $server{ntp} = \%ntp;
