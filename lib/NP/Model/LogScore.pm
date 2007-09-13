@@ -69,7 +69,7 @@ sub create_rrd {
     my @graph = (
                  "--start", "now-180d", "--step", "15m", # 15 minutes interval
                  "DS:score:GAUGE:7500:-100:20",   # heartbeat of ~2 hours, min value = -100, max = 20
-                 "DS:offset:GAUGE:7500:0:86400",
+                 "DS:offset:GAUGE:7500:-86400:86400",
                  "DS:step:GAUGE:7500:-10:5",
                  "RRA:AVERAGE:0.5:1:2048",   # 15 minutes, ~20 days
                  "RRA:AVERAGE:0.5:4:1536",   # 1 hour, ~60 days
