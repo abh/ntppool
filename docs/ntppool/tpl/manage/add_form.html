@@ -9,7 +9,10 @@
 
 	<p>
 	Your servers hostname or IP address: <br />
-	[% IF host_error %]<span class="error">[% host_error | html %]</span><br />[% END %]
+	[% IF host_error %]<span class="error">[% host_error | html %]</span><br />
+          You might find the <a href="http://www.vanheusden.com/query_ntp.php">NTP Query</a> site helpful
+          for diagnostics.<br/>
+        [% END %]
 	<form action="/manage/server/add#add" method="post">
 	<fieldset>
 	<input type="text" class="text" name="host" value="[% host | html %]">
