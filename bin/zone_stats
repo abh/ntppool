@@ -142,7 +142,7 @@ sub create_rrd {
     my $path = rrd_path($zone);
     return if -e $path;
 
-    my $START = 1123650000; # a few hours before the oldest data in prod
+    my $START = 1123602000; # a few hours before the oldest data in prod
     
     my @graph = (
                  "--start", $START, "--step", 21600, # 6 hours interval
