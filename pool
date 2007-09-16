@@ -407,7 +407,7 @@ elsif ($cmd eq "zone") {
 
     my $ttl = 2700;
     my $pgeodns = { serial => $time,
-                    ttl    => $ttl,
+                    ttl    => 600,
                   };
 
     my $www_record = { cname => 'x3.develooper.com',
@@ -451,7 +451,7 @@ elsif ($cmd eq "zone") {
     while (my $zone = $zones->next) {
         my $name = $zone->zone_name;
         for my $i (0..3) {
-            $pgeodns->{data}->{"$i.$name"}->{alias} = "$i.${pool_domain}";
+            $pgeodns->{data}->{"$i.$name"}->{cname} = "$i.${pool_domain}";
             print $fh "C$i.$name.${pool_domain}:$i.vendors.${pool_domain}:$ttl\n";
         }
     }
