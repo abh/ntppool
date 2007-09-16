@@ -410,7 +410,19 @@ elsif ($cmd eq "zone") {
                     ttl    => $ttl,
                   };
 
-    $pgeodns->{data}->{www}->{cname} = "x3.develooper.com.";
+    my $www_record = { cname => 'x3.develooper.com',
+                       ttl   => 7200,
+                     };
+
+    $pgeodns->{data}->{www} = $www_record;
+    $pgeodns->{data}->{web} = $www_record;
+
+    for (0..3) {
+        $pgeodns->{data}->{"$_.vendors.$pool_domain"}
+          = { cname => "$_.$pool_domain",
+              ttl   => 43200,
+            };
+    }
 
     my $vendordir = "vendordns";
     opendir my $dir, $vendordir or die "could not open '$vendordir' dir: $!";
@@ -473,13 +485,13 @@ elsif ($cmd eq "zone") {
             print $fh "# possible duplicates in the zones below (", $zone->name, ")\n";
             foreach my $z (("", "0.", "1.", "2.", "3.")) {
                 (my $pgeodns_group = "$z${name}") =~ s/\.$//;
-                $pgeodns->{data}->{$pgeodns_group}->{servers} = [];
+                $pgeodns->{data}->{$pgeodns_group}->{a} = [];
                 @$entries = shuffle(@$entries);
                 my $i;
                 foreach my $e (@$entries) {
                     $i++;
                     print $fh "+$z${name}${pool_domain}:$$e[0]:$ttl\n" if $i < 12;
-                    push @{$pgeodns->{data}->{$pgeodns_group}->{servers}}, $e;
+                    push @{$pgeodns->{data}->{$pgeodns_group}->{a}}, $e;
                 }
             }
         }
@@ -488,11 +500,11 @@ elsif ($cmd eq "zone") {
             @$entries = shuffle(@$entries);
             foreach my $z (("", "0.", "1.", "2.", "3.")) {
                 (my $pgeodns_group = "$z${name}") =~ s/\.$//;
-                $pgeodns->{data}->{$pgeodns_group}->{servers} = [];
+                $pgeodns->{data}->{$pgeodns_group}->{a} = [];
                 for (my $i = 0 ; $i < $min_non_duplicate_size; $i++) {
                     my $e = shift @$entries;
                     print $fh "+$z${name}${pool_domain}:", $e->[0], ":$ttl\n" if $i < 14;
-                    push @{$pgeodns->{data}->{$pgeodns_group}->{servers}}, $e;
+                    push @{$pgeodns->{data}->{$pgeodns_group}->{a}}, $e;
                 }
             }
         }
