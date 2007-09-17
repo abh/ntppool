@@ -20,11 +20,22 @@ The DNS data was updated
 
 [% FOR ns = servers %]
 <tr>
-<td>
+<td valign="top">
 [% ns.name %]
 </td>
 <td>
 <span style="background:[% ns.lag_css_color %]">[% ns.lag_text %]</span>
+[% IF ns.status %]
+<br/>
+[% ns.status | html %]
+[% END %]
+
+[% IF ns.version %]
+<br/>
+[% ns.version | html %]
+[% END %]
+
+
 </td>
 </tr>
 [% END %]

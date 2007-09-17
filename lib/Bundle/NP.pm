@@ -29,6 +29,7 @@ DateTime
 Clone
 Class::Factory::Util
 DateTime::Format::Strptime
+Task::Weaken
 DateTime::Format::Builder
 DateTime::Format::MySQL
 DateTime::Format::Pg

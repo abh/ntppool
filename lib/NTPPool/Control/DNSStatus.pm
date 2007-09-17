@@ -22,6 +22,8 @@ sub render {
   my $pool_domain = Combust::Config->new->site->{ntppool}->{pool_domain}
     or die "pool_domain configuration not setup";
 
+  # $pool_domain = 'pool.ntp.org';
+
   my $query = $res->query($pool_domain, "NS");
 
   my %servers;
@@ -42,15 +44,28 @@ sub render {
 
   for my $ns (keys %servers) {
     $res->nameserver($ns);
-    $servers{$ns}->{socket} = $res->bgsend($pool_domain, 'SOA');
+    $servers{$ns}->{soa_socket}     = $res->bgsend($pool_domain, 'SOA');
+    $servers{$ns}->{status_socket}  = $res->bgsend("status.$pool_domain", 'TXT');
+    $servers{$ns}->{version_socket} = $res->bgsend("version.$pool_domain", 'TXT');
   }
 
   for my $ns (sort keys %servers) {
-    my $socket = $servers{$ns}->{socket} or next;
-    my $packet = $res->bgread($socket);
-    my ($soa) = grep { $_->type eq 'SOA' } $packet->answer;
-    delete $servers{$ns}->{socket};
-    $servers{$ns}->{serial} = $soa && $soa->serial;
+    if (my $socket = $servers{$ns}->{soa_socket}) {
+      my $packet = $res->bgread($socket);
+      my ($soa) = grep { $_->type eq 'SOA' } $packet->answer;
+      delete $servers{$ns}->{soa_socket};
+      $servers{$ns}->{serial} = $soa && $soa->serial;
+    }
+
+    for my $f (qw(version status)) {
+      if (my $socket = $servers{$ns}->{"${f}_socket"}) {
+        my $packet = $res->bgread($socket);
+        my ($txt) = grep { $_->type eq 'TXT' } $packet->answer;
+        delete $servers{$ns}->{"${f}_socket"};
+        $servers{$ns}->{$f} = $txt && $txt->rdatastr;
+       }
+    }
+
   }
 
   my $max_serial = $servers{$prim}->{serial};
