@@ -418,7 +418,7 @@ elsif ($cmd eq "zone") {
     $pgeodns->{data}->{web} = $www_record;
 
     for (0..3) {
-        $pgeodns->{data}->{"$_.vendors.$pool_domain"}
+        $pgeodns->{data}->{"$_.vendors"}
           = { cname => "$_.$pool_domain",
               ttl   => 43200,
             };
