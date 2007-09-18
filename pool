@@ -431,7 +431,7 @@ elsif ($cmd eq "zone") {
     
     # temporary hack to disable the hardcoded vendor files for
     # development sandboxes
-    @vendor_files = () unless $pool_domain eq 'pool.ntp.org'; 
+    # @vendor_files = () unless $pool_domain eq 'pool.ntp.org'; 
 
     for my $file (@vendor_files) {
        open my $vfh, $file or die "could not open $file: $!";
@@ -442,21 +442,23 @@ elsif ($cmd eq "zone") {
        close $vfh;
     }
 
-    my $zones = NP::Model->vendor_zone->get_vendor_zones_iterator
+    my $vendor_zones = NP::Model->vendor_zone->get_vendor_zones
       ( query => [ status => 'Approved' ],
         order => 'approved_on', 
       );
 
+    my @vendor_zone_names = map { $_->zone_name } @$vendor_zones;
+    push @vendor_zone_names, map { s!.*/!!; $_ } @vendor_files;
 
-    while (my $zone = $zones->next) {
-        my $name = $zone->zone_name;
+    for my $name (@vendor_zone_names) {
         for my $i (0..3) {
             $pgeodns->{data}->{"$i.$name"}->{cname} = "$i.${pool_domain}";
             print $fh "C$i.$name.${pool_domain}:$i.vendors.${pool_domain}:$ttl\n";
         }
     }
 
-    $zones = NP::Model->zone->get_zones_iterator( query => [ dns => 1 ] );
+
+    my $zones = NP::Model->zone->get_zones_iterator( query => [ dns => 1 ] );
 
     while (my $zone = $zones->next) {
         my $name = $zone->name;
