@@ -53,150 +53,19 @@
 
 <div class="block">
 	<a name="news"></a>
-	<h3>News</h3>
+        <h3>News</h3>
+
 	<ul id="news">
-		<li class="latest">
-			<p>
-			<div class="date">2007-09-06</div>
-                        Three awesome news items today:
 
-                        <br/><br/><b>1:</b> We're announcing the great Meinberg GPS <a
-                        href="/meinberg.html">time equipment giveaway</a>.  Over the next
-                        months we're (thanks to <a href="http://www.meinberg.de/">Meinberg</a>)
-                        giving away thousands of dollars worth of high quality time-keeping devices.
+        [% TRY; 
+              INCLUDE _syndicate/news.html; 
+          CATCH;
+             'Could not load news - see the <a href="http://news.ntppool.org/">weblog</a> instead.';
+          END
+         %]
 
-                        <br/><br/><b>2:</b>
-                        We got a brand new design and layout on the pool site!  Many more updates are coming. 
-
-                        <br/><br/><b>3:</b>
-                        The pool is the default ntp service in several of the big Linux
-                        distributions (Fedora, Debian, RHEL, CentOS and many more).  For
-                        this reason we really really need more servers to help with the
-                        traffic.  Hopefully the equipment giveaway will help on this.
-                        Please mention it in your weblog or wherever else appropriate.
-
-                        <br/><br/> 
-                        On a related sidenote we've started alpha-testing a new
-                        system for distributing traffic to the servers more evenly and
-                        with much less "spikes" in the traffic.
-                        </p>
- 		</li>
-
-
-		<li>
-			<p>
-			<div class="date">2007-02-22</div>
-			We are getting close to one thousand active servers in the pool
-			system!  The pool system has gotten a major software upgrade, most
-			notably safely letting the server operators do more without having to
-			involve me. Please email ask@develooper.com if you see anything odd.
-			</p>
-			<p>
-			Coming up on the todo list is revamping the monitoring system.  With the help of a donated <a
-			href="http://www.meinberg.de/english/products/ntp-time-server.htm">time server</a> generously donated by <a href="http://www.meinberg.de/english/">Meinberg</a> I am working on a better and distributed
-			monitoring system.
-			</p>
-		</li>
-		<li>
-			<p>
-			<div class="date">2006-05-01</div>
-			The NTP Pool project now has a <a href="http://en.wikipedia.org/wiki/NTP_pool">wikipedia</a> entry.
-			</p>
-		</li>
-		<li>
-			<p>
-			<div class="date">2006-04-24</div>
-			The system has been changed a little so we now have separate counts
-			for "all servers" (almost 700 servers!) and servers in the global pool
-			(+600 servers!).  The global is by far the busiest, most users don't
-			pick a country or continent zone.
-			</p>
-			<p>
-			I've also done some more measuring and estimating of the client
-			population and my best guess is that somewhere between 2 and 6 million
-			client systems are using the pool.
-			</p>
-		</li>
-		<li>
-			<p>
-			<div class="date">2006-04-22</div>
-			The new <a href="/vendors.html">information for vendors</a> page is up!  Please <a
-			href="mailto:ask@develooper.com">let me know</a> if your operating
-			system/appliance/software vendor is using the NTP Pool but isn't using
-			a vendor zone.
-			</p>
-		</li>
-		<li>
-			<p>
-			<div class="date">2006-01-15</div>
-			Welcome <a
-			href="http://it.slashdot.org/it/06/01/14/1550221.shtml">Slashdot
-			readers</a>.  The Slashdot story was that we had reached 500 active
-			servers, but since the story was posted another 50 or so servers
-			joined us!  This is great, thank you everyone.  The only way we can
-			keep the load on each server reasonable is by adding more servers
-			quickly.  If you can, please <a
-			href="http://www.pool.ntp.org/join.html">join</a>.  More than 500
-			servers in the pool might sound like a lot, but our best guestimates
-			puts the number of clients at either hundreds of thousands or millions
-			of computers.
-			</p>
-		</li>
-		<li>
-			<p>
-			<div class="date">2005-08-10</div>
-			You can now add your NTP servers (and only your own, please) via the
-			new <a href="/manage">web interface</a>.  Please <a
-			href="mailto:ask@develooper.com">email me</a> if it doesn't work as expected.
-			</p>
-		</li>
-		<li>
-			<p>
-			<div class="date">2005-08-09</div>
-			You can now <a href="/zone">browse the available zones</a>. Also, I
-			split up the front page into a few smaller pages. I've fallen a little
-			behind on adding servers.  I'll catch up soon and get the self-service
-			web interface done.
-			</p>
-		</li>
-		<li>
-			<p>
-			<div class="date">2005-07-28</div>
-			I've added a page for server admins to <a href="/manage">login</a> and
-			see their servers as they are listed in the pool system.  I'm using <a
-			href="http://www.bitcard.org/">Bitcard</a> for the authentication, so
-			don't be alarmed when you get redirected over there.  In the not too
-			far future I'll add functionality so new servers can be registered
-			via the manage page too.
-			</p>
-		</li>
-		<li>
-			<p>
-			<div class="date">2005-07-25</div>
-			If you see this message you are fetching this page from the new
-			server.  I added a page to keep track of the <a href="dns.html">dns
-			servers</a>.
-			</p>
-		</li>
 		<li class="last">
-			<p>
-			<div class="date">2005-07-24</div>
-			No news for almost a year... It's time to say good bye.  I'll hand over the
-			project to  Ask Bjørn Hansen effective tomorrow morning.  Details are, of
-			course, in the <a
-			href="http://fortytwo.ch/mailman/pipermail/timekeepers-announce/2005/000014.html">list
-			archives</a>.
-			</p>
-		</li>
-		<!-- copy here for new news items
-		<li>
-			<p>
-			<div class="date"></div>
-			</p>
-		</li>
-		 -->
-		<li class="last">
-			<a href="older_news.html">Older news...</a>
+			<a href="http://news.ntppool.org/archives.html">Older news...</a>
 		</li>
 	</ul>
 </div>

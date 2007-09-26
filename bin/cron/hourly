@@ -1,0 +1,25 @@
+#!/bin/sh
+
+targetpath=$CBROOTLOCAL/docs/ntppool/_syndicate/
+mkdir -p $targetpath
+
+function getnews () {
+    target="$1.html"
+    targettemp="$targetpath/$1.tmp"
+    url=$2
+
+    curl -s \
+      $url > ${targettemp}
+
+    if [ $? -eq 0 ]; then
+      mv $targettemp $targetpath/$target
+    fi
+
+}
+
+getnews "news" "http://news.ntppool.org/www_syndicate.html";
+
+
+
+
+

@@ -21,6 +21,11 @@
 		font-size: 154%;
 		color: #454545;
 	}
+	.block h4 {
+		font-size: 120%;
+		color: #454545;
+	}
+
 		.block ul.bullet {
 			margin-left: 25px;
 		}
@@ -76,7 +81,9 @@ h1#tagline {font-size: 122%; font-style: italic; text-align: right;}
 }
 		
 #news {}
-	ul#news li {padding-bottom: 5px; border-bottom: 1px solid #ccc; min-height: 29px;}
+
+	ul#news li {padding-top: 5px; padding-bottom: 10px; border-bottom: 1px solid #ccc; min-height: 29px;}
+        ul#news h4 {padding-bottom: 5px; }
 		ul#news li.last {border: 0;}
 		ul#news li div.date {
 			float: left; font-size: 122%; color: #3885B4;
