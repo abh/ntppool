@@ -14,8 +14,8 @@ sub render {
 
   alarm(10);
 
-  $res->tcp_timeout(3);
-  $res->udp_timeout(3);
+  $res->tcp_timeout(2);
+  $res->udp_timeout(2);
 
   $res->nameserver('ns1.us.bitnames.com', 'ns2.us.bitnames.com');
 
@@ -52,7 +52,7 @@ sub render {
   for my $ns (sort keys %servers) {
     if (my $socket = $servers{$ns}->{soa_socket}) {
       my $packet = $res->bgread($socket);
-      my ($soa) = grep { $_->type eq 'SOA' } $packet->answer;
+      my ($soa) = $packet && grep { $_->type eq 'SOA' } $packet->answer;
       delete $servers{$ns}->{soa_socket};
       $servers{$ns}->{serial} = $soa && $soa->serial;
     }
@@ -60,7 +60,7 @@ sub render {
     for my $f (qw(version status)) {
       if (my $socket = $servers{$ns}->{"${f}_socket"}) {
         my $packet = $res->bgread($socket);
-        my ($txt) = grep { $_->type eq 'TXT' } $packet->answer;
+        my ($txt) = $packet && grep { $_->type eq 'TXT' } $packet->answer;
         delete $servers{$ns}->{"${f}_socket"};
         $servers{$ns}->{$f} = $txt && $txt->rdatastr;
        }
