@@ -77,6 +77,11 @@ sub score {
 
 sub admin { shift->user(@_) }
 
+sub url {
+    my $self = shift;
+    return '/scores/' . $self->ip;
+}
+
 sub urls {
     my $urls = shift->server_urls;
     return unless $urls and @$urls;

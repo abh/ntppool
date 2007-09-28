@@ -1,7 +1,7 @@
 package NTPPool::Control::Scores;
 use strict;
 use base qw(NTPPool::Control);
-use Apache::Constants qw(OK);
+use Apache::Constants qw(OK DECLINED);
 use NP::Model;
 use Imager ();
 use List::Util qw(min);
@@ -33,6 +33,14 @@ sub render {
               $limit = 50 unless $limit and $limit !~ m/\D/;
               $limit = 5000 if $limit > 5000;
               return OK, $server->log_scores_csv($limit), 'text/plain';
+          }
+          elsif ($mode eq 'rrd') {
+              my $path = sprintf "%s/rrd/server/%i.rrd", $ENV{CBROOTLOCAL}, $server->id;
+              my $fh;
+              open $fh, $path or warn "Could not open $path: $!" and return 403;
+              $self->request->header_out('Content-disposition', sprintf('attachment; filename=%s.rrd', $server->ip));
+              $self->r->update_mtime((stat($fh))[9]);
+              return OK, $fh, 'application/octet-stream';
           }
           return OK, $self->history_sparkline_png($server), 'image/png'
              if $mode eq 'spark';
