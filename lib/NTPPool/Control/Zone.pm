@@ -54,7 +54,8 @@ sub show_servers {
 sub render {
   my $self = shift;
   my $zone_name = $self->zone_name;
-  my ($zone) = NP::Model->zone->fetch(name => $zone_name) or return 404;
+  my $zone = NP::Model->zone->fetch(name => $zone_name);
+  return 404 unless $zone;
   $self->tpl_param('zone' => $zone);
 
   $self->tpl_param('is_logged_in' => $self->show_servers_access );
