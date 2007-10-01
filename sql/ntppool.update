@@ -266,6 +266,8 @@ alter table zone_server_counts
    add    `netspeed_active` int unsigned not null
 ;
 
+#35
+alter table servers add key (score_ts);
 
 
 
