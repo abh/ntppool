@@ -54,7 +54,7 @@
 <div class="block">
 	<a name="news"></a>
         <h3>News</h3>
-        <p>(<a href="http://news.ntppool.org/">Subscribe to the news feed</a>)</p>
+        <p>(<a href="http://news.ntppool.org/atom.xml">Subscribe to the news feed</a>)</p>
 
 	<ul id="news">
 
