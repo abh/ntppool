@@ -54,7 +54,11 @@
 <div class="block">
 	<a name="news"></a>
         <h3>News</h3>
-        <p>(<a href="http://news.ntppool.org/atom.xml">Subscribe to the news feed</a>)</p>
+        <p>
+
+<a href="http://news.ntppool.org/atom.xml" rel="alternate" type="application/rss+xml"><img src="[% combust.static_url('/images/feed-icon16x16.png') %]" alt="" style="vertical-align:middle;border:0"/></a>&nbsp;<a href="http://news.ntppool.org/atom.xml" rel="alternate" type="application/rss+xml">Subscribe in a reader</a>
+
+<a href="http://feeds.feedburner.com/ntppool"><img valign="top" src="http://feeds.feedburner.com/~fc/ntppool?bg=FFFFFF&amp;fg=444444&amp;anim=0" height="26" width="88" style="border:0" alt="" /></a></p>
 
 	<ul id="news">
 
