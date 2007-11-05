@@ -7,7 +7,7 @@
 
 # Maybe we should rewrite this in Perl ... oh well.
 
-DOCROOT=$CBROOTLOCAL/docs/ntppool/st/
+DOCROOT=$CBROOTLOCAL/docs/ntppool/static/
 WORKDIR=`$CBROOT/bin/cbconfig work_path`
 
 if [ ! -d $DOCROOT ]; then
@@ -44,8 +44,8 @@ done
 
 for FO in `find $DOCROOT -name \*.js -or -name \*.html -or -name \*.css`; do
   # 
-  STAT_GZIP=`stat -c="%Y" $FO.gzip 2> /dev/null`
-  STAT_ORIG=`stat -c="%Y" $FO`
+  STAT_GZIP=`perl -e 'print scalar ((stat(shift))[9])' $FO.gzip 2> /dev/null`
+  STAT_ORIG=`perl -e 'print scalar ((stat(shift))[9])' $FO`
   if [ "x$STAT_GZIP" != "x$STAT_ORIG" ]; then
     compress $FO
   fi
