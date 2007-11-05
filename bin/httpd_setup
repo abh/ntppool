@@ -5,5 +5,6 @@ eval 'exec $CBROOT/bin/perl $0 ${1+"$@"}'
 use strict;
 use warnings;
 
-system("$ENV{CBROOTLOCAL}/bin/deploy/static_version_cache");
+# we run this in a deployment script ...
+#system("$ENV{CBROOTLOCAL}/bin/deploy/compress_static_files");
 

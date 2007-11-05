@@ -75,12 +75,6 @@
        PerlHandler NTPPool::Control::Error->super
     </Location>
 
-    <Location /st/>
-      ErrorDocument 404 "File not found
-      SetHandler perl-script
-      PerlHandler NTPPool::Control::Static->super
-    </Location>
-
     <Location /server-status>
       SetHandler server-status
     </Location>

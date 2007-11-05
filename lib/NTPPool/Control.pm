@@ -6,7 +6,7 @@ use base qw(Class::Accessor::Class);
 use HTML::Prototype;
 use Carp qw(cluck);
 use Storable qw(retrieve);
-use List::Util qw(max);
+use Combust::StaticFiles qw(-force :all);
 
 $Combust::Control::Bitcard::cookie_name = 'npuid';
 
@@ -88,55 +88,6 @@ sub count_by_continent {
     push @zones, $total;
     \@zones
 }
-
-my $static_directory = $ENV{CBROOTLOCAL} . '/docs/ntppool/st';  
-my $static_files = eval { retrieve("${static_directory}/.versions.store") }
-or die "bin/deploy/static_version_cache not yet run: $@";
-
-sub static_base {
-    my ($class, $site) = @_;
-    my $base = $config->site->{$site} && $config->site->{$site}->{static_base};
-    $base ||= '/st';
-    $base =~ s!/$!!;
-    $base;
-}
-
-my $startup_time = time;
-
-sub static_url {
-    my ($self, $file) = @_;
-    $file or cluck "no filename specified to static_url" and return "";
-    $file = "/$file" unless $file =~ m!^/!;
-    my $regexp = qr/(\.(js|css|gif|png|jpg|ico))$/;
-    if ($file =~ m/$regexp/) {
-        my $version;
-        if ($self->deployment_mode eq 'devel') {
-            $version = max($startup_time, (stat("${static_directory}$file"))[9]);
-        }
-        else {
-            $version = $static_files->{$file};
-        }
-
-        $file =~ s!$regexp!.v$version$1! if $version;
-    }
-
-    return $self->tpl_config->{static_base} . $file;
-}
-
-__PACKAGE__->mk_class_accessors("tpl_config_cache");
-__PACKAGE__->tpl_config_cache({});
-
-sub tpl_config {
-    my $self = shift;
-    my $site = $self->site;
-    my $tpl_config = $self->tpl_config_cache->{$site};
-    return $tpl_config if $tpl_config;
-    $tpl_config = { static_base     => __PACKAGE__->static_base($site),
-                };
-    $self->tpl_config_cache->{$site} = $tpl_config;
-}
-
-
 
 package NTPPool::Control::Basic;
 use base qw(NTPPool::Control Combust::Control::Basic);
