@@ -3,6 +3,10 @@ use strict;
 use Text::CSV_XS;
 use File::Path qw(mkpath);
 use Carp qw(croak);
+
+use POSIX qw();
+$ENV{TZ} = 'UTC';   
+POSIX::tzset();
  
 sub insert {
     my $self = shift;
