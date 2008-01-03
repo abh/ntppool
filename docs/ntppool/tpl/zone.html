@@ -46,15 +46,13 @@
 
 	There are not enough servers in this zone, so we recommend you use the [% parent.description %] zone ([% parent.fqdn %]):
 
+	</p>
+
 	<pre>[% FOR i = [0..max_zone_number] %]
 	   server [% i %].[% parent.fqdn %]
 	[%- END %]
 	</pre>
 
-	</p>
-
-
-	</p>
 	[% END %]
 
 	<p>
@@ -104,9 +102,11 @@
 	<p>
 	<table class="servertable">
 	[% FOR server = servers %]
-	<tr>
+	<tr [% server.deleted ? 'class="deleted_server"' : '' %]>
 	<!-- <td>[% server.id %]</td> -->
-	<td><a href="/scores/[% server.ip %]">[% server.ip %]</a></td>
+	<td>
+          <a href="/scores/[% server.ip %]">[% server.ip %]</a>
+        </td>
 	<td>[% server.hostname %]</td>
 	<td>[% server.score %]</td>
 	<td>[% server.stratum %]</td>

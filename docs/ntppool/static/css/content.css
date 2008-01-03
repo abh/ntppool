@@ -116,6 +116,11 @@ table.servertable {
 	margin: 5px 0;
 }
 
+tr.deleted_server {
+   text-decoration: line-through;
+}
+
+
 /* misc.prev */
 .graph_explanation {
   display: none;
