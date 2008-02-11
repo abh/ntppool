@@ -360,7 +360,7 @@ elsif ($cmd eq "scores") {
                 my $trans_dest = $pkt{'Transmit Timestamp'} - $time_then;
                 $offset = ($recv_org + $trans_dest) / 2;
                 my $offset_abs = abs($offset);
-                if ($offset_abs > 3 or $pkt{Stratum} > 5) {
+                if ($offset_abs > 3 or $pkt{Stratum} >= 8) {
                     $step = -4;
                 }
                 elsif ($offset_abs > 1.5) {
