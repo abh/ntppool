@@ -363,11 +363,11 @@ elsif ($cmd eq "scores") {
                 if ($offset_abs > 3 or $pkt{Stratum} >= 8) {
                     $step = -4;
                 }
-                elsif ($offset_abs > 1.5) {
+                elsif ($offset_abs > 0.75) {
                     $step = -2;
                 }
                 elsif ($offset_abs > 0.075) {
-                    $step = -2 * $offset_abs + 1;
+                    $step = -4 * $offset_abs + 1;
                 }
                 else {
                     $step = 1;
