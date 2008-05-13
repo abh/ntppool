@@ -27,10 +27,11 @@ helpful.
 CPAN modules needed are listed in the Bundle::NP file,
    perldoc lib/Bundle/NP.pm
 
+   (The NTP Pool code is spread over NTPPool::* and NP::* ...)
+
 DIR=~/ntppool
 mkdir $DIR; cd $DIR
 svn co https://svn.develooper.com/project/ntppool/trunk .
-svn co https://svn.develooper.com/combust/trunk combust
 
 export CBROOTLOCAL=$DIR
 export CBROOT=$DIR/combust
@@ -46,7 +47,8 @@ mkdir -p $DIR/rrd/zone/graph
 
 $CBROOT/bin/cmysql ntppool < sql/tables.sql
 $CBROOT/bin/cmysql ntppool < sql/zones.sql
-
+$CBROOT/bin/database_update ntppool
+$CBROOT/bin/database_update ntppool
 
 $CBROOT/bin/run_httpd
 

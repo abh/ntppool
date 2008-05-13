@@ -1,0 +1,141 @@
+[% page.title = "Informations pour les fournisseurs" %]
+
+<div class="block">
+    
+<h1>pool.ntp.org pour les fournisseurs</h1>
+
+<h2>Sommaire</h2>
+<ul class="bullet">
+<li><a href="#audience">À qui s'adresse ce document ?</a></li>
+<li><a href="#why-sync-time">Pourquoi utiliser NTP ?</a></li>
+<li><a href="#basic-guidelines">Règles de base</a></li>
+<li><a href="#ntp-pool-offer">Ce que pool.ntp.org peut offrir</a></li>
+<li><a href="#vendor-zone">Obtenir une zone fournisseur</a></li>
+<li><a href="#pool-capacity">Capacité du projet</a></li>
+<li><a href="#open-source">Pour les projets Open Source</a></li>
+<li><a href="#faq">Foire aux questions</a></li>
+</ul>
+
+<a name="audience"></a>
+<h2>À qui s'adresse ce document ?</h2>
+
+<p>
+Toute personne ou groupe distribuant un périphérique, un système d'exploitation ou tout autre logiciel utilisant NTP.
+</p>
+<ul class="bullet">
+<li>Constructueurs de matériel (Netgear, D-Link, Linksys, ...)</li>
+<li>Fournisseurs de système d'exploitation (Debian, RedHat, FreeBSD, m0n0wall, ...)</li>
+<li>Fournisseurs de logiciel</li>
+</ul>
+
+<a name="why-sync-time"></a>
+<h2>Pourquoi utiliser NTP ?</h2>
+<p>
+Extrait de <a href="http://www.ntp.org/ntpfaq/NTP-s-def.htm">What is NTP?</a>, provenant de ntp.org.
+
+</p>
+<blockquote>
+<p>Généralement, le temps ne fait qu'avancer. Si vous avez des programmes qui communiquent entre eux sur différents ordinateurs, le temps devrait toujours avancer si vous passez d'un ordinateur à l'autre. Évidemment, si un système qui est en avance par rapport aux autres, les autres sont en retard par rapport à lui. Pour un observateur extérieur, passer d'un système à l'autre parmi ceux-ci peut faire avancer ou reculer le temps, ce qui n'est pas désirable</p>
+
+<p>En conséquence, des réseaux isolés peuvent avoir une heure décalée sans problème, mais dès que vous vous connectez à Internet, les effets deviennent visibles. Imaginez simplement qu'un courriel arrive cinq minutes avant d'avoir été envoyé, et qu'il y a même eu une réponse deux minutes avant qu'il aie été envoyé !</p>
+
+<p>Même sur un unique ordinateur, certaines applications ont des problèmes lorsque l'horloge retourne en arrière. Par exemple, les systèmes de bases de données utilisant les transactions et la récupération d'erreurs ont besoin de savoir l'heure du dernier bon état.</p>
+
+<p>Ainsi, le contrôle du trafic aérien a été l'une des première application de NTP.</p>
+
+</blockquote>
+
+<a name="basic-guidelines"></a>
+
+<h2>Règles de base</h2>
+
+<p>NTP est un service qui tourne en arrière-plan en silence. Quand des serveurs sont choisis, ils restent généralement dans la configuration « pour toujours ». Si le trafic du client est source de problèmes pour le serveur, il est très difficile de diminuer l'impact de ce trafic si cela n'a pas été planifié à l'avance.
+</p>
+
+<p>
+Deux exemples récents illustrent ce problème : <a href="http://www.cs.wisc.edu/~plonka/netgear-sntp/">des routeurs avec une faille inondent le serveur de temps de l'Université du Wisconsin</a> en 2003 et l'<a href="http://people.freebsd.org/~phk/dlink/">incident concernant la mauvaise configuration de routeurs D-Link</a> en 2006.
+</p>
+
+<p>Vous devez obtenir l'accord de l'administrateur d'un serveur avant de coder en dur des adresses IP ou des noms d'hôts. Cet accord est facile à obtenir si votre propre organisation possède des serveurs NTP que vous pensez utiliser. Dans la plupart des autres cas, vous n'obtiendrez pas cet accord.
+</p>
+
+<p>N'utilisez pas les alias <b>pool.ntp.org</b> pour la configuration par défaut de votre système. Le projet pool.ntp.org peut vous offrir un service adapté à vos besoins, mais il doit être planifié à l'avance (voir ci-dessous).
+</p>
+
+<p>
+Typiquement, la meilleure solution est que votre organisation configure son propre ensemble de serveurs NTP (ntp1.example.com, ntp2.example.com et ntp3.example.com par exemple) et que ceux-ci soient les serveurs utilisés par défaut dans votre configuration.
+</p>
+
+<a name="ntp-pool-offer"></a>
+<h2>Ce que pool.ntp.org peut offrir</h2>
+
+<p>Le projet pool.ntp.org a été démarré en 2003 en réponse à la rapide croissance de la consommation des ressources de serveurs NTP populaires et à la fermeture de ces serveurs en raison de cette croissance. Le projet a grandi jusqu'à être aujourd'hui central dans le fonctionnement de millions de systèmes dans le monde.
+</p>
+
+<p>
+Au lieu de créer et de maintenir votre propre ensenbme de serveurs NTP ou de négocier de manière individuelle avec des administrateurs de serveur, vous pouvez utiliser pool.ntp.org.
+</p>
+
+<p>L'utilisation de pool.ntp.org est généralement gratuite. Si vous avez un très grand nombre de clients, il est possible que nous demandions une contribution pour aider au passage à l'échelle de pool.ntp.org afin de répondre à la demande.
+</p>
+
+
+<a name="vendor-zone"></a>
+<h3>Obtenir une zone fournisseur</h3>
+
+<p>Pour vous permettre d'utiliser pool.ntp.org comme service de temps par défaut dans votre application, nous allons vous fournir des noms d'hôte spécifiques, comme par exemple : <tt>1.fournisseur.pool.ntp.org</tt>, <tt>2.fournisseur.pool.ntp.org</tt> et <tt>3.fournisseur.pool.ntp.org</tt>.</p>
+	
+<p>
+Vous devez absolument ne pas utiliser les noms de zone par défaut de pool.ntp.org comme configuration par défaut dans votre application ou dans votre périphérique.
+</p>
+
+<p>Pour que vos noms d'hôte soient configurés, veuillez contacter <a href="mailto:ask@develooper.com">ask@develooper.com</a> et précisez une grossière estimation du nombre de systèmes qui utiliseront pool.ntp.org. « Moins de 1000 », « plus de 100000 » ou « des millions » est suffisamment précis.
+</p>
+
+<p>
+Si vous avez une implémentation open source de ntpd ou un système d'exploitation utilisant ntpd, nous vous demandons d'inclure une référence dans le fichier de configuration ou dans la documentation pour encourager les gens à <a href="/join.html">Rejoindre le projet</a>.
+</p>
+
+<a name="pool-capacity"></a>
+<h3>Capacité du projet</h3>
+<p>Le projet pool.ntp.org permet à entre 2 et 6 millions de systèmes de garder une heure précise.</p>
+<p>Grâce à notre technologie et à notre expertise, nous pouvons augmenter de manière très importante le nombre de systèmes supportés, avec des contributions relativement modestes.</p>
+
+<h3>Détails d'implémentation</h3>
+<p>
+Vous pouvez choisir d'implémenter soit un serveur ntpd complet, soit une implémentation SNTP, plus simple. Quelques autres points et règles de base :
+</p>
+	<ul class="bullet">
+		<li>N'utilisez que les noms d'hôtes pool.ntp.org que l'on vous a accordés (généralement, {0,1,2,3}.{fournisseur}.pool.ntp.org).</li>
+		<li>Implémentez la gestion des réponses « KoD ».</li>
+		<li>N'envoyez pas des requêtes de manière excessivement fréquente. Un intervalle raisonnable entre les requêtes varie entre une ou deux fois par jour et 4 à 5 fois par heure, en fonction de l'application.</li>
+  <li>Faites en sorte que vos périphériques interrogent les serveurs NTP à des moments aléatoires de la journée. Par exemple, une fréquence de toutes les 43200 secondes depuis le démarrage est bonne, alors que minuit chaque jour est un mauvais choix.</li>
+  <li>Lisez la <a href="http://www.faqs.org/rfc/rfc4330.txt">nouvelle RFC SNTP</a> si vous implémentez un client SNTP.</li>
+	</ul>
+
+<p>	
+Nous pouvons vous mettre en contact avec des consultants possédant une grande expertise du protocole NTP et des applications visant à garder une horloge à l'heure. Pour cela, vous pouvez contacter Ask Bjørn Hansen, à l'adresse <a href="mailto:ask@develooper.com">ask@develooper.com</a>.
+</p>
+
+<a name="open-source"></a>
+<h2>Projets Open Source</h2>
+<p>
+Les projets Open Source sont bien entendu les bienvenus pour l'utilisation de pool.ntp.org dans leur configuration par défaut. Nous vous demandons cependant de demander et d'utiliser une <a href="#vendor-zone">zone fournisseur</a> lorsque vous utilisez pool.ntp.org dans la configuration par défaut.
+</p>
+
+<a name="faq"></a>
+<h2>FAQ pour les fournisseurs</h2>
+
+<p>
+La majorité des questions devrait trouver une réponse dans les informations ci-dessus. Voici quelques questions supplémentaires qui n'ont pas été couvertes.
+</p>
+
+<dl id="faq">
+
+<dt>Pourquoi utiliser des noms d'hôte spécifiques pour les fournisseurs ?</dt>
+
+<dd>Les noms d'hôte spécifiques nous permettent un minimum de contrôle sur le trafic, ce qui permet d'optimiser la distribution de la charge et d'envoyer les clients vers les serveurs les plus appropriés. Cela peut aussi servir dans le cas de problèmes avec des segments de la population des clients. (Voir les liens dans la partie sur les <a href="#basic-guidelines">règles de base</a>).</dd>
+
+</dl>
+
+</div>

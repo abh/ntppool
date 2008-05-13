@@ -7,8 +7,14 @@ use HTML::Prototype;
 use Carp qw(cluck);
 use Storable qw(retrieve);
 use Combust::StaticFiles qw(-force :all);
+use I18N::LangTags qw(implicate_supers);
+use I18N::LangTags::Detect ();
+use List::Util qw(first);
 
 $Combust::Control::Bitcard::cookie_name = 'npuid';
+
+our %valid_languages = map { $_ => 1 }
+  qw(en fr da);
 
 my $config = Combust::Config->new;
 
@@ -19,7 +25,7 @@ sub prototype {
 
 sub init {
   my $self = shift;
-  
+
   if ($self->req_param('sig') or $self->req_param('bc_id')) {
     my $bc = $self->bitcard;
     my $bc_user = eval { $bc->verify($self->r) };
@@ -57,6 +63,8 @@ sub init {
       $self->r->user( $self->user->username );
   }
 
+  my @lang = $self->language;
+
   return OK;
 }
 
@@ -75,6 +83,50 @@ sub bc_info_required {
     'username,email';
 }
 
+sub get_include_path {
+    my $self = shift;
+    my $path = $self->SUPER::get_include_path;
+    my $language = $self->language;
+    if ($language) {
+        unshift @$path, $path->[0] . "$language/";
+    }
+    $path;
+}
+
+# TODO: make this actually return a list of possible languages rather
+# than just one
+sub languages {
+    my $self = shift;
+    return $self->{_lang} if $self->{_lang}; 
+    my $language = first { $valid_languages{$_} } $self->detect_languages;
+    return $self->{_lang} = $language || 'en';
+}
+
+
+sub detect_languages {
+    my $self = shift;
+
+    my $path_language = $self->request->notes('lang');
+    if ($path_language) {
+        $self->cookie('lang', $path_language);
+        return $path_language;
+    }
+
+    my $lang_cookie = $self->cookie('lang');
+    return $lang_cookie if $lang_cookie;
+
+    $ENV{REQUEST_METHOD}       = $self->request->method;
+    $ENV{HTTP_ACCEPT_LANGUAGE} = $self->request->header_in('Accept-Language') || '';
+    my @lang = implicate_supers( I18N::LangTags::Detect::detect() );
+    @lang;
+}
+
+*loc = \&localize;
+sub localize {
+    my $self = shift;
+    my $lang = $self->languages;
+}
+
 sub count_by_continent {
     my $self = shift;
     my $global = NP::Model->zone->fetch(name => '@');
@@ -91,6 +143,12 @@ sub count_by_continent {
 
 package NTPPool::Control::Basic;
 use base qw(NTPPool::Control Combust::Control::Basic);
+
+sub render {
+    my $self = shift;
+    $self->force_template_processing(1) if $self->request->uri =~ m!^/robots.txt$!;
+    return $self->SUPER::render(@_);
+}
 
 sub servers_with_urls {
     my $self = shift;

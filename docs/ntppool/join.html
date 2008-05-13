@@ -31,8 +31,9 @@
 	be deployed over the next month or two.
 	</p>
 	<p>
-	Here are a few servers with traffic/load graphs: [% i = 0; FOR server = combust.servers_with_urls; %]
-	<a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
+	Here are a few servers with traffic/load graphs:
+	[% i = 0; FOR server = combust.servers_with_urls; %]
+	   <a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
 	[% END %]
 	</p>
 

@@ -1,0 +1,59 @@
+[% page.title = "rejoindre le projet" %]
+
+
+<h2><a name="join">Comment puis-je rejoindre pool.ntp.org ?</a></h2>
+
+<p>
+Tout d'abord : merci pour l'intérêt que vous portez au projet ! L'utilisation de pool.ntp.org a beaucoup augmenté et la seule façon pour que chacun puisse continuer à mettre à disposition un serveur est de toujours augmenter le nombre de serveurs qui participent à pool.ntp.org.
+</p>
+
+<p>
+Votre ordinateur <b>doit avoir une adresse IP statique</b> and une connexion à Internet permanente. Il est très important que votre adresse IP ne change pas, ou alors très rarement (moins d'une fois par an en moyenne). La bande passante nécessaire est peu importante. Chaque client ne vous enverra que quelques paquets UDP avec une fréquence variant de quelques minutes à 20 minutes.
+</p>
+
+<p>
+Actuellement, la plupart des serveurs reçoivent entre 5 et 15 paquets NTP par seconde avec quelques pics par jour à 60-120 paquets par seconde. C'est à peu près équivalent à 10-15Kbit/sec avec des pics à 50-120Kbit/sec. De nouveaux serveurs de temps rejoignent constamment le projet, donc la charge pour chaque serveur ne devrait pas augmenter sensiblement. Depuis fin 2006, la charge de la plupart des serveurs a cependant augmenter régulièrement, donc nous avons vraiment besoin de votre aide !
+</p>
+
+<p>
+Voici des graphiques du trafic et de la charge de quelques serveurs : 
+[% i = 0; FOR server = combust.servers_with_urls; %]
+   <a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
+[% END %]
+</p>
+
+<p>
+Les serveurs rejoignant le projet ne doivent pas avoir <tt>pool.ntp.org</tt> comme serveur(s) parent(s), mais doivent être configurés manuellement sur quelques <a href="http://ntp.isc.org/bin/view/Servers/StratumTwoTimeServers">bon serveurs</a> (ces serveurs <b>peuvent</b> être choisis parmi ceux de projet ; ce qui est important est qu'ils soient choisis de manière statique et non pas assignés au hasard à chaque redémarrage du serveur ; cela aide à offire une qualité de service acceptable). Notez qu'il n'est pas requis que votre serveur soit de strate 1 ou 2 : comme le projet se concentre plus sur la distribution de la charge, il n'y a aucune raison qu'un strate 3 ou même un strate 4 ne puisse pas joindre le projet.
+</p>
+
+<p>
+Nous avons une page avec des <a href="/join/configuration.html">recommendations de configuration</a> pour les serveurs rejoignant le projet.
+</p>
+
+<p>Enfin, nous insistons sur le fait que rejoindre le projet est un <b>engagement à long terme</b>. Nous supprimerons vos serveurs du projet sans problème si les circonstances l'exigent, mais en raison du fonctionnement des clients ntp, <b>cela peut prendre des semaines, voire des mois avant que le trafic ne s'arrête</b>.
+</p>
+
+<p>
+Si vous êtes toujours intéressé, vous pouvez vous connecter sur la page de <a href="http://www.pool.ntp.org/manage">gestion des serveurs</a> et demander à ce que votre serveur soit ajouté. En cas de problème avec l'interface, veuillez contacter <a href="mailto:ask@develooper.com">Ask</a>.
+</p>
+
+<p>
+Nous vous demandons aussi de bien vouloir vous abonner à la liste de diffusion <a href="mailto:timekeepers-announce-request@fortytwo.ch?subject=subscribe" >timekeepers-announce@fortytwo.ch</a> afin que vous restiez informés des derniers développements (il y a généralement pas plus d'un message par mois).
+</p>
+<p>
+Il serait bien (mais ce n'est pas nécessaire) si vous pouviez rediriger les requêtes web sur le port 80 de votre serveur de temps vers la page web officiel du projet à <tt>http://www.pool.ntp.org</tt>. Si vous utilisez Apache, vous pouvez insérer ceci dans votre configuration :
+</p>
+<pre style="background-color:#e0e0e0;">
+&lt;VirtualHost *:80&gt;
+    ServerName pool.ntp.org
+    ServerAlias *.pool.ntp.org
+    Redirect permanent / http://www.pool.ntp.org/
+&lt;/VirtualHost&gt;
+</pre>
+<p>
+Encore une fois, ce n'est que si vous faites déjà tourner un serveur web. La page web officielle du projet est toujours indiquée avec le préfixe 'www', mais parfois les gens sont paresseux et tapent simplement <tt>pool.ntp.org</tt> et sont alors surpris d'arriver sur une quelconque page web.
+</p>
+
+<p>
+Une fois le serveur ajouté au pool, la qualité de celui-ci sera constamment surveillée à l'aide d'un algorithme d'évaluation décrit dans <a href="https://fortytwo.ch/mailman/pipermail/timekeepers-announce/2003/000006.html">ce courriel</a>. Vous pouvez observer les performances de votre serveur en utilisant l'<a href="./scores/">interface web</a> ou la <a href="http://www.pool.ntp.org/manage">page de gestion</a>.
+</p>

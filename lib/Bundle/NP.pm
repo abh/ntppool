@@ -111,6 +111,12 @@ Locale::Object
 
 Time::Duration
 
+Geo::IP
+
+I18N::LangTags
+Locale::Maketext
+Locale::Maketext::Lexicon
+
 
 
 
