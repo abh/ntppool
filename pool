@@ -20,7 +20,7 @@ use Email::Simple;
 use Email::Date;
 use Email::Send 'SMTP';
 
-my $gi = Geo::IP->new(GEOIP_STANDARD);
+my $geo_ip = eval "Geo::IP->new(GEOIP_STANDARD)";
 
 use NP::Model;
 
@@ -86,8 +86,7 @@ sub server_information {
       $server->admin->email; 
     push @r, sprintf "score: %.1f, in pool: %i, in server list: %i\n", $server->score, $server->in_pool, $server->in_server_list;
     push @r, "Hostname: " . $server->hostname . "\n";
-    my $gi = Geo::IP->new(GEOIP_STANDARD);
-    my $country = $gi->country_code_by_addr($server->ip);
+    my $country = $geo_ip->country_code_by_addr($server->ip);
     $country = lc $country if $country;
     push @r, "Country: $country  -  " if $country;
     push @r, "Netspeed: " . $server->netspeed . "\n";
