@@ -9,9 +9,7 @@ use Geo::IP;
 use Email::Send 'SMTP';
 use Sys::Hostname qw(hostname);
 use Email::Date qw();
-use JSON qw();
-
-my $json = JSON->new();
+use JSON::XS qw(encode_json);
 
 sub render {
     my $self = shift;
@@ -127,8 +125,8 @@ sub get_server_info {
 
     $server{ntp} = \%ntp;
 
-    my $geo_ip = Geo::IP->new(GEOIP_STANDARD);
-    my $country = $geo_ip->country_code_by_addr($server{ip}) || '';
+    my $geo_ip = eval "Geo::IP->new(GEOIP_STANDARD)";
+    my $country = $geo_ip && $geo_ip->country_code_by_addr($server{ip}) || '';
     $country = 'UK' if $country eq 'GB';
     warn "Country: $country\n";
     my $country_zone = NP::Model->zone->fetch(name => $country);
@@ -194,7 +192,7 @@ sub handle_update_netspeed {
 
     #warn Data::Dumper->Dump([\$return],[qw(return)]);
     
-    return OK, $json->objToJson($return);
+    return OK, encode_json($return);
 
 }
 
