@@ -2,7 +2,10 @@ package NTPPool::Control;
 use strict;
 use Apache::Constants qw(OK);
 use base qw(Combust::Control Combust::Control::Bitcard);
+
+use Class::Accessor::Class;
 use base qw(Class::Accessor::Class);
+
 use HTML::Prototype;
 use Carp qw(cluck);
 use Storable qw(retrieve);
@@ -63,7 +66,7 @@ sub init {
       $self->r->user( $self->user->username );
   }
 
-  my @lang = $self->language;
+  my @lang = $self->languages;
 
   return OK;
 }
@@ -86,7 +89,7 @@ sub bc_info_required {
 sub get_include_path {
     my $self = shift;
     my $path = $self->SUPER::get_include_path;
-    my $language = $self->language;
+    my ($language) = $self->languages;
     if ($language) {
         unshift @$path, $path->[0] . "$language/";
     }
