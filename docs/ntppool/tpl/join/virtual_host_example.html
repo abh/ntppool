@@ -1,0 +1,7 @@
+    <pre class="code">
+    &lt;VirtualHost *:80&gt;
+       ServerName pool.ntp.org
+       ServerAlias *.pool.ntp.org *.ntppool.org
+       Redirect permanent / http://www.pool.ntp.org/
+    &lt;/VirtualHost&gt;
+</pre>

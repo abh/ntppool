@@ -43,13 +43,9 @@ Nous vous demandons aussi de bien vouloir vous abonner à la liste de diffusion 
 <p>
 Il serait bien (mais ce n'est pas nécessaire) si vous pouviez rediriger les requêtes web sur le port 80 de votre serveur de temps vers la page web officiel du projet à <tt>http://www.pool.ntp.org</tt>. Si vous utilisez Apache, vous pouvez insérer ceci dans votre configuration :
 </p>
-<pre style="background-color:#e0e0e0;">
-&lt;VirtualHost *:80&gt;
-    ServerName pool.ntp.org
-    ServerAlias *.pool.ntp.org
-    Redirect permanent / http://www.pool.ntp.org/
-&lt;/VirtualHost&gt;
-</pre>
+
+[% PROCESS tpl/join/virtual_host_example.html %]
+
 <p>
 Encore une fois, ce n'est que si vous faites déjà tourner un serveur web. La page web officielle du projet est toujours indiquée avec le préfixe 'www', mais parfois les gens sont paresseux et tapent simplement <tt>pool.ntp.org</tt> et sont alors surpris d'arriver sur une quelconque page web.
 </p>

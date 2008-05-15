@@ -77,13 +77,10 @@
 	on port 80 of your time server to the official web page of the project at
 	<tt>http://www.pool.ntp.org</tt>. If you run Apache, you could do this with:
 	</p>
+
+[% PROCESS tpl/join/virtual_host_example.html %]
 	
-	<pre class="code">
-	&lt;VirtualHost *:80&gt;
-	    ServerName pool.ntp.org
-	    ServerAlias *.pool.ntp.org
-	    Redirect permanent / http://www.pool.ntp.org/
-	&lt;/VirtualHost&gt;</pre>
+
 	<p>
 	Again, this is only if you run a webserver anyway. The official project web 
 	page will always be given with the 'www' at the beginning - but sometimes
