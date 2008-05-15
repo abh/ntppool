@@ -37,7 +37,7 @@
 	<div id="bd">
 		<div id="yui-main">
 			<div class="yui-b">
-				[% PROCESS tpl/navigation.html %]
+				[% PROCESS tpl/navigation_topbar.html %]
 				<br class="clearboth"/>
 				[% content %]
 
@@ -45,31 +45,7 @@
 		</div>
 		<div id="sidebar" class="yui-b">
 			<h1><a href="/">pool.ntp.org</a></h1>
-
-			<div id="quickstart" class="mod">
-				<h3>Get Started... </h3>
-				<ol>
-				<li><a href="/#news">News</a></li>
-				<li><a href="/use.html">How do I <i>use</i> pool.ntp.org?</a></li>
-				<li><a href="/join.html">How do I <i>join</i> pool.ntp.org?</a></li>
-				<li><a href="/vendors.html">Information for vendors</a></li>
-				<li><a href="/mailinglists.html">The mailing lists</a></li>
-				<li><a href="/#links">Additional links</a></li>
-				</ol>
-			</div>
-
-			<h3>Translations</h3>
-			<ul id="translations" class="mod">
-				<li><a href="http://ntp.rondom.org/" title="dutch">nederlands</a></li>
-				<!--
-				<li><a href="http://ntp.robertkehl.de/" title="german">deutsch</a></li> 
-				<li><a href="http://pool.ntp.bitic.net/" title="spanish">español</a></li>
-				<li><a href="http://ntp.vuntz.net/" title="french">français</a></li>
-				-->
-			</ul>
-
-			
-
+                        [% PROCESS tpl/navigation_sidebar.html %]
 		</div>
 	</div>
 	<div id="ft">

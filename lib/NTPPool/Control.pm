@@ -16,8 +16,14 @@ use List::Util qw(first);
 
 $Combust::Control::Bitcard::cookie_name = 'npuid';
 
-our %valid_languages = map { $_ => 1 }
-  qw(en fr da);
+our %valid_languages = (
+                        en => { name => "English", },
+                        fr => { name => "Français", },
+                        nl => { name => "Nederlands", },
+                        da => { name => "Danish",
+                                testing => 1,
+                              },
+                       );
 
 my $config = Combust::Config->new;
 
@@ -90,10 +96,22 @@ sub get_include_path {
     my $self = shift;
     my $path = $self->SUPER::get_include_path;
     my ($language) = $self->languages;
-    if ($language) {
-        unshift @$path, $path->[0] . "$language/";
+
+    # Always use the 'en' file as last resort. Maybe this should come
+    # in before "shared" etc...
+    if ($language ne 'en') {
+        push @$path, $path->[0] . "en";
     }
+
+    # try the $language version first
+    unshift @$path, $path->[0] . "$language/";
+
     $path;
+}
+
+sub current_language {
+    my $self = shift;
+    return ($self->languages)[0];
 }
 
 # TODO: make this actually return a list of possible languages rather
@@ -105,6 +123,9 @@ sub languages {
     return $self->{_lang} = $language || 'en';
 }
 
+sub valid_languages {
+    \%NTPPool::Control::valid_languages;
+}
 
 sub detect_languages {
     my $self = shift;
