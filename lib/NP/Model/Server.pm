@@ -300,7 +300,7 @@ sub get_bad_servers_to_remove {
                       s.score_raw < 0
                        AND s.in_pool = 1
                        AND s.deletion_on IS NULL
-                       AND (sa.first_email_time < DATE_SUB(NOW(), INTERVAL 62 DAY))
+                       AND (sa.first_email_time < DATE_SUB(NOW(), INTERVAL 45 DAY))
                        AND (sa.last_email_time  < DATE_SUB(NOW(), INTERVAL 5 DAY))
                        AND (sa.last_score+10) >= s.score_raw
                   ]
