@@ -409,7 +409,7 @@ elsif ($cmd eq "zone") {
                     ttl    => $ttl,
                   };
 
-    my $www_record = { cname => 'x3.develooper.com',
+    my $www_record = { cname => 'ntppool.develooper.com',
                        ttl   => 7200,
                      };
 
