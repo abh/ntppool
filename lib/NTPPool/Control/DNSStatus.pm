@@ -34,9 +34,9 @@ sub render {
     }
   }
 
-  { my $name = 'ns1.eu.bitnames.com';
-    $servers{$name} = { name => $name };
-  }
+#  { my $name = 'ns1.eu.bitnames.com';
+#    $servers{$name} = { name => $name };
+#  }
             
   my $prim = 'ns3.rbl.bitnames.com';
 
