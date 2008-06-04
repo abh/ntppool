@@ -76,6 +76,11 @@
        PerlHandler NTPPool::Control::Error->super
     </Location>
 
+    <Location /static>
+      SetHandler perl-script
+      PerlHandler Combust::Control::Basic->super
+    </Location>
+
     <Location /server-status>
       SetHandler server-status
     </Location>
