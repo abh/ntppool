@@ -40,7 +40,9 @@ sub prototype {
 my $ctemplate;
 sub tt {
     $ctemplate ||= Combust::Template->new
-      ( filters => { l => [\&loc_filter, 1] }
+      ( filters => { l   => [\&loc_filter, 1],
+                     loc => [\&loc_filter, 1],
+                   }
       )
       or die "Could not initialize Combust::Template object: $Template::ERROR";
 }
