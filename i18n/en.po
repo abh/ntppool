@@ -1,0 +1,29 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "go up"
+msgstr "go up"
+
+# zone names
+msgid "Africa"
+msgstr "Africa"
+
+msgid "Asia"
+msgstr "Asia"
+
+msgid "North America"
+msgstr "North America"
+
+msgid "South America"
+msgstr "South America"
+
+msgid "Global"
+msgstr "Global"
+
+msgid "All Pool Servers"
+msgstr "All Pool Servers"
+
+
