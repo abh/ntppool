@@ -1,50 +1,43 @@
-[% page.title = "NTP Pool mailing lists" %]
+[% page.title = "NTP Pool mailing lists" | loc %]
 
 <div class="block">
-	<h1>NTP Pool mailing lists</h1>
+	<h1>[%|loc%]NTP Pool mailing lists[% END %]</h1>
 
 	<p>
-	   Currently, there are three mailing lists for the pool.ntp.org project. They are all <i>in English</i>.
+	   [%|l%]Currently, there are three mailing lists for the pool.ntp.org project. They are all <i>in English</i>.[% END %]
         </p>
         
-    <h2>Announcements</h2>
+    <h2>[% "Announcement list" | loc %]</h2>
 
-	<p> Very very low traffic announcements of NTP Pool news.  All server operators
-	should be subscribed to the announcement list.
+	<p>[%|l%]announcement_list_description[%END%]
 	<br/>
 	<a href="https://fortytwo.ch/mailman/cgi-bin/listinfo/timekeepers-announce">timekeepers-announce</a>
 	| <a href="mailto:timekeepers-announce-request@fortytwo.ch?subject=subscribe"
-	>subscribe</a>
+	>[% "subscribe" | l %]</a>
 	| <a href="http://fortytwo.ch/mailman/pipermail/timekeepers-announce/"
-	>archive</a>
+	>[% "archive" | loc %]</a>
 	</p>
 
-	<h2>Discussion</h2>
+	<h2>[%|l%]Discussion list[% END %]</h2>
 	<p>
-	Server operators (and users) who wish to be more involved in the project can subscribe
-	to the discussion list.<br/>
- 	Of course, general discussions about ntp should take place on the
-	<a href="news:comp.protocols.time.ntp">comp.protocols.time.ntp</a> Usenet
-	newsgroup (also on <a href="http://groups.google.com/group/comp.protocols.time.ntp">Google Groups</a>).<br/>
+	[% | l('<a href="news:comp.protocols.time.ntp">comp.protocols.time.ntp</a>', 'http://groups.google.com/group/comp.protocols.time.ntp') %]discussion_list_description[% END %]<br/>
 
 	<a href="https://fortytwo.ch/mailman/cgi-bin/listinfo/timekeepers">timekeepers</a>	
-	| <a href="mailto:timekeepers-request@fortytwo.ch?subject=subscribe">subscribe</a> 
-	| <a href="https://fortytwo.ch/mailman/pipermail/timekeepers/" >archive</a>
+	| <a href="mailto:timekeepers-request@fortytwo.ch?subject=subscribe">[% "subscribe" | l %]</a> 
+	| <a href="https://fortytwo.ch/mailman/pipermail/timekeepers/" >[% "archive" | loc %]</a>
 	</p>
 
-	<h2>Development </h2>
+	<h2>[%|l%]Development list[% END %]</h2>
 	<p>
-	More technical (and ideally always pragmatic) discussions about the current development
-	of the <a href="https://svn.develooper.com/projects/ntppool/trunk/">ntp pool code</a> and
-	<a href="http://geo.bitnames.com/">pgeodns</a> happens on the timekeepers-dev list.<br/>
+          [% | l('https://svn.develooper.com/projects/ntppool/trunk/', 'http://geo.bitnames.com/') %]development_list_description[% END %]<br/>
  	<a
 	href="https://fortytwo.ch/mailman/cgi-bin/listinfo/timekeepers-dev"
 	>timekeepers-dev</a>
 	| <a
 	href="mailto:timekeepers-dev-request@fortytwo.ch?subject=subscribe"
-	>subscribe</a>
+	>[% "subscribe" | l %]</a>
 	| <a
-	href="https://fortytwo.ch/mailman/pipermail/timekeepers-dev">archive</a>
+	href="https://fortytwo.ch/mailman/pipermail/timekeepers-dev">[% "archive" | loc %]</a>
 	</p>
 
 </div>

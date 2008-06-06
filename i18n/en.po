@@ -26,4 +26,31 @@ msgstr "Global"
 msgid "All Pool Servers"
 msgstr "All Pool Servers"
 
+# mailinglists.html
+msgid  "NTP Pool mailing lists"
+msgstr "NTP Pool mailing lists"
+
+msgid  "subscribe"
+msgstr "subscribe"
+
+msgid  "archive"
+msgstr "archive"
+
+msgid  "Announcement list"
+msgstr "Announcement list"
+
+msgid  "Discussion list"
+msgstr "Discussion list"
+
+msgid  "Development list"
+msgstr "Development list"
+
+msgid  "announcement_list_description"
+msgstr "Very very low traffic announcements of NTP Pool news.  All server operators should be subscribed to the announcement list."
+
+msgid  "discussion_list_description"
+msgstr "Server operators (and users) who wish to be more involved in the project can subscribe to the discussion list.<br/> Of course, general discussions about ntp should take place on the %1 Usenet newsgroup (also on <a href=\"%2\">Google Groups</a>)."
+
+msgid  "development_list_description"
+msgstr "More technical (and ideally always pragmatic) discussions about the current development of the <a href=\"%1\">ntp pool code</a> and <a href=\"%2\">pgeodns</a> happens on the timekeepers-dev list."
 
