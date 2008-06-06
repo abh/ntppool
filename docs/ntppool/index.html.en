@@ -1,5 +1,5 @@
 
-<h1 id="tagline">pool.ntp.org: public ntp time server for everyone</h1>
+<h1 id="tagline">pool.ntp.org: [% 'public ntp time server for everyone' | l %]</h1>
 
 <div class="block">
 	<h3>Introduction</h3>
@@ -9,60 +9,35 @@
 				[% FOR zone = combust.count_by_continent %]
 				<li class="area">
 					<span class="location [% zone.name %] [% IF zone.name == '@' || zone.name == '.'; "global"; END  %]">[% zone.name == '@' ? '<b>' : '' %]
-					<a href="[% zone.url %]">[% zone.description %]</a>
+					<a href="[% zone.url %]">[% zone.description | l %]</a>
 					[% zone.name == '@' ? '</b>' : '' %]</span>&nbsp;[% zone.server_count %]
 				</li>
 				[% END %]
 			</ul>
 			<span class="date">As of [% USE date; date.format(date.now, '%Y-%m-%d'); %]</span>
 		</div>
-	<p>
-	The pool.ntp.org project is a big virtual cluster of timeservers
-	striving to provide reliable easy to use NTP service for millions of
-	clients without putting a strain on the big popular timeservers.
-	</p>
-	<p>
-	<a href="http://fortytwo.ch/">Adrian von Bidder</a> created this
-	project after a <a
-	href="http://groups.google.com/groups?threadm=3E2DBFF7.F9A51614%40udel.edu"
-	>discussion</a> about resource consumption on the big timeservers,
-	with the idea that for everyday use a DNS round robin would be good
-	enough, and would allow spreading the load over many servers. The
-	disadvantage is, of course, that you may occasionally get a bad server
-	and that you usually won't get the server closest to you.  The
-	workarounds for this is respectively to make sure you configure at
-	least three servers in your ntp.conf and to use the country zones (for
-	example 0.us.pool.ntp.org) rather than the global zone (for example
-	0.pool.ntp.org).  Read more on <a
-	href="http://www.pool.ntp.org/use.html">using the pool</a>.
-	</p>
-	<p>
-	The pool is now enormously popular, being used by millions of systems
-	around the world.  It's the default "time server" for most of the major 
-        Linux distributions (see <a href="/vendors">information for vendors</a>).
-	</p>
-	<p>
-	The pool project has since 2005 been maintained by <a
-	href="http://www.askbjoernhansen.com/">Ask Bj&oslash;rn
-	Hansen</a>, <a href="http://develooper.com/">Develooper</a>
-	and a great group of contributors on the <a
-	href="/mailinglists.html">mailing lists</a>.
-	</p>
-	<a href="#top" class="up">go up</a>
+
+        [% PROCESS homepage/intro.html %]
+	<a href="#top" class="up">[% 'go up' | l %]</a>
+
 </div>
 
 <div class="block">
 	<a name="news"></a>
-        <h3>News</h3>
+        <h3>[% 'News' | l %]</h3>
         <p>
 
-<a href="http://news.ntppool.org/atom.xml" rel="alternate" type="application/rss+xml"><img src="[% combust.static_url('/images/feed-icon16x16.png') %]" alt="" style="vertical-align:middle;border:0"/></a>&nbsp;<a href="http://news.ntppool.org/atom.xml" rel="alternate" type="application/rss+xml">Subscribe in a reader</a>
+<a href="http://news.ntppool.org/atom.xml" rel="alternate" type="application/rss+xml"><img src="[% combust.static_url('/images/feed-icon16x16.png')
+%]" alt="" style="vertical-align:middle;border:0"/></a>&nbsp;<a href="http://news.ntppool.org/atom.xml" rel="alternate" type="application/rss+xml">[%
+ 'Subscribe in a reader' | l %]
+</a>
 
-<a href="http://feed.news.ntppool.org/ntppool"><img valign="top" src="http://feeds.feedburner.com/~fc/ntppool?bg=FFFFFF&amp;fg=444444&amp;anim=0" height="26" width="88" style="border:0" alt="" /></a>
+<a href="http://feed.news.ntppool.org/ntppool"><img valign="top" src="http://feeds.feedburner.com/~fc/ntppool?bg=FFFFFF&amp;fg=444444&amp;anim=0"
+height="26" width="88" style="border:0" alt="" /></a>
 
 <br/>
 
-<a href="http://www.feedburner.com/fb/a/emailverifySubmit?feedId=1216706&amp;loc=en_US">Subscribe to NTP Pool News by Email</a>
+<a href="http://www.feedburner.com/fb/a/emailverifySubmit?feedId=1216706&amp;loc=en_US">[% 'Subscribe to NTP Pool News by Email' | l %]</a>
 
 
 </p>
@@ -77,7 +52,7 @@
          %]
 
 		<li class="last">
-			<a href="http://news.ntppool.org/archives.html">Older news...</a>
+			<a href="http://news.ntppool.org/archives.html">[% 'Older news' | l %]...</a>
 		</li>
 	</ul>
 </div>
