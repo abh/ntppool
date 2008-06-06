@@ -1,0 +1,3 @@
+[submodule "combust"]
+	path = combust
+	url = git://git.develooper.com/combust.git
