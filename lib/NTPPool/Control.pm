@@ -13,8 +13,11 @@ use Combust::StaticFiles qw(-force :all);
 use I18N::LangTags qw(implicate_supers);
 use I18N::LangTags::Detect ();
 use List::Util qw(first);
+use NP::I18N;
 
 $Combust::Control::Bitcard::cookie_name = 'npuid';
+
+my $config = Combust::Config->new;
 
 our %valid_languages = (
                         en => { name => "English", },
@@ -25,11 +28,21 @@ our %valid_languages = (
                               },
                        );
 
-my $config = Combust::Config->new;
+NP::I18N::add_directory( $config->root_local . '/i18n' );
+NP::I18N::loc_lang('en');
+
 
 my $prototype = HTML::Prototype->new;
 sub prototype {
   $prototype;
+}
+
+my $ctemplate;
+sub tt {
+    $ctemplate ||= Combust::Template->new
+      ( filters => { l => [\&loc_filter, 1] }
+      )
+      or die "Could not initialize Combust::Template object: $Template::ERROR";
 }
 
 sub init {
@@ -73,9 +86,17 @@ sub init {
   }
 
   my @lang = $self->languages;
+  NP::I18N::loc_lang( $lang[0] );
 
   return OK;
 }
+
+sub loc_filter {
+    my $tt   = shift;
+    my @args = @_;
+    return sub { NP::I18N::loc($_[0], @args) };
+}
+
 
 sub is_logged_in {
   my $self = shift;
