@@ -1,25 +1,25 @@
 <a name="top"></a>
 
-<a href="/">Back to the front page</a>
+<a href="/">[% | l %]Back to the front page[% END %]</a>
 
 [% UNLESS server; %]
 <form>
 IP <input type="text" name="ip">
-<input type="submit" name="Find">
+<input type="submit" name="[%|l%]Find[% END %]">
 </form>
  
 [% RETURN;
    END 
  %]
 
-[% page.title = 'Stats for ' _ server.ip  %]
+[% page.title = "Stats for %1" | l(server.ip) %]
 
 <h3>[% server.ip %] [% IF server.hostname;  '/ ' _ server.hostname; END %]</h3>
 
 
 <p>
 [% UNLESS server.in_pool%]
-<i>Not active in the pool, monitoring only</i><br/>
+<i>[% |l %]Not active in the pool, monitoring only[% END %]</i><br/>
 [% END %]
 
 [% IF server.admin.public_profile 
@@ -28,14 +28,15 @@ IP <input type="text" name="ip">
 Server admin: <a href="/user/[% (server.admin.username || server.admin.id) | html | uri %]"
 >[% server.admin.username || server.admin.email %]</a><br/>
 [% END %]
-Zones:
+[% "Zones:" | l %]
 [% FOR zone = server.zones_display %]
 <a href="[% zone.url %]">[% zone.name %]</a>
 [% END  %]<br/>
 
 [% IF server.deletion_on %]
-This server is <span class="deletion">scheduled for deletion</span>
-on [% server.deletion_on.strftime("%B %d, %Y") %].
+[% | loc(server.deletion_on.strftime("%B %d, %Y")) -%]
+This server is <span class="deletion">scheduled for deletion</span> on %1.
+[% END %]
 <br/>
 [% END %]
 
@@ -52,17 +53,17 @@ on [% server.deletion_on.strftime("%B %d, %Y") %].
 
 
 <p>
-Current score: [% server.score %] (only servers with a score higher than 5 are used in the pool)
+[% | loc(server.score) %]Current score: %1 (only servers with a score higher than 5 are used in the pool)[% END %]
 </p>
 
 <p>
 <img src="[% server.graph_uri('score') %]" alt="Server score graph" /><br />
 <img src="[% server.graph_uri('offset') %]" alt="Server offset graph" /><br />
-<span style="font-size:60%"># [% server.id %], <a href="[% server.url %]/log?limit=50">CSV log</a>
+<span style="font-size:60%"># [% server.id %], <a href="[% server.url %]/log?limit=50">[% "CSV log" | l %]</a>
 | <a href="[% server.url %]/rrd">RRD</a> |
 <a id="graph_explanation_link"
    onclick="toggleDisplay('graph_explanation_box');"
-   href="/scores/[% server.ip %]?graph_explanation=1#graph_explanation">What do the graphs mean?</a>
+   href="/scores/[% server.ip %]?graph_explanation=1#graph_explanation">[% "What do the graphs mean?" | l %]</a>
 </span>
 </p>
 
@@ -75,4 +76,4 @@ Current score: [% server.score %] (only servers with a score higher than 5 are u
 
 [% PROCESS tpl/server/graph_explanation.html %]
 
-<p><a href="#top">Back to top</a></p>
+<p><a href="#top">[% "go up" | l %]</a></p>

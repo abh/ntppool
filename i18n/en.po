@@ -54,3 +54,33 @@ msgstr "Server operators (and users) who wish to be more involved in the project
 msgid  "development_list_description"
 msgstr "More technical (and ideally always pragmatic) discussions about the current development of the <a href=\"%1\">ntp pool code</a> and <a href=\"%2\">pgeodns</a> happens on the timekeepers-dev list."
 
+
+# tpl/server.html
+msgid  "Back to the front page"
+msgstr "Back to the front page"
+
+msgid  "Find"
+msgstr "Find"
+
+msgid  "Stats for %1"
+msgstr "Statistics for %1"
+
+msgid  "Not active in the pool, monitoring only"
+msgstr "Not active in the pool, monitoring only"
+
+msgid  "Zones:"
+msgstr "Zones:"
+
+msgid  "This server is <span class="deletion">scheduled for deletion</span> on %1."
+msgstr "This server is <span class="deletion">scheduled for deletion</span> on %1."
+
+msgid  "Current score: %1 (only servers with a score higher than 5 are used in the pool)"
+msgstr "Current score: %1 (only servers with a score higher than 5 are used in the pool)"
+
+msgid  "What do the graphs mean?"
+msgstr "What do the graphs mean?"
+
+msgid  "CSV log"
+msgstr "CSV log"
+
+
