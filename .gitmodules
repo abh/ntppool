@@ -1,3 +1,6 @@
 [submodule "combust"]
 	path = combust
 	url = git://git.develooper.com/combust.git
+[submodule "cpan"]
+	path = cpan
+	url = git://git.develooper.com/ntppool-cpan.git
