@@ -21,6 +21,9 @@ You should install Bundle::Combust first
 
 =head1 CONTENTS
 
+Config::Simple
+Exception::Class
+
 Params::Validate
 DateTime::Locale
 Class::Singleton
@@ -64,7 +67,7 @@ HTML::Prototype
 
 Text::CSV_XS
 
-JSON
+JSON::XS
 
 Math::BigInt
 Math::BigRat
@@ -104,8 +107,6 @@ Data::Dumper::Simple
 Number::Format
 Template::Plugin::Number::Format
 
-Email::Valid
-
 Test::Pod
 Locale::Object
 
@@ -115,6 +116,4 @@ I18N::LangTags
 Locale::Maketext
 Locale::Maketext::Lexicon
 
-
-
-
+Imager
