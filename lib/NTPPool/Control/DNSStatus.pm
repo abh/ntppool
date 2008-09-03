@@ -2,6 +2,7 @@ package NTPPool::Control::DNSStatus;
 use strict;
 use base qw(NTPPool::Control);
 use Net::DNS::Resolver;
+use List::Util qw(max first);
 use Apache::Constants qw(OK);
 use DateTime::Duration;
 use DateTime::Format::Duration;
@@ -38,10 +39,6 @@ sub render {
 #    $servers{$name} = { name => $name };
 #  }
             
-  my $prim = 'ns3.rbl.bitnames.com';
-
-  $servers{$prim} = { name => $prim };
-
   for my $ns (keys %servers) {
     $res->nameserver($ns);
     $servers{$ns}->{soa_socket}     = $res->bgsend($pool_domain, 'SOA');
@@ -68,7 +65,7 @@ sub render {
 
   }
 
-  my $max_serial = $servers{$prim}->{serial};
+  my $max_serial = max map { $servers{$_}->{serial} } keys %servers;
   my $now = time;
 
   for my $ns (sort keys %servers) {
@@ -94,10 +91,10 @@ sub render {
     }
   }
 
-  $self->tpl_param('master' => delete $servers{$prim});
-
   my @servers = sort { $a->{name} cmp $b->{name} } values %servers;
   $self->tpl_param('servers' => \@servers);
+  my $master = first { $_->{serial} && $_->{serial} == $max_serial } values %servers;
+  $self->tpl_param('master'  => $master);
 
   alarm(0);
 
