@@ -7,8 +7,6 @@ use Imager ();
 use List::Util qw(min);
 
 BEGIN {
-  warn join ", ", Imager->read_types;
-
   die "Imager module needs to be compiled with png support"
       unless grep { $_ eq 'png' } Imager->write_types;
 }
