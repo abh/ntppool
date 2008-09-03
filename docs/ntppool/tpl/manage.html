@@ -23,6 +23,7 @@
 		</div>
 	</div>
 
+<!--
 	<div class="adspace">
           <h3><b><a href="http://www.meinberg.de/english/">Meinberg</a> <a href="/meinberg.html">equipment giveaway</a></b>!</h3> 
 
@@ -49,7 +50,7 @@
           [% END %]
 
 	</div>
-
+-->
 	
 	<div class="servers" >
 		<h3>Your Servers</h3>
@@ -59,7 +60,7 @@
 			   FOR server = servers; %] 
 			[% PROCESS tpl/manage/server.html, server => server %]
 			[% END %]
-			[% IF user.servers.size > 1 %]
+			[% IF servers.list.size > 1 %]
 			<p></p>
 			[% END %]
 		</div>
@@ -102,7 +103,7 @@
 	[% END %]
 
 
-        <div class="block">
+        <div class="block server_desc">
 
         <p>
         The current NTP implementations (and the pool system) are very IP focused, so to "change" the IP address
