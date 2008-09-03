@@ -13,37 +13,37 @@
 
     <Location />
        SetHandler perl-script
-       PerlHandler NTPPool::Control::Basic->super
+       [% PH %] NTPPool::Control::Basic->super
     </Location>
 
     <Location /manage>
        SetHandler perl-script
-       PerlHandler NTPPool::Control::Manage->super
+       [% PH %] NTPPool::Control::Manage->super
     </Location>
 
     <Location /manage/vendor>
        SetHandler perl-script
-       PerlHandler NTPPool::Control::Vendor->super
+       [% PH %] NTPPool::Control::Vendor->super
     </Location>
 
     <Location /manage/equipment>
        SetHandler perl-script
-       PerlHandler NTPPool::Control::Manage::Equipment->super
+       [% PH %] NTPPool::Control::Manage::Equipment->super
     </Location>
 
     <Location /dns.html>
        SetHandler perl-script
-       PerlHandler NTPPool::Control::DNSStatus->super
+       [% PH %] NTPPool::Control::DNSStatus->super
     </Location>
 
     <Location /scores>
       SetHandler perl-script
-      PerlHandler NTPPool::Control::Scores->super
+      [% PH %] NTPPool::Control::Scores->super
     </Location>
 
     <Location /s>
       SetHandler perl-script
-      PerlHandler NTPPool::Control::Scores->super
+      [% PH %] NTPPool::Control::Scores->super
     </Location>
 
     <Location /scores/graph>
@@ -52,17 +52,17 @@
 
     <Location /bulletin>
       SetHandler perl-script
-      PerlHandler NTPPool::Control::Bulletin->super
+      [% PH %] NTPPool::Control::Bulletin->super
     </Location>
 
     <Location /zone>
       SetHandler perl-script
-      PerlHandler NTPPool::Control::Zone->super
+      [% PH %] NTPPool::Control::Zone->super
     </Location>
 
     <Location /user>
       SetHandler perl-script
-      PerlHandler NTPPool::Control::UserProfile->super
+      [% PH %] NTPPool::Control::UserProfile->super
     </Location>
 
     <Location /zone/graph>
@@ -71,13 +71,20 @@
 
     <Location /error/>
        SetHandler   perl-script
-       PerlHandler NTPPool::Control::Error->super
+       [% PH %] NTPPool::Control::Error->super
     </Location>
 
     <Location /static>
       SetHandler perl-script
-      PerlHandler Combust::Control::Basic->super
+      [% PH %] Combust::Control::Basic->super
     </Location>
+
+
+  <Location /perl-status>
+      SetHandler modperl
+      PerlOptions +GlobalRequest
+      [% PH %] Apache2::Status
+  </Location>
 
     <Location /server-status>
       SetHandler server-status
