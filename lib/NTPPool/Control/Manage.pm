@@ -15,10 +15,10 @@ sub render {
     my $self = shift;
 
     $self->r->no_cache(1);
-    
+
     if ($self->request->uri =~ m!^/manage/logout!) {
         $self->cookie($Combust::Control::Bitcard::cookie_name, 0);
-        $self->redirect( $self->bitcard->logout_url( r => $self->config->base_url('ntppool') ));
+        $self->redirect($self->bitcard->logout_url(r => $self->config->base_url('ntppool')));
     }
 
     return $self->login unless $self->user;
@@ -28,10 +28,12 @@ sub render {
 
 sub manage_dispatch {
     my $self = shift;
-    return $self->handle_add    if $self->request->uri =~ m!^/manage/server/add!;
-    return $self->handle_update if $self->request->uri =~ m!^/manage/(server|profile)/update!;
-    return $self->handle_delete if $self->request->uri =~ m!^/manage/server/delete!;
-    return $self->show_manage   if $self->request->uri =~ m!^/manage/servers!;
+    return $self->handle_add if $self->request->uri =~ m!^/manage/server/add!;
+    return $self->handle_update
+      if $self->request->uri =~ m!^/manage/(server|profile)/update!;
+    return $self->handle_delete
+      if $self->request->uri =~ m!^/manage/server/delete!;
+    return $self->show_manage if $self->request->uri =~ m!^/manage/servers!;
     return $self->redirect('/manage/servers');
 }
 
@@ -57,12 +59,14 @@ sub handle_add {
     if ($self->req_param('yes')) {
         my $comment = $self->req_param('comment');
         $self->tpl_param('comment', $comment);
-        $self->tpl_param('scores_url', $self->config->base_url('ntppool') . '/scores/' . $server->{ip});
+        $self->tpl_param('scores_url',
+            $self->config->base_url('ntppool') . '/scores/' . $server->{ip});
 
         my $msg = $self->evaluate_template('tpl/manage/add_email.txt');
-        my $email = Email::Simple->new(ref $msg ? $$msg : $msg); # until we decide what eval_tpl should return :)
+        my $email = Email::Simple->new(ref $msg ? $$msg : $msg)
+          ;    # until we decide what eval_tpl should return :)
         $email->header_set('Message-ID' => join("-", int(rand(1000)), $$, time) . '@' . hostname);
-        $email->header_set('Date'       => Email::Date::format_date);
+        $email->header_set('Date' => Email::Date::format_date);
         my $return = send SMTP => $email, 'localhost';
         warn Data::Dumper->Dump([\$msg, \$email, \$return], [qw(msg amil return)]);
 
@@ -72,8 +76,7 @@ sub handle_add {
             $s->setup_server;
         }
         else {
-            $s = NP::Model->server->create
-              (ip       => $server->{ip});
+            $s = NP::Model->server->create(ip => $server->{ip});
         }
 
         $s->hostname($server->{hostname} || '');
@@ -82,11 +85,13 @@ sub handle_add {
         $s->zones([]);
 
         $s->join_zone($_) for @{$server->{zones}};
-        $s->add_logs
-            ({ user_id => $self->user->id, 
-               type    => 'create',
-               message => "Server added." . ($comment =~ m/\S/ ? "\n\n$comment" : ""),
-           });
+        $s->add_logs(
+            {   user_id => $self->user->id,
+                type    => 'create',
+                message => "Server added." . ($comment =~ m/\S/ ? "\n\n$comment" : ""),
+            }
+        );
+
         #local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
         $s->save(cascade => 1);
         return $self->redirect('/manage/servers#s-' . $s->ip);
@@ -110,17 +115,22 @@ sub get_server_info {
     die "Bad IP address\n" if $server{ip} =~ m/^(127|10|192.168)\./;
 
     if (my $s = NP::Model->server->fetch(ip => $server{ip})) {
-        my $other = $s->admin->id eq $self->user->id ? "" : "Email us your username to have it moved to this account";
-        die "$server{ip} is already listed in the pool. $other\n" unless $s->deleted;
+        my $other =
+          $s->admin->id eq $self->user->id
+          ? ""
+          : "Email us your username to have it moved to this account";
+        die "$server{ip} is already listed in the pool. $other\n"
+          unless $s->deleted;
     }
-    
+
     local $Net::NTP::TIMEOUT = 2;
     my %ntp = eval { get_ntp_response($server{ip}); };
     warn "checking $host / $server{ip}";
     warn Data::Dumper->Dump([\%ntp]);
 
     die "Didn't get an NTP response from $host\n" unless defined $ntp{Stratum};
-    die "Invalid stratum response from $host (Your server is in stratum $ntp{Stratum}).  Is your server configured properly? Is public access allowed?  If you just restarted your ntpd, then it might still be stabilizing the timesources - try again in 10-20 minutes.\n"
+    die
+      "Invalid stratum response from $host (Your server is in stratum $ntp{Stratum}).  Is your server configured properly? Is public access allowed?  If you just restarted your ntpd, then it might still be stabilizing the timesources - try again in 10-20 minutes.\n"
       unless $ntp{Stratum} > 0 and $ntp{Stratum} < 6;
 
     $server{ntp} = \%ntp;
@@ -141,10 +151,9 @@ sub get_server_info {
 }
 
 sub req_server {
-    my $self = shift;
+    my $self      = shift;
     my $server_id = $self->req_param('server');
-    my $server = NP::Model->server->fetch
-        (($server_id =~ m/\./ ? 'ip' : 'id') => $server_id);
+    my $server    = NP::Model->server->fetch(($server_id =~ m/\./ ? 'ip' : 'id') => $server_id);
     return unless $server and $server->admin->id == $self->user->id;
     $server;
 }
@@ -152,8 +161,11 @@ sub req_server {
 sub handle_update {
     my $self = shift;
 
-    return $self->handle_update_profile  if $self->request->uri =~ m!^/manage/profile/update!;
-    return $self->handle_update_netspeed if $self->request->uri =~ m!^/manage/server/update/netspeed!;
+    return $self->handle_update_profile
+      if $self->request->uri =~ m!^/manage/profile/update!;
+    return $self->handle_update_netspeed
+      if $self->request->uri =~ m!^/manage/server/update/netspeed!;
+
     # deletion and non-js netspeed
     if ($self->request->uri =~ m!^/manage/server/update/server!) {
         return $self->handle_update_netspeed if $self->req_param('Update');
@@ -181,17 +193,14 @@ sub handle_update_netspeed {
 
     return $self->redirect('/manage/servers') if $self->req_param('noscript');
 
-    my $return = { 
+    my $return = {
         netspeed => $self->netspeed_human($server->netspeed),
-        zones    => join " ", map { join "",
-                                     '<a href="/zone/',
-                                     $_->name, '">',
-                                     $_->name,
-                                     '</a>' } $server->zones_display,
+        zones    => join " ",
+        map { join "", '<a href="/zone/', $_->name, '">', $_->name, '</a>' } $server->zones_display,
     };
 
     #warn Data::Dumper->Dump([\$return],[qw(return)]);
-    
+
     return OK, encode_json($return);
 
 }
@@ -203,10 +212,10 @@ sub handle_update_profile {
     $self->user->public_profile($public);
     $self->user->update;
 
-    $self->tpl_param('user' => $self->user );
+    $self->tpl_param('user' => $self->user);
 
     return $self->redirect('/manage') if $self->r->method eq 'GET';
-    return OK, $self->evaluate_template('tpl/manage/profile_link.html', { style => 'bare.html' });
+    return OK, $self->evaluate_template('tpl/manage/profile_link.html', {style => 'bare.html'});
 }
 
 sub handle_delete {
@@ -217,28 +226,33 @@ sub handle_delete {
     if ($self->request->method eq 'post') {
         if (my $date = $self->req_param('deletion_date')) {
             my @date = split /-/, $date;
-            $date = $date[1] && DateTime->new( year  => $date[0],
-                                   month => $date[1],
-                                   day   => $date[2],
-                                   time_zone => 'UTC'
-                                   );
+            $date = $date[1] && DateTime->new(
+                year      => $date[0],
+                month     => $date[1],
+                day       => $date[2],
+                time_zone => 'UTC'
+            );
             if ($date and $date > DateTime->now) {
                 $server->deletion_on($date);
-                $server->add_logs
-                    ({ user_id => $self->user->id, 
-                       type    => 'delete',
-                       message => "Deletion scheduled for " . $date->ymd . " by " . $self->user->who,
-                   });
+                $server->add_logs(
+                    {   user_id => $self->user->id,
+                        type    => 'delete',
+                        message => "Deletion scheduled for "
+                          . $date->ymd . " by "
+                          . $self->user->who,
+                    }
+                );
                 $server->save;
             }
         }
         if ($self->req_param('cancel_deletion')) {
             $server->deletion_on(undef);
-            $server->add_logs
-                ({ user_id => $self->user->id, 
-                   type    => 'delete',
-                   message => "Deletion cancelled by " . $self->user->who,
-               });
+            $server->add_logs(
+                {   user_id => $self->user->id,
+                    type    => 'delete',
+                    message => "Deletion cancelled by " . $self->user->who,
+                }
+            );
             $server->save;
         }
     }
@@ -248,9 +262,9 @@ sub handle_delete {
     }
     else {
         my @dates;
-        my $dt = DateTime->now( time_zone => 'UTC' );
-        $dt->add( days => 4 );
-        for (1..90) {
+        my $dt = DateTime->now(time_zone => 'UTC');
+        $dt->add(days => 4);
+        for (1 .. 90) {
             push @dates, $dt->clone;
             $dt->add(days => 1);
         }
