@@ -29,9 +29,11 @@ CPAN modules needed are listed in the Bundle::NP file,
 
    (The NTP Pool code is spread over NTPPool::* and NP::* ...)
 
-DIR=~/ntppool
-mkdir $DIR; cd $DIR
-svn co https://svn.develooper.com/project/ntppool/trunk .
+export DIR=`pwd`/ntppool
+git clone git://git.develooper.com/ntppool.git
+cd ntppool
+git submodule init
+git submodule update
 
 export CBROOTLOCAL=$DIR
 export CBROOT=$DIR/combust
@@ -45,9 +47,13 @@ edit combust.conf
 mkdir -p $DIR/rrd/server/graph
 mkdir -p $DIR/rrd/zone/graph
 
+# Your MySQL server needs timezone data loaded, if it doesn't have it, run:
+mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -u root mysql
+
 $CBROOT/bin/cmysql ntppool < sql/tables.sql
 $CBROOT/bin/cmysql ntppool < sql/zones.sql
 $CBROOT/bin/database_update ntppool
+$CBROOT/bin/database_update combust
 $CBROOT/bin/database_update ntppool
 
 $CBROOT/bin/run_httpd
