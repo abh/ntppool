@@ -19,6 +19,8 @@ use LWP::Simple;
 use Email::Simple;
 use Email::Date;
 use Email::Send 'SMTP';
+use File::Path qw(mkpath);
+use JSON::XS ();
 
 my $geo_ip = eval "Geo::IP->new(GEOIP_STANDARD)";
 
@@ -391,6 +393,8 @@ elsif ($cmd eq "scores") {
 }
 elsif ($cmd eq "zone") {
 
+    mkpath "$ENV{CBROOTLOCAL}/dns/", 0, 0711;
+
     my $file = "$ENV{CBROOTLOCAL}/dns/$pool_domain";
     open(my $fh, ">$file.tmp") or die "Could not open $file.tmp: $!";
 
@@ -412,6 +416,8 @@ elsif ($cmd eq "zone") {
     my $www_record = { cname => 'ntppool.develooper.com',
                        ttl   => 7200,
                      };
+
+    $www_record->{cname} = 'ntp2.lax.ntppool.net' if hostname eq 'ntp2.lax.ntppool.net';
 
     $pgeodns->{data}->{www} = $www_record;
     $pgeodns->{data}->{web} = $www_record;
@@ -504,8 +510,8 @@ elsif ($cmd eq "zone") {
     close $fh or die "could not close $file.tmp: $!";
     rename "$file.tmp", "$file.tinydns" or die "could not rename $file.tmp to $file.tinydns: $!";
 
-    my $json = JSON->new( pretty => 1 );
-    my $js = $json->objToJson($pgeodns);
+    my $json = JSON::XS->new->pretty->utf8;
+    my $js = $json->encode($pgeodns);
     my $file = "$ENV{CBROOTLOCAL}/dns/$pool_domain.json";
     open(my $js_fh, ">$file.tmp") or die "Could not open $file.tmp: $!";
     print $js_fh $js;
