@@ -1,1 +1,6 @@
+[% page.style = 'bare.html' -%]
 # Hello Robot!
+[%- UNLESS combust.deployment_mode == 'prod' %]
+User-Agent: *
+Disallow: /
+[% END %]
