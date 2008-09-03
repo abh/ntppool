@@ -80,11 +80,13 @@
     </Location>
 
 
-  <Location /perl-status>
+   <IfDefine MODPERL2> 
+    <Location /perl-status>
       SetHandler modperl
       PerlOptions +GlobalRequest
       [% PH %] Apache2::Status
-  </Location>
+    </Location>
+  </IfDefine>
 
     <Location /server-status>
       SetHandler server-status
