@@ -1,6 +1,6 @@
 package NTPPool::Control;
 use strict;
-use Apache::Constants qw(OK);
+use Combust::Constant qw(OK);
 use base qw(Combust::Control Combust::Control::Bitcard);
 
 use Class::Accessor::Class;

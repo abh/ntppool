@@ -1,7 +1,7 @@
 package NTPPool::Control::Scores;
 use strict;
 use base qw(NTPPool::Control);
-use Apache::Constants qw(OK DECLINED);
+use Combust::Constant qw(OK DECLINED);
 use NP::Model;
 use Imager ();
 use List::Util qw(min);

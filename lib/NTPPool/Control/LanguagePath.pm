@@ -1,6 +1,6 @@
 package NTPPool::Control::LanguagePath;
 use strict;
-use Apache::Constants qw(OK);
+use Combust::Constant qw(OK DECLINED);
 
 my $lang_regexp = "(" . join( "|", keys %NTPPool::Control::valid_languages) . ")";
 $lang_regexp = qr!^/$lang_regexp/!;
@@ -14,7 +14,7 @@ sub handler {
         $r->uri($uri);
     }
 
-    return OK;
+    return DECLINED;
 }
 
 1;

@@ -2,7 +2,7 @@ package NTPPool::Control::Vendor;
 use strict;
 use base qw(NTPPool::Control::Manage);
 use NP::Model;
-use Apache::Constants qw(OK NOT_FOUND);
+use Combust::Constant qw(OK NOT_FOUND);
 use Email::Send;
 use Email::Simple;
 use Email::Simple::Creator;

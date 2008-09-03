@@ -2,7 +2,7 @@ package NTPPool::Control::Zone;
 use strict;
 use base qw(NTPPool::Control);
 use NP::Model;
-use Apache::Constants qw(OK);
+use Combust::Constant qw(OK);
 
 sub cache_info {
   my $self = shift;

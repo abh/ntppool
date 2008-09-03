@@ -1,7 +1,7 @@
 package NTPPool::Control::Manage::Equipment;
 use strict;
 use base qw(NTPPool::Control::Manage);
-use Apache::Constants qw(OK NOT_FOUND);
+use Combust::Constant qw(OK NOT_FOUND);
 use Email::Send 'SMTP';
 use Sys::Hostname qw(hostname);
 use Email::Date qw();

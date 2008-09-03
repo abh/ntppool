@@ -2,7 +2,7 @@ package NTPPool::Control::UserProfile;
 use strict;
 use base qw(NTPPool::Control);
 use NP::Model;
-use Apache::Constants qw(OK);
+use Combust::Constant qw(OK);
 
 sub uri_username {
     my $self = shift;
