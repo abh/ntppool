@@ -1,5 +1,6 @@
 package NTPPool::Control;
 use strict;
+use utf8;
 use Combust::Constant qw(OK);
 use base qw(Combust::Control Combust::Control::Bitcard);
 
