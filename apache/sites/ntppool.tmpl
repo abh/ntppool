@@ -1,11 +1,9 @@
 
-
   <VirtualHost *:[% config.port %]>
     ServerName [% config.site.ntppool.servername %]
     [% expandServerAliases( config.site.ntppool.aliases ) %]
     PerlSetVar site [% site %]
 
-    PerlTransHandler Combust::Redirect->super
     PerlTransHandler NTPPool::Control::LanguagePath
 
     PerlModule NTPPool
