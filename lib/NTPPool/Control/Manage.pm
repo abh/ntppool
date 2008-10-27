@@ -122,13 +122,13 @@ sub get_server_info {
 
     my %server;
     if (Net::IPv6Addr::ipv6_chkip($host)) {
-        $server{ip} = $host;
+        $server{ip}         = $host;
         $server{ip_version} = 'v6';
     }
     else {
         my $iaddr = gethostbyname $host;
         die "Could not find the IP for $host\n" unless $iaddr;
-        $server{ip} = inet_ntoa($iaddr);
+        $server{ip}         = inet_ntoa($iaddr);
         $server{ip_version} = 'v4';
     }
     $server{hostname} = $host if $host ne $server{ip};
