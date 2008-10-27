@@ -10,6 +10,7 @@ use Email::Send 'SMTP';
 use Sys::Hostname qw(hostname);
 use Email::Date qw();
 use JSON::XS qw(encode_json);
+use Net::IPv6Addr;
 
 sub render {
     my $self = shift;
@@ -80,11 +81,22 @@ sub handle_add {
         }
 
         $s->hostname($server->{hostname} || '');
+        $s->ip_version($server->{ip_version});
         $s->admin($self->user);
         $s->in_pool(1);
         $s->zones([]);
 
         $s->join_zone($_) for @{$server->{zones}};
+        if ($self->req_param('explicit_zone')) {
+            my $explicit_zone =
+              NP::Model->zone->get_zones(
+                query => [description => $self->req_param('explicit_zone')]);
+            $explicit_zone = $explicit_zone->[0];
+            do {
+                $s->join_zone($explicit_zone);
+                $explicit_zone = $explicit_zone->parent;
+            } while ($explicit_zone && $explicit_zone->dns);
+        }
         $s->add_logs(
             {   user_id => $self->user->id,
                 type    => 'create',
@@ -97,6 +109,9 @@ sub handle_add {
         return $self->redirect('/manage/servers#s-' . $s->ip);
     }
 
+    my @all_zones = NP::Model->zone->get_zones();
+    $self->tpl_param(all_zones => @all_zones);
+
     return OK, $self->evaluate_template('tpl/manage/add.html');
 }
 
@@ -105,11 +120,17 @@ sub get_server_info {
     my $host = $self->req_param('host');
     die "No hostname or IP\n" unless $host;
 
-    my $iaddr = gethostbyname $host;
-    die "Could not find the IP for $host\n" unless $iaddr;
-
     my %server;
-    $server{ip} = inet_ntoa($iaddr);
+    if (Net::IPv6Addr::ipv6_chkip($host)) {
+        $server{ip} = $host;
+        $server{ip_version} = 'v6';
+    }
+    else {
+        my $iaddr = gethostbyname $host;
+        die "Could not find the IP for $host\n" unless $iaddr;
+        $server{ip} = inet_ntoa($iaddr);
+        $server{ip_version} = 'v4';
+    }
     $server{hostname} = $host if $host ne $server{ip};
 
     die "Bad IP address\n" if $server{ip} =~ m/^(127|10|192.168)\./;
@@ -128,10 +149,12 @@ sub get_server_info {
     warn "checking $host / $server{ip}";
     warn Data::Dumper->Dump([\%ntp]);
 
-    die "Didn't get an NTP response from $host\n" unless defined $ntp{Stratum};
-    die
-      "Invalid stratum response from $host (Your server is in stratum $ntp{Stratum}).  Is your server configured properly? Is public access allowed?  If you just restarted your ntpd, then it might still be stabilizing the timesources - try again in 10-20 minutes.\n"
-      unless $ntp{Stratum} > 0 and $ntp{Stratum} < 6;
+    if ($server{ip_version} eq 'v4') {
+        die "Didn't get an NTP response from $host\n" unless defined $ntp{Stratum};
+        die
+          "Invalid stratum response from $host (Your server is in stratum $ntp{Stratum}).  Is your server configured properly? Is public access allowed?  If you just restarted your ntpd, then it might still be stabilizing the timesources - try again in 10-20 minutes.\n"
+          unless $ntp{Stratum} > 0 and $ntp{Stratum} < 6;
+    }
 
     $server{ntp} = \%ntp;
 
@@ -153,7 +176,7 @@ sub get_server_info {
 sub req_server {
     my $self      = shift;
     my $server_id = $self->req_param('server');
-    my $server    = NP::Model->server->fetch(($server_id =~ m/\./ ? 'ip' : 'id') => $server_id);
+    my $server    = NP::Model->server->fetch(($server_id =~ m/\[.:]/ ? 'ip' : 'id') => $server_id);
     return unless $server and $server->admin->id == $self->user->id;
     $server;
 }

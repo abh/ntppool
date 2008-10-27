@@ -88,6 +88,7 @@ Email::Simple::Creator
 Digest::HMAC_MD5
 Net::IP
 Net::DNS
+Net::IPv6Addr
 
 Test::Pod
 Pod::Coverage
