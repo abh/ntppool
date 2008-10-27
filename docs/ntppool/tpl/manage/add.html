@@ -15,16 +15,24 @@ Thanks for offering your server to the pool!<br /> Please verify the following i
 [% END %]
 
 <h4>Zones</h4>
+<form method="post" action="/manage/server/add">
 [% IF server.zones.size < 2 %]
-We couldn't determine which country your server is in, please tell us in the comments field!<br />
+We couldn't determine which country your server is in, 
+please select one explicitly!
+  <br />
+  <select name="explicit_zone">
+  <option></option>
+  [% FOR zone = all_zones %]
+  <option>[% zone.description %]</option>
+  [% END %]
+  </select>
+<br />
 [% END %]
 [% FOR zone = server.zones %]
 <a href="[% zone.url %]">[% zone.description %]</a>
 [% END %]
 
-</p>
 
-<form method="post" action="/manage/server/add">
 <input type="hidden" name="host" value="[% host | html %]">
 <h4>Comment</h4>
 <textarea name="comment" rows="6" cols="60">

@@ -185,7 +185,7 @@ __PACKAGE__->meta->setup(
 
   columns => [
     id             => { type => 'integer', not_null => 1 },
-    ip             => { type => 'varchar', default => '', length => 15, not_null => 1 },
+    ip             => { type => 'varchar', default => '', length => 40, not_null => 1 },
     user_id        => { type => 'integer', default => '', not_null => 1 },
     hostname       => { type => 'varchar', length => 255 },
     stratum        => { type => 'integer' },
@@ -197,6 +197,7 @@ __PACKAGE__->meta->setup(
     score_ts       => { type => 'datetime' },
     score_raw      => { type => 'scalar', default => '0', length => 64, not_null => 1 },
     deletion_on    => { type => 'date' },
+    ip_version     => { type => 'enum', values => ['v4', 'v6'] },
   ],
 
   primary_key_columns => [ 'id' ],

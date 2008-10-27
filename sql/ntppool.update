@@ -269,7 +269,8 @@ alter table zone_server_counts
 #35
 alter table servers add key (score_ts);
 
-
-
-
+#36
+alter table servers
+  modify ip varchar(40) NOT NULL
+  add ip_version enum("v4", "v6") not null default 'v4' after ip;
 

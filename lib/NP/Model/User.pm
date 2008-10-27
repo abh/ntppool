@@ -31,9 +31,7 @@ sub servers {
               ],
           ],
         );
-    $s = [ map { $_->[1] }
-           sort { $a->[0]->bincomp('gt', $b->[0])  }
-           map { [ Net::IP->new($_->ip), $_] }
+    $s = [ sort { $a->ip cmp $b->ip  }
            @$s ];
     wantarray ? @$s : $s;
 } 
