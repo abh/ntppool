@@ -275,3 +275,17 @@ alter table servers
 alter table servers 
   add ip_version enum("v4", "v6") not null default 'v4' after ip;
 
+#37
+create table monitor (
+  id int unsigned not null primary key auto_increment,
+  ip varchar(40) NOT NULL unique, 
+  created_on datetime not null,
+  last_seen datetime not null
+) ENGINE=INNODB;
+
+create table monitor_report (
+  monitor_id INTEGER unsigned NOT NULL,
+  server_id INTEGER unsigned NOT NULL,
+  ts datetime not null,
+  offset REAL
+) ENGINE=INNODB;

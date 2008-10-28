@@ -803,6 +803,72 @@ sub object_class { 'NP::Model::ZoneServerCount' }
 __PACKAGE__->make_manager_methods('zone_server_counts');
 }
 
+# Allow user defined methods to be added
+eval { require NP::Model::Monitor }
+  or $@ !~ m:^Can't locate NP/Model/Monitors.pm: and die $@;
+
+{ package NP::Model::Monitor;
+
+use strict;
+
+use base qw(NP::Model::_Object);
+
+__PACKAGE__->meta->setup(
+  table   => 'monitor',
+
+  columns => [
+    id               => { type => 'integer', not_null => 1 },
+    ip             => { type => 'varchar', default => '', length => 40, not_null => 1 },
+    created_on     => { type => 'datetime', default => '0000-00-00 00:00:00', not_null => 1 },
+    last_seen     => { type => 'datetime', default => '0000-00-00 00:00:00', not_null => 1 },
+  ],
+
+  primary_key_columns => [ 'id' ],
+
+);
+
+push @table_classes, __PACKAGE__;
+}
+
+# Allow user defined methods to be added
+eval { require NP::Model::MonitorReport }
+  or $@ !~ m:^Can't locate NP/Model/MonitorReport.pm: and die $@;
+
+{ package NP::Model::MonitorReport;
+
+use strict;
+
+use base qw(NP::Model::_Object);
+
+__PACKAGE__->meta->setup(
+  table   => 'monitor_report',
+
+  columns => [
+    monitor_id            => { type => 'integer', not_null => 1 },
+    server_id             => { type => 'integer', not_null => 1 },
+    ts        => { type => 'datetime', default => 'now', not_null => 1 },
+    offset    => { type => 'scalar', length => 64 },
+  ],
+
+  primary_key_columns => [ 'monitor_id', 'server_id' ],
+
+  foreign_keys => [
+    monitor => {
+      class       => 'NP::Model::Monitor',
+      key_columns => { monitor_id => 'id' },
+      rel_type    => 'many to one',
+    },
+    server => {
+      class       => 'NP::Model::Server',
+      key_columns => { server_id => 'id' },
+      rel_type    => 'many to one',
+    },
+  ],
+);
+
+push @table_classes, __PACKAGE__;
+}
+
 { package NP::Model;
 
   sub db  { shift; NP::Model::_Object->init_db(@_);      }
@@ -826,6 +892,8 @@ __PACKAGE__->make_manager_methods('zone_server_counts');
   sub vendor_zone { our $vendor_zone ||= bless [], 'NP::Model::VendorZone::Manager' }
   sub zone { our $zone ||= bless [], 'NP::Model::Zone::Manager' }
   sub zone_server_count { our $zone_server_count ||= bless [], 'NP::Model::ZoneServerCount::Manager' }
+  sub monitor { our $monitor ||= bless [], 'NP::Model::Monitor' }
+  sub monitor_report { our $monitor_report ||= bless [], 'NP::Model::MonitorReport' }
 
 }
 1;
