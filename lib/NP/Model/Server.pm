@@ -319,6 +319,7 @@ sub get_check_due {
                 FROM servers
                 WHERE
                   score_ts IS NULL or score_ts < DATE_SUB( NOW(), INTERVAL 24 minute)
+                  AND ip_version = 'v4'
                   AND (deletion_on IS NULL or deletion_on > NOW())
                 ORDER BY score_ts
                ],
