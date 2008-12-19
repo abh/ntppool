@@ -87,14 +87,15 @@ sub handle_add {
         $s->zones([]);
 
         $s->join_zone($_) for @{$server->{zones}};
-        if ($self->req_param('explicit_zone')) {
+        if (my $zone_name = $self->req_param('explicit_zone')) {
+            warn "user picked [$zone_name]";
             my $explicit_zone =
               NP::Model->zone->get_zones(
-                query => [description => $self->req_param('explicit_zone')]);
+                query => [name => $zone_name]);
             $explicit_zone = $explicit_zone->[0];
             do {
                 $s->join_zone($explicit_zone);
-                $explicit_zone = $explicit_zone->parent;
+                $explicit_zone = $explicit_zone && $explicit_zone->parent;
             } while ($explicit_zone && $explicit_zone->dns);
         }
         $s->add_logs(
@@ -109,7 +110,9 @@ sub handle_add {
         return $self->redirect('/manage/servers#s-' . $s->ip);
     }
 
-    my @all_zones = NP::Model->zone->get_zones();
+    my @all_zones = NP::Model->zone->get_zones(query   => [ name => { like => '__' } ],
+                                               sort_by => 'description',
+                                               );
     $self->tpl_param(all_zones => @all_zones);
 
     return OK, $self->evaluate_template('tpl/manage/add.html');
