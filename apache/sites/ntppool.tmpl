@@ -69,6 +69,11 @@
       SetHandler default
     </Location>
 
+    <Location /monitor>
+      SetHandler perl-script
+      [% PH %] NTPPool::Control::Monitor->super
+    </Location>
+
     <Location /error/>
        SetHandler   perl-script
        [% PH %] NTPPool::Control::Error->super

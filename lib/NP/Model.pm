@@ -825,10 +825,22 @@ __PACKAGE__->meta->setup(
 
   primary_key_columns => [ 'id' ],
 
+  unique_key => [ 'ip' ],
 );
 
 push @table_classes, __PACKAGE__;
 }
+
+{ package NP::Model::Monitor::Manager;
+
+use Combust::RoseDB::Manager;
+our @ISA = qw(Combust::RoseDB::Manager);
+
+sub object_class { 'NP::Model::Monitor' }
+
+__PACKAGE__->make_manager_methods('monitor');
+}
+
 
 # Allow user defined methods to be added
 eval { require NP::Model::MonitorReport }
@@ -869,6 +881,17 @@ __PACKAGE__->meta->setup(
 push @table_classes, __PACKAGE__;
 }
 
+{ package NP::Model::MonitorReport::Manager;
+
+use Combust::RoseDB::Manager;
+our @ISA = qw(Combust::RoseDB::Manager);
+
+sub object_class { 'NP::Model::MonitorReport' }
+
+__PACKAGE__->make_manager_methods('monitor_report');
+}
+
+
 { package NP::Model;
 
   sub db  { shift; NP::Model::_Object->init_db(@_);      }
@@ -892,8 +915,8 @@ push @table_classes, __PACKAGE__;
   sub vendor_zone { our $vendor_zone ||= bless [], 'NP::Model::VendorZone::Manager' }
   sub zone { our $zone ||= bless [], 'NP::Model::Zone::Manager' }
   sub zone_server_count { our $zone_server_count ||= bless [], 'NP::Model::ZoneServerCount::Manager' }
-  sub monitor { our $monitor ||= bless [], 'NP::Model::Monitor' }
-  sub monitor_report { our $monitor_report ||= bless [], 'NP::Model::MonitorReport' }
+  sub monitor { our $monitor ||= bless [], 'NP::Model::Monitor::Manager' }
+  sub monitor_report { our $monitor_report ||= bless [], 'NP::Model::MonitorReport::Manager' }
 
 }
 1;
