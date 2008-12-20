@@ -46,9 +46,10 @@ Zones:
 
 
 <br/>
-
-<a href="/scores/[% server.ip | uri %]">Trend</a>: <img src="/scores/[% server.ip %]/spark" /><br/>
-<br />
+[% IF server.ip_version == 'v4' %]
+  <a href="/scores/[% server.ip | uri %]">Trend</a>: <img src="/scores/[% server.ip %]/spark" /><br/>
+  <br />
+[% END %]
 
 </form>
 </span>

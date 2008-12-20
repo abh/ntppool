@@ -23,13 +23,14 @@ please select one explicitly!
   <select name="explicit_zone">
   <option></option>
   [% FOR zone = all_zones %]
-  <option>[% zone.description %]</option>
+  <option value="[% zone.name %]">[% zone.description %]</option>
   [% END %]
   </select>
 <br />
-[% END %]
-[% FOR zone = server.zones %]
-<a href="[% zone.url %]">[% zone.description %]</a>
+[% ELSE %]
+   [% FOR zone = server.zones %]
+   <a href="[% zone.url %]">[% zone.description %]</a>
+   [% END %]
 [% END %]
 
 

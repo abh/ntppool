@@ -1,11 +1,10 @@
 High priority things:
 
-  * Change the DNS system to use pgeodns (or similar) to distribute
-    requests rather than than regenerating the zone.  (Better use the
-    "bandwidth" setting the admins have; distribute requests to a "nearby"
-    server automatically; ...)
+  * Use Net::IP instead of Net::IPv6Addr
 
-  * Whatever else ...
+  * Normalize IP addresses before they are added (and make a one-time
+    script to go through and normalize old ones)
+
 
 After that then some of the things I have on my list are (not necessarily in order of priority)
 
@@ -24,7 +23,9 @@ After that then some of the things I have on my list are (not necessarily in ord
 
    * Deploy more Soekris/WRAP boxes for monitoring stations and "super nodes"
 
- - allow changing IPs N times a year
+IPv6 support
+  - When adding a server by name, query the AAAA record, too and offer
+    to add both if applicable
 
 allow an organization name and http link for each user for attribution
   - schema change
@@ -38,10 +39,6 @@ check if the servers do HTTP redirects
   - ok if none
   - warning if redirect somewhere else
 
-IPv6 support
-  - update database schema
-  - figure out if each IP is treated individually or together with the IPv4 entry
-
 update use.html page (be more explicit about number of zones)
 
 make the country zones alias to the continent zones when they are otherwise too small
@@ -51,8 +48,8 @@ de-couple the monitoring from the database (So it can work remotely)
 
 Change the schema so we can support multiple monitoring systems
 
-Make an API so the monitoring systems can pull configuration (list of servers) and post back
-monitoring results via HTTP (or jabber?)
+Make an API so the monitoring systems can pull configuration (list of
+servers) and post back monitoring results via HTTP (or jabber?)
 
 Make the monitoring servers use ntpd (noselect) to test the servers 
   - figure out the magic ntpdc commands to add and remove noselect servers
