@@ -179,7 +179,7 @@ sub get_server_info {
 sub req_server {
     my $self      = shift;
     my $server_id = $self->req_param('server');
-    my $server    = NP::Model->server->fetch(($server_id =~ m/\[.:]/ ? 'ip' : 'id') => $server_id);
+    my $server    = NP::Model->server->fetch(($server_id =~ m/[.:]/ ? 'ip' : 'id') => $server_id);
     return unless $server and $server->admin->id == $self->user->id;
     $server;
 }
