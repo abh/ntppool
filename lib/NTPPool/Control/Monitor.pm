@@ -19,6 +19,10 @@ sub render {
 
     if ($self->request->uri =~ m!^/monitor/(v[46])!) {
 
+	if ($self->r->method eq 'POST') {
+	    return $self->upload($monitor, $1);
+	}
+
         my $servers = NP::Model->server->get_servers(
             query => [
                 ip_version => $1,
@@ -37,6 +41,36 @@ sub render {
     }
 
     return 404;
+}
+
+sub upload {
+    my $self = shift;
+    my $monitor = shift;
+    my $proto = shift;
+    my $stats = $self->req_param('stats');
+    if (!defined($stats)) {
+	warn "No stats parameter";
+	return 400;
+    }
+    warn $stats;
+    my @stats = split(/\n/, $stats);
+    for my $line (@stats) {
+	my ($ip, $offset) = split(/ +/,$line);
+	my $server = NP::Model->server->fetch(ip => $ip);
+	if (!defined($server)) {
+	    warn "Bad IP" . $ip;
+	    return 400;
+	}
+	if ($offset eq "unreachable") {
+	    undef($offset);
+	}
+	$server = NP::Model->monitor_report->create(
+	    monitor_id => $monitor->id,
+	    server_id => $server->id,
+	    offset => $offset);
+	$server->save;
+    }
+    return OK, "Saved " . ($#stats+1) . " records", "text/plain";
 }
 
 1;
