@@ -280,14 +280,19 @@ alter table servers add index (deletion_on);
 #38
 create table monitor (
   id int unsigned not null primary key auto_increment,
-  ip varchar(40) NOT NULL unique, 
+  ip varchar(40) NOT NULL unique,
+  user_id INTEGER unsigned not null references users(id),
   created_on datetime not null,
-  last_seen datetime not null
+  last_seen datetime not null,
+  CONSTRAINT monitor_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=INNODB;
 
 create table monitor_report (
-  monitor_id INTEGER unsigned NOT NULL,
+  monitor_id INTEGER unsigned NOT NULL references monitor(id) on delete cascade,
   server_id INTEGER unsigned NOT NULL,
   ts datetime not null,
-  offset REAL
+  offset REAL,
+  CONSTRAINT monitor_report_monitor FOREIGN KEY (monitor_id) REFERENCES monitor(id) ON DELETE CASCADE,
+  CONSTRAINT monitor_report_server FOREIGN KEY (server_id) REFERENCES servers(id) ON DELETE CASCADE
 ) ENGINE=INNODB;
+

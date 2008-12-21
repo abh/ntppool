@@ -819,13 +819,21 @@ __PACKAGE__->meta->setup(
   columns => [
     id               => { type => 'integer', not_null => 1 },
     ip             => { type => 'varchar', default => '', length => 40, not_null => 1 },
-    created_on     => { type => 'datetime', default => '0000-00-00 00:00:00', not_null => 1 },
+    user_id               => { type => 'integer', not_null => 1 },
+    created_on     => { type => 'datetime', default => 'now', not_null => 1 },
     last_seen     => { type => 'datetime', default => '0000-00-00 00:00:00', not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
 
   unique_key => [ 'ip' ],
+
+  foreign_keys => [
+    user => {
+      class       => 'NP::Model::User',
+      key_columns => { user_id => 'id' },
+    },
+  ],
 );
 
 push @table_classes, __PACKAGE__;

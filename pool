@@ -166,6 +166,42 @@ if ($cmd eq "add") {
     logsay($server->id . " add $email $hostname $z");
 
 }
+elsif ($cmd eq "addmonitor") {
+    if ($#ARGV < 1) {
+        die "pool addmonitor <email> <host or IP>\n";
+    }
+
+    # look if the email address is already registered
+    my $email = shift @ARGV;
+    my $user = NP::Model->user->fetch(email => $email);
+    $user = NP::Model->user->fetch(username => $email) unless $user;
+    $user = NP::Model->user->fetch(id       => $email) unless $user;
+    $user = NP::Model->user->fetch_or_create(email => $email) unless $user;
+    $user->save;
+
+    # do we have a hostname or an IP?
+    my $hostname = shift @ARGV;
+    my $ip;
+    if (Net::IP::ip_is_ipv4($hostname)) {
+        $ip       = $hostname;
+        $hostname = undef;
+    }
+    else {
+        my $addrs = gethostbyname($hostname)
+          or die "$hostname does not resolve.\n";
+        if ($#{$addrs->addr_list} > 0) {
+            print "warning: $hostname has multiple IP addresses.\n";
+        }
+        $ip = inet_ntoa(${$addrs->addr_list}[0]);
+    }
+
+    my $monitor = NP::Model->monitor->create(
+        ip       => $ip,
+        user_id  => $user->id,
+    );
+
+    $monitor->save;
+}
 elsif ($cmd eq "edit") {
     my $arg = shift @ARGV or die "pool zones <host or IP>\n";
     my $server = NP::Model->server->find_server($arg);
