@@ -52,24 +52,31 @@ sub upload {
 	warn "No stats parameter";
 	return 400;
     }
+
+    my $dbh = NP::Model->dbh;
+
+    # Delete old records from this monitor for the same protocol
+    $dbh->do(q[delete m.* from monitor_report m, servers s 
+               where m.monitor_id=? and s.id=m.server_id and s.ip_version=?],
+	     undef,
+	     $monitor->id, $proto);
+
     warn $stats;
     my @stats = split(/\n/, $stats);
+    my $sth = $dbh->prepare(q[INSERT INTO monitor_report(monitor_id, server_id, ts, offset)
+                              SELECT ?, s.id, now(), ? FROM servers s WHERE s.ip=?]);
     for my $line (@stats) {
 	my ($ip, $offset) = split(/ +/,$line);
-	my $server = NP::Model->server->fetch(ip => $ip);
-	if (!defined($server)) {
-	    warn "Bad IP" . $ip;
-	    return 400;
-	}
 	if ($offset eq "unreachable") {
 	    undef($offset);
 	}
-	$server = NP::Model->monitor_report->create(
-	    monitor_id => $monitor->id,
-	    server_id => $server->id,
-	    offset => $offset);
-	$server->save;
+	my $res = $sth->execute($monitor->id, $offset, $ip);
+	if ($res != 1) {
+	    return 400, "Failed to update " . $ip;
+	}
     }
+    $monitor->last_seen(time);
+    $monitor->save;
     return OK, "Saved " . ($#stats+1) . " records", "text/plain";
 }
 
