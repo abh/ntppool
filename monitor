@@ -3,11 +3,18 @@ use strict;
 use Net::NTP;
 use LWP;
 use Time::HiRes;
+$Net::NTP::TIMEOUT = 2;
 
 my $poolserver = "http://www.pool.ntp.org/monitor";
 
+my $verbose = 0;
+if (@ARGV[0] eq '-v') {
+    $verbose = 1;
+    shift;
+}
+
 if ($#ARGV < 0 || ((@ARGV[0] != "v4") && (@ARGV[0] != "v6"))) {
-    die "monitor (v4|v6) [poolserver]\n";
+    die "monitor [-v] (v4|v6) [poolserver]\n";
 }
 
 
@@ -51,6 +58,10 @@ for my $server (@hosts) {
         # and use the second result - this is said to solve problems with some
         # crappy Internet access routers.
         my $offset = undef;
+	my $stratum;
+	if ($verbose) {
+	    print "Trying ", $server;
+	}
         for (my $i = 0; !defined($offset) and $i < 2; $i++) {
             $Net::NTP::CLIENT_TIME_RECEIVE = undef;
             my $time_then = Time::HiRes::time;
@@ -66,18 +77,26 @@ for my $server (@hosts) {
                 my $recv_org   = $pkt{'Receive Timestamp'} - $time_now;
                 my $trans_dest = $pkt{'Transmit Timestamp'} - $time_then;
                 $offset = ($recv_org + $trans_dest) / 2;
-                my $offset_abs = abs($offset);
+		$stratum = $pkt{Stratum};
             }
         }
 	
 	if (defined($offset)) {
-	    $status .= sprintf("%s %f\n", $server, $offset);
+	    $status .= sprintf("%s %f %d\n", $server, $offset, $stratum);
+	    if ($verbose) {
+		print " ", $offset, "\n";
+	    }
 	} else {
 	    $status .= sprintf("%s unreachable\n", $server);
+	    if ($verbose) {
+		print " unreachable\n";
+	    }
 	}
 }
 
 $response = $browser->post($url, Content_Type => 'form-data',
 			   Content => [stats => $status,]);
 die "$url error:", $response->status_line unless $response->is_success;
-print $response->content, "\n";
+if ($verbose) {
+    print $response->content, "\n";
+}

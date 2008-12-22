@@ -868,6 +868,7 @@ __PACKAGE__->meta->setup(
     server_id             => { type => 'integer', not_null => 1 },
     ts        => { type => 'datetime', default => 'now', not_null => 1 },
     offset    => { type => 'scalar', length => 64 },
+    stratum        => { type => 'integer' },
   ],
 
   primary_key_columns => [ 'monitor_id', 'server_id' ],

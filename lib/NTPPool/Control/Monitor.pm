@@ -63,14 +63,22 @@ sub upload {
 
     warn $stats;
     my @stats = split(/\n/, $stats);
-    my $sth = $dbh->prepare(q[INSERT INTO monitor_report(monitor_id, server_id, ts, offset)
-                              SELECT ?, s.id, now(), ? FROM servers s WHERE s.ip=?]);
+    my $sth = $dbh->prepare(q[INSERT INTO monitor_report(monitor_id, server_id, ts, offset, stratum)
+                              SELECT ?, s.id, now(), ?, ? FROM servers s WHERE s.ip=?]);
     for my $line (@stats) {
-	my ($ip, $offset) = split(/ +/,$line);
-	if ($offset eq "unreachable") {
-	    undef($offset);
+	my @line = split(/ +/,$line);
+	my $res;
+	my ($ip, $offset, $stratum);
+	if (@line == 3) {
+	    ($ip, $offset, $stratum) = @line;
+	    $res = $sth->execute($monitor->id, $offset, $stratum, $ip);
+	} else {
+	    ($ip, $offset) = @line;
+	    if ($offset ne "unreachable") {
+		return 400, "Invalid line:" . $line;
+	    }
+	    $res = $sth->execute($monitor->id, undef, undef, $ip);
 	}
-	my $res = $sth->execute($monitor->id, $offset, $ip);
 	if ($res != 1) {
 	    return 400, "Failed to update " . $ip;
 	}

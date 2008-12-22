@@ -292,6 +292,7 @@ create table monitor_report (
   server_id INTEGER unsigned NOT NULL,
   ts datetime not null,
   offset REAL,
+  stratum tinyint unsigned default NULL,
   CONSTRAINT monitor_report_monitor FOREIGN KEY (monitor_id) REFERENCES monitor(id) ON DELETE CASCADE,
   CONSTRAINT monitor_report_server FOREIGN KEY (server_id) REFERENCES servers(id) ON DELETE CASCADE
 ) ENGINE=INNODB;
