@@ -18,8 +18,6 @@ sub render {
   $res->tcp_timeout(2);
   $res->udp_timeout(2);
 
-  $res->nameserver('ns1.us.bitnames.com', 'ns2.us.bitnames.com');
-
   my $pool_domain = Combust::Config->new->site->{ntppool}->{pool_domain}
     or die "pool_domain configuration not setup";
 
