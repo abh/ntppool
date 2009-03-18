@@ -277,3 +277,14 @@ alter table servers
 #37
 alter table servers add index (deletion_on);
 
+#38
+CREATE TABLE `log_scores_archive` if not exists (
+  `id` int(11) NOT NULL,
+  `server_id` int(10) unsigned NOT NULL,
+  `ts` datetime NOT NULL,
+  `score` double NOT NULL default '0',
+  `step` double NOT NULL default '0',
+  `offset` double default NULL
+) ENGINE=ARCHIVE DEFAULT CHARSET=utf8;
+
+
