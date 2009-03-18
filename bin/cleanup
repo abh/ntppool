@@ -2,18 +2,13 @@
 eval 'exec $CBROOT/bin/perl $0 ${1+"$@"}'
   unless $running_under_some_shell;
 use strict;
-BEGIN { die "CBROOT required" unless $ENV{CBROOT}; }
-BEGIN { if ($ENV{CBROOTLOCAL}) { use lib "$ENV{CBROOTLOCAL}/lib" } }
-use lib "$ENV{CBROOT}/lib";
 
 use NP::Model;
 
 my $dbh = NP::Model->dbh;
 
 for (1..5) {
-  my $rv = $dbh->do(q[delete from log_scores where ts < date_sub( NOW(), interval 180 day) limit 7500]);
+  my $rv = $dbh->do(q[delete from log_scores where ts < date_sub( NOW(), interval 365 day) limit 7500]);
   last unless $rv;
 }
-
-
 
