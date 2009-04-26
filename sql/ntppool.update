@@ -278,7 +278,7 @@ alter table servers
 alter table servers add index (deletion_on);
 
 #38
-CREATE TABLE `log_scores_archive` if not exists (
+CREATE TABLE if not exists `log_scores_archive` (
   `id` int(11) NOT NULL,
   `server_id` int(10) unsigned NOT NULL,
   `ts` datetime NOT NULL,

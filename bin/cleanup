@@ -2,13 +2,16 @@
 eval 'exec $CBROOT/bin/perl $0 ${1+"$@"}'
   unless $running_under_some_shell;
 use strict;
+use warnings;
 
 use NP::Model;
+use DateTime;
 
 my $dbh = NP::Model->dbh;
 
-for (1..5) {
-  my $rv = $dbh->do(q[delete from log_scores where ts < date_sub( NOW(), interval 365 day) limit 7500]);
-  last unless $rv;
-}
+my $archive_date = my $yesterday = DateTime->now->subtract( days => 21 )->date;
+
+my $rv = $dbh->do(q[insert into log_scores_archive select * from log_scores where ts < ?], {}, $archive_date);
+die unless $rv;
+$rv = $dbh->do(q[delete from log_scores where ts < ?], {}, $archive_date);
 
