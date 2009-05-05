@@ -32,8 +32,10 @@
  'Subscribe in a reader' | l %]
 </a>
 
-<a href="http://feed.news.ntppool.org/ntppool"><img valign="top" src="http://feeds.feedburner.com/~fc/ntppool?bg=FFFFFF&amp;fg=444444&amp;anim=0"
-height="26" width="88" style="border:0" alt="" /></a>
+<a href="http://feed.news.ntppool.org/ntppool">
+  <img src="http://feeds2.feedburner.com/~fc/ntppool?bg=FFFFFF&amp;fg=444444&amp;anim=0"
+       height="26" width="88" style="border:0" alt="" />
+</a>
 
 <br/>
 
