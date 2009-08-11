@@ -208,6 +208,7 @@ sub servers_with_urls {
                     [ 'in_pool' => 1,
                       'in_server_list' => 1,
                      ],
+                    'deletion_on' => undef,
                     'score_raw' => { gt => 0 },
                    ],
          require_objects => ['server_urls'],
