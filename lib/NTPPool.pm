@@ -1,6 +1,7 @@
 package NTPPool;
 
 use NTPPool::Control;
+use NTPPool::Control::Basic;
 use NTPPool::Control::Scores;
 use NTPPool::Control::DNSStatus;
 use NTPPool::Control::Manage;
