@@ -14,6 +14,8 @@ BEGIN {
 sub render {
   my $self = shift;
 
+  $self->cache_control('s-maxage=1800');
+
   return $self->redirect('/scores/') if ($self->request->uri =~ m!^/s/?$!);
 
   if ($self->request->uri =~ m!^/s/([^/]+)!) {
@@ -60,6 +62,8 @@ sub render {
 
 sub history_sparkline_png {
     my ($self, $server) = @_;
+
+    $self->cache_control('s-maxage=5400');
 
     my $width  = 160;
     my $height = 64;

@@ -9,3 +9,4 @@ rrd/
 docs/ntppool/_syndicate/
 dns/
 
+*.gzip

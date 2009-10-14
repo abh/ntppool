@@ -23,6 +23,8 @@ sub render {
 
   # $pool_domain = 'pool.ntp.org';
 
+  $self->cache_control('s-maxage=45');
+
   my $query = $res->query($pool_domain, "NS");
 
   my %servers;
@@ -89,12 +91,14 @@ sub render {
     }
   }
 
+  alarm(0);
+
   my @servers = sort { $a->{name} cmp $b->{name} } values %servers;
   $self->tpl_param('servers' => \@servers);
   my $master = first { $_->{serial} && $_->{serial} == $max_serial } values %servers;
   $self->tpl_param('master'  => $master);
 
-  alarm(0);
+  $self->tpl_param('now' => DateTime->now);
 
   return OK, $self->evaluate_template('tpl/dns.html');
 

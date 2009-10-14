@@ -65,6 +65,13 @@ sub render {
       $self->tpl_param('servers', \@servers);
   }
 
+  unless ($self->show_servers_access) {
+      $self->cache_control('s-maxage=900, maxage=1800');
+  }
+  else {
+      $self->cache_control('private');
+  }
+
   return OK, $self->evaluate_template('tpl/zone.html');
 }
 

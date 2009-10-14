@@ -189,5 +189,29 @@ sub count_by_continent {
     \@zones
 }
 
+sub cache_control {
+    my $self   = shift;
+    return $self->{cache_control} unless @_;
+    return $self->{cache_control} = shift;
+}
+
+
+sub post_process {
+    my $self = shift;
+
+    # Tell IE8 that standards mode is what we want
+    # http://farukat.es/journal/2009/05/245-ie8-and-the-x-ua-compatible-situation
+    $self->request->header_out('X-UA-Compatible', 'IE=8');
+
+    if (my $cache = $self->cache_control) {
+        my $req = $self->request;
+        $req->header_out('Cache-Control', $cache);
+    }
+
+    return OK;
+}
+
+
+
 
 1;

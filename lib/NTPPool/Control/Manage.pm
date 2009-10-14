@@ -16,6 +16,7 @@ sub render {
     my $self = shift;
 
     $self->r->no_cache(1);
+    $self->cache_control('private');
 
     if ($self->request->uri =~ m!^/manage/logout!) {
         $self->cookie($Combust::Control::Bitcard::cookie_name, 0);
