@@ -1,5 +1,7 @@
 High priority things:
 
+  * Make the combust lang= cookie be a regular cookie
+
   * Use Net::IP instead of Net::IPv6Addr
 
   * Normalize IP addresses before they are added (and make a one-time
