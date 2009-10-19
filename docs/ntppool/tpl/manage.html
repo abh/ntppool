@@ -1,14 +1,13 @@
-<script src="[% combust.static_url("/js/jsonmin.js") %]" type="text/javascript"></script>
+[% page.js = BLOCK %]
+[% page.js %]
 <script src="[% combust.static_url("/js/ntppool.js") %]" type="text/javascript"></script>
-
+[% END %]
 
 
 [% PROCESS tpl/manage/navigation.html %]
 
-[% prototype_js = 1 %]
-
 <div id="admin" class="block">
-	<h3>Admin information <img id="busy" style="display: none;"  src="/st/images/progress.gif"></h3>
+	<h3>Admin information</h3>
 	[% user = combust.user %]	
 	<div class="profile yui-g">
 		<div class="yui-u first">
@@ -53,7 +52,9 @@
 -->
 	
 	<div class="servers" >
-		<h3>Your Servers</h3>
+		<h3>Your Servers
+                   <img id="busy" style="display: none; float: right;" src="[% combust.static_url("/images/progress.gif") %]">
+                </h3>
 		<div class="value">
 			<span class="add"><a href="#add">Add a server</a></span>
 			[% servers = user.servers; 

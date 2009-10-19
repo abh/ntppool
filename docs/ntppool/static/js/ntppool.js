@@ -1,51 +1,33 @@
+if (!NP) var NP = {};
 
-  function netspeed_updated(server_id, request) {
-        try {
-          // alert(request);
+  NP.netspeed_updated = function(server_id, data, status) {
+          $('#netspeed_' + server_id ).fadeIn(400);
+          $('#netspeed_' + server_id ).html(data.netspeed);
+          $('#zones_' + server_id ).html(data.zones);
+  };
 
-        var obj = JSON.parse(request.responseText);
+  NP.update_netspeed = function(server_id, netspeed) {
 
-          $('netspeed_' + server_id ).innerHTML = obj.netspeed;
-          $('zones_' + server_id ).innerHTML = obj.zones;
+     var pars = { "netspeed": netspeed, "server": server_id };
 
-          Element.setOpacity($('netspeed_' + server_id ), 0);
-          $('netspeed_' + server_id ).style.visibility = 'visible';
-          Effect.Appear('netspeed_' + server_id, { duration: 0.7 } );
-          
+     $('#netspeed_' + server_id ).fadeOut(50);
 
-        //  $('netspeed_checkmark_' + server_id).style.visibility = 'visible';
-        //  Effect.Pulsate('netspeed_checkmark_' + server_id, { duration: 0.5 } );
-        }
-        catch(e) {
-            document.write(e.message + "<br/>");
-        }     
+     jQuery.getJSON( '/manage/server/update/netspeed', pars, 
+                     function(data, textStatus) {
+                         NP.netspeed_updated(server_id, data)
+                     }
+                    );
+  };
 
-        
-  }
 
-  function update_netspeed(server_id, netspeed) {
-//     Object.dpDump(server_id);
-//     Object.dpDump(netspeed);
+$(document).ready(function () {
 
-     var pars = 'netspeed=' + netspeed + '&server=' + server_id;
+  $("#busy")
+    .ajaxStart(function(){
+        $(this).show(70);
+    })
+    .ajaxStop(function(){
+        $(this).hide(70);
+    });
 
-     $('netspeed_' + server_id ).style.visibility = 'hidden';
-
-   // 'netspeed_' + server_id
-     var onComp = function(request) { netspeed_updated(server_id, request) }
-     new Ajax.Request( '/manage/server/update/netspeed', { parameters: pars,asynchronous: 1,onComplete: onComp } );
-  }
-
-Ajax.Responders.register({
-  onCreate: function() {
-    if($('busy') && Ajax.activeRequestCount>0) {
-      Effect.Appear('busy',{duration:0.5,queue:'end'});
-    }
-  },
-  onComplete: function() {
-    if($('busy') && Ajax.activeRequestCount===0) {
-      Effect.Fade('busy',{duration:0.5,queue:'end'});
-    }
-  }
 });
-

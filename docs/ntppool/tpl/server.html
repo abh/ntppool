@@ -62,15 +62,18 @@ This server is <span class="deletion">scheduled for deletion</span> on %1.
 <span style="font-size:60%"># [% server.id %], <a href="[% server.url %]/log?limit=50">[% "CSV log" | l %]</a>
 | <a href="[% server.url %]/rrd">RRD</a> |
 <a id="graph_explanation_link"
-   onclick="toggleDisplay('graph_explanation_box');"
+   onclick="$('#graph_explanation_box').show()"
    href="/scores/[% server.ip %]?graph_explanation=1#graph_explanation">[% "What do the graphs mean?" | l %]</a>
 </span>
 </p>
 
-<script>
-  var link = document.getElementById('graph_explanation_link');
-  if (link) link.href='#graph_explanation';
-</script>
+[% page.js = BLOCK %]
+  [% page.js %]
+  <script>
+    var link = $('#graph_explanation_link');
+    if (link) link.attr({ "href": "#graph_explanation" });
+  </script>
+[% END %]
 
 <a name="graph_explanation"></a>
 

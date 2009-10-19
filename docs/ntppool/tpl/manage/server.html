@@ -24,11 +24,11 @@ Zones:
 <input type="hidden" name="noscript" value="1">
 
 <a href="#netspeed">Net speed</a>:
-<span  id="netspeed_[% server.id %]">[% server.netspeed_human %]
+<span id="netspeed_[% server.id %]">[% server.netspeed_human %]
 </span>
 <!-- <img id="netspeed_checkmark_[% server.id %]" src="/images/checkmark.png" style="visibility:hidden;" > -->
  | 
-<select name="netspeed" onchange="update_netspeed('[% server.id %]', this.value); return false;">
+<select name="netspeed" onchange="NP.update_netspeed('[% server.id %]', this.value); return false;">
 <option value="">Set connection speed</option>
 [% FOR speed = [256, 512, 768, 1000, 1500, 3000, 10000, 25000, 50000, 100000, 1000000] %]
 <option value="[% speed %]">[% combust.netspeed_human(speed) %]</option>
