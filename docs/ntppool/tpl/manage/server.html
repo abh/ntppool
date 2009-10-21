@@ -26,11 +26,15 @@ Zones:
 <a href="#netspeed">Net speed</a>:
 <span id="netspeed_[% server.id %]">[% server.netspeed_human %]
 </span>
-<!-- <img id="netspeed_checkmark_[% server.id %]" src="/images/checkmark.png" style="visibility:hidden;" > -->
  | 
 <select name="netspeed" onchange="NP.update_netspeed('[% server.id %]', this.value); return false;">
 <option value="">Set connection speed</option>
-[% FOR speed = [256, 512, 768, 1000, 1500, 3000, 10000, 25000, 50000, 100000, 1000000] %]
+[%  speeds = [384, 512, 768, 1000, 1500, 3000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000];
+    IF (server.netspeed < 384);
+       speeds.unshift(server.netspeed);
+    END;
+    FOR speed = speeds;
+ %]
 <option value="[% speed %]">[% combust.netspeed_human(speed) %]</option>
 [%- END %]
 </select>
