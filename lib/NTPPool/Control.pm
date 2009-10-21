@@ -195,7 +195,7 @@ sub localize_url {
         my $lang = $self->language;
         
         my $uri =
-          URI->new($self->config->base_url
+          URI->new($self->config->base_url('ntppool')
                    . $self->request->uri
                    . ($self->request->args ? '?' . $self->request->args : ''));
         
