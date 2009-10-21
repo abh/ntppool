@@ -4,6 +4,10 @@ eval 'exec $CBROOT/bin/perl $0 ${1+"$@"}'
   if $running_under_some_shell;
 use strict;
 use warnings;
+use Combust::Util qw(run);
+
+run("$ENV{CBROOT}/bin/deploy/static_version_cache");
+
 
 # we run this in a deployment script ...
 #system("$ENV{CBROOTLOCAL}/bin/deploy/compress_static_files");
