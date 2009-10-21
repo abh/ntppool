@@ -22,8 +22,9 @@ my %growth_targets =
    2005 => 0.45,
    2006 => 0.50,
    2007 => 0.35,
-   2008 => 0.35,
+   2008 => 0.32,
    2009 => 0.30,
+   default => 0.25
   );
 
 my $zones = NP::Model->zone->get_zones_iterator;
@@ -184,7 +185,7 @@ sub update_target_rrd {
             my $start_active = $first_stats->count_active;
             my $first_day = $first_stats->date->day_of_year;
 
-            my $year_growth_goal = $start_active * $growth_targets{$year};
+            my $year_growth_goal = $start_active * ($growth_targets{$year} || $growth_targets{default});
             $year_growth_goal    = 5 - $start_active if $year_growth_goal < 2;
 
             my $days_in_year = DateTime->new(year => $year)->is_leap_year ? 366 : 365;
