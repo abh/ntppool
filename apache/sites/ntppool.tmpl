@@ -50,11 +50,6 @@
        SetHandler default
     </Location>
 
-    <Location /bulletin>
-      SetHandler perl-script
-      [% PH %] NTPPool::Control::Bulletin->super
-    </Location>
-
     <Location /zone>
       SetHandler perl-script
       [% PH %] NTPPool::Control::Zone->super
