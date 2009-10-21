@@ -3,7 +3,13 @@ use base qw(NTPPool::Control Combust::Control::Basic);
 
 sub render {
     my $self = shift;
-    $self->force_template_processing(1) if $self->request->uri =~ m!^/robots.txt$!;
+    if ($self->request->uri =~ m!^/robots.txt$!) {
+        $self->force_template_processing(1)
+    }
+    else {
+        $self->localize_url;
+    }
+
     return $self->SUPER::render(@_);
 }
 

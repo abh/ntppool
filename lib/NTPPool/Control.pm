@@ -88,8 +88,8 @@ sub init {
       $self->r->user( $self->user->username );
   }
 
-  my @lang = $self->languages;
-  NP::I18N::loc_lang( $lang[0] );
+  my $lang = $self->language;
+  NP::I18N::loc_lang( $lang );
 
   return OK;
 }
@@ -119,7 +119,7 @@ sub bc_info_required {
 sub get_include_path {
     my $self = shift;
     my $path = $self->SUPER::get_include_path;
-    my ($language) = $self->languages;
+    my ($language) = $self->language;
 
     # Always use the 'en' file as last resort. Maybe this should come
     # in before "shared" etc...
@@ -133,46 +133,77 @@ sub get_include_path {
     $path;
 }
 
-sub current_language {
-    my $self = shift;
-    return ($self->languages)[0];
-}
-
-# TODO: make this actually return a list of possible languages rather
-# than just one
-sub languages {
+# Because of how the varnish caching works there's just one language
+# with fallback to English.  If we ever get more dialects we'll worry
+# about that then.
+sub language {
     my $self = shift;
     return $self->{_lang} if $self->{_lang}; 
-    my $language = first { $valid_languages{$_} } $self->detect_languages;
+    my $language = $self->detect_language;
     return $self->{_lang} = $language || 'en';
+}
+
+sub valid_language {
+    my $self = shift;
+    my @languages = @_;
+    return first { $valid_languages{$_} } @languages;
 }
 
 sub valid_languages {
     \%NTPPool::Control::valid_languages;
 }
 
-sub detect_languages {
+sub path_language {
+    my $self = shift;
+    my $path_language = $self->request->notes('lang');
+    return $path_language;
+}
+
+sub detect_language {
     my $self = shift;
 
-    my $path_language = $self->request->notes('lang');
-    if ($path_language) {
-        $self->cookie('lang', $path_language);
-        return $path_language;
+    if (my $lang_cookie = $self->plain_cookie('lang') || $self->cookie('lang')) {
+        if ($self->cookie('lang')) {
+            $self->plain_cookie('lang', $lang_cookie);
+            $self->cookie('lang', undef);
+        }
+        return $lang_cookie if $self->valid_language($lang_cookie);
     }
-
-    my $lang_cookie = $self->cookie('lang');
-    return $lang_cookie if $lang_cookie;
 
     $ENV{REQUEST_METHOD}       = $self->request->method;
     $ENV{HTTP_ACCEPT_LANGUAGE} = $self->request->header_in('Accept-Language') || '';
     my @lang = implicate_supers( I18N::LangTags::Detect::detect() );
-    @lang;
+    my $lang = $self->valid_language(@lang);
+
+    $self->plain_cookie($lang) if $lang;
+
+    return $lang;
 }
 
 *loc = \&localize;
 sub localize {
     my $self = shift;
-    my $lang = $self->languages;
+    my $lang = $self->language;
+}
+
+sub localize_url {
+    my $self = shift;
+    if (!$self->path_language
+        and $self->request->method =~ m/^(head|get)$/ 
+        and $self->request->uri !~ m{^/manage}
+       ) {
+        my $lang = $self->language;
+        
+        my $uri =
+          URI->new($self->config->base_url
+                   . $self->request->uri
+                   . ($self->request->args ? '?' . $self->request->args : ''));
+        
+        $uri->path("/$lang" . $uri->path);
+        $self->request->header_out('Vary', 'Accept-Language');
+        $self->cache_control('s-maxage=900, maxage=3600');
+        die $self->redirect($uri->as_string);
+    }
 }
 
 sub count_by_continent {
@@ -195,7 +226,6 @@ sub cache_control {
     return $self->{cache_control} = shift;
 }
 
-
 sub post_process {
     my $self = shift;
 
@@ -209,6 +239,23 @@ sub post_process {
     }
 
     return OK;
+}
+
+sub plain_cookie {
+    my $self   = shift;
+    my $cookie = shift;
+    my $value  = shift || '';
+    my $args   = shift || {};
+
+    my $ocookie = $self->request->get_cookie($cookie) || '';
+
+    return $ocookie unless $value;
+    return $ocookie if $value eq $ocookie;
+
+    $args->{path}   ||= '/';
+    $args->{expires} = '+30d' unless defined $args->{expires};
+
+    return $self->request->cookie($cookie, $value, $args);
 }
 
 
