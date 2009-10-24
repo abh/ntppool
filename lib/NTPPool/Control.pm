@@ -162,20 +162,22 @@ sub path_language {
 sub detect_language {
     my $self = shift;
 
-    if (my $lang_cookie = $self->plain_cookie('lang') || $self->cookie('lang')) {
-        if ($self->cookie('lang')) {
-            $self->plain_cookie('lang', $lang_cookie);
-            $self->cookie('lang', undef);
-        }
-        return $lang_cookie if $self->valid_language($lang_cookie);
+    my $language_choice = $self->plain_cookie('lang')
+      || $self->request->header_in('X-Language') 
+      || $self->cookie('lang');
+
+    if (my $old_cookie = $self->cookie('lang')) {
+        $self->plain_cookie('lang', $old_cookie);
+        $self->cookie('lang', undef);
     }
+    return $language_choice if $self->valid_language($language_choice);
 
     $ENV{REQUEST_METHOD}       = $self->request->method;
     $ENV{HTTP_ACCEPT_LANGUAGE} = $self->request->header_in('Accept-Language') || '';
     my @lang = implicate_supers( I18N::LangTags::Detect::detect() );
     my $lang = $self->valid_language(@lang);
 
-    $self->plain_cookie($lang) if $lang;
+    $self->plain_cookie('lang', $lang) if $lang;
 
     return $lang;
 }
