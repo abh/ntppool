@@ -4,9 +4,6 @@ use utf8;
 use Combust::Constant qw(OK);
 use base qw(Combust::Control Combust::Control::Bitcard);
 
-use Class::Accessor::Class;
-use base qw(Class::Accessor::Class);
-
 use HTML::Prototype;
 use Carp qw(cluck);
 use Storable qw(retrieve);
