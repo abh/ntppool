@@ -20,15 +20,15 @@ my $config = Combust::Config->new;
 our %valid_languages = (
                         en => { name => "English", },
                         fr => { name => "Français", },
-                        nl => { name => "Nederlands", },
+                        #nl => { name => "Nederlands", },
+                        pl => { name => "Polish",
+                                testing => 1 },
                         da => { name => "Danish",
                                 testing => 1,
                               },
                        );
 
-NP::I18N::add_directory( $config->root_local . '/i18n' );
 NP::I18N::loc_lang('en');
-
 
 my $prototype = HTML::Prototype->new;
 sub prototype {
@@ -136,7 +136,7 @@ sub get_include_path {
 sub language {
     my $self = shift;
     return $self->{_lang} if $self->{_lang}; 
-    my $language = $self->detect_language;
+    my $language = $self->path_language || $self->detect_language;
     return $self->{_lang} = $language || 'en';
 }
 
