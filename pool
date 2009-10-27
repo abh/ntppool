@@ -412,19 +412,16 @@ elsif ($cmd eq "zone") {
     }
     close HEAD;
 
-    my $ttl     = 1200;
+    my $ttl     = 600;
     my $pgeodns = {
         serial => $time,
         ttl    => $ttl,
     };
 
     my $www_record = {
-        cname => 'ntppool.develooper.com',
+        cname => 'ntppool-varnish.develooper.com',
         ttl   => 7200,
     };
-
-    $www_record->{cname} = 'ntp2.lax.ntppool.net'
-      if hostname eq 'ntp2.lax.ntppool.net';
 
     $pgeodns->{data}->{www} = $www_record;
     $pgeodns->{data}->{web} = $www_record;
