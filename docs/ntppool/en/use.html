@@ -10,12 +10,14 @@
 	system - <b>Linux, *BSD, Windows and even some more exotic systems</b>) is
 	really simple:
 	</p>
+
 <pre class="code">
 driftfile /var/lib/ntp/ntp.drift
 
 server 0.pool.ntp.org
 server 1.pool.ntp.org
-server 2.pool.ntp.org</pre>
+server 2.pool.ntp.org
+server 3.pool.ntp.org</pre>
 	<p>
 	The 0, 1 and 2.pool.ntp.org names point to a random set of servers that will
 	change every hour.  Make sure your computer's clock is set to something

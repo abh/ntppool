@@ -66,11 +66,11 @@
 	href="mailto:ask@develooper.com">ask@develooper.com</a>.
 	</p>
 	<p>
-	I'd ask you to also subscribe to the <a
-	href="mailto:timekeepers-announce-request@fortytwo.ch?subject=subscribe"
-	>timekeepers-announce@fortytwo.ch</a> mailing list so you keep up with newest
-	developments (I try to keep the mail volume down at around one message per
-	month).
+	I'd ask you to also subscribe to
+	the <a href="http://news.ntppool.org/atom.xml">weblog feed</a>
+	and to the
+        <a href="mailto:timekeepers-announce-request@fortytwo.ch?subject=subscribe">
+        timekeepers-announce</a> mailing list.
 	</p>
 	<p>
 	It would be nice (but it's not necessary) if you could redirect web requests
@@ -78,8 +78,7 @@
 	<tt>http://www.pool.ntp.org</tt>. If you run Apache, you could do this with:
 	</p>
 
-[% PROCESS tpl/join/virtual_host_example.html %]
-	
+        [% PROCESS tpl/join/virtual_host_example.html %]
 
 	<p>
 	Again, this is only if you run a webserver anyway. The official project web 
@@ -88,11 +87,10 @@
 	to just get a random web page.
 	</p>
 	<p>
-	Once added to the pool the server is
-	constantly monitored for quality, using a scoring algorithm described in <a
-	href="https://fortytwo.ch/mailman/pipermail/timekeepers-announce/2003/000006.html"
-	>this email</a>.  You can watch your server's performance using the <a
-	href="scores">web frontend</a> or the <a href="/manage">management page</a>.
+	Once added to the pool the server is constantly monitored for
+        availability and precision.  You can watch your server's
+        performance using the <a href="scores">web frontend</a> or
+        the <a href="/manage">management page</a>.
 	</p>
 </div>
 

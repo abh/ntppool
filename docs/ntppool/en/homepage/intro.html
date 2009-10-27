@@ -1,34 +1,29 @@
 	<p>
 	The pool.ntp.org project is a big virtual cluster of timeservers
-	striving to provide reliable easy to use NTP service for millions of
-	clients without putting a strain on the big popular timeservers.
+	providing reliable <a href="use.html">easy to use</a> NTP service
+        for millions of	clients.
 	</p>
 	<p>
-	<a href="http://fortytwo.ch/">Adrian von Bidder</a> created this
-	project after a <a
-	href="http://groups.google.com/groups?threadm=3E2DBFF7.F9A51614%40udel.edu"
-	>discussion</a> about resource consumption on the big timeservers,
-	with the idea that for everyday use a DNS round robin would be good
-	enough, and would allow spreading the load over many servers. The
-	disadvantage is, of course, that you may occasionally get a bad server
-	and that you usually won't get the server closest to you.  The
-	workarounds for this is respectively to make sure you configure at
-	least three servers in your ntp.conf and to use the country zones (for
-	example 0.us.pool.ntp.org) rather than the global zone (for example
-	0.pool.ntp.org).  Read more on <a
-	href="http://www.pool.ntp.org/use.html">using the pool</a>.
+	The pool is being used by millions or tens of millions of
+	systems around the world.  It's the default "time server" for
+	most of the major Linux distributions and many networked appliances
+	(see <a href="vendors.html">information for vendors</a>).
 	</p>
+        <p>
+        Because of the large number of users we are in need of more
+        servers.  If you have a server with a static IP address always
+        available on the internet, please considering <a href="join.html">
+        adding it to the system</a>.
+        </p>
 	<p>
-	The pool is now enormously popular, being used by millions of systems
-	around the world.  It's the default "time server" for most of the major 
-        Linux distributions (see <a href="/vendors">information for vendors</a>).
-	</p>
-	<p>
-	The pool project has since 2005 been maintained by <a
-	href="http://www.askbjoernhansen.com/">Ask Bj&oslash;rn
-	Hansen</a> and a great group of contributors on the <a
-	href="/mailinglists.html">mailing lists</a>.
+	The project is maintained and developed
+	by <a href="http://www.askbjoernhansen.com/">Ask Bj&oslash;rn
+	Hansen</a> and a great group of contributors on
+	the <a href="/mailinglists.html">mailing lists</a>. The code
+	is <a href="http://github.com/abh/ntppool">available</a>.
+        </p>
 
+        <p>
         Hosting and bandwidth for the "hub" servers are currently
         provided by <a href="http://develooper.com/">Develooper</a>,
         <a href="http://www.phyber.com/">Phyber Communications</a> and
