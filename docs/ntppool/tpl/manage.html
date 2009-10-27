@@ -80,14 +80,18 @@
 		</p>
 
 		<p>
-		The speed setting is used to give servers on faster connections
-		relatively more traffic.  Currently this load balancing logic is very
-		crude (basically we only put your server in the global zone if the
-		speed is 786Kbit or higher).
+		The amount of queries your server will get is
+		generally directly proportional to the netspeed, so a
+		50Mbit setting will get about 5 times more traffic
+		than the 10Mbit setting. The pool will only use a
+		fraction of the "netspeed setting".  Be aware that the
+		amount of queries to your server will grow over time.
 		</p>
 
 		<p>
-		The "availability <b>score</b>" goes up to 20.  It must be higher than 5 for the server to be included in the cluster.
+		The "availability <b>score</b>" goes up to 20.  It
+		must be higher than 5 for the server to be included in
+		the cluster.
 		</p>
 
 		<p>As noted on the <a href="/join.html">join information</a> page adding
