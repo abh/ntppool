@@ -1,0 +1,88 @@
+# translation of to Russian
+# Sergey Ptashnick <root@kangran.ru>
+
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "go up"
+msgstr "наверх"
+
+# zone names
+msgid "Africa"
+msgstr "Африка"
+
+msgid "Asia"
+msgstr "Азия"
+
+msgid "North America"
+msgstr "Северная Америка"
+
+msgid "South America"
+msgstr "Южная Америка"
+
+msgid "Global"
+msgstr "Итого"
+
+msgid "All Pool Servers"
+msgstr "Всего серверов в пуле"
+
+# mailinglists.html
+msgid  "NTP Pool mailing lists"
+msgstr "Списки рассылки пула NTP"
+
+msgid  "subscribe"
+msgstr "подписаться"
+
+msgid  "archive"
+msgstr "архив"
+
+msgid  "Announcement list"
+msgstr "Новостная рассылка"
+
+msgid  "Discussion list"
+msgstr "Рассылка для обсуждений"
+
+msgid  "Development list"
+msgstr "Рассылка для разработчиков"
+
+msgid  "announcement_list_description"
+msgstr "Рассылка новостей пула NTP. Ее трафик очень невелик. Всем администраторам серверов пула рекомендуется подписаться на эту рассылку."
+
+msgid  "discussion_list_description"
+msgstr "Эта рассылка предназначена для администраторов серверов пула и просто пользователей, которые хотят более активно участвовать в проекте.<br/> Разумеется, обсуждение общих вопросов, относящихся к NTP, должно происходить в Usenet-конференции %1 (<a href=\"%2\">доступна</a> через сервис Google Groups)."
+
+msgid  "development_list_description"
+
+msgstr "Здесь обсуждаются технические вопросы, связанные с разработкой <a href=\"%1\">исходного кода пула NTP</a> и <a href=\"%2\">pgeodns</a>."
+
+
+# tpl/server.html
+msgid  "Back to the front page"
+msgstr "На главную старницу"
+
+msgid  "Find"
+msgstr "Поиск"
+
+msgid  "Stats for %1"
+msgstr "Статистика для %1"
+
+msgid  "Not active in the pool, monitoring only"
+msgstr "Не участвует в пуле. Только наблюдается."
+
+msgid  "Zones:"
+msgstr "Зоны:"
+
+msgid  "This server is <span class="deletion">scheduled for deletion</span> on %1."
+msgstr "Этот сервер был <span class="deletion">поставлен на удаление</span> %1."
+
+msgid  "Current score: %1 (only servers with a score higher than 5 are used in the pool)"
+msgstr "Текущий рейтинг: %1 (в пуле используются только сервера с рейтингом выше 5)"
+
+msgid  "What do the graphs mean?"
+msgstr "Что означают эти графики?"
+
+msgid  "CSV log"
+msgstr "Журнал в формате CSV"

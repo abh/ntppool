@@ -21,6 +21,7 @@ our %valid_languages = (
                         en => { name => "English", },
                         fr => { name => "Français", },
                         #nl => { name => "Nederlands", },
+                        ru => { name => "русский", },  
                         pl => { name => "Polish",
                                 testing => 1 },
                         da => { name => "Danish",
