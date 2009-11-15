@@ -19,19 +19,15 @@ See the LICENSE file for detailed copyright and licensing information.
 
 -------------------------------------------------------------------------
 Quick and dirty install instructions; email ask@develooper.com for
-help.  For Combust installation instructions, see also the following
-URL.  It doesn't apply 100% to the pool setup, but it might be
-helpful.
-        http://combust.develooper.com/install-osx.html
+help.
 
-CPAN modules needed are listed in the Bundle::NP file,
-   perldoc lib/Bundle/NP.pm
-
-   (The NTP Pool code is spread over NTPPool::* and NP::* ...)
+CPAN modules for OS X (intel, 10.6) and i386 Linux are installed in the cpan/
+submodule.
 
 export DIR=`pwd`/ntppool
+# you can also clone on github: http://github.com/abh/ntppool
 git clone git://git.develooper.com/ntppool.git
-cd ntppool
+xscd ntppool
 git submodule init
 git submodule update
 
