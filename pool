@@ -2,8 +2,6 @@
 eval 'exec $CBROOT/bin/perl $0 ${1+"$@"}'
   unless $running_under_some_shell;
 use strict;
-use lib "$ENV{CBROOTLOCAL}/lib";
-use lib "$ENV{CBROOT}/lib";
 use Combust::DB;
 use Combust::Config;
 use List::Util qw(shuffle);
@@ -452,7 +450,12 @@ elsif ($cmd eq "zone") {
 
     for my $name (@vendor_zone_names) {
         for my $i (0 .. 3) {
-            $pgeodns->{data}->{"$i.$name"}->{cname} = "$i.${pool_domain}";
+	    if ($i == 3) {
+	        $pgeodns->{data}->{"$i.$name"}->{alias} = "$i";
+	    }
+	    else {
+	        $pgeodns->{data}->{"$i.$name"}->{cname} = "$i.${pool_domain}";
+	    }
             print $fh "C$i.$name.${pool_domain}:$i.${pool_domain}:$ttl\n";
         }
     }
