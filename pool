@@ -450,12 +450,7 @@ elsif ($cmd eq "zone") {
 
     for my $name (@vendor_zone_names) {
         for my $i (0 .. 3) {
-	    if ($i == 3) {
-	        $pgeodns->{data}->{"$i.$name"}->{alias} = "$i";
-	    }
-	    else {
-	        $pgeodns->{data}->{"$i.$name"}->{cname} = "$i.${pool_domain}";
-	    }
+            $pgeodns->{data}->{"$i.$name"}->{alias} = "$i";
             print $fh "C$i.$name.${pool_domain}:$i.${pool_domain}:$ttl\n";
         }
     }
