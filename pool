@@ -424,6 +424,7 @@ elsif ($cmd eq "zone") {
     $pgeodns->{data}->{www} = $www_record;
     $pgeodns->{data}->{web} = $www_record;
 
+    # todo: check logs that this isn't used...
     for (0 .. 3) {
         $pgeodns->{data}->{"$_.vendors"} = {
             cname => "$_.$pool_domain",
