@@ -475,14 +475,18 @@ elsif ($cmd eq "zone") {
         next unless $entries and @$entries;
 
         my $min_non_duplicate_size = 2;
-        $min_non_duplicate_size = int(@$entries / 5)
-          if (@$entries / 5 > $min_non_duplicate_size);
+	my $response_records = 3;
+	my @zones = ("", "0.", "1.", "2.", "3.");
+	my $zone_count = scalar @zones;
+
+        $min_non_duplicate_size = int(@$entries / $zone_count)
+          if (@$entries / $zone_count > $min_non_duplicate_size);
 
         print $fh "# " . scalar @$entries . " active servers in ", $zone->name, "\n";
 
-        if ($#$entries < ($min_non_duplicate_size * 5 - 1)) {
+        if ($#$entries < ($min_non_duplicate_size * $zone_count - 1)) {
             print $fh "# possible duplicates in the zones below (", $zone->name, ")\n";
-            foreach my $z (("", "0.", "1.", "2.", "3.")) {
+            foreach my $z (@zones) {
                 (my $pgeodns_group = "$z${name}") =~ s/\.$//;
                 $pgeodns->{data}->{$pgeodns_group}->{a} = [];
                 @$entries = shuffle(@$entries);
@@ -498,7 +502,7 @@ elsif ($cmd eq "zone") {
         else {
             print $fh "# 'big' zone without duplicates below (", $zone->name, ")\n";
             @$entries = shuffle(@$entries);
-            foreach my $z (("", "0.", "1.", "2.", "3.")) {
+            foreach my $z (@zones) {
                 (my $pgeodns_group = "$z${name}") =~ s/\.$//;
                 $pgeodns->{data}->{$pgeodns_group}->{a} = [];
                 for (my $i = 0; $i < $min_non_duplicate_size; $i++) {
