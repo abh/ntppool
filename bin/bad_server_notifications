@@ -49,8 +49,9 @@ for my $admin (@$admins) {
     }
 
     for my $server (@bad_servers) {
-        my $alert = $server->server_alert || NP::Model->server_alert->create(server_id => $server->id);
+        my $alert = $server->alert;
         $alert->mark_sent;
+        $alert->save;
     }
 
     #last;

@@ -2,11 +2,10 @@ use Test::More tests => 10;
 use strict;
 
 BEGIN {
-  use_ok('NTPPool::Server::Alert');
-  use_ok('NTPPool::Server');
+  use_ok('NP::Model');
 }
 
-my $dbh = NTPPool::DBI->dbh;
+my $dbh = NP::Model->dbh;
 
 END {
   $dbh->do(q[delete from servers where ip like '127.0.0.%']);
@@ -14,8 +13,8 @@ END {
 };
 
 
-ok(my $admin  = NTPPool::Admin->create({ email => 'test@example.com' }), 'create admin');
-ok(my $server = NTPPool::Server->create({ admin => $admin, ip => '127.0.0.2' }), "create server");
+ok(my $admin  = NP::Model::User->new( email => 'test@example.com'), 'create admin');
+ok(my $server = NP::Model::Server->new(user => $admin, ip => '127.0.0.2'), "create server");
 ok(my $alert  = $server->alert, 'create alert');
 ok($alert->mark_sent, 'mark_sent');
 ok(sleep 2, 'wait a few seconds');

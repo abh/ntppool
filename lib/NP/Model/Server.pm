@@ -122,6 +122,12 @@ sub score_sparkline_url {
     $url->as_string;
 }
 
+sub alert {
+    my $self  = shift;
+    my $alert = $self->server_alert
+      || NP::Model->server_alert->create(server => $self);
+}
+
 sub log_scores_csv {
     my ($self, $count) = @_;
     my $history = $self->history($count);

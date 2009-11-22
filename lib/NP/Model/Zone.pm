@@ -21,6 +21,10 @@ sub sub_zone_count {
     SUB_ZONE_COUNT;
 }
 
+sub children {
+    shift->zones;
+}
+
 sub random_subzone_ids {
     my ($class, $count) = @_;
     $count = SUB_ZONE_COUNT if $count > SUB_ZONE_COUNT;
