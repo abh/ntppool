@@ -1,4 +1,4 @@
-use Test::More tests => 10;
+use Test::More tests => 9;
 use strict;
 
 BEGIN {
@@ -6,6 +6,8 @@ BEGIN {
 }
 
 my $dbh = NP::Model->dbh;
+my $db = NP::Model->db;
+$db->begin_scoped_work;
 
 END {
   $dbh->do(q[delete from servers where ip like '127.0.0.%']);
@@ -13,15 +15,17 @@ END {
 };
 
 
-ok(my $admin  = NP::Model::User->new( email => 'test@example.com'), 'create admin');
-ok(my $server = NP::Model::Server->new(user => $admin, ip => '127.0.0.2'), "create server");
+ok(my $admin  = NP::Model->user->create(email => 'test@example.com'), 'create admin');
+$admin->save;
+ok(my $server = NP::Model->server->create(user => $admin, ip => '127.0.0.2'), "create server");
+$server->save;
 ok(my $alert  = $server->alert, 'create alert');
 ok($alert->mark_sent, 'mark_sent');
 ok(sleep 2, 'wait a few seconds');
 
 ok($alert  = $server->alert, 'create alert');
 ok($alert->mark_sent, 'mark_sent');
-ok($alert->first_email_time ne $alert->last_email_time, 'different last_email_time than first_email_time');
+isnt($alert->first_email_time, $alert->last_email_time, 'different last_email_time than first_email_time');
 
-
+$db->rollback;
 

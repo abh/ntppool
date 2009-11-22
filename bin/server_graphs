@@ -3,9 +3,10 @@ eval 'exec $CBROOT/bin/perl $0 ${1+"$@"}'
   unless $running_under_some_shell;
 use strict;
 use warnings;
-use lib "$ENV{CBROOTLOCAL}/lib", "$ENV{CBROOT}/lib";
+use File::Path qw(mkpath);
 
 my $rrd_path = "$ENV{CBROOTLOCAL}/rrd/server";
+mkpath $rrd_path unless -e $rrd_path;
 
 use NP::Model;
 

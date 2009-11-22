@@ -3,15 +3,18 @@ eval 'exec $CBROOT/bin/perl $0 ${1+"$@"}'
   unless $running_under_some_shell;
 use strict;
 use warnings;
-use lib "$ENV{CBROOTLOCAL}/lib";
-use lib "$ENV{CBROOT}/lib";
 use Data::Dumper;
 use Locale::Object;
 use RRDs;
 use DateTime;
+use File::Path qw(mkpath);
 
 my $base_path = "$ENV{CBROOTLOCAL}/rrd/zone";
 my $target_path = "$ENV{CBROOTLOCAL}/rrd/zonetargets";
+
+for my $path ($base_path, $target_path, "$base_path/graph") {
+    mkpath $path unless -e $path;
+}
 
 my $time = time;
  

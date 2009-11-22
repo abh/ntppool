@@ -124,8 +124,7 @@ sub score_sparkline_url {
 
 sub alert {
     my $self  = shift;
-    my $alert = $self->server_alert
-      || NP::Model->server_alert->create(server => $self);
+    return NP::Model->server_alert->fetch_or_create(server => $self);
 }
 
 sub log_scores_csv {
