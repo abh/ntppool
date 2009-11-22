@@ -225,7 +225,7 @@ sub score_graph {
                    qq[AREA:step_orange#FFAA22:],
                    qq[AREA:step_red#FF6666:],
                    qq[AREA:step_white#FFFFFF],
-                   q[LINE2:5#660000:Bad server cutoff],
+                   q[LINE2:10#660000:Bad server cutoff],
                    q[LINE1:20#000000:],
                    qq[LINE2:score#00BB00:Score],
 #                   qq[LINE1:step#001100:Step],

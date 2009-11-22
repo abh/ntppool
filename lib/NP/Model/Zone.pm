@@ -70,7 +70,7 @@ sub server_count {
       inner join server_zones l on(s.id=l.server_id)
       inner join zones z on(z.id=l.zone_id)
     where z.id=?
-      and s.score_raw >= 5
+      and s.score_raw > 10
       and s.in_pool = 1
       and (s.deletion_on IS NULL OR s.deletion_on > DATE_ADD(NOW(), interval ? day))
   ], undef, $self->id, deletion_grace_days());
@@ -100,7 +100,7 @@ sub netspeed_active {
       inner join server_zones l on(s.id=l.server_id)
       inner join zones z on(z.id=l.zone_id)
     where z.id=?
-      and s.score_raw >= 5
+      and s.score_raw > 10
       and s.in_pool = 1
       and (s.deletion_on IS NULL OR s.deletion_on > DATE_ADD(NOW(), interval ? day))
   ], undef, $self->id, deletion_grace_days());

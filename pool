@@ -467,7 +467,7 @@ elsif ($cmd eq "zone") {
             q[SELECT s.ip, s.netspeed
                FROM servers s, server_zones l 
                WHERE l.server_id = s.id AND l.zone_id = ? AND s.in_pool = 1 
-               AND s.score_raw > 5
+               AND s.score_raw > 10
                and (s.deletion_on IS NULL OR s.deletion_on > DATE_ADD(NOW(), interval ? day))
               ], undef, $zone->id, NP::Model::Zone->deletion_grace_days
         );

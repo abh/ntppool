@@ -23,7 +23,7 @@ my $dbh = NP::Model->dbh;
 
 $dbh->selectrow_array(q[SELECT GET_LOCK("notifications", 0)]) or exit;
 
-$dbh->do(q[delete from sa using server_alerts sa inner join servers s on (s.id=sa.server_id) where s.score_raw > 0]);
+$dbh->do(q[delete from sa using server_alerts sa inner join servers s on (s.id=sa.server_id) where s.score_raw > 4]);
 
 my $admins = NP::Model->user->admins_to_notify;
 
