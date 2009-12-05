@@ -410,7 +410,7 @@ elsif ($cmd eq "zone") {
     }
     close HEAD;
 
-    my $ttl     = 350;
+    my $ttl     = 250;
     my $pgeodns = {
         serial => $time,
         ttl    => $ttl,
