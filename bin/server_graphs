@@ -31,6 +31,6 @@ while (my $server = $servers->next) {
     }
 
     #next unless $server->id >= 300; #  and $server->id < 370;
-    $server->update_graphs;
+    #$server->update_graphs;
 }
 

@@ -1,6 +1,5 @@
 package NP::Model::LogScore;
 use strict;
-use NP::Model;
 use RRDs;
 
 sub save {
@@ -88,6 +87,5 @@ sub create_rrd {
         die "$0: unable to create '$path': $ERROR\n";
     }
 }
-
 
 1;

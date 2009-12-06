@@ -8,5 +8,6 @@ logs/
 rrd/
 docs/ntppool/_syndicate/
 dns/
+db/
 
 *.gzip

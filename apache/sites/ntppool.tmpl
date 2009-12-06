@@ -46,10 +46,6 @@
       [% PH %] NTPPool::Control::Scores->super
     </Location>
 
-    <Location /scores/graph>
-       SetHandler default
-    </Location>
-
     <Location /zone>
       SetHandler perl-script
       [% PH %] NTPPool::Control::Zone->super

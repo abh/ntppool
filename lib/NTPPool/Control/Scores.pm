@@ -2,6 +2,7 @@ package NTPPool::Control::Scores;
 use strict;
 use base qw(NTPPool::Control);
 use Combust::Constant qw(OK DECLINED);
+use Combust::Gearman::Client ();
 use NP::Model;
 use Imager ();
 use List::Util qw(min);
@@ -10,6 +11,8 @@ BEGIN {
   die "Imager module needs to be compiled with png support"
       unless grep { $_ eq 'png' } Imager->write_types;
 }
+
+my $gearman = Combust::Gearman::Client->new;
 
 sub render {
   my $self = shift;
@@ -20,7 +23,14 @@ sub render {
 
   if ($self->request->uri =~ m!^/s/([^/]+)!) {
     my $server = NP::Model->server->find_server($1) or return 404;
+    $self->cache_control('max-age=14400, s-maxage=7200');
     return $self->redirect('/scores/' . $server->ip);
+  }
+
+  if (my ($id, $mode) = ($self->request->uri =~ m!^/scores/graph/(\d+)-(score|offset).png!)) {
+    my $server = NP::Model->server->find_server($id) or return 404;
+    $self->cache_control('max-age=14400, s-maxage=7200');
+    return $self->redirect('/scores/' . $server->ip . "/graph/${mode}.png");
   }
 
   if (my $ip = ($self->req_param('ip') || $self->req_param('server_ip'))) {
@@ -42,19 +52,37 @@ sub render {
               return OK, $server->log_scores_csv($limit), 'text/plain';
           }
           elsif ($mode eq 'rrd') {
-              my $path = sprintf "%s/rrd/server/%i.rrd", $ENV{CBROOTLOCAL}, $server->id;
-              my $fh;
-              open $fh, $path or warn "Could not open $path: $!" and return 403;
+              # TODO: check that rrd is up-to-date
+              my $path = $server->rrd_path;
+              open my $fh, $path or warn "Could not open $path: $!" and return 403;
               $self->request->header_out('Content-disposition', sprintf('attachment; filename=%s.rrd', $server->ip));
               $self->r->update_mtime((stat($fh))[9]);
               return OK, $fh, 'application/octet-stream';
           }
-          return OK, $self->history_sparkline_png($server), 'image/png'
-             if $mode eq 'spark';
-
-          $self->tpl_param('graph_explanation' => 1) if $self->req_param('graph_explanation');
-
-          $self->tpl_param('server' => $server);
+          elsif ($mode eq 'graph') {
+            my ($type) = ($self->request->uri =~ m{/(offset|score)\.png$});
+            eval {
+                $gearman->do_task('update_graphs', $server->id,
+                    {uniq => 'graphs-' . $server->id});
+            };
+            my $ttl = $@ ? 10 : 1800;
+            my $path = $server->graph_path($type);
+            open my $fh, $path
+              or warn "Could not open $path: $!" and return 403;
+            $self->r->update_mtime((stat($fh))[9]);
+            $self->cache_control('max-age=2700, s-maxage=1800');
+            return OK, $fh, 'image/png';
+          }
+          elsif ($mode eq 'spark') {
+              return OK, $self->history_sparkline_png($server), 'image/png';
+          }
+          elsif ($mode eq '') {
+              $self->tpl_param('graph_explanation' => 1) if $self->req_param('graph_explanation');
+              $self->tpl_param('server' => $server);
+          }
+          else {
+              return $self->redirect('/scores/' . $server->ip);
+          }
       }
   }
   return OK, $self->evaluate_template('tpl/server.html');

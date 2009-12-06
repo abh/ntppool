@@ -220,6 +220,12 @@ sub count_by_continent {
     \@zones
 }
 
+sub redirect {
+    my ($self, $url) = (shift, shift);
+    $self->post_process;
+    return $self->SUPER::redirect($url, @_);
+}
+
 sub cache_control {
     my $self   = shift;
     return $self->{cache_control} unless @_;
