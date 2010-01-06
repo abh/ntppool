@@ -1,0 +1,99 @@
+[% page.title = 'Join the NTP Pool!'  %]
+
+<div class="block">
+	<h3><a name="join">Hoe neem ik deel aan pool.ntp.org?</a></h3>
+	<p>
+	Allereerst: Bedankt voor je interesse. Het gebruik van de pool
+	is enorm gegroeid en de enige manier waarop we het gemakkelijk voor
+	iedereen kunnen houden om een pool server te beheren
+	is door ook het aantal deelnemende servers te laten groeien.
+	</p>
+
+	<p>
+	Je computer <b>moet een vast IP adres hebben</b> en beschikken over
+	een permanente internet verbinding. Het is erg belangrijk dat het
+	IP adres niet verandert, of alleen zeer infrequent (zeg maar eens per
+	jaar of minder). De benodigde bandbreedte is relatief laag. Elke client
+	zal slechts een paar UDP pakketten per keer versturen met tussenpozen van enkele
+	tot 20 minuten.
+	</p>
+
+	<p>
+	Op dit moment krijgen de meeste servers ongeveer 5-15 NTP pakketten
+	per seconde met pieken een aantal keren per dag van 60-120 pakketten
+	per seconde. Dit komt ruwweg overeen met 10-15 Kbit/sec met pieken
+	van 50-120 Kbit/sec. Aan het project doen gestaag meer tijdservers
+	mee waardoor de belasting niet dramatisch zou hoeven toenemen voor
+	elke server. Plat gezegd heb je in ieder geval ongeveer 384-512 Kbit/sec
+	nodig (in- en uitgaand).
+	</p>
+	<p>
+	Hier zijn enkele servers met verkeer/belasting grafieken:
+	[% i = 0; FOR server = combust.servers_with_urls; %]
+	   <a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
+	[% END %]
+	</p>
+
+	<p>
+	De servers die deelnemen moeten niet <tt>pool.ntp.org</tt> als hun
+	bronserver(s) gebruiken maar zouden enkele van de 
+	<a href="http://ntp.isc.org/bin/view/Servers/StratumTwoTimeServers">goede servers</a> handmatig
+	moeten kiezen (die servers
+	<b>mogen</b> uit de pool worden gekozen. Het punt is dat zij vast worden
+	gekozen in plaats van willekeurig toegewezen bij elke server herstart. Dit
+	helpt bij het leveren van een acceptabel service niveau.)
+
+	Opgemerkt moet worden dat het niet noodzakelijk is dat je server een
+	stratum 1 of 2 server is - omdat dit project zich voornamelijk richt op
+	distributie, is er geen reden waarom een stratum 3 of stratum 4 server
+	niet zou kunnen meedoen.
+	</p>
+
+	<p>
+	We hebben een pagina met <a href="/join/configuration.html">configuratie aanbevelingen
+	voor servers die aan de pool deelnemen</a>.
+	</p>
+	<p>Laat ik tenslotte benadrukken dat het deelnemen aan de pool een <b>lange termijn
+	bijdrage</b> inhoudt.  We zullen je zonder problemen weer uit de pool halen wanneer
+	omstandigheden veranderen, maar vanwege de manier waarop ntp clienten werken
+	<b>kan het weken, maanden of zelfs JAREN duren voordat het verkeer volledig
+	is verdwenen</b>.
+	</p>
+
+	<p>
+	Wanneer je hiermee instemt, log dan in op de
+	<a href="/manage">server management</a> pagina en verzoek om jouw server te laten toevoegen. 
+	Als je problemen hebt met het systeem, email me op <a
+	href="mailto:ask@develooper.com">ask@develooper.com</a>.
+	</p>
+	<p>
+	Ik verzoek je om je ook te abonneren op de
+	<a href="http://news.ntppool.org/atom.xml">weblog feed</a>
+	en op de
+        <a href="mailto:timekeepers-announce-request@fortytwo.ch?subject=subscribe">
+        timekeepers-announce</a> mailing lijst.
+	</p>
+	<p>
+	Het zou mooi zijn (hoewel niet noodzakelijk) wanneer je web verzoeken voor poort
+	80 op jouw webserver zou kunnen doorzenden naar de officiële web pagina van
+	het project op 
+	<tt>http://www.pool.ntp.org</tt>. Wanneer je Apache gebruikt kun je dat doen met:
+	</p>
+
+        [% PROCESS tpl/join/virtual_host_example.html %]
+
+	<p>
+	Let wel, dit is alleen maar nodig wanneer je een webserver geïnstalleerd zou hebben.
+	De officiële project web pagina zal altijd worden opgegeven met de 'www' aan het
+	begin - maar soms zijn mensen lui en typen ze alleen <tt>pool.ntp.org</tt> en zijn
+	dan verbaasd om op een willekeurige webpagina te belanden.</p>
+	<p>
+	Eenmaal toegevoegd aan de pool wordt de server continu gemonitored voor
+	beschikbaarheid en precisie. Je kunt je server's performance bekijken via het
+        <a href="scores">web frontend</a> of
+        de <a href="/manage">management pagina</a>.
+	</p>
+</div>
+
+
+

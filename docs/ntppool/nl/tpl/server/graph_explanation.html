@@ -1,0 +1,37 @@
+<div id="graph_explanation_box" class="graph_explanation [% graph_explanation ? 'visible' : '' %]">
+
+<h3>De Score grafiek</h3>
+<p>
+Een aantal keren per uur checkt het pool systeem de tijd van jouw
+server en vergelijkt die met de lokale tijd. Punten worden afgetrokken
+wanneer de server niet bereikbaar is of de tijd meer dan 100ms
+afwijkt (zoals vrij ruw gemeten via de monitoring systemen). Meer
+punten worden afgetrokken naarmate de afwijking groter is.
+</p>
+
+<p>
+Wanneer de score vermindert zal de achtergrondkleur in het bovenste
+deel van de grafiek aangeven hoe enstig de "uitval" is. De kleurschaal
+gaat van blauw (zeer weinig) naar geel via oranje naar rood (de
+server wijkt meerdere seconden af of is onbereikbaar). Door de wijze
+waarop de grafiek wordt afgerond is het niet altijd vanuit de kleur direct
+duidelijk wat er is gebeurd. Het is alleen bedoeld als handvat
+om trends zichtbaar te maken. Voor meer exacte details van wat het
+monitoring systeem heeft gevonden kun je klikken op de CSV link.
+
+</p>
+
+<h3>De Offset grafiek</h3>
+
+<p>
+Het monitoring systeem werkt ruwweg als een <a
+href="http://www.ntp.org/ntpfaq/NTP-s-def.htm#AEN1242">SNTP</a> (<a
+href="http://www.eecis.udel.edu/~mills/database/rfc/rfc2030.txt">RFC
+2030</a>) client, waardoor het gevoeliger is voor willekeurige netwerk
+vertragingen tussen de server en het monitoring systeem dan een
+gewone ntpd client zou zijn. In andere worden: Schrik niet van
+incidentele grote offsets en gebruik de offset niet als een absolute
+indicatie van de performance.
+</p>
+
+</div>

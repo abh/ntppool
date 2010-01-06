@@ -1,0 +1,77 @@
+<div class="block">
+
+<h3>Configuratieaanbevelingen voor servers die deelnemen in de pool</h3>
+
+<p>
+De <a href="http://ntp.isc.org/bin/view/Support/WebHome">Support
+sectie</a> op <a href="http://ntp.isc.org/">ntp.isc.org</a> heeft heel
+veel nuttige informatie.
+</p>
+
+<p>
+Wanneer het de bedoeling is om alleen de pool te <i>gebruiken</i>, zie dan de <a href="/use.html">pool gebruik</a> pagina.
+</p>
+
+<p>
+De <a
+href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a>
+nieuwsgroep is de beste plek om hulp te krijgen voor de ntpd software.
+</p>
+
+<p>
+Hieronder staan een aantal zaken die van belang zijn wanneer je met
+jouw server wilt deelnemen in de NTP Pool.
+</p>
+
+<h4>Configureer ongeveer 5 servers</h4>
+
+<p>
+Om goed te werken moet ntpd op zijn minst met drie servers communiceren ("Een man
+met een klok weet wat de tijd is. Een man met twee klokken is daar nooit zeker van").
+</p>
+
+<p>
+Voor servers in de pool adviseren we om niet minder dan 4 en niet meer
+dan 7 servers te configureren.
+</p>
+
+
+<h4>Gebruik geen *.pool.ntp.org servers</h4>
+
+<p>
+Ironisch genoeg is het om er voor de zorgen dat de pool service optimaal
+werkt niet de bedoeling om de *.pool.ntp.prg aliases in de configuratie
+op te nemen wanneer die server aan de pool deel gaat nemen.
+</p>
+
+<p>
+Voor de robuustheid van de pool is het gezonder wanneer alle pool beheerders
+"met de hand" goede lokale (qua netwerk gezien) tijdservers uitkiezen.
+De NTP.org wiki heeft een <a
+href="http://ntp.isc.org/bin/view/Servers/WebHome">lijst van publieke
+servers</a>.
+</p>
+
+
+<h4>Gebruik de standaard ntpd</h4>
+
+<p>
+We zijn allen voor software diversiteit, maar een significant percentage
+van de "het werkt niet" vragen die binnenkomen zijn voor andere software
+dan ntpd.
+</p>
+
+<p>
+Je kunt de pool <i>gebruiken</i> met elk programma dat NTP spreekt, maar
+wanneer je aan de pool gaat deelnemen bevelen we aan om
+<a href="http://ntp.isc.org/bin/view/Main/SoftwareDownloads">ntpd</a>
+te gebruiken.
+</p>
+
+
+<h4>Gebruik niet de LOCAL klok driver</h4>
+
+<p>Servers in de NTP pool moeten niet de LOCAL klok driver hebben geconfigureerd.</p>
+
+
+</div>
