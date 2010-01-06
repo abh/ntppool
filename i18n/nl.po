@@ -1,0 +1,91 @@
+msgid ""
+msgstr ""
+"Last-Translator: Lammert Bies <ntp@linocomm.net>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "go up"
+msgstr "omhoog"
+
+# zone names
+msgid "Africa"
+msgstr "Afrika"
+
+msgid "Asia"
+msgstr "Azië"
+
+msgid "North America"
+msgstr "Noord Amerika"
+
+msgid "South America"
+msgstr "Zuid Amerika"
+
+msgid "Global"
+msgstr "Wereldwijd"
+
+msgid "All Pool Servers"
+msgstr "Alle Pool Servers"
+
+# navigation
+msgid "Translations"
+msgstr "Vertalingen"
+
+# mailinglists.html
+msgid  "NTP Pool mailing lists"
+msgstr "NTP Pool mailing lijsten"
+
+msgid  "subscribe"
+msgstr "abonneer"
+
+msgid  "archive"
+msgstr "archief"
+
+msgid  "Announcement list"
+msgstr "Aankondigingenlijst"
+
+msgid  "Discussion list"
+msgstr "Discussielijst"
+
+msgid  "Development list"
+msgstr "Ontwikkelaarslijst"
+
+msgid  "announcement_list_description"
+msgstr "Zeer zeer laag frequente aankondigingen van NTP Pool nieuws. Alle server beheerders zouden op de aankondigingen lijst geabonneerd moeten zijn."
+
+msgid  "discussion_list_description"
+msgstr "Server beheerders (en gebruikers) die meer betrokken willen zijn bij het project kunnen zich abonneren op de discussie lijst.<br/> Natuurlijk zouden algemene discussies over ntp plaats moeten vinden in de %1 Usenet nieuwsgroep (ook op <a href=\"%2\">Google Groups</a>)."
+
+msgid  "development_list_description"
+msgstr "Meer tecnische (en idealiter altijd praktische) discussies over de huidige ontwikkeling van de <a href=\"%1\">ntp pool broncode</a> en <a href=\"%2\">pgeodns</a> is te vinden op de timekeepers-dev lijst."
+
+
+# tpl/server.html
+msgid  "Back to the front page"
+msgstr "Terug naar de voorpagina"
+
+msgid  "Find"
+msgstr "Vind"
+
+msgid  "Stats for %1"
+msgstr "Statistieken voor %1"
+
+msgid  "Not active in the pool, monitoring only"
+msgstr "Niet actief in de pool, wordt alleen gemonitored"
+
+msgid  "Zones:"
+msgstr "Zones:"
+
+msgid  "This server is <span class="deletion">scheduled for deletion</span> on %1."
+msgstr "Deze server is <span class="deletion">gemarkeerd voor verwijdering</span> op %1."
+
+msgid  "Current score: %1 (only servers with a score higher than 5 are used in the pool)"
+msgstr "Huidige score: %1 (alleen servers met een score hoger dan 5 worden gebruikt in de pool)"
+
+msgid  "What do the graphs mean?"
+msgstr "Wat betekenen de grafieken?"
+
+msgid  "CSV log"
+msgstr "CSV log"
+
+

@@ -1,0 +1,132 @@
+[% page.title = 'Hoe configureer ik NTP om de pool te gebruiken?' %]
+
+<div class="block">
+	<h3><a name="use"></a>Hoe gebruik ik pool.ntp.org?</h3>
+	
+	<p>
+	Wanneer je alleen de klok van je computers wilt synchroniseren met het
+	netwerk, is de configuratiefile (voor het ntpd programma van de <a
+	href="http://www.ntp.org">ntp.org distributie</a>, voor elk ondersteund
+	operating systeem - <b>Linux, *BSD, Windows en zelfs enkele meer
+	exotische systemen</b>) erg eenvoudig:
+	</p>
+
+<pre class="code">
+driftfile /var/lib/ntp/ntp.drift
+
+server 0.pool.ntp.org
+server 1.pool.ntp.org
+server 2.pool.ntp.org
+server 3.pool.ntp.org</pre>
+	<p>
+	De 0, 1 en 2.pool.ntp.org namen wijzen naar een willekeurige verzameling van
+	servers die elk uur wijzigd. zorg ervoor dat de klok van de computer ingesteld
+	is op een reële waarde (binnen enkele minuten van de 'ware' tijd) - je kunt <tt>ntpdate
+	pool.ntp.org</tt> gebruiken, of je zou gewoon het <tt>date</tt> commando kunnen gebruiken en
+	het gelijk te zetten met je horloge.
+	Start ntpd en na enige tijd (dit kan tot een half uur duren!), zou
+	<tt>ntpq -pn</tt> een soortgelijke uitvoer moeten geven:
+	</p>
+<pre class="code ntpq">
+avbidder:~$ ntpq -p
+     remote           refid      st t when poll reach   delay   offset  jitter
+==============================================================================
++81.6.42.224     193.5.216.14     2 u   68 1024  377  158.995   51.220  50.287
+*217.162.232.173 130.149.17.8     2 u  191 1024  176   79.245    3.589  27.454
+-129.132.57.95   131.188.3.222    3 u  766 1024  377   22.302   -2.928   0.508
+</pre> 
+	<p>
+	De IP adressen zullen anders zijn, omdat je willekeurige tijdservers
+	krijgt toegewezen. Het is wel belangrijk dat één van de regels begint met een
+	sterretje (<tt>*</tt>), dat betekent dat je computer de tijd ontvang vanaf
+	het internet
+	- je hoeft je er daarna nooit meer zorgen over te maken!
+	</p>
+	<p>
+	Omdat <tt>pool.ntp.org</tt> je tijdservers zal toewijzen van over de gehele wereld
+	zal de kwaliteit van de tijd niet ideaal zijn. Je krijgt een wat beter resultaat wanneer
+	je gebruik maakt van de
+	<a href="/zone/@">continentale zones</a> (Bijvoorbeeld
+	<a href="/zone/europe">europe</a>,
+	<a href="/zone/north-america">north-america</a>,
+	<a href="/zone/oceania">oceania</a>
+	of <a href="/zone/asia">asia</a>.pool.ntp.org),
+	en nog betere tijd wanneer je gebruik maakt van de land zone (zoals 
+	nl.pool.ntp.org voor Nederland) - voor al deze zones kun je de 0, 1 en 2 prefixes
+	gebruiken zoals 0.nl.pool.ntp.prg. Houd er echter rekening mee dat een land zone
+	niet zou kunnen bestaan voor een land, of slechts één of twee tijdservers zou kunnen
+	bevatten. Wanneer je tijdservers kent die echt dicht bij jouw staan (gemeten in
+	netwerk afstand, met <tt>traceroute</tt> of <tt>ping</tt>), wordt de tijd waarschijnlijk
+	zelfs nog beter.
+	</p>
+	<p>
+	Wanneer je gebruik maakt van <b>een recente Windows versie</b>, kun je ook gebruik maken
+	van de ntp client die ingebouwd is in het systeem. Voer daarvoor uit:</p>
+<pre class="code">
+net time /setsntp:pool.ntp.org
+</pre>
+	<p>
+	Bij sommige Windows versies kun je ook meer dan één server opgeven
+<pre class="code">
+net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
+</pre>
+	</p>
+	<p>
+	op de commando regel. Dit werkt in ondermeer Windows 2000/XP/2003.
+	Hetzelfde kan worden bereikt, als beheerder, door met de rechter muistoets te
+	klikken op de klok in de taakbalk, daar te kiezen voor 'Wijzig Datum/Tijd' en
+	de server naam in te voeren in het 'Internet Tijd' tabblad.
+	</p>
+
+	<p>
+	Meinberg heeft een versie gemaakt van de <a href="http://www.meinberg.de/english/sw/ntp.htm">ntp daemon voor windows</a>.
+	</p>
+
+	<p>
+	Wanneer je Windows systeem onderdeel uitmaakt van eem domein kan het zijn dat je niet individueel in staat bent de computertijd aan te passen. Zie <a href="http://technet2.microsoft.com/WindowsServer/en/library/71e76587-28f4-4272-a3d7-7f44ca50c0181033.mspx?mfr=true">Hoe Windows Tijdservice Werkt</a>.
+	</p>
+</div>
+
+<div class="block">
+	<h3>Aanvullende opmerkingen</h3>
+	<p><span class="hook">Wanneer je een vast IP adres hebt en beschikt over een redelijke
+	internet verbinding</span> (bandbreedte is niet zo belangrijk maar het zou stabiel
+	moeten zijn en niet overbelast), overweeg dan om met je server bij te dragen aan
+	de server pool. Het kost niet meer dan een paar honderd bytes per seconde aan verkeer,
+	maar je help dit project ermee overleven.
+	<a href="/join.html">Lees de aanmeldingspagina</a> alsjeblieft voor meer informatie.
+	</p>
+	
+	<p><span class="hook">Wanneer je internet provider beschikt over een tijdserver</span>,
+	of als je een goede tijdserver in je omgeving kent zou je die moeten gebruiken
+	en niet deze lijst - je krijgt waarschijnlijk een nauwkeuriger tijd en gebruikt ook
+	minder netwerkbronnen. Wanneer je slechts één tijdserver dichtbij weet kun je
+	uiteraard die gebruiken en zeg maar twee van pool.ntp.org.</p>
+	
+	<p><span class="hook">Het kan sporadisch voorkomen dat je twee keer aan dezelfde
+	server wordt toegewezen</span> - het eenvoudigweg herstarten van de ntp server
+	lost meestal dit probleem op. Wanneer je een landzone gebruikt, houd er dan rekening
+	mee dat dit kan gebeuren wanneer er maar één server bekend is in die zone in het
+	project - in dat geval is het beter een continentale zone te gebruiken.
+	Je kunt <a href="/zone">door de zones bladeren</a> om te zien hoeveel servers
+	we in elke zone hebben.</p>
+	
+	<p><span class="hook">Wees vriendelijk</span>. Veel servers worden ter beschikking
+	gesteld door vrijwilligers en vrijwel alle tijdservers zijn in werkelijkheid
+	file, mail of webservers waarop ook nog eens ntp draait. Dus gebruik niet meer dan
+	drie tijdservers in je configuratie, en speel niet met trucjes met <tt>burst</tt>
+	of <tt>minpoll</tt> - alles wat je daarmee bereikt is dat project vroeger of
+	later zal stoppen.
+	
+	<p><span class="hook">Zorg ervoor dat de <i>tijdzone configuratie</i> van je computer correct is</span>.
+	ntpd zelf doet niets aan de tijdzonder, het gebruikt alleen UTC intern.</p>
+	
+	<p><span class="hook">Wanneer je een netwerk synchroniseert met pool.ntp.org</span>,
+	configureer dan zo mogelijk één van je computers als tijdservers en synchroniseer
+	de andere computers met die server. (dat kost wat leeswerk - het is echter niet moeilijk.
+	En er is altijd de <a href="news:comp.protocols.time.ntp"
+	>comp.protocols.time.ntp nieuwsgroep</a>.)</p>
+	
+	<p class="thanks">Op dit punt wil ik iedereen bedanken die zijn tijd en servers
+	bijdraagt aan dit netwerk.</p>
+</div>
