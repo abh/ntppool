@@ -20,7 +20,7 @@ my $config = Combust::Config->new;
 our %valid_languages = (
                         en => { name => "English", },
                         fr => { name => "Français", },
-                        #nl => { name => "Nederlands", },
+                        nl => { name => "Nederlands", },
                         ru => { name => "русский", },  
                         pl => { name => "Polish",
                                 testing => 1 },
