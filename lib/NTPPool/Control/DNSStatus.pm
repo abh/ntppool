@@ -5,18 +5,18 @@ use Combust::Constant qw(OK);
 use NP::Util::DNS;
 
 sub render {
-  my $self = shift;
+    my $self = shift;
 
-  $self->cache_control('s-maxage=45');
+    $self->cache_control('s-maxage=45');
 
-  my ($master, $servers) = NP::Util::DNS::get_dns_info();
-  
-  $self->tpl_param('servers' => $servers);
-  $self->tpl_param('master'  => $master);
+    my ($master, $servers) = NP::Util::DNS::get_dns_info();
 
-  $self->tpl_param('now' => DateTime->now);
+    $self->tpl_param('servers' => $servers);
+    $self->tpl_param('master'  => $master);
 
-  return OK, $self->evaluate_template('tpl/dns.html');
+    $self->tpl_param('now' => DateTime->now);
+
+    return OK, $self->evaluate_template('tpl/dns.html');
 
 }
 
