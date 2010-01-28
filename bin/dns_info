@@ -1,0 +1,15 @@
+# -*- cperl -*-
+eval 'exec $CBROOT/bin/perl $0 ${1+"$@"}'
+  unless $running_under_some_shell;
+use strict;
+use warnings;
+
+use NP::Util::DNS;
+use Data::Dumper qw(Dumper);
+
+my ($master, $servers) = NP::Util::DNS::get_dns_info();
+print Dumper(\$servers);
+
+
+
+
