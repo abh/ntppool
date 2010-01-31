@@ -163,6 +163,8 @@ p.develwarning {
   float: left;
 }
 
+#dnsinfo td { padding: 8px }
+
 span.s_his      { font-family: monospace; }
 span.s_his_ok   { color: green; font-size:80%; }  /* # */
 span.s_his_tol  { color: yellow; }  /* x */
