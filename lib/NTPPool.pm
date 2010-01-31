@@ -1,5 +1,7 @@
 package NTPPool;
 
+our $VERSION = '2.00';
+
 use NTPPool::Control;
 use NTPPool::Control::Basic;
 use NTPPool::Control::Scores;

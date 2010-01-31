@@ -21,7 +21,7 @@ The DNS data was updated
 [% FOR ns = servers %]
 <tr>
 <td valign="top">
-[% ns.name %]
+[% ns.names.join("<br>")  %]
 </td>
 <td>
 <span style="background:[% ns.lag_css_color %]">[% ns.lag_text %]</span>

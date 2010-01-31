@@ -3,33 +3,79 @@ use strict;
 use warnings;
 use Net::DNS::Resolver;
 use List::Util qw(max first);
+use NP::Util qw(uniq);
 use DateTime::Duration;
 use DateTime::Format::Duration;
 use Combust::Config;
 
-sub get_dns_info {
+sub find_dns_servers {
+
     my $res = Net::DNS::Resolver->new;
+
+    my %servers;
+    
+    my $add_servers = sub {
+        my $name = shift;
+        my @ips = host_to_ips($name);
+        for my $ip (@ips) {
+            unless ($servers{$ip}) {
+                $servers{$ip} = { names => [] };
+            }
+            push @{ $servers{$ip}->{names} }, $name;
+        }
+    };
+
+    my $pool_domain = Combust::Config->new->site->{ntppool}->{pool_domain}
+      or die "pool_domain configuration not setup";
+
+    my $dns_domains =
+      Combust::Config->new->site->{ntppool}->{dns_domains} || $pool_domain;
+
+    my @domains = split /\s+/, $dns_domains;
+    for my $domain (@domains) {
+        if (my $query = $res->query($domain, "NS")) {
+            for my $rr (grep { $_->type eq 'NS' } $query->answer) {
+                my $name = $rr->nsdname;
+                $add_servers->($name);
+            }
+        }
+    }
+
+    if (my $query = $res->query('all-dns.ntppool.net', "TXT")) {
+        for my $rr (grep { $_->type eq 'TXT' } $query->answer) {
+            my $names = $rr->txtdata;
+            for my $name (split /\s+/, $names) {
+                $name =~ m/\./ or $name = "$name.ntppool.net";
+                $add_servers->($name);
+            }
+        }
+    }
+
+    #use Data::Dumper qw(Dumper);
+    #print Dumper(\%servers);
+    #exit;
+
+    return %servers;
+}
+
+my $resolver;
+sub _res {
+    return $resolver = Net::DNS::Resolver->new;
+}
+
+sub get_dns_info {
+
+    my $res = _res();
 
     alarm(10);    # short circuit if we really screwed up
 
     $res->tcp_timeout(2);
     $res->udp_timeout(2);
 
-    my %servers;
-
     my $pool_domain = Combust::Config->new->site->{ntppool}->{pool_domain}
       or die "pool_domain configuration not setup";
 
-    # $pool_domain = 'pool.ntp.org';
-
-    my $query = $res->query($pool_domain, "NS");
-
-    if ($query) {
-        for my $rr (grep { $_->type eq 'NS' } $query->answer) {
-            my $name = $rr->nsdname;
-            $servers{$name} = {name => $name};
-        }
-    }
+    my %servers = find_dns_servers();
 
 #  { my $name = 'ns1.eu.bitnames.com';
 #    $servers{$name} = { name => $name };
@@ -110,10 +156,28 @@ sub get_dns_info {
 
     alarm(0);
 
-    my @servers = sort { $a->{name} cmp $b->{name} } values %servers;
+    my @servers = sort { $a->{names}->[0] cmp $b->{names}->[0] } values %servers;
     my $master = first { $_->{serial} && $_->{serial} == $max_serial } values %servers;
 
     return ($master, \@servers);
+}
+
+sub host_to_ips {
+    my $host = shift;
+    my $res = _res();
+    my $query = $res->search($host);
+  
+    my @ips;
+
+    if ($query) {
+        for my $rr ($query->answer) {
+            next unless $rr->type eq "A";
+            push @ips, $rr->address;
+        }
+    } else {
+        warn "query failed: ", $res->errorstring, "\n";
+    }
+    return @ips;
 }
 
 sub hour_min_sec {
