@@ -18,6 +18,7 @@ WriteMakefile(
                   'Net::DNS' => 0.63,
                   'Data::Transformer' => 0,
                   'Net::NTP' => 0,
+                  'namespace::clean' => 0,
     },
     test => {TESTS => 't/*.t t/*/*.t t/*/*/*.t'}
 );
