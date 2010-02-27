@@ -47,7 +47,7 @@
 	</div>
 </div>	
 
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
 [% page.js %]
 
 [%- IF siteconfig.googleanalytics %]
@@ -56,15 +56,17 @@
 [% END %]
 
     <!-- ipv6 testing -->
-    <script type="text/javascript" src="http://www.v6test.develooper.com/js/v1/v6test.js"></script>
-    <style>#v6test { overflow: hidden; width: 1px; height: 1px }</style>
-    <script type="text/javascript">
-       if (v6) {
-         v6.only_once = true; 
-         v6.hidden = true;
-         v6.api_server = 'http://www.v6test.develooper.com';
-         v6.test();
-       }
+<script type="text/javascript" src="http://ipv64.v6test.develooper.com/js/v1/v6test.js"></script>
+
+<script type="text/javascript">
+   // v6.target = '';
+   if (!v6.target) { v6.only_once = true }
+   v6.site = 'EED5EB02-235D-11DF-8ACC-F064064DD970';
+   v6.api_server = 'http://ipv64.v6test.develooper.com';
+   try {
+     v6.test();
+   } catch(err) {}
+</script>
     </script>
 
 
