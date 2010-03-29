@@ -137,7 +137,7 @@ sub get_server_info {
     }
     $server{hostname} = $host if $host ne $server{ip};
 
-    die "Bad IP address\n" if $server{ip} =~ m/^(127|10|192.168)\./;
+    die "Bad IP address\n" if $server{ip} =~ m/^(127|10|192.168|0)\./;
 
     if (my $s = NP::Model->server->fetch(ip => $server{ip})) {
         my $other =
