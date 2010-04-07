@@ -20,6 +20,7 @@ my $config = Combust::Config->new;
 our %valid_languages = (
                         en => { name => "English", },
                         fr => { name => "Français", },
+                        ko => { name => "한국어", },
                         nl => { name => "Nederlands", },
                         ru => { name => "русский", },  
                         pl => { name => "Polish",
@@ -27,8 +28,6 @@ our %valid_languages = (
                         da => { name => "Danish",
                                 testing => 1,
                               },
-                        ko => { name => "한국어",
-                                testing => 1 },
                        );
 
 NP::I18N::loc_lang('en');
