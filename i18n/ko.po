@@ -1,0 +1,91 @@
+msgid ""
+msgstr ""
+"Last-Translator: Chang Park <naltang@yahoo.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "go up"
+msgstr "위로 가기"
+
+# zone names
+msgid "Africa"
+msgstr "아프리카"
+
+msgid "Asia"
+msgstr "아시아"
+
+msgid "North America"
+msgstr "북아메리카"
+
+msgid "South America"
+msgstr "남아메리카"
+
+msgid "Global"
+msgstr "전지역"
+
+msgid "All Pool Servers"
+msgstr "모든 풀 서버들"
+
+# navigation
+msgid "Translations"
+msgstr "번역"
+
+# mailinglists.html
+msgid  "NTP Pool mailing lists"
+msgstr "NTP 풀 메일링 리스트"
+
+msgid  "subscribe"
+msgstr "가입"
+
+msgid  "archive"
+msgstr "지난것"
+
+msgid  "Announcement list"
+msgstr "공지사항 목록"
+
+msgid  "Discussion list"
+msgstr "토론 목록"
+
+msgid  "Development list"
+msgstr "개발 목록"
+
+msgid  "announcement_list_description"
+msgstr "아주 적은 트래픽을 차지하는 NTP 풀 뉴스 공지사항. 모든 서버 운영자들은 공지사항 목록에 가입하십시오."
+
+msgid  "discussion_list_description"
+msgstr "이 프로젝트에 더 깊이 관여하고 싶은 서버 운영자들과 사용자들은 가입하십시오.<br/> 물론 NTP에 대한 일반적인 토론은 유즈넷 뉴스그룹 %1 에서 하십시오. (<a href=\"%2\">구글 그룹</a>에도 있습니다.)"
+
+msgid  "development_list_description"
+msgstr "<a href=\"%1\">NTP 풀 코드</a>와 <a href=\"%2\">pgeodns</a>의 현재 개발에 대한 더 기술적인 토론은 timekeepers-dev 목록에 있습니다."
+
+
+# tpl/server.html
+msgid  "Back to the front page"
+msgstr "첫 페이지로 돌아가기"
+
+msgid  "Find"
+msgstr "찾기"
+
+msgid  "Stats for %1"
+msgstr "%1에 대한 통계"
+
+msgid  "Not active in the pool, monitoring only"
+msgstr "풀에서 활성화되지 않고 모니터링만 함"
+
+msgid  "Zones:"
+msgstr "지역:"
+
+msgid  "This server is <span class="deletion">scheduled for deletion</span> on %1."
+msgstr "이 서버는 %1 에 <span class="deletion">삭제될 예정</span>입니다."
+
+msgid  "Current score: %1 (only servers with a score higher than 5 are used in the pool)"
+msgstr "현재 점수: %1 (5점이 넘는 서버들만 풀에 사용됩니다.)"
+
+msgid  "What do the graphs mean?"
+msgstr "그래프가 의미하는 것은?"
+
+msgid  "CSV log"
+msgstr "CSV 로그"
+
+
