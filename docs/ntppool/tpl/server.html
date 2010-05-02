@@ -55,7 +55,7 @@ This server is <span class="deletion">scheduled for deletion</span> on %1.
 
 
 <p>
-[% | loc(server.score) %]Current score: %1 (only servers with a score higher than 5 are used in the pool)[% END %]
+[% | loc(server.score, server.active_score) %]Current score: %1 (only servers with a score higher than %2 are used in the pool)[% END %]
 </p>
 
 <p>

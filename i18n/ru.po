@@ -78,8 +78,8 @@ msgstr "Зоны:"
 msgid  "This server is <span class="deletion">scheduled for deletion</span> on %1."
 msgstr "Этот сервер был <span class="deletion">поставлен на удаление</span> %1."
 
-msgid  "Current score: %1 (only servers with a score higher than 5 are used in the pool)"
-msgstr "Текущий рейтинг: %1 (в пуле используются только сервера с рейтингом выше 5)"
+msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
+msgstr "Текущий рейтинг: %1 (в пуле используются только сервера с рейтингом выше %2)"
 
 msgid  "What do the graphs mean?"
 msgstr "Что означают эти графики?"

@@ -8,6 +8,10 @@ use NP::RRD qw(score_graph offset_graph);
 use POSIX qw();
 $ENV{TZ} = 'UTC';   
 POSIX::tzset();
+
+sub active_score {
+    return 10
+};
  
 sub insert {
     my $self = shift;

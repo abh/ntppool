@@ -463,13 +463,17 @@ elsif ($cmd eq "zone") {
         $name = '' if $name eq '@';
         $name = "$name." if $name;
 
-        my $entries = $db->selectall_arrayref(
+        my $entries = $db->selectall_arrayref
+          (
             q[SELECT s.ip, s.netspeed
                FROM servers s, server_zones l 
                WHERE l.server_id = s.id AND l.zone_id = ? AND s.in_pool = 1 
-               AND s.score_raw > 10
+               AND s.score_raw > ?
                and (s.deletion_on IS NULL OR s.deletion_on > DATE_ADD(NOW(), interval ? day))
-              ], undef, $zone->id, NP::Model::Zone->deletion_grace_days
+             ], undef,
+           $zone->id,
+           NP::Model::Server->active_score,
+           NP::Model::Zone->deletion_grace_days
         );
 
         next unless $entries and @$entries;

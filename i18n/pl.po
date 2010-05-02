@@ -82,8 +82,8 @@ msgstr "Strefy:"
 msgid  "This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
 msgstr "Ten serwer jest <span class=\"deletion\">zaplanowany do usunięcia</span> w dniu %1."
 
-msgid  "Current score: %1 (only servers with a score higher than 5 are used in the pool)"
-msgstr "Bieżący wynik: %1 (tylko serwery z wynikiem wyższym niż 5 będą używane w puli)"
+msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
+msgstr "Bieżący wynik: %1 (tylko serwery z wynikiem wyższym niż %2 będą używane w puli)"
 
 msgid  "What do the graphs mean?"
 msgstr "Co oznaczają wykresy?"

@@ -79,8 +79,8 @@ msgstr "Zones:"
 msgid  "This server is <span class="deletion">scheduled for deletion</span> on %1."
 msgstr "This server is <span class="deletion">scheduled for deletion</span> on %1."
 
-msgid  "Current score: %1 (only servers with a score higher than 5 are used in the pool)"
-msgstr "Current score: %1 (only servers with a score higher than 5 are used in the pool)"
+msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
+msgstr "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
 
 msgid  "What do the graphs mean?"
 msgstr "What do the graphs mean?"

@@ -79,8 +79,8 @@ msgstr "지역:"
 msgid  "This server is <span class="deletion">scheduled for deletion</span> on %1."
 msgstr "이 서버는 %1 에 <span class="deletion">삭제될 예정</span>입니다."
 
-msgid  "Current score: %1 (only servers with a score higher than 5 are used in the pool)"
-msgstr "현재 점수: %1 (5점이 넘는 서버들만 풀에 사용됩니다.)"
+msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
+msgstr "현재 점수: %1 (%2점이 넘는 서버들만 풀에 사용됩니다.)"
 
 msgid  "What do the graphs mean?"
 msgstr "그래프가 의미하는 것은?"
