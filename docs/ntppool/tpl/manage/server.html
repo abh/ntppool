@@ -3,7 +3,7 @@
 <form method="post" action="/manage/server/update/server">
 
 [% IF server.hostname %]Hostname: <b>[% server.hostname | html %]</b><br />[% END %]
-IP: <b>[% server.ip | html %]</b><br />
+IP: <b><a href="[% server.url %]">[% server.ip | html %]</a></b><br />
 [% IF server.deletion_on %]
 This server is <span class="deletion">scheduled for deletion</span>
 on [% server.deletion_on.strftime("%B %d, %Y") %].
@@ -51,7 +51,7 @@ Zones:
 
 <br/>
 [% IF server.ip_version == 'v4' %]
-  <a href="/scores/[% server.ip | uri %]">Trend</a>: <img src="/scores/[% server.ip %]/spark" /><br/>
+  <a href="[% server.url %]">Trend</a>: <img src="[% server.url %]/spark" /><br/>
   <br />
 [% END %]
 
