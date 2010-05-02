@@ -19,6 +19,23 @@ WriteMakefile(
                   'Data::Transformer' => 0,
                   'Net::NTP' => 0,
                   'namespace::clean' => 0,
+
+                  'Rose::DB::Object' => 0,
+
+                  'Locale::Maketext::Lexicon' => 0,
+                  'Gearman::Client' => 0,
+                  'Text::CSV_XS' => 0,
+                  'Time::Duration' => 0,
+                  'DateTime::Format::Duration' => 0,
+                  'Email::Send' => 0,
+                  'Email::Date' => 0,
+
+                  'Imager' => 0,
+                  'Geo::IP' => 0,
+
+                  # should just be Net::IP ..
+                  'Net::IPv6Addr' => 0,
+
     },
     test => {TESTS => 't/*.t t/*/*.t t/*/*/*.t'}
 );
