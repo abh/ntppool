@@ -16,10 +16,10 @@ msgid "Asia"
 msgstr "Asie"
 
 msgid "North America"
-msgstr "Amerique du Nord"
+msgstr "Amérique du Nord"
 
 msgid "South America"
-msgstr "Amerique du Sud"
+msgstr "Amérique du Sud"
 
 msgid "Global"
 msgstr "Mondial"
@@ -54,7 +54,7 @@ msgid  "announcement_list_description"
 msgstr "Annonces des nouvelles du Réservoir NTP à très très faible trafic. Tous les administrateurs de serveurs devrait s'inscrire à cette liste de diffusion."
 
 msgid  "discussion_list_description"
-msgstr "Les administrateurs de serveurs (et les utilisateurs) qui veulent s'impliquer plus dans le projet peuvent souscrire à la liste de discussion.<br/> Bien sûr, les discussions générale à propros de ntp devraient avoir lieu dans le newsgroup Usenet %1 (voir aussi les <a href=\"%2\">Google Groups</a>)"
+msgstr "Les administrateurs de serveurs (et les utilisateurs) qui veulent s'impliquer plus dans le projet peuvent souscrire à la liste de discussion.<br/> Bien sûr, les discussions générale à propos de ntp devraient avoir lieu dans le newsgroup Usenet %1 (voir aussi les <a href=\"%2\">Google Groups</a>)"
 
 msgid  "development_list_description"
 msgstr "Les discussions plus techniques (et idéalement plus pragmatiques) sur le développement actuel du <a href=\"%1\">code du réservoir ntp</a> et de <a href=\"%2\">pgeodns</a> ont lieu sur la liste timekeepers-dev.""
