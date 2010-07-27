@@ -1,0 +1,91 @@
+msgid ""
+msgstr ""
+"Last-Translator: Andrej Vlasic <andrej.vlasic0@gmail.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "go up"
+msgstr "na vrh"
+
+# zone names
+msgid "Africa"
+msgstr "Afrika"
+
+msgid "Asia"
+msgstr "Azija"
+
+msgid "North America"
+msgstr "Sjeverna Amerika"
+
+msgid "South America"
+msgstr "Južna Amerika"
+
+msgid "Global"
+msgstr "Globalno"
+
+msgid "All Pool Servers"
+msgstr "Svi Pool Serveri"
+
+# navigation
+msgid "Translations"
+msgstr "Prijevodi"
+
+# mailinglists.html
+msgid  "NTP Pool mailing lists"
+msgstr "NTP Pool mail lista"
+
+msgid  "subscribe"
+msgstr "pretplati se"
+
+msgid  "archive"
+msgstr "arhiva"
+
+msgid  "Announcement list"
+msgstr "Lista najava"
+
+msgid  "Discussion list"
+msgstr "Lista rasprava"
+
+msgid  "Development list"
+msgstr "Razvojna lista "
+
+msgid  "announcement_list_description"
+msgstr "Objave o NTP Pool vijestima s vrlo malo prometa. Svi operatori servera trebali bi biti pretplaćeni na listu objava."
+
+msgid  "discussion_list_description"
+msgstr "Operatori servera (i korisnici) koji žele biti više uključeni u ovaj projekt mogu se pretplatiti na listu rasprava.<br/> Naravno, generalne rasprave o ntp-u bi trebale biti raspravljane na %1 Usenet news grupi (dostupno i na <a href=\"%2\">Google Grupe</a>)."
+
+msgid  "development_list_description"
+msgstr "Više tehničke (i idealno uvijek pragmatičane) diskusije o trenutačnom razvoju <a href=\"%1\">ntp pool koda</a> i <a href=\"%2\">pgeodns</a> se dešavaju na timekeepers-dev listi."
+
+
+# tpl/server.html
+msgid  "Back to the front page"
+msgstr "Nazad na početnu stranicu"
+
+msgid  "Find"
+msgstr "Traži"
+
+msgid  "Stats for %1"
+msgstr "Statistike za %1"
+
+msgid  "Not active in the pool, monitoring only"
+msgstr "Neaktivan u pool-u, samo monitoring"
+
+msgid  "Zones:"
+msgstr "Zone:"
+
+msgid  "This server is <span class="deletion">scheduled for deletion</span> on %1."
+msgstr "Ovaj server je <span class="deletion">planiran za brisanje</span> na %1."
+
+msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
+msgstr "Trenutačni rezultat: %1 (samo serveri sa rezultatom večim od %2 su korišteni u pool-u)"
+
+msgid  "What do the graphs mean?"
+msgstr "Šta znače grafovi?"
+
+msgid  "CSV log"
+msgstr "CSV dnevnik"
+
+
