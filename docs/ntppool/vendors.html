@@ -93,8 +93,8 @@
 
 	<p>To allow you to use the pool as the default time service in your
 	application, we will set you up with special hostnames, for example
-	<tt>1.vendor.pool.ntp.org</tt>, <tt>2.vendor.pool.ntp.org</tt> and
-	<tt>3.vendor.pool.ntp.org</tt>.</p>
+	<tt>0.vendor.pool.ntp.org</tt>, <tt>1.vendor.pool.ntp.org</tt>,
+        <tt>2.vendor.pool.ntp.org</tt> and <tt>3.vendor.pool.ntp.org</tt>.</p>
 
 	<p>
 	You <b>must absolutely not use the default pool.ntp.org zone names</b> as the default configuration in your application or appliance.
@@ -135,7 +135,7 @@
 		<ul class="bullet">
 			<li>Only use the pool.ntp.org hostnames designated to you (typically {0,1,2,3}.{vendor}.pool.ntp.org)</li>
 			<li>Do implement handling of the "KoD" response</li>
-			<li>Don't send excessively frequent queries.  Reasonable query intervals are typically from once or twice a day to a 4-5 times an hour depending on the application</li>
+			<li>Don't send excessively frequent queries.  Reasonable query intervals are typically from once or twice a day to a 4-5 times an hour depending on the application.  Really consider how often the device will need "fresh time".  A standard ntpd or openntpd server works, too.</li>
 	                <li>Do have your devices query the NTP servers at random times of the day.  For example every 43200 seconds since boot is good, at midnight every day is bad.</li>
 	                <li>Read the <a href="http://www.faqs.org/rfc/rfc4330.txt">new SNTP RFC</a> if you are implementing an SNTP client.</li>
 		</ul>
