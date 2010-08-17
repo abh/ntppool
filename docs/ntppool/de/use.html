@@ -1,15 +1,13 @@
-[% page.title = 'How do I setup NTP to use the pool?' %]
+[% page.title = 'Wie benutze ich den NTP Pool?' %]
 
 <div class="block">
-	<h3><a name="use"></a>How do I use pool.ntp.org?</h3>
-	
-	<p>
-	If you just want to synchronise your computers clock to the network, the
-	configuration file (for the ntpd program from the <a
-	href="http://www.ntp.org">ntp.org distribution</a>, on any supported operating
-	system - <b>Linux, *BSD, Windows and even some more exotic systems</b>) is
-	really simple:
-	</p>
+ <h3><a name="use"></a>wie benutze ich pool.ntp.org?</h3>
+
+ <p>
+  Zur Synchronisation der Uhrzeit Ihres Computers nutzen Sie folgende
+  Konfiguration f&uuml;r den <a href="http://www.ntp.org">ntpd</a> Dienst
+  unabh&auml;ngig davon welches Betriebssystem Sie einsetzen:
+ </p>
 
 <pre class="code">
 driftfile /var/lib/ntp/ntp.drift
@@ -18,109 +16,134 @@ server 0.pool.ntp.org
 server 1.pool.ntp.org
 server 2.pool.ntp.org
 server 3.pool.ntp.org</pre>
-	<p>
-	The 0, 1 and 2.pool.ntp.org names point to a random set of servers that will
-	change every hour.  Make sure your computer's clock is set to something
-	sensible (within a few minutes of the 'true' time) - you could use <tt>ntpdate
-	pool.ntp.org</tt>, or you could just use the <tt>date</tt> command and set it
-	to your wristwatch. Start ntpd, and after some time (this could take as long as
-	half an hour!), <tt>ntpq -pn</tt> should output something like:
-	</p>
+ <p>
+  Die Ziffern 0, 1 und 2 zusammen mit <i>pool.ntp.org</i> zeigen auf
+  einen Satz von Severn, der st&uuml;ndlich &auml;ndert. Bevor der
+  <i>ntpd</i>-Dienst gestartet werden kann, muss die Systemzeit grob (im
+  Bereich weniger Minuten) eingestellt werden. Das kann manuell mit
+  <tt>date</tt> oder &uuml;ber den NTP Pool mit <tt>ntpdate
+   pool.ntp.org</tt> geschehen. Anschlie&szlig;end sollte der
+  <i>ntpd</i>-Dienst problemlos starten. Nach einigen Minuten kann der
+  Status des Dienstes aufgerufen werden. Das Kommando <tt>ntpq -pn</tt>
+  sollte in etwa wie folgt aussehen:
+ </p>
 <pre class="code ntpq">
 avbidder:~$ ntpq -p
-     remote           refid      st t when poll reach   delay   offset  jitter
+remote           refid      st t when poll reach   delay   offset  jitter
 ==============================================================================
 +81.6.42.224     193.5.216.14     2 u   68 1024  377  158.995   51.220  50.287
 *217.162.232.173 130.149.17.8     2 u  191 1024  176   79.245    3.589  27.454
 -129.132.57.95   131.188.3.222    3 u  766 1024  377   22.302   -2.928   0.508
 </pre> 
-	<p>
-	The IP addresses will be different, because you've been assigned random
-	timeservers. The essential thing is that one of the lines starts with an
-	asterisk (<tt>*</tt>), this means your computer gets the time from the internet
-	- you'll never have to worry about it again!
-	</p>
-	<p>
-	As <tt>pool.ntp.org</tt> will assign you timeservers from all over the
-	world, time quality will not be ideal.  You get a bit better result if you use
-	the <a href="/zone/@">continental zones</a> (For example
-	<a href="/zone/europe">europe</a>,
-	<a href="/zone/north-america">north-america</a>,
-	<a href="/zone/oceania">oceania</a>
-	or <a href="/zone/asia">asia</a>.pool.ntp.org),
-	and even better time if you use the country zone (like
-	ch.pool.ntp.org in Switzerland) - for all these zones, you can again use the 0,
-	1 or 2 prefixes, like 0.ch.pool.ntp.org.  Note, however, that the country zone
-	might not exist for your country, or might contain only one or two timeservers.
-	If you know timeservers that are really close to you (measured by network
-	distance, with <tt>traceroute</tt> or <tt>ping</tt>), time probably will be
-	even better.
-	</p>
-	<p>
-	If you're using <b>a recent Windows version</b>, you can also use the ntp
-	client that is built into the system. Just execute:</p>
+ <p>
+  Die IP Adressen werden andere sein, da zuf&auml;llige Zeitserver aus
+  dem NTP Pool eingesetzt werden. Ausschlaggeben ist die, dass einer der
+  Zeitserver mit einem Stern (<tt>*</tt>) markiert ist. Erst dann wird
+  die Systemzeit mit dem Internet synchronisiert.
+ </p>
+ <p>
+  Nachdem <tt>pool.ntp.org</tt> zuf&auml;llige Zeitserver aus der ganzen
+  Welt zuweist, kann es zu Synchronisationsgenauigkeiten kommen. F&uuml;r
+  bessere Ergebnisse empfielt es sich einer der
+  <a href="/zone/@">kontinentalen Zones</a> (zB.
+  <a href="/zone/europe">europe</a>,
+  <a href="/zone/north-america">north-america</a>,
+  <a href="/zone/oceania">oceania</a>
+  or <a href="/zone/asia">asia</a>.pool.ntp.org),
+  oder gar noch besser eine Landeszone wie zum Beispiel
+  <i>ch.pool.ntp.org</i> in der Schwweiz oder <i>de.pool.ntp.org</i> in
+  Deutschlang einzusetzen. Auch in diesen Zonen k&ouml;nnen die Ziffern 0,
+  1 oder 2 vorangestellt werden (zB. 0.de.pool.ntp.org)
+  Bitte beachten Sie, dass nicht alle L&auml;nderzonen existieren, oder
+  nur wenige Zeitserver enthalten sind. Sollten Sie einen Zeitserver
+  kennen, der sich in Ihrere N&auml;he befindet, wird die
+  Zeitsynchronisation vermutlich am besten sein.
+ </p>
+ <p>
+  Sollten Sie eine neuere Version von <b>Windows</b> einsetzten,
+  k&ouml;nnen Sie den NTP-Klienten nutzen, der in das System integriert
+  ist. F&uuml;hren Sie dazu folgendes Kommando aus:
+ </p>
 <pre class="code">
 net time /setsntp:pool.ntp.org
 </pre>
-	<p>
-	With some versions of Windows you can also specify more than one server
+ <p>
+  Manchen Versionen von Windows erlauben das setzen mehrerer Zeitserver:
 <pre class="code">
 net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
 </pre>
-	</p>
-	<p>
-	at the command prompt. This is known to work on Windows 2000/XP/2003.  The same
-	can be achieved by, as administrator, right-clicking the clock in the taskbar,
-	selecting 'Adjust Date/Time' and entering the server name in the 'Internet Time'
-	tab.
-	</p>
+ </p>
+ <p>
+  Dieses Vorgehen wurde f&uuml;r Windows 2000/XP/2003 ge&uuml;r&uuml;ft. Das
+  gleiche Ziel kann als Administrator erreicht werden durch rechtsklick auf die
+  Uhrzeit in der Systemleiste, danach 'Einstellungen'. Dort kann der Zeitserver
+  bzw. die Zone bei 'Internetzeit' eingetragen werden.
+ </p>
 
-	<p>
-	Meinberg made a port of the <a href="http://www.meinberg.de/english/sw/ntp.htm">ntp daemon for windows</a>.
-	</p>
+ <p>
+  Der <i>ntpd</i>-Dienst wurde von Meinberg auf Windows portiert: <a
+  href="http://www.meinberg.de/english/sw/ntp.htm">ntpd f&uuml;r Windows</a>.
+ </p>
 
-	<p>
-	If your Windows system is part of a domain, you might not be able to independently update your computer time.  See <a href="http://technet2.microsoft.com/WindowsServer/en/library/71e76587-28f4-4272-a3d7-7f44ca50c0181033.mspx?mfr=true">How Windows Time Service Works</a>.
-	</p>
+ <p>
+  Sollten Sie sich innerhalb einer Dom&auml;ne befinden, kann es sein, dass Sie
+  ihre Systemzeit nicht unabh&auml;ngig definieren k&ouml;nnen. Mehr
+  Informationen dazu liefert eine englische Problembeschreibung von Microsoft
+  <a
+  href="http://technet2.microsoft.com/WindowsServer/en/library/71e76587-28f4-4272-a3d7-7f44ca50c0181033.mspx?mfr=true">How
+  Windows Time Service Works</a>.
+ </p>
 </div>
 
 <div class="block">
-	<h3>Additional Notes</h3>
-	<p><span class="hook">If you have a static IP address and a reasonable Internet connection</span> (bandwidth
-	is not so important, but it should be stable and not too highly loaded), please
-	consider donating your server to the server pool. It doesn't cost you more than
-	a few hundred bytes per second traffic, but you help this project survive.
-	Please <a href="/join.html">read the joining page</a> for more information.
-	</p>
-	
-	<p><span class="hook">If your Internet provider has a timeserver</span>, or if you know of a good timeserver
-	near you, you should use that and not this list - you'll probably get better
-	time and you'll use fewer network resources.  If you know only one timeserver
-	near you, you can of course use that and two from pool.ntp.org or so.</p>
-	
-	<p><span class="hook">It can rarely happen that you are assigned the same timeserver twice</span> -
-	just restarting the ntp server usually solves this problem.  If you
-	use a country zone, please note that it may be because there is only
-	one server known in the project - better use a continental zone in
-	that case.  You can <a href="/zone">browse the zones</a> to see how
-	many servers we have in each zone.</p>
-	
-	<p><span class="hook">Be friendly</span>. Many servers are provided by volunteers, and almost all time
-	servers are really file or mail or webservers which just happen to also run ntp.
-	So don't use more than three time servers in your configuration, and don't play
-	dirty tricks with <tt>burst</tt> or <tt>minpoll</tt> - all you will gain is
-	that this project will be stopped sooner or later.</p>
-	
-	<p><span class="hook">Make sure that the <i>time zone configuration</i> of your computer is correct</span>.
-	ntpd itself does not do anything about the time zones, it just uses UTC
-	internally.</p>
-	
-	<p><span class="hook">If you are synchronising a network to pool.ntp.org</span>, please set up one of your
-	computers as a time server and synchronize the other computers to that one.
-	(you'll have some reading to do - it's not difficult though. And there's always
-	the <a href="news:comp.protocols.time.ntp"
-	>comp.protocols.time.ntp newsgroup</a>.)</p>
-	
-	<p class="thanks">At this point, I'd like to thank those donating their time and timeservers to
-	this network.</p>
+ <h3>Zus&auml;tzliche Anmerkungen</h3>
+ <p><span class="hook">Wenn Sie &uuml;ber eine statische IP-Adresse und eine
+   vern&uuml;nftige Bandbreite verf&uuml;gen</span> (die Bandbreite ist weniger
+  relevant als eine stabile Anbindung) erw&auml;gen Sie bitte Ihren Server in
+  den NTP Pool mit aufzunehmen. Der zus&auml;tzliche enstehende Verkehr
+  betr&auml;gt im allgemeinen nicht mehr als ein paar hundert Byte pro
+  Sekunde, jedoch helfen Sie dabei dieses Projekt am Leben zu halten. Bitte <a
+   href="/join.html">lesen Sie diese Beitrittsseite</a> f&uuml;r weitere
+  Informationen.
+ </p>
+
+ <p><span class="hook">Verf&uuml;gt ihr Internetanbieter &uuml;ber einen
+   Zeitserver</span>, oder kennen Sie einen guten Zeitserver in Ihrer
+  n&auml;he, sollten Sie diesen nutzen anstelle des NTP Pools. Die
+  Zeitsynchronisation wird dadurch besser und es werden weniger
+  Netzwerkresourcen des NTP Pools belegt. Selbstverst&auml;ndlich k&ouml;nnen
+  Sie die Zeitserver des NTP Pools auch zus&auml;tzlich zu den Ihnen bekanten
+  Servern hinzuf&uuml;gen.</p>
+
+ <p><span class="hook">In seltenen F&auml;llen kann es passieren, dass Ihnen
+   der gleiche Zeitserver zweimal zugewiesen wurde</span>. In einem solchen
+  Fall Hilf ein einfaches Neustarten des <i>ntpd</i>-Dienstes.
+  Wenn Sie L&auml;nderzonen einsetzen in denen nur wenige Zeitserver
+  registriert sind, steigt jedoch die Wahrscheinlichkeit eines solchen Falles.
+  Am besten setzten Sie dann auf kontinentale Zonen. In der <a
+   href="/zone">Liste der Zonen</a> k&ouml;nnen Sie durch alle Zonen
+  bl&auml;ttern.</p>
+
+ <p><span class="hook">Sein Sie freundlich</span>. Viele Zeitserver werden von
+  Freiwilligen betrieben und fast alle werden auch f&uuml;r private Zwecke des
+  Betreibers eingesetzt. Also nutzen Sie bitte nicht mehr als drei Zeitserver
+  in Ihrer Konfiguration und schrauben Sie nicht an schmutzigen Tricks wie
+  <tt>burst</tt> oder <tt>minpoll</tt>. Das einzige was Sie damit erreichen
+  k&ouml;nnen ist, das dieses Projekt fr&uuml;her oder sp&auml;ter eingestellt
+  werden muss.</p>
+
+ <p><span class="hook">Vergewissern Sie sich, dass Ihre
+   <i>Zeitzonenkonfiguration</i> korrekt ist</span>. <i>ntpd</i> selbst kennt
+  ihre Zeitzone nicht.</p>
+
+ <p><span class="hook">Wenn Sie ein Netzwerk mit pool.ntp.org synchronisieren
+   m&ouml;chten</span>, setzen Sie bitte einen Ihrere Server als Zeitserver
+  ein, der als einziger den NTP Pool nutzt und synchronisieren Sie alle anderen
+  Computer mit diesem. Das Aufsetzten eines eigenen Zeitservers ist nicht
+  weiter schwierig, erfordert allerdings ein paar Seiten der Anleitung zu lesen.
+  Bei Schwierigkeiten wird Ihnen Sicherlicht die <a href="news:comp.protocols.time.ntp"
+ >comp.protocols.time.ntp Newsgroup</a> weiterhelfen.</p>
+
+ <p class="thanks">Schlie&szlig;lich m&ouml;chte ich allen danken, die Ihre
+  Server dem NTP Pool zur Verf&uuml;gung stellen.</p>
 </div>
