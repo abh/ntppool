@@ -1,36 +1,35 @@
 <div id="graph_explanation_box" class="graph_explanation [% graph_explanation ? 'visible' : '' %]">
 
-<h3>The Score graph</h3>
+<h3>Das Punktediagram</h3>
+
 <p>
-A couple of times an hour the pool system checks the time from your
-server and compares it to the local time.  Points are deducted if the
-server can't be reached or if the time offset is more than 100ms (as
-measured relatively crudely from the monitoring systems).  More points
-are deducted the bigger the offset is.
+ Mehrere Male in der Stunde wird die Zeit ihres Zeitservers mit der
+ tats&auml;chlichen Zeit verglichen. Sollte Ihre Server nicht erreichbar sein,
+ oder geht Ihre Uhr mehr als 100ms falsch, werden Ihnen Punkte abgezogen.
+ F&uuml;r gr&ouml;&szlig;ere Fehler werden mehr Punkte abgezogen.
 </p>
 
 <p>
-When the score goes down the background color in the top part of the
-chart will reflect how severely the "outage" is.  The color scale goes
-from blue (very little) to yellow to orange to red (the server is
-several seconds off or unreachable).  Because of how the graph is
-averaged out, you can't always infer what happened from the color.
-It's only meant as a tool to visualize trends.  For more exact details
-of what the monitoring system found you can click on the CSV link.
-
+ Wenn ihr Punktestand f&auml;llt, zeigt Ihnen die Hintergrundfarbe in der oberen
+ H&auml;lfte des Diagrams die Schwere des Punkteabzugs an. Die Farbskala geht
+ von blaub f&uuml;r sehr kleine Fehler &uuml;ber gelb und orange bis rot, falls
+ der Zeitfehler mehre Sekunden betr&auml;gt oder Ihr Server nicht erreichbar ist.
+ Durch die eingesetzte Mittelung kann es teilweise sehr schwer werden auf die
+ Ursache des Punkteabzugs zu schlie&szlig;en. Das Diagram dient lediglich als
+ Werkzeug zur Visualisierung eines Trends. Die exakten Ergebnisse des
+ &Uuml;berwachungssystems k&ouml;nnen als CSV-Datei heruntergeladen werden.
 </p>
 
-<h3>The Offset graph</h3>
+<h3>Das Versatzdiagram</h3>
 
 <p>
-The monitoring system works roughly like an <a
-href="http://www.ntp.org/ntpfaq/NTP-s-def.htm#AEN1242">SNTP</a> (<a
-href="http://www.eecis.udel.edu/~mills/database/rfc/rfc2030.txt">RFC
-2030</a>) client, so it is more susceptible by random network
-latencies between the server and the monitoring system than a regular
-ntpd client would be.  In other words: Don't be alarmed by the
-occasional large offset and please don't use the offset as an absolute
-performance metric.
+ Das &Uuml;berwachungssystem funktioniert grob wie ein <a
+  href="http://www.ntp.org/ntpfaq/NTP-s-def.htm#AEN1242">SNTP</a> (<a
+  href="http://www.eecis.udel.edu/~mills/database/rfc/rfc2030.txt">RFC 2030</a>)
+  Klient, so dass es sehr empfindlich auf Netzwerklatenzen zwischen Server und
+  &Uuml;berwachungssystem reagiert als ein normaler <tt>ntpd</tt>-Dienst. In
+  anderen Worten: Die Diagramme k&ouml;nnen nicht zur absolute Leistungsmessung
+  des Zeitservers eingesetzt werden.
 </p>
 
 </div>

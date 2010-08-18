@@ -1,76 +1,77 @@
 <div class="block">
 
-<h3>Configuration recommendations for servers joining the pool</h3>
+<h3>Konfigurationsempfehlungen f&uuml;r die Teilnahme am NTP Pool</h3>
 
 <p>
- The <a href="http://support.ntp.org/bin/view/Support/WebHome">Support
-  section</a> on <a href="http://support.ntp.org/">support.ntp.org</a> has a lot
- of useful information.
+ Der <a href="http://support.ntp.org/bin/view/Support/WebHome">Support</a> auf
+ <a href="http://support.ntp.org/">support.ntp.org</a> verf&uuml;gt &uuml;ber
+ einige Informationen. bez&uuml;glich des NTP-Protokolls.
 </p>
 
 <p>
- If you just want to <i>use</i> the pool, see the <a href="/use.html">pool usage</a> page.
+ Wenn Sie den NTP Pool lediglich benutzen m&ouml;chten, lesen Sie bitte
+ die <a href="/use.html">Wie benutze ich den NTP Pool?</a> Seite.
 </p>
 
 <p>
- The <a
- href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a>
- newsgroup is the best place to get help with the ntpd software.
+ Als eine weitere Anlaufstelle dient die <a
+  href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a>
+  Newsgruppe. Dort wird Ihnen beim Einsatz der NTP Sofware geholfen.
 </p>
 
 <p>
- Below are some things of particular importance if you are going to
- join the NTP Pool with your server.
+ Im Folgenden werden einige relevante Informationen f&uuml;r den Betrieb eines
+ Zeitserver im NTP Pool beschrieben.
 </p>
 
-<h4>Setup about 5 servers</h4>
+<h4>Setup f&uuml;r etwa 5 Servers</h4>
 
 <p>
- To work properly ntpd needs to talk to at least 3 servers ("A man with
- a watch knows what time it is. A man with two watches is never sure").
-</p>
-
-<p>
- For servers in the pool we recommend configuring no less than 4 and no
- more than 7 servers.
-</p>
-
-
-<h4>Don't use *.pool.ntp.org servers</h4>
-
-<p>
- Ironically to make sure the pool service is the best it can be you
- shouldn't use the *.pool.ntp.org aliases in your configuration when
- you are going to add your server to the pool.
+ Um einwandfrei funktionieren zu k&ouml;nnen ben&ouml;tigt der
+ <i>ntpd</i>-Dienst mindestens 3 eingetragene Zeitserver ("Mit einer Uhr
+ wei&szlig; man wie sp&auml;t es ist. Mit zweien ist man sich nicht mehr
+ sicher).
 </p>
 
 <p>
- For the robustness of the pool it's healthier if all pool operators "hand pick" good local (network wise) time servers.
- The NTP.org wiki has  a <a
- href="http://support.ntp.org/bin/view/Servers/WebHome">list of public
- servers</a>.
+ Server im NTP Pool m&uuml;ssen mindestens 4 und d&uuml;rfen maximale 7
+ Zeitserver zur Synchronisation einsetzen.
 </p>
 
-
-<h4>Use the standard ntpd</h4>
+<h4>Benutzen Sie nicht *.pool.ntp.org als Zeitserver</h4>
 
 <p>
- We are all for software diversity, but a significant percentage of the
- "it's not working" questions that come in are for software other than
- ntpd.
+ Um die Qualit&auml;t der Zeitsynchronisation zu halten, sollten sie nicht auf
+ eine der <tt>*.pool.ntp.org</tt> Aliase in Ihrer Konfiguration
+ zur&uuml;ckgreifen.
 </p>
 
 <p>
- You can <i>use</i> the pool with any program speaking NTP, but if you
- are going to join the pool we recommend you
- use <a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
+ F&uuml;r eine robusten und gesunden Pool ist es das beste Sie w&auml;hlen den
+ f&uuml;r Sie am besten funktionierenden Zeitserver in Ihrere Umgebung.  Das
+ NTP.org Wiki hat daf&uuml;r ein <a
+ href="http://support.ntp.org/bin/view/Servers/WebHome">Liste &ouml;ffentlicher
+ Server</a>.
 </p>
 
+<h4>Benutzen Sie den Standard NTPd-Dienst</h4>
 
-<h4>Don't use the LOCAL clock driver</h4>
+<p>
+ Softwarealternativen sind prinzipiell etwas Gutes. Jedoch hat sich
+ herausgestellt, das der Gro&szlig;teil der aufgetretenen Problem durch den
+ Einsatz des Standard <tt>ntpd</tt>-Dienst behoben werden konnte.
+</p>
 
-<p>Servers in the NTP Pool should not have the LOCAL clock driver
- configured.</p>
+<p>
+ Benutzen k&ouml;nnen Sie den NTP Pool mit jeder Software die das NTP Protokoll
+ integriert hat, zum Betrieb eines Servers empfehlen wir Ihnen jedoch den
+ offiziellen <a
+ href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
+</p>
 
+<h4>Nutzen Sie nicht die lokale Uhrzeit</h4>
+
+<p>Server im NTP Pool sollten auf den Einsatz der lokalen Uhrzeit
+ verzichten.</p>
 
 </div>
