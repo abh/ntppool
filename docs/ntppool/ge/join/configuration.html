@@ -1,0 +1,70 @@
+<div class="block">
+
+<h3>Empfohlene Konfiguration f&uuml;r Server, die dem Pool beitreten</h3>
+
+<p>
+Unter <a href="http://support.ntp.org/bin/view/Support/WebHome">Support</a> 
+auf <a href="http://support.ntp.org/">support.ntp.org</a> 
+sind viele n&uuml;tzliche Informationen.
+</p>
+
+<p>
+Wenn du den Pool nur <i>nutzen</i> willst, schau dir bitte die Seite <a href="/use.html">Pool-Benutzung</a> an.
+</p>
+
+<p>
+Die Newsgroup <a
+href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a>
+ist der beste Platz um Hilfe zur ntpd-Software zu bekommen.
+</p>
+
+<p>
+Im Folgenden einige wichtige Dinge, falls du dem NTP Pool mit deinem Server beitrittst.
+</p>
+
+<h4>Setze etwa fünf Server auf</h4>
+
+<p>
+Um korrekt zu arbeiten muss ntpd mit mindestens drei Servern kommunizieren (&quot;Jemand mit einer Uhr wei&szlig;,
+wie sp&auml;t es ist. Jemand mit zwei Uhren ist niemals sicher.&quot;)
+</p>
+
+<p>
+F&uuml;r Server im Pool empfehlen wir nicht weniger als vier und nicht mehr als sieben zu konfigurieren.
+</p>
+
+
+<h4>Benutze keine *.pool.ntp.org Server</h4>
+
+<p>
+Ironischerweise muss der Pool-Service sicher gehen, dass keiner der Server einen *.pool.ntp.org-Alias
+benutzt um die Qualit&auml;t des Pools zu gew&auml;hrleisten.
+</p>
+
+<p>
+Die Zuverl&auml;&szlig;igkeit des Pools ist h&ouml;her, wenn alle Betreibenden &quot;handverlesene&quot;, 
+lokale (netzwerkm&auml;&szlig;ig) Zeitserver w&auml;hlen.
+Die NTP.org-Wiki hat eine <a
+href="http://support.ntp.org/bin/view/Servers/WebHome">Liste &ouml;ffentlicher Server</a>.
+</p>
+
+
+<h4>Benutze den Standard-ntpd</h4>
+
+<p>
+Wir sind alle f&uuml;r Software-Diversity, aber ein bedeuntender Prozentsatz der "es funktioniert nicht"-
+Fragen resultiert von Software, die nicht ntpd ist.
+</p>
+
+<p>
+Du kannst den Pool mit jedem NTP-f&auml;higen Programm <i>benutzen</i>, aber wenn du mitmachen willst,
+empfehlen wir dir <a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
+</p>
+
+
+<h4>Benutze keine LOCAL Uhrtreiber</h4>
+
+<p>Server im NTP-Pool sollten keine LOCAL Uhrentreiber aktiviert haben.</p>
+
+
+</div>
