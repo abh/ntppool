@@ -1,0 +1,93 @@
+msgid ""
+msgstr ""
+"Last-Translator: Vaclav Vobornik <vaclav@vobornik.eu>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Language-Team: \n"
+
+msgid "go up"
+msgstr "nahoru"
+
+# zone names
+msgid "Africa"
+msgstr "Afrika"
+
+msgid "Asia"
+msgstr "Asie"
+
+msgid "North America"
+msgstr "Severní Amerika"
+
+msgid "South America"
+msgstr "Jižní Amerika"
+
+msgid "Global"
+msgstr "Global"
+
+msgid "All Pool Servers"
+msgstr "Všechny Pool Servery"
+
+# navigation
+msgid "Translations"
+msgstr "Překlady"
+
+# mailinglists.html
+msgid "NTP Pool mailing lists"
+msgstr "NTP Pool e-mailová konference"
+
+msgid "subscribe"
+msgstr "přihlásit odběr"
+
+msgid "archive"
+msgstr "archiv"
+
+msgid "Announcement list"
+msgstr "Konference pro oznámení"
+
+msgid "Discussion list"
+msgstr "Diskusní konference"
+
+msgid "Development list"
+msgstr "Vývojářská konference"
+
+msgid "announcement_list_description"
+msgstr "Velmi velmi nízký počet oznámení o NTP Pool novinkách. Všichni operátoři serverů by měli být přihlášeni do konference pro oznámení."
+
+msgid "discussion_list_description"
+msgstr "Operátoři serverů (a uživatelé), kteří chtějí být více zapojeni do projektu se mohou přihlásit do této konference.<br/> Samozřejmě, obecná diskuse o ntp by měla probíhat v %1 Usenet skupině (také na <a href=\"%2\">Google Groups</a>)."
+
+msgid "development_list_description"
+msgstr "Více technické (a ideálně vždy pragmatické) diskuse o současném vývoji <a href=\"%1\">ntp pool kódu</a> a <a href=\"%2\">pgeodns</a> happens on the timekeepers-dev list."
+
+# tpl/server.html
+msgid "Back to the front page"
+msgstr "Návrat na hlavní stranu"
+
+msgid "Find"
+msgstr "Vyhledat"
+
+msgid "Stats for %1"
+msgstr "Statistika pro %1"
+
+msgid "Not active in the pool, monitoring only"
+msgstr "V poolu neaktivní, pouze monitorovat"
+
+msgid "Zones:"
+msgstr "Zóny:"
+
+msgid "This server is <span class="deletion">scheduled for deletion</span> on %1."
+msgstr "Tento server je <span class='deletion'>naplánován ke smazání</span> %1."
+
+msgid "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
+msgstr "Současné skóre: %1 (pouze servery se skóre vyšším než %2 jsou zahrnuty do poolu)"
+
+msgid "What do the graphs mean?"
+msgstr "Co tyto grafy znamenají?"
+
+msgid "CSV log"
+msgstr "CSV log"
+
