@@ -40,7 +40,7 @@ msgid "NTP Pool mailing lists"
 msgstr "NTP Pool-postlister"
 
 msgid "subscribe"
-msgstr ""
+msgstr "abonnér"
 
 msgid "archive"
 msgstr "arkiv"
@@ -49,22 +49,20 @@ msgid "Announcement list"
 msgstr ""
 
 msgid "Discussion list"
-msgstr ""
+msgstr "Diskussionsliste"
 
 msgid "Development list"
-msgstr ""
+msgstr "Udviklingsliste"
 
 #, fuzzy
 msgid "announcement_list_description"
 msgstr "Very very low traffic announcements of NTP Pool news.  All server operators should be subscribed to the announcement list."
 
-#, fuzzy
 msgid "discussion_list_description"
-msgstr "Server operators (and users) who wish to be more involved in the project can subscribe to the discussion list.<br/> Of course, general discussions about ntp should take place on the %1 Usenet newsgroup (also on <a href=\"%2\">Google Groups</a>)."
+msgstr "Serveroperatører (og brugere) som ønsker at være mere engageret i projektet kan abonnere på diskussionslisten.<br/>Generel diskussion omkring ntp bør selvfølgelig tage sted i %1 Usenet-nyhedsgruppen (også på <a href=\"%2\">Google Groups</a>)."
 
-#, fuzzy
 msgid "development_list_description"
-msgstr "More technical (and ideally always pragmatic) discussions about the current development of the <a href=\"%1\">ntp pool code</a> and <a href=\"%2\">pgeodns</a> happens on the timekeepers-dev list."
+msgstr "Mere tekniske (og ideelt set altid pragmatiske) diskussioner om den nuværende udvikling af <a href=\"%1\">ntp pool-koden</a> og <a href=\"%2\">pgeodns</a> sker på timekeepers-dev-listen."
 
 # tpl/server.html
 msgid "Back to the front page"
@@ -76,8 +74,9 @@ msgstr "Find"
 msgid "Stats for %1"
 msgstr "Statistik for %1"
 
+#, fuzzy
 msgid "Not active in the pool, monitoring only"
-msgstr ""
+msgstr "Ikke aktiv i pool'en, kun overvågning"
 
 msgid "Zones:"
 msgstr "Zoner:"
