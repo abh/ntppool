@@ -4,7 +4,6 @@ use utf8;
 use Combust::Constant qw(OK);
 use base qw(Combust::Control Combust::Control::Bitcard);
 
-use HTML::Prototype;
 use Carp qw(cluck);
 use Storable qw(retrieve);
 use Combust::StaticFiles qw(-force :all);
@@ -31,11 +30,6 @@ our %valid_languages = (
                        );
 
 NP::I18N::loc_lang('en');
-
-my $prototype = HTML::Prototype->new;
-sub prototype {
-  $prototype;
-}
 
 my $ctemplate;
 sub tt {
