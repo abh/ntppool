@@ -56,7 +56,7 @@ sub render {
               my $path = $server->rrd_path;
               open my $fh, $path or warn "Could not open $path: $!" and return 403;
               $self->request->header_out('Content-disposition', sprintf('attachment; filename=%s.rrd', $server->ip));
-              $self->r->update_mtime((stat($fh))[9]);
+              $self->request->update_mtime((stat($fh))[9]);
               return OK, $fh, 'application/octet-stream';
           }
           elsif ($mode eq 'graph') {
@@ -69,7 +69,10 @@ sub render {
             my $path = $server->graph_path($type);
             open my $fh, $path
               or warn "Could not open $path: $!" and return 403;
-            $self->r->update_mtime((stat($fh))[9]);
+
+            my $mtime = (stat($fh))[9];
+            $self->request->update_mtime($mtime);
+
             $self->cache_control('max-age=2700, s-maxage=1800');
             return OK, $fh, 'image/png';
           }

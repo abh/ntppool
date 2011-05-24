@@ -2,11 +2,10 @@ package NTPPool::Control;
 use strict;
 use utf8;
 use Combust::Constant qw(OK);
-use base qw(Combust::Control Combust::Control::Bitcard);
+use base qw(Combust::Control Combust::Control::StaticFiles Combust::Control::Bitcard);
 
 use Carp qw(cluck);
 use Storable qw(retrieve);
-use Combust::StaticFiles qw(-force :all);
 use I18N::LangTags qw(implicate_supers);
 use I18N::LangTags::Detect ();
 use List::Util qw(first);
@@ -46,7 +45,7 @@ sub init {
 
   if ($self->req_param('sig') or $self->req_param('bc_id')) {
     my $bc = $self->bitcard;
-    my $bc_user = eval { $bc->verify($self->r) };
+    my $bc_user = eval { $bc->verify($self->request) };
     warn $@ if $@;
     unless ($bc_user) {
       warn $bc->errstr;
@@ -78,7 +77,7 @@ sub init {
   }
 
   if ($self->is_logged_in) {
-      $self->r->user( $self->user->username );
+      $self->request->env->{REMOTE_USER} = $self->user->username;
   }
 
   my $lang = $self->language;
@@ -123,7 +122,7 @@ sub get_include_path {
     # try the $language version first
     unshift @$path, $path->[0] . "$language/";
 
-    $path;
+    return $path;
 }
 
 # Because of how the varnish caching works there's just one language
@@ -256,7 +255,9 @@ sub plain_cookie {
     $args->{path}   ||= '/';
     $args->{expires} = '+30d' unless defined $args->{expires};
 
-    return $self->request->cookie($cookie, $value, $args);
+    $args->{value} = $value;
+
+    return $self->request->response->cookies->{$cookie} = $args;
 }
 
 

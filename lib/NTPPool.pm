@@ -11,7 +11,6 @@ use NTPPool::Control::Vendor;
 use NTPPool::Control::Manage::Equipment;
 use NTPPool::Control::Zone;
 use NTPPool::Control::UserProfile;
-use NTPPool::Control::LanguagePath;
 
 use Template::Plugin::Number::Format;
 

@@ -57,7 +57,8 @@
     </Location>
 
     <Location /zone/graph>
-      SetHandler default
+      SetHandler perl-script
+      [% PH %] NTPPool::Control::Basic->super
     </Location>
 
     <Location /error/>
@@ -69,15 +70,6 @@
       SetHandler perl-script
       [% PH %] Combust::Control::Basic->super
     </Location>
-
-
-   <IfDefine MODPERL2> 
-    <Location /perl-status>
-      SetHandler modperl
-      PerlOptions +GlobalRequest
-      [% PH %] Apache2::Status
-    </Location>
-  </IfDefine>
 
     <Location /server-status>
       SetHandler server-status

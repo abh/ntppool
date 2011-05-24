@@ -18,11 +18,13 @@ WriteMakefile(
                   'Net::DNS' => 0.63,
                   'Data::Transformer' => 0,
                   'Net::NTP' => 0,
-                  'namespace::clean' => 0,
+                  'namespace::clean' => 0.20,
+
+                  'Moose' => 2,
 
                   'Rose::DB::Object' => 0,
 
-                  'Locale::Maketext::Lexicon' => 0,
+                  'Locale::Maketext::Lexicon' => 0.84,
                   'Gearman::Client' => 0,
                   'Text::CSV_XS' => 0,
                   'Time::Duration' => 0,
@@ -32,6 +34,9 @@ WriteMakefile(
 
                   'Imager' => 0,
                   'Geo::IP' => 0,
+
+                  'Plack' => 0,
+                  'Plack::Middleware::Options' => 0,
 
                   # should just be Net::IP ..
                   'Net::IPv6Addr' => 0,

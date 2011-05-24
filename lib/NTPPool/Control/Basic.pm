@@ -32,7 +32,4 @@ sub servers_with_urls {
     $servers;
 }
 
-package NTPPool::Control::Error;
-use base qw(NTPPool::Control Combust::Control::Error);
-
 1;

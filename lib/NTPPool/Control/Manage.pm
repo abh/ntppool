@@ -15,7 +15,6 @@ use Net::IPv6Addr;
 sub render {
     my $self = shift;
 
-    $self->r->no_cache(1);
     $self->cache_control('private');
 
     if ($self->request->uri =~ m!^/manage/logout!) {
@@ -241,7 +240,7 @@ sub handle_update_profile {
 
     $self->tpl_param('user' => $self->user);
 
-    return $self->redirect('/manage') if $self->r->method eq 'GET';
+    return $self->redirect('/manage') if $self->request->method eq 'GET';
     return OK, $self->evaluate_template('tpl/manage/profile_link.html', {style => 'bare.html'});
 }
 
