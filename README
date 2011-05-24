@@ -1,4 +1,4 @@
-   Copyright 2005-2009 Ask Bjoern Hansen, Develooper LLC
+   Copyright 2005-2011 Ask Bjoern Hansen, Develooper LLC
    Copyright 2003-2005 Adrian von Bidder
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,7 +27,7 @@ submodule.
 export DIR=`pwd`/ntppool
 # you can also clone on github: http://github.com/abh/ntppool
 git clone git://git.develooper.com/ntppool.git
-xscd ntppool
+cd ntppool
 git submodule init
 git submodule update
 
@@ -53,4 +53,7 @@ $CBROOT/bin/database_update combust
 $CBROOT/bin/database_update ntppool
 
 $CBROOT/bin/run_httpd
+
+If any modules are missing, the easiest way to install them is with
+   cpanm -L cpan Module::Name
 
