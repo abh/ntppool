@@ -55,7 +55,7 @@ sub init {
       my ($user) = NP::Model->user->fetch(bitcard_id => $bc_user->{id});
       $user = $email_user if ($email_user and !$user);
       if ($user and $email_user and $user->id != $email_user->id) {
-	my @servers = NP::Model->server->get_servers(query => [ user_id => $email_user ]);
+	my @servers = NP::Model->server->get_servers(query => [ user_id => $email_user->id ]);
 	for my $server (@servers) {
 	  $server->user_id($user);
 	  $server->save;
