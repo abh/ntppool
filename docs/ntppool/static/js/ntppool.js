@@ -12,7 +12,7 @@ if (!NP) var NP = {};
 
      $('#netspeed_' + server_id ).fadeOut(50);
 
-     jQuery.getJSON( '/manage/server/update/netspeed', pars, 
+     jQuery.getJSON( '/manage/server/update/netspeed', pars,
                      function(data, textStatus) {
                          NP.netspeed_updated(server_id, data)
                      }
@@ -30,4 +30,14 @@ $(document).ready(function () {
         $(this).hide(70);
     });
 
+  $("#profile_link a.profile_link_change")
+     .live('click',
+           function(event) {
+               event.preventDefault();
+               $.post(this.href, {},
+                      function(response) {
+                          $('#profile_link').html(response);
+                      })
+           }
+          );
 });

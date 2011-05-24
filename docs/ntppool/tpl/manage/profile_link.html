@@ -6,8 +6,13 @@
 <span id="profile_link">
 Your <a href="/user/[% user.username %]">profile</a> is currently
 [% IF user.public_profile %]
-<b>public</b>, [% combust.prototype.link_to_remote('mark it private', { update => 'profile_link', url => '/manage/profile/update/private' } ) -%]
+
+<b>public</b>, <a class="profile_link_change" href="/manage/profile/update/private">mark it private</a>
+
 [% ELSE %]
-<b>private</b>, [% combust.prototype.link_to_remote('mark it public', { update => 'profile_link', url => '/manage/profile/update/public' } ) -%]
+
+<b>private</b>, <a class="profile_link_change" href="/manage/profile/update/public">mark it public</a>
+
 [% END %]
 </span>
+
