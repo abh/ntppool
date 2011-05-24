@@ -22,7 +22,7 @@ sub cache_info {
 
 sub zone_name {
   my $self = shift;
-  my ($zone_name) = ($self->request->uri =~ m!^/zone/([^/]+)!);
+  my ($zone_name) = ($self->request->uri =~ m!^/zone/(?:graph/)?([^/]+?)(/|\.png)?$!);
   $zone_name ||= '.';
   $zone_name;
 }
@@ -56,6 +56,25 @@ sub render {
   my $zone_name = $self->zone_name;
   my $zone = NP::Model->zone->fetch(name => $zone_name);
   return 404 unless $zone;
+
+  # discourage trailing slashes
+  if (my ($path) = ( $self->request->path =~ m!^(.*)/$! )) {
+      return $self->redirect( $1, 301 );
+  }
+
+
+  if ($self->request->path =~ m!^/zone/graph!) {
+      my $path = $zone->graph_path;
+      open my $fh, $path
+        or warn "Could not open $path: $!" and return 403;
+      
+      my $mtime = (stat($fh))[9];
+      $self->request->update_mtime($mtime);
+      
+      $self->cache_control('max-age=10800, s-maxage=7200');
+      return OK, $fh, 'image/png';
+  }
+
   $self->tpl_param('zone' => $zone);
 
   $self->tpl_param('is_logged_in' => $self->show_servers_access );

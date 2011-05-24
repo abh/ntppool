@@ -1,7 +1,11 @@
 package NP::Model::Zone;
 use strict;
 use Combust::Config;
+use File::Path qw(mkpath);
+
 my $config = Combust::Config->new;
+
+use namespace::clean;
 
 sub url {
   my $self = shift;
@@ -20,6 +24,22 @@ use constant SUB_ZONE_COUNT => 4;
 sub sub_zone_count {
     SUB_ZONE_COUNT;
 }
+
+
+my $rrd_path = "$ENV{CBROOTLOCAL}/rrd/zone";
+mkpath "$rrd_path/graph/" unless -e "$rrd_path/graph";
+
+sub rrd_path {
+    my $self = shift;
+    "$rrd_path/" . $self->name . ".rrd";
+}
+
+sub graph_path {
+    my $self = shift;
+    my $file = $self->name . ".png";
+    return "$rrd_path/graph/" . $file;
+}
+
 
 sub children {
     shift->zones;

@@ -8,9 +8,6 @@
 
     PerlModule NTPPool
 
-    Alias /zone/graph/ [% root_local %]/rrd/zone/graph/
-    Alias /scores/graph/ [% root_local %]/rrd/server/graph/
-
     <Location />
        SetHandler perl-script
        [% PH %] NTPPool::Control::Basic->super
@@ -54,11 +51,6 @@
     <Location /user>
       SetHandler perl-script
       [% PH %] NTPPool::Control::UserProfile->super
-    </Location>
-
-    <Location /zone/graph>
-      SetHandler perl-script
-      [% PH %] NTPPool::Control::Basic->super
     </Location>
 
     <Location /error/>
