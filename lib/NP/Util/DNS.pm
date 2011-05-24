@@ -69,8 +69,8 @@ sub get_dns_info {
 
     alarm(10);    # short circuit if we really screwed up
 
-    $res->tcp_timeout(2);
-    $res->udp_timeout(2);
+    $res->tcp_timeout(3);
+    $res->udp_timeout(3);
 
     my $pool_domain = Combust::Config->new->site->{ntppool}->{pool_domain}
       or die "pool_domain configuration not setup";
