@@ -8,6 +8,7 @@ sub cache_info {
   my $self = shift;
 
   return {} if $self->deployment_mode eq 'devel';
+  return {} if $self->is_graph;
 
   return +{ expires => 3600,
             id => join(";",
@@ -25,6 +26,11 @@ sub zone_name {
   my ($zone_name) = ($self->request->uri =~ m!^/zone/(?:graph/)?([^/]+?)(/|\.png)?$!);
   $zone_name ||= '.';
   $zone_name;
+}
+
+sub is_graph {
+    my $self = shift;
+    return $self->request->path =~ m!^/zone/graph!;
 }
 
 # TODO: make the web interface actually do this
@@ -63,7 +69,7 @@ sub render {
   }
 
 
-  if ($self->request->path =~ m!^/zone/graph!) {
+  if ($self->is_graph) {
       my $path = $zone->graph_path;
       open my $fh, $path
         or warn "Could not open $path: $!" and return 403;
