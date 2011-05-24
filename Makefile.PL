@@ -35,8 +35,13 @@ WriteMakefile(
                   'Imager' => 0,
                   'Geo::IP' => 0,
 
+                  'Router::Simple' => 0,
                   'Plack' => 0,
                   'Plack::Middleware::Options' => 0,
+                  'Plack::Middleware::ReverseProxy' => 0,
+                  'Config::General' => 0,
+
+                  'I18N::LangTags' => 0,
 
                   # should just be Net::IP ..
                   'Net::IPv6Addr' => 0,
