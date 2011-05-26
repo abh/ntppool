@@ -24,13 +24,13 @@ sub render {
   if ($self->request->uri =~ m!^/s/([^/]+)!) {
     my $server = NP::Model->server->find_server($1) or return 404;
     $self->cache_control('max-age=14400, s-maxage=7200');
-    return $self->redirect('/scores/' . $server->ip);
+    return $self->redirect('/scores/' . $server->ip, 301);
   }
 
   if (my ($id, $mode) = ($self->request->uri =~ m!^/scores/graph/(\d+)-(score|offset).png!)) {
     my $server = NP::Model->server->find_server($id) or return 404;
     $self->cache_control('max-age=14400, s-maxage=7200');
-    return $self->redirect('/scores/' . $server->ip . "/graph/${mode}.png");
+    return $self->redirect('/scores/' . $server->ip . "/graph/${mode}.png", 301);
   }
 
   if (my $ip = ($self->req_param('ip') || $self->req_param('server_ip'))) {
@@ -43,7 +43,7 @@ sub render {
       if ($p) {
           my ($server) = NP::Model->server->find_server($p);
           return 404 unless $server;
-          return $self->redirect('/scores/' . $server->ip) unless $p eq $server->ip;
+          return $self->redirect('/scores/' . $server->ip, 301) unless $p eq $server->ip;
 
           if ($mode eq 'log' or $self->req_param('log')) {
               my $limit = $self->req_param('limit') || 0;
