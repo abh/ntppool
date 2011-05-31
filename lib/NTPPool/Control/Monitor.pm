@@ -8,9 +8,9 @@ use Net::IPv6Addr;
 sub render {
     my $self = shift;
 
-    $self->r->no_cache(1);
+    $self->no_cache(1);
 
-    my $monitor = NP::Model->monitor->fetch(ip => $self->r->connection->remote_ip);
+    my $monitor = NP::Model->monitor->fetch(ip => $self->request->remote_ip);
     my $servers;
 
     if (!$monitor) {
@@ -19,7 +19,7 @@ sub render {
 
     if ($self->request->uri =~ m!^/monitor/(v[46])!) {
 
-	if ($self->r->method eq 'POST') {
+	if ($self->request->method eq 'POST') {
 	    return $self->upload($monitor, $1);
 	}
 
