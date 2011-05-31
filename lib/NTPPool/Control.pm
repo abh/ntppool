@@ -16,16 +16,17 @@ $Combust::Control::Bitcard::cookie_name = 'npuid';
 my $config = Combust::Config->new;
 
 our %valid_languages = (
+                        de => { name => "Deutsch" },
+                        da => { name => "Danish",
+                                testing => 1,
+                              },
                         en => { name => "English", },
                         fr => { name => "Français", },
                         ko => { name => "한국어", },
                         nl => { name => "Nederlands", },
-                        ru => { name => "русский", },  
                         pl => { name => "Polish",
                                 testing => 1 },
-                        da => { name => "Danish",
-                                testing => 1,
-                              },
+                        ru => { name => "русский", },  
                        );
 
 NP::I18N::loc_lang('en');
