@@ -88,4 +88,21 @@ msgstr "Was bedeuten diese Graphen?"
 msgid  "CSV log"
 msgstr "CSV Log"
 
+# tpl/navigation_sidebar.html
+msgid  "News"
+msgstr "Neuigkeiten"
 
+msgid  "How do I <i>use</i> pool.ntp.org?"
+msgstr "Wie kan man sich an pool.ntp.org <i>beteiligen</i>?"
+
+msgid  "Information for vendors"
+msgstr "Informationen f&uuml;r Teilnehmer"
+
+msgid  "The mailing lists"
+msgstr "Emailverteiler"
+
+msgid  "Additional links"
+msgstr "Zus&auml;tzliche Links"
+
+msgid  "Can you translate?"
+msgstr "Can you translate?"
