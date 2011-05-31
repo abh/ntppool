@@ -1,0 +1,97 @@
+[% page.title = 'Dem NTP Pool beitreten'  %]
+
+<div class="block">
+ <h3><a name="join">Wie trete ich dem NTP Pool bei?</a></h3>
+ <p>
+  Zu allererst: Herzlichen Dank f&uuml;r das Interesse. Die Benutzung des Pools
+  hat stark zugenommen. Um diese Benutzung auch in Zukunft m&ouml;glichst
+  einfach gestalten zu k&ouml;nnen, muss die Zahl der teilnehmenden Server
+  ebenfalls steigen.
+ </p>
+
+ <p>
+  Ihr Computer muss <b>&uuml;ber eine statische IP-Adresse verf&uuml;gen</b> und
+  eine permanente Verbindung mit dem Internet aufweisen. Es ist zwingend
+  erforderlich, dass sich die Adresse Ihres Servers nur &auml;u&szlig;erst
+  selten (weniger als ein mal im Jahr) &auml;ndert. Die ben&ouml;tigte
+  Bandbreite ist relative gering gehalten, da jeder Klient nur alle paar Minuten
+  ein paar UDP-Packete anfordert.
+ </p>
+
+ <p>
+  Aktuell werden die meisten Server mit etwa 5-15 NTP Packeten pro Sekunden, mit
+  Spitzenwerten von von ca. 60-120 Packeten pro Sekunde belastet.  Grob gerechnet
+  entspricht das einer Datenrate von 10-15Kbit/sec bzw.  50-120Kbit/sec. Dem Pool
+  werden st&auml;ndig neue Zeitserver hinzugef&uuml;gt, so dass f&uuml;r die
+  Datenrate auch in Zukunft kein starker Anstieg zu erwarten ist. Kurz gesagt:
+  Sie ben&ouml;tigen eine Bandbreite von 384-512Kbit/s (ein- und ausgehen).
+ </p>
+ <p>
+  Ein paar wenige Server mit ihren Bandbreite/Load Diagrammen:
+  [% i = 0; FOR server = combust.servers_with_urls; %]
+  <a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
+  [% END %]
+ </p>
+
+ <p>
+  Teilnehmede Server sollten <tt>pool.ntp.org</tt> nicht als Zeitquelle
+  angegeben haben, sollten jedoch einen <a
+   href="http://support.ntp.org/bin/view/Servers/StratumTwoTimeServers">guten
+   Zeitserver</a> benutzen. Der Grund ist, dass die Zeitserver bei jedem Start
+  statistisch unabh&auml;ngig voneinander ausgew&auml;hlt werden. Dadurch soll
+  eine akzeptable Qualit&auml;t der Zeitsynchronisation gew&auml;rleistet
+  werden.
+
+  Ihr Server muss dazu kein Stratum 1 oder 2 sein, da der NTP Pool die Last auf
+  eben diese schlie&szlig;lich auf viele Server verteilen will. F&uuml;r 
+  Stratum 3 oder 4 gibt es keinen Grund, nicht dem Pool beizutreten.
+ </p>
+
+ <p>
+  <a href="/join/configuration.html">Konfigurationsempfehlungen zum Betrieb eines Servers f&uuml;r den NTP Pool</a>.
+ </p>
+
+ <p>Es wird darauf hingewiesen, dass die Teilnahme am NTP Pool eine
+  <b>langfristige Entscheidung</b> sein sollte. Gerne k&ouml;nnen wir Ihren
+  Server auch aus dem Pool entfernen, doch auf Grund der technischen Umsetzung
+  des NTP Pools, kann es Wochen, Monate bis sogar Jahre dauern, bis kein Klient
+  mehr Anfragen an Sie richtet.
+ </p>
+
+ <p>
+  F&uuml;r die Teilnahme begeben Sie sich bitte auf die Seiten des <a
+   href="/manage">Server Management</a> and beantragen Sie Ihre Teilnahme.
+  Sollten dennoch Schwierigkeiten entstehen, wenden Sie sich bitte direkt an
+  mich: <a href="mailto:ask@develooper.com">ask@develooper.com</a>.
+ </p>
+
+ <p>
+  Au&szlig;erdem bitte ich Sie den 
+  the <a href="http://news.ntppool.org/atom.xml">Weblog</a>
+  und eventuell die
+  <a href="https://lists.ntp.org/listinfo/pool">Pool Mailing Liste</a> zu
+  abonnieren.
+ </p>
+
+ <p>
+  Es w&auml;re nett (aber nicht erfoderlich) von Ihnen, wenn Sie Anfragen auf
+  Port 80 zur offiziellen Webseite des Projektes
+  <tt>http://www.pool.ntp.org</tt> weiterleiten k&ouml;nnten.
+  Wenn Sie Apache einsetzten konfigurieren Sie das durch:
+ </p>
+
+ [% PROCESS tpl/join/virtual_host_example.html %]
+
+ <p>
+  Die offizielle Webseite des Projekts wird immer unter
+  <tt>www.pool.ntp.org</tt> erreichbar sein, jedoch zwingt sich dem faulen
+  Menschen auf, das <tt>www</tt> schlicht zu ignorieren. Um &Uuml;berraschungen
+  zu vermeiden, w&auml;re eine Weiterleitung daher hilfreich.
+ </p>
+ <p>
+  Einmal Hinzugef&uuml;gt, wird ihr Server kontinuierlich &uuml;berwacht und die
+  Genauigkeit ihres Zeitservers untersucht. Die Ergebnisse k&ouml;nnen Sie unter
+  auf der <a href="/manage">Management Seite</a> oder dem <a href="scores">Web
+   Frontend</a> erfahren.
+ </p>
+</div>
