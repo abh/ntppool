@@ -1,0 +1,91 @@
+[% page.title = '¡Participa en el grupo NTP!'  %]
+
+<div class="block">
+	<h3><a name="join">¿Como me uno al grupo pool.ntp.org?</a></h3>
+	<p>
+	Lo primero, gracias por tu inter&eacute;s. El uso de la lista de servidores ha 
+	crecido en grandes proporciones y la &uacute;nica forma para todos de mantener de una manera
+	sencilla el administrar la lista de servidores para incluso que crezca el numero de 
+	servidores participantes.
+	</p>
+
+	<p>
+	Tu ordenador/servidor <b>debe tener una direcci&oacute;n IP est&aacute;tica</b> y una conexi&oacute;n 
+	permanente a internet. Es muy importante que la direcci&oacute;n IP no cambie o que, si 
+	lo hace, sea con una frecuencia extremadamente m&iacute;nima (d&iacute;gase una vez al a&ntilde;o o menos). 
+	El ancho de banda requerido es m&aacute;s bien bajo. Cada cliente s&oacute;lo enviar&aacute; un par de 
+	paquetes UDP cada poco, como mucho unos 20 minutos.
+	</p>
+
+	<p>
+	Por lo general muchos servidores recogen entre 5 y 15 paquetes NTP por segundo
+	con picos un par de veces al d&iacute;a de 60 a 120 paquetes por segundo. 
+	Esto es m&aacute;s o menos equivalente a unos 10-15 Kbit/segundo (1-2KB/s) con picos de
+	unos 50-120Kbit/segundo (6-15KB/s). El proyecto constantemente adquiere m&aacute;s servidores de 
+	hora, as&iacute; que la carga de red no deber&iacute;a incrementar mucho por cada servidor. 
+	Es decir, probablemente necesites como m&iacute;nimo un ancho de banda de unos 384-512Kbit 
+	(48-64KB/s) entre bajada y subida.
+	</p>
+	<p>
+	Aqu&iacute; hay unos pocos servidores con gr&aacute;ficos de tr&aacute;fico y carga del ordenador:
+	[% i = 0; FOR server = combust.servers_with_urls; %]
+	   <a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
+	[% END %]
+	</p>
+
+	<p>
+	Los servidores participantes no deber&iacute;an tener configurado a <tt>pool.ntp.org</tt> como servidor, 
+	pero se deber&iacute;an configurar algunos <a href="http://support.ntp.org/bin/view/Servers/StratumTwoTimeServers">buenos servidores</a> 
+	manualmente (estos servidores <b>podr&iacute;an</b> ser elegidos desde la lista de servidores. La idea es 
+	que se eligen estaticamente en lugar de asignarse autom&aacute;ticamente para cada reinicio del servidor. 
+	Esto ayudar&aacute; a proveer de una calidad aceptable del servicio.)
+
+	Piensa que no se requiere que tu servidor sea de 1er o 2o nivel - 
+	como este proyecto trata de distribuir la carga, no hay porqu&eacute; 
+	de ser de nivel 3 o incluso un servidor de nivel 4 el que deba participar.
+	</p>
+
+	<p>
+	Tenemos una pagina con <a href="/join/configuration.html">recomendaciones para 
+	la configuraci&oacute;n para servidores que se unen a la lista de seridores</a>.
+	</p>
+	<p>Finalmente, dedo poner &eacute;nfasis en que la participaci&oacute;n en el grupo es un 
+	<b>compromiso de larga duraci&oacute;n</b>. Tambi&eacute;n nos congratular&aacute; sacarte de la 
+	lista si tus circunstancias cambian, pero debido a como operan los clientes ntp 
+	<b>pueden pasar semanas, meses o incluso a&ntilde;os antes de que el tr&aacute;fico desaparezca 
+	completamente</b>.
+	</p>
+
+	<p>
+	Si est&aacute;s deacuerdo con todo, inicia sesi&oacute;n en la p&aacute;gina de 
+	<i><a href="/manage">administraci&oacute;n de servidor</a></i> y pide que se a&ntilde;ada tu 
+	servidor a la lista. Si tienes alg&uacute;n problema con el sistema, m&aacute;ndame un correo a 
+	<a href="mailto:ask@develooper.com">ask@develooper.com</a>.
+	</p>
+	<p>
+	Tambi&eacute;n te pedir&iacute;a que te suscribas al
+	<a href="http://news.ntppool.org/atom.xml">weblog</a>
+	y si puede ser a la <a href="https://lists.ntp.org/listinfo/pool">lista de correo del proyecto</a>.
+	</p>
+	<p>
+	Ser&iacute;a recomendable (pero no necesario) si pudieras redireccionar las peticiones web al 
+	puerto 80 de tu servidor harario a la pagina web oficial del proyecto en 
+	<tt>http://www.pool.ntp.org</tt>. Si ejecutas Apache, puedes hacerlo con:
+	</p>
+
+        [% PROCESS tpl/join/virtual_host_example.html %]
+
+	<p>
+	Reitero lo dicho, real&iacute;zalo s&oacute;lo si ejecutas un servidor web de algun modo. La p&aacute;gina web oficial 
+	del proyecto siempre es con las tres 'w' del principio (www) - pero a veces la gente pasa y solo escribe 
+	<tt>pool.ntp.org</tt> y se sorprende al ver que les sale una p&aacute;gina web aleatoria.
+	</p>
+	<p>
+	Una vez a&ntilde;adido a la lista el servidor se monitorear&aacute; constantemente para comprobar su
+    disponibilidad y precisi&oacute;n. Puedes ver el rendimiento de tu servidor echandole un vistazo a la  
+	<a href="scores">portada de la web</a> o la <a href="/manage">p&aacute;gina de administraci&oacute;n</a>.
+	</p>
+</div>
+
+
+
