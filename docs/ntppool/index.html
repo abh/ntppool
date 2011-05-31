@@ -10,7 +10,7 @@
 				<li class="area">
 					<span class="location [% zone.name %] [% IF zone.name == '@' || zone.name == '.'; "global"; END  %]">[% zone.name == '@' ? '<b>' : '' %]
 					<a href="[% zone.url %]">[% zone.description | l %]</a>
-					[% zone.name == '@' ? '</b>' : '' %]</span>&nbsp;[% zone.server_count %]
+					[% zone.name == '@' ? '</b>' : '' %]</span>&nbsp;<span class="count">[% zone.server_count %]</span>
 				</li>
 				[% END %]
 			</ul>
