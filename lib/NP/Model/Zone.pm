@@ -5,8 +5,6 @@ use File::Path qw(mkpath);
 
 my $config = Combust::Config->new;
 
-use namespace::clean;
-
 sub url {
   my $self = shift;
   "/zone/" . $self->name;
