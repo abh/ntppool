@@ -1,3 +1,32 @@
+
+multi server:
+
+  - move "score_ts" into a server-per-monitor table
+
+  - http api to get IPs to check (Control::Monitor)
+    - make it use the RDBO model
+    - make it just return the servers that are "due"
+    - make it return JSON
+
+  - http api to aggregate scores
+    - make it accept JSON
+    - make it calculate the total score, too
+    - calculate score per monitor + aggregate into the total "score_raw", too.
+
+  - monitor script
+    - use Getopt::Long
+    - cleanup perl style
+    - update to use JSON API
+    - return score results every N servers instead of just at the end
+
+  - rrd files
+    - graph data per monitor in addition to the total score
+
+  - csv export
+    - include monitor name
+
+
+
 High priority things:
 
   * Make the combust lang= cookie be a regular cookie

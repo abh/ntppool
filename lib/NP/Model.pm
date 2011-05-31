@@ -3,37 +3,38 @@ package NP::Model;
 ## This file is auto-generated *** DO NOT EDIT ***
 ##
 use Combust::RoseDB;
+use Combust::RoseDB::Manager;
 
-our $SVN = q$Id$;
 our @table_classes;
 
-{
+BEGIN {
   package NP::Model::_Meta;
   use base qw(Combust::RoseDB::Metadata);
   use NP::DB::ConventionManager;
+  our $VERSION = 0;
+
   sub registry_key { __PACKAGE__ }
   sub init_convention_manager { NP::DB::ConventionManager->new }
 }
-{
+BEGIN {
   package NP::Model::_Base;
-  use base qw(Combust::RoseDB::Object::toJson);
+  use base qw(Combust::RoseDB::Object Combust::RoseDB::Object::toJson);
+  our $VERSION = 0;
 
-  sub init_db    { shift; our $db ||= Combust::RoseDB->new(@_, type => 'ntppool') }
-  sub meta_class {'NP::Model::_Meta'}
-  sub model      { our $model ||= bless [], 'NP::Model'}
+  sub init_db       { shift; Combust::RoseDB->new_or_cached(@_, type => 'ntppool', combust_model => "NP::Model") }
+  sub meta_class    {'NP::Model::_Meta'}
+  sub combust_model { our $model ||= bless [], 'NP::Model'}
 }
-{
+BEGIN {
   package NP::Model::_Object;
   use base qw(NP::Model::_Base Rose::DB::Object);
+  our $VERSION = 0;
 }
-{
+BEGIN {
   package NP::Model::_Object::Cached;
   use base qw(NP::Model::_Base Rose::DB::Object::Cached);
+  our $VERSION = 0;
 }
-
-# Allow user defined methods to be added
-eval { require NP::Model::Log }
-  or $@ !~ m:^Can't locate NP/Model/Log.pm: and die $@;
 
 { package NP::Model::Log;
 
@@ -45,7 +46,7 @@ __PACKAGE__->meta->setup(
   table   => 'logs',
 
   columns => [
-    id             => { type => 'integer', not_null => 1 },
+    id             => { type => 'serial', not_null => 1 },
     server_id      => { type => 'integer' },
     user_id        => { type => 'integer' },
     vendor_zone_id => { type => 'integer' },
@@ -80,7 +81,8 @@ push @table_classes, __PACKAGE__;
 
 { package NP::Model::Log::Manager;
 
-use Combust::RoseDB::Manager;
+use strict;
+
 our @ISA = qw(Combust::RoseDB::Manager);
 
 sub object_class { 'NP::Model::Log' }
@@ -88,10 +90,9 @@ sub object_class { 'NP::Model::Log' }
 __PACKAGE__->make_manager_methods('logs');
 }
 
-
 # Allow user defined methods to be added
-eval { require NP::Model::LogScore }
-  or $@ !~ m:^Can't locate NP/Model/LogScore.pm: and die $@;
+eval { require NP::Model::Log }
+  or $@ !~ m:^Can't locate NP/Model/Log.pm: and die $@;
 
 { package NP::Model::LogScore;
 
@@ -103,17 +104,23 @@ __PACKAGE__->meta->setup(
   table   => 'log_scores',
 
   columns => [
-    id        => { type => 'integer', not_null => 1 },
-    server_id => { type => 'integer', default => '', not_null => 1 },
-    ts        => { type => 'datetime', default => 'now', not_null => 1 },
-    score     => { type => 'scalar', default => '0', length => 64, not_null => 1 },
-    step      => { type => 'scalar', default => '0', length => 64, not_null => 1 },
-    offset    => { type => 'scalar', length => 64 },
+    id         => { type => 'bigint', not_null => 1 },
+    monitor_id => { type => 'integer' },
+    server_id  => { type => 'integer', not_null => 1 },
+    ts         => { type => 'datetime', default => 'now', not_null => 1 },
+    score      => { type => 'scalar', default => '0', length => 64, not_null => 1 },
+    step       => { type => 'scalar', default => '0', length => 64, not_null => 1 },
+    offset     => { type => 'scalar', length => 64 },
   ],
 
   primary_key_columns => [ 'id' ],
 
   foreign_keys => [
+    monitor => {
+      class       => 'NP::Model::Monitor',
+      key_columns => { monitor_id => 'id' },
+    },
+
     server => {
       class       => 'NP::Model::Server',
       key_columns => { server_id => 'id' },
@@ -126,7 +133,8 @@ push @table_classes, __PACKAGE__;
 
 { package NP::Model::LogScore::Manager;
 
-use Combust::RoseDB::Manager;
+use strict;
+
 our @ISA = qw(Combust::RoseDB::Manager);
 
 sub object_class { 'NP::Model::LogScore' }
@@ -134,10 +142,63 @@ sub object_class { 'NP::Model::LogScore' }
 __PACKAGE__->make_manager_methods('log_scores');
 }
 
+# Allow user defined methods to be added
+eval { require NP::Model::LogScore }
+  or $@ !~ m:^Can't locate NP/Model/LogScore.pm: and die $@;
+
+{ package NP::Model::Monitor;
+
+use strict;
+
+use base qw(NP::Model::_Object);
+
+__PACKAGE__->meta->setup(
+  table   => 'monitors',
+
+  columns => [
+    id         => { type => 'serial', not_null => 1 },
+    name       => { type => 'varchar', length => 30, not_null => 1 },
+    ip         => { type => 'varchar', length => 40, not_null => 1 },
+    ip_version => { type => 'enum', check_in => [ 'v4', 'v6' ], not_null => 1 },
+    api_key    => { type => 'varchar', length => 40, not_null => 1 },
+    last_seen  => { type => 'datetime' },
+    created_on => { type => 'datetime', default => 'now', not_null => 1 },
+  ],
+
+  primary_key_columns => [ 'id' ],
+
+  unique_keys => [
+    [ 'api_key' ],
+    [ 'ip' ],
+  ],
+
+  relationships => [
+    servers => {
+      map_class => 'NP::Model::LogScore',
+      map_from  => 'monitor',
+      map_to    => 'server',
+      type      => 'many to many',
+    },
+  ],
+);
+
+push @table_classes, __PACKAGE__;
+}
+
+{ package NP::Model::Monitor::Manager;
+
+use strict;
+
+our @ISA = qw(Combust::RoseDB::Manager);
+
+sub object_class { 'NP::Model::Monitor' }
+
+__PACKAGE__->make_manager_methods('monitors');
+}
 
 # Allow user defined methods to be added
-eval { require NP::Model::SchemaRevision }
-  or $@ !~ m:^Can't locate NP/Model/SchemaRevision.pm: and die $@;
+eval { require NP::Model::Monitor }
+  or $@ !~ m:^Can't locate NP/Model/Monitor.pm: and die $@;
 
 { package NP::Model::SchemaRevision;
 
@@ -161,7 +222,8 @@ push @table_classes, __PACKAGE__;
 
 { package NP::Model::SchemaRevision::Manager;
 
-use Combust::RoseDB::Manager;
+use strict;
+
 our @ISA = qw(Combust::RoseDB::Manager);
 
 sub object_class { 'NP::Model::SchemaRevision' }
@@ -169,10 +231,9 @@ sub object_class { 'NP::Model::SchemaRevision' }
 __PACKAGE__->make_manager_methods('schema_revisions');
 }
 
-
 # Allow user defined methods to be added
-eval { require NP::Model::Server }
-  or $@ !~ m:^Can't locate NP/Model/Server.pm: and die $@;
+eval { require NP::Model::SchemaRevision }
+  or $@ !~ m:^Can't locate NP/Model/SchemaRevision.pm: and die $@;
 
 { package NP::Model::Server;
 
@@ -184,9 +245,10 @@ __PACKAGE__->meta->setup(
   table   => 'servers',
 
   columns => [
-    id             => { type => 'integer', not_null => 1 },
-    ip             => { type => 'varchar', default => '', length => 40, not_null => 1 },
-    user_id        => { type => 'integer', default => '', not_null => 1 },
+    id             => { type => 'serial', not_null => 1 },
+    ip             => { type => 'varchar', length => 40, not_null => 1 },
+    ip_version     => { type => 'enum', check_in => [ 'v4', 'v6' ], default => 'v4', not_null => 1 },
+    user_id        => { type => 'integer', not_null => 1 },
     hostname       => { type => 'varchar', length => 255 },
     stratum        => { type => 'integer' },
     in_pool        => { type => 'integer', default => '0', not_null => 1 },
@@ -197,7 +259,6 @@ __PACKAGE__->meta->setup(
     score_ts       => { type => 'datetime' },
     score_raw      => { type => 'scalar', default => '0', length => 64, not_null => 1 },
     deletion_on    => { type => 'date' },
-    ip_version     => { type => 'enum', values => ['v4', 'v6'] },
   ],
 
   primary_key_columns => [ 'id' ],
@@ -212,16 +273,17 @@ __PACKAGE__->meta->setup(
   ],
 
   relationships => [
-    log_scores => {
-      class      => 'NP::Model::LogScore',
-      column_map => { id => 'server_id' },
-      type       => 'one to many',
-    },
-
     logs => {
       class      => 'NP::Model::Log',
       column_map => { id => 'server_id' },
       type       => 'one to many',
+    },
+
+    monitors => {
+      map_class => 'NP::Model::LogScore',
+      map_from  => 'server',
+      map_to    => 'monitor',
+      type      => 'many to many',
     },
 
     server_alert => {
@@ -244,12 +306,10 @@ __PACKAGE__->meta->setup(
     },
 
     zones => {
-      column_map    => { server_id => 'id' },
-      foreign_class => 'NP::Model::Zone',
-      map_class     => 'NP::Model::ServerZone',
-      map_from      => 'server',
-      map_to        => 'zone',
-      type          => 'many to many',
+      map_class => 'NP::Model::ServerZone',
+      map_from  => 'server',
+      map_to    => 'zone',
+      type      => 'many to many',
     },
   ],
 );
@@ -259,7 +319,8 @@ push @table_classes, __PACKAGE__;
 
 { package NP::Model::Server::Manager;
 
-use Combust::RoseDB::Manager;
+use strict;
+
 our @ISA = qw(Combust::RoseDB::Manager);
 
 sub object_class { 'NP::Model::Server' }
@@ -267,10 +328,9 @@ sub object_class { 'NP::Model::Server' }
 __PACKAGE__->make_manager_methods('servers');
 }
 
-
 # Allow user defined methods to be added
-eval { require NP::Model::ServerAlert }
-  or $@ !~ m:^Can't locate NP/Model/ServerAlert.pm: and die $@;
+eval { require NP::Model::Server }
+  or $@ !~ m:^Can't locate NP/Model/Server.pm: and die $@;
 
 { package NP::Model::ServerAlert;
 
@@ -283,7 +343,7 @@ __PACKAGE__->meta->setup(
 
   columns => [
     server_id        => { type => 'integer', not_null => 1 },
-    last_score       => { type => 'scalar', default => '', length => 64, not_null => 1 },
+    last_score       => { type => 'scalar', length => 64, not_null => 1 },
     first_email_time => { type => 'datetime', default => 'now', not_null => 1 },
     last_email_time  => { type => 'datetime' },
   ],
@@ -304,7 +364,8 @@ push @table_classes, __PACKAGE__;
 
 { package NP::Model::ServerAlert::Manager;
 
-use Combust::RoseDB::Manager;
+use strict;
+
 our @ISA = qw(Combust::RoseDB::Manager);
 
 sub object_class { 'NP::Model::ServerAlert' }
@@ -312,10 +373,9 @@ sub object_class { 'NP::Model::ServerAlert' }
 __PACKAGE__->make_manager_methods('server_alerts');
 }
 
-
 # Allow user defined methods to be added
-eval { require NP::Model::ServerNote }
-  or $@ !~ m:^Can't locate NP/Model/ServerNote.pm: and die $@;
+eval { require NP::Model::ServerAlert }
+  or $@ !~ m:^Can't locate NP/Model/ServerAlert.pm: and die $@;
 
 { package NP::Model::ServerNote;
 
@@ -327,10 +387,10 @@ __PACKAGE__->meta->setup(
   table   => 'server_notes',
 
   columns => [
-    id         => { type => 'integer', not_null => 1 },
-    server_id  => { type => 'integer', default => '', not_null => 1 },
+    id         => { type => 'serial', not_null => 1 },
+    server_id  => { type => 'integer', not_null => 1 },
     name       => { type => 'varchar', default => '', length => 255, not_null => 1 },
-    note       => { type => 'text', default => '', length => 65535, not_null => 1 },
+    note       => { type => 'text', length => 65535, not_null => 1 },
     created_on => { type => 'datetime', default => 'now', not_null => 1 },
   ],
 
@@ -351,7 +411,8 @@ push @table_classes, __PACKAGE__;
 
 { package NP::Model::ServerNote::Manager;
 
-use Combust::RoseDB::Manager;
+use strict;
+
 our @ISA = qw(Combust::RoseDB::Manager);
 
 sub object_class { 'NP::Model::ServerNote' }
@@ -359,10 +420,9 @@ sub object_class { 'NP::Model::ServerNote' }
 __PACKAGE__->make_manager_methods('server_notes');
 }
 
-
 # Allow user defined methods to be added
-eval { require NP::Model::ServerUrl }
-  or $@ !~ m:^Can't locate NP/Model/ServerUrl.pm: and die $@;
+eval { require NP::Model::ServerNote }
+  or $@ !~ m:^Can't locate NP/Model/ServerNote.pm: and die $@;
 
 { package NP::Model::ServerUrl;
 
@@ -374,8 +434,8 @@ __PACKAGE__->meta->setup(
   table   => 'server_urls',
 
   columns => [
-    id        => { type => 'integer', not_null => 1 },
-    server_id => { type => 'integer', default => '', not_null => 1 },
+    id        => { type => 'serial', not_null => 1 },
+    server_id => { type => 'integer', not_null => 1 },
     url       => { type => 'varchar', default => '', length => 255, not_null => 1 },
   ],
 
@@ -394,7 +454,8 @@ push @table_classes, __PACKAGE__;
 
 { package NP::Model::ServerUrl::Manager;
 
-use Combust::RoseDB::Manager;
+use strict;
+
 our @ISA = qw(Combust::RoseDB::Manager);
 
 sub object_class { 'NP::Model::ServerUrl' }
@@ -402,10 +463,9 @@ sub object_class { 'NP::Model::ServerUrl' }
 __PACKAGE__->make_manager_methods('server_urls');
 }
 
-
 # Allow user defined methods to be added
-eval { require NP::Model::ServerZone }
-  or $@ !~ m:^Can't locate NP/Model/ServerZone.pm: and die $@;
+eval { require NP::Model::ServerUrl }
+  or $@ !~ m:^Can't locate NP/Model/ServerUrl.pm: and die $@;
 
 { package NP::Model::ServerZone;
 
@@ -441,7 +501,8 @@ push @table_classes, __PACKAGE__;
 
 { package NP::Model::ServerZone::Manager;
 
-use Combust::RoseDB::Manager;
+use strict;
+
 our @ISA = qw(Combust::RoseDB::Manager);
 
 sub object_class { 'NP::Model::ServerZone' }
@@ -449,10 +510,9 @@ sub object_class { 'NP::Model::ServerZone' }
 __PACKAGE__->make_manager_methods('server_zones');
 }
 
-
 # Allow user defined methods to be added
-eval { require NP::Model::User }
-  or $@ !~ m:^Can't locate NP/Model/User.pm: and die $@;
+eval { require NP::Model::ServerZone }
+  or $@ !~ m:^Can't locate NP/Model/ServerZone.pm: and die $@;
 
 { package NP::Model::User;
 
@@ -464,11 +524,11 @@ __PACKAGE__->meta->setup(
   table   => 'users',
 
   columns => [
-    id                => { type => 'integer', not_null => 1 },
+    id                => { type => 'serial', not_null => 1 },
     email             => { type => 'varchar', default => '', length => 255, not_null => 1 },
     name              => { type => 'varchar', length => 255 },
     pass              => { type => 'varchar', length => 255 },
-    nomail            => { type => 'enum', default => '0', not_null => 1, values => [ '0', 1 ] },
+    nomail            => { type => 'enum', check_in => [ '0', 1 ], default => '0', not_null => 1 },
     bitcard_id        => { type => 'varchar', length => 40 },
     username          => { type => 'varchar', length => 40 },
     public_profile    => { type => 'integer', default => '0', not_null => 1 },
@@ -523,7 +583,8 @@ push @table_classes, __PACKAGE__;
 
 { package NP::Model::User::Manager;
 
-use Combust::RoseDB::Manager;
+use strict;
+
 our @ISA = qw(Combust::RoseDB::Manager);
 
 sub object_class { 'NP::Model::User' }
@@ -531,10 +592,9 @@ sub object_class { 'NP::Model::User' }
 __PACKAGE__->make_manager_methods('users');
 }
 
-
 # Allow user defined methods to be added
-eval { require NP::Model::UserEquipmentApplication }
-  or $@ !~ m:^Can't locate NP/Model/UserEquipmentApplication.pm: and die $@;
+eval { require NP::Model::User }
+  or $@ !~ m:^Can't locate NP/Model/User.pm: and die $@;
 
 { package NP::Model::UserEquipmentApplication;
 
@@ -546,11 +606,11 @@ __PACKAGE__->meta->setup(
   table   => 'user_equipment_applications',
 
   columns => [
-    id                  => { type => 'integer', not_null => 1 },
-    user_id             => { type => 'integer', default => '', not_null => 1 },
+    id                  => { type => 'serial', not_null => 1 },
+    user_id             => { type => 'integer', not_null => 1 },
     application         => { type => 'text', length => 65535 },
     contact_information => { type => 'text', length => 65535 },
-    status              => { type => 'enum', default => 'New', not_null => 1, values => [ 'New', 'Pending', 'Maybe', 'No', 'Approved' ] },
+    status              => { type => 'enum', check_in => [ 'New', 'Pending', 'Maybe', 'No', 'Approved' ], default => 'New', not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
@@ -568,7 +628,8 @@ push @table_classes, __PACKAGE__;
 
 { package NP::Model::UserEquipmentApplication::Manager;
 
-use Combust::RoseDB::Manager;
+use strict;
+
 our @ISA = qw(Combust::RoseDB::Manager);
 
 sub object_class { 'NP::Model::UserEquipmentApplication' }
@@ -576,10 +637,9 @@ sub object_class { 'NP::Model::UserEquipmentApplication' }
 __PACKAGE__->make_manager_methods('user_equipment_applications');
 }
 
-
 # Allow user defined methods to be added
-eval { require NP::Model::UserPrivilege }
-  or $@ !~ m:^Can't locate NP/Model/UserPrivilege.pm: and die $@;
+eval { require NP::Model::UserEquipmentApplication }
+  or $@ !~ m:^Can't locate NP/Model/UserEquipmentApplication.pm: and die $@;
 
 { package NP::Model::UserPrivilege;
 
@@ -614,7 +674,8 @@ push @table_classes, __PACKAGE__;
 
 { package NP::Model::UserPrivilege::Manager;
 
-use Combust::RoseDB::Manager;
+use strict;
+
 our @ISA = qw(Combust::RoseDB::Manager);
 
 sub object_class { 'NP::Model::UserPrivilege' }
@@ -622,10 +683,9 @@ sub object_class { 'NP::Model::UserPrivilege' }
 __PACKAGE__->make_manager_methods('user_privileges');
 }
 
-
 # Allow user defined methods to be added
-eval { require NP::Model::VendorZone }
-  or $@ !~ m:^Can't locate NP/Model/VendorZone.pm: and die $@;
+eval { require NP::Model::UserPrivilege }
+  or $@ !~ m:^Can't locate NP/Model/UserPrivilege.pm: and die $@;
 
 { package NP::Model::VendorZone;
 
@@ -637,9 +697,9 @@ __PACKAGE__->meta->setup(
   table   => 'vendor_zones',
 
   columns => [
-    id                  => { type => 'integer', not_null => 1 },
-    zone_name           => { type => 'varchar', default => '', length => 90, not_null => 1 },
-    status              => { type => 'enum', default => 'New', not_null => 1, values => [ 'New', 'Pending', 'Approved', 'Rejected' ] },
+    id                  => { type => 'serial', not_null => 1 },
+    zone_name           => { type => 'varchar', length => 90, not_null => 1 },
+    status              => { type => 'enum', check_in => [ 'New', 'Pending', 'Approved', 'Rejected' ], default => 'New', not_null => 1 },
     user_id             => { type => 'integer' },
     vendor_cluster      => { type => 'integer', default => '0', not_null => 1 },
     organization_name   => { type => 'varchar', length => 255 },
@@ -677,7 +737,8 @@ push @table_classes, __PACKAGE__;
 
 { package NP::Model::VendorZone::Manager;
 
-use Combust::RoseDB::Manager;
+use strict;
+
 our @ISA = qw(Combust::RoseDB::Manager);
 
 sub object_class { 'NP::Model::VendorZone' }
@@ -685,10 +746,9 @@ sub object_class { 'NP::Model::VendorZone' }
 __PACKAGE__->make_manager_methods('vendor_zones');
 }
 
-
 # Allow user defined methods to be added
-eval { require NP::Model::Zone }
-  or $@ !~ m:^Can't locate NP/Model/Zone.pm: and die $@;
+eval { require NP::Model::VendorZone }
+  or $@ !~ m:^Can't locate NP/Model/VendorZone.pm: and die $@;
 
 { package NP::Model::Zone;
 
@@ -700,7 +760,7 @@ __PACKAGE__->meta->setup(
   table   => 'zones',
 
   columns => [
-    id          => { type => 'integer', not_null => 1 },
+    id          => { type => 'serial', not_null => 1 },
     name        => { type => 'varchar', default => '', length => 255, not_null => 1 },
     description => { type => 'varchar', length => 255 },
     parent_id   => { type => 'integer' },
@@ -720,12 +780,10 @@ __PACKAGE__->meta->setup(
 
   relationships => [
     servers => {
-      column_map    => { zone_id => 'id' },
-      foreign_class => 'NP::Model::Server',
-      map_class     => 'NP::Model::ServerZone',
-      map_from      => 'zone',
-      map_to        => 'server',
-      type          => 'many to many',
+      map_class => 'NP::Model::ServerZone',
+      map_from  => 'zone',
+      map_to    => 'server',
+      type      => 'many to many',
     },
 
     zone_server_counts => {
@@ -747,7 +805,8 @@ push @table_classes, __PACKAGE__;
 
 { package NP::Model::Zone::Manager;
 
-use Combust::RoseDB::Manager;
+use strict;
+
 our @ISA = qw(Combust::RoseDB::Manager);
 
 sub object_class { 'NP::Model::Zone' }
@@ -755,10 +814,9 @@ sub object_class { 'NP::Model::Zone' }
 __PACKAGE__->make_manager_methods('zones');
 }
 
-
 # Allow user defined methods to be added
-eval { require NP::Model::ZoneServerCount }
-  or $@ !~ m:^Can't locate NP/Model/ZoneServerCount.pm: and die $@;
+eval { require NP::Model::Zone }
+  or $@ !~ m:^Can't locate NP/Model/Zone.pm: and die $@;
 
 { package NP::Model::ZoneServerCount;
 
@@ -770,12 +828,12 @@ __PACKAGE__->meta->setup(
   table   => 'zone_server_counts',
 
   columns => [
-    id               => { type => 'integer', not_null => 1 },
-    zone_id          => { type => 'integer', default => '', not_null => 1 },
-    date             => { type => 'date', default => '', not_null => 1 },
-    count_active     => { type => 'scalar', default => '', length => 8, not_null => 1 },
-    count_registered => { type => 'scalar', default => '', length => 8, not_null => 1 },
-    netspeed_active  => { type => 'integer', default => '', not_null => 1 },
+    id               => { type => 'serial', not_null => 1 },
+    zone_id          => { type => 'integer', not_null => 1 },
+    date             => { type => 'date', not_null => 1 },
+    count_active     => { type => 'scalar', length => 8, not_null => 1 },
+    count_registered => { type => 'scalar', length => 8, not_null => 1 },
+    netspeed_active  => { type => 'integer', not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
@@ -795,7 +853,8 @@ push @table_classes, __PACKAGE__;
 
 { package NP::Model::ZoneServerCount::Manager;
 
-use Combust::RoseDB::Manager;
+use strict;
+
 our @ISA = qw(Combust::RoseDB::Manager);
 
 sub object_class { 'NP::Model::ZoneServerCount' }
@@ -804,114 +863,21 @@ __PACKAGE__->make_manager_methods('zone_server_counts');
 }
 
 # Allow user defined methods to be added
-eval { require NP::Model::Monitor }
-  or $@ !~ m:^Can't locate NP/Model/Monitors.pm: and die $@;
-
-{ package NP::Model::Monitor;
-
-use strict;
-
-use base qw(NP::Model::_Object);
-
-__PACKAGE__->meta->setup(
-  table   => 'monitor',
-
-  columns => [
-    id               => { type => 'integer', not_null => 1 },
-    ip             => { type => 'varchar', default => '', length => 40, not_null => 1 },
-    user_id               => { type => 'integer', not_null => 1 },
-    created_on     => { type => 'datetime', default => 'now', not_null => 1 },
-    last_seen     => { type => 'datetime', default => '0000-00-00 00:00:00', not_null => 1 },
-  ],
-
-  primary_key_columns => [ 'id' ],
-
-  unique_key => [ 'ip' ],
-
-  foreign_keys => [
-    user => {
-      class       => 'NP::Model::User',
-      key_columns => { user_id => 'id' },
-    },
-  ],
-);
-
-push @table_classes, __PACKAGE__;
-}
-
-{ package NP::Model::Monitor::Manager;
-
-use Combust::RoseDB::Manager;
-our @ISA = qw(Combust::RoseDB::Manager);
-
-sub object_class { 'NP::Model::Monitor' }
-
-__PACKAGE__->make_manager_methods('monitor');
-}
-
-
-# Allow user defined methods to be added
-eval { require NP::Model::MonitorReport }
-  or $@ !~ m:^Can't locate NP/Model/MonitorReport.pm: and die $@;
-
-{ package NP::Model::MonitorReport;
-
-use strict;
-
-use base qw(NP::Model::_Object);
-
-__PACKAGE__->meta->setup(
-  table   => 'monitor_report',
-
-  columns => [
-    monitor_id            => { type => 'integer', not_null => 1 },
-    server_id             => { type => 'integer', not_null => 1 },
-    ts        => { type => 'datetime', default => 'now', not_null => 1 },
-    offset    => { type => 'scalar', length => 64 },
-    stratum        => { type => 'integer' },
-  ],
-
-  primary_key_columns => [ 'monitor_id', 'server_id' ],
-
-  foreign_keys => [
-    monitor => {
-      class       => 'NP::Model::Monitor',
-      key_columns => { monitor_id => 'id' },
-      rel_type    => 'many to one',
-    },
-    server => {
-      class       => 'NP::Model::Server',
-      key_columns => { server_id => 'id' },
-      rel_type    => 'many to one',
-    },
-  ],
-);
-
-push @table_classes, __PACKAGE__;
-}
-
-{ package NP::Model::MonitorReport::Manager;
-
-use Combust::RoseDB::Manager;
-our @ISA = qw(Combust::RoseDB::Manager);
-
-sub object_class { 'NP::Model::MonitorReport' }
-
-__PACKAGE__->make_manager_methods('monitor_report');
-}
-
-
+eval { require NP::Model::ZoneServerCount }
+  or $@ !~ m:^Can't locate NP/Model/ZoneServerCount.pm: and die $@;
 { package NP::Model;
 
   sub db  { shift; NP::Model::_Object->init_db(@_);      }
   sub dbh { shift->db->dbh; }
 
+  my @cache_classes = grep { $_->can('clear_object_cache') } @table_classes;
   sub flush_caches {
-    $_->meta->clear_object_cache for @table_classes;
+    $_->clear_object_cache for @cache_classes;
   }
 
   sub log { our $log ||= bless [], 'NP::Model::Log::Manager' }
   sub log_score { our $log_score ||= bless [], 'NP::Model::LogScore::Manager' }
+  sub monitor { our $monitor ||= bless [], 'NP::Model::Monitor::Manager' }
   sub schema_revision { our $schema_revision ||= bless [], 'NP::Model::SchemaRevision::Manager' }
   sub server { our $server ||= bless [], 'NP::Model::Server::Manager' }
   sub server_alert { our $server_alert ||= bless [], 'NP::Model::ServerAlert::Manager' }
@@ -924,8 +890,6 @@ __PACKAGE__->make_manager_methods('monitor_report');
   sub vendor_zone { our $vendor_zone ||= bless [], 'NP::Model::VendorZone::Manager' }
   sub zone { our $zone ||= bless [], 'NP::Model::Zone::Manager' }
   sub zone_server_count { our $zone_server_count ||= bless [], 'NP::Model::ZoneServerCount::Manager' }
-  sub monitor { our $monitor ||= bless [], 'NP::Model::Monitor::Manager' }
-  sub monitor_report { our $monitor_report ||= bless [], 'NP::Model::MonitorReport::Manager' }
 
 }
 1;

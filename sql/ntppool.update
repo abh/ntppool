@@ -306,3 +306,71 @@ create table monitor_report (
   CONSTRAINT monitor_report_monitor FOREIGN KEY (monitor_id) REFERENCES monitor(id) ON DELETE CASCADE,
   CONSTRAINT monitor_report_server FOREIGN KEY (server_id) REFERENCES servers(id) ON DELETE CASCADE
 ) ENGINE=INNODB;
+
+#40
+drop table monitor_report;
+drop table monitor;
+
+#41
+CREATE TABLE if not exists `log_scores_archive_multi` (
+  `id` bigint unsigned NOT NULL,
+  `monitor_id` int(10) unsigned not null,
+  `server_id` int(10) unsigned NOT NULL,
+  `ts` datetime NOT NULL,
+  `score` double NOT NULL default '0',
+  `step` double NOT NULL default '0',
+  `offset` double default NULL
+) ENGINE=ARCHIVE DEFAULT CHARSET=utf8;
+
+#42
+create table monitors (
+  id int unsigned not null primary key auto_increment,
+  name varchar(30) not null,
+  ip varchar(40) not null,
+  ip_version enum("v4", "v6") not null,
+  api_key varchar(40) not null,
+  last_seen datetime NULL,
+  created_on datetime not null,
+  unique key (api_key),
+  unique key (ip)
+) engine=InnoDB default charset=utf8;
+
+#43
+alter table log_scores
+   modify id bigint unsigned not null,
+   add monitor_id int unsigned after id;
+
+#44
+insert into monitors
+  values (1, 'lax1', '207.171.3.2', 'v4', '', NULL, NOW()); 
+
+alter table log_scores
+   add CONSTRAINT `log_score_monitor_id_fk` FOREIGN KEY (`monitor_id`) REFERENCES `monitors` (`id`);
+
+#45
+insert into log_scores_archive_multi
+  select id, 1, server_id, ts, score, step, offset
+  from log_scores_archive;
+
+#46
+CREATE TABLE server_scores (
+  `id` bigint unsigned NOT NULL,
+  `monitor_id` int(10) unsigned not null,
+  `server_id` int(10) unsigned NOT NULL,
+  score_ts datetime null,
+  score_raw double not null default 0,
+  stratum tinyint unsigned default NULL,
+  unique key (server_id, monitor_id),
+  index (monitor_id, server_id),
+  index (monitor_id, score_ts),
+  CONSTRAINT `server_score_monitor_fk` FOREIGN KEY (`monitor_id`) REFERENCES `monitors` (`id`),
+  CONSTRAINT `server_score_server_id` FOREIGN KEY (`server_id`) REFERENCES `servers` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+#47
+insert into server_scores
+  select NULL, 1, id, score_ts, score_raw, stratum from servers;
+
+#48
+drop table log_scores_archive;
+rename table log_scores_archive_multi to log_scores_archive;
