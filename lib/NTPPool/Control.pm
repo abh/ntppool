@@ -195,8 +195,9 @@ sub localize_url {
         $uri->path("/$lang" . $uri->path);
         $self->request->header_out('Vary', 'Accept-Language');
         $self->cache_control('s-maxage=900, maxage=3600');
-        die $self->redirect($uri->as_string);
+        return $self->redirect($uri->as_string);
     }
+    return;
 }
 
 sub count_by_continent {

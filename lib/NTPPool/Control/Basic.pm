@@ -7,7 +7,8 @@ sub render {
         $self->force_template_processing(1)
     }
     else {
-        $self->localize_url;
+        my @r = $self->localize_url;
+        return @r if @r;
     }
 
     return $self->SUPER::render(@_);
