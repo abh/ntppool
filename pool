@@ -164,6 +164,42 @@ if ($cmd eq "add") {
     logsay($server->id . " add $email $hostname $z");
 
 }
+elsif ($cmd eq "addmonitor") {
+    if ($#ARGV < 1) {
+        die "pool addmonitor <email> <host or IP>\n";
+    }
+
+    # look if the email address is already registered
+    my $email = shift @ARGV;
+    my $user = NP::Model->user->fetch(email => $email);
+    $user = NP::Model->user->fetch(username => $email) unless $user;
+    $user = NP::Model->user->fetch(id       => $email) unless $user;
+    $user = NP::Model->user->fetch_or_create(email => $email) unless $user;
+    $user->save;
+
+    # do we have a hostname or an IP?
+    my $hostname = shift @ARGV;
+    my $ip;
+    if (Net::IP::ip_is_ipv4($hostname)) {
+        $ip       = $hostname;
+        $hostname = undef;
+    }
+    else {
+        my $addrs = gethostbyname($hostname)
+          or die "$hostname does not resolve.\n";
+        if ($#{$addrs->addr_list} > 0) {
+            print "warning: $hostname has multiple IP addresses.\n";
+        }
+        $ip = inet_ntoa(${$addrs->addr_list}[0]);
+    }
+
+    my $monitor = NP::Model->monitor->create(
+        ip       => $ip,
+        user_id  => $user->id,
+    );
+
+    $monitor->save;
+}
 elsif ($cmd eq "edit") {
     my $arg = shift @ARGV or die "pool zones <host or IP>\n";
     my $server = NP::Model->server->find_server($arg);
@@ -390,6 +426,83 @@ elsif ($cmd eq "scores") {
             }
         );
         $server->save(cascade => 1);
+
+    }
+}
+elsif ($cmd eq "rscores") {
+
+    my $dbh = NP::Model->dbh;
+    $dbh->selectrow_array(q[SELECT GET_LOCK("scores", 0)]) or exit;
+
+    # go through server array and fetch offset for all servers
+    my $records = NP::Model->monitor_report->get_objects
+      (query => [ ts => { gt => (time-3600) }],
+       sort_by => 'server_id');
+
+    my @servers = ();
+    my $server = undef;
+    my $times = [];
+    my %stratum = ();
+    for my $record (@$records) {
+      if (!defined($server) or $server->id != $record->server_id) {
+	# Advance to next server
+	$server = NP::Model->server->fetch(id => $record->server_id);
+	my $offset = undef;
+	push(@servers, [$server, $times]);
+	$times = [];
+      }
+      # Only push offsets if the record says that the server was up
+      # A single "up" vote will thus take precedence over many "down"
+      # votes
+      if (defined($record->offset)) {
+	push(@$times, $record->offset);
+	$server->stratum($record->stratum);
+      }
+    }
+
+    for my $s (@servers) {
+      my ($server, $times) = @$s;
+      my $offset;
+      my $offset_abs;
+      my $stratum = undef;
+      my $step = -5;
+      $server->score_raw($server->score_raw * 0.95);
+      if (scalar @$times ==  0) {
+	# printf "testing %s, down\n", $server->ip;
+      } else {
+	# there have been measurements; compute average
+	$offset = 0;
+	foreach(@$times){$offset += $_;}
+	$offset /= @$times;
+	$offset_abs = abs($offset);
+
+	# printf "testing %s, offset %s\n", $server->ip, $offset;
+
+	if ($offset_abs > 3){ # XXX or $pkt{Stratum} >= 8) {
+	  $step = -4;
+	}
+	elsif ($offset_abs > 0.75) {
+	  $step = -2;
+	}
+	elsif ($offset_abs > 0.075) {
+	  $step = -4 * $offset_abs + 1;
+	}
+	else {
+	  $step = 1;
+	}
+      }
+
+      # local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
+
+      $server->score_raw($server->score_raw + $step);
+      $server->score_ts('now');
+
+      $server->add_log_scores
+	({   score  => $server->score,
+	     step   => $step,
+	     offset => $offset,
+	 });
+      $server->save(cascade => 1);
 
     }
 }

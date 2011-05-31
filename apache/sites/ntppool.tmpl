@@ -53,18 +53,19 @@
       [% PH %] NTPPool::Control::UserProfile->super
     </Location>
 
+    <Location /zone/graph>
+      SetHandler default
+    </Location>
+
+    <Location /monitor>
+      SetHandler perl-script
+      [% PH %] NTPPool::Control::Monitor->super
+    </Location>
+
     <Location /static>
       SetHandler perl-script
       [% PH %] Combust::Control::Basic->super
     </Location>
 
-    <Location /server-status>
-      SetHandler server-status
-      Order Allow,Deny
-      Deny from any
-      Allow from 64.81.84.140 64.81.84.141
-      Allow from 64.81.39.118 64.81.39.130 64.81.39.76
-      Allow from 90.184.64.166
-    </Location>
   </VirtualHost>
 
