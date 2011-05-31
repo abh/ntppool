@@ -1,0 +1,35 @@
+<div id="graph_explanation_box" class="graph_explanation [% graph_explanation ? 'visible' : '' %]">
+
+<h3>Die Bewertungsgrafik</h3>
+<p>
+Mehrmals pro Stunde pr&uuml;ft das Pool-System deinen Server und vergleicht
+ihn mit der lokalen Uhrzeit. Punkte werden abgezogen, wenn der Server nicht 
+erreicht werden kann oder der Zeitunterschied mehr als 100 ms ist (relativ grob gemessen
+durch das System). Je gr&ouml;&szlig;er der Unterschied, desto mehr Punkte werden 
+abgezogen.
+</p>
+
+<p>
+Wenn die Wertung sinkt, zeigt die Hintergrundfarbe im oberen Teil, wie
+schwerwiegend der &quot;Ausfahl&quot; ist. Die Farbskala geht von
+Blau (sehr gering) zu Gelb und Orange zu Rot (der Server ist mehrere Sekunden
+nicht erreichbar oder aus). Weil die Grafik gemittelt wird, kann man anhand der Farbe 
+nicht immer sagen, was passiert ist.
+Es ist nur als ein Tool um Trends anzuzeigen gedacht. F&uuml;r exakte Details, was
+das Monitor-System fand, kannst du den CSV-Link anklicken.
+</p>
+
+<h3>Die Abweichungsgrafik</h3>
+
+<p>
+Das Monitor-System funktioniert etwa wie ein <a
+href="http://www.ntp.org/ntpfaq/NTP-s-def.htm#AEN1242">SNTP</a> (<a
+href="http://www.eecis.udel.edu/~mills/database/rfc/rfc2030.txt">RFC
+2030</a>)-Client. Es ist also empfindlicher auf zuf&auml;llige Netzwerklatenz zwischen 
+Server und dem System als ein normaler ntpd-Client sein w&uuml;rde. In anderen Worten: 
+Sei nicht verunsichert durch eine einstweilige, gro&szlig;e Abweichung und bitte benutze 
+die Abweichung nich als absolute Perfomancemessung.
+</p>
+
+</div>
+

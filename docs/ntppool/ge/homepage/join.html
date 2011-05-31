@@ -1,0 +1,91 @@
+[% page.title = 'Tritt dem NTP-Pool bei!'  %]
+
+<div class="block">
+	<h3><a name="join">Wie kann ich pool.ntp.org beitreten?</a></h3>
+	<p>
+	Zu erst: Danke f&uuml;r dein Interesse. Die Nutzung des Pools 
+	ist enorm gewachsen und die einzige M&ouml;glichkeit, es f&uuml;r alle
+	einfach zu halten einen Pool-Server zu betreiben ist es, auch die Zahl der
+	teilnehmenden Pool-Server zu erh&ouml;hen.
+	</p>
+
+	<p>
+	Dein Computer <b>muss eine statische IP-Adresse</b> besitzen und 
+	eine permanente Internetverbindung. Es ist sehr wichtig dass die IP-Adresse 
+	sich nicht &auml;ndert oder nur sehr sehr selten (einmal im Jahr seltener).
+	Die ben&ouml;tigte Bandbreite ist realtiv gering. Jeder Client wird nur einige 
+	wenige UDP-Pakete senden alle paar bis all 20 Minuten.
+	</p>
+
+	<p>
+	Derzeit erhalten die meisten Server zwischen fünf und 15 NTP-Pakete
+	pro Sekunde mit mehrmaligen Spitzen täglich von 60-120 Paketen pro Sekunde.
+	Dies ist etwa so viel wie 10-15kbit/s mit Spitzen von 50-120kbit/s
+	Das Projekt akquiriert st&auml;ndig neue Zeitserver, so dass der Load
+	f&uuml;r jeden Server nicht dramatisch gr&ouml;&szlig;er werden sollte.
+	Kurz gesagt, du brauchst mindestens 384-512Kbit Bandbreite (ein- und ausgehend).
+	</p>
+	<p>
+	Hier einige Server-Trafficload-Grafiken:
+	[% i = 0; FOR server = combust.servers_with_urls; %]
+	   <a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
+	[% END %]
+	</p>
+
+	<p>
+	Die beitretenden Server sollten nicht <tt>pool.ntp.org</tt> 
+	als upstream server haben, sondern mit einem <a href="http://support.ntp.org/bin/view/Servers/StratumTwoTimeServers">guten Server</a>
+	manuell konfiguriert werden. (Diese Server <b>k&ouml;nnen</b> aus
+	dem Pool gew&auml;hlt werden. Der Punkt ist, dass
+	diese statistisch gew&auml;hlt werden anstelle einer zuf&auml;lliger Zuordnung,
+	wenn der Server neu startet. Dies hilft, die Qualit&auml;t des Dienstes sicherzustellen.)
+	Beachte dass es ist n&ouml;tig ist, dass dein Server ein stratum 1 oder 2
+	Server ist. Da das Projekt den Load gr&ouml;&szlig;tenteils verteilt, gibt es keinen Grund,
+	warum ein stratum 3 oder stratum 4 Server nicht auch mitmachen k&ouml;nnte.
+	</p>
+
+	<p>
+	Wir haben eine Seite mit <a href="/join/configuration.html">Konfigurationsempfehlungen f&uuml;r beitretende Server</a>.
+	</p>
+	<p>Schlussendlich muss ich betonen, dass der Beitrtitt zum Pool eine <b>langfristige Verpflichtung</b> darstellt.
+	Wir nehmen dich gerne wieder aus dem Pool wenn die Umst&auml;nde sich f&uuml;r dich &auml;ndern,
+	aber aufgrund der Arbeitsweise der NTP-Clients, <b>dauert es Wochen, Monae oder sogar JAHRE bevor der Traffic
+	komplett verschwindet</b>.
+	</p>
+
+	<p>
+	Wenn dies alles OK ist, logge dich auf der 
+	<a href="/manage">Server Management</a>-Seite ein und beantrage deinen Sevrer hinzuzuf&uuml;gen.
+	Wenn du Probleme mit dem System hast, schreibe mir eine E-Mail auf <a
+	href="mailto:ask@develooper.com">ask@develooper.com</a>.
+	</p>
+	<p>
+	Ich bitte auch darum, den <a href="http://news.ntppool.org/atom.xml">Weblog Feed</a>
+	zu abonnieren und vielleicht auch die 
+	<a href="https://lists.ntp.org/listinfo/pool">Pool Mailingliste</a>.
+	</p>
+	<p>
+	Es w&auml;re sch&ouml;n (aber nicht notwendig), wenn du Webanfragen auf Port 80
+	deines Zeitservers auf die offizielle Webseite des Projekts auf 
+	<tt>http://www.pool.ntp.org</tt> umleitest.
+	Wenn du Apache benutzt, kannst du das so machen:
+	</p>
+
+        [% PROCESS tpl/join/virtual_host_beispiel.html %]
+
+	<p>
+	Nochmals, dies gilt nur, wenn du sowieso einen Webserver betreibst. Die offizielle
+	Projekt-Webseite wird immer mit &quot;www&quot; am Anfang, nur manchmal sind die Leute
+	faul und tippen nur <tt>pool.ntp.org</tt> ein, sind dann erstaunt, dass sie auf einer
+	zuf&auml;lligen Seite landen.
+	</p>
+	<p>
+	Einmal zum Pool hinzugef&uuml;gt wird der Server konstant auf Pr&auml;zision und 
+	Verf&uuml;gbarkeit &uuml;berwacht. Du kannst die Performance deines Servers 
+	&uuml;ber das <a href="scores">Web-Frontend</a> oder
+        die <a href="/manage">Management-Seite</a> ansehen.
+	</p>
+</div>
+
+
+
