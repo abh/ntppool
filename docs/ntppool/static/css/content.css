@@ -49,7 +49,7 @@ a.up {display: block; text-align: right; font-variant: small-caps;}
 
 /* index */
 h1#tagline {font-size: 122%; font-style: italic; text-align: right;}
-#activity .date {display: block; font-size: 92%; text-align: right; clear: both; margin-top: 25px;}
+#activity .date {display: block; font-size: 92%; text-align: right; clear: both; margin-top: 28px;}
 #servers .area {
 	clear: both;
 	padding: 4px 0;
@@ -58,7 +58,7 @@ h1#tagline {font-size: 122%; font-style: italic; text-align: right;}
 	#servers .area .location {
 		display: block;
 		width: 80px;
-		height: 35px;
+		height: 38px;
 		float: left;
 		padding-left: 45px;
 		font-size: 100%;
@@ -71,7 +71,7 @@ h1#tagline {font-size: 122%; font-style: italic; text-align: right;}
 		#servers .area .europe {background: no-repeat url(../images/globe_flat_europe.v1.png);}
 		#servers .area .asia {background: no-repeat url(../images/globe_flat_asia.v1.png);}
 		#servers .area .oceania {background: no-repeat url(../images/globe_flat_oceania.v1.png);}
-		#servers .area .global {width: 80px; padding-left: 45px; height: 20px; margin-top: 5px;}
+		#servers .area .global {width: 80px; padding-left: 45px; height: 23px; margin-top: 5px;}
 
 #activity {
 	float: right;
