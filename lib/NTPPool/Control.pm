@@ -17,15 +17,13 @@ my $config = Combust::Config->new;
 
 our %valid_languages = (
                         de => { name => "Deutsch" },
-                        da => { name => "Danish",
-                                testing => 1,
-                              },
+                        da => { name => "Danish", testing => 1, },
                         en => { name => "English", },
+                        es => { name => "Español", testing => 1 },
                         fr => { name => "Français", },
                         ko => { name => "한국어", },
                         nl => { name => "Nederlands", },
-                        pl => { name => "Polish",
-                                testing => 1 },
+                        pl => { name => "Polish", testing => 1 },
                         ru => { name => "русский", },  
                        );
 
