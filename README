@@ -57,3 +57,10 @@ $CBROOT/bin/httpd
 If any modules are missing, the easiest way to install them is with
    cpanm -L cpan Module::Name
 
+To setup a monitoring system in the 'monitors' table, run
+
+   ./pool addmonitor email@example.com 127.0.0.1 v4
+
+It will return an api key to be used with the ./monitor script.
+
+
