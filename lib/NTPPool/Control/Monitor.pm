@@ -3,43 +3,77 @@ use strict;
 use base qw(NTPPool::Control);
 use NP::Model;
 use Combust::Constant qw(OK NOT_FOUND);
-use Net::IPv6Addr;
+use Data::Dump qw(pp);
+
+my $json = JSON::XS->new->pretty;
+
+sub error {
+    my ($self, $error) = @_;
+    return OK, $json->encode({ error => $error });
+}
 
 sub render {
     my $self = shift;
 
     $self->no_cache(1);
 
-    # check api_key, too.
+    my $api_key = $self->req_param('api_key')
+      or return $self->error('Missing required api_key parameter');
 
-    my $monitor = NP::Model->monitor->fetch(ip => $self->request->remote_ip);
-    my $servers;
+    local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
+
+    my $monitor = NP::Model->monitor->fetch(api_key => $api_key);
 
     if (!$monitor) {
-        return 401, "Not a registered monitor";
+        return $self->error('Not a registered monitor');
     }
 
-    if ($self->request->method eq 'POST') {
-        return $self->upload($monitor, $1);
+    my $ip = $self->request->remote_ip;
+    # TODO: check that the current IP is allowed for this monitor
+
+    if ($self->request->method eq 'post') {
+        return $self->upload($monitor);
     }
 
     # go through server array and fetch offset for all servers
     my $servers = NP::Model->server->get_check_due($monitor, 10);
 
-    my $json = JSON::XS->new->pretty;
+    return OK, $json->encode({ servers => [ map { $_->ip } @$servers ]  }), "application/json";
+}
 
-    return OK, $json->encode({ servers => [ map { $_->ip } @$servers ]  }), "text/plain";
+sub post_data {
+    my $self    = shift;
+    my $request = $self->request;
+    return unless $request->method eq 'post';
+    my $ct = $request->header_in("Content-Type") or return;
+    return unless $ct =~ m!^application/json!;
+    my $content = $request->content;
+    return $json->decode($content);
 }
 
 sub upload {
     my $self = shift;
     my $monitor = shift;
-    my $proto = shift;
-    my $stats = $self->req_param('stats');
-    if (!defined($stats)) {
-	warn "No stats parameter";
-	return 400;
-    }
+
+    my $data = $self->post_data;
+    warn "got data: ", pp($data);
+
+    #  for each server
+    #     calculate score 'step'
+    #     begin
+    #     - add data to server_scores
+    #     - add data to log_scores
+    #     - update servers.score_ts, servers.score_raw, servers.stratum, too.
+    #     commit
+    #
+
+    # return how many server results were saved?
+    return OK, $json->encode({ ok => 1 });
+}
+
+1;
+
+__END__
 
     my $dbh = NP::Model->dbh;
 
@@ -74,6 +108,3 @@ sub upload {
     $monitor->last_seen(time);
     $monitor->save;
     return OK, "Saved " . ($#stats+1) . " records", "text/plain";
-}
-
-1;

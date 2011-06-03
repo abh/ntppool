@@ -3,20 +3,18 @@ use strict;
 use Net::NTP;
 use LWP;
 use Time::HiRes;
+use JSON qw(decode_json encode_json);
+
+my $VERSION = "0.1";
+
 $Net::NTP::TIMEOUT = 2;
 
-my $poolserver = "http://www.pool.ntp.org/monitor";
+my $api_key     = shift or die "$0 [api_key] [pool-server]\n";
+my $pool_server = shift || "http://www.pool.ntp.org/monitor";
 
-my $verbose = 0;
-if (@ARGV[0] eq '-v') {
-    $verbose = 1;
-    shift;
-}
+$pool_server .= '?api_key=' . $api_key;
 
-if ($#ARGV < 0 || ((@ARGV[0] != "v4") && (@ARGV[0] != "v6"))) {
-    die "monitor [-v] (v4|v6) [poolserver]\n";
-}
-
+my $verbose = 1;
 
 # check if this machine has good time.
 $Net::NTP::CLIENT_TIME_SEND    = undef;
@@ -27,10 +25,18 @@ if (!$pkt{'Stratum'} or $pkt{'Stratum'} == 0 or $pkt{'Stratum'} > 6) {
     die "monitoring server not synchronized\n";
 }
 
+#use Data::Dump qw(pp);
+#pp(\%pkt);
+
+# TODO: check the offset, too, with "ntpdc -c loopinfo" or "ntpq -c rv";
+# probably use the Capture::Tiny module to make it easy.
+# See https://github.com/abh/ntppool/issues/11
+
+
 # and if we're connected
 $Net::NTP::CLIENT_TIME_SEND    = undef;
 $Net::NTP::CLIENT_TIME_RECEIVE = undef;
-%pkt                           = eval { get_ntp_response('ntp1.us.grundclock.com'); };
+%pkt                           = eval { get_ntp_response('tick.ucla.edu'); };
 if ($pkt{'Stratum'} == 0 or $pkt{'Stratum'} > 6) {
     $Net::NTP::CLIENT_TIME_SEND    = undef;
     $Net::NTP::CLIENT_TIME_RECEIVE = undef;
@@ -40,63 +46,70 @@ if ($pkt{'Stratum'} == 0 or $pkt{'Stratum'} > 6) {
     }
 }
 
-my $proto = shift @ARGV;
-$poolserver = shift @ARGV unless $#ARGV < 0;
-my $url = $poolserver . "/" . $proto;
+my $ua = LWP::UserAgent->new;
+$ua->agent("NTPPool-Monitor/$VERSION");
 
-my $browser = LWP::UserAgent->new;
+my $response = $ua->get($pool_server);
 
-my $response = $browser->get($url);
-die "$url error:", $response->status_line unless $response->is_success;
-my $hosts = $response->content;
-my @hosts = split(/\n/, $hosts);
+my $data = eval { decode_json($response->content) } || {};
+my $err = $@;
 
-my $status = "";
+if (!$response->is_success or $data->{error} or $err) {
+    die "$pool_server error: ", $response->status_line, "\n",
+    ( $data->{error} ? "Server Response: " . $data->{error} . "\n" : () ),
+    ( $err ? "Data decoding error: $err\n" . $response->content . "\n" : () );
+} 
+
+die "Could not decode data" unless $data; 
+
+my @hosts = @{ $data->{servers} };
+
+my @status;
+
 for my $server (@hosts) {
-        # fetch offset by ntp
-        # if a server is not good, query a second time
-        # and use the second result - this is said to solve problems with some
-        # crappy Internet access routers.
-        my $offset = undef;
-	my $stratum;
-	if ($verbose) {
-	    print "Trying ", $server;
-	}
-        for (my $i = 0; !defined($offset) and $i < 2; $i++) {
-            $Net::NTP::CLIENT_TIME_RECEIVE = undef;
-            my $time_then = Time::HiRes::time;
-            $Net::NTP::CLIENT_TIME_SEND = $time_then;
 
-            my %pkt = eval { get_ntp_response($server); };
-            my $time_now = Time::HiRes::time;
+    my $offset;
+    my $stratum;
 
-            if (!$pkt{Stratum} or $!) {
-		# unreachable; leave offset as-is
-            }
-            else {
-                my $recv_org   = $pkt{'Receive Timestamp'} - $time_now;
-                my $trans_dest = $pkt{'Transmit Timestamp'} - $time_then;
-                $offset = ($recv_org + $trans_dest) / 2;
-		$stratum = $pkt{Stratum};
-            }
+    # Try twice
+    for (my $i = 0; !defined($offset) and $i < 2; $i++) {
+        $Net::NTP::CLIENT_TIME_RECEIVE = undef;
+        my $time_then = Time::HiRes::time;
+        $Net::NTP::CLIENT_TIME_SEND = $time_then;
+        
+        my %pkt = eval { get_ntp_response($server); };
+        my $time_now = Time::HiRes::time;
+        
+        if (!$pkt{Stratum} or $!) {
+            # unreachable; leave offset as-is
         }
-	
-	if (defined($offset)) {
-	    $status .= sprintf("%s %f %d\n", $server, $offset, $stratum);
-	    if ($verbose) {
-		print " ", $offset, "\n";
-	    }
-	} else {
-	    $status .= sprintf("%s unreachable\n", $server);
-	    if ($verbose) {
-		print " unreachable\n";
-	    }
-	}
+        else {
+            my $recv_org   = $pkt{'Receive Timestamp'} - $time_now;
+            my $trans_dest = $pkt{'Transmit Timestamp'} - $time_then;
+            $offset = ($recv_org + $trans_dest) / 2;
+            $stratum = $pkt{Stratum};
+        }
+    }
+    
+    if (defined($offset)) {
+        push @status, { server  => $server,
+                        offset  => $offset,
+                        stratum => $stratum,
+        };
+    } else {
+        push @status, { server => $server,
+                        no_response => 1,
+        };
+    }
 }
 
-$response = $browser->post($url, Content_Type => 'form-data',
-			   Content => [stats => $status,]);
-die "$url error:", $response->status_line unless $response->is_success;
-if ($verbose) {
+print encode_json(\@status);
+
+$response = $ua->post($pool_server, Content_Type => 'application/json',
+                      Content => encode_json({ status => \@status }));
+
+die "$pool_server error:", $response->status_line unless $response->is_success;
+if (1 or $verbose) {
+    print "posted\n";
     print $response->content, "\n";
 }

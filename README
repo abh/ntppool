@@ -52,7 +52,7 @@ $CBROOT/bin/database_update ntppool
 $CBROOT/bin/database_update combust
 $CBROOT/bin/database_update ntppool
 
-$CBROOT/bin/run_httpd
+$CBROOT/bin/httpd
 
 If any modules are missing, the easiest way to install them is with
    cpanm -L cpan Module::Name

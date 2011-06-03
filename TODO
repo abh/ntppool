@@ -2,7 +2,6 @@
 multi server:
 
   - http api to aggregate scores
-    - make it accept JSON
     - make it calculate the total score, too
     - calculate score per monitor + aggregate into the total "score_raw", too.
 
