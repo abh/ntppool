@@ -390,23 +390,6 @@ elsif ($cmd eq "scores") {
 
         #printf "testing %s\n", $server->ip;
 
-# do multiple requests to trigger servers with too agressive anti-abuse measures
-        if ($server->ip eq '84.92.75.21' or $server->ip eq '131.107.1.10x') {
-            eval {
-                get_ntp_response($server->ip);
-                sleep rand(2);
-                get_ntp_response($server->ip);
-                sleep rand(1);
-                get_ntp_response($server->ip);
-                get_ntp_response($server->ip);
-                get_ntp_response($server->ip);
-                if (rand(10) > 4) {
-                    get_ntp_response($server->ip);
-                    get_ntp_response($server->ip);
-                }
-            };
-        }
-
         # fetch offset by ntp
         # if a server is not good, query a second time
         # and use the second result - this is said to solve problems with some
