@@ -41,6 +41,9 @@ WriteMakefile(
                   'Plack::Middleware::ReverseProxy' => 0,
                   'Config::General' => 0,
 
+                  'Math::Random::Secure' => 0,
+                  'Math::BaseCalc'  => 0,
+
                   'I18N::LangTags' => 0,
 
                   # should just be Net::IP ..

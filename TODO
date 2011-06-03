@@ -1,11 +1,6 @@
 
 multi server:
 
-  - http api to get IPs to check (Control::Monitor)
-    - make it use the RDBO model
-    - make it just return the servers that are "due"
-    - make it return JSON
-
   - http api to aggregate scores
     - make it accept JSON
     - make it calculate the total score, too
@@ -22,8 +17,6 @@ multi server:
 
   - csv export
     - include monitor name
-
-  - When adding a server, setup entries in server_scores table
 
 
 High priority things:

@@ -157,6 +157,7 @@ __PACKAGE__->meta->setup(
 
   columns => [
     id         => { type => 'serial', not_null => 1 },
+    user_id    => { type => 'integer' },
     name       => { type => 'varchar', length => 30, not_null => 1 },
     ip         => { type => 'varchar', length => 40, not_null => 1 },
     ip_version => { type => 'enum', check_in => [ 'v4', 'v6' ], not_null => 1 },
@@ -169,7 +170,14 @@ __PACKAGE__->meta->setup(
 
   unique_keys => [
     [ 'api_key' ],
-    [ 'ip' ],
+    [ 'ip', 'ip_version' ],
+  ],
+
+  foreign_keys => [
+    user => {
+      class       => 'NP::Model::User',
+      key_columns => { user_id => 'id' },
+    },
   ],
 
   relationships => [
@@ -600,6 +608,12 @@ __PACKAGE__->meta->setup(
   relationships => [
     logs => {
       class      => 'NP::Model::Log',
+      column_map => { id => 'user_id' },
+      type       => 'one to many',
+    },
+
+    monitors => {
+      class      => 'NP::Model::Monitor',
       column_map => { id => 'user_id' },
       type       => 'one to many',
     },

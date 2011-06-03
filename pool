@@ -19,6 +19,7 @@ use Email::Date;
 use Email::Send 'SMTP';
 use File::Path qw(mkpath);
 use JSON::XS ();
+use Math::Random::Secure qw(irand);
 
 my $geo_ip = eval "Geo::IP->new(GEOIP_STANDARD)";
 
@@ -107,6 +108,16 @@ $db = Combust::DB::db_open('ntppool', {AutoCommit => 0})
 
 #$SIG{__DIE__} = \&closedbconnection;
 
+sub find_user_by_email {
+    my $email = shift;
+    my $user = NP::Model->user->fetch(email => $email);
+    $user = NP::Model->user->fetch(username => $email) unless $user;
+    $user = NP::Model->user->fetch(id       => $email) unless $user;
+    $user = NP::Model->user->fetch_or_create(email => $email) unless $user;
+    $user->save;
+    return $user;
+}
+
 my $cmd = shift @ARGV;
 if ($cmd eq "add") {
     if ($#ARGV < 1) {
@@ -115,11 +126,7 @@ if ($cmd eq "add") {
 
     # look if the email address is already registered
     my $email = shift @ARGV;
-    my $user = NP::Model->user->fetch(email => $email);
-    $user = NP::Model->user->fetch(username => $email) unless $user;
-    $user = NP::Model->user->fetch(id       => $email) unless $user;
-    $user = NP::Model->user->fetch_or_create(email => $email) unless $user;
-    $user->save;
+    my $user = find_user_by_email($email);
 
     # do we have a hostname or an IP?
     my $hostname = shift @ARGV;
@@ -165,20 +172,21 @@ if ($cmd eq "add") {
 
 }
 elsif ($cmd eq "addmonitor") {
-    if ($#ARGV < 1) {
-        die "pool addmonitor <email> <host or IP>\n";
+    if ($#ARGV < 2) {
+        die "pool addmonitor <email> <host or IP> <ip_version>\n";
     }
 
+    my ($email, $hostname, $ip_version) = @ARGV;
+
+    die "ip_version must be v4 or v6" unless $ip_version =~ m/^v[46]$/;
+
+    my $db = NP::Model->db;
+    my $txn  = $db->begin_scoped_work or die $db->error;
+
     # look if the email address is already registered
-    my $email = shift @ARGV;
-    my $user = NP::Model->user->fetch(email => $email);
-    $user = NP::Model->user->fetch(username => $email) unless $user;
-    $user = NP::Model->user->fetch(id       => $email) unless $user;
-    $user = NP::Model->user->fetch_or_create(email => $email) unless $user;
-    $user->save;
+    my $user = find_user_by_email($email);
 
     # do we have a hostname or an IP?
-    my $hostname = shift @ARGV;
     my $ip;
     if (Net::IP::ip_is_ipv4($hostname)) {
         $ip       = $hostname;
@@ -196,9 +204,32 @@ elsif ($cmd eq "addmonitor") {
     my $monitor = NP::Model->monitor->create(
         ip       => $ip,
         user_id  => $user->id,
+        ip_version => $ip_version,
     );
 
+    require Math::BaseCalc;
+    my $base36 = Math::BaseCalc->new(digits => ['a'..'k', 'm'..'z', 2..9]);
+
+    my @numbers = map { $base36->to_base(irand) } (undef) x 3;
+    my $api_key = join "", @numbers;
+
+    $monitor->api_key( $api_key );
+
     $monitor->save;
+
+    my $id = $monitor->id;
+
+    $db->dbh->do( q[ insert into server_scores (monitor_id, server_id, score_raw)
+                      select ?, id, score_raw from servers
+                      where ip_version = ? and deletion_on is null
+                     ], {}, $monitor->id, $monitor->ip_version );
+
+    for my $f (qw(ip ip_version api_key)) {
+        printf "%-10s: %s\n", $f, $monitor->$f;
+    }
+
+    $db->commit or die $db->error;
+
 }
 elsif ($cmd eq "edit") {
     my $arg = shift @ARGV or die "pool zones <host or IP>\n";
