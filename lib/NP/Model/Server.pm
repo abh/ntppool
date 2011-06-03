@@ -240,8 +240,7 @@ sub get_check_due {
     my $monitor = shift or return;
     my $limit   = shift || 200;
 
-    #my ($now, $now24) = NP::Model->dbh->selectrow_array(q[select now(), DATE_SUB( NOW(), INTERVAL 24 minute)]);
-    #warn "NOW: $now - NOW24: $now24";
+    # local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
 
     $class->get_objects_from_sql
       (
@@ -260,6 +259,5 @@ sub get_check_due {
        args => [ $monitor->id, $monitor->ip_version, $limit ]
       );
 }
-
 
 1;
