@@ -10,6 +10,8 @@ sub render {
 
     $self->no_cache(1);
 
+    # check api_key, too.
+
     my $monitor = NP::Model->monitor->fetch(ip => $self->request->remote_ip);
     my $servers;
 
@@ -17,30 +19,16 @@ sub render {
         return 401, "Not a registered monitor";
     }
 
-    if ($self->request->uri =~ m!^/monitor/(v[46])!) {
-
-	if ($self->request->method eq 'POST') {
-	    return $self->upload($monitor, $1);
-	}
-
-        my $servers = NP::Model->server->get_servers(
-            query => [
-                ip_version => $1,
-                or         => [
-                    deletion_on => undef,                       # not deleted
-                    deletion_on => {'gt' => DateTime->today}    # deleted in the future
-                ],
-            ],
-        );
-
-        my $result = "";
-        for my $server (@$servers) {
-            $result .= $server->ip . "\n";
-        }
-        return OK, $result, "text/plain";
+    if ($self->request->method eq 'POST') {
+        return $self->upload($monitor, $1);
     }
 
-    return 404;
+    # go through server array and fetch offset for all servers
+    my $servers = NP::Model->server->get_check_due($monitor, 10);
+
+    my $json = JSON::XS->new->pretty;
+
+    return OK, $json->encode({ servers => [ map { $_->ip } @$servers ]  }), "text/plain";
 }
 
 sub upload {

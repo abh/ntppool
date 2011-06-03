@@ -236,23 +236,29 @@ sub get_bad_servers_to_remove {
 }
 
 sub get_check_due {
-    my $class = shift;
+    my $class   = shift;
+    my $monitor = shift or return;
+    my $limit   = shift || 200;
 
     #my ($now, $now24) = NP::Model->dbh->selectrow_array(q[select now(), DATE_SUB( NOW(), INTERVAL 24 minute)]);
     #warn "NOW: $now - NOW24: $now24";
 
     $class->get_objects_from_sql
       (
-       sql => q[SELECT *
-                FROM servers
-                WHERE
-                  score_ts IS NULL or score_ts < DATE_SUB( NOW(), INTERVAL 24 minute)
-                  AND ip_version = 'v4'
-                  AND (deletion_on IS NULL or deletion_on > NOW())
-                ORDER BY score_ts
-               ],
-       
-              );
+       sql => q[SELECT s.*
+         FROM servers s
+         LEFT JOIN server_scores ss
+         ON (s.id=ss.server_id)
+         WHERE
+           monitor_id = ?
+           AND (ss.score_ts IS NULL or ss.score_ts < DATE_SUB( NOW(), INTERVAL 24 minute))
+           AND s.ip_version = ?
+           AND (deletion_on IS NULL or deletion_on > NOW())
+         ORDER BY score_ts
+         LIMIT ?
+       ],
+       args => [ $monitor->id, $monitor->ip_version, $limit ]
+      );
 }
 
 
