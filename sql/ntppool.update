@@ -354,7 +354,7 @@ insert into log_scores_archive_multi
 
 #46
 CREATE TABLE server_scores (
-  `id` bigint unsigned NOT NULL,
+  `id` bigint unsigned NOT NULL primary key auto_increment,
   `monitor_id` int(10) unsigned not null,
   `server_id` int(10) unsigned NOT NULL,
   score_ts datetime null,

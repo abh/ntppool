@@ -424,6 +424,59 @@ __PACKAGE__->make_manager_methods('server_notes');
 eval { require NP::Model::ServerNote }
   or $@ !~ m:^Can't locate NP/Model/ServerNote.pm: and die $@;
 
+{ package NP::Model::ServerScore;
+
+use strict;
+
+use base qw(NP::Model::_Object);
+
+__PACKAGE__->meta->setup(
+  table   => 'server_scores',
+
+  columns => [
+    id         => { type => 'bigserial', not_null => 1 },
+    monitor_id => { type => 'integer', not_null => 1 },
+    server_id  => { type => 'integer', not_null => 1 },
+    score_ts   => { type => 'datetime' },
+    score_raw  => { type => 'scalar', default => '0', length => 64, not_null => 1 },
+    stratum    => { type => 'integer' },
+  ],
+
+  primary_key_columns => [ 'id' ],
+
+  unique_key => [ 'server_id', 'monitor_id' ],
+
+  foreign_keys => [
+    monitor => {
+      class       => 'NP::Model::Monitor',
+      key_columns => { monitor_id => 'id' },
+    },
+
+    server => {
+      class       => 'NP::Model::Server',
+      key_columns => { server_id => 'id' },
+    },
+  ],
+);
+
+push @table_classes, __PACKAGE__;
+}
+
+{ package NP::Model::ServerScore::Manager;
+
+use strict;
+
+our @ISA = qw(Combust::RoseDB::Manager);
+
+sub object_class { 'NP::Model::ServerScore' }
+
+__PACKAGE__->make_manager_methods('server_scores');
+}
+
+# Allow user defined methods to be added
+eval { require NP::Model::ServerScore }
+  or $@ !~ m:^Can't locate NP/Model/ServerScore.pm: and die $@;
+
 { package NP::Model::ServerUrl;
 
 use strict;
@@ -882,6 +935,7 @@ eval { require NP::Model::ZoneServerCount }
   sub server { our $server ||= bless [], 'NP::Model::Server::Manager' }
   sub server_alert { our $server_alert ||= bless [], 'NP::Model::ServerAlert::Manager' }
   sub server_note { our $server_note ||= bless [], 'NP::Model::ServerNote::Manager' }
+  sub server_score { our $server_score ||= bless [], 'NP::Model::ServerScore::Manager' }
   sub server_url { our $server_url ||= bless [], 'NP::Model::ServerUrl::Manager' }
   sub server_zone { our $server_zone ||= bless [], 'NP::Model::ServerZone::Manager' }
   sub user { our $user ||= bless [], 'NP::Model::User::Manager' }
