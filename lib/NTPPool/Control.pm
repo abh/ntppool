@@ -43,6 +43,8 @@ sub tt {
 sub init {
   my $self = shift;
 
+  NP::Model->db->ping;
+
   if ($self->req_param('sig') or $self->req_param('bc_id')) {
     my $bc = $self->bitcard;
     my $bc_user = eval { $bc->verify($self->request) };

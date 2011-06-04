@@ -339,7 +339,7 @@ create table monitors (
 
 #43
 alter table log_scores
-   modify id bigint unsigned not null,
+   modify id bigint unsigned not null auto_increment,
    add monitor_id int unsigned after id;
 
 #44

@@ -1,14 +1,8 @@
 
 multi server:
 
-  - http api to aggregate scores
-    - make it calculate the total score, too
-    - calculate score per monitor + aggregate into the total "score_raw", too.
-
   - monitor script
     - use Getopt::Long
-    - cleanup perl style
-    - update to use JSON API
     - return score results every N servers instead of just at the end
 
   - rrd files

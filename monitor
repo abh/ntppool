@@ -68,48 +68,47 @@ my @status;
 
 for my $server (@hosts) {
 
-    my $offset;
-    my $stratum;
+    my $status = { server => $server };
 
-    # Try twice
-    for (my $i = 0; !defined($offset) and $i < 2; $i++) {
+    # try twice
+    for (my $i = 0; !defined($status->{offset}) and $i < 2; $i++) {
         $Net::NTP::CLIENT_TIME_RECEIVE = undef;
         my $time_then = Time::HiRes::time;
         $Net::NTP::CLIENT_TIME_SEND = $time_then;
         
         my %pkt = eval { get_ntp_response($server); };
         my $time_now = Time::HiRes::time;
+
+        $status->{ts} = $time_now;
         
         if (!$pkt{Stratum} or $!) {
-            # unreachable; leave offset as-is
+            $status->{no_response} = 1;
         }
         else {
+            delete $status->{no_response};
+
             my $recv_org   = $pkt{'Receive Timestamp'} - $time_now;
             my $trans_dest = $pkt{'Transmit Timestamp'} - $time_then;
-            $offset = ($recv_org + $trans_dest) / 2;
-            $stratum = $pkt{Stratum};
+
+            $status->{offset}  = ($recv_org + $trans_dest) / 2;
+            $status->{stratum} = $pkt{Stratum};
         }
     }
-    
-    if (defined($offset)) {
-        push @status, { server  => $server,
-                        offset  => $offset,
-                        stratum => $stratum,
-        };
-    } else {
-        push @status, { server => $server,
-                        no_response => 1,
-        };
-    }
+
+    push @status, $status;
+
 }
 
 print encode_json(\@status);
 
 $response = $ua->post($pool_server, Content_Type => 'application/json',
-                      Content => encode_json({ status => \@status }));
+                      Content => encode_json({ version => 1, servers => \@status }));
 
 die "$pool_server error:", $response->status_line unless $response->is_success;
-if (1 or $verbose) {
-    print "posted\n";
-    print $response->content, "\n";
+my $data = decode_json($response->content);
+if ($data->{warnings} && @{ $data->{warnings} }) {
+    for my $w (@{ $data->{warnings} }) {
+        print "WARNING: $w\n";
+    }
 }
+

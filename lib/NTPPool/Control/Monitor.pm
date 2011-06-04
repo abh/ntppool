@@ -20,7 +20,7 @@ sub render {
     my $api_key = $self->req_param('api_key')
       or return $self->error('Missing required api_key parameter');
 
-    local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
+    # local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
 
     my $monitor = NP::Model->monitor->fetch(api_key => $api_key);
 
@@ -58,17 +58,90 @@ sub upload {
     my $data = $self->post_data;
     warn "got data: ", pp($data);
 
-    #  for each server
-    #     calculate score 'step'
-    #     begin
-    #     - add data to server_scores
-    #     - add data to log_scores
-    #     - update servers.score_ts, servers.score_raw, servers.stratum, too.
-    #     commit
-    #
+    return $self->error('Unknown version') unless $data->{version} and $data->{version} == 1;
+    return $self->error('Invalid format') unless ref $data->{servers} eq 'ARRAY';
+
+    my $db = NP::Model->db;
+
+    # local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
+
+    my @warnings;
+
+    for my $status ( @{ $data->{servers} } ) {
+        my $txn = $db->begin_scoped_work;
+
+        # Normalize IPv6 IP
+
+        my $server_score = NP::Model->server_score->get_server_scores
+          (
+           query => [
+                     'monitor_id' => $monitor->id,
+                     'server.ip'  => $status->{server},
+                     ],
+           require_objects => ['server'],
+                    );
+
+
+        $server_score = $server_score && $server_score->[0];
+        my $server = $server_score->server;
+
+        unless ($server_score) {
+            push @warnings, "No server_score for $status->{server}";
+            next;
+        }
+
+        my $step;
+        if (! $status->{stratum} or $status->{no_response}) {
+            $step = -5;
+        }
+        else {
+            my $offset_abs = abs($status->{offset});
+            if ($offset_abs > 3 or $status->{stratum} >= 8) {
+                $step = -4;
+            }
+            elsif ($offset_abs > 0.75) {
+                $step = -2;
+            }
+            elsif ($offset_abs > 0.075) {
+                $step = -4 * $offset_abs + 1;
+            }
+            else {
+                $step = 1;
+            }
+        }
+        
+
+        my $ts = DateTime->from_epoch( epoch => $status->{ts} );
+
+        for my $obj ($server_score, $server) {
+            $obj->score_raw(($obj->score_raw * 0.95) + $step);
+            $obj->score_ts($ts);
+            $obj->stratum($status->{stratum});
+        }
+
+        my %log_score = ( step   => $step,
+                          offset => $status->{offset},
+                        );
+        
+        $server->add_log_scores
+          ({   
+               %log_score,
+               score  => $server->score,
+           },
+           {   
+               %log_score,
+               score  => $server_score->score,
+               monitor_id => $monitor->id,
+           });
+
+        $server_score->save(cascade => 1);
+
+        $db->commit;
+
+    }
 
     # return how many server results were saved?
-    return OK, $json->encode({ ok => 1 });
+    return OK, $json->encode({ ok => 1, warnings => \@warnings });
 }
 
 1;

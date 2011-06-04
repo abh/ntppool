@@ -104,7 +104,7 @@ __PACKAGE__->meta->setup(
   table   => 'log_scores',
 
   columns => [
-    id         => { type => 'bigint', not_null => 1 },
+    id         => { type => 'bigserial', not_null => 1 },
     monitor_id => { type => 'integer' },
     server_id  => { type => 'integer', not_null => 1 },
     ts         => { type => 'datetime', default => 'now', not_null => 1 },
