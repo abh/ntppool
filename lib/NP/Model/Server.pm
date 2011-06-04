@@ -98,15 +98,15 @@ sub urls {
 }
 
 sub history {
-  my ($self, $count) = @_;
+    my ($self, $count) = @_;
 
-  $count ||= 50;
+    $count ||= 50;
 
-  my $history = NP::Model->log_score->get_log_scores
-      (query   => [ server_id => $self->id ],
-       sort_by => 'ts desc',
-       limit   => $count,
-       );
+    my $history = NP::Model->log_score->get_log_scores(
+        query   => [server_id => $self->id, monitor_id => undef],
+        sort_by => 'ts desc',
+        limit   => $count,
+    );
 }
 
 sub score_sparkline_url {
