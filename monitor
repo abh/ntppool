@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 use strict;
-use Net::NTP;
+use Net::NTP 1.3;
 use LWP;
 use Time::HiRes;
 use JSON qw(decode_json encode_json);
@@ -67,6 +67,8 @@ my @hosts = @{ $data->{servers} };
 my @status;
 
 for my $server (@hosts) {
+
+    $server =~ m/::/ and require IO::Socket::INET6;
 
     my $status = { server => $server };
 
