@@ -9,6 +9,9 @@ my $VERSION = "0.1";
 
 $Net::NTP::TIMEOUT = 2;
 
+# How often should the server be rechecked?
+my $sleeptime = 120;
+
 my $api_key     = shift or die "$0 [api_key] [pool-server]\n";
 my $pool_server = shift || "http://www.pool.ntp.org/monitor";
 
@@ -46,71 +49,83 @@ if ($pkt{'Stratum'} == 0 or $pkt{'Stratum'} > 6) {
     }
 }
 
+sub catch_TERM {
+    exit(0);
+}
+$SIG{TERM} = \&catch_TERM;
+
 my $ua = LWP::UserAgent->new;
 $ua->agent("NTPPool-Monitor/$VERSION");
 
-my $response = $ua->get($pool_server);
+while(1) {
+    my $response = $ua->get($pool_server);
 
-my $data = eval { decode_json($response->content) } || {};
-my $err = $@;
+    my $data = eval { decode_json($response->content) } || {};
+    my $err = $@;
 
-if (!$response->is_success or $data->{error} or $err) {
-    die "$pool_server error: ", $response->status_line, "\n",
-    ( $data->{error} ? "Server Response: " . $data->{error} . "\n" : () ),
-    ( $err ? "Data decoding error: $err\n" . $response->content . "\n" : () );
-} 
+    if (!$response->is_success or $data->{error} or $err) {
+	die "$pool_server error: ", $response->status_line, "\n",
+	( $data->{error} ? "Server Response: " . $data->{error} . "\n" : () ),
+	( $err ? "Data decoding error: $err\n" . $response->content . "\n" : () );
+    } 
 
-die "Could not decode data" unless $data; 
+    die "Could not decode data" unless $data; 
 
-my @hosts = @{ $data->{servers} };
+    my @hosts = @{ $data->{servers} };
 
-my @status;
-
-for my $server (@hosts) {
-
-    $server =~ m/::/ and require IO::Socket::INET6;
-
-    my $status = { server => $server };
-
-    # try twice
-    for (my $i = 0; !defined($status->{offset}) and $i < 2; $i++) {
-        $Net::NTP::CLIENT_TIME_RECEIVE = undef;
-        my $time_then = Time::HiRes::time;
-        $Net::NTP::CLIENT_TIME_SEND = $time_then;
-        
-        my %pkt = eval { get_ntp_response($server); };
-        my $time_now = Time::HiRes::time;
-
-        $status->{ts} = $time_now;
-        
-        if (!$pkt{Stratum} or $!) {
-            $status->{no_response} = 1;
-        }
-        else {
-            delete $status->{no_response};
-
-            my $recv_org   = $pkt{'Receive Timestamp'} - $time_now;
-            my $trans_dest = $pkt{'Transmit Timestamp'} - $time_then;
-
-            $status->{offset}  = ($recv_org + $trans_dest) / 2;
-            $status->{stratum} = $pkt{Stratum};
-        }
+    # If the server has nothing to do for us, come back later.
+    if (not @hosts) {
+	sleep $sleeptime;
+	next;
     }
 
-    push @status, $status;
+    my @status;
+    
+    for my $server (@hosts) {
 
-}
+	$server =~ m/::/ and require IO::Socket::INET6;
 
-print encode_json(\@status);
+	my $status = { server => $server };
 
-$response = $ua->post($pool_server, Content_Type => 'application/json',
-                      Content => encode_json({ version => 1, servers => \@status }));
+	# try twice
+	for (my $i = 0; !defined($status->{offset}) and $i < 2; $i++) {
+	    $Net::NTP::CLIENT_TIME_RECEIVE = undef;
+	    my $time_then = Time::HiRes::time;
+	    $Net::NTP::CLIENT_TIME_SEND = $time_then;
+        
+	    my %pkt = eval { get_ntp_response($server); };
+	    my $time_now = Time::HiRes::time;
 
-die "$pool_server error:", $response->status_line unless $response->is_success;
-my $data = decode_json($response->content);
-if ($data->{warnings} && @{ $data->{warnings} }) {
-    for my $w (@{ $data->{warnings} }) {
-        print "WARNING: $w\n";
+	    $status->{ts} = $time_now;
+        
+	    if (!$pkt{Stratum} or $!) {
+		$status->{no_response} = 1;
+	    }
+	    else {
+		delete $status->{no_response};
+
+		my $recv_org   = $pkt{'Receive Timestamp'} - $time_now;
+		my $trans_dest = $pkt{'Transmit Timestamp'} - $time_then;
+		
+		$status->{offset}  = ($recv_org + $trans_dest) / 2;
+		$status->{stratum} = $pkt{Stratum};
+	    }
+	}
+
+	push @status, $status;
+
     }
-}
 
+    print encode_json(\@status) . "\n";
+    
+    $response = $ua->post($pool_server, Content_Type => 'application/json',
+			  Content => encode_json({ version => 1, servers => \@status }));
+
+    die "$pool_server error:", $response->status_line unless $response->is_success;
+    my $data = decode_json($response->content);
+    if ($data->{warnings} && @{ $data->{warnings} }) {
+	for my $w (@{ $data->{warnings} }) {
+	    print "WARNING: $w\n";
+	}
+    }
+} # end mainloop
