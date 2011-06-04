@@ -181,8 +181,14 @@ __PACKAGE__->meta->setup(
   ],
 
   relationships => [
+    log_scores => {
+      class      => 'NP::Model::LogScore',
+      column_map => { id => 'monitor_id' },
+      type       => 'one to many',
+    },
+
     servers => {
-      map_class => 'NP::Model::LogScore',
+      map_class => 'NP::Model::ServerScore',
       map_from  => 'monitor',
       map_to    => 'server',
       type      => 'many to many',
@@ -281,6 +287,12 @@ __PACKAGE__->meta->setup(
   ],
 
   relationships => [
+    log_scores => {
+      class      => 'NP::Model::LogScore',
+      column_map => { id => 'server_id' },
+      type       => 'one to many',
+    },
+
     logs => {
       class      => 'NP::Model::Log',
       column_map => { id => 'server_id' },
@@ -288,7 +300,7 @@ __PACKAGE__->meta->setup(
     },
 
     monitors => {
-      map_class => 'NP::Model::LogScore',
+      map_class => 'NP::Model::ServerScore',
       map_from  => 'server',
       map_to    => 'monitor',
       type      => 'many to many',
