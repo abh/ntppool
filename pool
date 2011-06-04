@@ -19,6 +19,7 @@ use Email::Date;
 use Email::Send 'SMTP';
 use File::Path qw(mkpath);
 use JSON::XS ();
+use Math::Random::Secure qw(irand);
 
 my $geo_ip = eval "Geo::IP->new(GEOIP_STANDARD)";
 
@@ -107,6 +108,16 @@ $db = Combust::DB::db_open('ntppool', {AutoCommit => 0})
 
 #$SIG{__DIE__} = \&closedbconnection;
 
+sub find_user_by_email {
+    my $email = shift;
+    my $user = NP::Model->user->fetch(email => $email);
+    $user = NP::Model->user->fetch(username => $email) unless $user;
+    $user = NP::Model->user->fetch(id       => $email) unless $user;
+    $user = NP::Model->user->fetch_or_create(email => $email) unless $user;
+    $user->save;
+    return $user;
+}
+
 my $cmd = shift @ARGV;
 if ($cmd eq "add") {
     if ($#ARGV < 1) {
@@ -115,11 +126,7 @@ if ($cmd eq "add") {
 
     # look if the email address is already registered
     my $email = shift @ARGV;
-    my $user = NP::Model->user->fetch(email => $email);
-    $user = NP::Model->user->fetch(username => $email) unless $user;
-    $user = NP::Model->user->fetch(id       => $email) unless $user;
-    $user = NP::Model->user->fetch_or_create(email => $email) unless $user;
-    $user->save;
+    my $user = find_user_by_email($email);
 
     # do we have a hostname or an IP?
     my $hostname = shift @ARGV;
@@ -162,6 +169,66 @@ if ($cmd eq "add") {
     unless (defined $hostname) { $hostname = $ip; }
     my $z = join " ", @ARGV;
     logsay($server->id . " add $email $hostname $z");
+
+}
+elsif ($cmd eq "addmonitor") {
+    if ($#ARGV < 2) {
+        die "pool addmonitor <email> <host or IP> <ip_version>\n";
+    }
+
+    my ($email, $hostname, $ip_version) = @ARGV;
+
+    die "ip_version must be v4 or v6" unless $ip_version =~ m/^v[46]$/;
+
+    my $db = NP::Model->db;
+    my $txn  = $db->begin_scoped_work or die $db->error;
+
+    # look if the email address is already registered
+    my $user = find_user_by_email($email);
+
+    # do we have a hostname or an IP?
+    my $ip;
+    if (Net::IP::ip_is_ipv4($hostname)) {
+        $ip       = $hostname;
+        $hostname = undef;
+    }
+    else {
+        my $addrs = gethostbyname($hostname)
+          or die "$hostname does not resolve.\n";
+        if ($#{$addrs->addr_list} > 0) {
+            print "warning: $hostname has multiple IP addresses.\n";
+        }
+        $ip = inet_ntoa(${$addrs->addr_list}[0]);
+    }
+
+    my $monitor = NP::Model->monitor->create(
+        ip       => $ip,
+        user_id  => $user->id,
+        ip_version => $ip_version,
+    );
+
+    require Math::BaseCalc;
+    my $base36 = Math::BaseCalc->new(digits => ['a'..'k', 'm'..'z', 2..9]);
+
+    my @numbers = map { $base36->to_base(irand) } (undef) x 3;
+    my $api_key = join "", @numbers;
+
+    $monitor->api_key( $api_key );
+
+    $monitor->save;
+
+    my $id = $monitor->id;
+
+    $db->dbh->do( q[ insert into server_scores (monitor_id, server_id, score_raw)
+                      select ?, id, score_raw from servers
+                      where ip_version = ? and deletion_on is null
+                     ], {}, $monitor->id, $monitor->ip_version );
+
+    for my $f (qw(ip ip_version api_key)) {
+        printf "%-10s: %s\n", $f, $monitor->$f;
+    }
+
+    $db->commit or die $db->error;
 
 }
 elsif ($cmd eq "edit") {
@@ -302,11 +369,11 @@ elsif ($cmd eq "scores") {
     # and if we're connected
     $Net::NTP::CLIENT_TIME_SEND    = undef;
     $Net::NTP::CLIENT_TIME_RECEIVE = undef;
-    %pkt                           = eval { get_ntp_response('ntp0.us.grundclock.com'); };
+    %pkt                           = eval { get_ntp_response('ntp1.us.grundclock.com'); };
     if ($pkt{'Stratum'} == 0 or $pkt{'Stratum'} > 6) {
         $Net::NTP::CLIENT_TIME_SEND    = undef;
         $Net::NTP::CLIENT_TIME_RECEIVE = undef;
-        %pkt                           = eval { get_ntp_response('ntp1.us.grundclock.com'); };
+        %pkt                           = eval { get_ntp_response('ntp2.us.grundclock.com'); };
         if ($pkt{'Stratum'} == 0 or $pkt{'Stratum'} > 6) {
             die "no time from ntp0 or ntp1\n";
         }
@@ -322,23 +389,6 @@ elsif ($cmd eq "scores") {
         $server->score_raw($server->score_raw * 0.95);
 
         #printf "testing %s\n", $server->ip;
-
-# do multiple requests to trigger servers with too agressive anti-abuse measures
-        if ($server->ip eq '84.92.75.21' or $server->ip eq '131.107.1.10x') {
-            eval {
-                get_ntp_response($server->ip);
-                sleep rand(2);
-                get_ntp_response($server->ip);
-                sleep rand(1);
-                get_ntp_response($server->ip);
-                get_ntp_response($server->ip);
-                get_ntp_response($server->ip);
-                if (rand(10) > 4) {
-                    get_ntp_response($server->ip);
-                    get_ntp_response($server->ip);
-                }
-            };
-        }
 
         # fetch offset by ntp
         # if a server is not good, query a second time
@@ -390,6 +440,83 @@ elsif ($cmd eq "scores") {
             }
         );
         $server->save(cascade => 1);
+
+    }
+}
+elsif ($cmd eq "rscores") {
+
+    my $dbh = NP::Model->dbh;
+    $dbh->selectrow_array(q[SELECT GET_LOCK("scores", 0)]) or exit;
+
+    # go through server array and fetch offset for all servers
+    my $records = NP::Model->monitor_report->get_objects
+      (query => [ ts => { gt => (time-3600) }],
+       sort_by => 'server_id');
+
+    my @servers = ();
+    my $server = undef;
+    my $times = [];
+    my %stratum = ();
+    for my $record (@$records) {
+      if (!defined($server) or $server->id != $record->server_id) {
+	# Advance to next server
+	$server = NP::Model->server->fetch(id => $record->server_id);
+	my $offset = undef;
+	push(@servers, [$server, $times]);
+	$times = [];
+      }
+      # Only push offsets if the record says that the server was up
+      # A single "up" vote will thus take precedence over many "down"
+      # votes
+      if (defined($record->offset)) {
+	push(@$times, $record->offset);
+	$server->stratum($record->stratum);
+      }
+    }
+
+    for my $s (@servers) {
+      my ($server, $times) = @$s;
+      my $offset;
+      my $offset_abs;
+      my $stratum = undef;
+      my $step = -5;
+      $server->score_raw($server->score_raw * 0.95);
+      if (scalar @$times ==  0) {
+	# printf "testing %s, down\n", $server->ip;
+      } else {
+	# there have been measurements; compute average
+	$offset = 0;
+	foreach(@$times){$offset += $_;}
+	$offset /= @$times;
+	$offset_abs = abs($offset);
+
+	# printf "testing %s, offset %s\n", $server->ip, $offset;
+
+	if ($offset_abs > 3){ # XXX or $pkt{Stratum} >= 8) {
+	  $step = -4;
+	}
+	elsif ($offset_abs > 0.75) {
+	  $step = -2;
+	}
+	elsif ($offset_abs > 0.075) {
+	  $step = -4 * $offset_abs + 1;
+	}
+	else {
+	  $step = 1;
+	}
+      }
+
+      # local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
+
+      $server->score_raw($server->score_raw + $step);
+      $server->score_ts('now');
+
+      $server->add_log_scores
+	({   score  => $server->score,
+	     step   => $step,
+	     offset => $offset,
+	 });
+      $server->save(cascade => 1);
 
     }
 }

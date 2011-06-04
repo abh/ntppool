@@ -63,14 +63,6 @@ sub handle_add {
         $self->tpl_param('scores_url',
             $self->config->base_url('ntppool') . '/scores/' . $server->{ip});
 
-        my $msg = $self->evaluate_template('tpl/manage/add_email.txt');
-        my $email = Email::Simple->new(ref $msg ? $$msg : $msg)
-          ;    # until we decide what eval_tpl should return :)
-        $email->header_set('Message-ID' => join("-", int(rand(1000)), $$, time) . '@' . hostname);
-        $email->header_set('Date' => Email::Date::format_date);
-        my $return = send SMTP => $email, 'localhost';
-        warn Data::Dumper->Dump([\$msg, \$email, \$return], [qw(msg amil return)]);
-
         my $s;
 
         if ($s = NP::Model->server->fetch(ip => $server->{ip})) {
@@ -107,6 +99,15 @@ sub handle_add {
 
         #local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
         $s->save(cascade => 1);
+
+        my $msg = $self->evaluate_template('tpl/manage/add_email.txt');
+        my $email = Email::Simple->new(ref $msg ? $$msg : $msg)
+          ;    # until we decide what eval_tpl should return :)
+        $email->header_set('Message-ID' => join("-", int(rand(1000)), $$, time) . '@' . hostname);
+        $email->header_set('Date' => Email::Date::format_date);
+        my $return = send SMTP => $email, 'localhost';
+        warn Data::Dumper->Dump([\$msg, \$email, \$return], [qw(msg email return)]);
+
         return $self->redirect('/manage/servers#s-' . $s->ip);
     }
 

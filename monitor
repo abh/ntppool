@@ -1,0 +1,116 @@
+#!/usr/bin/env perl
+use strict;
+use Net::NTP 1.3;
+use LWP;
+use Time::HiRes;
+use JSON qw(decode_json encode_json);
+
+my $VERSION = "0.1";
+
+$Net::NTP::TIMEOUT = 2;
+
+my $api_key     = shift or die "$0 [api_key] [pool-server]\n";
+my $pool_server = shift || "http://www.pool.ntp.org/monitor";
+
+$pool_server .= '?api_key=' . $api_key;
+
+my $verbose = 1;
+
+# check if this machine has good time.
+$Net::NTP::CLIENT_TIME_SEND    = undef;
+$Net::NTP::CLIENT_TIME_RECEIVE = undef;
+my $mon_host = 'localhost';
+my %pkt = eval { get_ntp_response($mon_host) };
+if (!$pkt{'Stratum'} or $pkt{'Stratum'} == 0 or $pkt{'Stratum'} > 6) {
+    die "monitoring server not synchronized\n";
+}
+
+#use Data::Dump qw(pp);
+#pp(\%pkt);
+
+# TODO: check the offset, too, with "ntpdc -c loopinfo" or "ntpq -c rv";
+# probably use the Capture::Tiny module to make it easy.
+# See https://github.com/abh/ntppool/issues/11
+
+
+# and if we're connected
+$Net::NTP::CLIENT_TIME_SEND    = undef;
+$Net::NTP::CLIENT_TIME_RECEIVE = undef;
+%pkt                           = eval { get_ntp_response('tick.ucla.edu'); };
+if ($pkt{'Stratum'} == 0 or $pkt{'Stratum'} > 6) {
+    $Net::NTP::CLIENT_TIME_SEND    = undef;
+    $Net::NTP::CLIENT_TIME_RECEIVE = undef;
+    %pkt                           = eval { get_ntp_response('clock-b.develooper.com'); };
+    if ($pkt{'Stratum'} == 0 or $pkt{'Stratum'} > 6) {
+	die "no time from ntp1 or clock-b\n";
+    }
+}
+
+my $ua = LWP::UserAgent->new;
+$ua->agent("NTPPool-Monitor/$VERSION");
+
+my $response = $ua->get($pool_server);
+
+my $data = eval { decode_json($response->content) } || {};
+my $err = $@;
+
+if (!$response->is_success or $data->{error} or $err) {
+    die "$pool_server error: ", $response->status_line, "\n",
+    ( $data->{error} ? "Server Response: " . $data->{error} . "\n" : () ),
+    ( $err ? "Data decoding error: $err\n" . $response->content . "\n" : () );
+} 
+
+die "Could not decode data" unless $data; 
+
+my @hosts = @{ $data->{servers} };
+
+my @status;
+
+for my $server (@hosts) {
+
+    $server =~ m/::/ and require IO::Socket::INET6;
+
+    my $status = { server => $server };
+
+    # try twice
+    for (my $i = 0; !defined($status->{offset}) and $i < 2; $i++) {
+        $Net::NTP::CLIENT_TIME_RECEIVE = undef;
+        my $time_then = Time::HiRes::time;
+        $Net::NTP::CLIENT_TIME_SEND = $time_then;
+        
+        my %pkt = eval { get_ntp_response($server); };
+        my $time_now = Time::HiRes::time;
+
+        $status->{ts} = $time_now;
+        
+        if (!$pkt{Stratum} or $!) {
+            $status->{no_response} = 1;
+        }
+        else {
+            delete $status->{no_response};
+
+            my $recv_org   = $pkt{'Receive Timestamp'} - $time_now;
+            my $trans_dest = $pkt{'Transmit Timestamp'} - $time_then;
+
+            $status->{offset}  = ($recv_org + $trans_dest) / 2;
+            $status->{stratum} = $pkt{Stratum};
+        }
+    }
+
+    push @status, $status;
+
+}
+
+print encode_json(\@status);
+
+$response = $ua->post($pool_server, Content_Type => 'application/json',
+                      Content => encode_json({ version => 1, servers => \@status }));
+
+die "$pool_server error:", $response->status_line unless $response->is_success;
+my $data = decode_json($response->content);
+if ($data->{warnings} && @{ $data->{warnings} }) {
+    for my $w (@{ $data->{warnings} }) {
+        print "WARNING: $w\n";
+    }
+}
+

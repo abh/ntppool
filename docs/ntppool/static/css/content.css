@@ -58,7 +58,7 @@ h1#tagline {font-size: 122%; font-style: italic; text-align: right;}
 	#servers .area .location {
 		display: block;
 		width: 100px;
-		height: 35px;
+		height: 38px;
 		float: left;
 		padding-left: 50px;
 		font-size: 100%;
@@ -71,7 +71,7 @@ h1#tagline {font-size: 122%; font-style: italic; text-align: right;}
 		#servers .area .europe {background: no-repeat url(../images/globe_flat_europe.v1.png);}
 		#servers .area .asia {background: no-repeat url(../images/globe_flat_asia.v1.png);}
 		#servers .area .oceania {background: no-repeat url(../images/globe_flat_oceania.v1.png);}
-		#servers .area .global {width: 100px; padding-left: 50px; height: 20px; margin-top: 5px;}
+		#servers .area .global {width: 100px; padding-left: 50px; height: 23px; margin-top: 5px;}
                 #servers .count {  }
 
 #activity {

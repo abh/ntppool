@@ -1,3 +1,17 @@
+
+multi server:
+
+  - monitor script
+    - use Getopt::Long
+    - return score results every N servers instead of just at the end
+
+  - rrd files
+    - graph data per monitor in addition to the total score
+
+  - csv export
+    - include monitor name
+
+
 High priority things:
 
   * Make the combust lang= cookie be a regular cookie
