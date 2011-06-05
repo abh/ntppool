@@ -29,23 +29,25 @@ if (!$pkt{'Stratum'} or $pkt{'Stratum'} == 0 or $pkt{'Stratum'} > 6) {
 #use Data::Dump qw(pp);
 #pp(\%pkt);
 
+# Add sbin to the path as ntpdc/ntpq may live there
+$ENV{PATH} .= ':/usr/sbin:/usr/local/sbin';
 my $offset_ms;
 my $ntpdc = capture_merged {
-       system('ntpdc -c loopinfo') == 0 or
-       system('/usr/sbin/ntpdc -c loopinfo');
+    system('ntpdc -c loopinfo $mon_host');
 };
-if ($ntpdc) {
+if ($ntpdc =~ m/offset: *([^ ]+)/s) {
     $ntpdc =~ s/.*offset: *([^ ]+).*/\1/s;
     $offset_ms = 1000*abs($ntpdc);
 }
 else {
     my $ntpq = capture_merged {
-           system('ntpq -c rv') == 0 or
-           system('/usr/sbin/ntpq -c rv');
+        system('ntpq -c rv $mon_host');
     };
-    die "Neither ntpdc nor ntpq found" unless $ntpq;
-    $ntpq =~ s/.*offset=([^,]+)*.*/\1/s;
-    $offset_ms = abs($ntpq);
+    if ($ntpq =~ m/offset=([^,]+)*/s) {
+        $ntpq =~ s/.*offset=([^,]+)*.*/\1/s;
+        $offset_ms = abs($ntpq);
+    }
+    else {die "Neither ntpdc nor ntpq found";}
 }
 die "Offset $offset_ms too large" unless $offset_ms < 20;
 
