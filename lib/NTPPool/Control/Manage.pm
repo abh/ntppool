@@ -158,17 +158,15 @@ sub get_server_info {
           unless $s->deleted;
     }
 
-    local $Net::NTP::TIMEOUT = 2;
+    local $Net::NTP::TIMEOUT = 3;
     my %ntp = eval { get_ntp_response($server{ip}); };
     warn "checking $host / $server{ip}";
     warn Data::Dumper->Dump([\%ntp]);
 
-    if ($server{ip_version} eq 'v4') {
-        die "Didn't get an NTP response from $host\n" unless defined $ntp{Stratum};
-        die
-          "Invalid stratum response from $host (Your server is in stratum $ntp{Stratum}).  Is your server configured properly? Is public access allowed?  If you just restarted your ntpd, then it might still be stabilizing the timesources - try again in 10-20 minutes.\n"
-          unless $ntp{Stratum} > 0 and $ntp{Stratum} < 6;
-    }
+    die "Didn't get an NTP response from $host\n" unless defined $ntp{Stratum};
+    die
+      "Invalid stratum response from $host (Your server is in stratum $ntp{Stratum}).  Is your server configured properly? Is public access allowed?  If you just restarted your ntpd, then it might still be stabilizing the timesources - try again in 10-20 minutes.\n"
+        unless $ntp{Stratum} > 0 and $ntp{Stratum} < 6;
 
     $server{ntp} = \%ntp;
 
