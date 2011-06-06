@@ -9,6 +9,7 @@ sub cache_info {
 
   return {} if $self->deployment_mode eq 'devel';
   return {} if $self->is_graph;
+  return {} if $self->show_servers;
 
   return +{ expires => 3600,
             id => join(";",
