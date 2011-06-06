@@ -166,7 +166,9 @@ mkpath "$rrd_path/graph/" unless -e "$rrd_path/graph";
 
 sub rrd_path {
     my $self = shift;
-    "$rrd_path/" . $self->id . ".rrd";
+    my $monitor_id = shift;
+    my $dir  = int( $self->id / 100 ) * 100;
+    "$rrd_path/$dir/" . $self->id . ($monitor_id ? "-$monitor_id" : "") . ".rrd";
 }
 
 sub graph_path {

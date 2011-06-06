@@ -1,6 +1,8 @@
 package NP::Model::LogScore;
 use strict;
 use RRDs;
+use File::Path qw(mkpath);
+use File::Basename qw(dirname);
 
 sub save {
     my $self = shift;
@@ -43,7 +45,7 @@ sub update_rrd {
 
     #warn join " / ", $self->id, $self->ts; #, $self->ts->epoch;
 
-    RRDs::update $self->server->rrd_path,
+    RRDs::update $self->rrd_path,
         (
          '--template' => 'score:step:offset',
          join(":", $self->ts->epoch, 
@@ -54,38 +56,50 @@ sub update_rrd {
         );
 
     if (my $ERROR = RRDs::error()) {
-        warn "$0: unable to update ",$self->server->rrd_path,": $ERROR\n";
+        warn "$0: unable to update ",$self->rrd_path,": $ERROR\n";
     }
 }
 
+sub rrd_path {
+    my $self = shift;
+    return $self->server->rrd_path( $self->monitor_id );
+}
 
 sub create_rrd {
     my $self = shift;
 
-    my $path = $self->server->rrd_path;
+    my $path = $self->rrd_path;
     return if -e $path;
 
-    my @graph = (
-                 "--start", "now-180d", "--step", "15m", # 15 minutes interval
-                 "DS:score:GAUGE:7500:-100:20",   # heartbeat of ~2 hours, min value = -100, max = 20
-                 "DS:offset:GAUGE:7500:-86400:86400",
-                 "DS:step:GAUGE:7500:-10:5",
-                 "RRA:AVERAGE:0.5:1:2048",   # 15 minutes, ~20 days
-                 "RRA:AVERAGE:0.5:4:1536",   # 1 hour, ~60 days
-                 "RRA:AVERAGE:0.5:12:1536",  # 3 hours, ~180 days
-                 "RRA:AVERAGE:0.5:96:2048",  # 1 day, ~5 years
-                 "RRA:MIN:0.5:4:1536",       
-                 "RRA:MAX:0.5:4:1536",       
-                 "RRA:MIN:0.5:96:2048",      
-                 "RRA:MAX:0.5:96:2048",      
-                );
-                 
+    my $dir = dirname($path);
+    mkpath $dir, unless -d $dir;
 
-    RRDs::create("$path", @graph);
+    my $step = $self->monitor_id ? "20m" : "5m";
+
+    my @ds = (
+                 "--start", "now-180d",
+                 "--step", $step,
+                 "DS:score:GAUGE:3600:-100:20",   # heartbeat of ~2 hours, min value = -100, max = 20
+                 "DS:offset:GAUGE:3600:-86400:86400",
+                 "DS:step:GAUGE:3600:-10:5",
+                 "RRA:AVERAGE:0.3:1:4320",   # 5/20 minutes, 15/60 days
+                 "RRA:AVERAGE:0.3:3:3456",   # 15/60 minutes, 36/144 days
+                 "RRA:AVERAGE:0.3:12:2304",  # 1/4 hours, 96/384 days
+                 "RRA:AVERAGE:0.3:72:2048",  # 1 day, ~5 years
+                 "RRA:MIN:0.3:3:3456",
+                 "RRA:MIN:0.3:72:2048",
+                 "RRA:MAX:0.3:3:3456",,
+                 "RRA:MAX:0.3:72:2048",
+                 "RRA:LAST:0.3:3:3456",,
+                 "RRA:LAST:0.3:72:2048",
+                );
+
+    RRDs::create("$path", @ds);
     my $ERROR = RRDs::error();
     if ($ERROR) {
         die "$0: unable to create '$path': $ERROR\n";
     }
+
 }
 
 1;
