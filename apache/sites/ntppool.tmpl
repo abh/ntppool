@@ -53,10 +53,6 @@
       [% PH %] NTPPool::Control::UserProfile->super
     </Location>
 
-    <Location /zone/graph>
-      SetHandler default
-    </Location>
-
     <Location /monitor>
       SetHandler perl-script
       [% PH %] NTPPool::Control::Monitor->super
