@@ -33,7 +33,7 @@ WriteMakefile(
                   'Email::Date' => 0,
 
                   'Imager' => 0,
-                  'Geo::IP' => 0,
+                  'Geo::IP' => 1.39,
 
                   'Router::Simple' => 0,
                   'Plack' => 0,
