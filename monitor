@@ -148,15 +148,13 @@ while (1) {
 	    }
 	}
 
-        logsay("status: $status");
+        logsay("Status of $server", $status);
 
 	push @status, $status;
 
     }
 
-    print encode_json(\@status) . "\n";
-
-    logsay("Posting response");
+    logsay("Posting response", \@status);
     
     $response = $ua->post($pool_server, Content_Type => 'application/json',
 			  Content => encode_json({ version => 1, servers => \@status }));
