@@ -54,11 +54,6 @@ else {
 }
 die "Offset $offset_ms too large" unless $offset_ms < 20;
 
-# TODO: check the offset, too, with "ntpdc -c loopinfo" or "ntpq -c rv";
-# probably use the Capture::Tiny module to make it easy.
-# See https://github.com/abh/ntppool/issues/11
-
-
 # and if we're connected
 $Net::NTP::CLIENT_TIME_SEND    = undef;
 $Net::NTP::CLIENT_TIME_RECEIVE = undef;
@@ -80,7 +75,10 @@ $SIG{TERM} = \&catch_TERM;
 my $ua = LWP::UserAgent->new;
 $ua->agent("NTPPool-Monitor/$VERSION");
 
-while(1) {
+while (1) {
+
+    sleep 1;
+
     my $response = $ua->get($pool_server);
 
     my $data = eval { decode_json($response->content) } || {};
