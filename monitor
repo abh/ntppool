@@ -10,6 +10,11 @@ my $VERSION = "0.1";
 
 $Net::NTP::TIMEOUT = 2;
 
+sub logsay {
+    my @msg = map { ref $_ ? encode_json($_) : $_ } @_;
+    print join(" ", @msg), "\n";
+}
+
 # How often should the server be rechecked?
 my $sleeptime = 120;
 
@@ -79,34 +84,44 @@ while (1) {
 
     sleep 1;
 
+    logsay("Getting servers to check");
     my $response = $ua->get($pool_server);
 
     my $data = eval { decode_json($response->content) } || {};
     my $err = $@;
 
-    if (!$response->is_success or $data->{error} or $err) {
-	die "$pool_server error: ", $response->status_line, "\n",
-	( $data->{error} ? "Server Response: " . $data->{error} . "\n" : () ),
-	( $err ? "Data decoding error: $err\n" . $response->content . "\n" : () );
-    } 
-
-    die "Could not decode data" unless $data; 
+    if (!$response->is_success or $data->{error} or $err or !$data) {
+        logsay(
+            "$pool_server error: ",
+            $response->status_line,
+            "\n",
+            ($data->{error} ? "Server Response: " . $data . "\n" : ()),
+            ($err ? "Data decoding error: $err\n" . $response->content . "\n" : ())
+        );
+        sleep 20;
+        next;
+    }
 
     my @hosts = @{ $data->{servers} };
 
     # If the server has nothing to do for us, come back later.
     if (not @hosts) {
+        logsay("No work; waiting $sleeptime seconds");
 	sleep $sleeptime;
 	next;
     }
 
     my @status;
+
+    logsay("Checking servers:", @hosts);
     
     for my $server (@hosts) {
 
 	$server =~ m/::/ and require IO::Socket::INET6;
 
 	my $status = { server => $server };
+
+        logsay("Checking $server");
 
 	# try twice
 	for (my $i = 0; !defined($status->{offset}) and $i < 2; $i++) {
@@ -133,20 +148,30 @@ while (1) {
 	    }
 	}
 
+        logsay("status: $status");
+
 	push @status, $status;
 
     }
 
     print encode_json(\@status) . "\n";
+
+    logsay("Posting response");
     
     $response = $ua->post($pool_server, Content_Type => 'application/json',
 			  Content => encode_json({ version => 1, servers => \@status }));
 
-    die "$pool_server error:", $response->status_line unless $response->is_success;
+    unless ($response->is_success) {
+        logsay("$pool_server error:", $response->status_line);
+        sleep 30;
+        next;
+    }
+            
     my $data = decode_json($response->content);
     if ($data->{warnings} && @{ $data->{warnings} }) {
 	for my $w (@{ $data->{warnings} }) {
-	    print "WARNING: $w\n";
+	    logsay("WARNING: $w");
 	}
     }
-} # end mainloop
+}
+
