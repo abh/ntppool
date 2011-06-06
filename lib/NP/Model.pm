@@ -454,12 +454,14 @@ __PACKAGE__->meta->setup(
   table   => 'server_scores',
 
   columns => [
-    id         => { type => 'bigserial', not_null => 1 },
-    monitor_id => { type => 'integer', not_null => 1 },
-    server_id  => { type => 'integer', not_null => 1 },
-    score_ts   => { type => 'datetime' },
-    score_raw  => { type => 'scalar', default => '0', length => 64, not_null => 1 },
-    stratum    => { type => 'integer' },
+    id          => { type => 'bigserial', not_null => 1 },
+    monitor_id  => { type => 'integer', not_null => 1 },
+    server_id   => { type => 'integer', not_null => 1 },
+    score_ts    => { type => 'datetime' },
+    score_raw   => { type => 'scalar', default => '0', length => 64, not_null => 1 },
+    stratum     => { type => 'integer' },
+    created_on  => { type => 'datetime', default => 'now', not_null => 1 },
+    modified_on => { type => 'timestamp', not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
