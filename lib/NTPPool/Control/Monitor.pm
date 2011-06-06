@@ -70,7 +70,7 @@ sub upload {
     for my $status ( @{ $data->{servers} } ) {
         my $txn = $db->begin_scoped_work;
 
-        # Normalize IPv6 IP
+        # TODO: Normalize IPv6 IP (or transfer data by ID...)
 
         my $server_score = NP::Model->server_score->get_server_scores
           (
@@ -79,8 +79,7 @@ sub upload {
                      'server.ip'  => $status->{server},
                      ],
            require_objects => ['server'],
-                    );
-
+          );
 
         $server_score = $server_score && $server_score->[0];
         my $server = $server_score->server;
@@ -121,8 +120,9 @@ sub upload {
 
         my %log_score = ( step   => $step,
                           offset => $status->{offset},
+                          ts     => $status->{ts},
                         );
-        
+
         $server->add_log_scores
           ({   
                %log_score,
