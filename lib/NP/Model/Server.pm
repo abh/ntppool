@@ -4,6 +4,7 @@ use Text::CSV_XS;
 use File::Path qw(mkpath);
 use Carp qw(croak);
 use NP::RRD qw(score_graph offset_graph);
+use Net::IP ();
 
 use POSIX qw();
 $ENV{TZ} = 'UTC';   
@@ -15,6 +16,9 @@ sub active_score {
  
 sub insert {
     my $self = shift;
+
+    my $ip = Net::IP->new( $self->ip );
+    $self->ip($ip->short);
 
     $self->join_zone('.');
 

@@ -10,7 +10,6 @@ use Email::Send 'SMTP';
 use Sys::Hostname qw(hostname);
 use Email::Date qw();
 use JSON::XS qw(encode_json);
-use Net::IPv6Addr;
 
 sub render {
     my $self = shift;
@@ -124,20 +123,31 @@ sub get_server_info {
     my $host = $self->req_param('host');
     die "No hostname or IP\n" unless $host;
 
+    my $ip = Net::IP->new($host);
+
     my %server;
-    if (Net::IPv6Addr::ipv6_chkip($host)) {
-        $server{ip} = $host;
-        $server{ip_version} = 'v6';
-    }
-    else {
+
+    unless ($ip) {
+        # TODO: lookup AAAA records, too.  See issue #17
+        # https://github.com/abh/ntppool/issues/17
         my $iaddr = gethostbyname $host;
         die "Could not find the IP for $host\n" unless $iaddr;
         $server{ip} = inet_ntoa($iaddr);
         $server{ip_version} = 'v4';
+        $server{hostname} = $host;
     }
-    $server{hostname} = $host if $host ne $server{ip};
+    else {
+        # if Net::IP proves too much trouble, loewis suggested
+        #    use Socket qw(inet_pton inet_ntop AF_INET6);
+        #    $short = inet_ntop(AF_INET6, inet_pton(AF_INET6, '0:1:0:0::2'));
+        $server{ip} = $ip->short;
+        $server{ip_version} = 'v' . $ip->version;
+    }
 
     die "Bad IP address\n" if $server{ip} =~ m/^(127|10|192.168|0)\./;
+
+    my $type = $ip->iptype;
+    die "Bad IP address ($type)\n" unless !$type or $type =~ m/^(PUBLIC|GLOBAL-UNICAST)/;
 
     if (my $s = NP::Model->server->fetch(ip => $server{ip})) {
         my $other =
