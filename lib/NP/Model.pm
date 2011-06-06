@@ -187,11 +187,10 @@ __PACKAGE__->meta->setup(
       type       => 'one to many',
     },
 
-    servers => {
-      map_class => 'NP::Model::ServerScore',
-      map_from  => 'monitor',
-      map_to    => 'server',
-      type      => 'many to many',
+    server_scores => {
+      class      => 'NP::Model::ServerScore',
+      column_map => { id => 'monitor_id' },
+      type       => 'one to many',
     },
   ],
 );
@@ -299,13 +298,6 @@ __PACKAGE__->meta->setup(
       type       => 'one to many',
     },
 
-    monitors => {
-      map_class => 'NP::Model::ServerScore',
-      map_from  => 'server',
-      map_to    => 'monitor',
-      type      => 'many to many',
-    },
-
     server_alert => {
       class                => 'NP::Model::ServerAlert',
       column_map           => { id => 'server_id' },
@@ -315,6 +307,12 @@ __PACKAGE__->meta->setup(
 
     server_notes => {
       class      => 'NP::Model::ServerNote',
+      column_map => { id => 'server_id' },
+      type       => 'one to many',
+    },
+
+    server_scores => {
+      class      => 'NP::Model::ServerScore',
       column_map => { id => 'server_id' },
       type       => 'one to many',
     },

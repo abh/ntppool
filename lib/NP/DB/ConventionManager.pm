@@ -14,13 +14,13 @@ Rose::DB::Object::Metadata->convention_manager_classes
 my %not_a_map_table;
 @not_a_map_table{qw(
    log_scores
+   server_scores
 )} = ();
 
 sub looks_like_map_table {
     my ($self, $table) = @_;
     return 1 if $table eq "location_socialmedia";
     my $r = $self->SUPER::looks_like_map_table($table) && !exists $not_a_map_table{$table};
-    warn "table: $table = $r\n";
     return $r;
 
 }

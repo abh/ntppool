@@ -64,6 +64,10 @@ sub handle_add {
 
         my $s;
 
+        my $db = NP::Model->db;
+
+        my $txn = $db->begin_scoped_work;
+
         if ($s = NP::Model->server->fetch(ip => $server->{ip})) {
             $s->setup_server;
         }
@@ -98,6 +102,8 @@ sub handle_add {
 
         #local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
         $s->save(cascade => 1);
+
+        $db->commit;
 
         my $msg = $self->evaluate_template('tpl/manage/add_email.txt');
         my $email = Email::Simple->new(ref $msg ? $$msg : $msg)

@@ -34,6 +34,20 @@ sub setup_server {
     my $ls = $self->add_log_scores({ step => 1, score => $start_score, offset => 0 });
     $self->deletion_on(undef);
     $self->score_raw($start_score);
+
+    my $monitors = NP::Model->monitor->get_objects
+      ( query => [ ip_version => $self->ip_version ] 
+      );
+
+    for my $monitor (@$monitors) {
+        $self->add_server_scores(
+            {   server_id  => $self->id,
+                monitor_id => $monitor->id,
+                score_raw  => $self->score_raw,
+            }
+        );
+    }
+
     $self->save(cascade => 1);
     $self->update_graphs;
 }
