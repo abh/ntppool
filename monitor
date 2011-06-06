@@ -10,6 +10,8 @@ my $VERSION = "0.1";
 
 $Net::NTP::TIMEOUT = 2;
 
+$| = 1;
+
 sub logsay {
     my @msg = map { ref $_ ? encode_json($_) : $_ } @_;
     print join(" ", @msg), "\n";
