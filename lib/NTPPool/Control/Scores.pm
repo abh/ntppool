@@ -65,7 +65,9 @@ sub render {
                 $gearman->do_task('update_graphs', $server->id,
                     {uniq => 'graphs-' . $server->id});
             };
-            my $ttl = $@ ? 10 : 1800;
+            my $err = $@;
+            warn "update_graphs error: $err" if $err;
+            my $ttl = $err ? 10 : 1800;
             my $path = $server->graph_path($type);
             open my $fh, $path
               or warn "Could not open $path: $!" and return 403;
@@ -73,7 +75,7 @@ sub render {
             my $mtime = (stat($fh))[9];
             $self->request->update_mtime($mtime);
 
-            $self->cache_control('max-age=2700, s-maxage=1800');
+            $self->cache_control('max-age=1800, s-maxage=900');
             return OK, $fh, 'image/png';
           }
           elsif ($mode eq 'spark') {
