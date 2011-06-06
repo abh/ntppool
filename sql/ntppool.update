@@ -333,7 +333,7 @@ create table monitors (
   last_seen datetime NULL,
   created_on datetime not null,
   unique key (api_key),
-  unique key (ip),
+  unique key (ip, ip_version),
   CONSTRAINT `monitors_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) engine=InnoDB default charset=utf8;
 
@@ -344,7 +344,7 @@ alter table log_scores
 
 #44
 insert into monitors
-  values (1, 'lax1', '207.171.3.2', 'v4', '', NULL, NOW()); 
+  values (1, NULL, 'lax1', '207.171.3.2', 'v4', '', NULL, NOW()); 
 
 alter table log_scores
    add CONSTRAINT `log_score_monitor_id_fk` FOREIGN KEY (`monitor_id`) REFERENCES `monitors` (`id`);
@@ -378,4 +378,4 @@ drop table log_scores_archive;
 rename table log_scores_archive_multi to log_scores_archive;
 
 #49
-alter table monitors drop key `ip`, add unique key (ip, ip_version);
+select now();
