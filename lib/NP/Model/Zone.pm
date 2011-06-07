@@ -79,6 +79,30 @@ sub first_stats {
 
 use constant deletion_grace_days => 14; 
 
+sub active_servers {
+    my $self = shift;
+    my $ip_version = shift or return;
+
+    my $dbh = NP::Model->dbh;
+
+    my $entries = $dbh->selectall_arrayref
+      (
+       q[SELECT s.ip, s.netspeed
+         FROM servers s, server_zones l
+         WHERE l.server_id = s.id AND l.zone_id = ? AND s.in_pool = 1 AND s.ip_version=?
+         AND s.score_raw > ?
+         and (s.deletion_on IS NULL OR s.deletion_on > DATE_ADD(NOW(), interval ? day))
+        ], undef,
+       $self->id,
+       $ip_version,
+       NP::Model::Server->active_score,
+       $self->deletion_grace_days
+      );
+
+    return $entries;
+
+}
+
 sub server_count {
   my $self = shift;
   my $dbh = $self->dbh;

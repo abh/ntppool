@@ -421,60 +421,57 @@ elsif ($cmd eq "zone") {
         $name = '' if $name eq '@';
         $name = "$name." if $name;
 
-        my $entries = $db->selectall_arrayref
-          (
-            q[SELECT s.ip, s.netspeed
-               FROM servers s, server_zones l 
-               WHERE l.server_id = s.id AND l.zone_id = ? AND s.in_pool = 1 
-               AND s.score_raw > ?
-               and (s.deletion_on IS NULL OR s.deletion_on > DATE_ADD(NOW(), interval ? day))
-             ], undef,
-           $zone->id,
-           NP::Model::Server->active_score,
-           NP::Model::Zone->deletion_grace_days
-        );
+        if (my $entries = $zone->active_servers('v4')) {
 
-        next unless $entries and @$entries;
+            my $min_non_duplicate_size = 2;
+            my $response_records       = 3;
+            my @zones                  = ("", "0.", "1.", "2.", "3.");
+            my $zone_count             = scalar @zones;
 
-        my $min_non_duplicate_size = 2;
-	my $response_records = 3;
-	my @zones = ("", "0.", "1.", "2.", "3.");
-	my $zone_count = scalar @zones;
+            $min_non_duplicate_size = int(@$entries / $zone_count)
+              if (@$entries / $zone_count > $min_non_duplicate_size);
 
-        $min_non_duplicate_size = int(@$entries / $zone_count)
-          if (@$entries / $zone_count > $min_non_duplicate_size);
+            print $fh "# " . scalar @$entries . " active servers in ", $zone->name, "\n";
 
-        print $fh "# " . scalar @$entries . " active servers in ", $zone->name, "\n";
-
-        if ($#$entries < ($min_non_duplicate_size * $zone_count - 1)) {
-            print $fh "# possible duplicates in the zones below (", $zone->name, ")\n";
-            foreach my $z (@zones) {
-                (my $pgeodns_group = "$z${name}") =~ s/\.$//;
-                $pgeodns->{data}->{$pgeodns_group}->{a} = [];
+            if ($#$entries < ($min_non_duplicate_size * $zone_count - 1)) {
+                print $fh "# possible duplicates in the zones below (", $zone->name, ")\n";
+                foreach my $z (@zones) {
+                    (my $pgeodns_group = "$z${name}") =~ s/\.$//;
+                    $pgeodns->{data}->{$pgeodns_group}->{a} = [];
+                    @$entries = shuffle(@$entries);
+                    my $i;
+                    foreach my $e (@$entries) {
+                        $i++;
+                        print $fh "+$z${name}${pool_domain}:$$e[0]:$ttl\n"
+                          if $i < 12;
+                        push @{$pgeodns->{data}->{$pgeodns_group}->{a}}, $e;
+                    }
+                }
+            }
+            else {
+                print $fh "# 'big' zone without duplicates below (", $zone->name, ")\n";
                 @$entries = shuffle(@$entries);
-                my $i;
-                foreach my $e (@$entries) {
-                    $i++;
-                    print $fh "+$z${name}${pool_domain}:$$e[0]:$ttl\n"
-                      if $i < 12;
-                    push @{$pgeodns->{data}->{$pgeodns_group}->{a}}, $e;
+                foreach my $z (@zones) {
+                    (my $pgeodns_group = "$z${name}") =~ s/\.$//;
+                    $pgeodns->{data}->{$pgeodns_group}->{a} = [];
+                    for (my $i = 0; $i < $min_non_duplicate_size; $i++) {
+                        my $e = shift @$entries;
+                        print $fh "+$z${name}${pool_domain}:", $e->[0], ":$ttl\n"
+                          if $i < 14;
+                        push @{$pgeodns->{data}->{$pgeodns_group}->{a}}, $e;
+                    }
                 }
             }
         }
-        else {
-            print $fh "# 'big' zone without duplicates below (", $zone->name, ")\n";
+
+        if (my $entries = $zone->active_servers('v6')) {
             @$entries = shuffle(@$entries);
-            foreach my $z (@zones) {
-                (my $pgeodns_group = "$z${name}") =~ s/\.$//;
-                $pgeodns->{data}->{$pgeodns_group}->{a} = [];
-                for (my $i = 0; $i < $min_non_duplicate_size; $i++) {
-                    my $e = shift @$entries;
-                    print $fh "+$z${name}${pool_domain}:", $e->[0], ":$ttl\n"
-                      if $i < 14;
-                    push @{$pgeodns->{data}->{$pgeodns_group}->{a}}, $e;
-                }
-            }
+
+            # for now just put all IPv6 servers in the '2' zone
+            (my $pgeodns_group = "2.${name}") =~ s/\.$//;
+            push @{$pgeodns->{data}->{$pgeodns_group}->{aaaa}}, $_ for @$entries;
         }
+
     }
 
     close $fh or die "could not close $file.tmp: $!";
