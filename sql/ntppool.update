@@ -343,7 +343,7 @@ alter table log_scores
    add monitor_id int unsigned after id;
 
 #44
---insert into monitors
+-- insert into monitors
 --  values (1, NULL, 'lax1', '207.171.3.2', 'v4', '', NULL, NOW());
 
 alter table log_scores
