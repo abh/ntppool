@@ -2,14 +2,20 @@
 
 <a name="top"></a>
 
+<p>
 <a href="/">[% | l %]Back to the front page[% END %]</a>
+</p>
 
 [% UNLESS server; %]
+
+<p> Search for the server by IP address </p>
 <form>
 IP <input type="text" name="ip">
 <input type="submit" name="[%|l%]Find[% END %]">
 </form>
- 
+
+</div> 
+
 [% RETURN;
    END 
  %]
