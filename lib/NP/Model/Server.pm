@@ -228,11 +228,17 @@ use strict;
 sub find_server {
     my ($class, $arg) = @_;
     my $server;
-    $server   = $class->fetch(id => $arg) if ($arg =~ m/^\d+$/);
-    # TODO: normalize IP properly with Net::IP
-    $server   = $class->fetch(ip => $arg) if (!$server and $arg =~ /^[[:xdigit:].:]+$/);
+    $server = $class->fetch(id => $arg) if ($arg =~ m/^\d+$/);
     return $server if $server;
-    $server = $class->get_servers(query => [ hostname => $arg ]) unless $server;
+
+    my $ip = Net::IP->new($arg);
+    if ($ip) {
+        $server = $class->fetch(ip => $ip->short);
+        return $server if $server;
+    }
+
+    $server = $class->get_servers(query => [hostname => $arg], sort_by => 'deletion_on')
+      unless $server;
     $server && @$server ? $server->[0] : ();
 }
 
