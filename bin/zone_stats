@@ -20,7 +20,7 @@ my $time = time;
  
 use NP::Model;
 
-my %growth_targets = 
+my %growth_targets =
   (
    2005 => 0.45,
    2006 => 0.50,
@@ -281,7 +281,10 @@ sub update_target_rrd {
                 $year_growth_goal    = 6 - $start_active if $year_growth_goal < 3;
                 my $growth_per_day   = $year_growth_goal / $days_in_year;
 
-                my $day = DateTime->from_epoch(epoch => $first_stats_year->date->epoch);
+                my $day = DateTime->from_epoch(epoch => $first_stats_year
+					       ? $first_stats_year->date->epoch
+					       : time
+					      );
 
                 my $goal = $start_active;
                 #print "starting goal: $goal\n";
