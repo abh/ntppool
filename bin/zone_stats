@@ -263,6 +263,8 @@ sub create_rrd {
 
                  "RRA:MAX:0.5:4:1024",       # 1 day, ~3 years
                  "RRA:MAX:0.5:42:1024",      # 1 week, ~19 years.
+
+                 "RRA:LAST:0.5:1:1",         # just save the last exact data
                 );
                  
 
