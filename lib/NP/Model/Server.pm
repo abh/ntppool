@@ -198,8 +198,9 @@ sub graph_path {
 
 sub graph_uri {
     my ($self, $name) = @_;
-    return "/scores/graph/" . $self->id . ($name ? "-$name" : "") . ".png";
-} 
+    return unless $name;
+    return '/scores/' . $self->ip . "/graph/$name.png";
+}
 
 sub update_graphs {
     my $server = shift;
