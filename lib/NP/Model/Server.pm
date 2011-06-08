@@ -268,6 +268,8 @@ sub get_check_due {
 
     # local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
 
+    my $interval = $monitor->ip_version eq 'v6' ? 14 : 24;
+
     $class->get_objects_from_sql
       (
        sql => q[SELECT s.*
@@ -276,13 +278,13 @@ sub get_check_due {
          ON (s.id=ss.server_id)
          WHERE
            monitor_id = ?
-           AND (ss.score_ts IS NULL or ss.score_ts < DATE_SUB( NOW(), INTERVAL 24 minute))
+           AND (ss.score_ts IS NULL or ss.score_ts < DATE_SUB( NOW(), INTERVAL ? minute))
            AND s.ip_version = ?
            AND (deletion_on IS NULL or deletion_on > NOW())
          ORDER BY score_ts
          LIMIT ?
        ],
-       args => [ $monitor->id, $monitor->ip_version, $limit ]
+       args => [ $monitor->id, $interval, $monitor->ip_version, $limit ]
       );
 }
 
