@@ -383,3 +383,16 @@ select now();
 alter table server_scores
   add created_on  datetime not null,
   add modified_on timestamp not null;
+
+#51
+alter table zone_server_counts
+   add ip_version enum ('v4', 'v6') not null default 'v4'
+   after zone_id;
+
+alter table zone_server_counts
+    modify ip_version enum ('v4', 'v6') not null;
+
+#52
+alter table zone_server_counts
+   drop key `zone`,
+   add  unique key `zone_date` (`zone_id`, `date`, `ip_version`);

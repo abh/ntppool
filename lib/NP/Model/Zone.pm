@@ -34,7 +34,9 @@ sub rrd_path {
 
 sub graph_path {
     my $self = shift;
-    my $file = $self->name . ".png";
+    my $ip_version = shift;
+    my $suffix = ($ip_version eq 'v6' ? '-v6' : '');
+    my $file = $self->name . "$suffix.png";
     return "$rrd_path/graph/" . $file;
 }
 
@@ -87,7 +89,7 @@ sub active_servers {
 
     my $entries = $dbh->selectall_arrayref
       (
-       q[SELECT s.ip, s.netspeed
+       qq[SELECT s.ip, s.netspeed
          FROM servers s, server_zones l
          WHERE l.server_id = s.id AND l.zone_id = ? AND s.in_pool = 1 AND s.ip_version=?
          AND s.score_raw > ?
@@ -103,10 +105,18 @@ sub active_servers {
 
 }
 
+sub _ip_version_sql {
+    my $self = shift;
+    my $ip_version = shift or return "";
+    return "AND s.ip_version=" . $self->dbh->quote($ip_version);
+}
+
 sub server_count {
   my $self = shift;
+  my $ip_version_sql = $self->_ip_version_sql(shift);
+
   my $dbh = $self->dbh;
-  $dbh->selectrow_array(q[
+  $dbh->selectrow_array(qq[
     select count(*) as count
     from servers s
       inner join server_zones l on(s.id=l.server_id)
@@ -115,13 +125,16 @@ sub server_count {
       and s.score_raw > 10
       and s.in_pool = 1
       and (s.deletion_on IS NULL OR s.deletion_on > DATE_ADD(NOW(), interval ? day))
+      $ip_version_sql
   ], undef, $self->id, deletion_grace_days());
 }
 
 sub server_count_all {
   my $self = shift;
+  my $ip_version_sql = $self->_ip_version_sql(shift);
+
   my $dbh = $self->dbh;
-  $dbh->selectrow_array(q[
+  $dbh->selectrow_array(qq[
     select count(*) as count
     from servers s
       inner join server_zones l on(s.id=l.server_id)
@@ -130,13 +143,16 @@ sub server_count_all {
       z.id=?
       and s.in_pool = 1
       and (s.deletion_on IS NULL OR s.deletion_on > DATE_ADD(NOW(), interval ? day))
+      $ip_version_sql
   ], undef, $self->id, deletion_grace_days());
 }
 
 sub netspeed_active {
   my $self = shift;
+  my $ip_version_sql = $self->_ip_version_sql(shift);
+
   my $dbh = $self->dbh;
-  $dbh->selectrow_array(q[
+  $dbh->selectrow_array(qq[
     select sum(s.netspeed) as netspeed
     from servers s
       inner join server_zones l on(s.id=l.server_id)
@@ -145,6 +161,7 @@ sub netspeed_active {
       and s.score_raw > 10
       and s.in_pool = 1
       and (s.deletion_on IS NULL OR s.deletion_on > DATE_ADD(NOW(), interval ? day))
+      $ip_version_sql
   ], undef, $self->id, deletion_grace_days());
 }
 

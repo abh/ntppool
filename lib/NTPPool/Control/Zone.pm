@@ -24,14 +24,15 @@ sub cache_info {
 
 sub zone_name {
   my $self = shift;
-  my ($zone_name) = ($self->request->uri =~ m!^/zone/(?:graph/)?([^/]+?)(/|\.png)?$!);
+  my ($zone_name) = ($self->request->uri =~ m!^/zone/(?:graph/)?([^/]+?)(/|(-v6)?\.png)?$!);
   $zone_name ||= '.';
   $zone_name;
 }
 
 sub is_graph {
     my $self = shift;
-    return $self->request->path =~ m!^/zone/graph!;
+    return unless $self->request->path =~ m!^/zone/graph!;
+    return $self->request->path =~ m/-v6.png$/ ? 'v6' : 'v4';
 }
 
 # TODO: make the web interface actually do this
@@ -69,9 +70,8 @@ sub render {
       return $self->redirect( $1, 301 );
   }
 
-
-  if ($self->is_graph) {
-      my $path = $zone->graph_path;
+  if (my $ip_version = $self->is_graph) {
+      my $path = $zone->graph_path($ip_version);
       open my $fh, $path
         or warn "Could not open $path: $!" and return 403;
       
