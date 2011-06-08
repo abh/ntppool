@@ -179,6 +179,9 @@ sub update_graph {
 
     my @options = (
                    #'--lazy',
+
+                   '--zoom' => 1,
+                   
                    '--end'    => 'now',
                    '--start'  => $start,
                    '--width'  => 420,
@@ -189,15 +192,39 @@ sub update_graph {
                    '--alt-autoscale-max',
                    # '--no-gridfit',
                    '--slope-mode',
+
+                   '--dynamic-labels',
+                   '--units-exponent' => 0,
+
+                   '--tabwidth' => 100,
+
                    qq[DEF:active=$rrd:active_${ip_version}:AVERAGE],
+                   q[VDEF:active_now=active,LAST],
+
                    qq[DEF:registered=$rrd:registered_${ip_version}:AVERAGE],
+                   q[VDEF:registered_now=registered,LAST],
+
                    qq[DEF:target=$trrd:target_${ip_version}:AVERAGE],
-                   qq[CDEF:inactive=registered,active,-],
-                   qq[LINE2:registered#00CCCC:registered servers],
-                   #qq[LINE2:inactive#EE0000:inactive servers],
-                   qq[LINE2:inactive#DD9000:inactive servers],
-                   qq[LINE2:active#006600:active servers],
-                   qq[LINE1:target#444444:growth target],
+                   q[VDEF:target_now=target,LAST],
+
+                   q[CDEF:inactive=registered,active,-],
+                   q[VDEF:inactive_now=inactive,LAST],
+
+                   q[LINE2:registered#00CCCC:registered servers\g],
+                   q[GPRINT:registered_now: (%1.0lf)],
+
+                   q[LINE1:target#444444:growth target\g],
+                   q[GPRINT:target_now:    (%1.0lf)],
+                   q[COMMENT:\l],
+
+                   q[LINE2:active#006600:active servers\g],
+                   q[GPRINT:active_now:     (%1.0lf)],
+
+                   q[LINE2:inactive#DD9000:inactive servers\g],
+                   q[GPRINT:inactive_now: (%1.0lf)],
+
+                   q[COMMENT:\l],
+
                   );
 
     my $path = $zone->graph_path($ip_version);
