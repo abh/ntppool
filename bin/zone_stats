@@ -193,7 +193,10 @@ sub update_graph {
                    # '--no-gridfit',
                    '--slope-mode',
 
-                   '--dynamic-labels',
+                   ## requires a newer rrdtool than what we have on the
+                   ## production server
+                   # '--dynamic-labels',
+
                    '--units-exponent' => 0,
 
                    '--tabwidth' => 100,
