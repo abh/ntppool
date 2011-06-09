@@ -13,7 +13,7 @@ sub url {
 sub fqdn {
   my $self = shift;
   my $pool_name = $config->site->{ntppool}->{pool_domain} or die "pool_domain configuration not setup";
-  return $pool_name if $self->name eq '@';
+  return $pool_name if $self->name eq '@' or $self->name eq '.';
   join ".", $self->name, $pool_name;
 }
 
