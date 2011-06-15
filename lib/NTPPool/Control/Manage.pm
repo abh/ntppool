@@ -138,7 +138,8 @@ sub get_server_info {
         # https://github.com/abh/ntppool/issues/17
         my $iaddr = gethostbyname $host;
         die "Could not find the IP for $host\n" unless $iaddr;
-        $server{ip} = inet_ntoa($iaddr);
+        $ip = Net::IP->new(inet_ntoa($iaddr));
+        $server{ip} = $ip->short;
         $server{ip_version} = 'v4';
         $server{hostname} = $host;
     }

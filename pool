@@ -187,9 +187,10 @@ elsif ($cmd eq "addmonitor") {
     my $user = find_user_by_email($email);
 
     # do we have a hostname or an IP?
-    my $ip;
-    if (Net::IP::ip_is_ipv4($hostname)) {
-        $ip       = $hostname;
+    my $ip = Net::IP->new($hostname);
+
+    if ($ip) {
+        $ip       = $ip->short;
         $hostname = undef;
     }
     else {

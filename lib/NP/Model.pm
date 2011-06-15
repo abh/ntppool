@@ -909,6 +909,7 @@ __PACKAGE__->meta->setup(
   columns => [
     id               => { type => 'serial', not_null => 1 },
     zone_id          => { type => 'integer', not_null => 1 },
+    ip_version       => { type => 'enum', check_in => [ 'v4', 'v6' ], not_null => 1 },
     date             => { type => 'date', not_null => 1 },
     count_active     => { type => 'integer', not_null => 1 },
     count_registered => { type => 'integer', not_null => 1 },
@@ -917,7 +918,7 @@ __PACKAGE__->meta->setup(
 
   primary_key_columns => [ 'id' ],
 
-  unique_key => [ 'zone_id', 'date' ],
+  unique_key => [ 'zone_id', 'date', 'ip_version' ],
 
   foreign_keys => [
     zone => {
