@@ -55,16 +55,16 @@ while (my $zone = $zones->next) {
         my $data = $data{$ip_version} = {};
 
         $data->{count_active}    = $zone->server_count($ip_version);
-        $data->{count_all}       = $zone->server_count_all($ip_version);
+        $data->{count_registered}       = $zone->server_count_all($ip_version);
         $data->{netspeed_active} = $zone->netspeed_active($ip_version) || 0;
 
-        # printf "%-8s %s %3i %3i\n", $zone->name, $ip_version, $data->{count_active}, $data->{count_all};
+        # printf "%-8s %s %3i %3i\n", $zone->name, $ip_version, $data->{count_active}, $data->{count_registered};
         $dbh->do(q[replace into zone_server_counts (zone_id,ip_version,date,count_active,count_registered,netspeed_active)
                values (?,?,NOW(),?,?,?)],
                  undef,
                  $zone->id,
                  $ip_version,
-                 $data->{count_active}, $data->{count_all}, $data->{netspeed_active}
+                 $data->{count_active}, $data->{count_registered}, $data->{netspeed_active}
                 );
 
     }
