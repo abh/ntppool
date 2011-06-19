@@ -1,6 +1,6 @@
 [% PROCESS tpl/manage/navigation.html %]
 <div class="block">
-	
+
 	<h2>"[% vz.zone_name | html %]" zone</h2>
 
 	<h3>Organization</h3>
@@ -31,7 +31,7 @@
 	  <input type="hidden" name="id" value="[% vz.id %]" />
 	  <input type="submit" class="button" value="&larr; Edit" />
 	</fieldset>
-	</form> 
+	</form>
 	[% END %]
 
 	[% IF vz.status == 'New' %]

@@ -1,6 +1,6 @@
 package NP::Model::VendorZone;
 use strict;
-use NP::Util qw(convert_to_html);
+use NP::Util qw();
 
 my %reserved_zone_names = map { $_ => 1 } 
   qw(
@@ -66,8 +66,8 @@ sub can_view {
     return 0;
 }
 
-sub contact_information_html { convert_to_html(shift->contact_information) }
-sub request_information_html { convert_to_html(shift->request_information) }
+sub contact_information_html { NP::Util::convert_to_html(shift->contact_information) }
+sub request_information_html { NP::Util::convert_to_html(shift->request_information) }
 
 
 1;
