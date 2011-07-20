@@ -44,7 +44,8 @@
 	   END;
 	%]
 
-	There are not enough servers in this zone, so we recommend you use the [% parent.description %] zone ([% parent.fqdn %]):
+	There are not enough servers in this zone, so we recommend you
+	use the [% parent.description %] zone ([% parent.fqdn %]):
 
 	</p>
 
@@ -55,15 +56,26 @@
 
 	[% END %]
 
+        <table id="zone_counts">
+        <tr> 
+
+        [% FOR ip_version = [ "v4", "v6" ];
+            server_count = zone.server_count(ip_version);
+
+         %]
+
+        <td>
+           <h4>IP[% ip_version %]</h4>
 	<p>
-	There [% zone.server_count==1 ? 'is' : 'are' %] [% zone.server_count %] active server[% zone.server_count==1 ? '' : 's' %] in this zone.
+
+	There [% server_count==1 ? 'is' : 'are' %] [% server_count %] active server[% server_count==1 ? '' : 's' %] in this zone.
 	</p>
 
 	<p>
 	[% FOR days = [1,7,14,30,90,180,365,730,1095];
-	   st = zone.stats_days_ago(days);
+	   st = zone.stats_days_ago(days, ip_version);
 	   NEXT UNLESS st;
-	   diff = zone.server_count - st.count_active;
+	   diff = server_count - st.count_active;
 	   color = diff > 0 ? 'green' : 'red';
 	 %]
 
@@ -72,6 +84,10 @@
 
 	[% END %]
 	</p>
+
+        </td>
+        [% END %]
+        </tr></table>
 
 	[% IF zone.parent %]
 	<p>
@@ -124,7 +140,8 @@
 	[% END %]
 
 	<p>
-	<img src="/zone/graph/[% zone.name %].png" alt="server count graphs for [% zone.name %].pool.ntp.org"/>
+	<img src="/zone/graph/[% zone.name %].png" alt="server count graph for IPv4 [% zone.name %].pool.ntp.org"/>
+	<img src="/zone/graph/[% zone.name %]-v6.png" alt="server count graph for IPv6 [% zone.name %].pool.ntp.org"/>
 	</p>
 
 
