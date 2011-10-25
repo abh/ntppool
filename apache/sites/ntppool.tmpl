@@ -38,6 +38,11 @@
       [% PH %] NTPPool::Control::Scores->super
     </Location>
 
+    <Location /graph>
+      SetHandler perl-script
+      [% PH %] NTPPool::Control::Graph->super
+    </Location>
+
     <Location /s>
       SetHandler perl-script
       [% PH %] NTPPool::Control::Scores->super
@@ -60,7 +65,7 @@
 
     <Location /static>
       SetHandler perl-script
-      [% PH %] Combust::Control::Basic->super
+      [% PH %] NTPPool::Control::Basic->super
     </Location>
 
   </VirtualHost>

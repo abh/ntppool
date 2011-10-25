@@ -1,0 +1,21 @@
+
+  <VirtualHost *:[% config.port %]>
+    ServerName [% config.site.ntpgraphs.servername %]
+    [% expandServerAliases( config.site.ntpgraphs.aliases ) %]
+    PerlSetVar site [% site %]
+
+    PerlTransHandler NTPPool::Control::LanguagePath
+
+    PerlModule NTPPool
+
+    <Location />
+       SetHandler perl-script
+       [% PH %] NTPPool::Control::Basic->super
+    </Location>
+
+    <Location /graph>
+      SetHandler perl-script
+      [% PH %] NTPPool::Control::Graph->super
+    </Location>
+
+  </VirtualHost>

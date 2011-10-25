@@ -5,10 +5,13 @@ use File::Path qw(mkpath);
 use Carp qw(croak);
 use NP::RRD qw(score_graph offset_graph);
 use Net::IP ();
+use Combust::Config;
 
 use POSIX qw();
 $ENV{TZ} = 'UTC';   
 POSIX::tzset();
+
+my $config = Combust::Config->new;
 
 sub active_score {
     return 10
@@ -199,7 +202,15 @@ sub graph_path {
 sub graph_uri {
     my ($self, $name) = @_;
     return unless $name;
-    return '/scores/' . $self->ip . "/graph/$name.png";
+    my $path = join "/", "", "graph", $self->ip, "${name}.png";
+    if (my $base = $config->site->{ntpgraphs} && $config->base_url('ntpgraphs')) {
+        my $uri = URI->new($base);
+        $uri->path($path);
+        return $uri->as_string;
+    }
+    else {
+        return $path;
+    }
 }
 
 sub update_graphs {

@@ -185,7 +185,7 @@ sub localize_url {
     my $self = shift;
     if (!$self->path_language
         and $self->request->method =~ m/^(head|get)$/ 
-        and $self->request->uri !~ m{^/manage}
+        and $self->request->uri !~ m{^/(manage|static)}
        ) {
         my $lang = $self->language;
         

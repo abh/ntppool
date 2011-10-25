@@ -2,7 +2,6 @@ package NTPPool::Control::Scores;
 use strict;
 use base qw(NTPPool::Control);
 use Combust::Constant qw(OK DECLINED);
-use Combust::Gearman::Client ();
 use NP::Model;
 use Imager ();
 use List::Util qw(min);
@@ -11,8 +10,6 @@ BEGIN {
   die "Imager module needs to be compiled with png support"
       unless grep { $_ eq 'png' } Imager->write_types;
 }
-
-my $gearman = Combust::Gearman::Client->new;
 
 sub render {
   my $self = shift;
@@ -30,7 +27,7 @@ sub render {
   if (my ($id, $mode) = ($self->request->uri =~ m!^/scores/graph/(\d+)-(score|offset).png!)) {
     my $server = NP::Model->server->find_server($id) or return 404;
     $self->cache_control('max-age=14400, s-maxage=7200');
-    return $self->redirect('/scores/' . $server->ip . "/graph/${mode}.png", 301);
+    return $self->redirect( $server->graph_uri( $mode ), 301);
   }
 
   if (my $ip = ($self->req_param('ip') || $self->req_param('server_ip'))) {
@@ -61,22 +58,7 @@ sub render {
           }
           elsif ($mode eq 'graph') {
             my ($type) = ($self->request->uri =~ m{/(offset|score)\.png$});
-            eval {
-                $gearman->do_task('update_graphs', $server->id,
-                    {uniq => 'graphs-' . $server->id});
-            };
-            my $err = $@;
-            warn "update_graphs error: $err" if $err;
-            my $ttl = $err ? 10 : 1800;
-            my $path = $server->graph_path($type);
-            open my $fh, $path
-              or warn "Could not open $path: $!" and return 403;
-
-            my $mtime = (stat($fh))[9];
-            $self->request->update_mtime($mtime);
-
-            $self->cache_control('max-age=1800, s-maxage=900');
-            return OK, $fh, 'image/png';
+            return $self->redirect( $server->graph_uri( $type ), 301);
           }
           elsif ($mode eq 'spark') {
               return OK, $self->history_sparkline_png($server), 'image/png';

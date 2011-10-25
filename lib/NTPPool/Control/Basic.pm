@@ -1,6 +1,12 @@
 package NTPPool::Control::Basic;
 use base qw(NTPPool::Control Combust::Control::Basic);
 
+sub init {
+    my $self = shift;
+    return 200 if $self->request->path =~ m!^/static!;
+    return $self->SUPER::init(@_);
+}
+
 sub render {
     my $self = shift;
     if ($self->request->uri =~ m!^/robots.txt$!) {
