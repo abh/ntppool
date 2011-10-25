@@ -156,22 +156,21 @@ sub path_language {
 sub detect_language {
     my $self = shift;
 
-    my $language_choice = $self->plain_cookie('lang')
-      || $self->request->header_in('X-Language') 
-      || $self->cookie('lang');
-
     if (my $old_cookie = $self->cookie('lang')) {
-        $self->plain_cookie('lang', $old_cookie);
         $self->cookie('lang', undef);
     }
+    if ($self->plain_cookie('lang')) {
+        $self->plain_cookie('lang', '', { expires => '-1' });
+    }
+
+    my $language_choice = $self->request->header_in('X-Language') ;
+
     return $language_choice if $self->valid_language($language_choice);
 
     $ENV{REQUEST_METHOD}       = $self->request->method;
     $ENV{HTTP_ACCEPT_LANGUAGE} = $self->request->header_in('Accept-Language') || '';
     my @lang = implicate_supers( I18N::LangTags::Detect::detect() );
     my $lang = $self->valid_language(@lang);
-
-    $self->plain_cookie('lang', $lang) if $lang;
 
     return $lang;
 }
@@ -252,11 +251,15 @@ sub plain_cookie {
 
     my $ocookie = $self->request->get_cookie($cookie) || '';
 
-    return $ocookie unless $value;
-    return $ocookie if $value eq $ocookie;
+    unless (defined $value and $value ne ($ocookie || '')) {
+        return $ocookie;
+    }
 
     $args->{path}   ||= '/';
-    $args->{expires} = '+30d' unless defined $args->{expires};
+    $args->{expires} = time + ( 30 * 86400 ) unless defined $args->{expires};
+    if ($args->{expires} =~ m/^-/) {
+        $args->{expires} = 1;
+    }
 
     $args->{value} = $value;
 
