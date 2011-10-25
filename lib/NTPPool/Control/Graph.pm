@@ -10,6 +10,8 @@ my $gearman = Combust::Gearman::Client->new;
 sub render {
     my $self = shift;
 
+    $self->cache_control('s-maxage=1800');
+
     my ($p, $type) = ($self->request->uri =~ m!^/graph/([^/]+)/(\w+).png!);
     my ($server) = $p && NP::Model->server->find_server($p);
     return 404 unless $server;
