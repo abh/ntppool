@@ -6,12 +6,32 @@ use warnings;
 
 use NP::Model;
 use DateTime;
+use DateTime::Format::MySQL;
 
 my $dbh = NP::Model->dbh;
 
-my $archive_date = my $yesterday = DateTime->now->subtract( days => 21 )->date;
+my ($min_ts) = $dbh->selectrow_array(q[select min(ts) from log_scores]);
+$min_ts = DateTime::Format::MySQL->parse_datetime( $min_ts ) or die "Could not parse date from mysql";
+
+my $archive_date = $min_ts->add( hours => 30 );
+my $limit = DateTime->now->subtract( days => 45 );
+
+if ($archive_date > $limit) {
+    $archive_date = $limit;
+}
+
+if ($archive_date < $min_ts) {
+    # no work todo
+    exit;
+}  
+
+print "Moving records from before $archive_date\n" if -t STDIN;
 
 my $rv = $dbh->do(q[insert into log_scores_archive select * from log_scores where ts < ?], {}, $archive_date);
 die unless $rv;
+print "Inserted $rv records\n" if -t STDIN;
+
 $rv = $dbh->do(q[delete from log_scores where ts < ?], {}, $archive_date);
+print "Removed $rv records\n" if -t STDIN;
+
 
