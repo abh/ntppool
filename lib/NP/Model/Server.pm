@@ -119,7 +119,12 @@ sub urls {
 }
 
 sub history {
-    my ($self, $count, $since) = @_;
+    my ($self, $options) = @_;
+    ref $options or $options = { count => $options };
+
+    my $count = $options->{count};
+    my $since = $options->{since};
+    my $monitor_id = $options->{monitor_id};
 
     $count ||= 50;
 
@@ -129,8 +134,8 @@ sub history {
 
     my $history = NP::Model->log_score->get_log_scores(
         query => [
-            server_id  => $self->id,
-            monitor_id => undef,
+            server_id => $self->id,
+            ($monitor_id && $monitor_id eq '*' ? () : (monitor_id => $monitor_id)),
             ($since ? (ts => {'>' => $since}) : ())
         ],
         sort_by => 'ts desc',
@@ -162,13 +167,33 @@ sub alert {
 }
 
 sub log_scores_csv {
-    my ($self, $count, $since) = @_;
-    my $history = $self->history($count, $since);
+    my ($self, $options) = @_;
+    my $history = $self->history($options);
     my $csv = Text::CSV_XS->new();
-    $csv->combine(qw(ts_epoch ts offset step score));
+    $csv->combine(qw(ts_epoch ts offset step score),
+                  defined $options->{monitor_id} ? qw(monitor_id monitor_name) : ());
     my $out = $csv->string . "\n";
+
+    my %monitors;
+
     for my $l (@$history) {
-        $csv->combine($l->ts->epoch, $l->ts->strftime("%F %T"), map { $l->$_ } qw(offset step score));
+
+        my $monitor_id;
+        my $monitor_name;
+
+        if ($options->{monitor_id}) {
+            $monitor_id = $l->monitor_id;
+            if ($monitor_id) {
+                $monitor_name = defined $monitors{ $monitor_id }
+                     ? $monitors{ $monitor_id }
+                     : ($monitors{ $monitor_id } = $l->monitor->name || "");
+            }
+        }
+
+        $csv->combine(
+                      $l->ts->epoch, $l->ts->strftime("%F %T"), map ({ $l->$_ } qw(offset step score)),
+                      ($options->{monitor_id} ? ($monitor_id, $monitor_name) : ())
+                     );
         $out .= $csv->string . "\n";
     }
     $out;

@@ -48,7 +48,14 @@ sub render {
               $limit = 4000 if $limit > 4000;
               my $since = $self->req_param('since') || 0;
               $since = 0 if $since =~ m/\D/;
-              return OK, $server->log_scores_csv($limit, $since), 'text/plain';
+
+              my $options = {
+                             count => $limit,
+                             since => $since,
+                             monitor_id => $self->req_param('monitor'),
+                            };
+
+              return OK, $server->log_scores_csv($options), 'text/plain';
           }
           elsif ($mode eq 'rrd') {
               # TODO: check that rrd is up-to-date
