@@ -45,8 +45,10 @@ sub render {
           if ($mode eq 'log' or $self->req_param('log')) {
               my $limit = $self->req_param('limit') || 0;
               $limit = 50 unless $limit and $limit !~ m/\D/;
-              $limit = 5000 if $limit > 5000;
-              return OK, $server->log_scores_csv($limit), 'text/plain';
+              $limit = 4000 if $limit > 4000;
+              my $since = $self->req_param('since') || 0;
+              $since = 0 if $since =~ m/\D/;
+              return OK, $server->log_scores_csv($limit, $since), 'text/plain';
           }
           elsif ($mode eq 'rrd') {
               # TODO: check that rrd is up-to-date

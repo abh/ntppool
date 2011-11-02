@@ -119,12 +119,20 @@ sub urls {
 }
 
 sub history {
-    my ($self, $count) = @_;
+    my ($self, $count, $since) = @_;
 
     $count ||= 50;
 
+    if ($since) {
+        $since = DateTime->from_epoch( epoch => $since );
+    }
+
     my $history = NP::Model->log_score->get_log_scores(
-        query   => [server_id => $self->id, monitor_id => undef],
+        query => [
+            server_id  => $self->id,
+            monitor_id => undef,
+            ($since ? (ts => {'>' => $since}) : ())
+        ],
         sort_by => 'ts desc',
         limit   => $count,
     );
@@ -154,8 +162,8 @@ sub alert {
 }
 
 sub log_scores_csv {
-    my ($self, $count) = @_;
-    my $history = $self->history($count);
+    my ($self, $count, $since) = @_;
+    my $history = $self->history($count, $since);
     my $csv = Text::CSV_XS->new();
     $csv->combine(qw(ts_epoch ts offset step score));
     my $out = $csv->string . "\n";
