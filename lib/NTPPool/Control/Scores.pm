@@ -55,6 +55,10 @@ sub render {
                              monitor_id => $self->req_param('monitor'),
                             };
 
+              if ($since) {
+                  $self->cache_control('s-maxage=300');
+              }
+
               return OK, $server->log_scores_csv($options), 'text/plain';
           }
           elsif ($mode eq 'rrd') {
