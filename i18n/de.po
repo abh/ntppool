@@ -22,7 +22,7 @@ msgid "South America"
 msgstr "Südamerika"
 
 msgid "Global"
-msgstr "Global"
+msgstr "Weltweit"
 
 msgid "All Pool Servers"
 msgstr "Alle Pool Server"
@@ -42,22 +42,22 @@ msgid  "archive"
 msgstr "Archiv"
 
 msgid  "Announcement list"
-msgstr "Ankündigungsliste"
+msgstr "Verteiler &quot;Ankündigungen&quot;"
 
 msgid  "Discussion list"
-msgstr "Diskussionsliste"
+msgstr "Verteiler &quot;Diskussionen&quot;"
 
 msgid  "Development list"
-msgstr "Entwicklungsliste"
+msgstr "Verteiler &quot;Entwicklung&quot;"
 
 msgid  "announcement_list_description"
-msgstr "Wenig frequentierte Ankündigungen des NTP Pool Projekts. Alle Serveradministratoren sollten diese Liste abonniert haben."
+msgstr "Wenig frequentierter Verteiler für die wichtigsten Ankündigungen des NTP Pool Projekts. Alle Serveradministratoren sollten diese Liste abonniert haben."
 
 msgid  "discussion_list_description"
-msgstr "Serveradministratoren (und Benutzer), die sich am NTP Pool Projekt beteiligen wollen, sind auf dieser Liste herzlich willkommen.<br/>Über allgemeine Themen rund um NTP sollte jedoch in der Usenet Newsgruppe %1 diskutiert werden (siehe auch <a href=\"%2\">Google Groups</a>)."
+msgstr "Serveradministratoren (und Benutzer), die sich am NTP Pool Projekt beteiligen wollen, sind in diesem Verteiler herzlich willkommen.<br/>Über allgemeine Themen rund um NTP sollte jedoch in der Usenet Newsgruppe %1 diskutiert werden (siehe auch <a href=\"%2\">Google Groups</a>)."
 
 msgid  "development_list_description"
-msgstr "Technische (und idealerweise immer pragmatische) Diskussionen über die aktuelle Entwicklung des <a href=\"%1\">NTP Pool Quellcodes</a> und <a href=\"%2\">pgeodns</a> werden auf der <i>timekeepers-dev</i> Liste gehalten."
+msgstr "Technische (und idealerweise immer pragmatische) Diskussionen über die aktuelle Entwicklung des <a href=\"%1\">NTP Pool Quellcodes</a> und <a href=\"%2\">pgeodns</a> werden über den <i>timekeepers-dev</i>-Verteiler geführt."
 
 
 # tpl/server.html
@@ -65,22 +65,22 @@ msgid  "Back to the front page"
 msgstr "Zurück zur Hauptseite"
 
 msgid  "Find"
-msgstr "Finde"
+msgstr "Suche"
 
 msgid  "Stats for %1"
 msgstr "Statistiken für %1"
 
 msgid  "Not active in the pool, monitoring only"
-msgstr "Nicht im Pool aktiv. Nur Überwachung."
+msgstr "Nicht im Pool aktiv, nur Überwachung."
 
 msgid  "Zones:"
 msgstr "Zonen:"
 
 msgid  "This server is <span class="deletion">scheduled for deletion</span> on %1."
-msgstr "Dieser Server ist für eine <span class="deletion">Löschung</span> am %1 markiert."
+msgstr "Dieser Server ist zum <span class="deletion">Löschen</span> am %1 markiert."
 
 msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
-msgstr "Aktuelle Punkte: %1 (Nur Server mit über %2 Punkten werden in den Pool aufgenommen)"
+msgstr "Aktuelle Bewertung: %1 (Nur Server mit einer Bewertung über %2 werden in den Pool aufgenommen)"
 
 msgid  "What do the graphs mean?"
 msgstr "Was bedeuten diese Graphen?"
