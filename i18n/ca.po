@@ -1,111 +1,111 @@
 msgid ""
 msgstr ""
-"Last-Translator: Ask Bjørn Hansen <ask@develooper.com>\n"
+"Last-Translator: Martin Steghöfer <martin@steghoefer.de>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 msgid "go up"
-msgstr "go up"
+msgstr "puja amunt"
 
 # zone names
 msgid "Africa"
-msgstr "Africa"
+msgstr "Àfrica"
 
 msgid "Asia"
-msgstr "Asia"
+msgstr "Àsia"
 
 msgid "North America"
-msgstr "North America"
+msgstr "Amèrica del Nord"
 
 msgid "South America"
-msgstr "South America"
+msgstr "Amèrica del Sud"
 
 msgid "Global"
 msgstr "Global"
 
 msgid "All Pool Servers"
-msgstr "All Pool Servers"
+msgstr "Tots els servidors del Pool"
 
 # navigation
 msgid "Translations"
-msgstr "Translations"
+msgstr "Traduccions"
 
 # mailinglists.html
 msgid  "NTP Pool mailing lists"
-msgstr "NTP Pool mailing lists"
+msgstr "Llista de correu del NTP Pool"
 
 msgid  "subscribe"
-msgstr "subscribe"
+msgstr "apuntar-s'hi"
 
 msgid  "archive"
-msgstr "archive"
+msgstr "arxiu"
 
 msgid  "Announcement list"
-msgstr "Announcement list"
+msgstr "Llista d'avisos"
 
 msgid  "Discussion list"
-msgstr "Discussion list"
+msgstr "Llista de discussions"
 
 msgid  "Development list"
-msgstr "Development list"
+msgstr "Llista de desenvolupament"
 
 msgid  "announcement_list_description"
-msgstr "Very very low traffic announcements of NTP Pool news.  All server operators should be subscribed to the announcement list."
+msgstr "Llista d'avisos de notícias del NTP Pool amb una freqüencia molt, mol baixa. Tots els administradors de servidors hi haurien d'estar apuntats."
 
 msgid  "discussion_list_description"
-msgstr "Server operators (and users) who wish to be more involved in the project can subscribe to the discussion list.<br/> Of course, general discussions about ntp should take place on the %1 Usenet newsgroup (also on <a href=\"%2\">Google Groups</a>)."
+msgstr "Administradors de servidors (i usuaris) que volen estar més involucrat es poden apuntar a la llista de discussions. Naturalment, discussions sobre el servei ntp en general s'haurien de fer en el grup de Usenet %1 (també disponible a través de <a href=\"%2\">Google Groups</a>)."
 
 msgid  "development_list_description"
-msgstr "More technical (and ideally always pragmatic) discussions about the current development of the <a href=\"%1\">ntp pool code</a> and <a href=\"%2\">pgeodns</a> happens on the timekeepers-dev list."
+msgstr "Discussions més tècniques (i pragmàtiques) sobre el desenvolupament en curs del <a href=\"%1\">ntp pool code</a> i <a href=\"%2\">pgeodns</a> es fan en la llista <i>timekeepers-dev</i>."
 
 
 # tpl/server.html
 msgid  "Back to the front page"
-msgstr "Back to the front page"
+msgstr "Torneu a la pàgina principal"
 
 msgid  "Find"
-msgstr "Find"
+msgstr "Cerca"
 
 msgid  "Stats for %1"
-msgstr "Statistics for %1"
+msgstr "Estadístiques sobre %1"
 
 msgid  "Not active in the pool, monitoring only"
-msgstr "Not active in the pool, monitoring only"
+msgstr "No actiu al pool, només vigilat"
 
 msgid  "Zones:"
 msgstr "Zones:"
 
 msgid  "This server is <span class="deletion">scheduled for deletion</span> on %1."
-msgstr "This server is <span class="deletion">scheduled for deletion</span> on %1."
+msgstr "Aquest servidor està <span class="deletion">marcat per esborrar-se</span> el %1."
 
 msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
-msgstr "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
+msgstr "Puntuació actual: %1 (només servidors amb una puntuació de %2 o més s'utilitzen en el pool)"
 
 msgid  "What do the graphs mean?"
-msgstr "What do the graphs mean?"
+msgstr "Que volen dir els gràfics?"
 
 msgid  "CSV log"
-msgstr "CSV log"
+msgstr "Diari en format CSV"
 
 # tpl/navigation_sidebar.html
 msgid  "News"
-msgstr "News"
+msgstr "Notícies"
 
 msgid  "How do I <i>use</i> pool.ntp.org?"
-msgstr "How do I <i>use</i> pool.ntp.org?"
+msgstr "Com <i>faig servir</i> pool.ntp.org?"
 
 msgid  "How do I <i>join</i> pool.ntp.org?"
-msgstr "How do I <i>join</i> pool.ntp.org?"
+msgstr "Com <i>m'apunto</i> a pool.ntp.org?"
 
 msgid  "Information for vendors"
-msgstr "Information for vendors"
+msgstr "Informació per a venedors"
 
 msgid  "The mailing lists"
-msgstr "The mailing lists"
+msgstr "La llista de correu"
 
 msgid  "Additional links"
-msgstr "Additional links"
+msgstr "Enllaços adicionals"
 
 msgid  "Can you translate?"
-msgstr "Can you translate?"
+msgstr "Pots traduir?"
