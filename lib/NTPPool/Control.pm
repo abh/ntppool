@@ -202,6 +202,25 @@ sub localize_url {
     return;
 }
 
+sub _url {
+    my ($self, $site, $url, $args) = @_;
+    my $uri = URI->new($self->config->base_url($site) . $url);
+    if ($args) {
+        $uri->query($args);
+    }
+    return $uri->as_string;
+}
+
+sub www_url {
+    my $self = shift;
+    return $self->_url('ntppool', @_);
+}
+
+sub manage_url {
+    my $self = shift;
+    return $self->_url('manage', @_);
+}
+
 sub count_by_continent {
     my $self = shift;
     my $global = NP::Model->zone->fetch(name => '@');

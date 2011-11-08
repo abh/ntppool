@@ -1,0 +1,5 @@
+[% page.style = 'bare.html' -%]
+# Hello Robot!  Nothing interesting here, please visit http://www.ntppool.org/
+User-Agent: *
+Disallow: /
+

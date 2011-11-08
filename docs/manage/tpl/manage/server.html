@@ -51,7 +51,7 @@ Zones:
 
 <br/>
 [% IF server.ip_version == 'v4' %]
-  <a href="[% server.url %]">Trend</a>: <img src="[% server.url %]/spark" /><br/>
+  <a href="[% server.url %]">Trend</a>: <img src="[% combust.www_url(server.url _ "/spark") %]"><br/>
   <br />
 [% END %]
 

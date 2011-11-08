@@ -9,6 +9,11 @@ sub init {
 
 sub render {
     my $self = shift;
+
+    if ($self->request->path =~ m!^/manage! and $self->site ne 'manage') {
+        return $self->redirect( $self->manage_url( $self->request->path ));
+    }
+
     if ($self->request->uri =~ m!^/robots.txt$!) {
         $self->force_template_processing(1)
     }

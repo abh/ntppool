@@ -9,6 +9,8 @@
 				</ol>
 			</div>
 
+                        [% IF combust.site == 'ntppool' %]
+
 			<h3>[% |l %]Translations[% END %]</h3>
 			<ul id="translations" class="mod">
                                 [% FOR lang_id = combust.valid_languages.keys.sort %] 
@@ -26,3 +28,4 @@
 				-->
 			</ul>
 
+                        [% END %]
