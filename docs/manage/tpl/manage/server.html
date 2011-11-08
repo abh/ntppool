@@ -3,7 +3,7 @@
 <form method="post" action="/manage/server/update/server">
 
 [% IF server.hostname %]Hostname: <b>[% server.hostname | html %]</b><br />[% END %]
-IP: <b><a href="[% server.url %]">[% server.ip | html %]</a></b><br />
+IP: <b><a href="[% combust.www_url(server.url) %]">[% server.ip | html %]</a></b><br />
 [% IF server.deletion_on %]
 This server is <span class="deletion">scheduled for deletion</span>
 on [% server.deletion_on.strftime("%B %d, %Y") %].
@@ -15,7 +15,7 @@ Current score: <b>[% server.score %]</b><br />
 Zones:
 <span id="zones_[% server.id %]">
 [% FOR zone = server.zones_display %]
-<a href="[% zone.url %]">[% zone.name %]</a>
+<a href="[% combust.www_url(zone.url) %]">[% zone.name %]</a>
 [% END  %]
 </span>
 <br />
@@ -50,10 +50,8 @@ Zones:
 
 
 <br/>
-[% IF server.ip_version == 'v4' %]
-  <a href="[% server.url %]">Trend</a>: <img src="[% combust.www_url(server.url _ "/spark") %]"><br/>
+  <a href="[% combust.www_url(server.url) %]">Trend</a>: <img src="[% combust.www_url(server.url _ "/spark") %]"><br/>
   <br />
-[% END %]
 
 </form>
 </span>
