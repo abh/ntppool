@@ -45,6 +45,15 @@ sub init {
 
   NP::Model->db->ping;
 
+  if ($config->site->{$self->site}->{ssl_only}) {
+      if (($self->request->header_in('X-Forwarded-Proto')  || 'http') eq 'http') {
+          return $self->redirect( $self->_url( $self->site, $self->request->path ) );
+      }
+      else {
+          $self->request->header_out('Strict-Transport-Security', 86400 * 31 );
+      }
+  }
+
   if ($self->req_param('sig') or $self->req_param('bc_id')) {
     my $bc = $self->bitcard;
     my $bc_user = eval { $bc->verify($self->request) };
@@ -204,7 +213,10 @@ sub localize_url {
 
 sub _url {
     my ($self, $site, $url, $args) = @_;
-    my $uri = URI->new($self->config->base_url($site) . $url);
+    my $uri = URI->new($config->base_url($site) . $url);
+    if ($config->site->{$site}->{ssl_only}) {
+        $uri->scheme('https');
+    }
     if ($args) {
         $uri->query($args);
     }
