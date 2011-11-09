@@ -61,43 +61,6 @@ sub init {
       }
   }
 
-  if ($self->req_param('sig') or $self->req_param('bc_id')) {
-    my $bc = $self->bitcard;
-    my $bc_user = eval { $bc->verify($self->request) };
-    warn $@ if $@;
-    unless ($bc_user) {
-      warn $bc->errstr;
-    }
-    if ($bc_user and $bc_user->{id} and $bc_user->{username}) {
-      my ($email_user) = NP::Model->user->fetch(email => $bc_user->{email});
-      my ($user) = NP::Model->user->fetch(bitcard_id => $bc_user->{id});
-      $user = $email_user if ($email_user and !$user);
-      if ($user and $email_user and $user->id != $email_user->id) {
-	my @servers = NP::Model->server->get_servers(query => [ user_id => $email_user->id ]);
-	for my $server (@servers) {
-	  $server->user_id($user);
-	  $server->save;
-	}
-	$email_user->delete;
-      }
-      unless ($user) {
-	($user) = NP::Model->user->create(bitcard_id => $bc_user->{id});
-      }
-      my $uid = $user->id;
-      $user->username($bc_user->{username});
-      $user->email($bc_user->{email});
-      $user->name($bc_user->{name});
-      $user->bitcard_id($bc_user->{id});
-      $user->save;
-      $self->cookie($Combust::Control::Bitcard::cookie_name, $uid);
-      $self->user($user);
-    }
-  }
-
-  if ($self->is_logged_in) {
-      $self->request->env->{REMOTE_USER} = $self->user->username;
-  }
-
   my $lang = $self->language;
   NP::I18N::loc_lang( $lang );
 
@@ -110,20 +73,12 @@ sub loc_filter {
     return sub { NP::I18N::loc($_[0], @args) };
 }
 
-
+# should be moved to the manage class when sure we don't use is_logged_in on the ntppool site
 sub is_logged_in {
   my $self = shift;
   my $user_info = $self->user;
   return 1 if $user_info and $user_info->username;
   return 0;
-}
-
-sub bc_user_class {
-    NP::Model->user;
-}
-
-sub bc_info_required {
-    'username,email';
 }
 
 sub get_include_path {
