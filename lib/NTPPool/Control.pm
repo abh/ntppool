@@ -192,7 +192,8 @@ sub localize {
 
 sub localize_url {
     my $self = shift;
-    if (!$self->path_language
+    if ($self->request->path eq '/' # this short-circuits some of the rest
+        and !$self->path_language
         and $self->request->method =~ m/^(head|get)$/ 
         and $self->request->uri !~ m{^/(manage|static)}
        ) {
