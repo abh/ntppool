@@ -45,6 +45,13 @@ sub init {
 
   NP::Model->db->ping;
 
+  if ($self->site ne 'manage') {
+      # delete combust cookie from non-manage sites
+      if ($self->plain_cookie('c')) {
+          $self->plain_cookie('c', '', { expires => '-1' });
+      }
+  }
+
   if ($config->site->{$self->site}->{ssl_only}) {
       if (($self->request->header_in('X-Forwarded-Proto')  || 'http') eq 'http') {
           return $self->redirect( $self->_url( $self->site, $self->request->path ) );
@@ -165,9 +172,6 @@ sub path_language {
 sub detect_language {
     my $self = shift;
 
-    if (my $old_cookie = $self->cookie('lang')) {
-        $self->cookie('lang', undef);
-    }
     if ($self->plain_cookie('lang')) {
         $self->plain_cookie('lang', '', { expires => '-1' });
     }
