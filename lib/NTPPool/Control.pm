@@ -131,6 +131,8 @@ sub detect_language {
         $self->plain_cookie('lang', '', { expires => '-1' });
     }
 
+    $self->request->header_out('Vary', 'Accept-Language');
+
     my $language_choice = $self->request->header_in('X-Varnish-Accept-Language');
     return $language_choice if $self->valid_language($language_choice);
 
