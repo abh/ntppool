@@ -107,5 +107,6 @@ msgstr "The mailing lists"
 msgid  "Additional links"
 msgstr "Additional links"
 
+# Don't translate this string
 msgid  "Can you translate?"
 msgstr "Can you translate?"

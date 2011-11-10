@@ -86,3 +86,22 @@ msgstr "Что означают эти графики?"
 
 msgid  "CSV log"
 msgstr "Журнал в формате CSV"
+
+# tpl/navigation_sidebar.html
+msgid  "News"
+msgstr "News"
+
+msgid  "How do I <i>use</i> pool.ntp.org?"
+msgstr "How do I <i>use</i> pool.ntp.org?"
+
+msgid  "How do I <i>join</i> pool.ntp.org?"
+msgstr "How do I <i>join</i> pool.ntp.org?"
+
+msgid  "Information for vendors"
+msgstr "Information for vendors"
+
+msgid  "The mailing lists"
+msgstr "The mailing lists"
+
+msgid  "Additional links"
+msgstr "Additional links"
