@@ -1,0 +1,91 @@
+msgid ""
+msgstr ""
+"Last-Translator: Taro Yoshimoto <el_harrouch_skikda@yahoo.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "go up"
+msgstr "先頭に戻る"
+
+# zone names
+msgid "Africa"
+msgstr "アフリカ"
+
+msgid "Asia"
+msgstr "アジア"
+
+msgid "North America"
+msgstr "北米"
+
+msgid "South America"
+msgstr "南米"
+
+msgid "Global"
+msgstr "全世界"
+
+msgid "All Pool Servers"
+msgstr "全てのプールサーバ"
+
+# navigation
+msgid "Translations"
+msgstr "翻訳"
+
+# mailinglists.html
+msgid  "NTP Pool mailing lists"
+msgstr "NTPプール メーリングリスト"
+
+msgid  "subscribe"
+msgstr "登録"
+
+msgid  "archive"
+msgstr "アーカイブ"
+
+msgid  "Announcement list"
+msgstr "お知らせリスト"
+
+msgid  "Discussion list"
+msgstr "ディスカッションリスト"
+
+msgid  "Development list"
+msgstr "開発リスト"
+
+msgid  "announcement_list_description"
+msgstr "非常に低トラフィックなNTPプールニュースのお知らせ。すべてのサーバ管理者は、お知らせリストに登録してください。"
+
+msgid  "discussion_list_description"
+msgstr "このプロジェクトにより深く関与したいサーバ管理者(とユーザ)はディスカッションリストに登録して下さい。<br/>当然ですが、ntpに関する一般的な議論は、Usenetニュースグループ%1で行って下さい。(<a href=\"%2\">Google Groups</a>にもあります)。"
+
+msgid  "development_list_description"
+msgstr "現在の<a href=\"%1\">ntpプールコード</a>と<a href=\"%2\">pgeodns</a>開発のためのより技術的な(そして理想を言えば実用的な)議論はtimekeepers-devリストで行われています。"
+
+
+# tpl/server.html
+msgid  "Back to the front page"
+msgstr "最初のページに戻る"
+
+msgid  "Find"
+msgstr "検索"
+
+msgid  "Stats for %1"
+msgstr "%1の統計情報"
+
+msgid  "Not active in the pool, monitoring only"
+msgstr "プール内でアクティブではなく、監視のみ"
+
+msgid  "Zones:"
+msgstr "ゾーン:"
+
+msgid  "This server is <span class="deletion">scheduled for deletion</span> on %1."
+msgstr "このサーバは%1に<span class="deletion">削除予定</span>です。"
+
+msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
+msgstr "現在のスコア: %1 (%2以上のサーバだけがプールに使用されます)"
+
+msgid  "What do the graphs mean?"
+msgstr "グラフは意味することは?"
+
+msgid  "CSV log"
+msgstr "CSVログ"
+
+
