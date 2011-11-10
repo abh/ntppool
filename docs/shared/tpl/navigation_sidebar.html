@@ -14,8 +14,11 @@
 			<h3>[% |l %]Translations[% END %]</h3>
 			<ul id="translations" class="mod">
                                 [% FOR lang_id = combust.valid_languages.keys.sort %] 
-                                  [% NEXT IF combust.valid_languages.$lang_id.testing %]
-                                  <li><a href="/[% lang_id %][% combust.request.uri %]">[% combust.valid_languages.$lang_id.name %]</a></li>
+                                  [% testing_lang = combust.valid_languages.$lang_id.testing || 0%]
+                                  [% NEXT IF testing_lang AND combust.deployment_mode == 'prod' %]
+                                  <li><a href="/[% lang_id %][% combust.request.uri %]">[% combust.valid_languages.$lang_id.name %]</a>
+                                  [% testing_lang ? '<em class="beta">(beta)</em>' : '' %]
+                                  </li>
                                 [% END %]
                                 <br>  
                                 (<a href="/en/translators.html">[% "Can you translate?" | l %]</a>)

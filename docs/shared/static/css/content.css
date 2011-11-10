@@ -184,3 +184,5 @@ p.serverurls {
 }
 
 #zone_counts td { padding-right: 8px; vertical-align: text-top;  }
+
+em.beta  { color: #888 }
