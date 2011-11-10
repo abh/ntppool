@@ -21,6 +21,7 @@ our %valid_languages = (
                         en => { name => "English", },
                         es => { name => "Español", testing => 1 },
                         fr => { name => "Français", },
+                        jp => { name => "日本語", testing => 1 },
                         ko => { name => "한국어", },
                         nl => { name => "Nederlands", },
                         pl => { name => "Polish", testing => 1 },
