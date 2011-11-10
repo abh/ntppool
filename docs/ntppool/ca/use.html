@@ -1,14 +1,14 @@
-[% page.title = 'How do I setup NTP to use the pool?' %]
+[% page.title = 'Com he de configurar NTP per fer servir el pool?' %]
 
 <div class="block">
-	<h3><a name="use"></a>How do I use pool.ntp.org?</h3>
+	<h3><a name="use"></a>Com faig servir pool.ntp.org?</h3>
 	
 	<p>
-	If you just want to synchronise your computers clock to the network, the
-	configuration file (for the ntpd program from the <a
-	href="http://www.ntp.org">ntp.org distribution</a>, on any supported operating
-	system - <b>Linux, *BSD, Windows and even some more exotic systems</b>) is
-	really simple:
+	Si només voleu sincronitzer el rellotge del vostre ordinador amb la xarxa,
+	el fitxer de configuració (per al programa ntpd de la
+	<a href="http://www.ntp.org">distribució ntp.org</a> a tots els sistemes operatius -
+	<b>Linux, *BSD, Windows i fins i tot alguns sistemes més exòtics</b>) és
+	força senzill:
 	</p>
 
 <pre class="code">
@@ -19,12 +19,13 @@ server 1.pool.ntp.org
 server 2.pool.ntp.org
 server 3.pool.ntp.org</pre>
 	<p>
-	The 0, 1 and 2.pool.ntp.org names point to a random set of servers that will
-	change every hour.  Make sure your computer's clock is set to something
-	sensible (within a few minutes of the 'true' time) - you could use <tt>ntpdate
-	pool.ntp.org</tt>, or you could just use the <tt>date</tt> command and set it
-	to your wristwatch. Start ntpd, and after some time (this could take as long as
-	half an hour!), <tt>ntpq -pn</tt> should output something like:
+	Els noms 0, 1 i 2.pool.ntp.org apunten a un conjunt aleatori que caviará cada
+	hora. Assegureu-vos de que el rellotje del vostre ordinador està ajustat
+	aproximadament (a uns pocs minuts de la hora 'real') - podeu fer servir
+	<tt>ntpdate pool.ntp.org</tt> o senzillament utilitzar el comando <tt>date</tt>
+	i ajustar així el rellotje segons el rellotge de polsera. Arranqueu ntpd i
+	al cap d'un temps (podria trigar fins a mitja hora!) <tt>ntpq -pn</tt>hauria
+	d'imprimir alguna cosa així:
 	</p>
 <pre class="code ntpq">
 avbidder:~$ ntpq -p
@@ -35,92 +36,94 @@ avbidder:~$ ntpq -p
 -129.132.57.95   131.188.3.222    3 u  766 1024  377   22.302   -2.928   0.508
 </pre> 
 	<p>
-	The IP addresses will be different, because you've been assigned random
-	timeservers. The essential thing is that one of the lines starts with an
-	asterisk (<tt>*</tt>), this means your computer gets the time from the internet
-	- you'll never have to worry about it again!
+	L'adreça IP serà diferent, ya que haureu obtingut un servidor de temps aleatori.
+	El tema és que una de les línies comenci amb un asterisc (<tt>*</tt>). Això
+	vol dir que el vostre ordinador rep l'hora des de l'internet - no us
+	n'haureu d'amoïnar mai més!
 	</p>
 	<p>
-	As <tt>pool.ntp.org</tt> will assign you timeservers from all over the
-	world, time quality will not be ideal.  You get a bit better result if you use
-	the <a href="/zone/@">continental zones</a> (For example
+	Com que <tt>pool.ntp.org</tt> us assignarà servidors de temps de tot el món,
+	la qualitat de l'hora obtinguda no serà ideal. Obtindreu resultats millors,
+	si feu servir les <a href="/zone/@">zones dels continents</a> (p.e.
 	<a href="/zone/europe">europe</a>,
 	<a href="/zone/north-america">north-america</a>,
 	<a href="/zone/oceania">oceania</a>
-	or <a href="/zone/asia">asia</a>.pool.ntp.org),
-	and even better time if you use the country zone (like
-	ch.pool.ntp.org in Switzerland) - for all these zones, you can again use the 0,
-	1 or 2 prefixes, like 0.ch.pool.ntp.org.  Note, however, that the country zone
-	might not exist for your country, or might contain only one or two timeservers.
-	If you know timeservers that are really close to you (measured by network
-	distance, with <tt>traceroute</tt> or <tt>ping</tt>), time probably will be
-	even better.
+	o <a href="/zone/asia">asia</a>.pool.ntp.org), i resultats encara millors,
+	si feu servir les zones de països (com ara ch.pool.ntp.org a Suïssa) -
+	per a totes aquestes zones altre cop podeu fer servir els prefixos 0, 1
+	o 2, com ara 0.ch.pool.ntp.org. Però tingue en compte que és possible que
+	la zona de país no existeixi per al vostre país, o que només contingui un
+	o dos servidors. Si coneixeu servidors de temps que són realment a prop
+	(segons distància a la xarxa, mesurada amb <tt>traceroute</tt> o <tt>ping</tt>),
+	la qualitat del temps probablement serà encara millor.
 	</p>
 	<p>
-	If you're using <b>a recent Windows version</b>, you can also use the ntp
-	client that is built into the system. Just execute:</p>
+	Si esteu fent servir <b>una versió recent de Windows</b>, també podeu utilitzar
+	el client ntp incorporat al vostre sistema. Executeu:</p>
 <pre class="code">
 net time /setsntp:pool.ntp.org
 </pre>
 	<p>
-	With some versions of Windows you can also specify more than one server
+	Amb algunes versions de Windows també podeu especificar més d'un servidor de temps
+	fent servir
 <pre class="code">
 net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
 </pre>
 	</p>
 	<p>
-	at the command prompt. This is known to work on Windows 2000/XP/2003.  The same
-	can be achieved by, as administrator, right-clicking the clock in the taskbar,
-	selecting 'Adjust Date/Time' and entering the server name in the 'Internet Time'
-	tab.
+	a la línia d'ordres. Està comprovat que això funciona a Windows 2000/XP/2003.
+	El mateix es pot aconseguir fent clic (com a administrador) amb el botó dret
+	sobre la icona del rellotge a la barra de tasques, seleccionant 'Ajustar data/hora'
+	i entrant el nom del servidor a la pestanya 'Temps des de Internet'.
 	</p>
 
 	<p>
-	Meinberg made a port of the <a href="http://www.meinberg.de/english/sw/ntp.htm">ntp daemon for windows</a>.
+	Meinberg ha traduït el <a href="http://www.meinberg.de/english/sw/ntp.htm">ntp daemon perquè funcionés a Windows</a>.
 	</p>
 
 	<p>
-	If your Windows system is part of a domain, you might not be able to independently update your computer time.  See <a href="http://technet2.microsoft.com/WindowsServer/en/library/71e76587-28f4-4272-a3d7-7f44ca50c0181033.mspx?mfr=true">How Windows Time Service Works</a>.
+	Si el vostre sistema de Windows forma part d'un domini, potser no sereu capaç
+	d'actualitzar l'hora del vostre sistema de forma independent. Vegeu també:
+	<a href="http://technet2.microsoft.com/WindowsServer/en/library/71e76587-28f4-4272-a3d7-7f44ca50c0181033.mspx?mfr=true">Com
+	funciona &quot;Windows Time&quot;</a>.
 	</p>
 </div>
 
 <div class="block">
-	<h3>Additional Notes</h3>
-	<p><span class="hook">If you have a static IP address and a reasonable Internet connection</span> (bandwidth
-	is not so important, but it should be stable and not too highly loaded), please
-	consider donating your server to the server pool. It doesn't cost you more than
-	a few hundred bytes per second traffic, but you help this project survive.
-	Please <a href="/join.html">read the joining page</a> for more information.
+	<h3>Avisos adicionals</h3>
+	<p><span class="hook">Si teniu una adreça IP estàtica i una connexió a internet raonable
+	(amplada de banda no és tan important, però hauria de ser estable i no massa carregada),
+	sisplau penseu amb donar el vostre servidor al pool de servidors. No us costarà més
+	d'uns centenars de bytes per segon, but ajudaràs el projecte a sobreviure. Sisplau,
+	llegiu <a href="/join.html">la pàgina sobre com unir-s'hi</a> per obtenir-ne més informació.
 	</p>
 	
-	<p><span class="hook">If your Internet provider has a timeserver</span>, or if you know of a good timeserver
-	near you, you should use that and not this list - you'll probably get better
-	time and you'll use fewer network resources.  If you know only one timeserver
-	near you, you can of course use that and two from pool.ntp.org or so.</p>
+	<p><span class="hook">Si el vostre proveïdor d'accès a internet té un servidor de temps</span> o si
+	coneixeu un bon servidor de temps a prop vostre, deuríeu fer servir aquest en comptes d'aquesta llista
+	- així probablement obtindràs millors resultats i gastaràs menys recursos de la xarxa. Si coneixeu
+	només un servidor, naturalment pots fer servir aquest i dos de la llista de pool.ntp.org.</p>
 	
-	<p><span class="hook">It can rarely happen that you are assigned the same timeserver twice</span> -
-	just restarting the ntp server usually solves this problem.  If you
-	use a country zone, please note that it may be because there is only
-	one server known in the project - better use a continental zone in
-	that case.  You can <a href="/zone">browse the zones</a> to see how
-	many servers we have in each zone.</p>
+	<p><span class="hook">En alguns casos pot passar que us assignen el mateix servidor dues vegades -
+	reinicant el vostre servidor ntp normalment solucioneu aquest problema. Si utilitzeu una zona
+	de país, tingue en compte que la causa pot ser que només hi ha un servidor de temps en
+	aquesta zona (en aquest projecte) - en aquest cas seria millor fer servir la zona de continent.
+	Pots <a href="/zone">navegar per les zones</a> per mirar quants servidors hi ha a cada zona.
 	
-	<p><span class="hook">Be friendly</span>. Many servers are provided by volunteers, and almost all time
-	servers are really file or mail or webservers which just happen to also run ntp.
-	So don't use more than three time servers in your configuration, and don't play
-	dirty tricks with <tt>burst</tt> or <tt>minpoll</tt> - all you will gain is
-	that this project will be stopped sooner or later.</p>
+	<p><span class="hook">Sigueu amable</span>. Molts servidors els mantenen voluntaris i gairebé
+	sempre els servidors són servidors d'arxius o d'email o de web que de pas també executen ntp.
+	Per tant no feu servir més de tres servidors a la vostre configuració i no feu jocs bruts
+	amb <tt>burst</tt> o <tt>minpoll</tt> - tot el que guanyaràs serà que aquest projecte morirà
+	tard o d'hora.
 	
-	<p><span class="hook">Make sure that the <i>time zone configuration</i> of your computer is correct</span>.
-	ntpd itself does not do anything about the time zones, it just uses UTC
-	internally.</p>
+	<p><span class="hook">Assegureu-vos de que la <i>configuració del fus horari</i> del vostre
+	orginador sigui correcte</span>. L'ntp mateix no fa res al respecte, internament només fa servir UTC.</p>
 	
-	<p><span class="hook">If you are synchronising a network to pool.ntp.org</span>, please set up one of your
-	computers as a time server and synchronize the other computers to that one.
-	(you'll have some reading to do - it's not difficult though. And there's always
-	the <a href="news:comp.protocols.time.ntp"
-	>comp.protocols.time.ntp newsgroup</a>.)</p>
+	<p><span class="hook">Si sincronitzeu una xarxa a pool.ntp.org</span>, sisplau establiu un dels
+	vostres ordinadors com a servidor de temps i sincronitzeu-n'hi els altres.
+	(haureu de llegir una mica - però no és difícil. I en tot cas teniu el grup
+	<a href="news:comp.protocols.time.ntp">comp.protocols.time.ntp</a> a la vostra
+	disposició.)</p>
 	
-	<p class="thanks">At this point, I'd like to thank those donating their time and timeservers to
-	this network.</p>
+	<p class="thanks">M'agradaría donar les gràcies a la gent que dóna el seu temps
+	i els seus servidors de temps a aquesta xarxa.</p>
 </div>
