@@ -1,76 +1,74 @@
 <div class="block">
 
-<h3>Configuration recommendations for servers joining the pool</h3>
+<h3>Configuració recomenada per a servidors que voleu unir al pool</h3>
 
 <p>
-The <a href="http://support.ntp.org/bin/view/Support/WebHome">Support
-section</a> on <a href="http://support.ntp.org/">support.ntp.org</a> has a lot
-of useful information.
+La <a href="http://support.ntp.org/bin/view/Support/WebHome">secció &quot;suport&quot;</a> a
+<a href="http://support.ntp.org/">support.ntp.org</a> conté molta informació útil.
 </p>
 
 <p>
-If you just want to <i>use</i> the pool, see the <a href="/use.html">pool usage</a> page.
+Si només voleu <i>fer servir</i> el pool, vegeu la <a href="/use.html">pàgina sobre l'ús</a>.
 </p>
 
 <p>
-The <a
-href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a>
-newsgroup is the best place to get help with the ntpd software.
+El grup de discussió <a href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a>
+is el millor lloc per obtenir ajuda amb el programari ntpd.
 </p>
 
 <p>
-Below are some things of particular importance if you are going to
-join the NTP Pool with your server.
+Més abaix trobareu algunes coses d'interès particular, si voleu unir el vostre servidor al pool.
 </p>
 
-<h4>Setup about 5 servers</h4>
+<h4>Configureu aproximadament 5 servidors</h4>
 
 <p>
-To work properly ntpd needs to talk to at least 3 servers ("A man with
-a watch knows what time it is. A man with two watches is never sure").
-</p>
-
-<p>
-For servers in the pool we recommend configuring no less than 4 and no
-more than 7 servers.
-</p>
-
-
-<h4>Don't use *.pool.ntp.org servers</h4>
-
-<p>
-Ironically to make sure the pool service is the best it can be you
-shouldn't use the *.pool.ntp.org aliases in your configuration when
-you are going to add your server to the pool.
+Perquè funcioni correctament l'ntpd ha de comunicar-se amb 3 servidors
+com a mínim (&quot;Un home amb un rellotge sap quina hora és. Un home
+amb dos rellotges mai no n'està segur.&quot;).
 </p>
 
 <p>
-For the robustness of the pool it's healthier if all pool operators "hand pick" good local (network wise) time servers.
-The NTP.org wiki has  a <a
-href="http://support.ntp.org/bin/view/Servers/WebHome">list of public
-servers</a>.
+Per a servidors del pool recomanem configurar com a mínim 4 i com a màxim
+7 servidors.
 </p>
 
 
-<h4>Use the standard ntpd</h4>
+<h4>No feu servir servidors de *.pool.ntp.org</h4>
 
 <p>
-We are all for software diversity, but a significant percentage of the
-"it's not working" questions that come in are for software other than
-ntpd.
+Semblarà irònic, però per assegurar-nos de que el pool funcioni de
+la millor manera possible no hauríeu de fer servir *.pool.ntp.org
+a la vostra configuració, si us proposeu d'afegir el vostre servidor
+al pool.
 </p>
 
 <p>
-You can <i>use</i> the pool with any program speaking NTP, but if you
-are going to join the pool we recommend you
-use <a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
+Per tenir un pool robust és millor si tots els operadors trien bons servidors
+de temps locals (respecte a la xarxa) de manera manual. El wiki de NTP.org conté
+una <a href="http://support.ntp.org/bin/view/Servers/WebHome">llista de servidors
+públics</a>.
 </p>
 
 
-<h4>Don't use the LOCAL clock driver</h4>
+<h4>Feu servir l'ntpd estàndard</h4>
 
-<p>Servers in the NTP Pool should not have the LOCAL clock driver
-configured.</p>
+<p>
+Tots estem a favor de diversitat de programari, però un percentatge significant
+de les preguntes a l'estil "no funciona" que ens arriben es refereixen a programari
+que no és l'ntpd.
+</p>
+
+<p>
+Podeu <i>fer servir</i> el pool amb qualsevol programa que sap parlar NTP,
+però si voleu unir el vostre servidor al pool us recomanem que feu servir
+<a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
+</p>
+
+
+<h4>No feu servir el controlador de rellotge &quot;LOCAL&quot;</h4>
+
+<p>Servidors del pool no haurien de tenir configurat el controlador de rellotge &quot;LOCAL&quot;.</p>
 
 
 </div>
