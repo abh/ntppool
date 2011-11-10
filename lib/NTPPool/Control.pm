@@ -246,6 +246,11 @@ sub plain_cookie {
         return $ocookie;
     }
 
+    $args->{domain} = delete $args->{domain}
+        || $self->site && $self->config->site->{$self->site}->{cookie_domain}
+        || $self->request->uri->host
+        || '';  
+
     $args->{path}   ||= '/';
     $args->{expires} = time + ( 30 * 86400 ) unless defined $args->{expires};
     if ($args->{expires} =~ m/^-/) {
