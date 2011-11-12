@@ -1,0 +1,131 @@
+[% page.title = 'Kuinka käytän poolia?' %]
+
+<div class="block">
+	<h3><a name="use"></a>Kuinka käytän poolia?</h3>
+	
+	<p>
+	Jo haluat vain synkronoida tietokoneesi kellon verkkoon, asetustiedosto
+	(<a href="http://www.ntp.org">ntp.org:in jakelupaketin</a> ntpd-ohjelmalle,
+        millä tahansa tuetuista käyytöjärjestelmistä - <b>Linux, *BSD, Windows tai
+        jopa jokin eksoottisempi järjestelmä</b>) on hyvin yksinkertainen:
+	</p>
+
+<pre class="code">
+driftfile /var/lib/ntp/ntp.drift
+
+server 0.pool.ntp.org
+server 1.pool.ntp.org
+server 2.pool.ntp.org
+server 3.pool.ntp.org</pre>
+
+	<p>
+	Nimet 0, 1 ja 2.pool.ntp.org viittaavat satunnaiseen joukkoon palvelimia
+	jotka muuttuvat kerran tunnissa. Varmista että tietokoneesi kello on asetettu
+	jotenkin järkevään aikaam (muutaman minuutin sisään 'oikeasta' ajasta) -
+	voit käyttää komentoa <tt>ntpdate pool.ntp.org</tt>, tai vain komentoa
+	<tt>date</tt> ja aettaa ajan rannekellosi näyttämään aikaan. Käynnistä ntpd,
+        ja jonkin ajan kuluttua (tämä voi kestää jopa puoli tuntia) komennon
+        <tt>ntpq -p</tt> pitäisi näyttää jotakin seuraavanlaista:
+	</p>
+
+<pre class="code ntpq">
+avbidder:~$ ntpq -p
+     remote           refid      st t when poll reach   delay   offset  jitter
+==============================================================================
++81.6.42.224     193.5.216.14     2 u   68 1024  377  158.995   51.220  50.287
+*217.162.232.173 130.149.17.8     2 u  191 1024  176   79.245    3.589  27.454
+-129.132.57.95   131.188.3.222    3 u  766 1024  377   22.302   -2.928   0.508
+</pre> 
+	<p>
+	IP-osoitteet ovat jotain muuta kuin yllä koska sinulle on jaettu satunnaiset
+	aikapalvelimet. Ydinasia tässä on että yksi riveistä alkaa tähtimerkillä
+	(<tt>*</tt>), mikä tarkoittaa että tietokoneesi saa ajan Internetistä -
+	eikä sinun enää koskaan tarvitse huolehtia siitä!
+	</p>
+
+	<p>
+	Koska <tt>pool.ntp.org</tt> jakaa aikapalvelimia ympäri maailmaa, ei ajan
+	laatu ole paras mahdollinen. Pääset hieman parempiin tuloksiin käyttämällä
+	<a href="/zone/@">mantereesi vyöhykettä</a> (esimerkiksi
+	<a href="/zone/europe">europe</a>,
+	<a href="/zone/north-america">north-america</a>,
+	<a href="/zone/oceania">oceania</a>
+	tai <a href="/zone/asia">asia</a>.pool.ntp.org),
+	tai vielä parempia jos käytät maavyöhykettä, kuten ch.pool.ntp.org
+	Sveitsissä. Kaikissa näissä vyöhykkeissä voidaan samalla tavalla käyttää 0, 1
+	tai 2-etuliitettä, kuten 0.ch.pool.ntp.org. Huomaa kuitenkin että maallesi ei
+	välttämättä ole vyöhykettä, tai se saattaa sisältää vain muutamia aikapalvelimia.
+	Jos tiedät aikapalvelimia jotka ovat sinua lähellä (verkon etäisyydessä, mitattuna
+	<tt>traceroute</tt>- tai <tt>ping</tt>-komennolla), on näiden tarjoama aika
+	luultavasti edelleen parempi.
+	</p>
+
+	<p>
+	Jos käytät <b>viimeaikaista Windowsin versiota</b>, voit käyttää myös
+	järjestelmän sisäänrakennettua ntp-asiakasohjelmistoa. Aja vain komento:</p>
+<pre class="code">
+net time /setsntp:pool.ntp.org
+</pre>
+	<p>
+	Joillain Windowsin versioilla voit myös määritellä useampia palvelimia:</p>
+<pre class="code">
+net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
+</pre>
+	<p>
+	Tämä toimii ainakin Windowsin versioissa 2000/XP/2003. Aikapalvelimen voi
+	ottaa käyttöön myös (pääkäyttäjän oikeuksin) klikkaamalla hiiren oikealla
+	painikkeella Tehtäväpalkin oikeassa reunassa olevaa kelloa, valitsemalla
+	'Muuta päivämäärä ja kellonaika' ja syöttämällä palvelimen 'Intenet-aika'
+	-välilehdellä.
+	</p>
+
+	<p>
+	Meinberg on portannut <a href="http://www.meinberg.de/english/sw/ntp.htm">ntp-palvelimen Windowsille</a>.
+	</p>
+
+	<p>
+	Jos Windows-koneesi on domainissa, voi olla ettet pysty päivittämään koneen kelloa omin päin. Katso <a href="http://technet2.microsoft.com/WindowsServer/en/library/71e76587-28f4-4272-a3d7-7f44ca50c0181033.mspx?mfr=true">How Windows Time Service Works</a>.
+	</p>
+</div>
+
+<div class="block">
+	<h3>Huomioita</h3>
+
+	<p><span class="hook">Jos sinulla on staattinen IP-osoite ja kohtuullisen nopea Internet-yhteys</span>
+	(bittinopeus ei ole niin tärkeä tekijä mutta järjestelmän tulisi olla vakaa eikä kovasti kuormitettu),
+	harkitse palvelimesi lahjoittamista pooliin. Se ei tee palvelimellesi muutamaa sataa tavua enempää liikennettä
+	sekunnissa, mutta autat tätä projektia säilymään hengissä. Katso lisätietoja <a href="/join.html">liittymissivulta</a>.	
+	</p>
+	
+	<p><span class="hook">Jos Internet-palveluntarjoajallasi on aikapalvelin</span>, tai jos tiedät hyvän
+	aikapalvelimen lähelläsi, sinun kannattaa käyttää sitä poolin palvelimien sijaan - näin saat luultavasti
+	paremman ajan ja kuormitat samalla verkkoa vähemmän. Jos tiedät vain yhden aikapalvelimen lähelläsi,
+	voit tietenkin käyttää sitä ja lisäksi kahta pool.ntp.org:ista ja niin edelleen.
+	</p>
+	
+	<p><span class="hook">Joskus voi käydä niin että sinulle jaetaan sama aikapalvelin kahdesti</span> -
+	tilanne selviää yleensä käynnistämällä ntp-palvelin uudestaan. Jos käytät maavyöhykettä, huomaa että
+	tämä voi johtua siitä että vyöhykkeeseen ei kuulu kuin yksi palvelin - tässä tapauksessa on parempi
+	käyttää mantereen vyöhkettä. Voit <a href="/zone">selata vyöhykkeitä</a> nähdäksesti kuinka monta
+	palvelinta kussakin on.
+	</p>
+	
+	<p><span class="hook">Ole kohtelias</span>. Monet palvelimista ovat vapaaehtoisten ylläpitämiä, ja lähes
+	kaikki palvelimista ovat oikeastaan tiedosto-, posti- tai webpalvelimia jotka vain sattuvat ajamaan myös
+	ntp:tä. Älä käytä useampaa kuin kolmea palvelinta asetustiedostossasi, äläkä tee ilkeitä temppuja <tt>burst</tt>illa
+	tai <tt>minpoll</tt>illa - teet vain haittaa projektille.
+	</p>
+	
+	<p><span class="hook">Varmista että koneesi <i>aikavyöhykeasetus</i> on oikein</span>.
+	ntpd ei itsessään tiedä mitään aikavyöhykkeistä vaan käyttää sisäisesti UTC:tä.
+	</p>
+	
+	<p><span class="hook">Jos synkronoit kokonaista verkkoa pool.ntp.org:iin</span>, ole hyvä ja aseta yksi
+	paikallisista koneista aikapalvelimeksi ja synkronoi muut koneet tähän koneeseen.
+	(Tämä vaatii hieman järjestelyjä mutta ei oikeasti ole kovin vaikeaa. Ja voit aina kysyä apua
+	<a href="news:comp.protocols.time.ntp">comp.protocols.time.ntp-uutisryhmästä</a>.
+	
+	<p class="thanks">Tässä kohtaa haluaisin lausua kiitokseni heille jotka lahjoittavat aikaansa ja
+	aikapalvelimiaan tähän verkostoon.
+	</p>
+</div>
