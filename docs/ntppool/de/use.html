@@ -71,13 +71,14 @@ net time /setsntp:pool.ntp.org
  <p>
   Manche Versionen von Windows erlauben, mehrere Zeitserver zu setzen:
 <pre class="code">
-net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
+net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 </pre>
  </p>
  <p>
   Dieses Vorgehen wurde f&uuml;r Windows 2000/XP/2003 gepr&uuml;ft. Das
-  gleiche kann als Administrator erreicht werden, wenn Sie mit Rechts auf die
-  Uhrzeit in der Systemleiste klickt und dann auf &quot;Einstellungen&quot;.
+  gleiche kann als Administrator erreicht werden, wenn Sie mit der rechten
+  Maustaste auf die Uhrzeit in der Systemleiste klicken und dann auf
+  &quot;Einstellungen&quot;.
   Dort kann der Zeitserver bzw. die Zone unter &quot;Internetzeit&quot;
   eingetragen werden.
  </p>
@@ -101,7 +102,7 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
  <h3>Zus&auml;tzliche Anmerkungen</h3>
  <p><span class="hook">Wenn Sie &uuml;ber eine statische IP-Adresse und eine
    vern&uuml;nftige Bandbreite verf&uuml;gen</span> (die Bandbreite ist weniger
-  relevant als eine stabile Anbindung) erw&auml;gen Sie bitte, Ihren Server in
+  relevant als eine stabile Anbindung), erw&auml;gen Sie bitte, Ihren Server in
   den NTP Pool mit aufnehmen zu lassen. Der zus&auml;tzlich entstehende Verkehr
   betr&auml;gt im Allgemeinen nicht mehr als ein paar hundert Byte pro
   Sekunde, jedoch helfen Sie dabei, dieses Projekt am Leben zu halten. Bitte <a
@@ -122,9 +123,9 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
   Fall hilft ein einfaches Neustarten des <i>ntpd</i>-Dienstes.
   Wenn Sie L&auml;nderzonen einsetzen, in denen nur wenige Zeitserver
   registriert sind, steigt jedoch die Wahrscheinlichkeit eines solchen Falles.
-  Am besten setzten Sie dann auf kontinentale Zonen. In der <a
+  Am besten setzen Sie dann auf kontinentale Zonen. In der <a
    href="/zone">Liste der Zonen</a> k&ouml;nnen Sie durch alle Zonen
-  bl&auml;tterni, um zu sehen wieviele Server sich in welcher Zone befinden.</p>
+  bl&auml;ttern, um zu sehen, wieviele Server sich in welcher Zone befinden.</p>
 
  <p><span class="hook">Seien Sie freundlich</span>. Viele Server werden von
   Freiwilligen betrieben und fast alle werden auch f&uuml;r private Zwecke
