@@ -88,4 +88,24 @@ msgstr "グラフは意味することは?"
 msgid  "CSV log"
 msgstr "CSVログ"
 
+# tpl/navigation_sidebar.html
+msgid  "News"
+msgstr "ニュース"
 
+msgid  "How do I <i>use</i> pool.ntp.org?"
+msgstr "pool.ntp.orgの<i>利用</i>方法は?"
+
+msgid  "How do I <i>join</i> pool.ntp.org?"
+msgstr "pool.ntp.orgへの<i>参加</i>方法は?"
+
+msgid  "Information for vendors"
+msgstr "ベンダ向け情報"
+
+msgid  "The mailing lists"
+msgstr "メーリングリスト"
+
+msgid  "Additional links"
+msgstr "追加リンク"
+
+msgid  "Can you translate?"
+msgstr "翻訳して頂けますか?"
