@@ -18,7 +18,7 @@ server 1.pool.ntp.org
 server 2.pool.ntp.org
 server 3.pool.ntp.org</pre>
 	<p>
-	Імена 0, 1 та 2.pool.ntp.org вказують на випадково обрані сервери з пулу, 
+	Імена 0, 1, 2 та 3.pool.ntp.org вказують на випадково обрані сервери з пулу, 
 	які переобираються кожну годину. Переконайтесь в тому, що годинник вашого комп'ютера 
 	вказує на час, близький до реального. Можна зробити одноразову синхронізацію, виконавши 
 	<tt>ntpdate pool.ntp.org</tt>, або просто встановити час вручну за допомогою 
@@ -62,7 +62,7 @@ net time /setsntp:pool.ntp.org
 	<p>
 	В Windows деяких версій можливо вказувати більше одного серверу:
 <pre class="code">
-net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
+net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 </pre>
 	</p>
 	<p>

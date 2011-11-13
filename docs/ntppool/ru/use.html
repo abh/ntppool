@@ -18,7 +18,7 @@ server 1.pool.ntp.org
 server 2.pool.ntp.org
 server 3.pool.ntp.org</pre>
 	<p>
-	Имена 0, 1 и 2.pool.ntp.org указывают на случайно выбранные из пула сервера
+	Имена 0, 1, 2 и 3.pool.ntp.org указывают на случайно выбранные из пула сервера
 	(выбираются заново каждый час). Перед запуском ntpd убедитесь, что
 	погрешность ваших часов находится в разумных пределах (не&nbsp;превышает
 	нескольких минут). Для этого можно провести моментальную синхронизацию с
@@ -68,7 +68,7 @@ net time /setsntp:pool.ntp.org
 	<p>
 	В некоторых версиях Windows можно указывать более одного сервера:
 <pre class="code">
-net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
+net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 </pre>
 	</p>
 

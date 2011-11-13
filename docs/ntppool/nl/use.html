@@ -19,7 +19,7 @@ server 1.pool.ntp.org
 server 2.pool.ntp.org
 server 3.pool.ntp.org</pre>
 	<p>
-	De 0, 1 en 2.pool.ntp.org namen wijzen naar een willekeurige verzameling van
+	De 0, 1, 2 en 3.pool.ntp.org namen wijzen naar een willekeurige verzameling van
 	servers die elk uur wijzigd. zorg ervoor dat de klok van de computer ingesteld
 	is op een reële waarde (binnen enkele minuten van de 'ware' tijd) - je kunt <tt>ntpdate
 	pool.ntp.org</tt> gebruiken, of je zou gewoon het <tt>date</tt> commando kunnen gebruiken en
@@ -68,7 +68,7 @@ net time /setsntp:pool.ntp.org
 	<p>
 	Bij sommige Windows versies kun je ook meer dan één server opgeven
 <pre class="code">
-net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
+net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 </pre>
 	</p>
 	<p>
