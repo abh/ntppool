@@ -1,0 +1,37 @@
+<div id="graph_explanation_box" class="graph_explanation [% graph_explanation ? 'visible' : '' %]">
+
+
+<h3>Tulosgraafi</h3>
+
+<p>
+Muutamia kertoja tunnissa järjestelmä tarkistaa ajan palvelimeltasi ja
+vvertaa sitä paikalliseen aikaan. Pisteitä vähennetään mikä palvelimeen
+ei saada yhteyttä tai mikäli aika heittää enemmällä kuin 100 millisekunnilla
+(mitattuna suhteellisen karkeasti monitorointijärjestelmästä). Mitä suurempi
+erotus on, sitä enemmän pisteitä vähennetään.
+</p>
+
+<p>
+Kun tulos laskee, muuttuu kuvaajan yläosan taustan väli kuvaamaan kuinka
+"vakavasta" häiriöstä oli kyse. Väriskaala ulottuu sinisestä (hyvin pientä
+ongelmaa) keltaisen ja oranssin kautta punaiseen (palvelimen kello on useita
+sekunteja pielessä tai siihen ei saada lainkaan yhteyttä). Johtuen graafin
+keskiarvoistamistavasta ei väristä aina voi päätellä mitä tarkalleen ottaen
+tapahtui. Sen tarkoitus on vain visualisoida trendejä. Saat tarkempia
+yksityiskohtia lataamalla linkistä CSV-muotoisen raportin.
+</p>
+
+<h3>Poikkeamagraafi</h3>
+
+<p>
+Monitorointijärjestelmä toimii suurin piirtein kuin
+<a href="http://www.ntp.org/ntpfaq/NTP-s-def.htm#AEN1242">SNTP</a>-asiakas
+(<a href="http://www.eecis.udel.edu/~mills/database/rfc/rfc2030.txt">RFC 2030</a>),
+joten se on herkempi palvelimen ja monitorointijärjetelmän välisille satunnaisille
+latenssivaihteluille kuin tavallinen ntp-asiakasohjelma olisi. Toisin sanoen:
+älä hätäänny ajoittaisista suuristakaan poikkeamista äläkä pidä poikkeamaa
+absoluuttisena suorituskyvyn mittana.
+</p>
+
+</div>
+
