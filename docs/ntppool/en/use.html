@@ -57,19 +57,18 @@ avbidder:~$ ntpq -p
 	even better.
 	</p>
 	<p>
-	If you're using <b>a recent Windows version</b>, you can also use the ntp
-	client that is built into the system. Just execute:</p>
+	If you're using <b>a recent Windows version</b>, you can use the ntp
+	client that is built into the system. As administrator enter</p>
 <pre class="code">
-net time /setsntp:pool.ntp.org
+w32tm /config /syncfromflags:manual /manualpeerlist:0.pool.ntp.org,1.pool.ntp.org,2.pool.ntp.org,3.pool.ntp.org
 </pre>
 	<p>
-	With some versions of Windows you can also specify more than one server
+	at the command prompt.  This will work on Windows 2003 and newer.  If you use an
+	older version of windows you can try
 <pre class="code">
 net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
 </pre>
-	</p>
-	<p>
-	at the command prompt. This is known to work on Windows 2000/XP/2003.  The same
+	The same
 	can be achieved by, as administrator, right-clicking the clock in the taskbar,
 	selecting 'Adjust Date/Time' and entering the server name in the 'Internet Time'
 	tab.
@@ -80,7 +79,9 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
 	</p>
 
 	<p>
-	If your Windows system is part of a domain, you might not be able to independently update your computer time.  See <a href="http://technet.microsoft.com/en-us/library/cc773013%28WS.10%29.aspx">How Windows Time Service Works</a>.
+	If your Windows system is part of a domain, you might not be able to independently update your computer time.
+	
+	For more information about setting the time on windows, see <a href="http://technet.microsoft.com/en-us/library/cc773013%28WS.10%29.aspx">How Windows Time Service Works</a>.
 	</p>
 </div>
 
