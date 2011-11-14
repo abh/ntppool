@@ -6,7 +6,7 @@
 	<p>
 	Jo haluat vain synkronoida tietokoneesi kellon verkkoon, asetustiedosto
 	(<a href="http://www.ntp.org">ntp.org:in jakelupaketin</a> ntpd-ohjelmalle,
-        millä tahansa tuetuista käyytöjärjestelmistä - <b>Linux, *BSD, Windows tai
+        millä tahansa tuetuista käyttöjärjestelmistä - <b>Linux, *BSD, Windows tai
         jopa jokin eksoottisempi järjestelmä</b>) on hyvin yksinkertainen:
 	</p>
 
@@ -19,9 +19,9 @@ server 2.pool.ntp.org
 server 3.pool.ntp.org</pre>
 
 	<p>
-	Nimet 0, 1 ja 2.pool.ntp.org viittaavat satunnaiseen joukkoon palvelimia
+	Nimet 0, 1, 2 ja 3.pool.ntp.org viittaavat satunnaiseen joukkoon palvelimia
 	jotka muuttuvat kerran tunnissa. Varmista että tietokoneesi kello on asetettu
-	jotenkin järkevään aikaam (muutaman minuutin sisään 'oikeasta' ajasta) -
+	jokseenkin järkevään aikaan (muutaman minuutin sisään 'oikeasta' ajasta) -
 	voit käyttää komentoa <tt>ntpdate pool.ntp.org</tt>, tai vain komentoa
 	<tt>date</tt> ja aettaa ajan rannekellosi näyttämään aikaan. Käynnistä ntpd,
         ja jonkin ajan kuluttua (tämä voi kestää jopa puoli tuntia) komennon
@@ -52,28 +52,27 @@ avbidder:~$ ntpq -p
 	<a href="/zone/oceania">oceania</a>
 	tai <a href="/zone/asia">asia</a>.pool.ntp.org),
 	tai vielä parempia jos käytät maavyöhykettä, kuten ch.pool.ntp.org
-	Sveitsissä. Kaikissa näissä vyöhykkeissä voidaan samalla tavalla käyttää 0, 1
-	tai 2-etuliitettä, kuten 0.ch.pool.ntp.org. Huomaa kuitenkin että maallesi ei
+	Sveitsissä. Kaikissa näissä vyöhykkeissä voidaan samalla tavalla käyttää 0, 1, 2
+	tai 3-etuliitettä, kuten 0.ch.pool.ntp.org. Huomaa kuitenkin että maallesi ei
 	välttämättä ole vyöhykettä, tai se saattaa sisältää vain muutamia aikapalvelimia.
 	Jos tiedät aikapalvelimia jotka ovat sinua lähellä (verkon etäisyydessä, mitattuna
 	<tt>traceroute</tt>- tai <tt>ping</tt>-komennolla), on näiden tarjoama aika
-	luultavasti edelleen parempi.
+	luultavasti parempi.
 	</p>
 
 	<p>
 	Jos käytät <b>viimeaikaista Windowsin versiota</b>, voit käyttää myös
 	järjestelmän sisäänrakennettua ntp-asiakasohjelmistoa. Aja vain komento:</p>
 <pre class="code">
-net time /setsntp:pool.ntp.org
+w32tm /config /syncfromflags:manual /manualpeerlist:0.pool.ntp.org,1.pool.ntp.org,2.pool.ntp.org,3.pool.ntp.org
 </pre>
 	<p>
-	Joillain Windowsin versioilla voit myös määritellä useampia palvelimia:</p>
+	Joillain vanhemmilla Windowsin versioilla annetaan seuraavan kaltainen komento:</p>
 <pre class="code">
-net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
+net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 </pre>
 	<p>
-	Tämä toimii ainakin Windowsin versioissa 2000/XP/2003. Aikapalvelimen voi
-	ottaa käyttöön myös (pääkäyttäjän oikeuksin) klikkaamalla hiiren oikealla
+	Saman saa aikaiseksi myös (pääkäyttäjän oikeuksin) klikkaamalla hiiren oikealla
 	painikkeella Tehtäväpalkin oikeassa reunassa olevaa kelloa, valitsemalla
 	'Muuta päivämäärä ja kellonaika' ja syöttämällä palvelimen 'Intenet-aika'
 	-välilehdellä.
@@ -84,7 +83,7 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
 	</p>
 
 	<p>
-	Jos Windows-koneesi on domainissa, voi olla ettet pysty päivittämään koneen kelloa omin päin. Katso <a href="http://technet2.microsoft.com/WindowsServer/en/library/71e76587-28f4-4272-a3d7-7f44ca50c0181033.mspx?mfr=true">How Windows Time Service Works</a>.
+	Jos Windows-koneesi on domainissa, voi olla ettet pysty päivittämään koneen kelloa omin päin. Katso <a href="http://technet.microsoft.com/en-us/library/cc773013%28WS.10%29.aspx">How Windows Time Service Works</a>.
 	</p>
 </div>
 
@@ -92,7 +91,7 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
 	<h3>Huomioita</h3>
 
 	<p><span class="hook">Jos sinulla on staattinen IP-osoite ja kohtuullisen nopea Internet-yhteys</span>
-	(bittinopeus ei ole niin tärkeä tekijä mutta järjestelmän tulisi olla vakaa eikä kovasti kuormitettu),
+	(kaista ei ole niin tärkeä tekijä mutta järjestelmän tulisi olla vakaa, eikä liian kuormitettu),
 	harkitse palvelimesi lahjoittamista pooliin. Se ei tee palvelimellesi muutamaa sataa tavua enempää liikennettä
 	sekunnissa, mutta autat tätä projektia säilymään hengissä. Katso lisätietoja <a href="/join.html">liittymissivulta</a>.	
 	</p>
@@ -106,7 +105,7 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
 	<p><span class="hook">Joskus voi käydä niin että sinulle jaetaan sama aikapalvelin kahdesti</span> -
 	tilanne selviää yleensä käynnistämällä ntp-palvelin uudestaan. Jos käytät maavyöhykettä, huomaa että
 	tämä voi johtua siitä että vyöhykkeeseen ei kuulu kuin yksi palvelin - tässä tapauksessa on parempi
-	käyttää mantereen vyöhkettä. Voit <a href="/zone">selata vyöhykkeitä</a> nähdäksesti kuinka monta
+	käyttää mantereen vyöhykettä. Voit <a href="/zone">selata vyöhykkeitä</a> nähdäksesti kuinka monta
 	palvelinta kussakin on.
 	</p>
 	
