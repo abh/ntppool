@@ -17,6 +17,15 @@ sub render {
 
     $self->no_cache(1);
 
+    if ($self->request->path eq '/monitor/map') {
+        my $servers = NP::Model->server->get_objects;
+        my $now = DateTime->now;
+        my $map = {map { 
+            my $deleted = ($_->deletion_on and $_->deletion_on > $now) ? 1 : 0;
+            ($_->ip => {id => $_->id, deleted => $deleted}) } @$servers};
+        return OK, $json->encode($map);
+    }
+
     my $api_key = $self->req_param('api_key')
       or return $self->error('Missing required api_key parameter');
 
