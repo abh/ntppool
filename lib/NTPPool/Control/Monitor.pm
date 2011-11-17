@@ -23,6 +23,7 @@ sub render {
         my $map = {map { 
             my $deleted = ($_->deletion_on and $_->deletion_on < $now) ? 1 : 0;
             ($_->ip => {id => $_->id, deleted => $deleted}) } @$servers};
+        $self->cache_control('max-age=90');
         return OK, $json->encode($map);
     }
 
