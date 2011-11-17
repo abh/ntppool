@@ -21,7 +21,7 @@ sub render {
         my $servers = NP::Model->server->get_objects;
         my $now = DateTime->now;
         my $map = {map { 
-            my $deleted = ($_->deletion_on and $_->deletion_on > $now) ? 1 : 0;
+            my $deleted = ($_->deletion_on and $_->deletion_on < $now) ? 1 : 0;
             ($_->ip => {id => $_->id, deleted => $deleted}) } @$servers};
         return OK, $json->encode($map);
     }
