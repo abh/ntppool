@@ -138,7 +138,7 @@ sub history {
             ($monitor_id && $monitor_id eq '*' ? () : (monitor_id => $monitor_id)),
             ($since ? (ts => {'>' => $since}) : ())
         ],
-        sort_by => 'ts desc',
+        sort_by => 'ts ' . ( $since ? "" : "desc"),
         limit   => $count,
     );
 }
