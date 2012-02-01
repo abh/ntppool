@@ -33,7 +33,9 @@ $Net::NTP::CLIENT_TIME_RECEIVE = undef;
 my $mon_host = 'localhost';
 my %pkt = eval { get_ntp_response($mon_host) };
 if (!$pkt{'Stratum'} or $pkt{'Stratum'} == 0 or $pkt{'Stratum'} > 6) {
-    die "monitoring server not synchronized\n";
+    warn "monitoring server not synchronized\n";
+    sleep 10;
+    exit 2;
 }
 
 #use Data::Dump qw(pp);
