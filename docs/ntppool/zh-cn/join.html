@@ -1,0 +1,73 @@
+[% page.title = '加入 NTP Pool!'  %]
+
+<div class="block">
+	<h3><a name="join">如何加入 pool.ntp.org?</a></h3>
+	<p>
+	首先: 感谢您对此感兴趣。使用pool服务的客户群在巨大的增长,我们只有一个办法来
+	保证所有人都能轻松容易的使用pool服务，那就是不断增加参与的服务器的数量。
+	</p>
+
+	<p>
+	您的服务器 <b>必须拥有一个静态IP地址</b> 和一个持久稳定的网络连接。
+	这一点非常重要，对于您的IP地址来说是不能改变的或者非常少频率的变更 (一年一次或几年一次)。
+	项目需求的带宽非常低，每个客户端每20分钟只是发送一对UDP数据包。
+	</p>
+
+	<p>
+	当前多数服务器获得每秒 5-15 个NTP包和每天间隔数次的每秒60-120个左右的数据包。
+	这大致相当于 10-15Kbit/秒 和 50-120Kbit/秒。这个项目拥有稳定数量的时间服务器， 
+	所以每个服务器的负荷不会很高。用专业术语来说，您需要至少384-512Kbit的带宽 (上传和下行).
+	</p>
+	<p>
+	这有一些服务器的 traffic/load 图:
+	[% i = 0; FOR server = combust.servers_with_urls; %]
+	   <a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
+	[% END %]
+	</p>
+
+	<p>
+	这台加入的服务器不应该将 <tt>pool.ntp.org</tt> 作为其上游服务器, 
+	但是应该手动配置一些 <a href="http://support.ntp.org/bin/view/Servers/StratumTwoTimeServers">good servers</a> 
+	(这些服务器<b>也可以</b>从pool选择，重要的一点是它们因该是静态随机的组合在一起而不是
+	每次服务器重启时随机获得,这将有助于提供一个优质的服务。)
+        
+	注意，这并不是必须要求您的服务器是1层或2层的设计，这个项目主要是的负载的分配。
+        没有什么原因会拒绝3层或4层的服务器的加入。
+	</p>
+
+	<p>
+	关于配置 <a href="/join/configuration.html">configuration recommendations for servers joining the pool</a> 的页面.
+	</p>
+	<p>最后，我必须要强调的是：加入pool 应该是一个 <b>长期的承诺</b>。
+	如果您的情况发生变化我们也欢迎您退出pool。但是由于不同ntp客户端
+	的设置 <b>这个过程会持续数周, 几个月甚至一年直至流量变为零</b>.
+	</p>
+
+	<p>
+	如果已经做完了这些, 请登录
+	<a href="/manage">server management</a> 这个页面并提交加入您服务器的请求. 
+	您有任何关于系统方面的问题, 都可以发邮件到 <a
+	href="mailto:ask@develooper.com">ask@develooper.com</a>.
+	</p>
+	<p>
+	我们建议您订阅<a href="http://news.ntppool.org/atom.xml">weblog feed</a>
+	或者订阅 <a href="https://lists.ntp.org/listinfo/pool">pool mailing list</a>.
+	</p>
+	<p>
+	这样做也许会更好 (但这不是必需的) 假如您可以重定向您服务器上的80端口请求到官方
+	主页 <tt>http://www.pool.ntp.org</tt> 上的话。如果您使用的是Apache,您可以这样做:
+	</p>
+
+        [% PROCESS tpl/join/virtual_host_example.html %]
+
+	<p>
+	进一步来说, 下面仅仅针对的是您已经运行有webserver服务器来说. 项目的官方主页The official project web 
+	一直有'www' 前缀 - 但是有时，偷懒的人们只是键入 <tt>pool.ntp.org</tt> 这时他们会惊讶的发现他们被跳转
+	到了一个随机的页面。
+	</p>
+	<p>
+	一旦您的服务器加入到pool 集群中,我们会持续监测其可用性和精确度，
+	您可以通过以下链接查看服务器的性能利用情况。
+        <a href="scores">web frontend</a> 或者 <a href="/manage">management page</a>.
+	</p>
+</div>

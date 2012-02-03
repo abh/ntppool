@@ -1,0 +1,111 @@
+[% page.title = '如何使用pool来设置NTP?' %]
+
+<div class="block">
+	<h3><a name="use"></a>如何使用 pool.ntp.org?</h3>
+	
+	<p>
+        如果您仅仅想让您的电脑通过网络同步时钟，那么配置文件 (来自于ntpd计划 
+        <a href="http://www.ntp.org">ntp.org 分布</a>, 在任何支持的操作系统上 - 
+        <b>Linux, *BSD, Windows 和其它各异的操作系统</b>) 都是非常简单的:
+	</p>
+
+<pre class="code">
+driftfile /var/lib/ntp/ntp.drift
+
+server 0.pool.ntp.org
+server 1.pool.ntp.org
+server 2.pool.ntp.org
+server 3.pool.ntp.org</pre>
+	<p>
+	0, 1, 2 和 3.pool.ntp.org 域名分别指向了每个小时随机变化的不同服务器。
+        手动校对您的计算机时间 (使得和“正确”时间差别在几分钟之内) - 您可以使用
+       <tt>ntpdate pool.ntp.org</tt>, 或者您可以使用 <tt>date</tt> 命令来设置成您手
+       表上的时间。启动 ntpd, 然后过一段时间后 (或许有一个半小时!),使用 <tt>ntpq -pn</tt> 
+       命令，它的输出大概类似这样:
+	</p>
+<pre class="code ntpq">
+avbidder:~$ ntpq -p
+     remote           refid      st t when poll reach   delay   offset  jitter
+==============================================================================
++81.6.42.224     193.5.216.14     2 u   68 1024  377  158.995   51.220  50.287
+*217.162.232.173 130.149.17.8     2 u  191 1024  176   79.245    3.589  27.454
+-129.132.57.95   131.188.3.222    3 u  766 1024  377   22.302   -2.928   0.508
+</pre> 
+	<p>
+	IP地址会不尽相同, 因为您获得的是随机分配的时间服务器,最重要的是从星号 (<tt>*</tt>)开
+        始的那一行,这意味这您的计算机成功从网络获取到时间。- 您再也不用担心它（时间）错误了!
+	</p>
+	<p>
+	而<tt>pool.ntp.org</tt> 可能会分配给你全世界任何时间服务器, 时间的准确性也许不会是最
+        理想的. 这样做您将获得更好的结果
+	使用 <a href="/zone/@">continental zones</a> (例如
+	<a href="/zone/europe">europe</a>,
+	<a href="/zone/north-america">north-america</a>,
+	<a href="/zone/oceania">oceania</a>
+	或者 <a href="/zone/asia">asia</a>.pool.ntp.org),
+	最好的方法是使用国家区域 (比如在瑞士可以使用
+	ch.pool.ntp.org ) - 对于所有的区域来说, 您同样可以使用 0,
+	1 或 2 前缀, 比如 0.ch.pool.ntp.org.  重要的是: 不管怎样, 即使您所在国家不在区域码内, 又或者
+	这个国家只有一个或者二个时间服务器，如果您知道离您最近的时间服务器 (依据的是网络距离, 使用
+        <tt>traceroute</tt> 或 <tt>ping</tt>),时间的准确性会更高.
+	</p>
+	<p>
+	如果您使用 <b>一个较新版本的 Windows 系统</b>, 您可以使用系统内置的ntp客户端. 在管理员
+        模式下命令行窗口中键入</p>
+<pre class="code">
+w32tm /config /syncfromflags:manual /manualpeerlist:0.pool.ntp.org,1.pool.ntp.org,2.pool.ntp.org,3.pool.ntp.org
+</pre>
+	<p>
+	对于命令提示行.  这将在windows 2003 之后的操作系统起作用. 如果您使用一个较旧版本的windows系统
+        您可以使用
+<pre class="code">
+net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
+</pre>
+	同样的
+	能够实现, 在系统管理员用户下, 右键点击任务栏上的时钟,
+	选择“调整日期/时间”，在“Internet时间”选项下填上服务器名字。
+	</p>
+
+	<p>
+	Meinberg 做了一个端口<a href="http://www.meinberg.de/english/sw/ntp.htm">ntp daemon for windows</a>.
+	</p>
+
+	<p>
+	如果您的Windows system处于域系统中，您可能无法独自更新您的系统时间。
+	关于更多的设置 windows 系统时间, 请查看 <a href="http://technet.microsoft.com/en-us/library/cc773013%28WS.10%29.aspx">How Windows Time Service Works</a>。
+	</p>
+</div>
+
+<div class="block">
+	<h3>更多信息</h3>
+	<p><span class="hook"> 如果您拥有一个静态IP地址和良好的网络环境</span> 
+	(带宽不是最重要的, 但是您的网络连接应该是稳定而且低延迟的),请考虑将您的
+	服务器加入到pool集群中来吧.它每秒钟仅仅使用您几Kb的流量,但是您确能帮助项目更好的发展。
+	点击阅读 <a href="/join.html"> 加入计划 </a>页面查看更多信息。
+	</p>
+	
+	<p><span class="hook">如果您的网络接入已经为您提供了时间服务器</span>，
+	或者您知道离您很近的一个时间服务器, 您应该使用那台而不是在这里列出的 - 这样您将能获得
+	更准确的时间，同时也最节省网络资源。如果你知道只有一个时间服务器靠近你，你可以使用它，
+	当然你也可以使用pool.ntp.org或者其他。</p>
+	
+	<p><span class="hook">连续两次分配给您相同的时间服务器的情况确实有可能会发生</span> -
+	重启 ntp 服务应该会解决这个问题。假如您使用了区域码，请注意，有可能是在此区域
+	只有一台该项目的服务器 - 在这种情况下要更好的使用， 您可以 
+	<a href="/zone">browse the zones</a> 查看各地区的时间服务器数量</p>
+	
+	<p><span class="hook">友情提示</span>。许多服务器是由志愿者提供，而且几乎所有的时间
+        服务器是真正的文件或电子邮件或Web服务器，恰好也运行NTP服务。所以，在您的配置中不要使用超过
+	三个时间服务器，不要耍弄<tt>伎俩</tt> 或者 <tt>作弊</tt> - 这样您所有你获得的方案
+	被关闭只是迟早的问题。</p>
+	
+	<p><span class="hook">确保您的主机 <i>time zone configuration</i> 设置是正确的</span>。
+	ntpd 本身并不能设置时区，它使用的是系统内部的 UTC。</p>
+	
+	<p><span class="hook">如果您通过 pool.ntp.org 同步您的计算机网络</span>，请将其中的一台
+	设置成时间服务器并让其他服务器通过这台机器来同步时间。 
+	(按照阅读的提示来做 - 这其实并不难。 而且您可以查看 <a href="news:comp.protocols.time.ntp"
+	>comp.protocols.time.ntp newsgroup</a>.)</p>
+	
+	<p class="thanks">在此，我想感谢那些捐献他们时间精力和服务器到这个网络中来的人们。</p>
+</div>
