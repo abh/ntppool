@@ -5,6 +5,7 @@ use Combust::Constant qw(OK DECLINED);
 use NP::Model;
 use Imager ();
 use List::Util qw(min);
+use JSON qw(encode_json);
 
 BEGIN {
   die "Imager module needs to be compiled with png support"
@@ -42,7 +43,7 @@ sub render {
           return 404 unless $server;
           return $self->redirect('/scores/' . $server->ip, 301) unless $p eq $server->ip;
 
-          if ($mode eq 'log' or $self->req_param('log')) {
+          if ($mode eq 'log' or $self->req_param('log') or $mode eq 'json') {
               my $limit = $self->req_param('limit') || 0;
               $limit = 50 unless $limit and $limit !~ m/\D/;
               $limit = 4000 if $limit > 4000;
@@ -59,7 +60,27 @@ sub render {
                   $self->cache_control('s-maxage=300');
               }
 
-              return OK, $server->log_scores_csv($options), 'text/plain';
+            if ($mode eq 'json') {
+                #local ($Rose::DB::Object::Debug, $Rose::DB::Object::Manager::Debug) = (1, 1);
+                # This logic should probably just be in the server
+                # model, similar to log_scores_csv.
+
+                my $history = $server->history($options);
+                $history = [
+                    map {
+                        my $h      = $_;
+                        my %h      = ();
+                        my @fields = qw(offset step score monitor_id);
+                        @h{@fields} = map { $h->$_; } @fields;
+                        $h{ts} = $h->ts->epoch;
+                        \%h;
+                      } @$history
+                ];
+                return OK, encode_json({history => $history}), 'application/json';
+            }
+              else {
+                  return OK, $server->log_scores_csv($options), 'text/plain';
+              }
           }
           elsif ($mode eq 'rrd') {
               # TODO: check that rrd is up-to-date
