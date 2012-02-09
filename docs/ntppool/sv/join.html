@@ -1,0 +1,98 @@
+[% page.title = 'Gå med i NTP Pool!'  %]
+
+<div class="block">
+	<h3><a name="join">Hur går jag med i pool.ntp.org?</a></h3>
+	<p>
+	Till att börja med: Tack för att du frågar.  Utnyttandet av 
+	poolen har ökat enormt mycket och enda sättet vi kan se till att 
+	uppgiften att driva en tidsserver inte blir alltför betungande, är
+	att se till antalet deltagande servrar växer.
+	</p>
+
+	<p>
+	Din dator <b>måste ha en statisk IP address</b> och ständig kontakt 
+	med internet.  Det är mycket viktigt att din IP-adress aldrig
+	ändras, eller att det sker extremt sällan (högst någon gång per år).
+	Det krävs inga stora hastigheter. Varje klient skickar bara ett par
+	UDP-paket med några minuters mellanrum, upp till var tjugonde minut.
+	</p>
+
+	<p>
+	För närvarande får varje server mellan 5 och 15 paket per sekund, 
+	med toppar ett par gånger om dagen på 60-120 paket per sekund.
+	Det motsvarar i grova drag 10-15Kbit/s med toppar på
+	50-120Kbit/s.  Projektet värvar ständigt nya tidsservrar så
+	belastningen för varje enskild server bör inte komma att ändras 
+	alltför mycket.  I realiteten, behöver du nog ha en anslutnings på
+	mins 384-512Kbit/s (både upp- och nedströms).
+	</p>
+	<p>
+	Här är några servrar med grafer för trafik och belastning:
+	[% i = 0; FOR server = combust.servers_with_urls; %]
+	   <a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
+	[% END %]
+	</p>
+
+	<p>
+	Servrar som går med skall inte använda <tt>pool.ntp.org</tt> för sin 
+	egen synkronisering, utan vara konfigurerade med några
+	<a href="http://support.ntp.org/bin/view/Servers/StratumTwoTimeServers">bra servrar</a>
+	manuellt (dessa servrar
+	<b>kan</b> hämtas från poolen, vitsen är att de skall vara statiskt 
+	angivna, i stället för att väljas slumpvis varje gång servern 
+	startar om.  Detta hjälper till att upprätthålla en godtagbar standard.)
+
+	Observera att det inte är nödvändigt att din server hämtar sin tid
+	från en tidsserver i stratum 1 eller 2. Eftersom detta projekt framför 
+	allt handlar om lastdelning, är även servrar i stratum 3
+	eller rentav stratum 4 välkomna.
+	</p>
+
+	<p>
+	Vi har en sida med <a href="/join/configuration.html">rekommenderade
+	inställningar för servrar som ingår i poolen</a>.
+	</p>
+	<p>Slutligen vill jag betona att deltagande i denna pool är ett 
+	<b>långsiktigt åtagande</b>.  Vid behov kan vi plocka bort en server
+	ur poolen när som helst, men på grund av ntp-klienternas beteende
+	så <b>tar det veckor, månader eller till och med FLERA ÅR innan
+	inkommande trafik helt försvinner</b>.
+	</p>
+
+	<p>
+	Om allt detta är ok för dig, logga då in på sidan för 
+	<a href="/manage">hantering av servrar</a> och begär att din server läggs in.
+	Om du har några problem med systemet, skicka då e-post till mig på <a
+	href="mailto:ask@develooper.com">ask@develooper.com</a>.
+	</p>
+	<p>
+	Dessutom ber jag dig att även prenumera på vår
+	<a href="http://news.ntppool.org/atom.xml">blog feed</a>
+	och kanske också <a href="https://lists.ntp.org/listinfo/pool">poolens
+	distributionslista</a>.
+	</p>
+	<p>
+	Det vore trevligt (men är inte nödvändigt) om du kan vidarebefordra
+	web-förfrågningar på port 80 på din server, till projektets officiella
+	hemsida på
+	<tt>http://www.pool.ntp.org</tt>. Om du kör Apache, kan du ordna det så här:
+	</p>
+
+        [% PROCESS tpl/join/virtual_host_example.html %]
+
+	<p>
+	Men, som sagt, det är bara om redan har en web-server. Den officiella webbsidan
+	för projektet anges alltid med 'www' i början, men ibland är människor lata
+	och skriver bara in <tt>pool.ntp.org</tt> i adressfältet, och sedan blir de 
+	förvånade, när de får en helt slumpartade webbsida tillbaka.
+	</p>
+	<p>
+	När servern lagts till i poolen, så övervakas dess tillgänglighet och 
+	tidsnoggrannhet.  Du kan se din servers resultat på 
+	<a href="scores">webb-gränssnittet</a> eller på 
+	<a href="/manage">administrationssidan</a>.
+	</p>
+</div>
+
+
+
