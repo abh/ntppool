@@ -4,7 +4,7 @@ Subject: New vendor zone application: [% vz.zone_name %]
 
 [% combust.user.username %] requested a [% vz.zone_name %] zone for [% vz.organization_name %].
 
-[% combust.config.base_url('ntppool') %]/manage/vendor/zone?id=[% vz.id %]
+[% combust.manage_url('/manage/vendor/zone?id=' + vz.id) %]
 
 Notes:
 
