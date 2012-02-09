@@ -16,10 +16,10 @@ msgid "Asia"
 msgstr "Asien"
 
 msgid "North America"
-msgstr "Nord Amerkca"
+msgstr "Nord-Amerika"
 
 msgid "South America"
-msgstr "Süd Amerika"
+msgstr "Süd-Amerika"
 
 msgid "Global"
 msgstr "Global"
@@ -65,7 +65,7 @@ msgid  "Back to the front page"
 msgstr "Zurück zur Hauptseite"
 
 msgid  "Find"
-msgstr "Finde"
+msgstr "Suche"
 
 msgid  "Stats for %1"
 msgstr "Statistiken für %1"
@@ -108,4 +108,4 @@ msgid  "Additional links"
 msgstr "Zus&auml;tzliche Links"
 
 msgid  "Can you translate?"
-msgstr "Can you translate?"
+msgstr "Können Sie das übersetzen?"
