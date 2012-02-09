@@ -1,95 +1,95 @@
-[% page.title = 'Gå med i NTP Pool!'  %]
+[% page.title = 'GÃ¥ med i NTP Pool!'  %]
 
 <div class="block">
-	<h3><a name="join">Hur går jag med i pool.ntp.org?</a></h3>
+	<h3><a name="join">Hur gÃ¥r jag med i pool.ntp.org?</a></h3>
 	<p>
-	Till att börja med: Tack för att du frågar.  Utnyttandet av 
-	poolen har ökat enormt mycket och enda sättet vi kan se till att 
-	uppgiften att driva en tidsserver inte blir alltför betungande, är
-	att se till antalet deltagande servrar växer.
+	Till att bÃ¶rja med: Tack fÃ¶r att du frÃ¥gar.  Utnyttandet av 
+	poolen har Ã¶kat enormt mycket och enda sÃ¤ttet vi kan se till att 
+	uppgiften att driva en tidsserver inte blir alltfÃ¶r betungande, Ã¤r
+	att se till antalet deltagande servrar vÃ¤xer.
 	</p>
 
 	<p>
-	Din dator <b>måste ha en statisk IP address</b> och ständig kontakt 
-	med internet.  Det är mycket viktigt att din IP-adress aldrig
-	ändras, eller att det sker extremt sällan (högst någon gång per år).
-	Det krävs inga stora hastigheter. Varje klient skickar bara ett par
-	UDP-paket med några minuters mellanrum, upp till var tjugonde minut.
+	Din dator <b>mÃ¥ste ha en statisk IP address</b> och stÃ¤ndig kontakt 
+	med internet.  Det Ã¤r mycket viktigt att din IP-adress aldrig
+	Ã¤ndras, eller att det sker extremt sÃ¤llan (hÃ¶gst nÃ¥gon gÃ¥ng per Ã¥r).
+	Det krÃ¤vs inga stora hastigheter. Varje klient skickar bara ett par
+	UDP-paket med nÃ¥gra minuters mellanrum, upp till var tjugonde minut.
 	</p>
 
 	<p>
-	För närvarande får varje server mellan 5 och 15 paket per sekund, 
-	med toppar ett par gånger om dagen på 60-120 paket per sekund.
-	Det motsvarar i grova drag 10-15Kbit/s med toppar på
-	50-120Kbit/s.  Projektet värvar ständigt nya tidsservrar så
-	belastningen för varje enskild server bör inte komma att ändras 
-	alltför mycket.  I realiteten, behöver du nog ha en anslutnings på
-	mins 384-512Kbit/s (både upp- och nedströms).
+	FÃ¶r nÃ¤rvarande fÃ¥r varje server mellan 5 och 15 paket per sekund, 
+	med toppar ett par gÃ¥nger om dagen pÃ¥ 60-120 paket per sekund.
+	Det motsvarar i grova drag 10-15Kbit/s med toppar pÃ¥
+	50-120Kbit/s.  Projektet vÃ¤rvar stÃ¤ndigt nya tidsservrar sÃ¥
+	belastningen fÃ¶r varje enskild server bÃ¶r inte komma att Ã¤ndras 
+	alltfÃ¶r mycket.  I realiteten, behÃ¶ver du nog ha en anslutnings pÃ¥
+	mins 384-512Kbit/s (bÃ¥de upp- och nedstrÃ¶ms).
 	</p>
 	<p>
-	Här är några servrar med grafer för trafik och belastning:
+	HÃ¤r Ã¤r nÃ¥gra servrar med grafer fÃ¶r trafik och belastning:
 	[% i = 0; FOR server = combust.servers_with_urls; %]
 	   <a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
 	[% END %]
 	</p>
 
 	<p>
-	Servrar som går med skall inte använda <tt>pool.ntp.org</tt> för sin 
-	egen synkronisering, utan vara konfigurerade med några
+	Servrar som gÃ¥r med skall inte anvÃ¤nda <tt>pool.ntp.org</tt> fÃ¶r sin 
+	egen synkronisering, utan vara konfigurerade med nÃ¥gra
 	<a href="http://support.ntp.org/bin/view/Servers/StratumTwoTimeServers">bra servrar</a>
 	manuellt (dessa servrar
-	<b>kan</b> hämtas från poolen, vitsen är att de skall vara statiskt 
-	angivna, i stället för att väljas slumpvis varje gång servern 
-	startar om.  Detta hjälper till att upprätthålla en godtagbar standard.)
+	<b>kan</b> hÃ¤mtas frÃ¥n poolen, vitsen Ã¤r att de skall vara statiskt 
+	angivna, i stÃ¤llet fÃ¶r att vÃ¤ljas slumpvis varje gÃ¥ng servern 
+	startar om.  Detta hjÃ¤lper till att upprÃ¤tthÃ¥lla en godtagbar standard.)
 
-	Observera att det inte är nödvändigt att din server hämtar sin tid
-	från en tidsserver i stratum 1 eller 2. Eftersom detta projekt framför 
-	allt handlar om lastdelning, är även servrar i stratum 3
-	eller rentav stratum 4 välkomna.
+	Observera att det inte Ã¤r nÃ¶dvÃ¤ndigt att din server hÃ¤mtar sin tid
+	frÃ¥n en tidsserver i stratum 1 eller 2. Eftersom detta projekt framfÃ¶r 
+	allt handlar om lastdelning, Ã¤r Ã¤ven servrar i stratum 3
+	eller rentav stratum 4 vÃ¤lkomna.
 	</p>
 
 	<p>
 	Vi har en sida med <a href="/join/configuration.html">rekommenderade
-	inställningar för servrar som ingår i poolen</a>.
+	instÃ¤llningar fÃ¶r servrar som ingÃ¥r i poolen</a>.
 	</p>
-	<p>Slutligen vill jag betona att deltagande i denna pool är ett 
-	<b>långsiktigt åtagande</b>.  Vid behov kan vi plocka bort en server
-	ur poolen när som helst, men på grund av ntp-klienternas beteende
-	så <b>tar det veckor, månader eller till och med FLERA ÅR innan
-	inkommande trafik helt försvinner</b>.
+	<p>Slutligen vill jag betona att deltagande i denna pool Ã¤r ett 
+	<b>lÃ¥ngsiktigt Ã¥tagande</b>.  Vid behov kan vi plocka bort en server
+	ur poolen nÃ¤r som helst, men pÃ¥ grund av ntp-klienternas beteende
+	sÃ¥ <b>tar det veckor, mÃ¥nader eller till och med FLERA Ã…R innan
+	inkommande trafik helt fÃ¶rsvinner</b>.
 	</p>
 
 	<p>
-	Om allt detta är ok för dig, logga då in på sidan för 
-	<a href="/manage">hantering av servrar</a> och begär att din server läggs in.
-	Om du har några problem med systemet, skicka då e-post till mig på <a
+	Om allt detta Ã¤r ok fÃ¶r dig, logga dÃ¥ in pÃ¥ sidan fÃ¶r 
+	<a href="/manage">hantering av servrar</a> och begÃ¤r att din server lÃ¤ggs in.
+	Om du har nÃ¥gra problem med systemet, skicka dÃ¥ e-post till mig pÃ¥ <a
 	href="mailto:ask@develooper.com">ask@develooper.com</a>.
 	</p>
 	<p>
-	Dessutom ber jag dig att även prenumera på vår
+	Dessutom ber jag dig att Ã¤ven prenumera pÃ¥ vÃ¥r
 	<a href="http://news.ntppool.org/atom.xml">blog feed</a>
-	och kanske också <a href="https://lists.ntp.org/listinfo/pool">poolens
+	och kanske ocksÃ¥ <a href="https://lists.ntp.org/listinfo/pool">poolens
 	distributionslista</a>.
 	</p>
 	<p>
-	Det vore trevligt (men är inte nödvändigt) om du kan vidarebefordra
-	web-förfrågningar på port 80 på din server, till projektets officiella
-	hemsida på
-	<tt>http://www.pool.ntp.org</tt>. Om du kör Apache, kan du ordna det så här:
+	Det vore trevligt (men Ã¤r inte nÃ¶dvÃ¤ndigt) om du kan vidarebefordra
+	web-fÃ¶rfrÃ¥gningar pÃ¥ port 80 pÃ¥ din server, till projektets officiella
+	hemsida pÃ¥
+	<tt>http://www.pool.ntp.org</tt>. Om du kÃ¶r Apache, kan du ordna det sÃ¥ hÃ¤r:
 	</p>
 
         [% PROCESS tpl/join/virtual_host_example.html %]
 
 	<p>
-	Men, som sagt, det är bara om redan har en web-server. Den officiella webbsidan
-	för projektet anges alltid med 'www' i början, men ibland är människor lata
-	och skriver bara in <tt>pool.ntp.org</tt> i adressfältet, och sedan blir de 
-	förvånade, när de får en helt slumpartade webbsida tillbaka.
+	Men, som sagt, det Ã¤r bara om redan har en web-server. Den officiella webbsidan
+	fÃ¶r projektet anges alltid med 'www' i bÃ¶rjan, men ibland Ã¤r mÃ¤nniskor lata
+	och skriver bara in <tt>pool.ntp.org</tt> i adressfÃ¤ltet, och sedan blir de 
+	fÃ¶rvÃ¥nade, nÃ¤r de fÃ¥r en helt slumpartade webbsida tillbaka.
 	</p>
 	<p>
-	När servern lagts till i poolen, så övervakas dess tillgänglighet och 
-	tidsnoggrannhet.  Du kan se din servers resultat på 
-	<a href="scores">webb-gränssnittet</a> eller på 
+	NÃ¤r servern lagts till i poolen, sÃ¥ Ã¶vervakas dess tillgÃ¤nglighet och 
+	tidsnoggrannhet.  Du kan se din servers resultat pÃ¥ 
+	<a href="scores">webb-grÃ¤nssnittet</a> eller pÃ¥ 
 	<a href="/manage">administrationssidan</a>.
 	</p>
 </div>

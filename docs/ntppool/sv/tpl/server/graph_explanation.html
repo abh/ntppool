@@ -1,36 +1,36 @@
 <div id="graph_explanation_box" class="graph_explanation [% graph_explanation ? 'visible' : '' %]">
 
-<h3>Poängkurvan</h3>
+<h3>PoÃ¤ngkurvan</h3>
 <p>
-Ett par gånger i timmen hämtar pool-systemet tiden från din server
-och jämför med lokal tid.  Poängavdrag görs när en server inte är 
-tillgänglig eller när den går mer än 100ms fel (grovt mätt gentemot
-driftsystemets klocka).  För större tidsavvikelse blir poängavdraget 
-större.
+Ett par gÃ¥nger i timmen hÃ¤mtar pool-systemet tiden frÃ¥n din server
+och jÃ¤mfÃ¶r med lokal tid.  PoÃ¤ngavdrag gÃ¶rs nÃ¤r en server inte Ã¤r 
+tillgÃ¤nglig eller nÃ¤r den gÃ¥r mer Ã¤n 100ms fel (grovt mÃ¤tt gentemot
+driftsystemets klocka).  FÃ¶r stÃ¶rre tidsavvikelse blir poÃ¤ngavdraget 
+stÃ¶rre.
 </p>
 
 <p>
-När poängen minskar, anger bakgrundsfärgen i övre delen hur omfattande
-&quot;driftstoppet&quot; är.  Färgen varierar från blå blue (minimal 
-avvikelse) via gult och orange till röd (servern ligger flera sekunder 
-fel eller svarar inte).  Beroende på hur diagrammet förändras över tiden
-kan du inte direkt utifrån färgkoderna tolka vad som har hänt. Det är 
-mer tänkt som ett verktyg för att trender.  För detaljerad information
-om vad uppföljningssystemet funnit, kan du klicka på länken för CSV.
+NÃ¤r poÃ¤ngen minskar, anger bakgrundsfÃ¤rgen i Ã¶vre delen hur omfattande
+&quot;driftstoppet&quot; Ã¤r.  FÃ¤rgen varierar frÃ¥n blÃ¥ blue (minimal 
+avvikelse) via gult och orange till rÃ¶d (servern ligger flera sekunder 
+fel eller svarar inte).  Beroende pÃ¥ hur diagrammet fÃ¶rÃ¤ndras Ã¶ver tiden
+kan du inte direkt utifrÃ¥n fÃ¤rgkoderna tolka vad som har hÃ¤nt. Det Ã¤r 
+mer tÃ¤nkt som ett verktyg fÃ¶r att trender.  FÃ¶r detaljerad information
+om vad uppfÃ¶ljningssystemet funnit, kan du klicka pÃ¥ lÃ¤nken fÃ¶r CSV.
 
 </p>
 
 <h3>Avvikelsegrafen</h3>
 
 <p>
-Uppföljningssystemet fungerar ungefär som en <a
+UppfÃ¶ljningssystemet fungerar ungefÃ¤r som en <a
 href="http://www.ntp.org/ntpfaq/NTP-s-def.htm#AEN1242">SNTP</a> (<a
 href="http://www.eecis.udel.edu/~mills/database/rfc/rfc2030.txt">RFC
-2030</a>) klient, så det har större risk att drabbas av 
-fördröjningar mellan servern och uppföljningssystemet än vad
-en vanlig ntpd klient har.  Därför: Ta inte så hårt på enstaka 
-stora avvikelser, och se inte siffrorna om avvikelser som några 
-exakta mätvärden.
+2030</a>) klient, sÃ¥ det har stÃ¶rre risk att drabbas av 
+fÃ¶rdrÃ¶jningar mellan servern och uppfÃ¶ljningssystemet Ã¤n vad
+en vanlig ntpd klient har.  DÃ¤rfÃ¶r: Ta inte sÃ¥ hÃ¥rt pÃ¥ enstaka 
+stora avvikelser, och se inte siffrorna om avvikelser som nÃ¥gra 
+exakta mÃ¤tvÃ¤rden.
 </p>
 
 </div>

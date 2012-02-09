@@ -1,78 +1,78 @@
 <div class="block">
 
-<h3>Rekommenderad konfiguration för server som ansluts till poolen</h3>
+<h3>Rekommenderad konfiguration fÃ¶r server som ansluts till poolen</h3>
 
 <p>
 <a href="http://support.ntp.org/bin/view/Support/WebHome">Support-delen</a> 
-på <a href="http://support.ntp.org/">support.ntp.org</a> har en hel del
-användbar information.
+pÃ¥ <a href="http://support.ntp.org/">support.ntp.org</a> har en hel del
+anvÃ¤ndbar information.
 </p>
 
 <p>
-Om du bara vill <i>använda</i> poolen, se sidan för <a href="/use.html">användning av poolen</a>.
+Om du bara vill <i>anvÃ¤nda</i> poolen, se sidan fÃ¶r <a href="/use.html">anvÃ¤ndning av poolen</a>.
 </p>
 
 <p>
 Nyhetsgruppen <a
 href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a>
-är bästa stället att få hjälp med programmet ntpd.
+Ã¤r bÃ¤sta stÃ¤llet att fÃ¥ hjÃ¤lp med programmet ntpd.
 </p>
 
 <p>
-Här är några punkter som är extra viktiga om du vill ansluta din server till
+HÃ¤r Ã¤r nÃ¥gra punkter som Ã¤r extra viktiga om du vill ansluta din server till
 NTP-poolen.
 </p>
 
 <h4>Ange cirka 5 servrar</h4>
 
 <p>
-För att fungera korrekt, behöver ntpd prata med minst 3 servrar
-(&quot;Den som har en klocka vet alltid rätt tid. Den som har två klockor 
-är aldrig säker&quot;).
+FÃ¶r att fungera korrekt, behÃ¶ver ntpd prata med minst 3 servrar
+(&quot;Den som har en klocka vet alltid rÃ¤tt tid. Den som har tvÃ¥ klockor 
+Ã¤r aldrig sÃ¤ker&quot;).
 </p>
 
 <p>
-För servrar i poolen rekommenderar vi att konfigurera för minst 4 och högst
-7 värd-servrar.
+FÃ¶r servrar i poolen rekommenderar vi att konfigurera fÃ¶r minst 4 och hÃ¶gst
+7 vÃ¤rd-servrar.
 </p>
 
 
 <h4>Ange inte *.pool.ntp.org som server</h4>
 
 <p>
-Ironiskt nog, för att få bästa kvalitet, är det bäst att inte använda
-alias av typen *.pool.ntp.org i din konfiguration när du vill ansluta 
+Ironiskt nog, fÃ¶r att fÃ¥ bÃ¤sta kvalitet, Ã¤r det bÃ¤st att inte anvÃ¤nda
+alias av typen *.pool.ntp.org i din konfiguration nÃ¤r du vill ansluta 
 din server till poolen.
 </p>
 
 <p>
-Poolen blir stabilare och starkare om varje server-operatör
-&quot;handplockar&quot; tids-servrar som ligger nära (nätverksmässigt).
-Wikin på NTP.org har en <a
+Poolen blir stabilare och starkare om varje server-operatÃ¶r
+&quot;handplockar&quot; tids-servrar som ligger nÃ¤ra (nÃ¤tverksmÃ¤ssigt).
+Wikin pÃ¥ NTP.org har en <a
 href="http://support.ntp.org/bin/view/Servers/WebHome">lista med 
 publika servrar</a>.
 </p>
 
 
-<h4>Använd standard-versionen av ntpd</h4>
+<h4>AnvÃ¤nd standard-versionen av ntpd</h4>
 
 <p>
-Vi uppskattar alla att det finns många olika program att välja på, 
-men en betydande andel av frågorna av typen 
-&quot;Det fungerar inte&quot; gäller system med andra program än 
+Vi uppskattar alla att det finns mÃ¥nga olika program att vÃ¤lja pÃ¥, 
+men en betydande andel av frÃ¥gorna av typen 
+&quot;Det fungerar inte&quot; gÃ¤ller system med andra program Ã¤n 
 ntpd.
 </p>
 
 <p>
-Du kan <i>använda</i> poolen med vilket program som helst, som pratar NTP,
-men om du tänker gå med i poolen, rekommenderar vi att du använder
+Du kan <i>anvÃ¤nda</i> poolen med vilket program som helst, som pratar NTP,
+men om du tÃ¤nker gÃ¥ med i poolen, rekommenderar vi att du anvÃ¤nder
  <a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
 </p>
 
 
-<h4>Använd inte LOKAL tidskälla</h4>
+<h4>AnvÃ¤nd inte LOKAL tidskÃ¤lla</h4>
 
-<p>Servrar i NTP-Poolen får inte ha LOKAL(LOCAL) tidskälla konfigurerad.</p>
+<p>Servrar i NTP-Poolen fÃ¥r inte ha LOKAL(LOCAL) tidskÃ¤lla konfigurerad.</p>
 
 
 </div>
