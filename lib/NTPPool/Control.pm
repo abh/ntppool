@@ -20,7 +20,7 @@ our %valid_languages = (
                         da => { name => "Danish", testing => 1, },
                         en => { name => "English", },
                         es => { name => "Español", testing => 1 },
-                        fi => { name => "Suomi", testing => 1 },
+                        fi => { name => "Suomi" },
                         fr => { name => "Français", },
                         jp => { name => "日本語" },
                         ko => { name => "한국어", },
