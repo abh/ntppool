@@ -7,7 +7,7 @@
 	Om du helt enkelt vill synkronisera din dators tid med nätverket, så är
 	konfigurerings-filen (för programmet ntpd från <a
 	href="http://www.ntp.org">ntp.org distribution</a>, för alla understödda
-	typer av datorsystem - <b>Linux, *BSD, Windows och till och med några mer 
+	typer av datorsystem - <b>Linux, *BSD, Windows och även med några mer 
 	exotiska system</b>) riktigt enkel:
 	</p>
 
@@ -36,10 +36,10 @@ avbidder:~$ ntpq -p
 -129.132.57.95   131.188.3.222    3 u  766 1024  377   22.302   -2.928   0.508
 </pre> 
 	<p>
-	Du kommer att se andra IP-adresser, du tilldelas några slumpvis utvalda 
+	Du kommer att se andra IP-adresser, eftersom din dator tilldelas några slumpvis utvalda 
 	tidsservrar. Det centrala är att en av raderna inleds med en asterisk
 	(<tt>*</tt>), vilket innebär att din dator får sin tid via internet och 
-	du behöver inte bry dig i fortsättningen!
+	du inte behöver bry dig i fortsättningen!
 	</p>
 	<p>
 	Eftersom <tt>pool.ntp.org</tt> kommer att ge dig slumpvis valda servrar från
@@ -52,10 +52,10 @@ avbidder:~$ ntpq -p
 	eller ännu hellre ditt eget lands zon (exempelvis
 	se.pool.ntp.org för Sverige). I alla dessa zoner, kan du använda prefixen 0,
 	1 eller 2, t.ex. 0.se.pool.ntp.org.  Observera dock att det kanske inte finns
-	någon zon för ditt eget land, eller så kanske den bara har en eller ett par
+	någon zon för ditt eget land, eller så kanske det bara finns en eller ett par
 	tidsservrar.
 	Om du vet några tidsservrar som ligger riktigt nära dig (mätt i nätverksavstånd
-	med <tt>traceroute</tt> eller <tt>ping</tt>), så får du troligen ännu exaktare tid.
+	med <tt>traceroute</tt> eller <tt>ping</tt>), så får du troligen exaktare tid den vägen.
 	</p>
 	<p>
 	Om du har en <b>någorlunda ny version av Windows</b>, så kan du använda systemets
@@ -89,37 +89,37 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
 <div class="block">
 	<h3>Anmärkningar</h3>
 	<p><span class="hook">Om du har en fast IP-adress och hyfsad anslutningshastighet</span> 
-	hastigheten är inte så viktigt, men den behöver vara stabil och inte alltför upptagen), är
-	du välkommen att bidra med din server till vår serverpool. Det drar bara några hundra bytes trafik
+	(Behöver inte vara jättehög, men skall vara stabil och inte alltför belastad), är
+	du välkommen att ansluta din server till vår serverpool. Det drar bara några kilobytes trafik
 	per sekund, men bidrar till projektets överlevnad.
 	Var vänlig <a href="/join.html">läs inträdes-sidan</a> för ytterligare information.
 	</p>
 	
 	<p><span class="hook">Om din internet-leverantör har en tidsserver</span>, eller om du 
-	kännder till en bra tidsserver i din närhet, då skall du använda den, i stället 
+	känner till en bra tidsserver i din närhet, då skall du använda den, i stället 
 	för vår lista - det ger troligen en mer exakt tid, samtidigt som det förbrukar mindre
 	nätverksresurser.  Om du bara känner till en tidsserver i din närhet, så kan du givetvis
-	använde den tillsammans med två servrar från pool.ntp.org, t.ex.</p>
+	använda den i kombination med ett par servrar från t.ex. pool.ntp.org.</p>
 	
 	<p><span class="hook">Någon enstaka gång kan det hända att du tilldelas samma server
-	två gånger</span>. Vanligtvis går det problemet att lösa genom att starta om ntp-servern.
-	Om du använder en lands-zon, så kan det bero på att projektet bara har en enda server
+	två gånger</span>. Vanligtvis går problemet att lösa genom att starta om ntp-servern.
+	Om du använder en lands-zon, så kan det bero på att projektet bara innehåller en enda server
 	från landet i fråga. I så fall är det bättre att använda den närmaste kontinentala zonen
 	i stället.  Du kan <a href="/zone">undersöka zonerna</a> för att se antalet servrar i varje zon.</p>
 	
-	<p><span class="hook">Var hövlig</span>. Många servrar tillhandahålls av frivilliga.
-	Nästan jämt är det frågan om fil- epost- eller webservrar, som dessutom råkar köra ntp.
+	<p><span class="hook">Var hövlig</span>. Många servrar tillhandahålls av frivilliga krafter.
+	Det är nästan alltid frågan om fil- epost- eller webservrar, som dessutom köra ntp.
 	Så nöj dig med tre tidsservrar i din konfiguration och undvik fula knep, såsom
 	<tt>burst</tt> eller <tt>minpoll</tt>. Det enda du kan åstadkomma den vägen är 
-	projektet dör, förr eller senare.</p>
+	projektet förr eller senare dör.</p>
 	
 	<p><span class="hook">Se till att din dator har <i>rätt tidszon</i> inställd</span>.
-	själva ntpd bryr sig inte om tidszoner, utan använder UTC internt.</p>
+	Själva programmet ntpd bryr sig inte om tidszoner, utan arbretar med UTC internt.</p>
 	
 	<p><span class="hook">Om du synkroniserar ditt nätverk mot pool.ntp.org</span>, konfigurera
 	då en av dina egna datorer som tidsserver för resten av ditt eget nätverk.
-	(du får läsa på en del, men det är itne svårt. Och så finns ju alltid nyhetsgruppen
-	<a href="news:comp.protocols.time.ntp">comp.protocols.time.ntp newsgroup</a> att tillgå.)</p>
+	(du får läsa på en del, men det är inte så svårt. Och så finns ju alltid nyhetsgruppen
+	<a href="news:comp.protocols.time.ntp">comp.protocols.time.ntp newsgroup</a> att tillgå. På engelska.)</p>
 	
 	<p class="thanks">Slutligen vill jag härmed tacka alla som bidrar med sin egen tid
 	och med sina tidsservrar till detta nätverk.</p>
