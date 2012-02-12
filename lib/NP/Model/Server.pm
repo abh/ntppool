@@ -132,6 +132,8 @@ sub history {
         $since = DateTime->from_epoch( epoch => $since );
     }
 
+    warn "MID: ", $monitor_id;
+
     my $history = NP::Model->log_score->get_log_scores(
         query => [
             server_id => $self->id,

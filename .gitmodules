@@ -4,3 +4,9 @@
 [submodule "cpan"]
 	path = cpan
 	url = git://git.develooper.com/ntppool-cpan.git
+[submodule "docs/shared/static/d3"]
+	path = docs/shared/static/d3
+	url = git@github.com:abh/d3.git
+[submodule "docs/shared/static/cdn"]
+	path = docs/shared/static/cdn
+	url = git@github.com:abh/ntppool-static-cdn.git
