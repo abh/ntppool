@@ -156,7 +156,7 @@ $(document).ready(function(){
 
    var graph_div = $('#graph');
 
-   if (1||!Modernizr.svg) { // no svg support, show the noscript section
+   if (!Modernizr.svg) { // no svg support, show the noscript section
        var noscript_html = $('#graph_noscript').html();
        noscript_html = $('<div/>').html(noscript_html).text();
        graph_div.html( unescape( noscript_html ) );
