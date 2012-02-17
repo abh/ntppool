@@ -85,7 +85,7 @@ sub render {
                         @h{@fields} = map { $h->$_; } @fields;
                         $h{ts} = $h->ts->epoch;
                         \%h;
-                      } @$history
+                      } reverse @$history
                 ];
                 return OK,
                   encode_json(

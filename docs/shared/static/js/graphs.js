@@ -33,7 +33,7 @@ function update_graph(div, data, options) {
             .range([0, w]);
 
     var svg = d3.select(div)
-        .append("svg:svg")
+        .append("svg")
         .attr("width", w + pad_w * 2)
         .attr("height", h + pad_h * 2)
         .append("g")
@@ -118,10 +118,14 @@ svg.append("rect")
 svg.selectAll("g.scores")
     .data(data.history)
     .enter().append("circle")
+    .filter(function(d) { return d.monitor_id ? true : false })
     .attr("class", "scores monitor_data")
     .attr("r", 2)
     .attr("transform", function(d,i) { var tr = "translate(" + x(d.date) + "," + y_score(d.score) + ")"; return tr })
     .style("fill", function(d) {
+        if (!d.monitor_id) {
+            return "black";
+        }
         if (d.step < -1) {
            return "red";
         }
@@ -137,7 +141,9 @@ svg.selectAll("g.scores")
 
 svg.selectAll("g.offsets")
     .data(data.history)
-    .enter().append("circle")
+    .enter()
+    .append("circle")
+    .filter(function(d) { return d.monitor_id ? true : false })
     .attr("class", "offsets monitor_data")
     .attr("r", 1.5) // todo: make this 2 if number of data points are < 250 or some such
     .attr("transform", function(d,i) { return "translate(" + x(d.date) + "," + y_offset(d.offset) + ")"; })
@@ -158,6 +164,21 @@ svg.selectAll("g.offsets")
     .on('mouseover',  fade(.25))
     .on('mouseout',   fade(1));
 
+var dh = data.history.filter(function(d) { return d.monitor_id === null ? true : false  });
+//console.log("d.history", dh);
+
+svg.selectAll(".total_score")
+    .data([dh])
+    .enter().append("path")
+    .attr("class", "line total_score")
+    .style("stoke", "red")
+    .style("stroke-width", "1.5px")
+    .attr("d", d3.svg.line()
+       .x(function(d) { var px = x(d.date); console.log("px", d.date, px); return px; })
+       .y(function(d) { var py = y_score(d.score); console.log("py", d.score, py); return py; }));
+
+svg.selectAll("g.scores")
+
    // -----------------------------
    // Add Title then Legend
    // -----------------------------
@@ -173,7 +194,6 @@ svg.selectAll("g.offsets")
         for (var i = 0; i < data.monitors.length; i++) {
             var mon = data.monitors[i];
             var text = mon.name + " (" + mon.score + ")";
-            console.log("adding ", text);
             legend.append($('<span>').text(text).addClass('legend').data('monitor_id', mon.id));
         }
         $('span.legend').mouseenter(function(e) {
@@ -235,7 +255,7 @@ $(document).ready(function(){
    // but the same data.
    var data;
 
-   d3.json("/scores/"+ ip +"/json?monitor=*&limit=150", function(json) {
+   d3.json("/scores/"+ ip +"/json?monitor=*&limit=250", function(json) {
       if (json) {
           data = json;
           update_graph('#graph', json, { legend: graph_legend });
