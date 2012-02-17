@@ -157,9 +157,21 @@ $(document).ready(function(){
    var graph_div = $('#graph');
 
    if (!Modernizr.svg) { // no svg support, show the noscript section
-       var noscript_html = $('#graph_noscript').html();
-       noscript_html = $('<div/>').html(noscript_html).text();
-       graph_div.html( unescape( noscript_html ) );
+       var $legacy = $('#legacy-graphs');
+
+       $legacy.html('Please upgrade to a browser that supports SVG '
+                    + 'to see the new graphs. '
+                    + '(For example <a href="http://www.apple.com/safari/">Safari</a>, '
+                    + '<a href="https://www.google.com/chrome/">Chrome</a>, '
+                    + '<a href="http://www.mozilla.org/firefox">Firefox</a> or '
+                    + '<a href="http://ie.microsoft.com/">IE9+</a>)<br>'
+                   );
+
+       $legacy.append($('<br><img class=".legacy-graph-img"/>')
+           .attr('src', $legacy.data('score-graph-url')));
+       $legacy.append($('<br><img class=".legacy-graph-img"/>')
+           .attr('src', $legacy.data('offset-graph-url')));
+
        return;
    }
 
