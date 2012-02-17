@@ -171,13 +171,13 @@ svg.selectAll(".total_score")
     .data([dh])
     .enter().append("path")
     .attr("class", "line total_score")
+    .style("fill", "none")
     .style("stoke", "red")
-    .style("stroke-width", "1.5px")
+    .style("stroke-width", 2)
     .attr("d", d3.svg.line()
-       .x(function(d) { var px = x(d.date); console.log("px", d.date, px); return px; })
-       .y(function(d) { var py = y_score(d.score); console.log("py", d.score, py); return py; }));
-
-svg.selectAll("g.scores")
+          .x(function(d) { return x(d.date); })
+          .y(function(d) { return y_score(d.score); })
+         );
 
    // -----------------------------
    // Add Title then Legend
