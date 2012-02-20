@@ -255,7 +255,7 @@ $(document).ready(function(){
    // but the same data.
    var data;
 
-   d3.json("/scores/"+ ip +"/json?monitor=*&limit=250", function(json) {
+   d3.json("/scores/"+ ip +"/json?monitor=*&limit=400", function(json) {
       if (json) {
           data = json;
           update_graph('#graph', json, { legend: graph_legend });
