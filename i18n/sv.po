@@ -93,7 +93,7 @@ msgid "What do the graphs mean?"
 msgstr "Vad betyder graferna?"
 
 msgid "CSV log"
-msgstr "Logg för CSV"
+msgstr "Logg i CSV-format"
 
 # tpl/navigation_sidebar.html
 msgid "News"
