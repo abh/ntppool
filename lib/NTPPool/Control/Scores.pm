@@ -65,6 +65,17 @@ sub render {
                 # This logic should probably just be in the server
                 # model, similar to log_scores_csv.
 
+                my $monitors = $server->server_scores;
+                $monitors = [
+                   map {
+                       my %m = (id => $_->monitor->id,
+                                score => $_->score,
+                                name => $_->monitor->name,
+                               );
+                       \%m;
+                   } @$monitors
+                ];
+
                 my $history = $server->history($options);
                 $history = [
                     map {
@@ -74,9 +85,16 @@ sub render {
                         @h{@fields} = map { $h->$_; } @fields;
                         $h{ts} = $h->ts->epoch;
                         \%h;
-                      } @$history
+                      } reverse @$history
                 ];
-                return OK, encode_json({history => $history}), 'application/json';
+                return OK,
+                  encode_json(
+                    {   history  => $history,
+                        monitors => $monitors,
+                        server   => { ip => $server->ip }
+                    }
+                  ),
+                  'application/json';
             }
               else {
                   return OK, $server->log_scores_csv($options), 'text/plain';

@@ -65,8 +65,35 @@ This server is <span class="deletion">scheduled for deletion</span> on %1.
 </p>
 
 <p>
-<img src="[% server.graph_uri('score') %]" alt="Server score graph" /><br />
-<img src="[% server.graph_uri('offset') %]" alt="Server offset graph" /><br />
+
+<h3>History</h3>
+
+<div data-server-ip="[% server.ip %]" id="graph"></div>
+<div id="graph-legend"></div>
+<p class="graph_desc" style="display: none; color: #777">
+Green/orange/red small dots are offsets (in milliseconds, using the left axis).<br>
+Blue/red "double size" dots are points/scores (using the right axis).<br>
+Note that the y-axes aren't linear to highlight the (usually) more interesting area of the data.<br>
+</p>
+
+<noscript id="graph_noscript">
+
+Please upgrade to a browser that supports SVG
+(<a href="http://www.apple.com/safari/">Safari</a>,
+<a href="https://www.google.com/chrome/">Chrome</a>,
+<a href="http://www.mozilla.org/firefox">Firefox</a> or
+<a href="http://ie.microsoft.com/">IE9+</a>
+and enable javascript to see the new graphs.<br><br>
+
+<img src="[% server.graph_uri('score') %]" alt="Server score graph"><br>
+<img src="[% server.graph_uri('offset') %]" alt="Server offset graph"><br>
+</noscript>
+
+<div id="legacy-graphs"
+   data-score-graph-url="[% server.graph_uri('score') %]"
+   data-offset-graph-url="[% server.graph_uri('offset') %]"
+></div>
+
 <span style="font-size:60%"># [% server.id %], <a href="[% server.url %]/log?limit=50">[% "CSV log" | l %]</a>
 | <a href="[% server.url %]/rrd">RRD</a> |
 <a id="graph_explanation_link"
@@ -90,3 +117,44 @@ This server is <span class="deletion">scheduled for deletion</span> on %1.
 <p><a href="#top">[% "go up" | l %]</a></p>
 
 </div>
+
+[% page.js = BLOCK %]
+[% page.js %]
+
+<!--[if lt IE 9]>
+[% # this is so d3 can load in ancient browsers even if we end up not using it,
+   # and so we can use modern javascript stuff without too dramatic failures.
+ %]
+<script type="text/javascript" src="[% combust.static_url("/cdn/js/es5-shim.min.js") %]"></script>
+<![endif]-->
+
+<script src="[% combust.static_url("/d3/d3.min.js") %]" type="text/javascript"></script>
+<script src="[% combust.static_url("/d3/d3.time.js") %]" type="text/javascript"></script>
+<script src="[% combust.static_url("/cdn/js/modernizr.custom.js") %]" type="text/javascript"></script>
+<script src="[% combust.static_url("/js/ntppool.js") %]" type="text/javascript"></script>
+<script src="[% combust.static_url("/js/graphs.js") %]" type="text/javascript"></script>
+
+<style>
+
+rect {
+  fill: none;
+  stroke: black;
+  shape-rendering: crispEdges;
+}
+
+.x line, .y line {
+  stroke: #ccc;
+  shape-rendering: crispEdges;
+}
+
+.y_score line {
+  stroke: #ddd;
+  shape-rendering: crispEdges;
+  stroke-dasharray: 2, 2, 2, 2;
+}
+
+</style>
+
+
+[% END %]
+

@@ -1,3 +1,6 @@
+if (!"console" in window) { window.console = { log: function() {} } }
+else if (!console) { var console = { log: function() {} } }
+
 if (!NP) var NP = {};
 
   NP.netspeed_updated = function(server_id, data, status) {

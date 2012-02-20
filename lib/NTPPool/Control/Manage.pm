@@ -4,6 +4,7 @@ use base qw(NTPPool::Control);
 use NP::Model;
 use Combust::Constant qw(OK NOT_FOUND);
 use Socket qw(inet_ntoa);
+use Socket6;
 use Net::NTP;
 use Geo::IP;
 use Email::Send 'SMTP';

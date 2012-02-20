@@ -177,6 +177,19 @@ div.error       { color: red; }
 
 span.deletion   { color: red; } 
 
+/* graph legends */
+span.legend_header,
+span.legend {
+   margin-right: 20px;
+}
+
+.total_score { fill: none; stroke: blue; stroke-width: 2px }
+
+span.legend {
+   border-bottom: 1px dotted black;
+}
+
+/* long explanation */
 .server_history_legend { font-size: 0.85em; }
 
 p.serverurls {

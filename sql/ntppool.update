@@ -396,3 +396,6 @@ alter table zone_server_counts
 alter table zone_server_counts
    drop key `zone`,
    add  unique key `zone_date` (`zone_id`, `date`, `ip_version`);
+
+#53
+alter table logs modify created_on datetime not null;
