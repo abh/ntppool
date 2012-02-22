@@ -64,8 +64,14 @@ sub init {
       }
   }
 
-  my $lang = $self->language;
-  NP::I18N::loc_lang( $lang );
+  if ($self->request->path !~ m!^/static/!) {
+      my $lang = $self->language;
+      NP::I18N::loc_lang( $lang );
+      $self->tpl_param('current_language', $lang);
+  }
+  else {
+      $self->tpl_param('current_language', 'en');
+  }
 
   return OK;
 }
@@ -87,6 +93,9 @@ sub is_logged_in {
 sub get_include_path {
     my $self = shift;
     my $path = $self->SUPER::get_include_path;
+
+    return $path if $self->request->path =~ m!^/static/!;
+
     my ($language) = $self->language;
 
     # Always use the 'en' file as last resort. Maybe this should come
