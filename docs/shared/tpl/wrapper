@@ -1,7 +1,7 @@
 [%- 
 
    MACRO language_url(url) BLOCK;
-       combust.www_url("/" _ combust.language _ url);
+       combust.www_url("/" _ current_language _ url);
    END;
 
    content = PROCESS $template;
