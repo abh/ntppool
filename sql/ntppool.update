@@ -399,3 +399,6 @@ alter table zone_server_counts
 
 #53
 alter table logs modify created_on datetime not null;
+
+#54
+alter table user_privileges add support_staff tinyint not null default 0;

@@ -735,6 +735,7 @@ __PACKAGE__->meta->setup(
     see_all_user_profiles => { type => 'integer', default => '0', not_null => 1 },
     vendor_admin          => { type => 'integer', default => '0', not_null => 1 },
     equipment_admin       => { type => 'integer', default => '0', not_null => 1 },
+    support_staff         => { type => 'integer', default => '0', not_null => 1 },
   ],
 
   primary_key_columns => [ 'user_id' ],
