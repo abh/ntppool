@@ -9,4 +9,4 @@
 	url = git@github.com:abh/d3.git
 [submodule "docs/shared/static/cdn"]
 	path = docs/shared/static/cdn
-	url = git@github.com:abh/ntppool-static-cdn.git
+	url = git://git.develooper.com/devcdn.git

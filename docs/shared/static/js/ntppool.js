@@ -1,3 +1,5 @@
+/* Copyright 2006-2012 Ask Bjørn Hansen, Develooper LLC */
+
 if (!"console" in window) { window.console = { log: function() {} } }
 else if (!console) { var console = { log: function() {} } }
 

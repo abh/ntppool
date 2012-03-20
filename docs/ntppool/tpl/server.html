@@ -125,12 +125,12 @@ and enable javascript to see the new graphs.<br><br>
 [% # this is so d3 can load in ancient browsers even if we end up not using it,
    # and so we can use modern javascript stuff without too dramatic failures.
  %]
-<script type="text/javascript" src="[% combust.static_url("/cdn/js/es5-shim.min.js") %]"></script>
+<script type="text/javascript" src="[% combust.static_url("/cdn/libs/es5-shim/1/es5-shim.min.js") %]"></script>
 <![endif]-->
 
 <script src="[% combust.static_url("/d3/d3.min.js") %]" type="text/javascript"></script>
 <script src="[% combust.static_url("/d3/d3.time.js") %]" type="text/javascript"></script>
-<script src="[% combust.static_url("/cdn/js/modernizr.custom.js") %]" type="text/javascript"></script>
+<script src="[% combust.static_url("/cdn/libs/modernizr/2/modernizr.ntppool.js") %]" type="text/javascript"></script>
 <script src="[% combust.static_url("/js/ntppool.js") %]" type="text/javascript"></script>
 <script src="[% combust.static_url("/js/graphs.js") %]" type="text/javascript"></script>
 
