@@ -66,7 +66,7 @@ sub upload {
     my $monitor = shift;
 
     my $data = $self->post_data;
-    warn "got data: ", pp($data);
+    #warn "got data: ", pp($data);
 
     return $self->error('Unknown version') unless $data->{version} and $data->{version} == 1;
     return $self->error('Invalid format') unless ref $data->{servers} eq 'ARRAY';
