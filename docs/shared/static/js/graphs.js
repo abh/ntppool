@@ -1,6 +1,11 @@
+/* Copyright 2012 Ask Bjørn Hansen, Develooper LLC */
+/*jshint jquery:true browser:true */
+/*globals d3:true, Modernizr:true */
 
 function update_graph(div, data, options) {
-    if (!options) { options = {} }
+    "use strict";
+
+    if (!options) { options = {}; }
     var legend = options.legend;
 
     var history = data.history;
@@ -9,12 +14,12 @@ function update_graph(div, data, options) {
         d.date = new Date(d.ts * 1000);
     });
 
-    var y_offset_max = d3.max(history.map(function(e){ return e.offset * 1 })),
-        y_offset_min = d3.min(history.map(function(e){ return e.offset * 1 }));
+    var y_offset_max = d3.max(history.map(function(e){ return e.offset * 1; })),
+        y_offset_min = d3.min(history.map(function(e){ return e.offset * 1; }));
 
     // more than two seconds off and we'll stop showing just how bad
-    if (y_offset_max >  2) { y_offset_max =  2 }
-    if (y_offset_min < -2) { y_offset_min = -2 }
+    if (y_offset_max >  2) { y_offset_max =  2; }
+    if (y_offset_min < -2) { y_offset_min = -2; }
 
     $(".graph_desc").show();
 
@@ -27,8 +32,8 @@ function update_graph(div, data, options) {
 
         y_score = d3.scale.sqrt().domain([25,-105]).range([0,h]),
 
-        x = d3.time.scale.utc().domain([d3.min(history.map(function(e){ return e.date })),
-                                        d3.max(history.map(function(e){ return e.date }))
+        x = d3.time.scale.utc().domain([d3.min(history.map(function(e){ return e.date; })),
+                                        d3.max(history.map(function(e){ return e.date; }))
             ])
             .range([0, w]);
 
@@ -95,7 +100,7 @@ yrule_score.append("text")
     .attr("y", y_score)
     .attr("dy", ".35em")
     .attr("text-anchor", "end")
-    .text(function(text) { return text });
+    .text(function(text) { return text; });
 
 
 var zero_offset = svg.selectAll("g.zero_offset")
@@ -118,10 +123,13 @@ svg.append("rect")
 svg.selectAll("g.scores")
     .data(data.history)
     .enter().append("circle")
-    .filter(function(d) { return d.monitor_id ? true : false })
+    .filter(function(d) { return d.monitor_id ? true : false; })
     .attr("class", "scores monitor_data")
     .attr("r", 2)
-    .attr("transform", function(d,i) { var tr = "translate(" + x(d.date) + "," + y_score(d.score) + ")"; return tr })
+    .attr("transform", function(d,i) {
+        var tr = "translate(" + x(d.date) + "," + y_score(d.score) + ")";
+        return tr;
+    })
     .style("fill", function(d) {
         if (!d.monitor_id) {
             return "black";
@@ -136,21 +144,21 @@ svg.selectAll("g.scores")
            return "steelblue";
         }
     })
-    .on('mouseover',  fade(.2))
+    .on('mouseover',  fade(0.2))
     .on('mouseout',   fade(1));
 
 svg.selectAll("g.offsets")
     .data(data.history)
     .enter()
     .append("circle")
-    .filter(function(d) { return d.monitor_id ? true : false })
+    .filter(function(d) { return d.monitor_id ? true : false; })
     .attr("class", "offsets monitor_data")
     .attr("r", 1.5) // todo: make this 2 if number of data points are < 250 or some such
     .attr("transform", function(d,i) { return "translate(" + x(d.date) + "," + y_offset(d.offset) + ")"; })
     .style("fill", function(d) {
         var offset = d.offset;
 
-        if (offset < 0) { offset = offset * -1 }
+        if (offset < 0) { offset = offset * -1; }
         if ( offset < 0.050 ) {
             return "green";
         }
@@ -161,10 +169,10 @@ svg.selectAll("g.offsets")
             return "red";
        }
     })
-    .on('mouseover',  fade(.25))
+    .on('mouseover',  fade(0.25))
     .on('mouseout',   fade(1));
 
-var dh = data.history.filter(function(d) { return d.monitor_id === null ? true : false  });
+var dh = data.history.filter(function(d) { return d.monitor_id === null ? true : false; });
 //console.log("d.history", dh);
 
 svg.selectAll(".total_score")
@@ -198,12 +206,12 @@ svg.selectAll(".total_score")
         }
         $('span.legend').mouseenter(function(e) {
                                         var mon = $(this).data('monitor_id');
-                                        if (!mon) { return };
+                                        if (!mon) { return; }
                                         fade(0.25)( { monitor_id: mon } );
                                     });
         $('span.legend').mouseleave(function(e) {
                                         var mon = $(this).data('monitor_id');
-                                        if (!mon) { return };
+                                        if (!mon) { return; }
                                         fade(1)( { monitor_id: mon } );
                                     });
     }
@@ -224,6 +232,7 @@ svg.selectAll(".total_score")
 
 
 $(document).ready(function(){
+   "use strict";
 
    var graph_div = $('#graph');
    var graph_legend = $('#graph-legend');
@@ -248,7 +257,7 @@ $(document).ready(function(){
    }
 
    var ip = graph_div.data('server-ip');
-   if (!ip) { return }
+   if (!ip) { return; }
 
 
    // make it easier to update_graph again with different options
