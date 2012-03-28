@@ -1,9 +1,11 @@
 /* Copyright 2006-2012 Ask Bjørn Hansen, Develooper LLC */
-
-if (!"console" in window) { window.console = { log: function() {} } }
-else if (!console) { var console = { log: function() {} } }
+/*jshint jquery:true browser:true */
 
 if (!NP) var NP = {};
+
+(function() {
+
+  "use strict";
 
   NP.netspeed_updated = function(server_id, data, status) {
           $('#netspeed_' + server_id ).fadeIn(400);
@@ -19,7 +21,7 @@ if (!NP) var NP = {};
 
      jQuery.getJSON( '/manage/server/update/netspeed', pars,
                      function(data, textStatus) {
-                         NP.netspeed_updated(server_id, data)
+                         NP.netspeed_updated(server_id, data);
                      }
                     );
   };
@@ -42,7 +44,8 @@ $(document).ready(function () {
                $.post(this.href, {},
                       function(response) {
                           $('#profile_link').html(response);
-                      })
+                      });
            }
           );
 });
+}());
