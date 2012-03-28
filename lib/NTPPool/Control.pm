@@ -191,7 +191,12 @@ sub _url {
         $uri->scheme('https');
     }
     if ($args) {
-        $uri->query($args);
+        if (ref $args) {
+            $uri->query_form(%$args);
+        }
+        else {
+            $uri->query($args);
+        }
     }
     return $uri->as_string;
 }

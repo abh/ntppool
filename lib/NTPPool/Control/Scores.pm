@@ -15,7 +15,16 @@ BEGIN {
 sub render {
   my $self = shift;
 
-  $self->cache_control('s-maxage=1800');
+  my $public = $self->site->name eq 'ntppool' ? 1 : 0;
+  $self->cache_control('s-maxage=1800') if $public;
+
+  unless ($public or $self->user) {
+      $self->redirect( $self->www_url( $self->request->uri, $self->request->query_parameters ));
+  }
+
+  if (!$public) {
+      $self->tpl_param('manage_site', 1);
+  }
 
   return $self->redirect('/scores/') if ($self->request->uri =~ m!^/s/?$!);
 
@@ -205,6 +214,9 @@ sub _calc_y {
     my $h = shift;
     (($h->score - 20) * -1) + 1;
 }
+
+sub bc_user_class { NP::Model->user }
+sub bc_info_required { 'username,email' }
 
 
 1;

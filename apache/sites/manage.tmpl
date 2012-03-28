@@ -21,6 +21,11 @@
        [% PH %] NTPPool::Control::Manage->super
     </Location>
 
+    <Location /scores/>
+      SetHandler perl-script
+      [% PH %] NTPPool::Control::Scores->super
+    </Location>
+
     <Location /manage/vendor>
        SetHandler perl-script
        [% PH %] NTPPool::Control::Vendor->super
@@ -29,6 +34,11 @@
     <Location /manage/equipment>
        SetHandler perl-script
        [% PH %] NTPPool::Control::Manage::Equipment->super
+    </Location>
+
+    <Location /api>
+       SetHandler perl-script
+       [% PH %] NTPPool::Control::API->super
     </Location>
 
     <Location /static>

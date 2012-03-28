@@ -31,10 +31,12 @@ IP <input type="text" name="ip">
 [% END %]
 
 [% IF server.admin.public_profile 
-       OR  combust.user.id == server.admin.id
-       OR combust.user.privileges.see_all_user_profiles %]
+       OR combust.user.id == server.admin.id
+       OR combust.user.is_staff %]
 Server admin: <a href="/user/[% (server.admin.username || server.admin.id) | html | uri %]"
->[% server.admin.username || server.admin.email %]</a><br/>
+>[% server.admin.username || server.admin.email %]</a>
+(<a href="mailto:[% server.admin.email |uri%]">[% server.admin.email |html %]</a>)
+<br/>
 [% END %]
 [% "Zones:" | l %]
 [% FOR zone = server.zones_display %]

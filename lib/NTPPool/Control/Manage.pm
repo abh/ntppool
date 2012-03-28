@@ -83,7 +83,16 @@ sub manage_dispatch {
     return $self->handle_delete
       if $self->request->uri =~ m!^/manage/server/delete!;
     return $self->show_manage if $self->request->uri =~ m!^/manage/servers!;
-    return $self->redirect('/manage/servers');
+
+    return $self->redirect('/manage/servers')
+      unless $self->user->is_staff;
+
+    return $self->show_staff;
+}
+
+sub show_staff {
+    my $self = shift;
+    return OK, $self->evaluate_template('tpl/staff.html');
 }
 
 sub show_manage {
