@@ -2,9 +2,9 @@
 From: ([% combust.user.username %]) [% combust.user.email %]
 Subject: New vendor zone application: [% vz.zone_name %]
 
-[% combust.user.username %] requested a [% vz.zone_name %] zone for [% vz.organization_name %].
+[% combust.user.username %] requested the "[% vz.zone_name %]" zone for [% vz.organization_name %].
 
-[% combust.manage_url('/manage/vendor/zone?id=' + vz.id) %]
+[% combust.manage_url('/manage/vendor/zone', id = vz.id) %]
 
 Notes:
 
