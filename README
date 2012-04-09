@@ -52,6 +52,8 @@ $CBROOT/bin/database_update ntppool
 $CBROOT/bin/database_update combust
 $CBROOT/bin/database_update ntppool
 
+make templates
+
 $CBROOT/bin/httpd
 
 If any modules are missing, the easiest way to install them is with
