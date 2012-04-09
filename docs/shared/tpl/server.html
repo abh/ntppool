@@ -35,7 +35,7 @@ IP <input type="text" name="ip">
        OR combust.user.is_staff %]
 Server admin: <a href="/user/[% (server.admin.username || server.admin.id) | html | uri %]"
 >[% server.admin.username || server.admin.email %]</a>
-[% combust.user.id == server.admin.id OR combust.user.is_staff %]
+[% IF combust.user.id == server.admin.id OR combust.user.is_staff %]
 (<a href="mailto:[% server.admin.email |uri%]">[% server.admin.email |html %]</a>)
 [% END %]
 <br/>
