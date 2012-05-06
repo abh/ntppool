@@ -1,0 +1,18 @@
+[%- 
+
+   MACRO language_url(url) BLOCK;
+       combust.www_url("/" _ current_language _ url);
+   END;
+
+   content = PROCESS $template;
+
+   #USE Dumper; Dumper.dump_html(page template)
+
+   IF page.style == 'none';
+      content;
+   ELSE;
+      default_style_template = "tpl/style/" _ page.style;
+      PROCESS $default_style_template;
+   END;
+%]
+

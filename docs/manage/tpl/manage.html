@@ -1,0 +1,131 @@
+[% page.js = BLOCK %]
+[% page.js %]
+<script src="[% combust.static_url("/js/ntppool.js") %]" type="text/javascript"></script>
+[% END %]
+
+
+[% PROCESS tpl/manage/navigation.html %]
+
+<div id="admin" class="block">
+	<h3>Admin information</h3>
+	[% user = combust.user %]	
+	<div class="profile yui-g">
+		<div class="yui-u first">
+			<label>Username:</label>
+			[% user.username %] <br />
+			[% PROCESS tpl/manage/profile_link.html %]
+		</div>
+		<div class="yui-u">
+			<label>Email:</label>
+				[% user.email %] <br />
+					<span>(change your email address in your <a href="[% combust.account_url %]">Bitcard Account</a>)</span>
+		</div>
+	</div>
+
+<!--
+	<div class="adspace">
+          <h3><b><a href="http://www.meinberg.de/english/">Meinberg</a> <a href="/meinberg.html">equipment giveaway</a></b>!</h3> 
+
+          [% UNLESS combust.user.user_equipment_applications %]
+          <p>
+            Before continuing, be sure to carefully <a href="/meinberg.html">carefully read the requirements</a>.
+          </p>
+
+          <p>
+             <a href="/manage/equipment/new">Submit a new application</a>
+          </p>
+
+          [% ELSE;
+            ea = combust.user.user_equipment_applications;
+          %]
+
+          <p> You have already submitted an application.</p> 
+
+          <p>
+            <a href="/manage/equipment/application?id=[% ea.id %]">[% ea.can_edit(combust.user) ? 'Edit/Submit' : 'Show' %]
+               your application</a>
+          </p>
+
+          [% END %]
+
+	</div>
+-->
+	
+	<div class="servers" >
+		<h3>Your Servers
+                   <img id="busy" style="display: none; float: right;" src="[% combust.static_url("/images/progress.gif") %]">
+                </h3>
+		<div class="value">
+			<span class="add"><a href="#add">Add a server</a></span>
+			[% servers = user.servers; 
+			   FOR server = servers; %] 
+			[% PROCESS tpl/manage/server.html, server => server %]
+			[% END %]
+			[% IF servers.list.size > 1 %]
+			<p></p>
+			[% END %]
+		</div>
+	</div>
+	
+	
+	<a name="add"></a>
+	[% PROCESS tpl/manage/add_form.html %]
+	
+	[% IF servers %]
+	<div class="server_desc">
+		<p>
+		<a name="netspeed"></a>The <b>net speed</b> is used to balance the
+		load between the pool servers.  If your connection is asymmetric
+		(like most DSL connections) you should use the <i>lower</i> speed.
+		</p>
+
+		<p>
+		The amount of queries your server will get is
+		generally directly proportional to the netspeed, so a
+		50Mbit setting will get about 5 times more traffic
+		than the 10Mbit setting. The pool will only use a
+		fraction of the "netspeed setting".  Be aware that the
+		amount of queries to your server will grow over time.
+		</p>
+
+		<p>
+		The "availability <b>score</b>" goes up to 20.  It
+		must be higher than 10 for the server to be included in
+		the cluster.
+		</p>
+
+		<p>As noted on the <a href="[% combust.www_url("/join.html") %]">join information</a> page adding
+		your IP to the pool is a long term commitment.  If you need to remove
+		your server from the pool you can schedule the removal with the
+		<b>delete</b> button (up to 3 months in advance!).
+		</p>
+
+	</div>
+	[% ELSE %]
+
+	<i>No servers registered to your email address. Send  a mail if that was not what you expected!</i> 
+
+	[% END %]
+
+
+        <div class="block server_desc">
+
+        <p>
+        The current NTP implementations (and the pool system) are very IP focused, so to "change" the IP address
+        of your server, please delete the old server and just add the new IP. 
+        </p>
+
+
+	<p>
+	To change other server information, email <a
+	href="mailto:ntppool-server-support@develooper.com">ntppool-server-support@develooper.com</a>.
+	</p>
+
+        </div>
+	
+</div>
+
+
+
+
+

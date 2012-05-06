@@ -4,6 +4,12 @@ use Net::IP;
 
 sub BAD_SERVER_THRESHOLD { -15 }
 
+sub is_staff {
+    my $self = shift;
+    my $privileges = $self->privileges;
+    return $privileges->see_all_servers or $privileges->see_all_user_profiles or $privileges->support_staff;
+}
+
 sub who {
     my $self = shift;
     $self->username || $self->email;

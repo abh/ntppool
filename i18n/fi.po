@@ -1,0 +1,112 @@
+msgid ""
+msgstr ""
+"Last-Translator: Joni Kähärä <joni.kahara@async.fi>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "go up"
+msgstr "ylös"
+
+# zone names
+msgid "Africa"
+msgstr "Afrikka"
+
+msgid "Asia"
+msgstr "Aasia"
+
+msgid "North America"
+msgstr "Pohjois-Amerikka"
+
+msgid "South America"
+msgstr "Etelä-Amerikka"
+
+msgid "Global"
+msgstr "Globaali"
+
+msgid "All Pool Servers"
+msgstr "Kaikki Poolin Palvelimet"
+
+# navigation
+msgid "Translations"
+msgstr "Käännökset"
+
+# mailinglists.html
+msgid  "NTP Pool mailing lists"
+msgstr "NTP Poolin postituslistat"
+
+msgid  "subscribe"
+msgstr "tilaa"
+
+msgid  "archive"
+msgstr "arkisto"
+
+msgid  "Announcement list"
+msgstr "Ilmoituslista"
+
+msgid  "Discussion list"
+msgstr "Keskustelulista"
+
+msgid  "Development list"
+msgstr "Kehityslista"
+
+msgid  "announcement_list_description"
+msgstr "NTP Poolin ilmoituslista, hyvin vähän liikennettä. Kaikkien poolin palvelimia operoivien tahojen tulisi liittyä tähän."
+
+msgid  "discussion_list_description"
+
+msgstr "Palvelimia operoivien tahojen (ja käyttäjien) jotka haluavat olla enemmän mukana projektissa voivat liittyä tähän.<br/>Tietenkin, yleisen keskustelun tulisi tapahtua %1 Usenet-uutisryhmässä (myös <a href=\"%2\">Google Groupsissa</a>)."
+
+msgid  "development_list_description"
+
+msgstr "Teknisemmät (ja toivottavasti myös käytännöllisemmät) <a href=\"%1\">poolin koodin</a> ja <a href=\"%2\">pgeodns:n</a> kehittämiseen liittyvä keskustelu tapahtuu timekeepers-dev-listalla."
+
+# tpl/server.html
+msgid  "Back to the front page"
+msgstr "Takaisin etusivulle"
+
+msgid  "Find"
+msgstr "Etsi"
+
+msgid  "Stats for %1"
+msgstr "%1 Tilastot"
+
+msgid  "Not active in the pool, monitoring only"
+msgstr "Ei aktiivinen poolissa, vain monitorointi"
+
+msgid  "Zones:"
+msgstr "Vyöhykkeet:"
+
+msgid  "This server is <span class="deletion">scheduled for deletion</span> on %1."
+msgstr "Palvelimen on <span class="deletion">määrä poistaa</span> %1."
+
+msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
+msgstr "Nykyinen tulos: %1 (vain palvelimet joiden tulos on yli %2 ovat mukana poolissa)"
+
+msgid  "What do the graphs mean?"
+msgstr "Mitä graafit tarkoittavat?"
+
+msgid  "CSV log"
+msgstr "CSV-logi"
+
+# tpl/navigation_sidebar.html
+msgid  "News"
+msgstr "Uutiset"
+
+msgid  "How do I <i>use</i> pool.ntp.org?"
+msgstr "Kuinka <i>käytän</i> pool.ntp.org:ia?"
+
+msgid  "How do I <i>join</i> pool.ntp.org?"
+msgstr "Kuinka <i>liityn</i> pool.ntp.org:iin?"
+
+msgid  "Information for vendors"
+msgstr "Tietoa laite- ja ohjelmistotoimittajille"
+
+msgid  "The mailing lists"
+msgstr "Postituslistat"
+
+msgid  "Additional links"
+msgstr "Lisää linkkejä"
+
+msgid  "Can you translate?"
+msgstr "Osaatko kääntää?"

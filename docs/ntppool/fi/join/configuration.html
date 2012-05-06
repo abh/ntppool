@@ -1,0 +1,68 @@
+<div class="block">
+
+<h3>Asetussuosituksia pooliin liittyville palvelimille</h3>
+
+<p>
+<a href="http://support.ntp.org/">support.ntp.org:in</a>
+<a href="http://support.ntp.org/bin/view/Support/WebHome">tukioisiossa</a>
+on paljon hyödyllistä tietoa.
+</p>
+
+<p>
+Jos haluat vain <b>käyttää</b> poolia, katso <a href="/fi/use.html">kuinka käytän poolia</a>.
+</p>
+
+<p>
+<a href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp-uutisryhmä</a>
+on paras paikka etsiä apua ntpd-ohjelmaan liittyen.
+</p>
+
+<p>
+Alla on joitain huomioon otettavia seikkoja jos aiot liittää palvelimesi pooliin.
+</p>
+
+
+<h4>Käytä noin viittä palvelinta</h4>
+
+<p>
+Toimiakseen kunnolla ntpd tarvitsee vähintään kolme palvelinta joihin synkronoitua
+("Mies jolla on kello tietää paljonko se on. Mies jolla on kaksi kelloa ei voi ikinä
+olla varma.")
+</p>
+
+<p>
+Suosittelemme pooliin kuuluville palvelimille vähintään neljän mutta ei enempää
+kuin seitsemän palvelimen käyttämistä.
+</p>
+
+<h4>Älä käytä *.pool.ntp.org:in palvelimia</h4>
+
+<p>
+Ironista on että varmistaaksesi parhaan mahdollisen palvelun tason, liitäessäsi palvelimesi
+pooliin  sinun ei tule käyttää *.pool.ntp.org-aliaksia asetustiedostossasi.
+</p>
+
+<p>
+Poolin luotettavuuden varmistamiseksi poolin operaattoreiden tulisi valita käsin hyvät paikalliset
+(verkkomielessä) palvelimet. NTP.org:in wikissä on lista
+<a href="http://support.ntp.org/bin/view/Servers/WebHome">julkisista palvelimista</a>.
+</p>
+
+<h4>Käytä standardia ntpd:tä</h4>
+
+<p>
+Suosimme ohjelmiston monimuotoisuutta, mutta merkittävä osuus "se ei toimi"
+-kysymyksistä joita meille esitetään liittyy muihin kuin ntpd:hen.
+</p>
+
+<p>
+Voit <b>käyttää</b> poolia millä tahansa NTP:tä ymmärtävällä ohjelmistolla, mutta
+mikäli aiot liittyä pooliin, suosittelemme käyttämään
+<a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd:tä</a>.
+</p>
+
+<h4>Älä käytä LOCAL-kelloajuria</h4>
+
+<p>Poolin palvelimilla ei pitäisi olla LOCAL-kelloajuria konfiguroituna.</p>
+
+</div>

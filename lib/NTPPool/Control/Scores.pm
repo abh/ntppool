@@ -5,6 +5,7 @@ use Combust::Constant qw(OK DECLINED);
 use NP::Model;
 use Imager ();
 use List::Util qw(min);
+use JSON qw(encode_json);
 
 BEGIN {
   die "Imager module needs to be compiled with png support"
@@ -14,7 +15,16 @@ BEGIN {
 sub render {
   my $self = shift;
 
-  $self->cache_control('s-maxage=1800');
+  my $public = $self->site->name eq 'ntppool' ? 1 : 0;
+  $self->cache_control('s-maxage=1800') if $public;
+
+  unless ($public or $self->user) {
+      $self->redirect( $self->www_url( $self->request->uri, $self->request->query_parameters ));
+  }
+
+  if (!$public) {
+      $self->tpl_param('manage_site', 1);
+  }
 
   return $self->redirect('/scores/') if ($self->request->uri =~ m!^/s/?$!);
 
@@ -42,7 +52,7 @@ sub render {
           return 404 unless $server;
           return $self->redirect('/scores/' . $server->ip, 301) unless $p eq $server->ip;
 
-          if ($mode eq 'log' or $self->req_param('log')) {
+          if ($mode eq 'log' or $self->req_param('log') or $mode eq 'json') {
               my $limit = $self->req_param('limit') || 0;
               $limit = 50 unless $limit and $limit !~ m/\D/;
               $limit = 4000 if $limit > 4000;
@@ -59,7 +69,45 @@ sub render {
                   $self->cache_control('s-maxage=300');
               }
 
-              return OK, $server->log_scores_csv($options), 'text/plain';
+            if ($mode eq 'json') {
+                #local ($Rose::DB::Object::Debug, $Rose::DB::Object::Manager::Debug) = (1, 1);
+                # This logic should probably just be in the server
+                # model, similar to log_scores_csv.
+
+                my $monitors = $server->server_scores;
+                $monitors = [
+                   map {
+                       my %m = (id => $_->monitor->id,
+                                score => $_->score,
+                                name => $_->monitor->name,
+                               );
+                       \%m;
+                   } @$monitors
+                ];
+
+                my $history = $server->history($options);
+                $history = [
+                    map {
+                        my $h      = $_;
+                        my %h      = ();
+                        my @fields = qw(offset step score monitor_id);
+                        @h{@fields} = map { $h->$_; } @fields;
+                        $h{ts} = $h->ts->epoch;
+                        \%h;
+                      } reverse @$history
+                ];
+                return OK,
+                  encode_json(
+                    {   history  => $history,
+                        monitors => $monitors,
+                        server   => { ip => $server->ip }
+                    }
+                  ),
+                  'application/json';
+            }
+              else {
+                  return OK, $server->log_scores_csv($options), 'text/plain';
+              }
           }
           elsif ($mode eq 'rrd') {
               # TODO: check that rrd is up-to-date
@@ -166,6 +214,9 @@ sub _calc_y {
     my $h = shift;
     (($h->score - 20) * -1) + 1;
 }
+
+sub bc_user_class { NP::Model->user }
+sub bc_info_required { 'username,email' }
 
 
 1;

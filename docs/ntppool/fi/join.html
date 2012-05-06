@@ -1,0 +1,101 @@
+[% page.title = 'Liity NTP Pooliin!'  %]
+
+<div class="block">
+	<h3><a name="join">Kuinka liityn pool.ntp.org:iin?</a></h3>
+
+	<p>
+	Ensinnäkin: Kiitokset mielenkiinnostasi. Poolin käyttö on lisääntynyt
+	valtavasti ja ainoa tapa millä varmistamme että jokainen poolin
+	palvelinta ajava pääsee mahdollisimman vähällä vaivalla on kasvattaa
+	poolissa olevien palvelinten lukumäärää.
+	</p>
+
+	<p>
+	Palvelimellasi tulee olla <b>staattinen IP-osoite</b> ja kiinteä
+	Internet-yhteys. On ensisijaisen tärkeää ettei IP-osoite muutu, tai
+	tekee niin ainoastaan äärimmäisen harvoin (esim. kerran vuodessa tai
+	harvemmin). Kaistaleveysvaatimukset ovat verrattain alhaiset. Jokainen
+	asiakas lähettää vain muutamia UDP-paketteja muutamien tai muutamien
+	kymmenten minuuttien välein.
+	</p>
+
+	<p>
+	Tällä hetkellä useimmille palvelimille tulee noin 5-15 NTP-pakettia
+	sekunnissa, sekä muutamien päivittäisten huippujen aikana noin 60-120
+	pakettia sekunnissa. Tämä vastaa noin 10-15 kilobittiä sekunnissa, tai
+	50-120 kilobittiä sekunnissa huippujen aikana. Projektiin liittyy
+	tasaisesti uusia palvelimia, joten yksittäiseen palvelimeen kohdistuvan
+	kuorman ei pitäisi nousta mitenkään dramaattisesti. Yksinkertaistettuna,
+	tarvitset kaistaa vähintään 384-512 kilobittiä sekunnissa sekä sisään- että
+	ulospäin.
+	</p>
+
+	<p>
+	Tässä joidenkin palvelimien liikenne/kuormakäyriä:
+	[% i = 0; FOR server = combust.servers_with_urls; %]
+	   <a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
+	[% END %]
+	</p>
+
+	<p>
+	Liittyvien palvelimien ei pidä käyttää <tt>pool.ntp.org</tt>:ia
+	omana palvelimenaan, vaan konfiguroida muutama <a href="http://support.ntp.org/bin/view/Servers/StratumTwoTimeServers">hyvä palvelin</a> manuaalisesti.
+	(Nämä palvelimet <b>saattavat</b> olla poolissa, mutta idea on että
+	palvelimet valitaan staattisesti eikä niitä jaeta satunnaisesti
+	uudelleenkäynnistyksessä. Tämä parantaa palvelun laatua.)
+
+	Huomaa että palvelimesi ei välttämättä tarvitse olla stratum 1 tai stratum 2
+	-palvelin - koska tämän projektin pääasiallinen tarkoitus on kuorman
+	tasaaminen, ei ole mitään syytä mikseivät stratum 3 tai jopa stratum 4
+	-palvelimet voisi liittyä.
+	</p>
+
+	<p>
+	Meillä on sivu <a href="/fi/join/configuration.html">asetussuosituksia pooliin liittyville palvelimille</a>.
+	</p>
+	<p>
+	Lopuksi, haluaisin korostaa että pooliin liittyminen vaatii <b>pitkän aikavälin sitoutumista</b>.
+	Poistamme mielellämme palvelimesi poolista, mikäli olosuhteesi muuttuvat, mutta
+	johtuen tavasta jolla NTP-asiakkaat toimivat <b>saattaa kestää viikkoja, kuukausia tai
+	jopa VUOSIA ennen kuin kaikki liikenne lopullisesti häviää</b>.
+	</p>
+
+	<p>
+	Jos kaikki tämä on ok, kirjaudu sisään <a href="/manage">palvelinten hallintaan</a> ja
+	pyydä palvelimesi liittämistä pooliin.
+	Jos sinulla on jotain ongelmia järjestelmän kanssa, kirjoita minulle sähköpostia
+	osoitteeseen <a href="mailto:ask@develooper.com">ask@develooper.com</a>.
+	</p>
+
+	
+	<p>
+	Pyytäisin sinua myös tilaamaan <a href="http://news.ntppool.org/atom.xml">feedin</a>
+	ja mahdollisesti liittymään <a href="https://lists.ntp.org/listinfo/pool">postituslistalle</a>.
+	</p>
+	
+
+
+	<p>
+	On suotavaa (muttei välttämätöntä) että voisit uudelleenohjata web-pyynnöt palvelimesi
+	porttiin 80 projektin viralliselle etusivulle <tt>http://www.pool.ntp.org</tt>. Jos
+	käytät Apachea, voit toimia seuraavasti:
+	</p>
+
+        [% PROCESS tpl/join/virtual_host_example.html %]
+
+	<p>
+	Mutta, kuten sanottu, tämä ei ole välttämätöntä ja voit jättää tämän tekemättä mikäli
+	et muutenkaan aja web-palvelinta. Projektin virallisen etusivun osoitteessa on aina
+	'www'-etuliite mutta joskus ihmiset laiskuuttaan kirjoittavat vain <tt>pool.ntp.org</tt>
+	ja ihmettelevät sitten päätyessään jollekin satunnaiselle web-sivulle.
+	</p>
+
+	<p>
+	Kun palvelin on lisätty pooliin, sen saavutettavuutta ja tarkkuutta monitoroidaan
+	jatkuvasti. Voit seurata palvelimesi tilastoja <a href="scores">web frontendistä</a>
+	tai <a href="/manage">hallintasivulta</a>.
+	</p>
+</div>
+
+
+

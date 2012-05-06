@@ -94,3 +94,21 @@ msgstr "Hvad betyder graferne?"
 msgid "CSV log"
 msgstr "CSV-log"
 
+# tpl/navigation_sidebar.html
+msgid  "News"
+msgstr "News"
+
+msgid  "How do I <i>use</i> pool.ntp.org?"
+msgstr "How do I <i>use</i> pool.ntp.org?"
+
+msgid  "How do I <i>join</i> pool.ntp.org?"
+msgstr "How do I <i>join</i> pool.ntp.org?"
+
+msgid  "Information for vendors"
+msgstr "Information for vendors"
+
+msgid  "The mailing lists"
+msgstr "The mailing lists"
+
+msgid  "Additional links"
+msgstr "Additional links"

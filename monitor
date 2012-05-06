@@ -1,12 +1,12 @@
 #!/usr/bin/env perl
 use strict;
 use Net::NTP 1.3;
-use LWP;
 use Time::HiRes;
 use JSON qw(decode_json encode_json);
 use Capture::Tiny qw(capture_merged);
+use HTTP::Tiny;
 
-my $VERSION = "0.1";
+my $VERSION = "1.1";
 
 $Net::NTP::TIMEOUT = 2;
 
@@ -33,7 +33,9 @@ $Net::NTP::CLIENT_TIME_RECEIVE = undef;
 my $mon_host = 'localhost';
 my %pkt = eval { get_ntp_response($mon_host) };
 if (!$pkt{'Stratum'} or $pkt{'Stratum'} == 0 or $pkt{'Stratum'} > 6) {
-    die "monitoring server not synchronized\n";
+    warn "monitoring server not synchronized\n";
+    sleep 10;
+    exit 2;
 }
 
 #use Data::Dump qw(pp);
@@ -108,8 +110,7 @@ sub catch_TERM {
 }
 $SIG{TERM} = \&catch_TERM;
 
-my $ua = LWP::UserAgent->new;
-$ua->agent("NTPPool-Monitor/$VERSION");
+my $ua = HTTP::Tiny->new( agent => "NTPPool-Monitor/$VERSION" );
 
 while (1) {
 
@@ -120,16 +121,16 @@ while (1) {
     logsay("Getting servers to check");
     my $response = $ua->get($pool_server);
 
-    my $data = eval { decode_json($response->content) } || {};
+    my $data = eval { decode_json($response->{content}) } || {};
     my $err = $@;
 
-    if (!$response->is_success or $data->{error} or $err or !$data) {
+    if (!$response->{success} or $data->{error} or $err or !$data) {
         logsay(
             "$pool_server error: ",
-            $response->status_line,
+            $response->{reason},
             "\n",
             ($data->{error} ? "Server Response: " . $data . "\n" : ()),
-            ($err ? "Data decoding error: $err\n" . $response->content . "\n" : ())
+            ($err ? "Data decoding error: $err\n" . $response->{content} . "\n" : ())
         );
         sleep 20;
         next;
@@ -189,16 +190,21 @@ while (1) {
 
     logsay("Posting response", \@status);
     
-    $response = $ua->post($pool_server, Content_Type => 'application/json',
-			  Content => encode_json({ version => 1, servers => \@status }));
+    $response = $ua->request(
+        'POST',
+        $pool_server,
+        {   headers => {'Content-Type' => 'application/json'},
+            content => encode_json({version => 1, servers => \@status})
+        }
+    );
 
-    unless ($response->is_success) {
-        logsay("$pool_server error:", $response->status_line);
+    unless ($response->{success}) {
+        logsay("$pool_server error:", $response->{reason});
         sleep 30;
         next;
     }
             
-    my $data = decode_json($response->content);
+    my $data = decode_json($response->{content});
     if ($data->{warnings} && @{ $data->{warnings} }) {
 	for my $w (@{ $data->{warnings} }) {
 	    logsay("WARNING: $w");
