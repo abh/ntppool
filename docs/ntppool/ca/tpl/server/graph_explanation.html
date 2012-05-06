@@ -1,0 +1,34 @@
+<div id="graph_explanation_box" class="graph_explanation [% graph_explanation ? 'visible' : '' %]">
+
+<h3>El gràfic de puntuació</h3>
+<p>
+Alguns cops per hora el sistema del pool comprova l'hora del vostre
+servidor i la compara amb l'hora local. Si no s'hi pot connectar
+o la diferència de l'hora és més de 100ms (mesurada amb la precisió
+relativament baixa del sistema de vigilància), resta punts del vostre
+servidor. Amb més gran la diferència, més punts en resta.
+</p>
+
+<p>
+Quan la puntuació baixa el color del fons a dalt indiquen la
+gravetat de la fallada. L'escala de colors s'estén de blau (molt poc greu)
+a través de groc i taronja a vermell (molt greu). Com que el gràfic
+mostra una mitjana, no sempre se'n pot deduir què exactament ha passat.
+Només està pensat com a eina per visualitzar tendències. Per a més detalls
+sobre els resultats del sistema de vigilància pots fer clic sobre l'enllaç de CSV.
+</p>
+
+<h3>El gràfic de diferència</h3>
+
+<p>
+El sistema de vigilància funciona més o menys com un client <a
+href="http://www.ntp.org/ntpfaq/NTP-s-def.htm#AEN1242">SNTP</a> (<a
+href="http://www.eecis.udel.edu/~mills/database/rfc/rfc2030.txt">RFC
+2030</a>). Per tant, és més susceptible a canvis de latències de la xarxa
+que un client ntpd normal. Dit amb altres paraules: No t'amoïnis, si
+de vegades la diferència està alta i, sisplau, no facis servir aquesta
+eina de mètrica absoluta de rendiment del teu servidor.
+</p>
+
+</div>
+
