@@ -1,0 +1,74 @@
+<div class="block">
+
+<h3>Configuració recomenada per a servidors que voleu unir al pool</h3>
+
+<p>
+La <a href="http://support.ntp.org/bin/view/Support/WebHome">secció &quot;suport&quot;</a> a
+<a href="http://support.ntp.org/">support.ntp.org</a> conté molta informació útil.
+</p>
+
+<p>
+Si només voleu <i>fer servir</i> el pool, vegeu la <a href="/use.html">pàgina sobre l'ús</a>.
+</p>
+
+<p>
+El grup de discussió <a href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a>
+is el millor lloc per obtenir ajuda amb el programari ntpd.
+</p>
+
+<p>
+Més abaix trobareu algunes coses d'interès particular, si voleu unir el vostre servidor al pool.
+</p>
+
+<h4>Configureu aproximadament 5 servidors</h4>
+
+<p>
+Perquè funcioni correctament l'ntpd ha de comunicar-se amb 3 servidors
+com a mínim (&quot;Un home amb un rellotge sap quina hora és. Un home
+amb dos rellotges mai no n'està segur.&quot;).
+</p>
+
+<p>
+Per a servidors del pool recomanem configurar com a mínim 4 i com a màxim
+7 servidors.
+</p>
+
+
+<h4>No feu servir servidors de *.pool.ntp.org</h4>
+
+<p>
+Semblarà irònic, però per assegurar-nos de que el pool funcioni de
+la millor manera possible no feu servir *.pool.ntp.org
+a la vostra configuració, si us proposeu d'afegir el vostre servidor
+al pool.
+</p>
+
+<p>
+Per tenir un pool robust és millor si tots els operadors trien bons servidors
+de temps locals (respecte a la xarxa) de manera manual. El wiki de NTP.org conté
+una <a href="http://support.ntp.org/bin/view/Servers/WebHome">llista de servidors
+públics</a>.
+</p>
+
+
+<h4>Feu servir l'ntpd estàndard</h4>
+
+<p>
+Tots estem a favor de diversitat de programari, però un percentatge significant
+de les preguntes a l'estil "no funciona" que ens arriben es refereixen a programari
+que no és l'ntpd.
+</p>
+
+<p>
+Podeu <i>fer servir</i> el pool amb qualsevol programa que sap parlar NTP,
+però si voleu unir el vostre servidor al pool us recomanem que feu servir
+<a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
+</p>
+
+
+<h4>No feu servir el controlador de rellotge &quot;LOCAL&quot;</h4>
+
+<p>Servidors del pool no haurien de tenir configurat el controlador de rellotge &quot;LOCAL&quot;.</p>
+
+
+</div>
