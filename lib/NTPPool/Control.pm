@@ -16,6 +16,7 @@ $Combust::Control::Bitcard::cookie_name = 'npuid';
 my $config = Combust::Config->new;
 
 our %valid_languages = (
+                        ca => { name => "Català", testing => 1 },
                         de => { name => "Deutsch" },
                         da => { name => "Danish", testing => 1, },
                         en => { name => "English", },
