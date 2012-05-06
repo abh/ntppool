@@ -63,20 +63,18 @@ remote           refid      st t when poll reach   delay   offset  jitter
  <p>
   Sollten Sie eine neuere Version von <b>Windows</b> einsetzten,
   k&ouml;nnen Sie den NTP-Client nutzen, der in das System integriert
-  ist. F&uuml;hren Sie dazu folgendes Kommando aus:
+  ist. F&uuml;hren Sie dazu folgendes Kommando als Administrator aus:
  </p>
 <pre class="code">
-net time /setsntp:pool.ntp.org
+w32tm /config /syncfromflags:manual /manualpeerlist:0.pool.ntp.org,1.pool.ntp.org,2.pool.ntp.org,3.pool.ntp.org
 </pre>
- <p>
-  Manche Versionen von Windows erlauben, mehrere Zeitserver zu setzen:
+Dieses Kommando funktioniert auf Versionen ab Windows 2003. Wenn Sie eine ältere Windows-Version benutzen, können Sie folgendes Kommando probieren:
 <pre class="code">
 net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 </pre>
  </p>
  <p>
-  Dieses Vorgehen wurde f&uuml;r Windows 2000/XP/2003 gepr&uuml;ft. Das
-  gleiche kann als Administrator erreicht werden, wenn Sie mit der rechten
+  Das Gleiche kann als Administrator erreicht werden, wenn Sie mit der rechten
   Maustaste auf die Uhrzeit in der Systemleiste klicken und dann auf
   &quot;Einstellungen&quot;.
   Dort kann der Zeitserver bzw. die Zone unter &quot;Internetzeit&quot;
@@ -90,11 +88,11 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 
  <p>
   Sollten Sie sich innerhalb einer Dom&auml;ne befinden, kann es sein, dass Sie
-  Ihre Systemzeit nicht unabh&auml;ngig definieren k&ouml;nnen. Mehr
-  Informationen dazu liefert eine englische Problembeschreibung von Microsoft
+  Ihre Systemzeit nicht unabh&auml;ngig definieren k&ouml;nnen. Für weitere
+  Informationen zur Einstellung von Zeitservern unter Windows siehe
   <a
-  href="http://technet.microsoft.com/en-us/library/cc773013%28WS.10%29.aspx">How
-  Windows Time Service Works</a>.
+  href="http://technet.microsoft.com/en-us/library/cc773013%28WS.10%29.aspx">&quot;How
+  Windows Time Service Works&quot;</a>.
  </p>
 </div>
 
@@ -129,11 +127,10 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 
  <p><span class="hook">Seien Sie freundlich</span>. Viele Server werden von
   Freiwilligen betrieben und fast alle werden auch f&uuml;r private Zwecke
-  eingesetzt. Also nutzen Sie bitte nicht mehr als drei Zeitserver
+  eingesetzt. Also nutzen Sie bitte nicht mehr als vier Zeitserver
   in Ihrer Konfiguration und spielen Sie niemandem b&ouml;se Streiche mit
   <tt>burst</tt> oder <tt>minpoll</tt>. Das Einzige, was Sie damit erreichen
-  k&ouml;nnen ist, dass dieses Projekt fr&uuml;her oder sp&auml;ter eingestellt
-  werden muss.</p>
+  k&ouml;nnen ist zusätzliche Beansprungung des Servers eines Freiwilligen.</p>
 
  <p><span class="hook">Vergewissern Sie sich, dass die
   <i>Zeitzonenkonfiguration</i> Ihres Computers korrekt ist</span>. <i>ntpd</i>
