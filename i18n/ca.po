@@ -51,7 +51,7 @@ msgid  "Development list"
 msgstr "Llista de desenvolupament"
 
 msgid  "announcement_list_description"
-msgstr "Llista d'avisos de notícias del NTP Pool amb una freqüencia molt, mol baixa. Tots els administradors de servidors hi haurien d'estar apuntats."
+msgstr "Llista d'avisos de notícias del NTP Pool amb una freqüencia molt, molt baixa. Tots els administradors de servidors hi haurien d'estar apuntats."
 
 msgid  "discussion_list_description"
 msgstr "Administradors de servidors (i usuaris) que volen estar més involucrat es poden apuntar a la llista de discussions. Naturalment, discussions sobre el servei ntp en general s'haurien de fer en el grup de Usenet %1 (també disponible a través de <a href=\"%2\">Google Groups</a>)."
