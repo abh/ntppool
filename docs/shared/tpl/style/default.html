@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+[% title = page.title || 'the internet cluster of ntp servers' %]
+<title>pool.ntp.org: [% title | html %]</title>
+
+<link rel="shortcut icon" href="[% combust.static_url('/images/favicon.ico') %]" type="image/x-icon" />
+
+		<link rel="stylesheet" type="text/css" href="[% combust.static_url("/css/reset-fonts-grids.css") %]">
+
+		<link rel="stylesheet" href="[% combust.static_url("/css/master.css") %]" type="text/css" media="screen" charset="utf-8" />
+		<link rel="stylesheet" href="[% combust.static_url("/css/content.css") %]" type="text/css" media="screen" charset="utf-8" />
+		<link rel="icon" href="[% combust.static_url("/images/favicon.ico") %]" type="image/x-icon" />
+
+</head>
+<body>
+	
+	
+<div id="doc3" class="yui-t2">
+	<div id="hd">
+		<h1>pool.ntp.org</h1>
+		[% IF combust.deployment_mode != 'prod' %]
+		<p class="develwarning">Note: This is a development/test version of
+		the NTP Pool system!  For the real site with real data, go to <a
+		href="http://www.pool.ntp.org/">www.pool.ntp.org</a>.  Discussion and
+		bug reports for the beta/test site here, see <a
+		href="https://lists.ntp.org/listinfo/pool-dev">pool-dev</a>.
+		</p>
+		[% END %]
+	</div>
+	<div id="bd">
+		<div id="yui-main">
+			<div class="yui-b">
+				[% PROCESS tpl/navigation_topbar.html %]
+				<br class="clearboth"/>
+				[% content %]
+
+			</div>
+		</div>
+		<div id="sidebar" class="yui-b">
+			<h1><a href="/">pool.ntp.org</a></h1>
+                        [% PROCESS tpl/navigation_sidebar.html %]
+		</div>
+	</div>
+	<div id="ft">
+		Comments and questions to <a href="http://www.askbjoernhansen.com/">Ask Bj&oslash;rn Hansen</a> &#8212;
+		<a href="mailto:ask@develooper.com">ask@develooper.com</a>
+	</div>
+</div>	
+
+<script type="text/javascript" src="[% combust.static_url("cdn/libs/jquery/1.7.2/jquery.min.js") %]"></script>
+[% page.js %]
+
+[%- IF siteconfig.googleanalytics %]
+<script src="//www.google-analytics.com/urchin.js" type="text/javascript"></script>
+<script type="text/javascript">_uacct = "[% siteconfig.googleanalytics %]";urchinTracker();</script>
+[% END %]
+
+[% IF combust.site == 'ntppool' %]
+<!-- ipv6 testing -->
+<script type="text/javascript" src="http://ipv64.v6test.develooper.com/js/v1/v6test.js"></script>
+
+<script type="text/javascript">
+   // v6.target = '';
+   if (!v6.target) { v6.only_once = true }
+   v6.site = 'EED5EB02-235D-11DF-8ACC-F064064DD970';
+   v6.api_server = 'http://ipv64.v6test.develooper.com';
+   try {
+     v6.test();
+   } catch(err) {}
+</script>
+[% END %]
+
+</body>
+</html>
+
+

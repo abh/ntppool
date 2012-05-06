@@ -17,7 +17,7 @@ server 1.pool.ntp.org
 server 2.pool.ntp.org
 server 3.pool.ntp.org</pre>
 	<p>
-	0과 1, 2.pool.ntp.org 이름들은 매 시간마다 변하면서 임의의 서버들을 지정합니다.
+	0과 1, 2, 3.pool.ntp.org 이름들은 매 시간마다 변하면서 임의의 서버들을 지정합니다.
 	귀하의 컴퓨터의 시간을 대충 (진짜 시간과 몇 분 차이 안나도록) 맞춘 것을 확인한
 	후에는 <tt>ntpupdate.pool.ntp.org</tt>를 사용할 수 있습니다.
 	아니면 그냥 손목시계를 보고 <tt>date</tt>명령어로 시간을 맞추십시오.
@@ -73,7 +73,7 @@ net time /setsntp:pool.ntp.org
 	<p>
 	어떤 윈도우즈 버전은 다음과 같이 여러 개의 서버를 지정할 수 있습니다.
 <pre class="code">
-net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
+net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 </pre>
 	</p>
 	<p>
@@ -90,7 +90,7 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
 
 	<p>
 	윈도우즈 시스템이 도메인의 구성원이라면 컴퓨터의 시간을 마음대로 바꾸지 못할 수도 있습니다.
-	<a href="http://technet2.microsoft.com/WindowsServer/en/library/71e76587-28f4-4272-a3d7-7f44ca50c0181033.mspx?mfr=true">윈도우즈 시간 서비스가 어떻게 작동하는지에 대한 문서</a>
+	<a href="http://technet.microsoft.com/en-us/library/cc773013%28WS.10%29.aspx">윈도우즈 시간 서비스가 어떻게 작동하는지에 대한 문서</a>
 	를 보십시오.
 	</p>
 </div>

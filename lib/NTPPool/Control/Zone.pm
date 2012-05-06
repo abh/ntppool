@@ -4,24 +4,6 @@ use base qw(NTPPool::Control);
 use NP::Model;
 use Combust::Constant qw(OK);
 
-sub cache_info {
-  my $self = shift;
-
-  return {} if $self->deployment_mode eq 'devel';
-  return {} if $self->is_graph;
-  return {} if $self->show_servers;
-
-  return +{ expires => 3600,
-            id => join(";",
-                       "zonepage",
-                       $self->zone_name,
-                       $self->sort_order,
-                       $self->show_servers,
-                       ($self->show_servers_access ? 1 : 0)
-                      ),
-          }
-}
-
 sub zone_name {
   my $self = shift;
   my ($zone_name) = ($self->request->uri =~ m!^/zone/(?:graph/)?([^/]+?)(/|(-v6)?\.png)?$!);

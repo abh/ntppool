@@ -108,4 +108,4 @@ msgid  "Additional links"
 msgstr "Zus&auml;tzliche Links"
 
 msgid  "Can you translate?"
-msgstr "Kannst du übersetzen?"
+msgstr "Können Sie pool.ntp.org übersetzen?"

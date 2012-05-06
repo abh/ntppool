@@ -1,0 +1,18 @@
+<ul>
+{{#users}}
+  <li>{{username}} {{email}} {{name}} ({{id}})<br>
+      <ol>
+          {{#servers}}
+              <li><a href="/scores/{{ip}}">
+                  {{{ip_display}}}
+              </a> ({{score}}, {{netspeed_human}})
+              {{#deletion_on}}<span class="badge badge-warning">{{deletion_on}}</span>{{/deletion_on}}
+              {{#zones}}
+                  {{.}} 
+              {{/zones}}
+              </li>
+              
+          {{/servers}}
+      </ol>
+  </li>
+{{/users}}

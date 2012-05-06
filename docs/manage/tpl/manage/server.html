@@ -1,0 +1,54 @@
+<a name="s-[% server.ip %]"></a>
+<span id="server_[% server.id %]">
+<form method="post" action="/manage/server/update/server">
+
+[% IF server.hostname %]Hostname: <b>[% server.hostname | html %]</b><br />[% END %]
+IP: <b><a href="[% combust.www_url(server.url) %]">[% server.ip | html %]</a></b><br />
+[% IF server.deletion_on %]
+This server is <span class="deletion">scheduled for deletion</span>
+on [% server.deletion_on.strftime("%B %d, %Y") %].
+<br/>
+[% END %]
+Current score: <b>[% server.score %]</b><br />
+[% IF server.stratum %]Stratum: <b>[% server.stratum %]</b><br/>[% END %]
+
+Zones:
+<span id="zones_[% server.id %]">
+[% FOR zone = server.zones_display %]
+<a href="[% combust.www_url(zone.url) %]">[% zone.name %]</a>
+[% END  %]
+</span>
+<br />
+
+<input type="hidden" name="server" value="[% server.id %]">
+<input type="hidden" name="noscript" value="1">
+
+<a href="#netspeed">Net speed</a>:
+<span id="netspeed_[% server.id %]">[% server.netspeed_human %]
+</span>
+ | 
+<select name="netspeed" onchange="NP.update_netspeed('[% server.id %]', this.value); return false;">
+<option value="">Set connection speed</option>
+[%  speeds = [384, 512, 768, 1000, 1500, 3000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000];
+    IF (server.netspeed < 384);
+       speeds.unshift(server.netspeed);
+    END;
+    FOR speed = speeds;
+ %]
+<option value="[% speed %]">[% combust.netspeed_human(speed) %]</option>
+[%- END %]
+</select>
+<noscript>
+<input type="submit" name="Update" value="Update">
+</noscript>
+
+[% IF server.deletion_on %]
+<input type="submit" name="Delete" value="Cancel Deletion">
+[% ELSE %]
+<input type="submit" name="Delete" value="Delete">
+[% END %]
+
+<br><br>
+
+</form>
+</span>

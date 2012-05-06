@@ -1,0 +1,23 @@
+[% page.js = BLOCK %]
+[% page.js %]
+[% PROCESS tpl/admin_js.html %]
+[% END %]
+
+<link rel="stylesheet" type="text/css" href="[% combust.static_url("cdn/libs/bootstrap/2/css/bootstrap.min.css") %]">
+
+
+[% PROCESS tpl/manage/navigation.html %]
+
+<div id="admin" class="block">
+    <h3>Manage NTP Pool</h3>
+
+    <form id="search_form" class="well form-search">
+      <input class="input-large search-query" id="q" type="text" name="q">
+      <button type="submit" class="btn">Search</button>
+    </form>
+
+    <div id="users">
+
+    </div>
+
+</div>

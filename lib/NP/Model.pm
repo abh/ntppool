@@ -53,7 +53,7 @@ __PACKAGE__->meta->setup(
     type           => { type => 'varchar', length => 50 },
     title          => { type => 'varchar', length => 255 },
     message        => { type => 'text', length => 65535 },
-    created_on     => { type => 'datetime', default => '0000-00-00 00:00:00', not_null => 1 },
+    created_on     => { type => 'datetime', default => 'now', not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
@@ -735,6 +735,7 @@ __PACKAGE__->meta->setup(
     see_all_user_profiles => { type => 'integer', default => '0', not_null => 1 },
     vendor_admin          => { type => 'integer', default => '0', not_null => 1 },
     equipment_admin       => { type => 'integer', default => '0', not_null => 1 },
+    support_staff         => { type => 'integer', default => '0', not_null => 1 },
   ],
 
   primary_key_columns => [ 'user_id' ],

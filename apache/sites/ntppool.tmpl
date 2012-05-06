@@ -13,21 +13,6 @@
        [% PH %] NTPPool::Control::Basic->super
     </Location>
 
-    <Location /manage>
-       SetHandler perl-script
-       [% PH %] NTPPool::Control::Manage->super
-    </Location>
-
-    <Location /manage/vendor>
-       SetHandler perl-script
-       [% PH %] NTPPool::Control::Vendor->super
-    </Location>
-
-    <Location /manage/equipment>
-       SetHandler perl-script
-       [% PH %] NTPPool::Control::Manage::Equipment->super
-    </Location>
-
     <Location /dns.html>
        SetHandler perl-script
        [% PH %] NTPPool::Control::DNSStatus->super
