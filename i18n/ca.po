@@ -21,6 +21,9 @@ msgstr "Amèrica del Nord"
 msgid "South America"
 msgstr "Amèrica del Sud"
 
+msgid "Europe"
+msgstr "Europa"
+
 msgid "Global"
 msgstr "Global"
 
