@@ -96,9 +96,39 @@ sub search {
     return $result;
 }
 
-sub server_zones {
+sub edit_server {
     my $self = shift;
-    return {};
+
+    return { error => 'No access' } unless $self->user && $self->user->is_staff;
+
+    # TODO:
+    #  check auth_token
+
+    my ($field, $value, $server_ip) = $self->_required_param(qw(id value server));
+    my $server = NP::Model->server->find_server($server_ip)
+      or die "Could not find server";
+
+    if ($field eq 'zone_list') {
+        my %zones = map { $_->name => $_ } $server->zones_display;
+        my %new_zones = map { $_ => 1 } split /[,\s]+/, $value;
+        for my $zone (keys %new_zones) {
+            if ($zones{$zone}) {
+                # ok already
+                delete $zones{$zone};
+                next;
+            }
+            $server->join_zone($zone);
+        }
+        for my $zone (keys %zones) {
+            next if $zones{$zone}->name eq '.';
+            $server->leave_zone($zone);
+        }
+        $server->save;
+        return [ map { $_->name } $server->zones_display ];
+    }
+    else {
+        die "Don't know how to edit $field";
+    }
 }
 
 1;

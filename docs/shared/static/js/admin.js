@@ -33,28 +33,34 @@ if (!NP) { var NP = {}; }
                     }, 'json'
             );
         });
-        
+
         var zone_list = $('#zone_list');
-        
+
         if (zone_list) {
-            zone_list.editable('/api/staff/server_zones', {
-                submit_data: {
+            zone_list.editable('/api/staff/edit_server', {
+                submitdata: {
                     auth_token: NP.token,
                     server: zone_list.data('server-ip')
                 },
-                data: zone_list.data('zones'),
+                data: function() { return zone_list.data('zones') },
                 indicator: 'Saving...',
+                event: "dblclick",
+                select: false,
                 cancel: 'Cancel',
                 submit: 'Save',
-                callback: function(zones,editable) {
-                    console.log(zones);
-                    return "bah!";
+                callback: function(zones, editable) {
+                    var zones_data = JSON.parse(zones),
+                        zones_str = zones_data.join(" ");
+                    zone_list.data('zones', zones_str);
+                    $('#zone_list').html(zones_str);
+                    $('#server_edit_zones').show();
+
                 }
             });
-       
+
             $('#server_edit_zones').click(function() {
                 console.log("button click");
-                zone_list.click();
+                zone_list.dblclick();
                 $('#server_edit_zones').hide();
             });
         }

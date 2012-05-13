@@ -264,7 +264,6 @@ elsif ($cmd eq "zones") {
     print server_information($server);
     my @zones = $server->zones;
     for my $zone_name (@ARGV) {
-        my @zones = $server->zones;
         if ($zone_name =~ s/^-//) {
             my ($zone) = grep { $_->name eq $zone_name } @zones;
             print "Could not find location '$zone_name' to delete\n" and next
