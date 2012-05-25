@@ -22,7 +22,11 @@ IP <input type="text" name="ip">
 
 [% page.title = "Stats for %1" | l(server.ip) %]
 
-<h3>[% server.ip %] [% IF server.hostname;  '/ ' _ server.hostname; END %]</h3>
+<h3>[% server.ip %]
+  [% IF server.hostname OR (manage_site AND combust.user.is_staff) %]
+      / <span id="server_hostname">[% server.hostname || 'add hostname' %]</span>
+  [% END %]
+</h3>
 
 
 <p>

@@ -64,5 +64,26 @@ if (!NP) { var NP = {}; }
                 $('#server_edit_zones').hide();
             });
         }
+
+        var server_hostname = $('#server_hostname');
+
+        if (server_hostname) {
+            server_hostname.editable('/api/staff/edit_server', {
+                submitdata: {
+                    id: 'hostname',
+                    auth_token: NP.token,
+                    server: zone_list.data('server-ip')
+                },
+                placeholder: "hostname",
+                callback: function(data, editable) {
+                    data = JSON.parse(data);
+                    server_hostname.html(data.hostname);
+                    if (data.error) {
+                        alert(data.error + ": " + data.input);
+                    }
+                }
+            });
+        }
+
     });
 })(jQuery);

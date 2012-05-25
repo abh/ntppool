@@ -2,6 +2,7 @@ package NTPPool::API::Staff;
 use strict;
 use base qw(NTPPool::API::Base);
 use NP::Model;
+use Net::IP;
 
 sub search {
     my $self = shift;
@@ -104,13 +105,16 @@ sub edit_server {
     # TODO:
     #  check auth_token
 
-    my ($field, $value, $server_ip) = $self->_required_param(qw(id value server));
+    my ($field, $server_ip) = $self->_required_param(qw(id server));
+    my $value = $self->_optional_param('value') || '';
+
     my $server = NP::Model->server->find_server($server_ip)
       or die "Could not find server";
 
     if ($field eq 'zone_list') {
         my %zones = map { $_->name => $_ } $server->zones_display;
         my %new_zones = map { $_ => 1 } split /[,\s]+/, $value;
+        %new_zones = %zones unless %new_zones; # don't allow removing all zones
         for my $zone (keys %new_zones) {
             if ($zones{$zone}) {
                 # ok already
@@ -125,6 +129,37 @@ sub edit_server {
         }
         $server->save;
         return [ map { $_->name } $server->zones_display ];
+    }
+    elsif ($field eq 'hostname') {
+        my $hostname = $value;
+        my $server_ip = Net::IP->new($server->ip);
+
+        my $res = Net::DNS::Resolver->new;
+        my $reply = $res->query($hostname, $server->ip_version eq 'v4' ? 'A' : 'AAAA');
+
+        my $error = "";
+        my $found = 0;
+
+        if ($reply) {
+            for my $rr ($reply->answer) {
+                next unless $rr->type eq 'A' or $rr->type eq 'AAAA';
+                $found++ if Net::IP->new($rr->address)->short eq $server_ip->short;
+            }
+        }
+
+        if ($found) {
+            $server->hostname( lc $hostname );
+            $server->save;
+        }
+        else {
+            $error = "That hostname doesn't resolve to the IP address of the server";
+        }
+
+        return {
+            hostname => $server->hostname,
+            input    => $hostname,
+            error    => $error
+        };
     }
     else {
         die "Don't know how to edit $field";
