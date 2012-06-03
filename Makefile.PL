@@ -25,6 +25,9 @@ WriteMakefile(
                   'Rose::DB::Object' => 0,
 
                   'Locale::Maketext::Lexicon' => 0.84,
+
+                  'Locale::Object' => 0,
+
                   'Gearman::Client' => 0,
                   'Text::CSV_XS' => 0,
                   'Time::Duration' => 0,
@@ -46,8 +49,9 @@ WriteMakefile(
 
                   'I18N::LangTags' => 0,
 
-                  # should just be Net::IP ..
-                  'Net::IPv6Addr' => 0,
+                  'Net::IP' => 0,
+
+                  'Socket6' => 0,
 
     },
     test => {TESTS => 't/*.t t/*/*.t t/*/*/*.t'}
