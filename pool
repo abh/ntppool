@@ -375,7 +375,7 @@ elsif ($cmd eq "zone") {
     };
 
     my $www_record = {
-        cname => 'ntppool-varnish.develooper.com',
+        cname => 'www-lb.ntppool.org',
         ttl   => 7200,
     };
 
