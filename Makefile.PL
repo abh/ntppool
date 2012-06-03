@@ -58,6 +58,9 @@ sub MY::postamble {
 
 .PHONY: testcover
 
+templates:
+	(cd docs/manage/tpl/client; hulk *.html > ../../../shared/static/js/admin-templates.js)
+
 testcover:
 	cover -delete
 	HARNESS_PERL_SWITCHES=-MDevel::Cover \$(MAKE) test
