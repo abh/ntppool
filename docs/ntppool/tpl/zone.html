@@ -1,4 +1,7 @@
-[% page.title = 'NTP Servers in ' _ zone.description _ ', ' _ zone.fqdn %]
+[% page.title = 'NTP Servers in ' _ zone.description _ ', ' _ zone.fqdn;
+   page.canonical = zone.url;
+ %]
+
 
 <div class="block">
 	<h1>[% zone.description %] [% IF zone.dns %] &#8212; [% zone.fqdn %][% END %]</h1>

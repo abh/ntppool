@@ -4,6 +4,10 @@
 [% title = page.title || 'the internet cluster of ntp servers' %]
 <title>pool.ntp.org: [% title | html %]</title>
 
+                [%- IF page.canonical %]
+                <link rel="canonical" href="[% page.canonical | html %]">
+                [% END -%]
+
 		<link rel="stylesheet" type="text/css" href="[% combust.static_url("/css/reset-fonts-grids.css") %]">
 
 		<link rel="stylesheet" href="[% combust.static_url("/css/master.css") %]" type="text/css" media="screen" charset="utf-8" />
