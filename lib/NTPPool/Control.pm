@@ -65,13 +65,19 @@ sub init {
       }
   }
 
-  if ($self->request->path !~ m!^/static/!) {
+  my $path = $self->request->path;
+
+  if ($path !~ m!^/static/!) {
       my $lang = $self->language;
       NP::I18N::loc_lang( $lang );
       $self->tpl_param('current_language', $lang);
   }
   else {
       $self->tpl_param('current_language', 'en');
+  }
+
+  if ($path =~ s/[\).:]+$//) {
+      return $self->redirect($path, 301);
   }
 
   return OK;
