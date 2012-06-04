@@ -76,7 +76,7 @@ sub init {
       $self->tpl_param('current_language', 'en');
   }
 
-  if ($path =~ s/[\).:]+$//) {
+  if ($path =~ s/[\).:>}]+$//) {
       return $self->redirect($path, 301);
   }
 
