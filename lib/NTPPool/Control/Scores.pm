@@ -74,6 +74,8 @@ sub render {
                 # This logic should probably just be in the server
                 # model, similar to log_scores_csv.
 
+                $self->request->header_out('Access-Control-Allow-Origin' => '*');
+
                 my $monitors = $server->server_scores;
                 $monitors = [
                    map {
