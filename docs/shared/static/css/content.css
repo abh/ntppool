@@ -199,3 +199,22 @@ p.serverurls {
 #zone_counts td { padding-right: 8px; vertical-align: text-top;  }
 
 em.beta  { color: #888 }
+
+
+/* graph formatting */
+#graph rect {
+  fill: none;
+  stroke: black;
+  shape-rendering: crispEdges;
+}
+
+#graph .x line, #graph .y line {
+  stroke: #ccc;
+  shape-rendering: crispEdges;
+}
+
+#graph .y_score line {
+  stroke: #ddd;
+  shape-rendering: crispEdges;
+  stroke-dasharray: 2, 2, 2, 2;
+}

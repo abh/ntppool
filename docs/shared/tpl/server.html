@@ -107,12 +107,10 @@ Please upgrade to a browser that supports SVG
 <a href="http://ie.microsoft.com/">IE9+</a>
 and enable javascript to see the new graphs.<br><br>
 
-<img src="[% server.graph_uri('score') %]" alt="Server score graph"><br>
 <img src="[% server.graph_uri('offset') %]" alt="Server offset graph"><br>
 </noscript>
 
 <div id="legacy-graphs"
-   data-score-graph-url="[% server.graph_uri('score') %]"
    data-offset-graph-url="[% server.graph_uri('offset') %]"
 ></div>
 
@@ -167,28 +165,6 @@ and enable javascript to see the new graphs.<br><br>
 [% PROCESS tpl/admin_js.html %]
 <script type="text/javascript">NP.token='[% combust.auth_token %]';</script>
 [% END %]
-
-<style>
-
-rect {
-  fill: none;
-  stroke: black;
-  shape-rendering: crispEdges;
-}
-
-.x line, .y line {
-  stroke: #ccc;
-  shape-rendering: crispEdges;
-}
-
-.y_score line {
-  stroke: #ddd;
-  shape-rendering: crispEdges;
-  stroke-dasharray: 2, 2, 2, 2;
-}
-
-</style>
-
 
 [% END %]
 

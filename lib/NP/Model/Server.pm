@@ -3,7 +3,6 @@ use strict;
 use Text::CSV_XS;
 use File::Path qw(mkpath);
 use Carp qw(croak);
-use NP::RRD qw(score_graph offset_graph);
 use Net::IP ();
 use Combust::Config;
 
@@ -52,7 +51,6 @@ sub setup_server {
     }
 
     $self->save(cascade => 1);
-    $self->update_graphs;
 }
 
 sub _resolve_zone {
@@ -200,13 +198,6 @@ sub _netspeed_human {
 my $rrd_path = "$ENV{CBROOTLOCAL}/rrd/server";
 mkpath "$rrd_path/graph/" unless -e "$rrd_path/graph";
 
-sub rrd_path {
-    my $self = shift;
-    my $monitor_id = shift;
-    my $dir  = int( $self->id / 100 ) * 100;
-    "$rrd_path/$dir/" . $self->id . ($monitor_id ? "-$monitor_id" : "") . ".rrd";
-}
-
 sub graph_path {
     my ($self, $name) = @_;
     my $dir  = int( $self->id / 500 ) * 500;
@@ -227,26 +218,6 @@ sub graph_uri {
         return $path;
     }
 }
-
-sub update_graphs {
-    my $server = shift;
-
-    # should never happen as we create the rrd when the server object is created
-    # return unless -e $server->rrd_path;
-
-    my @defaults = (
-                    '--lazy',
-                    '--end'    => 'now',
-                    '--start'  => 'end-3d',
-                    '--width'  => 420,
-                    '--height' => 130,
-                   );
-
-    offset_graph($server, \@defaults);
-    score_graph($server, \@defaults);
-}
-
-
 
 
 package NP::Model::Server::Manager;

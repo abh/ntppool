@@ -23,8 +23,8 @@ function update_graph(div, data, options) {
 
     $(".graph_desc").show();
 
-    var w = 480,
-        h = 250,
+    var w = ($(div).data("width")  || 480),
+        h = ($(div).data("height") || 250),
         pad_w = 35,
         pad_h = 15,
 
@@ -237,7 +237,11 @@ $(document).ready(function(){
    var graph_div = $('#graph');
    var graph_legend = $('#graph-legend');
 
-   if (!Modernizr.svg) { // no svg support, show the noscript section
+   if (!Modernizr) {
+       var Modernizr;
+   }
+
+   if (Modernizr && !Modernizr.svg) { // no svg support, show the noscript section
        var $legacy = $('#legacy-graphs');
 
        $legacy.html('Please upgrade to a browser that supports SVG '
@@ -249,8 +253,6 @@ $(document).ready(function(){
                    );
 
        $legacy.append($('<br><img class=".legacy-graph-img"/>')
-           .attr('src', $legacy.data('score-graph-url')));
-       $legacy.append($('<br><img class=".legacy-graph-img"/>')
            .attr('src', $legacy.data('offset-graph-url')));
 
        return;
@@ -258,7 +260,6 @@ $(document).ready(function(){
 
    var ip = graph_div.data('server-ip');
    if (!ip) { return; }
-
 
    // make it easier to update_graph again with different options
    // but the same data.

@@ -135,6 +135,11 @@ sub render {
           }
       }
   }
+
+  if ($self->req_param('graph_only')) {
+      return OK, $self->evaluate_template('tpl/server_static_graph.html');
+  }
+
   return OK, $self->evaluate_template('tpl/server.html');
 }
 

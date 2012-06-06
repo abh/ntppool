@@ -1,23 +1,40 @@
 # -*- cperl -*-
 eval 'exec $CBROOT/bin/perl $0 ${1+"$@"}'
   unless $running_under_some_shell;
-use RRDs;
-use DateTime;
+use strict;
+use warnings;
+
+use URI;
+
 use Combust::Gearman::Worker;
+use Combust::Config;
+
 use NP::Model;
+use NP::Util qw(run);
 
 $| = 1;
+
+my $url = URI->new(Combust::Config->new->base_url('ntppool'));
+$url->query_form(graph_only => 1);
 
 my $worker = Combust::Gearman::Worker->new();
 $worker->register_function(update_graphs => sub { update_graphs(@_) });
 $worker->work while 1;
 
 sub update_graphs {
-    my $job = shift;
+    my $job       = shift;
     my $server_id = $job->arg;
     printf "Processing %i\n", $server_id;
     my $server = NP::Model->server->fetch(id => $server_id) or return 0;
-    $server->update_graphs;
-    printf "Done with %i\n", $server_id;
-    return 1;
+    my $path = $server->graph_path("offset");
+    $url->path($server->url);
+    NP::Util::run("phantomjs",
+                  "--disk-cache=yes",
+                  "$ENV{CBROOTLOCAL}/phantom/graph.js",
+                  $url->as_string,
+                  $path);
+    open my $fh, "<", $path or die "Could not open graph: $!";
+    my $data = do { local $/ = undef; <$fh> };
+    printf "Done with %i %s %s\n", $server_id, $path, $url->as_string;
+    return $data;
 }

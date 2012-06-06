@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+[% title = page.title || 'the internet cluster of ntp servers' %]
+<title>pool.ntp.org: [% title | html %]</title>
+
+                [%- IF page.canonical %]
+                <link rel="canonical" href="[% page.canonical | html %]">
+                [% END -%]
+
+		<link rel="stylesheet" type="text/css" href="[% combust.static_url("/css/reset-fonts-grids.css") %]">
+
+		<link rel="stylesheet" href="[% combust.static_url("/css/master.css") %]" type="text/css" media="screen" charset="utf-8" />
+		<link rel="stylesheet" href="[% combust.static_url("/css/content.css") %]" type="text/css" media="screen" charset="utf-8" />
+		<link rel="shortcut icon" href="[% combust.static_url("/images/favicon.ico") %]" type="image/x-icon" />
+
+</head>
+<body>
+
+<div id="doc3"><div id="yui-main"><div class="yui-b">
+	
+[% content %]
+
+</div></div></div>
+
+<script type="text/javascript" src="[% combust.static_url("cdn/libs/jquery/1.7.2/jquery.min.js") %]"></script>
+[% page.js %]
+
+
+</body>
+</html>

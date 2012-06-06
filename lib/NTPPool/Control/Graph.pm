@@ -17,22 +17,22 @@ sub render {
     return 404 unless $server;
     return 404 unless $type and $type =~ m!^(offset|score)$!;
 
+    # we only have one graph type now
+    $type = 'offset';
+
     return $self->redirect('/graph/' . $server->ip . "/$type" , 301) unless $p eq $server->ip;
 
-    eval { $gearman->do_task('update_graphs', $server->id, {uniq => 'graphs-' . $server->id}); };
+    my $graph = eval { $gearman->do_task('update_graphs', $server->id, {uniq => 'graphs-' . $server->id}); };
 
-    my $err = $@;
+    my $err = $@ || !$graph;
     warn "update_graphs error: $err" if $err;
     my $ttl = $err ? 10 : 1800;
-    my $path = $server->graph_path($type);
-    open my $fh, $path
-      or warn "Could not open $path: $!" and return 403;
 
-    my $mtime = (stat($fh))[9];
+    my $mtime = time;
     $self->request->update_mtime($mtime);
 
     $self->cache_control('max-age=1800, s-maxage=900');
-    return OK, $fh, 'image/png';
+    return OK, $graph, 'image/png';
 
 }
 
