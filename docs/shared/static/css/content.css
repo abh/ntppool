@@ -51,7 +51,12 @@
 		}
 	.block p.desc {font-size: 92%;}
 p {margin-bottom: 7px; line-height: 1.3;}
-pre.code {background-color: #eee; padding: 10px; margin: 5px 0;}
+pre.code {
+         font-family: "ubuntu-mono-1","ubuntu-mono-2", monospace;
+         background-color: #eee;
+         padding: 10px;
+         margin: 5px 0;
+}
 a.up {display: block; text-align: right; font-variant: small-caps;}
 .clearboth {clear: both;}
 
@@ -100,7 +105,6 @@ h1#tagline {font-size: 122%; font-style: italic; text-align: right;}
                 ul#news li ul li { border: 0; list-style-type: disc; margin-left: 25px; }
 		
 /* use */	
-pre.ntpq {width: 630px;}
 .block span.hook {font-weight: bold;}
 p.thanks {font-style: italic; font-weight: bold;}
 		
@@ -174,7 +178,7 @@ p.develwarning {
 
 #dnsinfo td { padding: 8px }
 
-span.s_his      { font-family: monospace; }
+span.s_his      { font-family: "ubuntu-mono-1","ubuntu-mono-2", monospace; }
 span.s_his_ok   { color: green; font-size:80%; }  /* # */
 span.s_his_tol  { color: yellow; }  /* x */
 span.s_his_big  { color: #ffa500; }  /* o */
