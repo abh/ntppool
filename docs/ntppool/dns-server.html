@@ -1,0 +1,102 @@
+[% page.title = "NTP Pool DNS servers" | loc %]
+
+[% # Translators: Do not translate this page.
+   # Reading and writing a bit of English is a requirement for effectively
+   # helping with the DNS services.
+ %]
+
+
+<div class="block">
+	<h1>NTP Pool DNS servers</h1>
+
+<p>
+To direct our millions of NTP users to an appropriate server we run a
+customized DNS server.  Many of the instances are offered by
+volunteers around the world.
+</p>
+
+<h2>Requirements for hosting a server</h2> 
+
+<p>
+The NTP Pool DNS server usually runs on CentOS or Ubuntu LTS; either
+will work though CentOS is preferred.  We also have one instance
+running on FreeBSD (in a jail I believe) which is performing very very well.
+</p>
+
+<p>
+If it's a virtual machine, it needs to be a Xen or KVM based one if
+the server is going to be part of
+the <a href="http://en.wikipedia.org/wiki/Anycast">anycast</a> setup.
+The "container" systems (OpenVZ) don't have the required network
+interfaces to work. VMware will probably work, too.
+</p>
+
+<p>
+    <dl>
+
+    <dt>CPU</dt>
+    <dd>In the ballpark of a 2GHz CPU or faster. More and faster is
+better.  Something from the last 4-5 years.  32-bit is fine.
+    </dd>
+
+    <dt>RAM</dt>
+    <dd>512MB or more is best. More than 1GB is wasteful.  The system
+        running uses little ram, but yum, apt and such tools use enough memory
+        that less than 512MB is uncomfortable.
+    </dd>
+
+    <dt>Disk space</dt>
+    <dd>
+        Basically just a minimal-ish install of CentOS or Ubuntu.
+        4-5GB is plenty. It can be just about as slow as you can imagine and it'll be fine.
+    </dd>
+
+    <dt>IP addresses</dt>
+    <dd>
+        Need 1 or (better) 2 routable IP addresses for
+        management and for monitoring the specific DNS instances.  Ideally
+        both IPv4 and IPv6, but IPv4 is most important.
+    </dd>
+
+    <dt>Bandwidth</dt>
+    <dd>
+        Practically nothing. Usually each server does 100-300 requests
+        per second or less, each response being about 100 bytes. During
+        certain times of the hour and the day the rate goes up significantly
+        for a few seconds (basically to however many the CPU and the software
+        can keep up with).
+    </dd>
+    
+    <dt>Software</dt>
+    <dd>
+        Regular DNS servers can't smartly respond with a "nearby" server out of
+        several thousand and do so weighted, so we run a bit of <a href="http://geo.bitnames.com/">
+        quirky DNS software</a> that can.
+    </dd>
+
+    <dt>BGP access</dt>
+    <dd>(only for anycast nodes) The NTP Pool DNS anycast AS
+        number is 6647; it will be announced with the 'bird' daemon or with exabgp.  The IPv4
+        prefix is 207.171.17.0/24. If you have IPv6, then we'll also announce
+        2620:101:d007::/48.
+    </dd>
+
+    <dt>Firewall/security</dt>
+    <dd>
+        The system needs incoming port 53 (duh), port 22
+        (or another port for ssh if you so require) and obviously port 179 to
+        your routers for BGP.  (No external firewall is needed, just in case
+        you have one and it needs holes opened up.  Be sure to disable session
+        tracking for port 53/udp if you do have a firewall).
+    </dd>
+
+    <dt>Management</dt>
+    <dd>
+        We typically do the day-to-day management of the system.
+    </dd>
+
+    <p>If you are interested in helping with this, please email <a href="mailto:ask@develooper.com">
+        ask@develooper.com</a>.
+    </p>
+    
+</div>
