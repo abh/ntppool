@@ -24,9 +24,9 @@ function update_graph(div, data, options) {
     $(".graph_desc").show();
 
     var w = ($(div).data("width")  || 480),
-        h = ($(div).data("height") || 250),
+        h = ($(div).data("height") || 246),
         pad_w = 35,
-        pad_h = 15,
+        pad_h = 19,
 
         y_offset = d3.scale.pow().exponent(0.5).domain([y_offset_max, y_offset_min]).range([0, h]).clamp(true),
 

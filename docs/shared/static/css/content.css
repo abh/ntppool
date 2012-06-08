@@ -214,6 +214,11 @@ em.beta  { color: #888 }
 
 
 /* graph formatting */
+#graph {
+  font-size: 90%;
+  /* font-family: "ubuntu-mono-1","ubuntu-mono-2", monospace; */
+}
+
 #graph rect {
   fill: none;
   stroke: black;
