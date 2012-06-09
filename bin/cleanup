@@ -13,8 +13,8 @@ my $dbh = NP::Model->dbh;
 my ($min_ts) = $dbh->selectrow_array(q[select min(ts) from log_scores]);
 $min_ts = DateTime::Format::MySQL->parse_datetime( $min_ts ) or die "Could not parse date from mysql";
 
-my $archive_date = $min_ts->add( hours => 30 );
-my $limit = DateTime->now->subtract( days => 45 );
+my $archive_date = $min_ts->add( hours => 8 );
+my $limit = DateTime->now->subtract( days => 36 );
 
 if ($archive_date > $limit) {
     $archive_date = $limit;
@@ -23,7 +23,7 @@ if ($archive_date > $limit) {
 if ($archive_date < $min_ts) {
     # no work todo
     exit;
-}  
+}
 
 print "Moving records from before $archive_date\n" if -t STDIN;
 
