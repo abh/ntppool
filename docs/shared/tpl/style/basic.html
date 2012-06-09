@@ -8,8 +8,12 @@
                 <link rel="canonical" href="[% page.canonical | html %]">
                 [% END -%]
 
+                [% IF 0;
+                    # Couldn't get typekit to work with phantomjs
+                %]
                 <script type="text/javascript" src="//use.typekit.com/giv8ugp.js"></script>
                 <script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+                [% END %]
 
 		<link rel="stylesheet" type="text/css" href="[% combust.static_url("/css/reset-fonts-grids.css") %]">
 
