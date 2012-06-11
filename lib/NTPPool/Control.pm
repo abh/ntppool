@@ -67,7 +67,7 @@ sub init {
 
   my $path = $self->request->path;
 
-  if ($path !~ m!^/static/!) {
+  if ($path !~ m!(^/static/|\.png$)!) {
       my $lang = $self->language;
       NP::I18N::loc_lang( $lang );
       $self->tpl_param('current_language', $lang);
@@ -101,7 +101,7 @@ sub get_include_path {
     my $self = shift;
     my $path = $self->SUPER::get_include_path;
 
-    return $path if $self->request->path =~ m!^/static/!;
+    return $path if $self->request->path =~ m!(^/static/|\.png$)!;
 
     my ($language) = $self->language;
 
