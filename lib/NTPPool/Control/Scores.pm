@@ -112,12 +112,7 @@ sub render {
               }
           }
           elsif ($mode eq 'rrd') {
-              # TODO: check that rrd is up-to-date
-              my $path = $server->rrd_path;
-              open my $fh, $path or warn "Could not open $path: $!" and return 403;
-              $self->request->header_out('Content-disposition', sprintf('attachment; filename=%s.rrd', $server->ip));
-              $self->request->update_mtime((stat($fh))[9]);
-              return OK, $fh, 'application/octet-stream';
+              return 404;
           }
           elsif ($mode eq 'graph') {
             my ($type) = ($self->request->uri =~ m{/(offset|score)\.png$});
