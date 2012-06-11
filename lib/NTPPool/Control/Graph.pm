@@ -26,14 +26,13 @@ sub render {
 
     my $err = $@ || !$graph;
     warn "update_graphs error: $err" if $err;
-    my $ttl = $err ? 10 : 1800;
+    my $ttl = $err ? 10 : 7200;
 
     my $mtime = time;
     $self->request->update_mtime($mtime);
 
-    $self->cache_control('max-age=1800, s-maxage=900');
+    $self->cache_control(sprintf('max-age=%i, s-maxage=%i', $ttl, $ttl * 0.75));
     return OK, $graph, 'image/png';
-
 }
 
 1;
