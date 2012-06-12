@@ -25,6 +25,7 @@ sub update_graphs {
     my $job       = shift;
     my $server_id = $job->arg;
     printf "Processing %i\n", $server_id;
+    NP::Model->db->ping;
     my $server = NP::Model->server->fetch(id => $server_id) or return 0;
     my $path = $server->graph_path("offset");
     $url->path($server->url);
