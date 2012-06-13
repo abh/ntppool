@@ -247,9 +247,8 @@ sub cache_control {
 sub post_process {
     my $self = shift;
 
-    # Tell IE8 that standards mode is what we want
-    # http://farukat.es/journal/2009/05/245-ie8-and-the-x-ua-compatible-situation
-    $self->request->header_out('X-UA-Compatible', 'IE=8');
+    # IE8 is old cruft by now.
+    $self->request->header_out('X-UA-Compatible', 'IE=9');
 
     if (my $cache = $self->cache_control) {
         my $req = $self->request;

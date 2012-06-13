@@ -237,11 +237,7 @@ $(document).ready(function(){
    var graph_div = $('#graph');
    var graph_legend = $('#graph-legend');
 
-   if (!Modernizr) {
-       var Modernizr;
-   }
-
-   if (Modernizr && !Modernizr.svg) { // no svg support, show the noscript section
+   if (!NP.svg_graphs && !Modernizr.svg) { // no svg support, show the noscript section
        var $legacy = $('#legacy-graphs');
 
        $legacy.html('Please upgrade to a browser that supports SVG '
