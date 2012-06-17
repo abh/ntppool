@@ -1,8 +1,4 @@
-[% page.js = BLOCK %]
-[% page.js %]
-<script src="[% combust.static_url("/js/ntppool.js") %]" type="text/javascript"></script>
-[% END %]
-
+[% page.js.push("ntppool.js"); %]
 
 [% PROCESS tpl/manage/navigation.html %]
 

@@ -15,10 +15,21 @@
                 <script type="text/javascript" src="//use.typekit.com/giv8ugp.js"></script>
                 <script type="text/javascript">try{Typekit.load();}catch(e){}</script>
 
-		<link rel="stylesheet" type="text/css" href="[% combust.static_url("/css/reset-fonts-grids.css") %]">
+                [% page.css.unshift( combust.static_group("common.css") );
+                   FOR css_elem = page.css;
+                       FOR css = css_elem.list;
+                           IF css.match('^/');
+                               t_css = css;
+                           ELSE;
+                               t_css = '/css/' _ css;
+                           END;
+                 -%]
+                 <link rel="stylesheet" href="[% combust.static_url(t_css) %]" type="text/css" charset="utf-8">
+                 [%-
+                       END; # FOR css
+                   END;  # FOR css_elem
+                 %]
 
-		<link rel="stylesheet" href="[% combust.static_url("/css/master.css") %]" type="text/css" media="screen" charset="utf-8" />
-		<link rel="stylesheet" href="[% combust.static_url("/css/content.css") %]" type="text/css" media="screen" charset="utf-8" />
 		<link rel="shortcut icon" href="[% combust.static_url("/images/favicon.ico") %]" type="image/x-icon" />
 
 </head>
@@ -57,8 +68,7 @@
 	</div>
 </div>	
 
-<script type="text/javascript" src="[% combust.static_url("cdn/libs/jquery/1.7.2/jquery.min.js") %]"></script>
-[% page.js %]
+[% PROCESS tpl/common/js.html %]
 
 [%- IF siteconfig.googleanalytics %]
 <script src="//www.google-analytics.com/urchin.js" type="text/javascript"></script>
