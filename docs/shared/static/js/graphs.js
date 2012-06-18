@@ -83,109 +83,109 @@ function update_graph(div, data, options) {
                             return y_offset.tickFormat(0)(ms);
         });
 
-/* score y lines */
-var yrule_score = svg.selectAll("g.y_scores")
-    .data([20,0,-20,-50,-100])
-    .enter().append("g")
-    .attr("class", "y_score");
+    /* score y lines */
+    var yrule_score = svg.selectAll("g.y_scores")
+        .data([20,0,-20,-50,-100])
+        .enter().append("g")
+        .attr("class", "y_score");
 
-yrule_score.append("line")
-    .attr("x1", 0)
-    .attr("x2", w)
-    .attr("y1", y_score)
-    .attr("y2", y_score);
+    yrule_score.append("line")
+        .attr("x1", 0)
+        .attr("x2", w)
+        .attr("y1", y_score)
+        .attr("y2", y_score);
 
-yrule_score.append("text")
-    .attr("x", w + 23)
-    .attr("y", y_score)
-    .attr("dy", ".35em")
-    .attr("text-anchor", "end")
-    .text(function(text) { return text; });
+    yrule_score.append("text")
+        .attr("x", w + 23)
+        .attr("y", y_score)
+        .attr("dy", ".35em")
+        .attr("text-anchor", "end")
+        .text(function(text) { return text; });
 
 
-var zero_offset = svg.selectAll("g.zero_offset")
-    .data([0])
-    .enter().append("g");
+    var zero_offset = svg.selectAll("g.zero_offset")
+        .data([0])
+        .enter().append("g");
 
-zero_offset.append("line")
-     .attr("x1", 0)
-     .attr("x2", w)
-     .attr("y1", y_offset(0))
-     .attr("y2", y_offset(0))
-     .attr("class", "x")
-     .attr("stroke-width", 2)
-     .attr("stroke", "black");
+    zero_offset.append("line")
+         .attr("x1", 0)
+         .attr("x2", w)
+         .attr("y1", y_offset(0))
+         .attr("y2", y_offset(0))
+         .attr("class", "x")
+         .attr("stroke-width", 2)
+         .attr("stroke", "black");
 
-svg.append("rect")
-    .attr("width", w)
-    .attr("height", h);
+    svg.append("rect")
+        .attr("width", w)
+        .attr("height", h);
 
-svg.selectAll("g.scores")
-    .data(data.history)
-    .enter().append("circle")
-    .filter(function(d) { return d.monitor_id ? true : false; })
-    .attr("class", "scores monitor_data")
-    .attr("r", 2)
-    .attr("transform", function(d,i) {
-        var tr = "translate(" + x(d.date) + "," + y_score(d.score) + ")";
-        return tr;
-    })
-    .style("fill", function(d) {
-        if (!d.monitor_id) {
-            return "black";
-        }
-        if (d.step < -1) {
-           return "red";
-        }
-        else if (d.step < 0) {
-           return "orange";
-        }
-        else {
-           return "steelblue";
-        }
-    })
-    .on('mouseover',  fade(0.2))
-    .on('mouseout',   fade(1));
+    svg.selectAll("g.scores")
+        .data(data.history)
+        .enter().append("circle")
+        .filter(function(d) { return d.monitor_id ? true : false; })
+        .attr("class", "scores monitor_data")
+        .attr("r", 2)
+        .attr("transform", function(d,i) {
+            var tr = "translate(" + x(d.date) + "," + y_score(d.score) + ")";
+            return tr;
+        })
+        .style("fill", function(d) {
+            if (!d.monitor_id) {
+                return "black";
+            }
+            if (d.step < -1) {
+               return "red";
+            }
+            else if (d.step < 0) {
+               return "orange";
+            }
+            else {
+               return "steelblue";
+            }
+        })
+        .on('mouseover',  fade(0.2))
+        .on('mouseout',   fade(1));
 
-svg.selectAll("g.offsets")
-    .data(data.history)
-    .enter()
-    .append("circle")
-    .filter(function(d) { return d.monitor_id ? true : false; })
-    .attr("class", "offsets monitor_data")
-    .attr("r", 1.5) // todo: make this 2 if number of data points are < 250 or some such
-    .attr("transform", function(d,i) { return "translate(" + x(d.date) + "," + y_offset(d.offset) + ")"; })
-    .style("fill", function(d) {
-        var offset = d.offset;
+    svg.selectAll("g.offsets")
+        .data(data.history)
+        .enter()
+        .append("circle")
+        .filter(function(d) { return d.monitor_id ? true : false; })
+        .attr("class", "offsets monitor_data")
+        .attr("r", 1.5) // todo: make this 2 if number of data points are < 250 or some such
+        .attr("transform", function(d,i) { return "translate(" + x(d.date) + "," + y_offset(d.offset) + ")"; })
+        .style("fill", function(d) {
+            var offset = d.offset;
 
-        if (offset < 0) { offset = offset * -1; }
-        if ( offset < 0.050 ) {
-            return "green";
-        }
-        else if ( offset < 0.100 ) {
-            return "orange";
-        }
-        else {
-            return "red";
-       }
-    })
-    .on('mouseover',  fade(0.25))
-    .on('mouseout',   fade(1));
+            if (offset < 0) { offset = offset * -1; }
+            if ( offset < 0.050 ) {
+                return "green";
+            }
+            else if ( offset < 0.100 ) {
+                return "orange";
+            }
+            else {
+                return "red";
+           }
+        })
+        .on('mouseover',  fade(0.25))
+        .on('mouseout',   fade(1));
 
-var dh = data.history.filter(function(d) { return d.monitor_id === null ? true : false; });
-//console.log("d.history", dh);
+    var dh = data.history.filter(function(d) { return d.monitor_id === null ? true : false; });
+    //console.log("d.history", dh);
 
-svg.selectAll(".total_score")
-    .data([dh])
-    .enter().append("path")
-    .attr("class", "line total_score")
-    .style("fill", "none")
-    .style("stoke", "red")
-    .style("stroke-width", 2)
-    .attr("d", d3.svg.line()
-          .x(function(d) { return x(d.date); })
-          .y(function(d) { return y_score(d.score); })
-         );
+    svg.selectAll(".total_score")
+        .data([dh])
+        .enter().append("path")
+        .attr("class", "line total_score")
+        .style("fill", "none")
+        .style("stoke", "red")
+        .style("stroke-width", 2)
+        .attr("d", d3.svg.line()
+              .x(function(d) { return x(d.date); })
+              .y(function(d) { return y_score(d.score); })
+             );
 
    // -----------------------------
    // Add Title then Legend
