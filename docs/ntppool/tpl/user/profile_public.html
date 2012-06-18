@@ -15,7 +15,7 @@
 [% FOR server = user.servers %]
 <p>
 [% IF server.hostname %]Hostname: <b>[% server.hostname | html %]</b><br />[% END %]
-IP: <b><a href="/scores/[% server.ip %]">[% server.ip | html %]</a></b><br />
+IP: <b><a href="[% server.url %]">[% server.ip | html %]</a></b><br />
 Current score: <b>[% server.score %]</b><br />
 Zones: [% FOR zone = server.zones_display %] <a href="[% zone.url %]">[% zone.name %]</a>[% END  %]<br/>
 [% IF server.urls;
@@ -31,10 +31,18 @@ Zones: [% FOR zone = server.zones_display %] <a href="[% zone.url %]">[% zone.na
 Netspeed: [% server.netspeed_human %]<br/>
 [% END %]
 
+<!--
 <a href="/s/[% server.id %]"><img border="0" src="[% server.graph_uri('offset') %]" alt="Server score graph" /></a><br />
+-->
 
+<div class="graph" data-server-ip="[% server.ip %]" data-width="480" data-height="100"></div>
+<div class="graph-legend"></div>
 
 </p> 
 [% END %]
+
+[% page.js.push(combust.static_group("d3.js")) %]
+[% page.js.push(combust.static_group("graphs.js")) %]
+
 
 </div>

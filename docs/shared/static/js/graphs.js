@@ -2,7 +2,7 @@
 /*jshint jquery:true browser:true */
 /*globals d3:true, Modernizr:true */
 
-function update_graph(div, data, options) {
+function server_chart(div, data, options) {
     "use strict";
 
     if (!options) { options = {}; }
@@ -37,7 +37,7 @@ function update_graph(div, data, options) {
             ])
             .range([0, w]);
 
-    var svg = d3.select(div)
+    var svg = d3.select(div.get(0))
         .append("svg")
         .attr("width", w + pad_w * 2)
         .attr("height", h + pad_h * 2)
@@ -220,22 +220,21 @@ function update_graph(div, data, options) {
         return function(g, i) {
             svg.selectAll(".monitor_data")
                .filter(function(d) {
-                        return d.monitor_id !== g.monitor_id;
+                   return d.monitor_id !== g.monitor_id;
                })
             .transition()
             .style("opacity", opacity);
         };
-    }
+    };
 
-} // update_graph()
-
+}
 
 
 $(document).ready(function(){
    "use strict";
 
-   var graph_div = $('#graph');
-   var graph_legend = $('#graph-legend');
+   var data = {};
+   var graph_div = $('div.graph');
 
    if (!NP.svg_graphs && !Modernizr.svg) { // no svg support, show the noscript section
        var $legacy = $('#legacy-graphs');
@@ -254,23 +253,23 @@ $(document).ready(function(){
        return;
    }
 
-   var ip = graph_div.data('server-ip');
-   if (!ip) { return; }
+    graph_div.each(function(i) {
+        var div = $(this);
+        var ip = div.data('server-ip');
+        if (ip) {
+            var graph_legend = div.next('.graph-legend');
 
-   // make it easier to update_graph again with different options
-   // but the same data.
-   var data;
-
-   d3.json("/scores/"+ ip +"/json?monitor=*&limit=400", function(json) {
-      if (json) {
-          data = json;
-          update_graph('#graph', json, { legend: graph_legend });
-      }
-      else {
-          graph_div.html('<p>Error downloading graph data</p>');
-      }
-   });
-
+            d3.json("/scores/"+ ip +"/json?monitor=*&limit=400", function(json) {
+                if (json) {
+                    data[ip] = json;
+                    server_chart(div, json, { legend: graph_legend });
+                }
+                else {
+                    div.html('<p>Error downloading graph data</p>');
+                }
+            });
+        }
+    });
 
 });
 

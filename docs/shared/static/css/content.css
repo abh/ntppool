@@ -218,23 +218,23 @@ em.beta  { color: #888 }
 
 
 /* graph formatting */
-#graph {
+.graph {
   font-size: 90%;
   /* font-family: "ubuntu-mono-1","ubuntu-mono-2", monospace; */
 }
 
-#graph rect {
+.graph rect {
   fill: none;
   stroke: black;
   shape-rendering: crispEdges;
 }
 
-#graph .x line, #graph .y line {
+.graph .x line, #graph .y line {
   stroke: #ccc;
   shape-rendering: crispEdges;
 }
 
-#graph .y_score line {
+.graph .y_score line {
   stroke: #ddd;
   shape-rendering: crispEdges;
   stroke-dasharray: 2, 2, 2, 2;
