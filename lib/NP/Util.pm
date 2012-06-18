@@ -4,6 +4,7 @@ use warnings;
 use HTML::Entities qw(encode_entities);
 use Exporter;
 use Encode ();
+use Carp qw(croak);
 use Data::Transformer ();
 
 our @EXPORT_OK = qw(
