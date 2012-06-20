@@ -21,9 +21,6 @@ See the LICENSE file for detailed copyright and licensing information.
 Quick and dirty install instructions; email ask@develooper.com for
 help.
 
-CPAN modules for OS X (intel, 10.6) and i386 Linux are installed in the cpan/
-submodule.
-
 export DIR=`pwd`/ntppool
 # you can also clone on github: http://github.com/abh/ntppool
 git clone git://git.develooper.com/ntppool.git
@@ -33,6 +30,11 @@ git submodule update
 
 export CBROOTLOCAL=$DIR
 export CBROOT=$DIR/combust
+
+# install a bazillion modules from CPAN, use -n to not test each module,
+# this will take a while.
+mkdir cpan
+cpanm -L cpan < .modules
 
 cp combust/combust.conf.sample combust.conf
 edit combust.conf 

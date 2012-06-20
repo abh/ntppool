@@ -5,6 +5,7 @@ combust.conf.testing
 tmp/
 
 logs/
+cpan/
 rrd/
 docs/ntppool/_syndicate/
 dns/

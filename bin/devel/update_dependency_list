@@ -1,0 +1,23 @@
+#!/bin/sh
+
+(
+ ( cd combust;
+   dzil listdeps;
+ )
+ (
+   /usr/bin/env perl -e '
+use strict;
+use warnings;
+use JSON qw(decode_json);
+
+open my $fh, "<", "MYMETA.json" or die "Could not open MYMETA.json: $!";
+my $json = do {
+   local $/;
+   <$fh>;
+};
+$json = decode_json($json);
+print join "\n", sort keys %{ $json->{prereqs}->{runtime}->{requires} };
+'
+  )
+) | sort -u > .modules
+
