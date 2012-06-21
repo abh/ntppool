@@ -1,6 +1,6 @@
 [% page.title = (user.username || user.email) _ "'s pool servers" %]
 
-<div class="block">
+<div id="userprofile" class="block">
 
 <h3>[% user.username || user.email | html %]'s pool servers</h3>
 
@@ -13,7 +13,7 @@
 [% END %]
 
 [% FOR server = user.servers %]
-<p>
+<div class="server">
 [% IF server.hostname %]Hostname: <b>[% server.hostname | html %]</b><br />[% END %]
 IP: <b><a href="[% server.url %]">[% server.ip | html %]</a></b><br />
 Current score: <b>[% server.score %]</b><br />
@@ -40,7 +40,7 @@ Netspeed: [% server.netspeed_human %]<br/>
 <div class="graph" data-server-ip="[% server.ip %]" data-width="480" data-height="100"></div>
 <div class="graph-legend"></div>
 
-</p> 
+</div>
 [% END %]
 
 [% page.js.push(combust.static_group("d3.js")) %]

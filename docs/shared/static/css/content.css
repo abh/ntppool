@@ -126,6 +126,14 @@ p.thanks {font-style: italic; font-weight: bold;}
 	}
 		#admin .value span {font-size: 107%;}
 		#admin .server_desc {font-size: 88%;}
+
+/* user profile */
+#userprofile .server {
+          border-bottom: 1px dotted #bbb;
+	  padding-bottom: 10px;
+          margin-bottom: 15px;
+}
+
 		
 /* zones */	
 table.servertable {
