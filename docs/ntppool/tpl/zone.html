@@ -6,9 +6,11 @@
 <div class="block">
 	<h1>[% zone.description %] [% IF zone.dns %] &#8212; [% zone.fqdn %][% END %]</h1>
 
-	[% IF zone.dns and !zone.children and zone.server_count < 39 %]
+	[% IF zone.dns and !zone.children and zone.server_count < 50 %]
 	<p>
-	We can use more servers in this country.  If you have a server with a static IP, please consider <a href="/join.html">joining the pool</a>!
+	We need more servers in this country.  If you have a server
+	with a static IP, please consider <a href="/join.html">joining
+	the pool</a>!
 	</p>
 	[% END %]
 
