@@ -204,19 +204,21 @@ function server_chart(div, data, options) {
             var text = mon.name + " (" + mon.score + ")";
             legend.append($('<span>').text(text).addClass('legend').data('monitor_id', mon.id));
         }
-        $('span.legend').mouseenter(function(e) {
+        var fadeout = fade(0.25);
+        var fadein  = fade(1);
+        legend.find('span').mouseenter(function(e) {
                                         var mon = $(this).data('monitor_id');
                                         if (!mon) { return; }
-                                        fade(0.25)( { monitor_id: mon } );
+                                        fadeout( { monitor_id: mon } );
                                     });
-        $('span.legend').mouseleave(function(e) {
+        legend.find('span').mouseleave(function(e) {
                                         var mon = $(this).data('monitor_id');
                                         if (!mon) { return; }
-                                        fade(1)( { monitor_id: mon } );
+                                        fadein( { monitor_id: mon } );
                                     });
     }
 
-    function fade(opacity) {
+    function fade (opacity) {
         return function(g, i) {
             svg.selectAll(".monitor_data")
                .filter(function(d) {

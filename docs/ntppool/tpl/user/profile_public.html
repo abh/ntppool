@@ -31,9 +31,11 @@ Zones: [% FOR zone = server.zones_display %] <a href="[% zone.url %]">[% zone.na
 Netspeed: [% server.netspeed_human %]<br/>
 [% END %]
 
-<!--
-<a href="/s/[% server.id %]"><img border="0" src="[% server.graph_uri('offset') %]" alt="Server score graph" /></a><br />
--->
+<noscript>
+<a href="/scores/[% server.ip %]">
+  <img border="0" src="[% server.graph_uri('offset') %]" alt="Server score graph"></a>
+  <br>
+</noscript>
 
 <div class="graph" data-server-ip="[% server.ip %]" data-width="480" data-height="100"></div>
 <div class="graph-legend"></div>
