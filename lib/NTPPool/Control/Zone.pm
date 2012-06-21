@@ -3,10 +3,11 @@ use strict;
 use base qw(NTPPool::Control);
 use NP::Model;
 use Combust::Constant qw(OK);
+use JSON qw(encode_json);
 
 sub zone_name {
   my $self = shift;
-  my ($zone_name) = ($self->request->uri =~ m!^/zone/(?:graph/)?([^/]+?)(/|(-v6)?\.png)?$!);
+  my ($zone_name) = ($self->request->uri =~ m!^/zone/(?:graph|json/)?([^/]+?)(/|(-v6)?\.png)?$!);
   $zone_name ||= '.';
   $zone_name;
 }
@@ -62,6 +63,24 @@ sub render {
       
       $self->cache_control('max-age=10800, s-maxage=7200');
       return OK, $fh, 'image/png';
+  }
+  elsif ($self->request->path =~ m!^/zone/json!) {
+      my $data = NP::Model->zone_server_count->get_objects(
+          query   => [zone_id => $zone->id],
+          sort_by => 'date',
+          limit   => 3000,
+      );
+
+    my @data = map {
+        +{  d  => $_->date->date,
+            ac => $_->count_active,
+            rc => $_->count_registered,
+            w  => $_->netspeed_active,
+            iv => $_->ip_version,
+          }
+    } @$data;
+
+      return OK, encode_json(\@data), 'application/json';
   }
 
   $self->tpl_param('zone' => $zone);
