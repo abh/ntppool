@@ -10,10 +10,12 @@ use I18N::LangTags qw(implicate_supers);
 use I18N::LangTags::Detect ();
 use List::Util qw(first);
 use NP::I18N;
+use NP::Version;
 
 $Combust::Control::Bitcard::cookie_name = 'npuid';
 
-my $config = Combust::Config->new;
+my $version = NP::Version->new;
+my $config  = Combust::Config->new;
 
 our %valid_languages = (
                         ca => { name => "Català", testing => 1 },
@@ -249,6 +251,8 @@ sub post_process {
 
     # IE8 is old cruft by now.
     $self->request->header_out('X-UA-Compatible', 'IE=9');
+
+    $self->request->header_out('X-NPV', $version->current_release . " (" . $version->hostname . ")");
 
     if (my $cache = $self->cache_control) {
         my $req = $self->request;
