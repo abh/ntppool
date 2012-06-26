@@ -6,17 +6,4 @@ C3.intel.pool.ntp.org:0.pool.ntp.org:28800
 
 ---
 
-http://rt.develooper.com/rt/Ticket/Display.html?id=1015
-
-
-Hi.  I was reading your page at http://www.pool.ntp.org/vendors.html,  
-and
-then wondering how to set up an Intel vendor zone (or if there exists  
-one
-already)?
-
-Usage estimate, at least for now, is < 1000 systems.  Its not for Intel
-corporate machines, but rather an embedded-type box I'm developing.
-
-Thx,
-- Kevin
+http://rt.develooper.com/Ticket/Display.html?id=1015

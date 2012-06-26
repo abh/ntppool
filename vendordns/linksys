@@ -6,17 +6,4 @@ C3.linksys.pool.ntp.org:0.pool.ntp.org:28800
 
 ---
 
-http://rt.develooper.com/rt/Ticket/Display.html?id=1008
-
-Hey,
-
-Could you please create a pool for vendor 'Linksys'. We expect less  
-then a 1000 systems will be using this NTP pool.
-
-cheers
-Niels
-
-  Niels Brunsgaard
-  Technical Leader
-  CCIE 1544 R&S/Voice
-[...]
+http://rt.develooper.com/Ticket/Display.html?id=1008

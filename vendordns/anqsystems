@@ -9,31 +9,5 @@ C3.anqsystems.pool.ntp.org:0.pool.ntp.org:28800
 --
 
 RT#507
-http://rt.develooper.com/rt/Ticket/Display.html?id=507
-
-Subject:        Vendor zone setup
-Date:   Fri, 19 May 2006 00:57:46 -0700
-To:     <ask@develooper.com>
-From:   "TK Wang" <tkwang@anqsystems.com>
-
-Dear sir,
-
-We are a start-up company just about to ship our first product, a  
-network appliance for WLAN that has a configuration option for NTP.
-After some research, I would like to explore the possibility of  
-setting up a vendor zone with pool.ntp.org. The purpose is, as stated  
-on the pool.ntp.org's website, to provide NTP setup default for our  
-customer.
-
-The estimated number of system we will be shipping is less then 1,000  
-for the first year. Please let me know what is involved and what do I  
-need to do next to have the zone setup.
-
-Regards,
-TK Wang
-
-Tel: +1-408-895-0888
-Fax: +1-408-895-0889
-Cell: +1-408-821-1001
-www.anqsystems.com
+http://rt.develooper.com/Ticket/Display.html?id=507
 
