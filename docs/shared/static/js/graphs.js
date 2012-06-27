@@ -1,4 +1,4 @@
-/* Copyright 2012 Ask Bjørn Hansen, Develooper LLC */
+/*! Copyright 2012 Ask Bjørn Hansen, Develooper LLC */
 /*jshint jquery:true browser:true */
 /*globals d3:true, Modernizr:true */
 
@@ -44,20 +44,20 @@ $(document).ready(function(){
             });
             return;
         }
-        
+
         var zone = div.data('zone');
         if (zone) {
             d3.json("/zone/json/" + zone + "?limit=180", function(json) {
                 if (json) {
                     data[zone] = json;
                     zone_chart(div, json, { name: zone });
-                    
+
                 }
                 else {
                     div.html('<p>Error downloading graph data</p>');
                 }
             });
-            
+
         }
     });
 
