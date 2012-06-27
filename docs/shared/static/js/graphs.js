@@ -233,27 +233,29 @@ function server_chart(div, data, options) {
 
 
 $(document).ready(function(){
-   "use strict";
+    "use strict";
 
-   var data = {};
-   var graph_div = $('div.graph');
+    var data = {};
+    var graph_div = $('div.graph');
 
-   if (!NP.svg_graphs && !Modernizr.svg) { // no svg support, show the noscript section
-       var $legacy = $('#legacy-graphs');
+    if (!NP.svg_graphs && !Modernizr.svg) { // no svg support, show the noscript section
+        var $legacy = $('#legacy-graphs');
 
-       $legacy.html('Please upgrade to a browser that supports SVG '
-                    + 'to see the new graphs. '
-                    + '(For example <a href="http://www.apple.com/safari/">Safari</a>, '
-                    + '<a href="https://www.google.com/chrome/">Chrome</a>, '
-                    + '<a href="http://www.mozilla.org/firefox">Firefox</a> or '
-                    + '<a href="http://ie.microsoft.com/">IE9+</a>)<br>'
-                   );
+        if (!legacy) { return; }
 
-       $legacy.append($('<br><img class=".legacy-graph-img"/>')
-           .attr('src', $legacy.data('offset-graph-url')));
+        $legacy.html('Please upgrade to a browser that supports SVG '
+                     + 'to see the new graphs. '
+                     + '(For example <a href="http://www.apple.com/safari/">Safari</a>, '
+                     + '<a href="https://www.google.com/chrome/">Chrome</a>, '
+                     + '<a href="http://www.mozilla.org/firefox">Firefox</a> or '
+                     + '<a href="http://ie.microsoft.com/">IE9+</a>)<br>'
+                    );
 
-       return;
-   }
+        $legacy.append($('<br><img class=".legacy-graph-img"/>')
+            .attr('src', $legacy.data('offset-graph-url')));
+
+        return;
+    }
 
     graph_div.each(function(i) {
         var div = $(this);
