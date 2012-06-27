@@ -19,12 +19,16 @@ function zone_chart(div, data, options) {
     var y_max = d3.max(history.map(function(e){ return e.rc })),
         y_min = 0;
 
+    if (y_max < 5) {
+        y_max = y_max + 1;
+    }
+
     var w = ($(div).data("width")  || 480),
         h = ($(div).data("height") || 246),
         pad_w = 40,
         pad_h = 19,
 
-        y = d3.scale.linear().domain([y_max, y_min ]).range([0, h]).clamp(true),
+        y = d3.scale.linear().domain([y_max, y_min ]).range([0, h]),
 
         x = d3.time.scale.utc().domain([d3.min(history.map(function(e){ return e.date; })),
                                         d3.max(history.map(function(e){ return e.date; }))
@@ -39,7 +43,7 @@ function zone_chart(div, data, options) {
         .attr("transform", "translate(" + pad_w + "," + pad_h + ")");
 
     var xrule = svg.selectAll("g.x")
-        .data(x.ticks(10))
+        .data(x.ticks(8))
         .enter().append("g")
         .attr("class", "x");
 
@@ -57,8 +61,9 @@ function zone_chart(div, data, options) {
         .text(x.tickFormat(10));
 
     /* offset y lines */
+    var y_ticks = y_max > 8 ? 8 : y_max;
     var yrule = svg.selectAll("g.y")
-        .data(y.ticks(8))
+        .data(y.ticks(y_ticks))
         .enter().append("g")
         .attr("class", "y");
 
