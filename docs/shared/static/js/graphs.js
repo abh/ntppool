@@ -42,6 +42,22 @@ $(document).ready(function(){
                     div.html('<p>Error downloading graph data</p>');
                 }
             });
+            return;
+        }
+        
+        var zone = div.data('zone');
+        if (zone) {
+            d3.json("/zone/json/" + zone + "?limit=180", function(json) {
+                if (json) {
+                    data[zone] = json;
+                    zone_chart(div, json, { name: zone });
+                    
+                }
+                else {
+                    div.html('<p>Error downloading graph data</p>');
+                }
+            });
+            
         }
     });
 

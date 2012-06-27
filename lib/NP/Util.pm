@@ -63,10 +63,9 @@ sub utf8_safe_tree {
 }
 
 sub uniq (@) {
-    my %h;
-    map { $h{$_}++ == 0 ? $_ : () } @_;
+    my %seen = ();
+    grep { not $seen{$_}++ } @_;
 }
-
 
 1;
 

@@ -144,10 +144,16 @@
 	</table>
 	[% END %]
 
+[% page.js.push(combust.static_group("d3.js")) %]
+[% page.js.push(combust.static_group("graphs.js")) %]
+
+        <div data-zone="[% zone.name %]" class="graph zone_graph"></div>
+
+        <!--
 	<p>
 	<img src="/zone/graph/[% zone.name %].png" alt="server count graph for IPv4 [% zone.name %].pool.ntp.org"/>
 	<img src="/zone/graph/[% zone.name %]-v6.png" alt="server count graph for IPv6 [% zone.name %].pool.ntp.org"/>
 	</p>
-
+        -->
 
 </div>
