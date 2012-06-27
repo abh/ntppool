@@ -54,6 +54,9 @@ WriteMakefile(
                   'Socket6' => 0,
                   'IO::Socket::INET6' => 0,
 
+                  # For deployment scripts
+                  'File::Find::Rule'  => 0,
+
     },
     test => {TESTS => 't/*.t t/*/*.t t/*/*/*.t'}
 );
