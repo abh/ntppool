@@ -98,7 +98,7 @@ function zone_chart(div, data, options) {
               .interpolate("monotone")
              );
 
-        svg.selectAll(".active_count")
+        svg.selectAll(".active_count" + ip_version)
         .data([dh])
         .enter().append("path")
         .attr("class", _class("line", "active_count"))
@@ -108,7 +108,7 @@ function zone_chart(div, data, options) {
               .interpolate("monotone")
         );
 
-        svg.selectAll(".inactive_count")
+        svg.selectAll(".inactive_count" + ip_version)
         .data([dh])
         .enter().append("path")
         .attr("class", _class("line", "inactive_count"))
