@@ -47,7 +47,7 @@ $(document).ready(function(){
 
         var zone = div.data('zone');
         if (zone) {
-            d3.json("/zone/json/" + zone + "?limit=180", function(json) {
+            d3.json("/zone/" + zone + ".json?limit=180", function(json) {
                 if (json) {
                     data[zone] = json;
                     zone_chart(div, json, { name: zone });
