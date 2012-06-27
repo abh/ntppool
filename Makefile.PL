@@ -52,6 +52,7 @@ WriteMakefile(
                   'Net::IP' => 0,
 
                   'Socket6' => 0,
+                  'IO::Socket::INET6' => 0,
 
     },
     test => {TESTS => 't/*.t t/*/*.t t/*/*/*.t'}
