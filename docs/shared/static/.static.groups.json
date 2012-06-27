@@ -5,7 +5,11 @@
       "files": [ "d3/d3.min.js", "d3/d3.time.js" ]
   },
   "graphs.js": {
-      "files": [ "cdn/libs/modernizr/2/modernizr.ntppool.js", "js/graphs.js" ]
+      "files": [
+          "cdn/libs/modernizr/2/modernizr.ntppool.js",
+          "js/graphs.server.js"
+          "js/graphs.js"
+      ]
   },
   "admin.js": {
       "files": [
