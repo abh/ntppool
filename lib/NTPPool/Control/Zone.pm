@@ -98,14 +98,16 @@ sub render {
           }
       }
 
-    my @data = map { +{  d  => $_->date->date,
+      my @data = map { +{  d  => $_->date->date,
             ts => $_->date->epoch + 0,
             ac => $_->count_active + 0,
             rc => $_->count_registered + 0,
             w  => $_->netspeed_active + 0,
             iv => $_->ip_version,
           }
-    } @out ? @out : @$data;
+      } @out ? @out : @$data;
+
+      $self->cache_control('s-maxage=43200, maxage=7200');
 
       return OK, encode_json({ history => \@data }), 'application/json';
   }
