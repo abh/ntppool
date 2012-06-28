@@ -69,7 +69,7 @@ sub init {
 
   my $path = $self->request->path;
 
-  if ($path !~ m!(^/static/|\.png$)!) {
+  if ($path !~ m!(^/static/|\.png|\.json$)!) {
       my $lang = $self->language;
       NP::I18N::loc_lang( $lang );
       $self->tpl_param('current_language', $lang);
