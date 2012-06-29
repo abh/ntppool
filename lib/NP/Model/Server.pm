@@ -266,7 +266,7 @@ sub get_check_due {
 
     # local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
 
-    my $interval = $monitor->ip_version eq 'v6' ? 14 : 24;
+    my $interval = $monitor->ip_version eq 'v6' ? 10 : 12;
 
     $class->get_objects_from_sql
       (
