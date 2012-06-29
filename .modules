@@ -4,6 +4,7 @@ Class::Accessor::Class
 Config::General
 Config::Simple
 DBI
+DBD::mysql
 Data::Dumper
 Data::Transformer
 DateTime::Format::Duration

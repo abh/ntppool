@@ -22,6 +22,7 @@ WriteMakefile(
 
                   'Moose' => 2,
 
+                  'DBD::mysql' => 4.016,
                   'Rose::DB::Object' => 0,
 
                   'Locale::Maketext::Lexicon' => 0.84,
