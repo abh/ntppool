@@ -26,6 +26,8 @@ WriteMakefile(
 
                   'Locale::Maketext::Lexicon' => 0.84,
 
+                  # Locale::Object needs DBD::SQLite
+                  'DBD::SQLite'    => 0,
                   'Locale::Object' => 0,
 
                   'Gearman::Client' => 0,

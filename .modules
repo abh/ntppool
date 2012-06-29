@@ -22,6 +22,7 @@ IO::Compress::Gzip
 Imager
 JSON::XS
 Locale::Maketext::Lexicon
+DBD::SQLite
 Locale::Object
 Math::BaseCalc
 Math::Random::Secure
