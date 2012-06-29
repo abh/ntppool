@@ -402,3 +402,13 @@ alter table logs modify created_on datetime not null;
 
 #54
 alter table user_privileges add support_staff tinyint not null default 0;
+
+#55
+update vendor_zones set approved_on = modified_on;
+
+#56
+alter table vendor_zones
+  add client_type enum ('ntp', 'sntp', 'all') not null default 'ntp'
+    after organization_name,
+  add dns_root varchar(255) null after organization_name,
+  drop vendor_cluster;

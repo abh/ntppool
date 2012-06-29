@@ -405,13 +405,24 @@ elsif ($cmd eq "zone") {
         order => 'approved_on',
     );
 
-    my @vendor_zone_names = map { $_->zone_name } @$vendor_zones;
+    my @vendor_zone_names = @$vendor_zones;
     push @vendor_zone_names, map { s!.*/!!; $_ } @vendor_files;
 
     for my $name (@vendor_zone_names) {
-        for my $i (0 .. 3) {
-            $pgeodns->{data}->{"$i.$name"}->{alias} = "$i";
-            print $fh "C$i.$name.${pool_domain}:$i.${pool_domain}:$ttl\n";
+        my $zone = $name;
+        $name = $zone->zone_name if ref $zone;
+        my $client_type = ref $zone ? $zone->client_type : 'ntp';
+        my $sntp = $client_type eq 'sntp' or $client_type eq 'all';
+        my $ntp  = $client_type eq 'ntp'  or $client_type eq 'all';
+        if ($sntp) {
+            $pgeodns->{data}->{"$name"}->{alias} = "";
+            print $fh "C$name.${pool_domain}:${pool_domain}:$ttl\n";
+        }
+        if ($ntp) {
+            for my $i (0 .. 3) {
+                $pgeodns->{data}->{"$i.$name"}->{alias} = "$i";
+                print $fh "C$i.$name.${pool_domain}:$i.${pool_domain}:$ttl\n";
+            }
         }
     }
 
