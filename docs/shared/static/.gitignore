@@ -1,2 +1,4 @@
 .static.versions.json
 .static.versions.store
+*-min.css
+*-min.js
