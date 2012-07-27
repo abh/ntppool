@@ -16,7 +16,7 @@ sub render {
   my $self = shift;
 
   my $public = $self->site->name eq 'ntppool' ? 1 : 0;
-  $self->cache_control('s-maxage=1800') if $public;
+  $self->cache_control('s-maxage=1200,max-age=600') if $public;
 
   unless ($public or $self->user) {
       $self->redirect( $self->www_url( $self->request->uri, $self->request->query_parameters ));
