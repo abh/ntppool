@@ -21,6 +21,8 @@ WriteMakefile(
                   'namespace::clean' => 0.20,
 
                   'Moose' => 2,
+                  'namespace::clean' => 0,
+                  'namespace::autoclean' => 0,
 
                   'DBD::mysql' => 4.016,
                   'Rose::DB::Object' => 0,

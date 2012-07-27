@@ -54,4 +54,5 @@ Time::Duration
 URI::Escape
 local::lib
 namespace::clean
+namespace::autoclean
 File::Find::Rule
