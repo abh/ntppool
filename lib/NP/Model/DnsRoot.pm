@@ -27,7 +27,7 @@ sub data {
         $data->{www} = $www_record;
         $data->{web} = $www_record;
 
-        $data->{""}->{ns} = [split /[\s+,]/, $self->ns_list];
+        $data->{""}->{ns} = { map { $_ => undef } split /[\s+,]/, $self->ns_list };
         $data;
     };
 }
