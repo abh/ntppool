@@ -11,6 +11,7 @@ my %reserved_zone_names = map { $_ => 1 }
      asia
      africa
 
+     root
      ntppool
      vendor
   );
@@ -29,9 +30,12 @@ sub validate {
         $errors->{zone_name} = 'That zone name is in use or reserved.';
     }
 
-    if (my $vz2 = NP::Model->vendor_zone->fetch(zone_name => $vz->zone_name)) {
-        unless ($vz and $vz->id == $vz2->id) {
-            $errors->{zone_name} = 'That zone name is already used in an application.';
+    {
+        my $vz2 = NP::Model->vendor_zone->get_objects(query => [zone_name => $vz->zone_name]);
+        if (@$vz2) {
+            unless ($vz and grep { $vz->id == $_->id } @$vz2) {
+                $errors->{zone_name} = 'That zone name is already used.';
+            }
         }
     }
 

@@ -15,6 +15,8 @@ my %not_a_map_table;
 @not_a_map_table{qw(
    log_scores
    server_scores
+   vendor_zones
+   dns_roots
 )} = ();
 
 sub looks_like_map_table {

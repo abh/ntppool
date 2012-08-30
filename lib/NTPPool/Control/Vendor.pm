@@ -32,7 +32,14 @@ sub manage_dispatch {
 sub render_form {
     my $self = shift;
     my $vz   = shift;
-    $self->tpl_param('vz', $vz) if ($vz);
+    $self->tpl_param('vz', $vz) if $vz;
+    if ($vz) {
+        $self->tpl_param('dns_roots', [$vz->dns_root]);
+    }
+    else {
+        $self->tpl_param('dns_roots', NP::Model->dns_root->get_objects(query => [vendor_available => 1]));
+    }
+
     return OK, $self->evaluate_template('tpl/vendor/form.html');
 }
 
@@ -86,8 +93,6 @@ sub render_submit {
     return OK, $self->evaluate_template('tpl/vendor/submitted.html');
 }
 
-
-
 sub render_edit {
     my $self = shift;
 
@@ -110,9 +115,14 @@ sub render_edit {
         }
     }
     else {
+
+        # TODO: If we ever have more than one public dns_root, be smarter here.
+        my $dns_root = (NP::Model->dns_root->get_objects(query => [vendor_available => 1], limit => 1))->[0];
+
         $vz = NP::Model->vendor_zone->create
           ( zone_name => $zone_name,
             user_id   => $self->user->id,
+            dns_root  => $dns_root->id,
             (map { $_ => ($self->req_param($_) || '')
                } qw(organization_name request_information contact_information device_count)
             )
@@ -128,7 +138,6 @@ sub render_edit {
     $vz->save;
 
     return $self->render_zone($vz->id, 'show');
-
 }
 
 sub render_admin {

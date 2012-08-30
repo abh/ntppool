@@ -12,7 +12,8 @@
 	  <small>Contact <a href="ntppool-vendors@develooper.com">ntppool-vendors@develooper.com</a> for help.</small>
 	</div>
 	[% END %]
-	<input type="text" class="text" name="zone_name" value="[% vz.zone_name | html %]" id="name" size="40" maxsize="50">
+	<input type="text" class="text" name="zone_name" value="[% vz.zone_name | html %]" id="name" size="18" maxsize="50">
+	.[% vz.dns_root.origin || dns_roots.0.origin %]
 
 	<br/>
 	<br>
@@ -23,7 +24,9 @@
 	<br>
 
 	<b>Vendor zone information</b><br>
-	What devices will use the pool?  How often will they poll?  (only visible to the NTP Pool admins)<br>
+	What devices will use the pool?  How often will they poll?
+	Please read the <a href="[% combust.www_url("/vendors.html") %]">vendor zone information faq</a>.
+	(only visible to the NTP Pool admins)<br>
 	[% IF errors.request_information %]<div class="error">[% errors.request_information | html %]</div>[% END %]
 	<textarea name="request_information" rows="12" cols="65">[% vz.request_information | html %]</textarea>
 

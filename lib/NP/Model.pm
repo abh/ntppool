@@ -36,6 +36,54 @@ BEGIN {
   our $VERSION = 0;
 }
 
+{ package NP::Model::DnsRoot;
+
+use strict;
+
+use base qw(NP::Model::_Object);
+
+__PACKAGE__->meta->setup(
+  table   => 'dns_roots',
+
+  columns => [
+    id               => { type => 'serial', not_null => 1 },
+    origin           => { type => 'varchar', length => 255, not_null => 1 },
+    vendor_available => { type => 'integer', default => '0', not_null => 1 },
+    general_use      => { type => 'integer', default => '0', not_null => 1 },
+    ns_list          => { type => 'varchar', length => 255, not_null => 1 },
+  ],
+
+  primary_key_columns => [ 'id' ],
+
+  unique_key => [ 'origin' ],
+
+  relationships => [
+    vendor_zones => {
+      class      => 'NP::Model::VendorZone',
+      column_map => { id => 'dns_root_id' },
+      type       => 'one to many',
+    },
+  ],
+);
+
+push @table_classes, __PACKAGE__;
+}
+
+{ package NP::Model::DnsRoot::Manager;
+
+use strict;
+
+our @ISA = qw(Combust::RoseDB::Manager);
+
+sub object_class { 'NP::Model::DnsRoot' }
+
+__PACKAGE__->make_manager_methods('dns_roots');
+}
+
+# Allow user defined methods to be added
+eval { require NP::Model::DnsRoot }
+  or $@ !~ m:^Can't locate NP/Model/DnsRoot.pm: and die $@;
+
 { package NP::Model::Log;
 
 use strict;
@@ -782,7 +830,6 @@ __PACKAGE__->meta->setup(
     status              => { type => 'enum', check_in => [ 'New', 'Pending', 'Approved', 'Rejected' ], default => 'New', not_null => 1 },
     user_id             => { type => 'integer' },
     organization_name   => { type => 'varchar', length => 255 },
-    dns_root            => { type => 'varchar', length => 255 },
     client_type         => { type => 'enum', check_in => [ 'ntp', 'sntp', 'all' ], default => 'ntp', not_null => 1 },
     contact_information => { type => 'text', length => 65535 },
     request_information => { type => 'text', length => 65535 },
@@ -791,13 +838,19 @@ __PACKAGE__->meta->setup(
     approved_on         => { type => 'datetime' },
     created_on          => { type => 'datetime', default => 'now', not_null => 1 },
     modified_on         => { type => 'timestamp', not_null => 1 },
+    dns_root_id         => { type => 'integer', not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
 
-  unique_key => [ 'zone_name' ],
+  unique_key => [ 'zone_name', 'dns_root_id' ],
 
   foreign_keys => [
+    dns_root => {
+      class       => 'NP::Model::DnsRoot',
+      key_columns => { dns_root_id => 'id' },
+    },
+
     user => {
       class       => 'NP::Model::User',
       key_columns => { user_id => 'id' },
@@ -957,6 +1010,7 @@ eval { require NP::Model::ZoneServerCount }
     $_->clear_object_cache for @cache_classes;
   }
 
+  sub dns_root { our $dns_root ||= bless [], 'NP::Model::DnsRoot::Manager' }
   sub log { our $log ||= bless [], 'NP::Model::Log::Manager' }
   sub log_score { our $log_score ||= bless [], 'NP::Model::LogScore::Manager' }
   sub monitor { our $monitor ||= bless [], 'NP::Model::Monitor::Manager' }

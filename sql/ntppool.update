@@ -412,3 +412,29 @@ alter table vendor_zones
     after organization_name,
   add dns_root varchar(255) null after organization_name,
   drop vendor_cluster;
+
+#57
+create table dns_roots (
+  id      int unsigned not null primary key auto_increment,
+  origin  varchar(255) not null,
+  vendor_available tinyint not null default 0,
+  general_use      tinyint not null default 0,
+  ns_list varchar(255) not null,
+  unique key (origin)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+#58
+alter table vendor_zones
+  add dns_root_id int unsigned,
+  drop dns_root,
+  drop key `zone_name`,
+  drop key `name`,
+  add unique key (zone_name, dns_root_id);
+
+#59
+alter table vendor_zones
+  add constraint `dns_root_fk` foreign key (`dns_root_id`) references `dns_roots` (`id`);
+
+#60
+alter table vendor_zones
+  modify dns_root_id int unsigned not null;
