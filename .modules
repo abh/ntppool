@@ -20,7 +20,6 @@ HTTP::Date
 HTTP::Parser::XS
 I18N::LangTags
 IO::Compress::Gzip
-Imager
 JSON::XS
 Locale::Maketext::Lexicon
 DBD::SQLite
