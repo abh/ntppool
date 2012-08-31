@@ -1,5 +1,9 @@
 <h2>dns status</h2>
 
+[% USE time_dur = Time::Duration;
+   USE Number.Format
+%]
+
 <p>
 The DNS data was updated
 <span style="background:[% master.age_css_color %]">[% master.age_text %] ago</span> (current time: [% now.iso8601 %]).
@@ -26,7 +30,10 @@ The DNS data was updated
 <span style="background:[% ns.lag_css_color %]">[% ns.lag_text %]</span>
 [% IF ns.status %]
 <br/>
-[% ns.status | html %]
+[% ns.status.id %], [% ns.status.v | html %]<br>
+uptime: [% time_dur.duration(ns.status.up) | html %]<br>
+[% ns.status.qs | format_number | html %] queries
+([% ns.status.qs / ns.status.up | format_number | html %]/qps)<br>
 [% END %]
 
 [% IF ns.version %]

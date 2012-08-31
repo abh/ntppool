@@ -36,6 +36,7 @@ WriteMakefile(
                   'Gearman::Client' => 0,
                   'Text::CSV_XS' => 0,
                   'Time::Duration' => 0,
+                  'Template::Plugin::Time::Duration' => 0,
                   'DateTime::Format::Duration' => 0,
                   'Email::Send' => 0,
                   'Email::Date' => 0,

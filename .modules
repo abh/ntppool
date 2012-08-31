@@ -50,6 +50,7 @@ Template::Plugin::JSON
 Template::Plugin::Number::Format
 Text::CSV_XS
 Time::Duration
+Template::Plugin::Time::Duration
 URI::Escape
 local::lib
 namespace::clean

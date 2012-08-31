@@ -3,9 +3,10 @@ use strict;
 use warnings;
 use Net::DNS::Resolver;
 use List::Util qw(max first);
-use NP::Util qw(uniq);
 use DateTime::Duration;
 use DateTime::Format::Duration;
+use JSON qw(decode_json);
+use NP::Util qw(uniq);
 use Combust::Config;
 
 sub find_dns_servers {
@@ -86,28 +87,29 @@ sub get_dns_info {
     for my $ns (keys %servers) {
         $res->nameserver($ns);
         $sockets{$ns}->{soa_socket}     = $res->bgsend($pool_domain,           'SOA');
-        $sockets{$ns}->{status_socket}  = $res->bgsend("status.$pool_domain",  'TXT');
-        $sockets{$ns}->{version_socket} = $res->bgsend("version.$pool_domain", 'TXT');
+        $sockets{$ns}->{status_socket}  = $res->bgsend("_status.$pool_domain",  'TXT');
     }
 
     for my $i (1 .. 5) {
 
         for my $ns (sort keys %sockets) {
             my $socket = $sockets{$ns}->{soa_socket};
-            if ($socket && $res->bgisready($socket)) {
-                my $packet = $res->bgread($socket);
-                my ($soa) = $packet && grep { $_->type eq 'SOA' } $packet->answer;
-                delete $sockets{$ns}->{soa_socket};
-                $servers{$ns}->{serial} = $soa && $soa->serial;
-            }
 
-            for my $f (qw(version status)) {
+            for my $f (qw(soa status)) {
                 my $socket = $sockets{$ns}->{"${f}_socket"};
                 if ($socket && $res->bgisready($socket)) {
                     my $packet = $res->bgread($socket);
-                    my ($txt) = $packet && grep { $_->type eq 'TXT' } $packet->answer;
-                    delete $sockets{$ns}->{"${f}_socket"};
-                    $servers{$ns}->{$f} = $txt && $txt->rdatastr;
+                    if ($f eq 'status') {
+                        my ($txt) = $packet && grep { $_->type eq 'TXT' } $packet->answer;
+                        delete $sockets{$ns}->{"${f}_socket"};
+                        $txt = $txt && $txt->txtdata;
+                        $servers{$ns}->{$f} = $txt && decode_json($txt);
+                    }
+                    elsif ($f eq 'soa') {
+                        my ($soa) = $packet && grep { $_->type eq 'SOA' } $packet->answer;
+                        delete $sockets{$ns}->{soa_socket};
+                        $servers{$ns}->{serial} = $soa && $soa->serial;
+                    }
                 }
             }
 
