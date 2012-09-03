@@ -46,23 +46,34 @@ interfaces to work. VMware will probably work, too.
 <p>
     <dl>
 
+    <dt>Operating System</dt>
+    <dd>
+        Basically just a minimal-ish install of (x86_64) CentOS or
+        Ubuntu LTS.  Our software also works with FreeBSD, but we
+        prefer not maintaining the base system on other operating
+        systems than Ubunutu and CentOS, so if the system runs FreeBSD
+        we prefer just getting a jail on a well maintained system.
+        We can also run on Mac OS X 10.6+, but again someone else
+        should apply system updates etc in that case.
+    </dd>
+
     <dt>CPU</dt>
 
     <dd>Faster is better. More than 2 cores won't currently be used
     efficiently, so better with fewer faster CPUs than more slower.
     In the ballpark of 2GHz or faster.  Almost any CPU from the last
-    4-5 years will do a nice job.  32-bit is fine.
+    4-5 years will do a nice job, though to run the new version of
+    our nameserver it has to be 64-bit.
     </dd>
 
     <dt>RAM</dt>
-    <dd>512MB or more is best. More than 1GB is wasteful.  The system
+    <dd>1GB is comfortable, less is okay, more won't be used at all.  The system
         running uses little ram, but yum, apt and such tools use enough memory
         that less than 512MB is uncomfortable.
     </dd>
 
     <dt>Disk space</dt>
     <dd>
-        Basically just a minimal-ish install of CentOS or Ubuntu.
         4-5GB is plenty. It can be just about as slow as you can imagine and it'll be fine.
     </dd>
 
