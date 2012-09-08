@@ -26,6 +26,7 @@ sub data {
     	my $data = {};
         $data->{www} = $www_record;
         $data->{web} = $www_record;
+        $data->{gb}  = { alias => 'uk' };
 
         $data->{""}->{ns} = { map { $_ => undef } split /[\s+,]/, $self->ns_list };
         $data;
