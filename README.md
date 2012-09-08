@@ -25,6 +25,9 @@ curl -kL http://install.perlbrew.pl | bash
 perlbrew install perl-5.16.1
 perlbrew use perl-5.16.1
 
+# Other dependencies
+sudo port install libgeoip
+
 # install a bazillion modules from CPAN, use -n to not test each module,
 # this will take a while.
 mkdir cpan

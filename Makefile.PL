@@ -59,7 +59,9 @@ WriteMakefile(
                   'Socket6' => 0,
                   'IO::Socket::INET6' => 0,
 
-                  # For deployment scripts
+		  'JSON::XS' => 2,
+
+                 # For deployment scripts
                   'File::Find::Rule'  => 0,
 
     },
