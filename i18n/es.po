@@ -6,14 +6,14 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 msgid "go up"
-msgstr "Subir al tope"
+msgstr "Ir arriba"
 
 # zone names
 msgid "Africa"
 msgstr "&Aacute;frica"
 
 msgid "Asia"
-msgstr "&aacute;sia"
+msgstr "Asia"
 
 msgid "North America"
 msgstr "Norteam&eacute;rica"
@@ -25,7 +25,7 @@ msgid "Global"
 msgstr "Global"
 
 msgid "All Pool Servers"
-msgstr "Todos los equipos de servidores"
+msgstr "Todos los servidores"
 
 # navigation
 msgid "Translations"
@@ -36,7 +36,7 @@ msgid  "NTP Pool mailing lists"
 msgstr "Listas de correo de equipos de NTP"
 
 msgid  "subscribe"
-msgstr "suscribir"
+msgstr "suscribirse"
 
 msgid  "archive"
 msgstr "archivo"
@@ -71,35 +71,35 @@ msgid  "Stats for %1"
 msgstr "Estad&iacute;sticas de %1"
 
 msgid  "Not active in the pool, monitoring only"
-msgstr "No est&aacute; activo en el equipo, s&oacute;lo para monitorizaci&oacute;n."
+msgstr "No est&aacute; activo en el grupo, s&oacute;lo para monitorizaci&oacute;n."
 
 msgid  "Zones:"
 msgstr "Zonas:"
 
 msgid "This server is <span class="deletion">scheduled for deletion</span> on %1."
-msgstr  "Este servidor se <span class="deletion">borrar&aacute;</span> en %1."
+msgstr "Este servidor se <span class="deletion">borrar&aacute;</span> en %1."
 
 msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
 msgstr "Puntuaci&oacute;n actual: %1 (s&oacute;lo los servidores con una puntuaci&oacute;n mayor que %2 se usan en el equipo)"
 
 msgid  "What do the graphs mean?"
-msgstr "¿Qu&eacute; significan los gr&aacute;ficos?"
+msgstr "&iquest;Qu&eacute; significan los gr&aacute;ficos?"
 
 msgid  "CSV log"
-msgstr "Informe CSV"
+msgstr "Registro CSV"
 
 # tpl/navigation_sidebar.html
 msgid  "News"
 msgstr "Noticias"
 
 msgid  "How do I <i>use</i> pool.ntp.org?"
-msgstr "¿Cómo <i>utilizo</i> pool.ntp.org?"
+msgstr "&iquest;C&oacute;mo <i>utilizo</i> pool.ntp.org?"
 
 msgid  "How do I <i>join</i> pool.ntp.org?"
-msgstr "¿Cómo <i>me uno</i> a pool.ntp.org?"
+msgstr "&iquest;C&oacute;mo <i>me uno</i> a pool.ntp.org?"
 
 msgid  "Information for vendors"
-msgstr "Información para vendedores"
+msgstr "Informaci&oacute;n para vendedores"
 
 msgid  "The mailing lists"
 msgstr "Las listas de correo"
