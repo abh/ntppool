@@ -90,20 +90,20 @@ msgstr "Informe CSV"
 
 # tpl/navigation_sidebar.html
 msgid  "News"
-msgstr "News"
+msgstr "Noticias"
 
 msgid  "How do I <i>use</i> pool.ntp.org?"
-msgstr "How do I <i>use</i> pool.ntp.org?"
+msgstr "¿Cómo <i>utilizo</i> pool.ntp.org?"
 
 msgid  "How do I <i>join</i> pool.ntp.org?"
-msgstr "How do I <i>join</i> pool.ntp.org?"
+msgstr "¿Cómo <i>me uno</i> a pool.ntp.org?"
 
 msgid  "Information for vendors"
-msgstr "Information for vendors"
+msgstr "Información para vendedores"
 
 msgid  "The mailing lists"
-msgstr "The mailing lists"
+msgstr "Las listas de correo"
 
 msgid  "Additional links"
-msgstr "Additional links"
+msgstr "Enlaces adicionales"
 
