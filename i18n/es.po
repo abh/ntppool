@@ -54,7 +54,7 @@ msgid  "announcement_list_description"
 msgstr "Avisos de tr&aacute;fico muy muy lento de noticias del grupo NTP. Todas las operaciones del servidor se deben suscribir a la lista de avisos."
 
 msgid  "discussion_list_description"
-msgstr "Los operadores de servidor (y los usuarios) que deseen estar m&aacute;s involucrados en el proyecto pueden suscribirse a la lista de debates.<br/> Por supuesto, los debates generales sobre ntp deben estar en el grupo de noticias %1 de Usenet (incluso en <a href=\"%2\">Google Groups</a>)."
+msgstr "Los operadores de servidor (y los usuarios) que deseen involucrase m&aacute;s en el proyecto pueden suscribirse a la lista de debates.<br/>Por supuesto, los debates generales sobre ntp deben estar en el grupo de noticias %1 de Usenet (incluso en <a href=\"%2\">Google Groups</a>)."
 
 msgid  "development_list_description"
 msgstr "Los debates m&aacute;s t&eacute;cnicos (e idealmente siempre &uacute;tiles) sobre el actual desarrollo del <a href=\"%1\">c&oacute;digo de grupo ntp</a> y <a href=\"%2\">pgeodns</a> ocurre en la lista timekeepers-dev (desarrollo de cron&oacute;metros)."
