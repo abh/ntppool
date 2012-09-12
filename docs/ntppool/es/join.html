@@ -3,89 +3,90 @@
 <div class="block">
 	<h3><a name="join">¿Como me uno al grupo pool.ntp.org?</a></h3>
 	<p>
-	Lo primero, gracias por tu inter&eacute;s. El uso de la lista de servidores ha 
-	crecido en grandes proporciones y la &uacute;nica forma para todos de mantener de una manera
-	sencilla el administrar la lista de servidores para incluso que crezca el numero de 
-	servidores participantes.
+	En primer lugar, gracias por tu inter&eacute;s. El uso de la lista de servidores ha 
+	crecido mucho la &uacute;nica forma en la que podemos facilitar que cualquiera pueda administrar
+	una lista de servidores es aumentar el n&uacute;mero de servidores participantes.
 	</p>
 
 	<p>
-	Tu ordenador/servidor <b>debe tener una direcci&oacute;n IP est&aacute;tica</b> y una conexi&oacute;n 
-	permanente a internet. Es muy importante que la direcci&oacute;n IP no cambie o que, si 
-	lo hace, sea con una frecuencia extremadamente m&iacute;nima (d&iacute;gase una vez al a&ntilde;o o menos). 
+	Tu servidor <b>debe tener una direcci&oacute;n IP est&aacute;tica</b> y una conexi&oacute;n 
+	permanente a Internet. Es muy importante que la direcci&oacute;n IP no cambie o que, si 
+	lo hace, sea con una frecuencia extremadamente baja (d&iacute;gamos una vez al a&ntilde;o). 
 	El ancho de banda requerido es m&aacute;s bien bajo. Cada cliente s&oacute;lo enviar&aacute; un par de 
-	paquetes UDP cada poco, como mucho unos 20 minutos.
+	paquetes UDP cada pocos minutos, como mucho 20.
 	</p>
 
 	<p>
 	Por lo general muchos servidores recogen entre 5 y 15 paquetes NTP por segundo
-	con picos un par de veces al d&iacute;a de 60 a 120 paquetes por segundo. 
-	Esto es m&aacute;s o menos equivalente a unos 10-15 Kbit/segundo (1-2KB/s) con picos de
-	unos 50-120Kbit/segundo (6-15KB/s). El proyecto constantemente adquiere m&aacute;s servidores de 
+	con picos de 60 a 120 paquetes por segundo un par de veces al d&iacute;a.
+	Esto es m&aacute;s o menos equivalente a unos 10-15 Kbit/segundo con picos de
+	unos 50-120Kbit/segundo. El proyecto constantemente adquiere m&aacute;s servidores de 
 	hora, as&iacute; que la carga de red no deber&iacute;a incrementar mucho por cada servidor. 
-	Es decir, probablemente necesites como m&iacute;nimo un ancho de banda de unos 384-512Kbit 
-	(48-64KB/s) entre bajada y subida.
+	Es decir, probablemente necesitar&aacute;s como m&iacute;nimo un ancho de banda de unos 384-512Kbit 
+	(entre bajada y subida).
 	</p>
+
 	<p>
-	Aqu&iacute; hay unos pocos servidores con gr&aacute;ficos de tr&aacute;fico y carga del ordenador:
+	Aqu&iacute; tienes algunos servidores con gr&aacute;ficos de tr&aacute;fico y carga:
 	[% i = 0; FOR server = combust.servers_with_urls; %]
 	   <a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
 	[% END %]
 	</p>
 
 	<p>
-	Los servidores participantes no deber&iacute;an tener configurado a <tt>pool.ntp.org</tt> como servidor, 
-	pero se deber&iacute;an configurar algunos <a href="http://support.ntp.org/bin/view/Servers/StratumTwoTimeServers">buenos servidores</a> 
-	manualmente (estos servidores <b>podr&iacute;an</b> ser elegidos desde la lista de servidores. La idea es 
-	que se eligen estaticamente en lugar de asignarse autom&aacute;ticamente para cada reinicio del servidor. 
-	Esto ayudar&aacute; a proveer de una calidad aceptable del servicio.)
-
-	Piensa que no se requiere que tu servidor sea de 1er o 2o nivel - 
-	como este proyecto trata de distribuir la carga, no hay porqu&eacute; 
-	de ser de nivel 3 o incluso un servidor de nivel 4 el que deba participar.
+	Los servidores participantes no deber&iacute;an tener configurado <tt>pool.ntp.org</tt> como servidor
+	de referencia, por el contrario debes configurar algunos <a href="http://support.ntp.org/bin/view/Servers/StratumTwoTimeServers">servidores fiables</a> 
+	manualmente (estos servidores <b>se pueden</b> elegir de la lista de servidores. La idea es 
+	que se elijan est&aacute;ticamente en lugar de asignarse autom&aacute;ticamente en cada reinicio del servidor. 
+	Esto ayuda a ofrecer una calidad aceptable del servicio). Piensa que no hace falta
+	que tu servidor est&eacute; en el estrato 1 o en el 2, ya que el objetivo principal de este
+	proyecto es el de distribuir la carga, por lo que no hay raz&oacute;n para pensar que
+	un servidor de estrato 3 o incluso del 4 no deba unirse al proyecto.
 	</p>
 
 	<p>
 	Tenemos una pagina con <a href="/join/configuration.html">recomendaciones para 
-	la configuraci&oacute;n para servidores que se unen a la lista de seridores</a>.
+	la configuraci&oacute;n de servidores que se unen a la lista</a>.
 	</p>
-	<p>Finalmente, dedo poner &eacute;nfasis en que la participaci&oacute;n en el grupo es un 
-	<b>compromiso de larga duraci&oacute;n</b>. Tambi&eacute;n nos congratular&aacute; sacarte de la 
-	lista si tus circunstancias cambian, pero debido a como operan los clientes ntp 
-	<b>pueden pasar semanas, meses o incluso a&ntilde;os antes de que el tr&aacute;fico desaparezca 
+
+	<p>Finalmente, dedes recordar que la participaci&oacute;n en este proyecto es un 
+	<b>compromiso a largo plazo</b>. Tambi&eacute;n nos comprometemos a sacarte de la lista si
+	tus circunstancias cambian, pero debido a como operan los clientes ntp 
+	<b>pueden pasar semanas, meses o incluso A&Ntilde;OS antes de que el tr&aacute;fico desaparezca 
 	completamente</b>.
 	</p>
 
 	<p>
-	Si est&aacute;s deacuerdo con todo, inicia sesi&oacute;n en la p&aacute;gina de 
-	<i><a href="/manage">administraci&oacute;n de servidor</a></i> y pide que se a&ntilde;ada tu 
-	servidor a la lista. Si tienes alg&uacute;n problema con el sistema, m&aacute;ndame un correo a 
-	<a href="mailto:ask@develooper.com">ask@develooper.com</a>.
+	Si est&aacute;s de acuerdo con todo, inicia sesi&oacute;n en la p&aacute;gina de 
+	<i><a href="/manage">administraci&oacute;n de servidores</a></i> y solicita que tu 
+	servidor sea a&ntilde;adido a la lista. Si tienes alg&uacute;n problema con el sistema,
+	env&iacute;ame un correo a <a href="mailto:ask@develooper.com">ask@develooper.com</a>.
 	</p>
+
 	<p>
-	Tambi&eacute;n te pedir&iacute;a que te suscribas al
-	<a href="http://news.ntppool.org/atom.xml">weblog</a>
-	y si puede ser a la <a href="https://lists.ntp.org/listinfo/pool">lista de correo del proyecto</a>.
+	Tambi&eacute;n te pido que te suscribas a la
+	<a href="http://news.ntppool.org/atom.xml">sindicaci&oacute;n del weblog</a>
+	y, si puede ser, a la <a href="https://lists.ntp.org/listinfo/pool">lista de correo del proyecto</a>.
 	</p>
+
 	<p>
-	Ser&iacute;a recomendable (pero no necesario) si pudieras redireccionar las peticiones web al 
-	puerto 80 de tu servidor harario a la pagina web oficial del proyecto en 
-	<tt>http://www.pool.ntp.org</tt>. Si ejecutas Apache, puedes hacerlo con:
+	Ser&iacute;a recomendable (pero no necesario) que redireccionaras las peticiones web al 
+	puerto 80 de tu servidor horario hacia la pagina web oficial del proyecto en 
+	<tt>http://www.pool.ntp.org</tt>. Si corres Apache, puedes hacerlo con:
 	</p>
 
         [% PROCESS tpl/join/virtual_host_example.html %]
 
 	<p>
-	Reitero lo dicho, real&iacute;zalo s&oacute;lo si ejecutas un servidor web de algun modo. La p&aacute;gina web oficial 
-	del proyecto siempre es con las tres 'w' del principio (www) - pero a veces la gente pasa y solo escribe 
-	<tt>pool.ntp.org</tt> y se sorprende al ver que les sale una p&aacute;gina web aleatoria.
+	Reitero lo dicho, hazlo &uacute;nicamente si ejecutas un servidor web de algun modo. La p&aacute;gina web oficial 
+	del proyecto siempre es con las tres 'w' al comienzo (www) - pero a veces la gente lo olvida y
+	escribe <tt>pool.ntp.org</tt> y se sorprende al comprobar que se carga una p&aacute;gina
+	web al azar.
 	</p>
+
 	<p>
-	Una vez a&ntilde;adido a la lista el servidor se monitorear&aacute; constantemente para comprobar su
-    disponibilidad y precisi&oacute;n. Puedes ver el rendimiento de tu servidor echandole un vistazo a la  
-	<a href="scores">portada de la web</a> o la <a href="/manage">p&aacute;gina de administraci&oacute;n</a>.
+	Una vez a&ntilde;adido tu servidor a la lista, &eacute;ste se monitoriza constantemente para
+	comprobar su disponibilidad y precisi&oacute;n. Puedes ver el rendimiento de tu servidor utilizando
+	<a href="scores">nuestra web</a> o la <a href="/manage">p&aacute;gina de administraci&oacute;n</a>.
 	</p>
 </div>
-
-
-
