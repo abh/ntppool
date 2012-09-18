@@ -1,37 +1,31 @@
 <div id="graph_explanation_box" class="graph_explanation [% graph_explanation ? 'visible' : '' %]">
 
-<h3>El grafico de puntuaci&oacute;n</h3>
+<h3>El gr&aacute;fico de puntuaci&oacute;n</h3>
 <p>
-Un par de veces cada hora el servidor principal comprueba la hora de tu 
-servidor y lo compara con la hora local. La puntuaci&oacute;n baja si no se  
-puede contactar con el servidor o si la diferencia de tiempo es mayor a 
-100ms (como se miden los servidores de monitorizaci&oacute;n). 
-La puntuaci&oacute;n baja m&aacute;s si la diferencia es mayor.
+Un par de veces por hora, el sistema de monitorizaci&oacute;n comprueba la
+hora de tu servidor y la compara con la hora local. La puntuaci&oacute;n
+baja si no se  puede contactar con el servidor o si la diferencia de tiempo
+es superior a 100ms (como se miden los servidores de monitorizaci&oacute;n).
+Esta puntuaci&oacute;n baja m&aacute;s cuanto mayor sea la diferencia.
 </p>
 
 <p>
-Cuando la puntuaci&oacute;n baja, el color de fondo en la parte de arriba del 
-gr&aacute;fico reflejar&aacute; proporcionalmente la bajada de puntos. La escala de color va de 
-azul (muy peque&ntilde;o) a amarillo, naranja y rojo (el servidor lleva varios segundos
-apagado o es inalcanzable). La forma de calcular la media del gr&aacute;fico, no se puede saber 
-porque ha pasado el cambio de color. El color s&oacute;lo importa como una herramienta para 
-comparar servidores. Para detalles exactos de como lo hace el sistema de monitorizaci&oacute;n 
-puedes hacer click en el enlace CSV.
-
+Est&aacute; pensada como una herramienta para visualizar tendencias.
+Para obtener datos m&aacute;s exactos acerca de lo que ha encontrado el
+sistema de monitorizaci&oacute;n puedes hacer clic en el enlace CSV.
 </p>
 
-<h3>El gr&aacute;fico de diferencia</h3>
+<h3>El gr&aacute;fico de diferencias</h3>
 
 <p>
-El sistema de monitorizaci&oacute;n funciona estimando al cliente <a
-href="http://www.ntp.org/ntpfaq/NTP-s-def.htm#AEN1242">SNTP</a> (<a
-href="http://www.eecis.udel.edu/~mills/database/rfc/rfc2030.txt">RFC
-2030</a>), as&iacute; que es muy susceptible a la latencia de la red aleatoria 
-entre el servidor y el sistema de monitorizaci&oacute;n, m&aacute;s que un cliente ntp 
-regular puede ser. En otras palabras, no te preocupes por las diferencias 
-grandes ocasionales y por favor no uses en absoluto la diferencia como 
-medida de optimizaci&oacute;n del reloj.
+El sistema de monitorizaci&oacute;n trabaja b&aacute;sicamente como un
+cliente <a href="http://www.ntp.org/ntpfaq/NTP-s-def.htm#AEN1242">SNTP</a>
+(<a href="http://www.eecis.udel.edu/~mills/database/rfc/rfc2030.txt">
+RFC 2030</a>), por lo que es susceptible de obtener m&aacute; latencias
+de red aleatorias entre el servidor y el sistema de monitorizaci&oacute;n de
+lo que obtendr&iacute;a un cliente ntpd. En otras palabras: no te alarmes
+si obtienes una gran diferencia en algunas ocasiones y por favor, no
+utilices esta diferencia como una m&eacute;trica absoluta de rendimiento.
 </p>
 
 </div>
-

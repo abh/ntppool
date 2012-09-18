@@ -3,69 +3,75 @@
 <h3>Recomendaciones de configuraci&oacute;n para los sevidores que se unen a la lista de servidores</h3>
 
 <p>
-La <a href="http://support.ntp.org/bin/view/Support/WebHome">secci&oacute;n de soporte</a> 
-en <a href="http://support.ntp.org/">support.ntp.org</a> tiene mucha informaci&oacute;n util.
+La <a href="http://support.ntp.org/bin/view/Support/WebHome">
+secci&oacute;n de soporte</a> en <a href="http://support.ntp.org/">
+support.ntp.org</a> tiene mucha informaci&oacute;n &uacute;til.
 </p>
 
 <p>
-Si simplemente quieres <i>usar</i> la lista de sevidores, echa un vistazo a la p&aacute;gina
-<a href="/use.html">uso de la lista de servidores</a>.
+Si simplemente quieres <i>utilizar</i> la lista de sevidores, echa un vistazo
+a la p&aacute;gina de <a href="/use.html">uso de la lista de servidores</a>.
 </p>
 
 <p>
-El grupo de noticias <a href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a>
-es el mejor lugar para obtener ayuda del programa ntpd (servicio de protocolo de hora de internet).
+El grupo de noticias
+<a href="http://groups.google.com/group/comp.protocols.time.ntp">
+comp.protocols.time.ntp</a> es el mejor lugar para obtener ayuda del programa
+ntpd (servicio de protocolo de hora de Internet).
 </p>
 
 <p>
-Debajo hay algunas cosas de particular importancia si vas a unirte a la lista de servidores NTP con tu servidor.
+Debajo te ofrecemos algunas cuestiones de particular importancia si vas a
+unirte a la lista de servidores NTP con tu servidor.
 </p>
 
-<h4>Configuraci&oacute;n con 5 servidores</h4>
+<h4>Configura unos 5 servidores</h4>
 
 <p>
-Para que el servicio ntpd funcione debidamente necesitas conectar con 3 servidores ("Un hombre con 
-un reloj sabe la hora que es. Un hombre con 2 relojes nunca est&aacute; seguro").
+Para que el servicio ntpd funcione debidamente necesitas conectar con 3
+servidores ("Un hombre con un reloj sabe la hora que es. Un hombre con 2
+relojes nunca est&aacute; seguro").
 </p>
 
 <p>
-Para los servidores en la lista de servidores recomendamos configurar entre 4 y 7 servidores horarios.
+Para los servidores a&ntilde;adidos a la lista de servidores recomendamos
+configurar no menos de 4 servidores y no m&aacute;s de 7 servidores.
 </p>
-
 
 <h4>No uses los servidores *.pool.ntp.org</h4>
 
 <p>
 Ironicamente, para asegurarse de que el servicio del grupo es el mejor posible,
-no deber&iacute;as usar los alias *.pool.ntp.org en tu configuraci&oacute;n cuando vas a a&ntilde;adir 
-tu servidor a la lista de servidores.
+no deber&iacute;as usar los alias *.pool.ntp.org en tu configuraci&oacute;n
+cuando vas a a&ntilde;adir tu servidor a la lista de servidores.
 </p>
 
 <p>
-Para que la lista de servidores sea consistente es mejor que todos los servidores de la lista recojan a dedo buenos 
-servidores horarios locales (a esto se le llama red inteligente).
-La wiki de NTP.org tiene una <a
-href="http://support.ntp.org/bin/view/Servers/WebHome">lista de servidores publicos</a>.
+Para que la lista de servidores sea robusta, es mejor que todos los servidores
+de la lista "elijan a dedo" buenos servidores horarios locales (a esto se le
+llama red inteligente). La wiki de NTP.org tiene una
+<a href="http://support.ntp.org/bin/view/Servers/WebHome">
+lista de servidores p&uacute;blicos</a>.
 </p>
-
 
 <h4>Uso del servicio de protocolo hora de red est&aacute;ndar (ntpd)</h4>
 
 <p>
-Todos apostamos por la diversidad de programas, pero un porcentaje significativo de 
-temas del tipo "no funciona" que vienen son de programas que no son el ntpd.
+Todos apostamos por la diversidad de programas, pero un porcentaje
+significativo de problemas del tipo "no funciona" que aparecen en ocasiones
+se producen con software distinto a ntpd.
 </p>
 
 <p>
-Puedes <i>usar</i> la lista de servidores con cualquier programa que tranaje con NTP, pero si 
-vas a participar en el proyecto te recomendamos que uses 
-<a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
+Puedes <i>utilizar</i> la lista de servidores con cualquier programa que
+hable NTP, pero si vas a participar en el proyecto, te recomendamos que
+uses <a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
 </p>
 
+<h4>No utilices el controlador de reloj LOCAL</h4>
 
-<h4>No uses el driver de reloj local</h4>
-
-<p>Los servidores del grupo NTP no deber&iacute;an tener el driver del reloj local configurado.</p>
-
+<p>Los servidores del grupo NTP no deben tener configurado el controlador
+de reloj LOCAL.
+</p>
 
 </div>
