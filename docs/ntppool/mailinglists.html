@@ -10,7 +10,7 @@
         <h2>[% "Announcement list" | loc %]</h2>
 
 	<p>[%|l%]announcement_list_description[%END%]
-	<br/>
+	<br>
 	<a href="http://news.ntppool.org/">timekeepers news</a>
 	| <a rel="nofollow" href="http://feedburner.google.com/fb/a/mailverify?uri=ntppool"
 	>[% "subscribe" | l %]</a>
@@ -23,7 +23,7 @@
 
 	<h2>[%|l%]Discussion list[% END %]</h2>
 	<p>
-	[% | l('<a href="news:comp.protocols.time.ntp">comp.protocols.time.ntp</a>', 'http://groups.google.com/group/comp.protocols.time.ntp') %]discussion_list_description[% END %]<br/>
+	[% | l('<a href="news:comp.protocols.time.ntp">comp.protocols.time.ntp</a>', 'http://groups.google.com/group/comp.protocols.time.ntp') %]discussion_list_description[% END %]<br>
 
 	<a href="https://lists.ntp.org/listinfo/pool">timekeepers</a>	
 	| <a href="mailto:pool-request@lists.ntp.org?subject=subscribe">[% "subscribe" | l %]</a> 
@@ -32,7 +32,7 @@
 
 	<h2>[%|l%]Development list[% END %]</h2>
 	<p>
-          [% | l('http://git.develooper.com/ntppool.git', 'http://geo.bitnames.com/') %]development_list_description[% END %]<br/>
+          [% | l('http://git.develooper.com/ntppool.git', 'http://geo.bitnames.com/') %]development_list_description[% END %]<br>
  	<a
 	href="https://lists.ntp.org/listinfo/pool-dev"
 	>pool-dev</a>
@@ -43,7 +43,9 @@
 	href="https://lists.ntp.org/pipermail/pool-dev">[% "archive" | loc %]</a>
 	</p>
 
-        <h2>[|l%]IRC channel[% END %]</h2>
-        [% | l('irc.ntppool.org', '#ntppool') %]irc_channel_description[% END %]<br/>
+        <h2>[%|l%]IRC channel[% END %]</h2>
+        <p>
+          [% | l('irc.ntppool.org', '#ntppool') %]irc_channel_description[% END %]
+        </p>
 
 </div>
