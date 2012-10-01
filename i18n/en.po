@@ -59,6 +59,8 @@ msgstr "Server operators (and users) who wish to be more involved in the project
 msgid  "development_list_description"
 msgstr "More technical (and ideally always pragmatic) discussions about the current development of the <a href=\"%1\">ntp pool code</a> and <a href=\"%2\">pgeodns</a> happens on the timekeepers-dev list."
 
+msgid  "irc_channel_description"
+msgstr "There's a %2 IRC channel for server operators and users on %1."
 
 # tpl/server.html
 msgid  "Back to the front page"
