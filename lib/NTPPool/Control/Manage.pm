@@ -252,7 +252,7 @@ sub get_server_info {
 
 sub req_server {
     my $self      = shift;
-    my $server_id = $self->req_param('server');
+    my $server_id = $self->req_param('server') or return;
     my $server    = NP::Model->server->fetch(($server_id =~ m/[.:]/ ? 'ip' : 'id') => $server_id);
     return unless $server and $server->admin->id == $self->user->id;
     $server;
@@ -270,8 +270,7 @@ sub handle_update {
     if ($self->request->uri =~ m!^/manage/server/update/server!) {
         return $self->handle_update_netspeed if $self->req_param('Update');
         if ($self->req_param('Delete')) {
-            my $server = $self->req_server or return NOT_FOUND;
-            return $self->redirect("/manage/server/delete?server=" . $server->ip);
+            return $self->handle_delete;
         }
     }
     return NOT_FOUND;
