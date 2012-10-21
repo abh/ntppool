@@ -11,7 +11,23 @@
 		margin-bottom: 2px;
 	}
 
-#quickstart li { margin-bottom: 7px; };
+#activity ul {
+   margin: 0;
+}
+
+#translations ol {
+   padding: 0;
+   margin: 0;
+}
+
+#quickstart ol {
+   padding: 0;
+   margin: 0;
+}
+
+#quickstart li {
+        margin-bottom: 7px;
+}
 
 .block {margin-bottom: 10px;}
        .block h1, h2, h3, h4 {
@@ -66,7 +82,7 @@ a.up {display: block; text-align: right; font-variant: small-caps;}
 .clearboth {clear: both;}
 
 /* index */
-h1#tagline {font-size: 122%; font-style: italic; text-align: right;}
+h1#tagline {font-size: 122%; font-style: italic; text-align: right; margin: 0; padding: 0}
 #activity .date {display: block; font-size: 92%; text-align: right; clear: both; margin-top: 40px;}
 #servers .area {
 	clear: both;

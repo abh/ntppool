@@ -12,7 +12,8 @@
                         [% IF combust.site == 'ntppool' %]
 
 			<h3>[% |l %]Translations[% END %]</h3>
-			<ul id="translations" class="mod">
+                        <div id="translations">
+			<ol class="mod">
                                 [% FOR lang_id = combust.valid_languages.keys.sort %] 
                                   [% testing_lang = combust.valid_languages.$lang_id.testing || 0%]
                                   [% NEXT IF testing_lang AND combust.deployment_mode == 'prod' %]
@@ -23,12 +24,7 @@
                                 <br>  
                                 (<a href="/en/translators.html">[% "Can you translate?" | l %]</a>)
 
-				<!--
-				<li><a href="http://ntp.rondom.org/" title="dutch">nederlands</a></li>
-				<li><a href="http://ntp.robertkehl.de/" title="german">deutsch</a></li> 
-				<li><a href="http://pool.ntp.bitic.net/" title="spanish">espaÃ±ol</a></li>
-				<li><a href="http://ntp.vuntz.net/" title="french">franÃ§ais</a></li>
-				-->
-			</ul>
+			</ol>
+                        </div>
 
                         [% END %]
