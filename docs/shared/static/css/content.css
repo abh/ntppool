@@ -68,6 +68,8 @@
 pre {
          font-family: "source-code-pro-1", "source-code-pro-2", monospace;
          font-weight: 400;
+         font-size: 15px;
+         line-height: 18px;
 }
 pre.code {
          background-color: #eee;
