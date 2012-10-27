@@ -54,7 +54,7 @@ Server admin: <a href="/user/[% (server.admin.username || server.admin.id) | htm
                zone_names.join(" ")
    %]">
 [% FOR zone = server.zones_display %]
-<a href="[% zone.url %]">[% zone.name %]</a>
+<a href="[% combust.www_url(zone.url) %]">[% zone.name %]</a>
 [% END  %]
 </span>
 [% IF manage_site AND combust.user.is_staff %]

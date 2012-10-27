@@ -23,10 +23,8 @@
                            ELSE;
                                t_css = '/css/' _ css;
                            END;
-                 -%]
-                 <link rel="stylesheet" href="[% combust.static_url(t_css) %]" type="text/css" charset="utf-8">
-                 [%-
-                       END; # FOR css
+                 %]<link rel="stylesheet" href="[% combust.static_url(t_css) %]" type="text/css" charset="utf-8">
+[%                     END; # FOR css
                    END;  # FOR css_elem
                  %]
 
