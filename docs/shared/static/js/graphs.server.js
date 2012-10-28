@@ -64,7 +64,7 @@ function server_chart(div, data, options) {
 
     /* offset y lines */
     var yrule = svg.selectAll("g.y")
-        .data(y_offset.ticks(7))
+        .data(y_offset.ticks(8))
         .enter().append("g")
         .attr("class", "y");
 
@@ -74,13 +74,15 @@ function server_chart(div, data, options) {
         .attr("y1", y_offset)
         .attr("y2", y_offset);
 
+    var yformat = d3.format((y_offset_max*1000 < 3 && y_offset_min*1000 > -3) ? "0.1f" : "0.0f");
+
     yrule.append("text")
         .attr("x", -3)
         .attr("y", y_offset)
         .attr("dy", ".35em")
         .attr("text-anchor", "end")
         .text(function(ms) {ms = ms * 1000;
-                            return y_offset.tickFormat(0)(ms);
+                            return yformat(ms);
         });
 
     /* score y lines */
