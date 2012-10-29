@@ -29,6 +29,7 @@ ul#nav li {
 	font: 125% "p22-underground-1","p22-underground-2", sans-serif;
         font-variant: small-caps;
         font-weight: 600;
+        list-style: none;
         }
 	ul#nav li a {
 		float: left;
@@ -47,9 +48,12 @@ ul#nav li {
 		width: 140px; 
 		background: no-repeat url(../images/use_pool.v1.png);}
 	ul#nav li.manage a {background: no-repeat url(../images/manage_servers.v1.png);}
+	
+div#tagline {font-size: 122%; font-style: italic; text-align: right; margin: 0; padding: 0; float: right;}
 		
 #ft {
 	text-align: right;
+	margin-right: 10px; 
 	font-size: 88%;
 }	
 

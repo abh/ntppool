@@ -1,9 +1,9 @@
 { "common.css": {
       "files": [ #"css/reset-fonts-grids.css",
-                 "cdn/libs/yui/2.3/reset/reset.css",
-                 "cdn/libs/yui/2.3/fonts/fonts.css",
+                 #"cdn/libs/yui/2.3/reset/reset.css",
+                 #"cdn/libs/yui/2.3/fonts/fonts.css",
                  "cdn/libs/bootstrap/2.1/css/bootstrap.min.css",
-                 "cdn/libs/yui/2.3/grids/grids.css",
+                 #"cdn/libs/yui/2.3/grids/grids.css",
                  "css/master.css",
                  "css/content.css"
       ]
