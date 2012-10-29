@@ -19,6 +19,7 @@ alias=ntppool
 servername = ntp.pagekite.me
 aliases    = *
 deployment_mode = devel
+pool_domain = ntp.local
 
 [ntpgraphs]
 servername = ntpgraphs.local
