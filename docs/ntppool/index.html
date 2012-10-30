@@ -1,46 +1,39 @@
 
-<div class="block">
-	<h3>Introduction</h3>
-		<div id="activity">
-			<h3>Active Servers</h3>
-			<ul id="servers">
-				[% FOR zone = combust.count_by_continent %]
-				<li class="area">
-					<span class="location [% zone.name %] [% IF zone.name == '@' || zone.name == '.'; "global"; END  %]">[% zone.name == '@' ? '<b>' : '' %]
-					<a href="[% zone.url %]">[% zone.description | l %]</a>
-					[% zone.name == '@' ? '</b>' : '' %]</span>&nbsp;<span class="count">[% zone.server_count %]</span>
-				</li>
-				[% END %]
-			</ul>
-			<span class="date">As of [% USE date; date.format(date.now, '%Y-%m-%d'); %]</span>
-		</div>
+<h3>Introduction</h3>
+	<div id="activity">
+		<h3>Active Servers</h3>
+		<ul id="servers">
+			[% FOR zone = combust.count_by_continent %]
+			<li class="area">
+				<span class="location [% zone.name %] [% IF zone.name == '@' || zone.name == '.'; "global"; END  %]">[% zone.name == '@' ? '<b>' : '' %]
+				<a href="[% zone.url %]">[% zone.description | l %]</a>
+				[% zone.name == '@' ? '</b>' : '' %]</span>&nbsp;<span class="count">[% zone.server_count %]</span>
+			</li>
+			[% END %]
+		</ul>
+		<span class="date">As of [% USE date; date.format(date.now, '%Y-%m-%d'); %]</span>
+	</div>
 
-        [% PROCESS homepage/intro.html %]
-	<a href="#top" class="up">[% 'go up' | l %]</a>
+    [% PROCESS homepage/intro.html %]
 
-</div>
+<a href="#top" class="up">[% 'go up' | l %]</a>
 
-<div class="block">
-	<a name="news"></a>
-        <h3>[% 'News' | l %]</h3>
+
+<a name="news"></a>
+
+<h3>[% 'News' | l %]</h3>
         <p>
-
-<a href="http://news.ntppool.org/atom.xml" rel="alternate" type="application/rss+xml"><img width="16" height="16" src="[% combust.static_url('/images/feed-icon16x16.png')
+        	<a href="http://news.ntppool.org/atom.xml" rel="alternate" type="application/rss+xml"><img width="16" height="16" src="[% combust.static_url('/images/feed-icon16x16.png')
 %]" alt="Atom feed" style="vertical-align:middle;border:0"/></a>&nbsp;<a href="http://news.ntppool.org/atom.xml" rel="alternate" type="application/rss+xml">[%
  'Subscribe in a reader' | l %]
-</a>
+ 			</a>
 
-<a href="http://feed.news.ntppool.org/ntppool">
-  <img src="http://feeds2.feedburner.com/~fc/ntppool?bg=FFFFFF&amp;fg=444444&amp;anim=0"
-       height="26" width="88" style="border:0" alt="" />
-</a>
+			<a href="http://feed.news.ntppool.org/ntppool"><img src="http://feeds2.feedburner.com/~fc/ntppool?bg=FFFFFF&amp;fg=444444&amp;anim=0" height="26" width="88" style="border:0" alt="" /></a>
 
-<br/>
+			<br/>
 
-<a href="http://www.feedburner.com/fb/a/emailverifySubmit?feedId=1216706&amp;loc=en_US">[% 'Subscribe to NTP Pool News by Email' | l %]</a>
-
-
-</p>
+			<a href="http://www.feedburner.com/fb/a/emailverifySubmit?feedId=1216706&amp;loc=en_US">[% 'Subscribe to NTP Pool News by Email' | l %]</a>
+		</p>
 
 	<ul id="news">
 
@@ -55,31 +48,26 @@
 			<a href="http://news.ntppool.org/archives.html">[% 'Older news' | l %]...</a>
 		</li>
 	</ul>
-</div>
 
-<div class="block">
-	<a name="links"></a>
+
+
+<a name="links"></a>
 	<h3>Links</h3>
 	<ul>
-	<li>
-	<a href="http://www.ntp.org">NTP home</a> - <i>the</i> website about ntp
-	</li>
+		<li>
+			<a href="http://www.ntp.org">NTP home</a> - <i>the</i> website about ntp
+		</li>
 
-	<li><a href="http://www.meinberg.de/english/">Meinberg</a>, makers of incredibly fine 
-	<a href="http://www.meinberg.de/english/products/ntp-time-server.htm">time server</a> systems.
-	</li>
+		<li>
+			<a href="http://www.meinberg.de/english/">Meinberg</a>, makers of incredibly fine <a href="http://www.meinberg.de/english/products/ntp-time-server.htm">time server</a> systems.
+		</li>
 
-	<li>
-	The <a
-	href="http://groups.google.com/groups?threadm=3E2DBFF7.F9A51614%40udel.edu"
-	>Public servers abuse</a> and the <a
-	href="http://groups.google.com/groups?threadm=cpaznpnzrb1.fsf%40cabernet.nelson.monkey.org"
-	>Fixing the NTP server abuse problem</a> threads on the <a
-	href="news:comp.protocols.time.ntp"
-	>comp.protocols.time.ntp</a> newsgroup have caused this project to be started.
-	</li>
+		<li>
+			The <a href="http://groups.google.com/groups?threadm=3E2DBFF7.F9A51614%40udel.edu">Public servers abuse</a> and the <a href="http://groups.google.com/groups?threadm=cpaznpnzrb1.fsf%40cabernet.nelson.monkey.org">Fixing the NTP server abuse problem</a> threads on the <a href="news:comp.protocols.time.ntp">comp.protocols.time.ntp</a> newsgroup have caused this project to be started.
+		</li>
 	</ul>
-	<a href="#top" class="up">go up</a>
-</div>
+
+<a href="#top" class="up">go up</a>
+
 
 
