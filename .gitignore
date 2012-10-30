@@ -4,10 +4,16 @@ combust.conf
 combust.conf.testing
 tmp/
 
+.DS_Store
+MYMETA.*
+Makefile
+REVISION
+run
 logs/
 cpan/
 rrd/
 docs/ntppool/_syndicate/
+docs/shared/static/js/admin-templates.js
 dns/
 db/
 
