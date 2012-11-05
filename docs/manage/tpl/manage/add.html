@@ -1,46 +1,77 @@
-
 <h2>Add my server to the pool</h2>
 
+[% IF allow_submit %]
 <p>
-Thanks for offering your server to the pool!<br /> Please verify the following information.
+Thanks for offering your server to the pool!<br>
+Please verify the following information.
 </p>
-
-<p>
-<h4>IP</h4>
-[% server.ip %]<br />
-
-[% IF server.hostname %]
-<h4>Hostname</h4>
-[% server.hostname | html %]
-[% END %]
-
-<h4>Zones</h4>
-<form method="post" action="/manage/server/add">
-[% IF server.zones.size < 2 %]
-We couldn't determine which country your server is in, 
-please select one explicitly!
-  <br />
-  <select name="explicit_zone">
-  <option></option>
-  [% FOR zone = all_zones %]
-  <option value="[% zone.name %]">[% zone.description %]</option>
-  [% END %]
-  </select>
-<br />
 [% ELSE %]
-   [% FOR zone = server.zones %]
-   <a href="[% zone.url %]">[% zone.description %]</a>
-   [% END %]
+   [% PROCESS tpl/manage/add_form.html %]
 [% END %]
 
+
+[% IF (hostname = servers.0.hostname) %]
+<h3>[% hostname | html %]</h3>
+[% END %]
+
+<form method="post" action="/manage/server/add" id="add_server_form">
+
+[% FOR server = servers %]
+
+<div class="server_info" id="server[% loop.count %]">
+
+<tt><b>[% server.ip %]</b></tt><br />
+
+
+[% IF server.listed %]
+<div class="alert alert-info">
+[% server.ip %] is already listed in your account.
+</div>
+[% NEXT; END %]
+
+
+[% IF server.error %]
+
+<div class="alert alert-error">
+[% server.error | html %]
+</div>
+
+</div>
+
+[% NEXT; END %]
+
+[% IF server.zones AND server.zones.size > 1 %]
+   [% FOR zone = server.zones %]
+     <a href="[% combust.www_url(zone.url) %]">[% zone.description %]</a>[% UNLESS loop.last %], [% END %]
+   [% END %]
+[% ELSE %]
+
+  <p>
+    We couldn't determine which country your server is in, please specify:<br />
+
+    <select name="explicit_zone">
+        <option></option>
+        [% FOR zone = all_zones %]
+            <option value="[% zone.name %]">[% zone.description %]</option>
+        [% END %]
+    </select>
+  </p>
+
+[% END %]
+
+</div>
+
+[% END # servers loop %]
+
+[% IF allow_submit %]
 
 <input type="hidden" name="host" value="[% host | html %]">
 <h4>Comment</h4>
-<textarea name="comment" rows="6" cols="60">
+<textarea name="comment" rows="6" cols="80">
 </textarea><br />
 <span style="font-size:0.8em">(Tell us if we auto-configured your zones wrong)</span>
-<br/> 
-<br/>
+
+<br><br>
 <input type="submit" name="yes" value="Yes, this is my server, add it!">
 </form>
 
@@ -48,8 +79,5 @@ please select one explicitly!
 No, please <a href="/manage/server">cancel</a>.
 </p>
 
-<!-- 
-<pre>
-[% USE Dumper; Dumper.dump(server) %]
-</pre>
--->
+[% END %]
+

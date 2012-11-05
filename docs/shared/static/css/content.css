@@ -240,6 +240,11 @@ p.serverurls {
 em.beta  { color: #888 }
 
 
+#add_server_form div.server_info {
+  margin-top: 10px;
+}
+
+
 .zone_graph .registered_count { fill: none; stroke: #00cccc; stroke-width: 1px }
 .zone_graph .active_count     { fill: none; stroke: #006600; stroke-width: 2px }
 .zone_graph .inactive_count   { fill: none; stroke: #dd9000; stroke-width: 1px }
