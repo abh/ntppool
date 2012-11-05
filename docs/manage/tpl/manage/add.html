@@ -46,7 +46,9 @@ Please verify the following information.
 [% END %]
 
 [% IF server.zones AND server.zones.size > 1 %]
-   [% FOR zone = server.zones %]
+   [% FOR zone = server.zones;
+        IF zone.name == "."; NEXT; END;
+   %]
      <a href="[% combust.www_url(zone.url) %]">[% zone.description %]</a>[% UNLESS loop.last %], [% END %]
    [% END %]
 [% ELSE %]

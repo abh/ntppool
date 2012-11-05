@@ -1,6 +1,6 @@
 [%- page.style='bare.html' %]To: ask@develooper.com
 From: ([% combust.user.username %]) [% combust.user.email %]
-Subject: New addition to the NTP Pool: [% server.0.ip; server.0.hostname ? " / " _ server.0.hostname : "" %]
+Subject: New addition to the NTP Pool: [% servers.0.ip; servers.0.hostname ? " / " _ servers.0.hostname : "" %]
 
 [% combust.user.username %] added:
 
@@ -8,7 +8,10 @@ Subject: New addition to the NTP Pool: [% server.0.ip; server.0.hostname ? " / "
    NEXT IF server.error;
 %]
 IP: [% server.ip %]
-Zones:  [% FOR zone = server.zones; " " _ zone.name; END; %]
+Zones:  [% FOR zone = server.zones;
+              IF zone.name == "."; NEXT; END;
+              " " _ zone.name;
+           END; %]
 Stratum: [% server.ntp.Stratum %]
 Country: [% server.geoip_country %]
 [% END %]
