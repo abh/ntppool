@@ -78,7 +78,8 @@ sub init {
       $self->tpl_param('current_language', 'en');
   }
 
-  if ($path =~ s/[\).:>}]+$//) {
+  if ($path !~ m{^/s(cores)?/.*::$} and $path =~ s/[\).:>}]+$//) {
+      # :: is for ipv6 "null" addresses in /scores urls
       return $self->redirect($path, 301);
   }
 
