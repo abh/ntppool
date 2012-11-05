@@ -1,13 +1,13 @@
 [% page.title = "NTP Pool mailing lists" | loc %]
 
-<div class="block">
-	<h1>[%|loc%]NTP Pool mailing lists[% END %]</h1>
+
+	<h2>[%|loc%]NTP Pool mailing lists[% END %]</h1>
 
 	<p>
 	   [%|l%]Currently, there are three mailing lists for the pool.ntp.org project. They are all <i>in English</i>.[% END %]
         </p>
         
-        <h2>[% "Announcement list" | loc %]</h2>
+        <h3>[% "Announcement list" | loc %]</h2>
 
 	<p>[%|l%]announcement_list_description[%END%]
 	<br>
@@ -21,7 +21,7 @@
 	>[% "archive" | loc %]</a>
 	</p>
 
-	<h2>[%|l%]Discussion list[% END %]</h2>
+	<h3>[%|l%]Discussion list[% END %]</h2>
 	<p>
 	[% | l('<a href="news:comp.protocols.time.ntp">comp.protocols.time.ntp</a>', 'http://groups.google.com/group/comp.protocols.time.ntp') %]discussion_list_description[% END %]<br>
 
@@ -30,7 +30,7 @@
 	| <a href="https://lists.ntp.org/pipermail/pool/" >[% "archive" | loc %]</a>
 	</p>
 
-	<h2>[%|l%]Development list[% END %]</h2>
+	<h3>[%|l%]Development list[% END %]</h2>
 	<p>
           [% | l('http://git.develooper.com/ntppool.git', 'http://geo.bitnames.com/') %]development_list_description[% END %]<br>
  	<a
@@ -43,9 +43,9 @@
 	href="https://lists.ntp.org/pipermail/pool-dev">[% "archive" | loc %]</a>
 	</p>
 
-        <h2>[%|l%]IRC channel[% END %]</h2>
+        <h3>[%|l%]IRC channel[% END %]</h2>
         <p>
           [% | l('irc.ntppool.org', '#ntppool') %]irc_channel_description[% END %]
         </p>
 
-</div>
+

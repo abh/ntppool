@@ -11,6 +11,7 @@ use Email::Send 'SMTP';
 use Sys::Hostname qw(hostname);
 use Email::Date qw();
 use JSON::XS qw(encode_json);
+use Net::DNS;
 
 sub init {
     my $self = shift;
@@ -103,137 +104,183 @@ sub show_manage {
 sub handle_add {
     my $self = shift;
 
-    $self->tpl_param('host', $self->req_param('host'));
+    my $host = $self->req_param('host');
+    $self->tpl_param('host', $host);
 
-    my $server = eval { $self->get_server_info };
-    if (!$server or $@) {
-        $self->tpl_param('host_error', $@ || 'Error checking your server');
-        warn $self->tpl_param('host_error');
+    my @servers;
+
+    my @ips = $self->_get_server_ips($host);
+
+    for my $ip (@ips) {
+        warn "IP-l: $ip";
+        my $server = $self->get_server_info($ip);
+        unless (Net::IP->new($host)) {
+            $server->{hostname} = $host if $server;
+        }
+        push @servers, $server;
+    }
+
+    if (!@servers) {
         return OK, $self->evaluate_template('tpl/manage/add_form.html');
     }
 
-    $self->tpl_param(server => $server);
+    $self->tpl_param(servers => \@servers);
 
     if ($self->req_param('yes')) {
-        my $comment = $self->req_param('comment');
-        $self->tpl_param('comment', $comment);
-        $self->tpl_param('scores_url',
-            $self->config->base_url('ntppool') . '/scores/' . $server->{ip});
-
         my $s;
-
-        my $db = NP::Model->db;
-
-        my $txn = $db->begin_scoped_work;
-
-        if ($s = NP::Model->server->fetch(ip => $server->{ip})) {
-            $s->setup_server;
-        }
-        else {
-            $s = NP::Model->server->create(ip => $server->{ip});
-        }
-
-        $s->hostname($server->{hostname} || '');
-        $s->ip_version($server->{ip_version});
-        $s->admin($self->user);
-        $s->in_pool(1);
-        $s->zones([]);
-
-        $s->join_zone($_) for @{$server->{zones}};
-        if (my $zone_name = $self->req_param('explicit_zone')) {
-            warn "user picked [$zone_name]";
-            my $explicit_zone =
-              NP::Model->zone->get_zones(
-                query => [name => $zone_name]);
-            $explicit_zone = $explicit_zone->[0];
-            do {
-                $s->join_zone($explicit_zone);
-                $explicit_zone = $explicit_zone && $explicit_zone->parent;
-            } while ($explicit_zone && $explicit_zone->dns);
-        }
-        $s->add_logs(
-            {   user_id => $self->user->id,
-                type    => 'create',
-                message => "Server added." . ($comment =~ m/\S/ ? "\n\n$comment" : ""),
+        for my $server (@servers) {
+            unless ($server->{error} or $server->{listed}) {
+                $s = $self->_add_server($server);
             }
-        );
-
-        #local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
-        $s->save(cascade => 1);
-
-        $db->commit;
-
-        my $msg = $self->evaluate_template('tpl/manage/add_email.txt');
-        my $email = Email::Simple->new(ref $msg ? $$msg : $msg)
-          ;    # until we decide what eval_tpl should return :)
-        $email->header_set('Message-ID' => join("-", int(rand(1000)), $$, time) . '@' . hostname);
-        $email->header_set('Date' => Email::Date::format_date);
-        my $return = send SMTP => $email, 'localhost';
-        warn Data::Dumper->Dump([\$msg, \$email, \$return], [qw(msg email return)]);
-
+        }
         return $self->redirect('/manage/servers#s-' . $s->ip);
     }
 
     my @all_zones = NP::Model->zone->get_zones(query   => [ name => { like => '__' } ],
                                                sort_by => 'description',
-                                               );
+                                              );
     $self->tpl_param(all_zones => @all_zones);
+
+    $self->tpl_param('allow_submit' => scalar grep { !$_->{error} } @servers);
+
+    use Data::Dump qw(pp);
+    #warn "SERVERS: ", pp(\@servers);
 
     return OK, $self->evaluate_template('tpl/manage/add.html');
 }
 
-sub get_server_info {
-    my $self = shift;
-    my $host = $self->req_param('host');
-    die "No hostname or IP\n" unless $host;
+sub _get_server_ips {
+    my ($self, $host) = @_;
+    my $res = Net::DNS::Resolver->new;
+    my @ips;
+    for my $type (qw(A AAAA)) {
+        my $query = $res->query($host, $type);
+        if ($query) {
+            for my $rr ($query->answer) {
+                next unless $rr->type eq "A" or $rr->type eq "AAAA";
+                push @ips, $rr->address;
+            }
+        }
+        else {
+            warn "query failed: ", join(" ",$host, $type, $res->errorstring), "\n";
+        }
+    }
+    warn "GOT IPS: ", join ", ", @ips;
+    return @ips;
+}
 
-    my $ip = Net::IP->new($host);
+sub _add_server {
+    my ($self, $server) = @_;
+
+    my $comment = $self->req_param('comment');
+    $self->tpl_param('comment',    $comment);
+    $self->tpl_param('scores_url', $self->config->base_url('ntppool') . '/scores/' . $server->{ip});
+
+    my $s;
+
+    my $db = NP::Model->db;
+
+    my $txn = $db->begin_scoped_work;
+
+    if ($s = NP::Model->server->fetch(ip => $server->{ip})) {
+        $s->setup_server;
+    }
+    else {
+        $s = NP::Model->server->create(ip => $server->{ip});
+    }
+
+    $s->hostname($server->{hostname} || '');
+    $s->ip_version($server->{ip_version});
+    $s->admin($self->user);
+    $s->in_pool(1);
+    $s->deleted(0);
+    $s->deletion_on(undef);
+    $s->zones([]);
+
+    $s->join_zone($_) for @{$server->{zones}};
+    if (my $zone_name = $self->req_param('explicit_zone_')) {
+        warn "user picked [$zone_name]";
+        my $explicit_zone = NP::Model->zone->get_zones(query => [name => $zone_name]);
+        $explicit_zone = $explicit_zone->[0];
+        do {
+            $s->join_zone($explicit_zone);
+            $explicit_zone = $explicit_zone && $explicit_zone->parent;
+        } while ($explicit_zone && $explicit_zone->dns);
+    }
+    $s->add_logs(
+        {   user_id => $self->user->id,
+            type    => 'create',
+            message => "Server added." . ($comment =~ m/\S/ ? "\n\n$comment" : ""),
+        }
+    );
+
+    #local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
+    $s->save(cascade => 1);
+
+    $db->commit;
+
+    my $msg = $self->evaluate_template('tpl/manage/add_email.txt');
+    my $email =
+      Email::Simple->new(ref $msg ? $$msg : $msg);  # until we decide what eval_tpl should return :)
+    $email->header_set('Message-ID' => join("-", int(rand(1000)), $$, time) . '@' . hostname);
+    $email->header_set('Date' => Email::Date::format_date);
+    my $return = send SMTP => $email, 'localhost';
+    warn Data::Dumper->Dump([\$msg, \$email, \$return], [qw(msg email return)]);
+
+    return $s;
+}
+
+sub get_server_info {
+    my ($self, $ip) = @_;
+
+    warn "getting server info for $ip";
+
+    $ip = Net::IP->new($ip);
 
     my %server;
 
-    unless ($ip) {
-        # TODO: lookup AAAA records, too.  See issue #17
-        # https://github.com/abh/ntppool/issues/17
-        my $iaddr = gethostbyname $host;
-        die "Could not find the IP for $host\n" unless $iaddr;
-        $ip = Net::IP->new(inet_ntoa($iaddr));
-        $server{ip} = $ip->short;
-        $server{ip_version} = 'v4';
-        $server{hostname} = $host;
-    }
-    else {
-        # if Net::IP proves too much trouble, loewis suggested
-        #    use Socket qw(inet_pton inet_ntop AF_INET6);
-        #    $short = inet_ntop(AF_INET6, inet_pton(AF_INET6, '0:1:0:0::2'));
-        $server{ip} = $ip->short;
-        $server{ip_version} = 'v' . $ip->version;
-    }
+    $server{ip} = $ip->short;
+    $server{ip_version} = 'v' . $ip->version;
 
-    die "Bad IP address\n" if $server{ip} =~ m/^(127|10|192.168|0)\./;
-
-    my $type = $ip->iptype;
-    die "Bad IP address ($type)\n" unless !$type or $type =~ m/^(PUBLIC|GLOBAL-UNICAST)/;
+    {
+        my $type = $ip->iptype;
+        if ($type and $type !~ m/^(PUBLIC|GLOBAL-UNICAST)/) {
+            $server{error} = "Bad IP address: $type";
+            return \%server;
+        }
+    }
 
     if (my $s = NP::Model->server->fetch(ip => $server{ip})) {
         my $other =
           $s->admin->id eq $self->user->id
           ? ""
           : "Email us your username to have it moved to this account";
-        die "$server{ip} is already listed in the pool. $other\n"
-          unless $s->deleted;
+        unless ($s->deleted or $s->deletion_on) {
+            $server{listed} = 1 unless $other;
+            $server{error} = "$server{ip} is already listed in the pool. $other\n";
+            return \%server;
+        }
     }
 
     local $Net::NTP::TIMEOUT = 3;
     my %ntp = eval { get_ntp_response($server{ip}); };
-    warn "checking $host / $server{ip}";
+    warn "checking $ip / $server{ip}";
     warn Data::Dumper->Dump([\%ntp]);
 
-    die "Didn't get an NTP response from $host\n" unless defined $ntp{Stratum};
-    die
-      "Invalid stratum response from $host (Your server is in stratum $ntp{Stratum}).  Is your server configured properly? Is public access allowed?  If you just restarted your ntpd, then it might still be stabilizing the timesources - try again in 10-20 minutes.\n"
-        unless $ntp{Stratum} > 0 and $ntp{Stratum} < 6;
+    unless (defined $ntp{Stratum}) {
+        $server{error} = "Didn't get an NTP response from $server{ip}\n";
+    }
+
+    unless ($ntp{Stratum} > 0 and $ntp{Stratum} < 6) {
+        $server{error} = "Invalid stratum response from $server{ip} (Your server is in stratum $ntp{Stratum}).  Is your server configured properly? Is public access allowed?  If you just restarted your ntpd, then it might still be stabilizing the timesources - try again in 10-20 minutes.\n"
+    }
 
     $server{ntp} = \%ntp;
+
+    if ($server{error}) {
+        warn "Error: $server{error}";
+        return \%server;
+    }
 
     my $geo_ip = eval "Geo::IP->new(GEOIP_STANDARD)";
     my $country = $geo_ip && $geo_ip->country_code_by_addr($server{ip}) || '';

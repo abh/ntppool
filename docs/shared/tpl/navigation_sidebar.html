@@ -1,18 +1,19 @@
 			<div id="quickstart" class="mod">
-				<ol>
+				<ul>
 				<li><a href="[% language_url("/#news") %]">[% "News" | l %]</a></li>
 				<li><a href="[% language_url("/use.html") %]">[% "How do I <i>use</i> pool.ntp.org?" | l %]</a></li>
 				<li><a href="[% language_url("/join.html") %]">[% "How do I <i>join</i> pool.ntp.org?" | l %]</a></li>
 				<li><a href="[% language_url("/vendors.html") %]">[% "Information for vendors" | l %]</a></li>
 				<li><a href="[% language_url("/mailinglists.html") %]">[% "The mailing lists" | l %]</a></li>
 				<li><a href="[% language_url("/#links") %]">[% "Additional links" | l %]</a></li>
-				</ol>
+				</ul>
 			</div>
 
                         [% IF combust.site == 'ntppool' %]
 
 			<h3>[% |l %]Translations[% END %]</h3>
-			<ul id="translations" class="mod">
+                        <div id="translations">
+			<ul class="mod">
                                 [% FOR lang_id = combust.valid_languages.keys.sort %] 
                                   [% testing_lang = combust.valid_languages.$lang_id.testing || 0%]
                                   [% NEXT IF testing_lang AND combust.deployment_mode == 'prod' %]
@@ -20,15 +21,9 @@
                                   [% testing_lang ? '<em class="beta">(beta)</em>' : '' %]
                                   </li>
                                 [% END %]
-                                <br>  
-                                (<a href="/en/translators.html">[% "Can you translate?" | l %]</a>)
+                                <li><br>(<a href="/en/translators.html">[% "Can you translate?" | l %]</a>)</li>
 
-				<!--
-				<li><a href="http://ntp.rondom.org/" title="dutch">nederlands</a></li>
-				<li><a href="http://ntp.robertkehl.de/" title="german">deutsch</a></li> 
-				<li><a href="http://pool.ntp.bitic.net/" title="spanish">espaÃ±ol</a></li>
-				<li><a href="http://ntp.vuntz.net/" title="french">franÃ§ais</a></li>
-				-->
 			</ul>
+                        </div>
 
                         [% END %]
