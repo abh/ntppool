@@ -136,7 +136,9 @@ sub handle_add {
         return $self->redirect('/manage/servers#s-' . $s->ip);
     }
 
-    my @all_zones = NP::Model->zone->get_zones(query   => [ name => { like => '__' } ],
+    my @all_zones = NP::Model->zone->get_zones(query   => [ name => { like => '__' },
+                                                            dns  => 1,
+                                                          ],
                                                sort_by => 'description',
                                               );
     $self->tpl_param(all_zones => @all_zones);
