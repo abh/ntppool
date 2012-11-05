@@ -36,9 +36,14 @@ Please verify the following information.
 [% server.error | html %]
 </div>
 
-</div>
-
+</div>  [% # server info div %]
 [% NEXT; END %]
+
+[% IF server.data_missing %]
+<div class="alert alert-warning">
+[% server.data_missing | html %]
+</div>
+[% END %]
 
 [% IF server.zones AND server.zones.size > 1 %]
    [% FOR zone = server.zones %]
@@ -47,14 +52,17 @@ Please verify the following information.
 [% ELSE %]
 
   <p>
-    We couldn't determine which country your server is in, please specify:<br />
-
-    <select name="explicit_zone">
-        <option></option>
+    <div class="alert alert-warning">
+       We couldn't determine which country this IP address is in, please specify:
+    <select name="explicit_zone_[% server.ip %]">
+        <option>Select country:</option>
         [% FOR zone = all_zones %]
             <option value="[% zone.name %]">[% zone.description %]</option>
         [% END %]
     </select>
+        If the country of your server isn't listed, please email <a
+        href="mailto:ntppool-server-support@develooper.com">ntppool-server-support@develooper.com</a>.
+    </div>
   </p>
 
 [% END %]

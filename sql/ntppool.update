@@ -438,3 +438,8 @@ alter table vendor_zones
 #60
 alter table vendor_zones
   modify dns_root_id int unsigned not null;
+
+#61
+-- bug #48
+select @zid := id from zones where name = ".";
+insert ignore into server_zones select id,@zid from servers;

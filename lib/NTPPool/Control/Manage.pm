@@ -112,7 +112,6 @@ sub handle_add {
     my @ips = $self->_get_server_ips($host);
 
     for my $ip (@ips) {
-        warn "IP-l: $ip";
         my $server = $self->get_server_info($ip);
         unless (Net::IP->new($host)) {
             $server->{hostname} = $host if $server;
@@ -124,28 +123,46 @@ sub handle_add {
         return OK, $self->evaluate_template('tpl/manage/add_form.html');
     }
 
+    for my $server (@servers) {
+        my @zones;
+        if (!$server->{country_zone}) {
+            $server->{data_missing} ||= 'Country not specified'
+              if !$server->{error} and $self->req_param('yes');
+            next;
+        }
+        my @zones;
+        push @zones, $server->{country_zone};
+        unshift @zones, $zones[0]->parent while ($zones[0]->parent);
+        $server->{zones} = \@zones;
+    }
+
     $self->tpl_param(servers => \@servers);
 
-    if ($self->req_param('yes')) {
+    my $allow_submit = grep { !$_->{error} } @servers;
+    my $data_missing = grep { $_->{data_missing} } @servers;
+
+    $self->tpl_param('allow_submit' => $allow_submit);
+
+    if ($self->req_param('yes') and $allow_submit and !$data_missing) {
         my $s;
         for my $server (@servers) {
             unless ($server->{error} or $server->{listed}) {
                 $s = $self->_add_server($server);
             }
         }
-        return $self->redirect('/manage/servers#s-' . $s->ip);
+        return $self->redirect('/manage/servers#s-' . ($s && $s->ip));
     }
 
-    my @all_zones = NP::Model->zone->get_zones(query   => [ name => { like => '__' },
-                                                            dns  => 1,
-                                                          ],
-                                               sort_by => 'description',
-                                              );
+    my @all_zones = NP::Model->zone->get_zones(
+        query => [
+            name => {like => '__'},
+            dns  => 1,
+        ],
+        sort_by => 'description',
+    );
     $self->tpl_param(all_zones => @all_zones);
 
-    $self->tpl_param('allow_submit' => scalar grep { !$_->{error} } @servers);
-
-    use Data::Dump qw(pp);
+    #use Data::Dump qw(pp);
     #warn "SERVERS: ", pp(\@servers);
 
     return OK, $self->evaluate_template('tpl/manage/add.html');
@@ -200,14 +217,14 @@ sub _add_server {
     $s->zones([]);
 
     $s->join_zone($_) for @{$server->{zones}};
-    if (my $zone_name = $self->req_param('explicit_zone_')) {
+    if (my $zone_name = $self->req_param('explicit_zone_' . $s->ip)) {
         warn "user picked [$zone_name]";
         my $explicit_zone = NP::Model->zone->get_zones(query => [name => $zone_name]);
         $explicit_zone = $explicit_zone->[0];
-        do {
+        while ($explicit_zone) {
             $s->join_zone($explicit_zone);
             $explicit_zone = $explicit_zone && $explicit_zone->parent;
-        } while ($explicit_zone && $explicit_zone->dns);
+        }
     }
     $s->add_logs(
         {   user_id => $self->user->id,
@@ -285,16 +302,13 @@ sub get_server_info {
     }
 
     my $geo_ip = eval "Geo::IP->new(GEOIP_STANDARD)";
-    my $country = $geo_ip && $geo_ip->country_code_by_addr($server{ip}) || '';
+    $server{geoip_country} = $geo_ip && $geo_ip->country_code_by_addr($server{ip}) || '';
+
+    my $country = $self->req_param('explicit_zone_' . $server{ip}) || $server{geoip_country};
+
     $country = 'UK' if $country eq 'GB';
     warn "Country: $country\n";
-    my $country_zone = NP::Model->zone->fetch(name => $country);
-    my @zones;
-    push @zones, $country_zone if $country_zone;
-    push @zones, NP::Model->zone->fetch(name => '@') unless @zones;
-    die "the server admin forgot to run ./bin/populate_zones" unless @zones;
-    unshift @zones, $zones[0]->parent while ($zones[0]->parent and $zones[0]->parent->dns);
-    $server{zones} = \@zones;
+    $server{country_zone} = $country && NP::Model->zone->fetch(name => $country);
 
     return \%server;
 }
