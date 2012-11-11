@@ -4,3 +4,6 @@
 User-Agent: *
 Disallow: /
 [% END %]
+
+User-Agent: *
+Disallow: /dns.html

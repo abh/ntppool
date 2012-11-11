@@ -32,7 +32,8 @@
 
 </head>
 <body>
-	
+[% PROCESS "tpl/google-analytics.html" %]
+
 <div class="container-fluid">
 	<div id="hd" class="row-fluid">
 		<h1>pool.ntp.org</h1>
@@ -80,11 +81,6 @@
 </div>	
 
 [% PROCESS tpl/common/js.html %]
-
-[%- IF siteconfig.googleanalytics %]
-<script src="//www.google-analytics.com/urchin.js" type="text/javascript"></script>
-<script type="text/javascript">_uacct = "[% siteconfig.googleanalytics %]";urchinTracker();</script>
-[% END %]
 
 [% IF combust.site == 'ntppool' %]
 <!-- ipv6 testing -->
