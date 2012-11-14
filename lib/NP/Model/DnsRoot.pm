@@ -3,15 +3,15 @@ use Combust::Config;
 use List::Util qw(shuffle);
 use NP::Model;
 
-my $config = Combust::Config->new;
+my $config     = Combust::Config->new;
 my $config_ntp = $config->site->{ntppool};
 
 sub ttl {
-	return 380;
+    return 380;
 }
 
 sub serial {
-	return $self->{_dns_serial} ||= time;
+    return $self->{_dns_serial} ||= time;
 }
 
 sub data {
@@ -23,12 +23,12 @@ sub data {
             ttl => 7200,
         };
 
-    	my $data = {};
+        my $data = {};
         $data->{www} = $www_record;
         $data->{web} = $www_record;
-        $data->{gb}  = { alias => 'uk' };
+        $data->{gb}  = {alias => 'uk'};
 
-        $data->{""}->{ns} = { map { $_ => undef } split /[\s+,]/, $self->ns_list };
+        $data->{""}->{ns} = {map { $_ => undef } split /[\s+,]/, $self->ns_list};
         $data;
     };
 }
@@ -36,10 +36,10 @@ sub data {
 sub TO_JSON {
     my $self = shift;
     return {
-            serial => $self->serial,
-            ttl => $self->ttl,
-            data => $self->data
-    }
+        serial => $self->serial,
+        ttl    => $self->ttl,
+        data   => $self->data
+    };
 }
 
 sub populate {
@@ -66,6 +66,7 @@ sub populate {
             # print $fh "# " . scalar @$entries . " active servers in ", $zone->name, "\n";
 
             if ($#$entries < ($min_non_duplicate_size * $zone_count - 1)) {
+
                 # possible duplicates, not enough servers
                 foreach my $z (@zones) {
                     (my $pgeodns_group = "$z${name}") =~ s/\.$//;
@@ -77,6 +78,7 @@ sub populate {
                 }
             }
             else {
+
                 # 'big' zone without duplicates
                 @$entries = shuffle(@$entries);
                 foreach my $z (@zones) {
