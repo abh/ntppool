@@ -7,7 +7,7 @@ my $config     = Combust::Config->new;
 my $config_ntp = $config->site->{ntppool};
 
 sub ttl {
-    return 380;
+    return 150;
 }
 
 sub serial {
