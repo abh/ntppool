@@ -170,6 +170,11 @@ sub handle_add {
 
 sub _get_server_ips {
     my ($self, $host) = @_;
+
+    if (my $ip = Net::IP->new($host)) {
+        return ($ip->short);
+    }
+
     my $res = Net::DNS::Resolver->new;
     my @ips;
     for my $type (qw(A AAAA)) {
