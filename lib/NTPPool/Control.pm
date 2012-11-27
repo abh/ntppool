@@ -63,7 +63,7 @@ sub init {
           return $self->redirect( $self->_url( $self->site, $self->request->path ) );
       }
       else {
-          $self->request->header_out('Strict-Transport-Security', 86400 * 31 );
+          $self->request->header_out('Strict-Transport-Security', 'maxage=' . (86400 * 31));
       }
   }
 
