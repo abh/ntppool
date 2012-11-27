@@ -1,0 +1,92 @@
+[% page.title = 'Unirsi a NTP Pool!'  %]
+
+<div class="block">
+	<h3><a name="join">Come mi unisco a pool.ntp.org?</a></h3>
+	<p>
+	Prima di tutto: Grazie per il tuo interesse.  L'uso del pool &egrave;
+	cresciuto enormemente e l'unico modo per mantenere facile l'accesso a tutti al
+	pool server &egrave; di aumentare anche il numero di server partecipanti.
+	</p>
+
+	<p>
+	Il tuo computer <b>deve avere un indirizzo IP statico</b> e una connessione
+	internet permanente.  &Egrave; molto importante che il tuo indirizzo IP non
+	cambi o almeno che lo faccia molto di rado (diciamo una volta all'anno o
+	meno). La larghezza di banda richiesta &egrave; relativamente poca.  Ogni
+	client invier&agrave; solo un paio di pacchetti UDP ogni pochi (fino
+	a 20) minuti.
+	</p>
+
+	<p>
+	Attualmente la maggior parte dei server riceve circa 5-15 pacchetti
+	NTP per secondo con picchi un paio di volte al giorno di 60-120 pacchetti
+	per secondo.  Ci&ograve; equivale approssimativamente a 10-15Kbit/s con
+	picchi di 50-120Kbit/s.  Il progetto acquisisce costantemente pi&ugrave;
+	timeserver, quindi il carico non dovrebbe incrementare drammaticamente
+	per ogni server.  In parole semplici, ti serviranno almeno 384-512Kbit
+	di banda (in ingresso e in uscita).
+	</p>
+	<p>
+	Qui trovi alcuni server con grafico traffico/carico:
+	[% i = 0; FOR server = combust.servers_with_urls; %]
+	   <a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
+	[% END %]
+	</p>
+
+	<p>
+	I server che aderiscono non dovrebbero avere <tt>pool.ntp.org</tt> come loro
+	server, ma dovrebbero configurare alcuni <a href="http://support.ntp.org/bin/view/Servers/StratumTwoTimeServers">buoni server</a> manualmente
+	(questi server <b>andrebbero</b> scelti dal pool. Il punto &egrave; che
+	dovrebbero essere scelti staticamente invece che assegnati casualmente ad
+	ogni riavvio del server.  Questo aiuter&agrave; a fornire un servizio di
+	qualit&agrave; accettabile).
+
+    Nota che non &egrave; necessario che il tuo server sia un server stratum 1
+    o 2 - dato che questo progetto distribuisce gran parte del carico, non c'&egrave;
+    motivo per cui un stratum 3 o persino stratum 4 non dovrebbe unirsi.
+	</p>
+
+	<p>
+	Abbiamo una pagina con le <a href="/join/configuration.html">raccomandazioni sulla configurazione per i server che si uniscono al pool</a>.
+	</p>
+	<p>Infine, devo enfatizzare che unirsi al pool &egrave; un <b>impegno a
+	lungo termine</b>.  Saremo felici di rimuoverti dal pool di nuovo se le tue
+	circostanze cambiassero, ma dato il funzionamento dei client ntp <b>saranno
+	necessarie settimane, mesi o persino ANNI prima che il traffico sparisca
+        completamente</b>.
+	</p>
+
+	<p>
+	Se va tutto bene, effettua il login alla pagina <a href="/manage">gestione server</a>
+	e richiedi che il tuo server venga aggiunto. Se dovessi avere problemi con il
+	sistema, inviami una email a <a	href="mailto:ask@develooper.com">ask@develooper.com</a>.
+	</p>
+	<p>
+	Ti chiederei anche di sottoscriverti ai
+	<a href="http://news.ntppool.org/atom.xml">feed weblog</a> e magari anche
+	alla <a href="https://lists.ntp.org/listinfo/pool">mailing list pool</a>.
+	</p>
+	<p>
+	Sarebbe carino (ma non necessario) se tu potessi redirigere le richieste web
+	sulla porta 80 del tuo time server alla pagina web ufficiale del progetto su
+	<tt>http://www.pool.ntp.org</tt>. Se esegui Apache, puoi farlo usando:
+	</p>
+
+        [% PROCESS tpl/join/virtual_host_example.html %]
+
+	<p>
+	Di nuovo, questo solo se esegui un webserver. La pagina web ufficiale del
+	progetto sar&agrave; sempre fornita con il 'www' all'inizio - ma a volte la
+	gente &egrave; pigra e scrive semplicemente <tt>pool.ntp.org</tt> e restano
+	sorpresi di ricevere una pagina web casuale.
+	</p>
+	<p>
+	Una volta aggiunto al pool, il server viene costantemente monitorato
+	    per disponibilit&agrave; e precisione.  Puoi osservare le performance
+	    del tuo server usando <a href="scores">l'interfaccia web</a> o la
+	    <a href="/manage">pagina di gestione</a>.
+	</p>
+</div>
+
+
+

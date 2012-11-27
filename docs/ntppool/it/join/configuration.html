@@ -1,0 +1,75 @@
+<div class="block">
+
+<h3>Raccomandazioni sulla configurazione per i server che si uniscono al pool</h3>
+
+<p>
+La <a href="http://support.ntp.org/bin/view/Support/WebHome">sezione
+Support</a> su <a href="http://support.ntp.org/">support.ntp.org</a> ha molte
+informazioni utili.
+</p>
+
+<p>
+Se vuoi semplicemente <i>usare</i> il pool, vedi la pagina <a href="/use.html">uso del pool</a>.
+</p>
+
+<p>
+Il newsgroup <a
+href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a>
+&egrave; il posto migliore per ricevere aiuto per il software ntpd.
+</p>
+
+<p>
+Sotto ci sono alcune cose di particolare importanza se stai per unirti
+al Pool NTP con il tuo server.
+</p>
+
+<h4>Impostare circa 5 server</h4>
+
+<p>
+Per funzionare correttamente ntpd ha bisogno di parlare con almeno 3 server
+("Un uomo con un orologio sa che ora &egrave;. Un uomo con due orologi non
+&egrave; mai sicuro").
+</p>
+
+<p>
+Per i server nel pool raccomandiamo di configurare non meno di 4 e non
+pi&ugrave; di 7 server.
+</p>
+
+
+<h4>Non usare server *.pool.ntp.org</h4>
+
+<p>
+Ironicamente, per assicurarsi che il servizio pool funzioni al meglio
+non dovresti usare gli alias *.pool.ntp.org nella tua configurazione
+quando stai per aggiungere il tuo server al pool.
+</p>
+
+<p>
+Per la robustezza del pool sarebbe preferibile che tutti gli operatori del pool "scelgano a mano" buoni time server locali.
+Il wiki NTP.org ha una <a href="http://support.ntp.org/bin/view/Servers/WebHome">lista di server pubblici</a>.
+</p>
+
+
+<h4>Usa l'ntpd standard</h4>
+
+<p>
+Siamo tutti per la diversit&agrave; del software, ma una percentuale
+significativa delle domande "non funziona" che ci arrivano sono causate
+da software diverso da ntpd.
+</p>
+
+<p>
+Puoi <i>usare</i> il pool con ogni programma che parla NTP, ma se stai
+per unirti al pool ti raccomandiamo l'uso di <a
+href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
+</p>
+
+
+<h4>Non usare il clock driver LOCAL</h4>
+
+<p>I server nel Pool NTP non dovrebbero avere il clock driver
+LOCAL configurato.</p>
+
+
+</div>
