@@ -18,72 +18,75 @@ my $version = NP::Version->new;
 my $config  = Combust::Config->new;
 
 our %valid_languages = (
-                        ca => { name => "Català", testing => 1 },
-                        de => { name => "Deutsch" },
-                        da => { name => "Danish", testing => 1, },
-                        en => { name => "English", },
-                        es => { name => "Español" },
-                        fi => { name => "Suomi" },
-                        fr => { name => "Français", },
-                        jp => { name => "日本語" },
-                        ko => { name => "한국어", },
-                        nl => { name => "Nederlands", },
-                        pl => { name => "Polish", testing => 1 },
-                        ru => { name => "русский", },
-                        sv => { name => "Svenska" },
-                        uk => { name => "Українська" },
-                       );
+    ca => {name => "Català", testing => 1},
+    de => {name => "Deutsch"},
+    da => {name => "Danish",  testing => 1,},
+    en => {name => "English",},
+    es => {name => "Español"},
+    fi => {name => "Suomi"},
+    fr => {name => "Français",},
+    jp => {name => "日本語"},
+    ko => {name => "한국어",},
+    nl => {name => "Nederlands",},
+    pl => {name => "Polish",  testing => 1},
+    ru => {name => "русский",},
+    sv => {name => "Svenska"},
+    uk => {name => "Українська"},
+);
 
 NP::I18N::loc_lang('en');
 
 my $ctemplate;
+
 sub tt {
-    $ctemplate ||= Combust::Template->new
-      ( filters => { l   => [\&loc_filter, 1],
-                     loc => [\&loc_filter, 1],
-                   }
-      )
-      or die "Could not initialize Combust::Template object: $Template::ERROR";
+    $ctemplate ||= Combust::Template->new(
+        filters => {
+            l   => [\&loc_filter, 1],
+            loc => [\&loc_filter, 1],
+        }
+    ) or die "Could not initialize Combust::Template object: $Template::ERROR";
 }
 
 sub init {
-  my $self = shift;
+    my $self = shift;
 
-  NP::Model->db->ping;
+    NP::Model->db->ping;
 
-  if ($self->site ne 'manage') {
-      # delete combust cookie from non-manage sites
-      if ($self->plain_cookie('c')) {
-          $self->plain_cookie('c', '', { expires => '-1' });
-      }
-  }
+    if ($self->site ne 'manage') {
 
-  if ($config->site->{$self->site}->{ssl_only}) {
-      if (($self->request->header_in('X-Forwarded-Proto')  || 'http') eq 'http') {
-          return $self->redirect( $self->_url( $self->site, $self->request->path ) );
-      }
-      else {
-          $self->request->header_out('Strict-Transport-Security', 'maxage=' . (86400 * 31));
-      }
-  }
+        # delete combust cookie from non-manage sites
+        if ($self->plain_cookie('c')) {
+            $self->plain_cookie('c', '', {expires => '-1'});
+        }
+    }
 
-  my $path = $self->request->path;
+    if ($config->site->{$self->site}->{ssl_only}) {
+        if (($self->request->header_in('X-Forwarded-Proto') || 'http') eq 'http') {
+            return $self->redirect($self->_url($self->site, $self->request->path));
+        }
+        else {
+            $self->request->header_out('Strict-Transport-Security', 'maxage=' . (86400 * 31));
+        }
+    }
 
-  if ($path !~ m!(^/static/|\.png|\.json$)!) {
-      my $lang = $self->language;
-      NP::I18N::loc_lang( $lang );
-      $self->tpl_param('current_language', $lang);
-  }
-  else {
-      $self->tpl_param('current_language', 'en');
-  }
+    my $path = $self->request->path;
 
-  if ($path !~ m{^/s(cores)?/.*::$} and $path =~ s/[\).:>}]+$//) {
-      # :: is for ipv6 "null" addresses in /scores urls
-      return $self->redirect($path, 301);
-  }
+    if ($path !~ m!(^/static/|\.png|\.json$)!) {
+        my $lang = $self->language;
+        NP::I18N::loc_lang($lang);
+        $self->tpl_param('current_language', $lang);
+    }
+    else {
+        $self->tpl_param('current_language', 'en');
+    }
 
-  return OK;
+    if ($path !~ m{^/s(cores)?/.*::$} and $path =~ s/[\).:>}]+$//) {
+
+        # :: is for ipv6 "null" addresses in /scores urls
+        return $self->redirect($path, 301);
+    }
+
+    return OK;
 }
 
 sub loc_filter {
@@ -94,10 +97,10 @@ sub loc_filter {
 
 # should be moved to the manage class when sure we don't use is_logged_in on the ntppool site
 sub is_logged_in {
-  my $self = shift;
-  my $user_info = $self->user;
-  return 1 if $user_info and $user_info->username;
-  return 0;
+    my $self      = shift;
+    my $user_info = $self->user;
+    return 1 if $user_info and $user_info->username;
+    return 0;
 }
 
 sub get_include_path {
@@ -125,13 +128,13 @@ sub get_include_path {
 # about that then.
 sub language {
     my $self = shift;
-    return $self->{_lang} if $self->{_lang}; 
+    return $self->{_lang} if $self->{_lang};
     my $language = $self->path_language || $self->detect_language;
     return $self->{_lang} = $language || 'en';
 }
 
 sub valid_language {
-    my $self = shift;
+    my $self      = shift;
     my @languages = @_;
     return first { $valid_languages{$_} } @languages;
 }
@@ -141,7 +144,7 @@ sub valid_languages {
 }
 
 sub path_language {
-    my $self = shift;
+    my $self          = shift;
     my $path_language = $self->request->notes('lang');
     return $path_language;
 }
@@ -150,7 +153,7 @@ sub detect_language {
     my $self = shift;
 
     if ($self->plain_cookie('lang')) {
-        $self->plain_cookie('lang', '', { expires => '-1' });
+        $self->plain_cookie('lang', '', {expires => '-1'});
     }
 
     $self->request->header_out('Vary', 'Accept-Language');
@@ -158,15 +161,16 @@ sub detect_language {
     my $language_choice = $self->request->header_in('X-Varnish-Accept-Language');
     return $language_choice if $self->valid_language($language_choice);
 
-    $ENV{REQUEST_METHOD}       = $self->request->method;
+    $ENV{REQUEST_METHOD} = $self->request->method;
     $ENV{HTTP_ACCEPT_LANGUAGE} = $self->request->header_in('Accept-Language') || '';
-    my @lang = implicate_supers( I18N::LangTags::Detect::detect() );
+    my @lang = implicate_supers(I18N::LangTags::Detect::detect());
     my $lang = $self->valid_language(@lang);
 
     return $lang;
 }
 
 *loc = \&localize;
+
 sub localize {
     my $self = shift;
     my $lang = $self->language;
@@ -174,18 +178,19 @@ sub localize {
 
 sub localize_url {
     my $self = shift;
-    if ($self->request->path eq '/' # this short-circuits some of the rest
+    if ($self->request->path eq '/'    # this short-circuits some of the rest
         and !$self->path_language
-        and $self->request->method =~ m/^(head|get)$/ 
+        and $self->request->method =~ m/^(head|get)$/
         and $self->request->uri !~ m{^/(manage|static)}
-       ) {
+      )
+    {
         my $lang = $self->language;
-        
+
         my $uri =
           URI->new($self->config->base_url('ntppool')
-                   . $self->request->uri
-                   . ($self->request->args ? '?' . $self->request->args : ''));
-        
+              . $self->request->uri
+              . ($self->request->args ? '?' . $self->request->args : ''));
+
         $uri->path("/$lang" . $uri->path);
         $self->request->header_out('Vary', 'Accept-Language');
         $self->cache_control('s-maxage=900, maxage=3600');
@@ -230,9 +235,9 @@ sub count_by_continent {
     }
     my @zones = sort { $a->description cmp $b->description } $global->zones;
     push @zones, $global;
-    my $total =  NP::Model->zone->fetch(name => '.');
+    my $total = NP::Model->zone->fetch(name => '.');
     push @zones, $total;
-    \@zones
+    \@zones;
 }
 
 sub redirect {
@@ -242,7 +247,7 @@ sub redirect {
 }
 
 sub cache_control {
-    my $self   = shift;
+    my $self = shift;
     return $self->{cache_control} unless @_;
     return $self->{cache_control} = shift;
 }
@@ -253,7 +258,8 @@ sub post_process {
     # IE8 is old cruft by now.
     $self->request->header_out('X-UA-Compatible', 'IE=9');
 
-    $self->request->header_out('X-NPV', $version->current_release . " (" . $version->hostname . ")");
+    $self->request->header_out('X-NPV',
+        $version->current_release . " (" . $version->hostname . ")");
 
     if (my $cache = $self->cache_control) {
         my $req = $self->request;
@@ -275,13 +281,14 @@ sub plain_cookie {
         return $ocookie;
     }
 
-    $args->{domain} = delete $args->{domain}
-        || $self->site && $self->config->site->{$self->site}->{cookie_domain}
-        || $self->request->uri->host
-        || '';  
+    $args->{domain} =
+         delete $args->{domain}
+      || $self->site && $self->config->site->{$self->site}->{cookie_domain}
+      || $self->request->uri->host
+      || '';
 
-    $args->{path}   ||= '/';
-    $args->{expires} = time + ( 30 * 86400 ) unless defined $args->{expires};
+    $args->{path} ||= '/';
+    $args->{expires} = time + (30 * 86400) unless defined $args->{expires};
     if ($args->{expires} =~ m/^-/) {
         $args->{expires} = 1;
     }
@@ -290,8 +297,6 @@ sub plain_cookie {
 
     return $self->request->response->cookies->{$cookie} = $args;
 }
-
-
 
 
 1;
