@@ -20,9 +20,15 @@ sub render {
     if ($self->request->path eq '/monitor/map') {
         my $servers = NP::Model->server->get_objects;
         my $now = DateTime->now;
-        my $map = {map { 
-            my $deleted = ($_->deletion_on and $_->deletion_on < $now) ? 1 : 0;
-            ($_->ip => {id => $_->id, deleted => $deleted}) } @$servers};
+        my $map = {
+            map {
+                my $deleted = ($_->deletion_on and $_->deletion_on < $now) ? 1 : 0;
+                ($_->ip => {id => $_->id + 0,
+                            deleted => ($deleted ? $JSON::true : $JSON::false)
+                           }
+                )
+            } @$servers
+        };
         $self->cache_control('max-age=90');
         return OK, $json->encode($map);
     }
