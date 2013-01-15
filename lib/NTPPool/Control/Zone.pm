@@ -55,15 +55,8 @@ sub render {
   }
 
   if (my $ip_version = $self->is_graph) {
-      my $path = $zone->graph_path($ip_version);
-      open my $fh, $path
-        or warn "Could not open $path: $!" and return 403;
-      
-      my $mtime = (stat($fh))[9];
-      $self->request->update_mtime($mtime);
-      
       $self->cache_control('max-age=10800, s-maxage=7200');
-      return OK, $fh, 'image/png';
+      return 404;
   }
   elsif ($self->request->path =~ m!\.json$!) {
       my $limit = $self->req_param('limit') || 0;
