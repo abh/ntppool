@@ -1,0 +1,32 @@
+<div id="graph_explanation_box" class="graph_explanation [% graph_explanation ? 'visible' : '' %]">
+
+<h3>Il grafico Punteggio</h3>
+<p>
+Un paio di volte all'ora il sistema pool controlla l'ora dal tuo server
+e la confronta con l'ora locale.  I punti vengono sottratti se il server
+non pu&ograve; essere raggiunto o se la differenza di tempo &egrave;
+maggiore di 100ms (come misurata dal sistema di monitoraggio).  Maggiori
+punti vengono sottratti all'aumentare della differenza.
+</p>
+
+<p>
+
+&Egrave; solo inteso come strumento per visualizzare le tendenze.  Per maggiori dettagli esatti
+su cosa il sistema di monitoraggio trova, puoi cliccare sul link CSV.
+
+</p>
+
+<h3>Il grafico Differenza</h3>
+
+<p>
+Il sistema di monitoraggio funziona approssimativamente come un client <a
+href="http://www.ntp.org/ntpfaq/NTP-s-def.htm#AEN1242">SNTP</a> (<a
+href="http://www.eecis.udel.edu/~mills/database/rfc/rfc2030.txt">RFC
+2030</a>), quindi &egrave; pi&ugrave; suscettibile alle latenze casuali della
+rete fra il server e il sistema di monitoraggio rispetto a quanto lo sarebbe un
+normale client ntpd.  Il altre parole: Non ti allarmare per le occasionali grosse
+differenze e per favore non usare la differenza come metro di performance assoluto.
+</p>
+
+</div>
+
