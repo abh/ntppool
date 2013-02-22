@@ -90,6 +90,11 @@ sub render {
                             \%h;
                         } @$history
                     ];
+
+                    if (@$history && $history->[-1]->{ts} < time - 86400) {
+                        $self->cache_control('maxage=28800')
+                    }
+
                     return OK,
                       encode_json(
                         {   history  => $history,
