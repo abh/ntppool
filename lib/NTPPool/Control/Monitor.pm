@@ -29,7 +29,7 @@ sub render {
                 )
             } @$servers
         };
-        $self->cache_control('max-age=90');
+        $self->cache_control('max-age=900');
         return OK, $json->encode($map);
     }
 
