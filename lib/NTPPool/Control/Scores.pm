@@ -85,7 +85,7 @@ sub render {
                             my $h      = $_;
                             my %h      = ();
                             my @fields = qw(offset step score monitor_id);
-                            @h{@fields} = map { $h->$_; } @fields;
+                            @h{@fields} = map { my $v = $h->$_; defined $v ? $v + 0 : $v } @fields;
                             $h{ts} = $h->ts->epoch;
                             \%h;
                         } @$history
