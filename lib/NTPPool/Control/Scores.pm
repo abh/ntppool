@@ -75,6 +75,8 @@ sub render {
                     # This logic should probably just be in the server
                     # model, similar to log_scores_csv.
 
+                    $options->{sort_ascending} = 1;
+
                     $self->request->header_out('Access-Control-Allow-Origin' => '*');
 
                     my $history = $server->history($options);
@@ -86,7 +88,7 @@ sub render {
                             @h{@fields} = map { $h->$_; } @fields;
                             $h{ts} = $h->ts->epoch;
                             \%h;
-                        } reverse @$history
+                        } @$history
                     ];
                     return OK,
                       encode_json(
