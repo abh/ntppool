@@ -46,6 +46,12 @@ sub render {
             return 404 unless $server;
             return $self->redirect('/scores/' . $server->ip, 301) unless $p eq $server->ip;
 
+            if ($mode eq 'monitors') {
+                $self->cache_control('s-maxage=480,max-age=240') if $public;
+                return OK, encode_json({monitors => $self->_monitors($server)}),
+                  'application/json';
+            }
+
             if ($mode eq 'log' or $self->req_param('log') or $mode eq 'json') {
                 my $limit = $self->req_param('limit') || 0;
                 $limit = 50 unless $limit and $limit !~ m/\D/;
@@ -71,18 +77,6 @@ sub render {
 
                     $self->request->header_out('Access-Control-Allow-Origin' => '*');
 
-                    my $monitors = $server->server_scores;
-                    $monitors = [
-                        map {
-                            my %m = (
-                                id    => $_->monitor->id,
-                                score => $_->score,
-                                name  => $_->monitor->name,
-                            );
-                            \%m;
-                        } @$monitors
-                    ];
-
                     my $history = $server->history($options);
                     $history = [
                         map {
@@ -97,7 +91,7 @@ sub render {
                     return OK,
                       encode_json(
                         {   history  => $history,
-                            monitors => $monitors,
+                            monitors => $self->_monitors($server),
                             server   => {ip => $server->ip}
                         }
                       ),
@@ -129,6 +123,22 @@ sub render {
     }
 
     return OK, $self->evaluate_template('tpl/server.html');
+}
+
+sub _monitors {
+    my ($self, $server) = @_;
+    my $monitors = $server->server_scores;
+    $monitors = [
+        map {
+            my %m = (
+                id    => $_->monitor->id,
+                score => $_->score,
+                name  => $_->monitor->name,
+            );
+            \%m;
+        } @$monitors
+    ];
+    return $monitors;
 }
 
 sub bc_user_class    { NP::Model->user }
