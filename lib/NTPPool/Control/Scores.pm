@@ -75,8 +75,6 @@ sub render {
                     # This logic should probably just be in the server
                     # model, similar to log_scores_csv.
 
-                    $options->{sort_ascending} = 1;
-
                     $self->request->header_out('Access-Control-Allow-Origin' => '*');
 
                     my $history = $server->history($options);
@@ -90,6 +88,10 @@ sub render {
                             \%h;
                         } @$history
                     ];
+
+                    if (defined $options->{since}) {
+                        $history = [ reverse @$history ];
+                    }
 
                     if (@$history && $history->[-1]->{ts} < time - 86400) {
                         $self->cache_control('maxage=28800')
