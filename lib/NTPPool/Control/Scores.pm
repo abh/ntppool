@@ -56,8 +56,9 @@ sub render {
                 my $limit = $self->req_param('limit') || 0;
                 $limit = 50 unless $limit and $limit !~ m/\D/;
                 $limit = 4000 if $limit > 4000;
-                my $since = $self->req_param('since') || 0;
-                $since = 0 if $since =~ m/\D/;
+
+                my $since = $self->req_param('since');
+                $since = 0 if defined $since and $since =~ m/\D/;
 
                 my $options = {
                     count      => $limit,
