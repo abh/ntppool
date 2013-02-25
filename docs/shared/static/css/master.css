@@ -33,10 +33,10 @@ ul#nav li {
         }
 	ul#nav li a {
 		float: left;
-		display: block; 
+		display: block;
 		width: 150px;
-		height: 45px; 
-		color: #7B7A7D; 
+		height: 45px;
+		color: #7B7A7D;
 		padding: 5px 0 0 40px;
 		text-decoration: none;
 	}
@@ -45,16 +45,16 @@ ul#nav li {
 		width: 145px;
 		background: no-repeat url(../images/join_pool.v1.png);}
 	ul#nav li.use a {
-		width: 140px; 
+		width: 140px;
 		background: no-repeat url(../images/use_pool.v1.png);}
 	ul#nav li.manage a {background: no-repeat url(../images/manage_servers.v1.png);}
-	
+
 div#tagline {font-size: 122%; font-style: italic; text-align: right; margin: 0; padding: 0; float: right;}
-		
+
 #ft {
 	text-align: right;
-	margin-right: 10px; 
+	margin-right: 10px;
 	font-size: 88%;
-}	
+}
 
 em {font-style:italic;}
