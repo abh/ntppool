@@ -17,7 +17,7 @@ if (!Pool.Graphs) { Pool.Graphs = {}; }
         if (!NP.svg_graphs && !Modernizr.svg) { // no svg support, show the noscript section
             var $legacy = $('#legacy-graphs');
 
-            if (!legacy) { return; }
+            if (!$legacy) { return; }
 
             $legacy.html('Please upgrade to a browser that supports SVG '
                          + 'to see the new graphs. '
