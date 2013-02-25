@@ -1,4 +1,4 @@
-/* Copyright 2012 Ask Bjørn Hansen, Develooper LLC */
+/* Copyright 2012-2013 Ask Bjørn Hansen, Develooper LLC */
 /*jshint jquery:true browser:true */
 /*globals d3:true */
 
@@ -44,8 +44,10 @@ function server_chart(div, data, options) {
         .append("g")
         .attr("transform", "translate(" + pad_w + "," + pad_h + ")");
 
+    var xticks = 6;
+
     var xrule = svg.selectAll("g.x")
-        .data(x.ticks(10))
+        .data(x.ticks(xticks))
         .enter().append("g")
         .attr("class", "x");
 
@@ -60,7 +62,7 @@ function server_chart(div, data, options) {
         .attr("y", h + 3)
         .attr("dy", ".71em")
         .attr("text-anchor", "middle")
-        .text(x.tickFormat(10));
+        .text(x.tickFormat(xticks));
 
     /* offset y lines */
     var yrule = svg.selectAll("g.y")
