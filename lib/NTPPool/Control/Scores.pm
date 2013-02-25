@@ -90,7 +90,7 @@ sub render {
                         } @$history
                     ];
 
-                    if (defined $options->{since}) {
+                    unless (defined $options->{since}) {
                         $history = [ reverse @$history ];
                     }
 
