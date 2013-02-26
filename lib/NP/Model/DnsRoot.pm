@@ -19,7 +19,7 @@ sub data {
     return $self->{_dns_data} ||= do {
 
         my $www_record = {
-            cname => $config_ntp->{www_cname} || 'www-lb.ntppool.org',
+            cname => $config_ntp->{www_cname} || 'www-lb.ntppool.org.',
             ttl => 7200,
         };
 
