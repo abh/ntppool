@@ -1,8 +1,10 @@
 [% page.title = "NTP Pool DNS servers" | loc %]
 
 [% # Translators: Do not translate this page.
+
    # Reading and writing a bit of English is a requirement for effectively
-   # helping with the DNS services.
+   # helping with the DNS services anyway and it is important this page doesn't
+   # get "out of sync" in the different languages.
  %]
 
 
@@ -48,7 +50,7 @@ interfaces to work. VMware will probably work, too.
 
     <dt>Operating System</dt>
     <dd>
-        Basically just a minimal-ish install of (x86_64) CentOS or
+        Basically just a minimal-ish install of (64-bit, x86_64) CentOS or
         Ubuntu LTS.  Our software also works with FreeBSD, but we
         prefer not maintaining the base system on other operating
         systems than Ubunutu and CentOS, so if the system runs FreeBSD
@@ -60,15 +62,12 @@ interfaces to work. VMware will probably work, too.
     <dt>CPU</dt>
 
     <dd>Faster is better. About 2 CPU cores, in the ballpark of 2GHz
-    or faster is currently plenty. Almost any CPU from the last 4-5
-    years will do a nice job, though to run the new version of our
-    nameserver it will work best if it is a 64-bit system.
+    or faster is best. Almost any CPU from the last 4-5
+    years will do a nice job, though it has to be a 64-bit system.
     </dd>
 
     <dt>RAM</dt>
-    <dd>1GB is comfortable, less is okay, more won't be used at all.  The system
-        running uses little ram, but yum, apt and such tools use enough memory
-        that less than 512MB is uncomfortable.
+    <dd>1GB is comfortable, less is okay but not less than 512MB.
     </dd>
 
     <dt>Disk space</dt>
@@ -78,18 +77,20 @@ interfaces to work. VMware will probably work, too.
 
     <dt>IP addresses</dt>
     <dd>
-        Need 1 or (better) 2 routable IP addresses for
-        management and for monitoring the specific DNS instances.  Ideally
-        both IPv4 and IPv6, but IPv4 is most important.
+        One routable IPv4 address. IPv6 is also nice, but not required. If your
+        network supports us announcing our anycast network then we like doing that,
+        see below for BGP information.
     </dd>
 
     <dt>Bandwidth</dt>
     <dd>
-        Practically nothing. Usually each server does 100-300 requests
-        per second or less, each response being about 100 bytes. During
-        certain times of the hour and the day the rate goes up significantly
+        It used to be less, currently it's about 1-5Mbit/second per server (anywhere
+        from 100-500GB data per month).
+        <br><br>
+        During certain times of the hour and the day the rate goes up significantly
         for a few seconds (basically to however many the CPU and the software
-        can keep up with).
+        can keep up with). If you are in a country with poor DNS server coverage
+        but can't serve that many requests, we have tools to give you less traffic.
     </dd>
     
     <dt>Software</dt>
@@ -100,10 +101,10 @@ interfaces to work. VMware will probably work, too.
     </dd>
 
     <dt>BGP access</dt>
-    <dd>(only for anycast nodes) The NTP Pool DNS anycast AS
-        number is 6647; it will be announced with the 'bird' daemon or with exabgp.  The IPv4
-        prefix is 207.171.17.0/24. If you have IPv6, then we'll also announce
-        2620:101:d007::/48.
+    <dd>(only for anycast nodes) The NTP Pool DNS anycast AS number is
+        6647. It will be announced with the 'bird' daemon or with
+        exabgp.  The IPv4 prefix is 207.171.17.0/24. If you have IPv6,
+        then we'll also announce 2620:101:d007::/48.
     </dd>
 
     <dt>Firewall/security</dt>
