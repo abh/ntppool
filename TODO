@@ -1,3 +1,5 @@
+Most issues and todos are tracked on the issue tracker at
+http://github.com/abh/ntppool/issues
 
 multi server:
 
@@ -5,24 +7,10 @@ multi server:
     - use Getopt::Long
     - return score results every N servers instead of just at the end
 
-  - rrd files
-    - graph data per monitor in addition to the total score
+  - monitor api
+    - handle multiple monitor clients with the same API key
 
-  - csv export
-    - include monitor name
-
-
-High priority things:
-
-  * Make the combust lang= cookie be a regular cookie
-
-  * Use Net::IP instead of Net::IPv6Addr
-
-  * Normalize IP addresses before they are added (and make a one-time
-    script to go through and normalize old ones)
-
-
-After that then some of the things I have on my list are (not necessarily in order of priority)
+Not necessarily in order of priority:
 
   * Improve the scoring mechanism to better track long term stability
     (right now the score is basically based on your last couple of days)
@@ -31,17 +19,7 @@ After that then some of the things I have on my list are (not necessarily in ord
     Use the long term scores to include / recommend / ... servers from
     that list to new admins who want to join the pool.
 
-   * Improve the monitoring system to have multiple monitoring stations around the world.
-
-   * Make each monitoring station exchange information with each other and the DNS servers able to get the information from any one of them.
-
-   * Make a system to allow translations of the pool website, ideally including the manage interface.
-
-   * Deploy more Soekris/WRAP boxes for monitoring stations and "super nodes"
-
-IPv6 support
-  - When adding a server by name, query the AAAA record, too and offer
-    to add both if applicable
+  * Deploy more Soekris/ALIX boxes for monitoring stations and "super nodes"
 
 allow an organization name and http link for each user for attribution
   - schema change
@@ -57,24 +35,10 @@ check if the servers do HTTP redirects
 
 update use.html page (be more explicit about number of zones)
 
-make the country zones alias to the continent zones when they are otherwise too small
+make the country zones use data from the continents if they are otherwise too small
 
-de-couple the monitoring from the database (So it can work remotely)
-  - API for entering monitoring results?
-
-Change the schema so we can support multiple monitoring systems
-
-Make an API so the monitoring systems can pull configuration (list of
-servers) and post back monitoring results via HTTP (or jabber?)
-
-Make the monitoring servers use ntpd (noselect) to test the servers 
+Make the monitoring servers use ntpd (noselect) to test the servers
+  - figure out if this is even possible/practical for 5-10k servers
   - figure out the magic ntpdc commands to add and remove noselect servers
     (is that even possible?)
-
-make server page and user profile show when the server is not in the pool (50% done)
-
-document the growth target thing
-
-make the country zones alias to the continent zones when they are
-otherwise too small
 
