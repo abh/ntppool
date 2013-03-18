@@ -13,6 +13,12 @@ sub render {
     $self->cache_control('s-maxage=1800');
 
     my ($p, $type) = ($self->request->uri =~ m!^/graph/([^/]+)/(\w+).png!);
+
+    # people breaking the varnish cache by adding query parameters
+    if (keys %{$self->request->query_parameters}) {
+        return $self->redirect($self->request->uri, 301);
+    }
+
     my ($server) = $p && NP::Model->server->find_server($p);
     return 404 unless $server;
     return 404 unless $type and $type =~ m!^(offset|score)$!;
