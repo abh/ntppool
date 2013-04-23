@@ -7,5 +7,21 @@ cd ~/ntppool
 . cbsetup
 echo Starting
 export PERL_LWP_SSL_VERIFY_HOSTNAME=0
-exec ./combust/bin/httpd
+# init_perlbrew forces the program to under under the perlbrew environment, the
+# script from production is listed below
+exec init_perlbrew ./combust/bin/httpd
+exit 2
 
+## 
+## example init_perlbrew script
+##
+#!/bin/bash
+
+export PERLBREW_ROOT=/opt/perlbrew
+if [ -e $PERLBREW_ROOT/etc/bashrc ]; then
+    source $PERLBREW_ROOT/etc/bashrc
+fi
+
+if [[ ! -z "$@" ]]; then
+    exec "$@"
+fi
