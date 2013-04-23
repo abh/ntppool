@@ -1,0 +1,11 @@
+#!/bin/bash
+exec </dev/null
+exec 2>&1
+find .nospin.start -mmin -1 -exec echo "*** rate limiting restart ***" \; -exec sleep 2 \;
+touch .nospin.start
+cd ~/ntppool
+. cbsetup
+echo Starting
+export PERL_LWP_SSL_VERIFY_HOSTNAME=0
+exec ./combust/bin/httpd
+

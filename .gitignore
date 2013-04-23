@@ -8,7 +8,6 @@ tmp/
 MYMETA.*
 Makefile
 REVISION
-run
 logs/
 cpan/
 rrd/
