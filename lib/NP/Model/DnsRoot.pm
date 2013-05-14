@@ -50,7 +50,7 @@ sub populate {
 
     while (my $zone = $zones->next) {
         my $name = $zone->name;
-        $name = '' if $name eq '@';
+        $name = ''       if $name eq '@';
         $name = "$name." if $name;
 
         if (my $entries = $zone->active_servers('v4')) {
