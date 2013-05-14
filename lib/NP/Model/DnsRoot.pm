@@ -14,6 +14,10 @@ sub serial {
     return $self->{_dns_serial} ||= time;
 }
 
+sub stathat_api {
+    return $config_ntp->{stathat_api} || '';
+}
+
 sub data {
     my $self = shift;
     return $self->{_dns_data} ||= do {
@@ -38,7 +42,8 @@ sub TO_JSON {
     return {
         serial => $self->serial,
         ttl    => $self->ttl,
-        data   => $self->data
+        data   => $self->data,
+        logging => {stathat_api => $self->stathat_api},
     };
 }
 
