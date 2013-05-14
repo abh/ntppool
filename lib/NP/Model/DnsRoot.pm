@@ -40,9 +40,10 @@ sub data {
 sub TO_JSON {
     my $self = shift;
     return {
-        serial => $self->serial,
-        ttl    => $self->ttl,
-        data   => $self->data,
+        serial    => $self->serial,
+        ttl       => $self->ttl,
+        data      => $self->data,
+        max_hosts => 4,
         logging => {stathat_api => $self->stathat_api},
     };
 }
