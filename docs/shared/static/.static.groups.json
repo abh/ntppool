@@ -11,6 +11,11 @@
   "d3.js": {
       "files": [ "d3/d3.min.js", "d3/d3.time.js" ]
   },
+  "bootstrap.js": {
+      "files": [
+          "cdn/libs/bootstrap/2/js/bootstrap.min.js",
+      ]
+  },
   "graphs.js": {
       "files": [
           "cdn/libs/modernizr/2/modernizr.ntppool.js",

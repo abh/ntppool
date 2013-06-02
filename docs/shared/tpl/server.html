@@ -14,10 +14,10 @@ IP <input type="text" name="ip">
 <input type="submit" name="[%|l%]Find[% END %]">
 </form>
 
-</div> 
+</div>
 
 [% RETURN;
-   END 
+   END
  %]
 
 [% page.title = "Stats for %1" | l(server.ip) %]
@@ -34,7 +34,7 @@ IP <input type="text" name="ip">
 <i>[% |l %]Not active in the pool, monitoring only[% END %]</i><br/>
 [% END %]
 
-[% IF server.admin.public_profile 
+[% IF server.admin.public_profile
        OR combust.user.id == server.admin.id
        OR combust.user.is_staff %]
 Server admin: <a href="/user/[% (server.admin.username || server.admin.id) | html | uri %]"
@@ -153,6 +153,7 @@ and enable javascript to see the new graphs.<br><br>
 <![endif]-->
 
 [% page.js.push(combust.static_group("d3.js")) %]
+[% page.js.push(combust.static_group("bootstrap.js")) %]
 [% page.js.push(combust.static_group("graphs.js")) %]
 
 [% IF manage_site %]

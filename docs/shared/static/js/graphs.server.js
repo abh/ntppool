@@ -14,6 +14,8 @@ function server_chart(div, data, options) {
         d.date = new Date(d.ts * 1000);
     });
 
+
+
     var y_offset_max = d3.max(history.map(function(e){ return e.offset * 1; })),
         y_offset_min = d3.min(history.map(function(e){ return e.offset * 1; }));
 
@@ -23,8 +25,8 @@ function server_chart(div, data, options) {
 
     $(".graph_desc").show();
 
-    var w = ($(div).data("width")  || 480),
-        h = ($(div).data("height") || 246),
+    var w = (options.width  || $(div).data("width")  || 480),
+        h = (options.height || $(div).data("height") || 246),
         pad_w = 35,
         pad_h = 19,
 
@@ -32,10 +34,14 @@ function server_chart(div, data, options) {
 
         y_score = d3.scale.sqrt().domain([25,-105]).range([0,h]),
 
-        x = d3.time.scale.utc().domain([d3.min(history.map(function(e){ return e.date; })),
-                                        d3.max(history.map(function(e){ return e.date; }))
-            ])
+        x_range = [d3.min(history.map(function(e){ return e.date; })),
+                   d3.max(history.map(function(e){ return e.date; }))
+        ],
+
+        x = d3.time.scale.utc().domain(x_range)
             .range([0, w]);
+
+    console.log("DIV", div);
 
     var svg = d3.select(div.get(0))
         .append("svg")
@@ -43,6 +49,9 @@ function server_chart(div, data, options) {
         .attr("height", h + pad_h * 2)
         .append("g")
         .attr("transform", "translate(" + pad_w + "," + pad_h + ")");
+
+    console.log("DIV", div, svg);
+
 
     var xticks = 6;
 
@@ -129,7 +138,7 @@ function server_chart(div, data, options) {
         .enter().append("circle")
         .filter(function(d) { return d.monitor_id ? true : false; })
         .attr("class", "scores monitor_data")
-        .attr("r", 2)
+        .attr("r", 1.5)
         .attr("transform", function(d,i) {
             var tr = "translate(" + x(d.date) + "," + y_score(d.score) + ")";
             return tr;
@@ -151,13 +160,31 @@ function server_chart(div, data, options) {
         .on('mouseover',  fade(0.2))
         .on('mouseout',   fade(1));
 
+    var offset_point_radius = 1.5;
+    if (data.history.length < 250) {
+        offset_point_radius = 2;
+    }
+    else if (data.history.length > 6000) {
+        offset_point_radius = 0.45;
+    }
+    else if (data.history.length > 3000) {
+        offset_point_radius = 0.6;
+    }
+    else if (data.history.length > 2000) {
+        offset_point_radius = 0.8;
+    }
+    else if (data.history.length > 1000) {
+        offset_point_radius = 1;
+    }
+    console.log("offset_point_radius", offset_point_radius, data.history.length);
+
     svg.selectAll("g.offsets")
         .data(data.history)
         .enter()
         .append("circle")
-        .filter(function(d) { return d.monitor_id ? true : false; })
+        .filter(function(d) { return (d.monitor_id || d.ts < 1307425000) ? true : false; })
         .attr("class", "offsets monitor_data")
-        .attr("r", 1.5) // todo: make this 2 if number of data points are < 250 or some such
+        .attr("r", offset_point_radius)
         .attr("transform", function(d,i) { return "translate(" + x(d.date) + "," + y_offset(d.offset) + ")"; })
         .style("fill", function(d) {
             var offset = d.offset;
@@ -232,5 +259,7 @@ function server_chart(div, data, options) {
             .style("opacity", opacity);
         };
     };
+
+    return svg;
 
 }

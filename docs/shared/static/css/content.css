@@ -259,6 +259,10 @@ em.beta  { color: #888 }
   /* font-family: "ubuntu-mono-1","ubuntu-mono-2", monospace; */
 }
 
+.graph_desc {
+	padding-top: 10px;
+}
+
 .graph rect {
   fill: none;
   stroke: black;
