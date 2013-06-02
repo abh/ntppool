@@ -23,10 +23,13 @@ sub render {
         my $map = {
             map {
                 my $deleted = ($_->deletion_on and $_->deletion_on < $now) ? 1 : 0;
-                ($_->ip => {id => $_->id + 0,
-                            deleted => ($deleted ? $JSON::true : $JSON::false)
-                           }
-                )
+                (   $_->ip => {
+                        id      => $_->id + 0,
+                        deleted => ($deleted ? $JSON::true : $JSON::false),
+                        c       => $_->created_on->epoch,
+                        ($deleted ? (d => $_->deletion_on->epoch) : ()),
+                    }
+                  )
             } @$servers
         };
         $self->cache_control('max-age=900');
