@@ -1,0 +1,36 @@
+<div id="graph_explanation_box" class="graph_explanation [% graph_explanation ? 'visible' : '' %]">
+
+<h3>O gr&aacute;fico de pontua&ccedil;&atilde;o</h3>
+<p>
+Algumas vezes em uma hora o sistema de pool verifica a hora a partir do 
+seu servidor e compara-a com o hor&aacute;rio local. Pontos s&atilde;o 
+deduzidos se o servidor n&atilde;o puder ser alcan&ccedil;ado ou se a 
+diferen&ccedil;a de hora for maior do que 100ms (como &eacute; medido 
+relativamente a grosso modo dos sistemas de monitoramento). Mais pontos 
+s&atilde;o deduzidos na medida em que aumenta a diferen&ccedil;a.
+</p>
+
+<p>
+
+Foi feito para ser uma ferramenta para visualizar tend&ecirc;ncias. Para 
+detalhes exatos do que o sistema de monitoramento encontrou, basta clicar 
+no link de CSV.
+
+</p>
+
+<h3>O gr&aacute;fico de diferen&ccedil;a</h3>
+
+<p>
+O sistema de monitoramente funciona basicamente como um cliente <a 
+href="http://www.ntp.org/ntpfaq/NTP-s-def.htm#AEN1242">SNTP</a> (<a 
+href="http://www.eecis.udel.edu/~mills/database/rfc/rfc2030.txt">RFC 
+2030</a>), de forma que ele &eacute; mais suscet&iacute;vel a 
+lat&ecirc;ncias aleat&oacute;rias da rede entre servidor e sistema 
+de monitoramento do que um cliente ntpd comum estaria. Em outras 
+palavras: n&atilde;o se preocupe com grandes diferen&ccedil;as 
+ocasionais e por favor n&atilde;o use a diferen&ccedil;a como uma 
+m&eacute;trica absoluta de performance.
+</p>
+
+</div>
+
