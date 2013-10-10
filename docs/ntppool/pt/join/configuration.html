@@ -1,0 +1,82 @@
+<div class="block">
+
+<h3>Recomenda&ccedil;&otilde;es de configura&ccedil;&atilde;o para juntar
+servidores ao pool</h3>
+
+<p>
+A <a href="http://support.ntp.org/bin/view/Support/WebHome">se&ccedil;&atilde;o 
+de suporte</a> em <a href="http://support.ntp.org/">support.ntp.org</a> possui 
+muitas informa&ccedil;&otilde;es &uacute;teis.
+</p>
+
+<p>
+Se voc&ecirc; simplesmente deseja <i>usar</i> o pool, veja a p&aacute;gina
+<a href="/use.html">uso do pool</a>.
+</p>
+
+<p>
+O grupo de not&iacute;cias <a
+href="http://groups.google.com/group/comp.protocols.time.ntp">
+comp.protocols.time.ntp</a> &eacute; o melhor lugar para obter ajuda com o
+software ntpd.
+</p>
+
+<p>
+Abaixo est&atilde;o algumas coisas de import&acirc;ncia particular, se 
+voc&ecirc; vai juntar o NTP Pool com seu servidor.
+</p>
+
+<h4>Configure cerca de 5 servidores</h4>
+
+<p>
+Para funcionar adequadamente, o ntpd precisa conversar com pelo menos 3
+servidores ("Um homem com um rel&oacute;gio sabe que horas s&atilde;o, um
+homem com dois rel&oacute;gios nunca tem certeza").
+</p>
+
+<p>
+Para servidores no pool, n&oacute;s recomendamos configurar n&atilde;o menos
+de 4 e n&atilde;o mais de 7 servidores.
+</p>
+
+
+<h4>N&atilde;o use servidores *.pool.ntp.org</h4>
+
+<p>
+Ironicamente, para assegurar de que o servi&ccedil;o do pool seja o melhor
+poss&iacute;vel, voc&ecirc; n&atilde;o deveria usar os endere&ccedil;os
+*.pool.ntp.org na sua configura&ccedil;&atilde;o quando voc&ecirc; estiver
+adicionando seu servidor ao pool.
+</p>
+
+<p>
+Para a robustez do pool &eacute; mais saud&aacute;vel que todos os
+administradores de pool escolham "a dedo" bons servidores de tempo locais 
+(com boa resposta de rede). O wiki do NTP.org tem uma <a
+href="http://support.ntp.org/bin/view/Servers/WebHome">lista de servidores
+p&uacute;blicos</a>.
+</p>
+
+
+<h4>Use o ntpd padr&atilde;o</h4>
+
+<p>
+Somos todos pela diversidade de softwares, mas uma porcentagem significativa 
+das perguntas "n&atilde;o est&aacute; funcionando" que chegam s&atilde;o 
+relacionados a softwares sem ser ntpd.
+</p>
+
+<p>
+Voc&ecirc; pode <i>usar</i> o pool com qualquer programa que fale NTP, mas se 
+voc&ecirc; for se juntar ao pool, n&oacute;s recomendamos que voc&ecirc; use 
+o <a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
+</p>
+
+
+<h4>N&atilde;o use um driver de rel&oacute;gio LOCAL</h4>
+
+<p>Os servidores no NTP Pool n&atilde;o deveriam ter o driver de
+rel&oacute;gio LOCAL configurado.</p>
+
+
+</div>
