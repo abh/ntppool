@@ -121,4 +121,4 @@ msgid  "Additional links"
 msgstr "Links adicionais"
 
 msgid  "Can you translate?"
-msgstr "Posso traduzir"
+msgstr "Posso traduzir?"
