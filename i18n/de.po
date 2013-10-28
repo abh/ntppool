@@ -59,6 +59,8 @@ msgstr "Serveradministratoren (und Benutzer), die sich am NTP Pool Projekt betei
 msgid  "development_list_description"
 msgstr "Technische (und idealerweise immer pragmatische) Diskussionen über die aktuelle Entwicklung des <a href=\"%1\">NTP Pool Quellcodes</a> und <a href=\"%2\">pgeodns</a> werden über den <i>timekeepers-dev</i>-Verteiler geführt."
 
+msgid  "irc_channel_description"
+msgstr "Es gibt einen IRC-Kanal %2 für Server-Betreiber und Benutzer auf %1."
 
 # tpl/server.html
 msgid  "Back to the front page"
