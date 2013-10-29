@@ -28,7 +28,7 @@ msgid "Global"
 msgstr "Weltweit"
 
 msgid "All Pool Servers"
-msgstr "Alle Pool Server"
+msgstr "Alle Pool-Server"
 
 # navigation
 msgid "Translations"
@@ -54,10 +54,10 @@ msgid  "Development list"
 msgstr "Verteiler &quot;Entwicklung&quot;"
 
 msgid  "announcement_list_description"
-msgstr "Wenig frequentierter Verteiler für die wichtigsten Ankündigungen des NTP Pool Projekts. Alle Serveradministratoren sollten diese Liste abonniert haben."
+msgstr "Wenig frequentierter Verteiler für die wichtigsten Ankündigungen des NTP-Pool-Projekts. Alle Serveradministratoren sollten diese Liste abonniert haben."
 
 msgid  "discussion_list_description"
-msgstr "Serveradministratoren (und Benutzer), die sich am NTP Pool Projekt beteiligen wollen, sind in diesem Verteiler herzlich willkommen.<br/>Über allgemeine Themen rund um NTP sollte jedoch in der Usenet Newsgruppe %1 diskutiert werden (siehe auch <a href=\"%2\">Google Groups</a>)."
+msgstr "Serveradministratoren (und Benutzer), die sich am NTP-Pool-Projekt beteiligen wollen, sind in diesem Verteiler herzlich willkommen.<br/>Über allgemeine Themen rund um NTP sollte jedoch in der Usenet Newsgruppe %1 diskutiert werden (siehe auch <a href=\"%2\">Google Groups</a>)."
 
 msgid  "development_list_description"
 msgstr "Technische (und idealerweise immer pragmatische) Diskussionen über die aktuelle Entwicklung des <a href=\"%1\">NTP Pool Quellcodes</a> und <a href=\"%2\">pgeodns</a> werden über den <i>timekeepers-dev</i>-Verteiler geführt."
