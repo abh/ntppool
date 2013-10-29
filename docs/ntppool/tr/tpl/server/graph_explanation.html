@@ -1,0 +1,27 @@
+<div id="graph_explanation_box" class="graph_explanation [% graph_explanation ? 'visible' : '' %]">
+
+<h3>Puan grafiği</h3>
+<p>
+Havuz sistemi saatte iki kere sunucunuzun saatini kontrol eder ve 
+kendi saati ile karşılaştırır. Puanlar sunucunuz erişilemediğinde 
+yada saat farkı 100ms'den fazla olduğunda düşürülür. Saat farkı 
+fazlalaştığında düşülen puanda artar.
+</p>
+
+<p>
+Bu sadece eğilimleri görselleştiren bir araçtır. İzleme sisteminin 
+topladığı daha kesin detaylar için CSV bağlantısına tıklayabilirsiniz.
+</p>
+
+<h3>Fark grafiği</h3>
+
+<p>
+İzleme sistemi kabaca <a href="http://www.ntp.org/ntpfaq/NTP-s-def.htm#AEN1242">SNTP</a> istemcisi
+(<a href="http://www.eecis.udel.edu/~mills/database/rfc/rfc2030.txt">RFC2030</a>)
+gibi çalışır, yani izleme sistemi ile sunucu arasğındaki rastgele ağ gecikmelerine, 
+normal bir ntpd istemcisine göre daha duyarlıdır. Başka bir deyişle: Ara sıra oluşan büyük 
+saat farkları yüzünden endişelenmeyin ve saat farkını performans göstergesi olarak değerlendirmeyin.
+</p>
+
+</div>
+

@@ -1,0 +1,120 @@
+[% page.title = 'Havuzu kullanmak için NTP nasıl ayarlanır?' %]
+
+<div class="block">
+	<h3><a name="use"></a>pool.ntp.org nasıl kullanılır?</h3>
+	
+	<p>
+	Eğer sadece bilgisayarlarınızın saatini ağa senkronize etmek istiyorsanız
+	ayar dosyası (ntpd programı için Linux, *BSD, Windows ve hatta bazı değişik 
+	sistemler için bile <a	href="http://www.ntp.org">ntp.org dağıtımı</a> kullanılabilir 
+	) gerçekten çok basittir:
+	</p>
+
+<pre class="code">
+driftfile /var/lib/ntp/ntp.drift
+
+server 0.pool.ntp.org
+server 1.pool.ntp.org
+server 2.pool.ntp.org
+server 3.pool.ntp.org</pre>
+	<p>
+	0, 1, 2 ve 3.pool.ntp.org isimleri her saat değişen rastgele sunucuları gösterir. 
+	Bilgisayarınızın saatinin makul bir şekilde ayarlandığına emin olun (gerçek zamandan 
+	bir kaç dakika fark aralığında). <tt>ntpdate pool.ntp.org</tt> şeklinde kullanabilirsiniz 
+	veya sadece <tt>date</tt> komutu ile bileğinizdeki saate göre ayarlayabilirsiniz. 
+	ntpd'yi başlattıktan biraz sonra (en fazla yarım saat sürer) <tt>ntpq -pn</tt> komutu 
+	aşağıdaki gibi bir çıktı vermelidir:
+	</p>
+<pre class="code ntpq">
+avbidder:~$ ntpq -p
+     remote           refid      st t when poll reach   delay   offset  jitter
+==============================================================================
++81.6.42.224     193.5.216.14     2 u   68 1024  377  158.995   51.220  50.287
+*217.162.232.173 130.149.17.8     2 u  191 1024  176   79.245    3.589  27.454
+-129.132.57.95   131.188.3.222    3 u  766 1024  377   22.302   -2.928   0.508
+</pre> 
+	<p>
+	IP adresi farklı olacaktır çünkü rastgele zaman sunucusu olarak ayarladık. 
+	Buradaki önemli noktalardan biri (<tt>*</tt>) ile başlayan satırlardır. Bunlar 
+	bilgisayarınızın saati internetten aldığını gösterir. Bu adımdan sonra 
+	asla endişelenmenize gerek yok!
+	</p>
+	<p>
+	<tt>pool.ntp.org</tt> dünya üzerindeki çeşitli zaman sunucularından size 
+	atama yapacaktır. Zaman kalitesi ideal olmayabilir. <a href="/zone/@">Kıta bölgeleri</a> 
+	(mesela <a href="/zone/europe">avrupa</a>,	<a href="/zone/north-america">kuzey-amerika</a>,
+	<a href="/zone/oceania">okyanusya</a> veya <a href="/zone/asia">asya</a>.pool.ntp.org) 
+	kullanırsanız biraz daha iyi sonuçlar alabilirsiniz. Hatta ülke bölgesi kullanırsanız 
+	(Türkiyedeki tr.pool.ntp.org gibi) daha da iyi sonuçlar alabilirsiniz. Tüm bu bölgeler 
+	için adreslerin başlarında 0 veya 1 gibi ön ekleri de (0.tr.pool.ntp.org gibi) 
+	kullanabilirsiniz. Tabii ki ön ek olarak yazdığınız sunucunun gerçekten var olduğunu 
+	kontrol etmelisiniz. Eğer zaman sunucusunun size yakın olduğunu biliyorsanız (ağ ölçümü ile 
+	, <tt>traceroute</tt> veya <tt>ping</tt>) en iyi sonuçları alırsınız.
+	</p>
+	<p>
+	Eğer Windows'un <b>son versiyonlarından birini</b> kullanıyorsanız, sistem dahilinde olan 
+	ntp aracını kullanabilirsiniz. Yönetici olarak komut satırına şu komutu yazın</p>
+<pre class="code">
+w32tm /config /syncfromflags:manual /manualpeerlist:0.pool.ntp.org,1.pool.ntp.org,2.pool.ntp.org,3.pool.ntp.org
+</pre>
+	<p>
+	. Bu Windows 2003 ve daha sonrası için çalışacaktır. Eğer daha eski bir sürüm kullanıyorsanız 
+	şunu deneyebilirsiniz</p>
+<pre class="code">
+net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
+</pre>
+	<p>
+	Aynı sonuca ulaşmak için ayrıca yönetici olarak görev çubuğundaki saate sağ tuş ile tıklayıp 
+	'Tarih/saat ayarla' seçeneğini seçip sunucu ismini 'İnternet saati' sekmesine girebilirsiniz.
+	</p>
+
+	<p>
+	Meinberg windows için benzer bir <a href="http://www.meinberg.de/english/sw/ntp.htm">ntp programı</a> yazmıştır.
+	</p>
+
+	<p>
+	Eğer Windows sisteminiz bir domain yapısına bağlı ise bilgisayarınızın saatini güncelleyemeyebilirsiniz.
+	
+	Windows üzerinde saat ayarları hakkında daha fazla bilgi için <a href="http://technet.microsoft.com/en-us/library/cc773013%28WS.10%29.aspx">Windows Zaman Hizmeti Nasıl Çalışır</a>
+	yazısını inceleyebilirsiniz.
+	</p>
+</div>
+
+<div class="block">
+	<h3>Ek bilgiler</h3>
+	<p><span class="hook">Eğer sabit bir IP adresiniz ve kabul edilebilir bir internet bağlantınız varsa 
+	(bant genişliği çok önemli değil fakat stabil olmalı ve çok yük ile çalışmamalı), 
+	lütfen sunucunuzu havuza eklemeyi düşünün. Size sadece saniyede bir kaç yüz byte'a 
+	mal olacaktır ve bu projenin ayakta kalmasına yardımcı olacaksınız. Daha fazla 
+	bilgi için <a href="/join.html">katılma sayfasını okuyun</a>.
+	</p>
+	
+	<p><span class="hook">Eğer intetnet sağlayıcınızın zaman sunucusu varsa veya yakınlarınızda 
+	iyi bir zaman sunucusu biliyorsanız bunu kullanın. Büyük ihtimalle daha iyi sonuçlar alırsınız 
+	ve daha az ağ kaynağı kullanmış olursunuz. Eğer bu şekilde bir sunucu biliyorsanız tabii ki 
+	pool.ntp.org'dan veya başka bir yerden iki sunucu daha ekleyebilirsiniz.</p>
+	
+	<p><span class="hook">Nadiren aynı zaman sunucusunu iki kere tanımlayabiliyorsunuz. 
+	Bu durumda ntp sunucusunu yeniden başlattığınızda genellikle sorunu çözecektir. 
+	Eğer ülke bölgesini kullanıyorsanız tek sunucu olabilir bu durumda kıta bölgesini 
+	kullanmanız daha iyi olur. Her bölgede ne kadar sunucu var <a href="/zone">bölgeler</a> 
+	sayfasına bakabilirsiniz.</p>
+	
+	<p><span class="hook">Dostça davranın</span>. Bir çok sunucu gönüllüler tarafından 
+	sunulmaktadır ve neredeyse tüm zaman sunucuları gerçekte ntp çalıştıran dosya, posta 
+	veya web sunucusudur. Bu yüzden ayarlarınızda dörtten fazla zaman sunucusu ayarlamayınız 
+	ve <tt>burst</tt> veya <tt>minpoll</tt> ile kurnazlık yapmayınız. Bunlar sadece 
+	gönüllü zaman sunucularına ek bir yük getirecektir.</p>
+	
+	<p><span class="hook">Bilgisayarınızın <i>zaman bölgesi ayarlarının</i> doğru olduğuna emin olun 
+	ntpd'nin kendisi zaman bölgeleri hakkında bir şey yapmaz. Sadece UTC kullanır.</p>
+	
+	<p><span class="hook">Eğer ağınızı pool.ntp.org ile senkronize ediyorsanız, lütfen 
+	bir bilgisayarınızı zaman sunucusu yapıp diğer bilgisayarlarınızı bu bilgisayara 
+	yönlendirin. (bunun için biraz okumanız yeterlidir, çok zor değil ayrıca her zaman 
+	<a href="news:comp.protocols.time.ntp">comp.protocols.time.ntp haber gurubuna</a> 
+	başvurabilirsiniz.)</p>
+	
+	<p class="thanks">Size gönüllü olduğunuz, zaman ayırdığınız ve sunucunuzu ağımıza eklediğiniz 
+	için çok teşekkür ederiz.</p>
+</div>
