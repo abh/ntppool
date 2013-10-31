@@ -62,6 +62,8 @@ msgstr "Administradors de servidors (i usuaris) que volen estar més involucrat 
 msgid  "development_list_description"
 msgstr "Discussions més tècniques (i pragmàtiques) sobre el desenvolupament en curs del <a href=\"%1\">ntp pool code</a> i <a href=\"%2\">pgeodns</a> es fan en la llista <i>timekeepers-dev</i>."
 
+msgid  "irc_channel_description"
+msgstr "Hi ha un canal d'IRC %2 per administradors de servidors i usuaris a %1."
 
 # tpl/server.html
 msgid  "Back to the front page"
