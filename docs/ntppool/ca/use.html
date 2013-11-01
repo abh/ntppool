@@ -4,7 +4,7 @@
 	<h3><a name="use"></a>Com faig servir pool.ntp.org?</h3>
 	
 	<p>
-	Si només voleu sincronitzer el rellotge del vostre ordinador amb la xarxa,
+	Si només voleu sincronitzar el rellotge del vostre ordinador amb la xarxa,
 	el fitxer de configuració (per al programa ntpd de la
 	<a href="http://www.ntp.org">distribució ntp.org</a> a tots els sistemes operatius -
 	<b>Linux, *BSD, Windows i fins i tot alguns sistemes més exòtics</b>) és
@@ -19,8 +19,8 @@ server 1.pool.ntp.org
 server 2.pool.ntp.org
 server 3.pool.ntp.org</pre>
 	<p>
-	Els noms 0, 1, 2 i 3.pool.ntp.org apunten a un conjunt aleatori que canviará cada
-	hora. Assegureu-vos de que el rellotje del vostre ordinador està ajustat
+	Els noms 0, 1, 2 i 3.pool.ntp.org apunten a un conjunt aleatori que canviarà cada
+	hora. Assegureu-vos de que el rellotge del vostre ordinador està ajustat
 	aproximadament (a uns pocs minuts de la hora 'real') - podeu fer servir
 	<tt>ntpdate pool.ntp.org</tt> o senzillament utilitzar el comando <tt>date</tt>
 	i ajustar així el rellotje segons el rellotge de polsera. Arranqueu ntpd i
@@ -36,9 +36,9 @@ avbidder:~$ ntpq -p
 -129.132.57.95   131.188.3.222    3 u  766 1024  377   22.302   -2.928   0.508
 </pre> 
 	<p>
-	L'adreça IP serà diferent, ya que haureu obtingut un servidor de temps aleatori.
+	L'adreça IP serà diferent, ja que haureu obtingut un servidor de temps aleatori.
 	El tema és que una de les línies comenci amb un asterisc (<tt>*</tt>). Això
-	vol dir que el vostre ordinador rep l'hora des de l'internet - no us
+	vol dir que el vostre ordinador rep l'hora des de l'Internet - no us
 	n'haureu d'amoïnar mai més!
 	</p>
 	<p>
@@ -51,7 +51,7 @@ avbidder:~$ ntpq -p
 	o <a href="/zone/asia">asia</a>.pool.ntp.org), i resultats encara millors,
 	si feu servir les zones de països (com ara ch.pool.ntp.org a Suïssa) -
 	per a totes aquestes zones altre cop podeu fer servir els prefixos 0, 1
-	o 2, com ara 0.ch.pool.ntp.org. Però tingue en compte que és possible que
+	o 2, com ara 0.ch.pool.ntp.org. Però tingueu en compte que és possible que
 	la zona de país no existeixi per al vostre país, o que només contingui un
 	o dos servidors. Si coneixeu servidors de temps que són realment a prop
 	(segons distància a la xarxa, mesurada amb <tt>traceroute</tt> o <tt>ping</tt>),
@@ -90,33 +90,33 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
 </div>
 
 <div class="block">
-	<h3>Avisos adicionals</h3>
-	<p><span class="hook">Si teniu una adreça IP estàtica i una connexió a internet raonable
+	<h3>Avisos addicionals</h3>
+	<p><span class="hook">Si teniu una adreça IP estàtica i una connexió a Internet raonable
 	(amplada de banda no és tan important, però hauria de ser estable i no massa carregada),
 	sisplau penseu amb donar el vostre servidor al pool de servidors. No us costarà més
-	d'uns centenars de bytes per segon, but ajudaràs el projecte a sobreviure. Sisplau,
+	d'uns centenars de bytes per segon, però ajudaràs el projecte a sobreviure. Sisplau,
 	llegiu <a href="/join.html">la pàgina sobre com unir-s'hi</a> per obtenir-ne més informació.
 	</p>
 	
-	<p><span class="hook">Si el vostre proveïdor d'accès a internet té un servidor de temps</span> o si
+	<p><span class="hook">Si el vostre proveïdor d'accés a Internet té un servidor de temps</span> o si
 	coneixeu un bon servidor de temps a prop vostre, deuríeu fer servir aquest en comptes d'aquesta llista
 	- així probablement obtindràs millors resultats i gastaràs menys recursos de la xarxa. Si coneixeu
 	només un servidor, naturalment pots fer servir aquest i dos de la llista de pool.ntp.org.</p>
 	
 	<p><span class="hook">En alguns casos pot passar que us assignen el mateix servidor dues vegades -
-	reinicant el vostre servidor ntp normalment solucioneu aquest problema. Si utilitzeu una zona
-	de país, tingue en compte que la causa pot ser que només hi ha un servidor de temps en
+	reiniciant el vostre servidor ntp normalment solucioneu aquest problema. Si utilitzeu una zona
+	de país, tingueu en compte que la causa pot ser que només hi ha un servidor de temps en
 	aquesta zona (en aquest projecte) - en aquest cas seria millor fer servir la zona de continent.
 	Pots <a href="/zone">navegar per les zones</a> per mirar quants servidors hi ha a cada zona.
 	
-	<p><span class="hook">Sigueu amable</span>. Molts servidors els mantenen voluntaris i gairebé
+	<p><span class="hook">Sigueu amables</span>. Molts servidors els mantenen voluntaris i gairebé
 	sempre els servidors són servidors d'arxius o d'email o de web que de pas també executen ntp.
 	Per tant no feu servir més de quatre servidors a la vostre configuració i no feu jocs bruts
 	amb <tt>burst</tt> o <tt>minpoll</tt> - tot el que guanyaràs serà una quantitat de feina augmentada
     per al servidor d'algun voluntari.
 	
 	<p><span class="hook">Assegureu-vos de que la <i>configuració del fus horari</i> del vostre
-	orginador sigui correcte</span>. L'ntp mateix no fa res al respecte, internament només fa servir UTC.</p>
+	ordinador sigui correcte</span>. L'ntp mateix no fa res al respecte, internament només fa servir UTC.</p>
 	
 	<p><span class="hook">Si sincronitzeu una xarxa a pool.ntp.org</span>, sisplau establiu un dels
 	vostres ordinadors com a servidor de temps i sincronitzeu-n'hi els altres.
@@ -124,6 +124,6 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
 	<a href="news:comp.protocols.time.ntp">comp.protocols.time.ntp</a> a la vostra
 	disposició.)</p>
 	
-	<p class="thanks">M'agradaría donar les gràcies a la gent que dóna el seu temps
+	<p class="thanks">M'agradaria donar les gràcies a la gent que dóna el seu temps
 	i els seus servidors de temps a aquesta xarxa.</p>
 </div>
