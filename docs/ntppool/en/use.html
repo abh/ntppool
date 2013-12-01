@@ -41,20 +41,20 @@ avbidder:~$ ntpq -p
 	- you'll never have to worry about it again!
 	</p>
 	<p>
-	As <tt>pool.ntp.org</tt> will assign you timeservers from all over the
-	world, time quality will not be ideal.  You get a bit better result if you use
-	the <a href="/zone/@">continental zones</a> (For example
+	Looking up <code>pool.ntp.org</code> (or <code>0.pool.ntp.org</code>,
+	<code>1.pool.ntp.org</code>, etc) will usually return IP addresses for servers
+	in or close to your country. For most users this will give the best results.
+	</p>
+
+	<p>You can also use the <a href="/zone/@">continental zones</a> (For example
 	<a href="/zone/europe">europe</a>,
 	<a href="/zone/north-america">north-america</a>,
 	<a href="/zone/oceania">oceania</a>
 	or <a href="/zone/asia">asia</a>.pool.ntp.org),
-	and even better time if you use the country zone (like
+	and a country zone (like
 	ch.pool.ntp.org in Switzerland) - for all these zones, you can again use the 0,
 	1 or 2 prefixes, like 0.ch.pool.ntp.org.  Note, however, that the country zone
 	might not exist for your country, or might contain only one or two timeservers.
-	If you know timeservers that are really close to you (measured by network
-	distance, with <tt>traceroute</tt> or <tt>ping</tt>), time probably will be
-	even better.
 	</p>
 	<p>
 	If you're using <b>a recent Windows version</b>, you can use the ntp
