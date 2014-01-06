@@ -7,7 +7,7 @@ use Net::IP ();
 use Combust::Config;
 
 use POSIX qw();
-$ENV{TZ} = 'UTC';   
+$ENV{TZ} = 'UTC';
 POSIX::tzset();
 
 my $config = Combust::Config->new;
@@ -15,7 +15,7 @@ my $config = Combust::Config->new;
 sub active_score {
     return 10
 };
- 
+
 sub insert {
     my $self = shift;
 
@@ -38,7 +38,7 @@ sub setup_server {
     $self->score_raw($start_score);
 
     my $monitors = NP::Model->monitor->get_objects
-      ( query => [ ip_version => $self->ip_version ] 
+      ( query => [ ip_version => $self->ip_version ]
       );
 
     for my $monitor (@$monitors) {

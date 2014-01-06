@@ -56,7 +56,7 @@ Zones:
 <a href="#netspeed">Net speed</a>:
 <span id="netspeed_[% server.id %]">[% server.netspeed_human %]
 </span>
- | 
+ |
 <select name="netspeed" onchange="NP.update_netspeed('[% server.id %]', this.value); return false;">
 <option value="">Set connection speed</option>
 [%  speeds = [384, 512, 768, 1000, 1500, 3000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000];

@@ -1,12 +1,12 @@
 #1
 select now();
 #2
-alter table server_notes 
+alter table server_notes
   drop foreign key `server_notes_ibfk_1`;
 
 alter table server_notes
   change server server_id int unsigned not null,
-  add CONSTRAINT `server_notes_ibfk_1` FOREIGN KEY (`server_id`) REFERENCES `servers` (`id`) ON DELETE CASCADE; 
+  add CONSTRAINT `server_notes_ibfk_1` FOREIGN KEY (`server_id`) REFERENCES `servers` (`id`) ON DELETE CASCADE;
 
 #3
 
@@ -21,7 +21,7 @@ alter table servers
 
 #4
 
-alter table locations 
+alter table locations
    drop foreign key locations_server,
    drop foreign key locations_zone;
 
@@ -32,18 +32,18 @@ alter table locations
    add CONSTRAINT `locations_zone` FOREIGN KEY (`zone_id`) REFERENCES `zones` (`id`) ON DELETE CASCADE;
 
 #5
-alter table log_scores 
+alter table log_scores
    drop foreign key log_scores_server;
 
-alter table log_scores 
+alter table log_scores
    change server server_id int unsigned not null,
    add CONSTRAINT `log_scores_server` FOREIGN KEY (`server_id`) REFERENCES `servers` (`id`) ON DELETE CASCADE;
 
 #6
-alter table scores 
+alter table scores
    drop foreign key scores_server;
 
-alter table scores 
+alter table scores
    change server server_id int unsigned not null,
    add CONSTRAINT `scores_server` FOREIGN KEY (`server_id`) REFERENCES `servers` (`id`) ON DELETE CASCADE
 
@@ -75,10 +75,10 @@ alter table user_privileges
    add constraint `user_privileges_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 #10
-alter table server_urls 
+alter table server_urls
    drop foreign key server_urls_server;
 
-alter table server_urls 
+alter table server_urls
    change server server_id int unsigned not null,
    add CONSTRAINT `server_urls_server` FOREIGN KEY (`server_id`) REFERENCES `servers` (`id`) ON DELETE CASCADE
 
@@ -173,7 +173,7 @@ alter table servers
    change ip `ip` varchar(15) NOT NULL,
    change in_pool `in_pool` tinyint(3) unsigned NOT NULL default '0',
    change in_server_list `in_server_list` tinyint(3) unsigned NOT NULL default '0';
-alter table zone_server_counts 
+alter table zone_server_counts
    change date `date` date NOT NULL,
    change count_active `count_active` mediumint(8) unsigned NOT NULL,
    change count_registered `count_registered` mediumint(8) unsigned NOT NULL;
@@ -197,14 +197,14 @@ CREATE TABLE vendor_zones (
     CONSTRAINT `vendor_zones_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE=INNODB;
 
-alter table logs 
+alter table logs
   modify server_id      int unsigned null,
   add vendor_zone_id int unsigned null after user_id,
   add CONSTRAINT `logs_vendor_zone_id` FOREIGN KEY (`vendor_zone_id`)
     REFERENCES `vendor_zones` (`id`) ON DELETE CASCADE;
 
 #29
-alter table vendor_zones 
+alter table vendor_zones
    change application request_information text null,
    add vendor_cluster tinyint unsigned not null default 0 after user_id,
    add contact_information text null after description;
@@ -254,11 +254,11 @@ alter table servers
   modify created_on datetime not null,
   modify `user_id` int(10) unsigned NOT NULL;
 
-alter table server_alerts 
+alter table server_alerts
    modify first_email_time datetime not null,
    modify `last_score` double NOT NULL;
 
-alter table zone_server_counts 
+alter table zone_server_counts
    modify `zone_id` int(10) unsigned NOT NULL,
    modify `date` date not null,
    modify `count_registered` mediumint(8) unsigned NOT NULL,

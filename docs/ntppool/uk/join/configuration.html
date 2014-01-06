@@ -3,7 +3,7 @@
 <h3>Рекомендації по налаштуванню серверів, що додаються до пулу</h3>
 
 <p>
-Багато корисної інформації містить <a href="http://support.ntp.org/bin/view/Support/WebHome">розділ 
+Багато корисної інформації містить <a href="http://support.ntp.org/bin/view/Support/WebHome">розділ
 підтримки</a> on <a href="http://support.ntp.org/">support.ntp.org</a>.
 </p>
 
@@ -13,25 +13,35 @@
 
 <p>
 Конференція <a
-href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a>, 
+href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a>,
 найкраще місце, де можна отримати допомогу з ntpd.
 </p>
 
 <p>
-Нижче приведено декілька важливих порад, які потрібно врахувати при додаванні 
+Нижче приведено декілька важливих порад, які потрібно врахувати при додаванні
 вашого серверу в NTP пул.
 </p>
+
+<h4 id="management-queries">Management queries</h4>
+
+<p>Make the default configuration be to not allow "management queries". For ntpd this will be adding the "noquery" option to the default "restrict" lines, for example:</p>
+
+[% INCLUDE "join/configuration/restrict-default.html" %]
+
+<p>To allow commands like "ntpq -c pe" to work from localhost you can add:</p>
+
+[% INCLUDE "join/configuration/restrict-localhost.html" %]
 
 <h4>Використовуйте близько 5-ти серверів</h4>
 
 <p>
-Для правильної роботи ntpd має використовувати як найменше 3 сервери 
-(існує прислів'я: "Той у кого є годинник, завжди знає котра година. Той, 
+Для правильної роботи ntpd має використовувати як найменше 3 сервери
+(існує прислів'я: "Той у кого є годинник, завжди знає котра година. Той,
 у кого два годинника, ніколи не знає точного часу.")
 </p>
 
 <p>
-Для серверів пулу ми рекомендуємо використовувати не менше 4-х і 
+Для серверів пулу ми рекомендуємо використовувати не менше 4-х і
 не більше 7-ми серверів.
 </p>
 
@@ -39,12 +49,12 @@ href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.tim
 <h4>Не використовуйте сервери *.pool.ntp.org</h4>
 
 <p>
-Для забезпечення ефективної роботи пулу не використовуйте в налаштуваннях 
+Для забезпечення ефективної роботи пулу не використовуйте в налаштуваннях
 аліаси *.pool.ntp.org в якості джерел точного часу на серверах, що входять в пул.
 </p>
 
 <p>
-Для надійної роботи пулу обирайте вручну точні та близькі (за мережевою дистанцією) сервери 
+Для надійної роботи пулу обирайте вручну точні та близькі (за мережевою дистанцією) сервери
 із списків на <a
 href="http://support.ntp.org/bin/view/Servers/WebHome">wiki NTP.org
 </a>.
@@ -54,14 +64,14 @@ href="http://support.ntp.org/bin/view/Servers/WebHome">wiki NTP.org
 <h4>Використовуйте стандартний ntpd</h4>
 
 <p>
-Ми не заперечуємо проти використання іншого програмного забезпечення, 
-але найбільша кількість скарг «воно не працює» припадає на різні 
+Ми не заперечуємо проти використання іншого програмного забезпечення,
+але найбільша кількість скарг «воно не працює» припадає на різні
 альтернативи ntpd.
 </p>
 
 <p>
-Ви можете <i>використовувати</i> пул за допомогою будь-якої програми NTP, але якщо ви збираєтесь 
-приймати в ньому участь, ми рекомендуємо обрати 
+Ви можете <i>використовувати</i> пул за допомогою будь-якої програми NTP, але якщо ви збираєтесь
+приймати в ньому участь, ми рекомендуємо обрати
 <a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
 </p>
 
