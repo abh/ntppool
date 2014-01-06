@@ -12,6 +12,10 @@ use Sys::Hostname qw(hostname);
 use Email::Date qw();
 use JSON::XS qw(encode_json);
 use Net::DNS;
+use LWP::UserAgent qw();
+
+my $config     = Combust::Config->new;
+my $config_ntp = $config->site->{ntppool};
 
 sub init {
     my $self = shift;
@@ -333,15 +337,38 @@ sub handle_update {
       if $self->request->uri =~ m!^/manage/profile/update!;
     return $self->handle_update_netspeed
       if $self->request->uri =~ m!^/manage/server/update/netspeed!;
+    return $self->handle_mode7_check
+      if $self->request->uri =~ m!^/manage/server/update/mode7check!;
 
     # deletion and non-js netspeed
     if ($self->request->uri =~ m!^/manage/server/update/server!) {
+        return $self->handle_mode7_check if $self->req_param('mode7check');
         return $self->handle_update_netspeed if $self->req_param('Update');
         if ($self->req_param('Delete')) {
             return $self->handle_delete;
         }
     }
     return NOT_FOUND;
+}
+
+sub handle_mode7_check {
+    my $self = shift;
+    my $server = $self->req_server or return NOT_FOUND;
+    my $ntpcheck = $config_ntp->{ntpcheck};
+    my $ua = LWP::UserAgent->new;
+    my $url = URI->new("$ntpcheck");
+    $url->path("/check/" . $server->ip);
+    $url->query("queue=1");
+    warn "URL: $url";
+    $ua->post($url);
+    return $self->redirect('/manage/servers') if $self->req_param('noscript');
+
+    my $return = {
+        queued => 1,
+    };
+
+    return OK, encode_json($return);
+
 }
 
 sub handle_update_netspeed {

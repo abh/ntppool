@@ -1,4 +1,4 @@
-/* Copyright 2006-2012 Ask Bjørn Hansen, Develooper LLC */
+/* Copyright 2006-2013 Ask Bjørn Hansen, Develooper LLC */
 /*jshint jquery:true browser:true */
 
 if (!NP) var NP = {};
@@ -19,6 +19,19 @@ if (!NP) var NP = {};
         jQuery.getJSON( '/manage/server/update/netspeed', pars,
             function(data, textStatus) {
                 NP.netspeed_updated(server_id, data);
+            }
+        );
+    };
+
+    NP.recheck_mode7 = function(server_id) {
+        console.log("recheck mode7");
+        var span = $('#mode7check_' + server_id );
+        var pars = { "server": server_id };
+        span.fadeOut(50);
+        jQuery.getJSON( '/manage/server/update/mode7check', pars,
+            function(data, textStatus) {
+                span.fadeIn(100);
+                span.html("Check has been scheduled<br>");
             }
         );
     };

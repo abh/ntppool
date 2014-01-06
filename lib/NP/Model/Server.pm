@@ -146,6 +146,19 @@ sub alert {
     return NP::Model->server_alert->fetch_or_create(server => $self);
 }
 
+sub note {
+    my ($self, $name) = @_;
+    my $note = NP::Model->server_note->fetch_or_create(server => $self->id, name => $name);
+    return $note;
+}
+
+sub mode7check {
+    my $self = shift;
+    my $mode7 = $self->note('mode7check');
+    return unless $mode7->id;
+    return $mode7;
+}
+
 sub log_scores_csv {
     my ($self, $options) = @_;
     my $history = $self->history($options);

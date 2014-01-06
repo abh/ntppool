@@ -453,11 +453,12 @@ __PACKAGE__->meta->setup(
   table   => 'server_notes',
 
   columns => [
-    id         => { type => 'serial', not_null => 1 },
-    server_id  => { type => 'integer', not_null => 1 },
-    name       => { type => 'varchar', default => '', length => 255, not_null => 1 },
-    note       => { type => 'text', length => 65535, not_null => 1 },
-    created_on => { type => 'datetime', default => 'now', not_null => 1 },
+    id          => { type => 'serial', not_null => 1 },
+    server_id   => { type => 'integer', not_null => 1 },
+    name        => { type => 'varchar', default => '', length => 255, not_null => 1 },
+    note        => { type => 'text', length => 65535, not_null => 1 },
+    created_on  => { type => 'datetime', default => 'now', not_null => 1 },
+    modified_on => { type => 'timestamp', not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],

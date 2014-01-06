@@ -20,6 +20,7 @@ sub set {
     my $note = NP::Model->server_note->fetch_or_create( server_id => $server->id, name => $name );
 
     $note->note($text);
+    $note->modified_on('now');
     $note->save;
 
     return { ok => 1 };

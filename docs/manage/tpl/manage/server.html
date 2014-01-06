@@ -12,6 +12,36 @@ on [% server.deletion_on.strftime("%B %d, %Y") %].
 Current score: <b>[% server.score %]</b><br />
 [% IF server.stratum %]Stratum: <b>[% server.stratum %]</b><br/>[% END %]
 
+
+[% IF (mode7 = server.mode7check);
+    SET recheck = 0;
+	IF mode7.is_recent;
+	  SET recheck = 1;
+	END;
+ %]
+
+<span id="mode7check_[% server.id %]">
+	[% IF mode7.note != ''; recheck = 1; %]
+		<small><span class="label label-important">Warning</span></small>
+		Your server appears to allow "management requests", please review
+		the <a href="[% combust.www_url("/join/configuration.html#management-queries") %]">
+		recommended configuration</a>.
+
+		(Last checked [% mode7.age_human %] ago).
+	[% ELSIF recheck %]
+		<small><span class="label label-success">Ok!</span></small>
+		Your server does not appear to respond to "management requests".
+	[% END %]
+
+
+[% IF recheck %]
+<input type="submit" name="mode7check" value="Recheck"
+	onclick="NP.recheck_mode7('[% server.id %]'); return false;">
+[% END %]
+<br>
+</span>
+[% END %]
+
 Zones:
 <span id="zones_[% server.id %]">
 [% FOR zone = server.zones_display %]

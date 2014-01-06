@@ -23,6 +23,16 @@ Sotto ci sono alcune cose di particolare importanza se stai per unirti
 al Pool NTP con il tuo server.
 </p>
 
+<h4 id="management-queries">Management queries</h4>
+
+<p>Make the default configuration be to not allow "management queries". For ntpd this will be adding the "noquery" option to the default "restrict" lines, for example:</p>
+
+[% INCLUDE "join/configuration/restrict-default.html" %]
+
+<p>To allow commands like "ntpq -c pe" to work from localhost you can add:</p>
+
+[% INCLUDE "join/configuration/restrict-localhost.html" %]
+
 <h4>Impostare circa 5 server</h4>
 
 <p>

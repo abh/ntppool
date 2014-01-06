@@ -23,6 +23,16 @@ href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.tim
 다음은 서버를 NTP 풀에 합류시키려고 할 때에만 중요한 사항입니다.
 </p>
 
+<h4 id="management-queries">Management queries</h4>
+
+<p>Make the default configuration be to not allow "management queries". For ntpd this will be adding the "noquery" option to the default "restrict" lines, for example:</p>
+
+[% INCLUDE "join/configuration/restrict-default.html" %]
+
+<p>To allow commands like "ntpq -c pe" to work from localhost you can add:</p>
+
+[% INCLUDE "join/configuration/restrict-localhost.html" %]
+
 <h4>약 5개의 서버를 설정</h4>
 
 <p>
