@@ -28,17 +28,18 @@ Current score: <b>[% server.score %]</b><br />
 		recommended configuration</a>.
 
 		(Last checked [% mode7.age_human %] ago).
+		<br>
 	[% ELSIF recheck %]
 		<small><span class="label label-success">Ok!</span></small>
 		Your server does not appear to respond to "management requests".
+		<br>
 	[% END %]
-
 
 [% IF recheck %]
 <input type="submit" name="mode7check" value="Recheck"
 	onclick="NP.recheck_mode7('[% server.id %]'); return false;">
-[% END %]
 <br>
+[% END %]
 </span>
 [% END %]
 
