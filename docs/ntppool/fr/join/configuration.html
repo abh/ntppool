@@ -1,0 +1,70 @@
+<div class="block">
+
+<h3>Configuration serveur recommandé pour rejoindre pool.ntp.org</h3>
+
+<p>
+La <a href="http://support.ntp.org/bin/view/Support/WebHome">Section support</a> sur <a href="http://support.ntp.org/">support.ntp.org</a> a beaucoup d'informations utiles.
+</p>
+
+<p>
+Si vous voulez juste <i>utiliser</i> pool.ntp.org, voir l'<a href="/use.html">utilisation de pool.ntp.org</a> .
+</p>
+
+<p>
+Le <a
+href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a> forum est le meilleur endroit pour obtenir de l'aide avec le logiciel de ntpd.
+</p>
+
+<p>
+Voici quelques points d'importance particulière si vous allez rejoindre le pool.ntp.org avec votre serveur.
+</p>
+
+<h4 id="management-queries">Requêtes de gestion</h4>
+
+<p>Par défaut, ne pas autoriser "les requêtes de gestion". Pour ntpd ce sera l'ajout de "noquery" dans l'option par défaut "restrict", par exemple:</p>
+
+[% INCLUDE "join/configuration/restrict-default.html" %]
+
+<p>Pour permettre à des commandes comme "ntpq-c pe" de fonctionner sur votre propre machine vous pouvez ajouter:</p>
+
+[% INCLUDE "join/configuration/restrict-localhost.html" %]
+
+<h4>Configuration sur 5 serveurs</h4>
+
+<p>
+Pour fonctionner correctement ntpd a besoin de communiquer avec au moins 3 serveurs ("Un homme avec une montre sait quelle heure il est. Un homme avec deux montres n'est jamais sûr").
+</p>
+
+<p>
+Pour les serveurs de pool.ntp.org, nous vous recommandons de configurer au moins 4 et pas plus de 7 serveurs.
+</p>
+
+
+<h4>Ne pas utiliser les serveurs *.pool.ntp.org</h4>
+
+<p>
+Ironie du sort pour s'assurer que le service de la piscine est le meilleur (il peut l'etre) vous ne devez pas utiliser les aliasses de *.pool.ntp.org dans voter fichier de configuration quand vous allez ajouter votre serveur à pool.ntp.org.
+</p>
+
+<p>
+Pour la solidité de pool.ntp.org, il est plus sain si tous les acteurs de pool.ntp.org on un bon serveur de temps local. Le wiki NTP.org a une <a href="http://support.ntp.org/bin/view/Servers/WebHome">liste de serveurs publics</a>.
+</p>
+
+
+<h4>Utilisez le NTPD standard</h4>
+
+<p>
+Nous sommes tous pour la diversité de logiciel, mais un pourcentage important des questions "Ça ne marche pas" qui arrivent sont pour un autre logiciel que ntpd.
+</p>
+
+<p>
+Vous pouvez <i>utiliser</i> pool.ntp.org avec tout programme qui parle le NTP, mais si vous venez rejoindre pool.ntp.org, nous vous recommandons d'utiliser <a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
+</p>
+
+
+<h4>Ne pas utiliser le pilote d'horloge locale</h4>
+
+<p>Les serveurs dans le pool.ntp.org ne devraient pas avoir le pilote de l'horloge locale configuré.</p>
+
+
+</div>
