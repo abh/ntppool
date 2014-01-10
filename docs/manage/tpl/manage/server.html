@@ -22,15 +22,15 @@ Current score: <b>[% server.score %]</b><br />
 
 <span id="mode7check_[% server.id %]">
 	[% IF mode7.note != ''; recheck = 1; %]
-		<small><span class="label label-important">Warning</span></small>
-		Your server appears to allow "management requests", please review
+		<small><span class="label label-important">Warning</span></small><br>
+		Your server appears to allow "management requests",<br>please review
 		the <a href="[% combust.www_url("/join/configuration.html#management-queries") %]">
-		recommended configuration</a>.
+		recommended configuration</a>.<br>
 
 		(Last checked [% mode7.age_human %] ago).
 		<br>
 	[% ELSIF recheck %]
-		<small><span class="label label-success">Ok!</span></small>
+		<small><span class="label label-success">Ok!</span></small><br>
 		Your server does not appear to respond to "management requests".
 		<br>
 	[% END %]
