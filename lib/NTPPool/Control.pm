@@ -35,6 +35,7 @@ our %valid_languages = (
     ro => {name => "Română", testing => 1},
     ru => {name => "русский",},
     sv => {name => "Svenska"},
+    tr => {name => "Türkçe"},
     uk => {name => "Українська"},
 );
 
