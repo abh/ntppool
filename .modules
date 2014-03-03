@@ -8,6 +8,7 @@ DBD::mysql
 Data::Dumper
 Data::Transformer
 DateTime::Format::Duration
+DateTime::Format::Human::Duration
 Digest::SHA
 Email::Date
 Email::Send

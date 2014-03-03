@@ -74,7 +74,7 @@ sub MY::postamble {
 .PHONY: testcover
 
 templates:
-	(cd docs/manage/tpl/client; hulk *.html > ../../../shared/static/js/admin-templates.js)
+	(./node_modules/hogan.js/bin/hulk docs/manage/tpl/client/*.html > docs/shared/static/js/admin-templates.js)
 
 testcover:
 	cover -delete
