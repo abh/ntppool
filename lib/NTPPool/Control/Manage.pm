@@ -140,20 +140,31 @@ sub handle_add {
         $server->{zones} = \@zones;
     }
 
-    $self->tpl_param(servers => \@servers);
-
     my $allow_submit = grep { !$_->{error} } @servers;
     my $data_missing = grep { $_->{data_missing} } @servers;
+
+    $self->tpl_param(servers => \@servers);
 
     $self->tpl_param('allow_submit' => $allow_submit);
 
     if ($self->req_param('yes') and $allow_submit and !$data_missing) {
         my $s;
+        my @added;
         for my $server (@servers) {
             unless ($server->{error} or $server->{listed}) {
                 $s = $self->_add_server($server);
+                push @added, $server;
             }
         }
+        $self->tpl_param(servers => \@added);
+        my $msg = $self->evaluate_template('tpl/manage/add_email.txt');
+        my $email =
+          Email::Simple->new(ref $msg ? $$msg : $msg);  # until we decide what eval_tpl should return :)
+        $email->header_set('Message-ID' => join("-", int(rand(1000)), $$, time) . '@' . hostname);
+        $email->header_set('Date' => Email::Date::format_date);
+        my $return = send SMTP => $email, 'localhost';
+        warn Data::Dumper->Dump([\$msg, \$email, \$return], [qw(msg email return)]);
+
         return $self->redirect('/manage/servers#s-' . ($s && $s->ip));
     }
 
@@ -246,14 +257,6 @@ sub _add_server {
     $s->save(cascade => 1);
 
     $db->commit;
-
-    my $msg = $self->evaluate_template('tpl/manage/add_email.txt');
-    my $email =
-      Email::Simple->new(ref $msg ? $$msg : $msg);  # until we decide what eval_tpl should return :)
-    $email->header_set('Message-ID' => join("-", int(rand(1000)), $$, time) . '@' . hostname);
-    $email->header_set('Date' => Email::Date::format_date);
-    my $return = send SMTP => $email, 'localhost';
-    warn Data::Dumper->Dump([\$msg, \$email, \$return], [qw(msg email return)]);
 
     return $s;
 }

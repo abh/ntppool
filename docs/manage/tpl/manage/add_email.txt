@@ -1,5 +1,6 @@
-[%- page.style='bare.html' %]To: ask@develooper.com
-From: ([% combust.user.username %]) [% combust.user.email %]
+[%- page.style='bare.html' %]To: ask@ntppool.org
+From: ask@ntppool.org
+Reply-To: ([% combust.user.username %]) [% combust.user.email %]
 Subject: New addition to the NTP Pool: [% servers.0.ip; servers.0.hostname ? " / " _ servers.0.hostname : "" %]
 
 [% combust.user.username %] added:
