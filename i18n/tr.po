@@ -31,6 +31,25 @@ msgstr "Tüm Havuz Sunucuları"
 msgid "Translations"
 msgstr "Çeviriler"
 
+# index.html
+msgid  "Introduction"
+msgstr "Önsöz"
+
+msgid  "Active Servers"
+msgstr "Aktif Sunucular"
+
+msgid  "Links"
+msgstr "Bağlantılar"
+
+msgid  "Terms of service"
+msgstr "Hizmet koşulları"
+
+msgid  "Subscribe in a reader"
+msgstr "Bir okuyucudan abone olun"
+
+msgid  "Older news"
+msgstr "Daha önceki haberler"
+
 # mailinglists.html
 msgid  "NTP Pool mailing lists"
 msgstr "NTP Havuz posta listeleri"
