@@ -34,6 +34,25 @@ msgstr "All Pool Servers"
 msgid "Translations"
 msgstr "Translations"
 
+# index.html
+msgid  "Introduction"
+msgstr "Introduction"
+
+msgid  "Active Servers"
+msgstr "Active Servers"
+
+msgid  "Links"
+msgstr "Links"
+
+msgid  "Terms of service"
+msgstr "Terms of service"
+
+msgid  "Subscribe in a reader"
+msgstr "Subscribe in a reader"
+
+msgid  "Older news"
+msgstr "Older news"
+
 # mailinglists.html
 msgid  "NTP Pool mailing lists"
 msgstr "NTP Pool mailing lists"
