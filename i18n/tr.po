@@ -21,6 +21,12 @@ msgstr "Kuzey Amerika"
 msgid "South America"
 msgstr "Güney Amerika"
 
+msgid "Europe"
+msgstr "Avrupa"
+
+msgid "Oceania"
+msgstr "Okyanusya"
+
 msgid "Global"
 msgstr "Genel"
 
