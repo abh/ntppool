@@ -1,10 +1,12 @@
-[%- page.style='bare.html' %]To: ntppool-vendors@develooper.com
+[%- page.style='bare.html' %]To: vendors@rt.ntppool.org
 From: ([% combust.user.username %]) [% combust.user.email %]
 Subject: New vendor zone application: [% vz.zone_name %]
 
 [% combust.user.username %] requested the "[% vz.zone_name %]" zone for [% vz.organization_name %].
 
 [% combust.manage_url('/manage/vendor/zone', id = vz.id) %]
+
+Clients: [% vz.device_count %]
 
 Notes:
 

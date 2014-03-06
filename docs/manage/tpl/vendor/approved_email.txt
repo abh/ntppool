@@ -1,6 +1,6 @@
-[%- page.style='bare.html' %]From: (Ask Bjoern Hansen) ntppool-vendors@develooper.com
+[%- page.style='bare.html' %]From: (Ask Bjoern Hansen) vendors@ntppool.org
 To: ([% vz.user.username %]) [% vz.user.email %]
-Bcc: ask@develooper.com
+Bcc: ask@ntppool.org
 Subject: Vendor zone activated: [% vz.zone_name %]
 
 Hi [% vz.user.name %],
@@ -12,11 +12,10 @@ hostnames are below.  They will be active within a few hours.
    [% i %].[% vz.zone_name %].pool.ntp.org
 [% END %]
 
-
-Please subscribe to the (announce-only, very low traffic)
-ntppool-vendors list at Google Groups.  We recommend everyone in your
-organization involved with this is subscribed there.
-   http://groups.google.com/group/ntppool-vendors
+Please subscribe to the (announce-only, very low traffic - typically a
+few mails a year or less) vendor information mailing list. We
+recommend everyone in your organization involved with project are
+subscribed: http://eepurl.com/PN-3f
 
 If you are a commercial organization/product/company consider
 contributing back to the pool so we can keep the service sustainable
@@ -30,5 +29,5 @@ to offer this service to you.
 
 Kind regards,
 
-Ask Bjoern Hansen
-(ask@develooper.com)
+Ask Bjørn Hansen
+(ask@ntppool.org)
