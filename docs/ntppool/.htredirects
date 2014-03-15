@@ -2,6 +2,7 @@
 
 /vendor.html  /vendors.html  perm
 /vendors?/?   /vendors.html  perm
+/vendors/list http://eepurl.com/PN-3f
 
 /ordb.html /
 /rsbl.html /
