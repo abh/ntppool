@@ -1,0 +1,90 @@
+<div class="block">
+
+<h3>Konfigurační doporučení pro servery připojované do klastru</h3>
+
+<p>
+V <a href="http://support.ntp.org/bin/view/Support/WebHome">kapitole
+Support</a> na webu <a href="http://support.ntp.org/">support.ntp.org</a>
+najdete mnoho užitečných informací.
+</p>
+
+<p>
+Chcete-li klastr jen <i>používat</i>, podívejte se na stránku
+<a href="/use.html">o používání</a>.
+</p>
+
+<p>
+Konference <a
+href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a>
+je nejlepší misto, kde vám mohou pomoci se software ntpd.
+</p>
+
+<p>
+Níže jsou uvedeny některé důležité skutečnosti, chcete-li připojit váš server
+do NTP Poolu.
+</p>
+
+<h4 id="management-queries">Administrační dotazy</h4>
+
+<p>Upravte výchozí konfiguraci tak, aby nepovolovala "administrační dotazy".
+V případě ntpd to znamená přidat parametr "noquery" k výchozím řádkům s
+direktivami "restrict", například:</p>
+
+[% INCLUDE "join/configuration/restrict-default.html" %]
+
+<p>Aby příkazy jako "ntpq -c pe" fungovaly z vašeho serveru lokálně, můžete
+přidat:</p>
+
+[% INCLUDE "join/configuration/restrict-localhost.html" %]
+
+<h4>Nakonfigurujte asi 5 serverů</h4>
+
+<p>
+Aby ntpd pracoval správně, potřebuje komunikovat s alespoň 3 dalšími servery
+("Člověk s hodinkami ví jistě, kolik je hodin. Člověk s dvěma hodinkami si
+nemůže být nikdy jist").
+</p>
+
+<p>
+Doporučujeme v konfiguraci nastavit ne méně než 4 a ne více než 7 serverů.
+</p>
+
+
+<h4>Nepoužívejte servery *.pool.ntp.org</h4>
+
+<p>
+Je ironií, že pro zajištění co nejlepší kvality služby je nejlepší, abyste
+nepoužívali aliasy *.pool.ntp.org ve své konfiguraci, když chcete svůj server
+přidat do klastru.
+</p>
+
+<p>
+K větší robustnosti klastru přispívá, pokud si všichni provozovatelé
+jednotlivých serverů "sami zvolí" dobré a blízké (z pohledu sítě) časové
+servery. Wiki NTP.org obsahuje
+<a href="http://support.ntp.org/bin/view/Servers/WebHome">seznam veřejných
+serverů</a>.
+</p>
+
+
+<h4>Používejte standardní ntpd</h4>
+
+<p>
+Všichni jsme pro různost software, ale významný podíl otázek typu "ono to 
+nefunguje", které dostáváme se týkají jiného software než je ntpd.
+</p>
+
+<p>
+Klastr můžete <i>používat</i> s libovolným programem, který používá protokol
+NTP, ale pokud se chcete přidat ke klastru, doporučujeme vám použít 
+<a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
+</p>
+
+
+<h4>Nepoužívejte ovladače hodin LOCAL</h4>
+
+<p>Servery v klastru NTP Pool by neměly mít nakonfigurován ovladač hodin
+ LOCAL.</p>
+
+
+</div>
