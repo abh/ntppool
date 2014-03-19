@@ -88,7 +88,7 @@ msgid  "Current score: %1 (only servers with a score higher than %2 are used in 
 msgstr "Puntuació actual: %1 (només servidors amb una puntuació de %2 o més s'utilitzen en el pool)"
 
 msgid  "What do the graphs mean?"
-msgstr "Que volen dir els gràfics?"
+msgstr "Què volen dir els gràfics?"
 
 msgid  "CSV log"
 msgstr "Diari en format CSV"
@@ -107,7 +107,7 @@ msgid  "Information for vendors"
 msgstr "Informació per a venedors"
 
 msgid  "The mailing lists"
-msgstr "La llista de correu"
+msgstr "Les llistes de correu"
 
 msgid  "Additional links"
 msgstr "Enllaços adicionals"
