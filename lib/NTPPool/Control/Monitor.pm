@@ -108,6 +108,7 @@ sub upload {
             next;
         }
 
+	my $max_score;
         my $step;
         if (! $status->{stratum} or $status->{no_response}) {
             $step = -5;
@@ -116,6 +117,9 @@ sub upload {
             my $offset_abs = abs($status->{offset});
             if ($offset_abs > 3 or $status->{stratum} >= 8) {
                 $step = -4;
+		if ($offset_abs > 3) {
+		    $max_score = -20;
+		}
             }
             elsif ($offset_abs > 0.75) {
                 $step = -2;
@@ -132,7 +136,11 @@ sub upload {
         my $ts = DateTime->from_epoch( epoch => $status->{ts} );
 
         for my $obj ($server_score, $server) {
-            $obj->score_raw(($obj->score_raw * 0.95) + $step);
+	    my $new_score = ($obj->score_raw * 0.95) + $step;
+	    if (defined $max_score and $new_score > $max_score) {
+		$new_score = $max_score;
+	    }
+            $obj->score_raw($new_score);
             $obj->score_ts($ts);
             $obj->stratum($status->{stratum});
         }
