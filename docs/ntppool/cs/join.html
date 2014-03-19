@@ -1,0 +1,87 @@
+[% page.title = 'Přidejte se k NTP Poolu!' %]
+
+<div class="block">
+	<h3><a name="join">Jak se přidám k pool.ntp.org?</a></h3>
+	<p>
+	Nejprve vám děkujeme za zájem. Používání klastru enormně vzrostlo a jediný
+	způsob, jak můžeme umožnit všem účastníkům bezproblémové provozování všech
+	serverů v klastru, je zvětšovat počet zapojených serverů.
+	</p>
+	<p>
+	Váš počítač <b>musí mít statickou IP adresu</b> a trvalé připojení k
+	internetu. Je velmni důležité, aby se vaše IP adresa neměnila, nebo jen
+	velmi zřídka (řekněme jednou za rok a méně). Požadovaná kapacita připojení
+	je relativně malá. Každý klient pošle jen několik UDP paketů jednou za
+	několik málo minut až jednou za 20 minut.
+	</p>
+	<p>
+	Většina serverů dostane aktuálně přibližně 5-15 NTP paketů za sekundu
+	se špičkami několikrát denně v rozsahu 60-120 paketů za sekundu.
+	To zhruba odpovídá 10-15Kbit/sec se špičkami 50-120Kbit/sec. Projekt
+	soustavně získává další časové servery, takže zátěž každého serveru
+	by se již neměla dramaticky zvyšovat. Stručně řečeno, s největší
+	pravděpodobností potřebujete připojení o kapacitě nejméně 
+	384-512Kbit (příchozí i odchozí).
+	</p>
+	<p>
+	Zde je několik serverů s grafy provozu/zátěže:
+	[% i = 0; FOR server = combust.servers_with_urls; %]
+	   <a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
+	[% END %]
+	</p>
+	<p>
+	Servery, které se připojují by neměly mít <tt>pool.ntp.org</tt> nastaven
+	mezi svými nadřazenými servery, ale měly by mít nastaveny některé z 
+	<a href="http://support.ntp.org/bin/view/Servers/StratumTwoTimeServers">dobrých serverů</a>
+	manuálně (tyto servery <b>mohou</b> být zvoleny z klastru. Cílem je,
+	že jsou zvoleny staticky místo náhodného přiřazení při každém restartu
+	serveru. To pomůže při poskytování přijatelné kvality služby.)
+
+	Všimněte si, že není vyžadováno, aby váš server byl typu stratum 1 nebo 2
+	- vzhledem k tomu, že tento projekt je založen především na distribuci
+	zátěže, neexistuje důvod, proč by se nemohly připojit servery typu
+	stratum 3 nebo dokonce stratum 4.
+	</p>
+	<p>
+	Máme stránku popisující <a href="/join/configuration.html">doporučená
+	nastavení pro servery připojené v klastru</a>.
+	</p>
+	<p>Nakonec musíme zdůraznit, že připojení do klastru je <b>dlouhodobý
+	závazek</b>. Rádi vás opět z klastru vyřadíme, pokud se vaše podmínky
+	změní, ale s ohledem na způsob, jak ntp klienti pracují, <b>bude
+	trvat týdny, měsíce nebo i ROKY, než provoz opravdu úplně ustane</b>.
+	</p>
+	<p>
+	Je-li všechno bez problémů, přihlašte se na stránku
+	<a href="/manage">správy serverů</a> a požádejte o připojení vašeho
+	serveru. Máte-li problémy se systémem, napište na adresu <a
+	href="mailto:ask@develooper.com">ask@develooper.com</a>.
+	</p>
+	<p>
+	Žádáme vás také o přihlášení k odběru 
+	<a href="http://news.ntppool.org/atom.xml">novinek z blogu</a>
+	a snad také k odběru 
+	<a href="https://lists.ntp.org/listinfo/pool">e-mailové konference
+	klastru</a>.
+	</p>
+	<p>
+	Bylo by hezké (ale nikoli nezbytně nutné), kdybyste mohli přesměrovat
+	požadavky směřující na port 80 vašeho časového serveru na oficiální webové
+	stránky projektu na	<tt>http://www.pool.ntp.org</tt>. Používáte-li
+	Apache, můžete to udělat pomocí:
+	</p>
+
+        [% PROCESS tpl/join/virtual_host_example.html %]
+
+	<p>
+	To ale platí jen v případě, že provozujete webserver. Oficiální stránky
+	projektu mají vždy na začátku 'www' - ale někdy lidé jen napíší
+	<tt>pool.ntp.org</tt> a pak jsou překvapeni tím, že se dostanou na náhodně
+	zvolenou stránku.
+	</p>
+	<p>
+	Jakmile je server přidán do klastru, je neustále monitorována jeho
+	dostupnost a přesnost. Výkon svého serveru můžete sledovat pomocí stránek
+	<a href="scores">přehled</a> nebo <a href="/manage">správa serverů</a>.
+	</p>
+</div>

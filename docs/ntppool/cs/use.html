@@ -1,0 +1,137 @@
+[% page.title = 'Jak nastavím NTP, aby používal klastr?' %]
+
+<div class="block">
+	<h3><a name="use"></a>Jak použít pool.ntp.org?</h3>
+
+	<p>
+	Chcete-li jen synchronizovat hodiny vašeho počítače pomocí sítě, stačí vám
+	velmi jednoduchý konfigurační soubor (pro program ntpd z <a
+	href="http://www.ntp.org">dílny ntp.org</a>, na jakémkoli
+	podporovaném operačním systému - <b>Linuxu, *BSD, Windows a dokonce
+	i na několika exotičtějsích systémech</b>):
+	</p>
+
+<pre class="code">
+driftfile /var/lib/ntp/ntp.drift
+
+server 0.pool.ntp.org
+server 1.pool.ntp.org
+server 2.pool.ntp.org
+server 3.pool.ntp.org</pre>
+	<p>
+	Jména 0, 1, 2 and 3.pool.ntp.org ukazují na náhodně vybranou skupinu serverů,
+	která se mění každou hodinu. Zajistěte, aby hodiny vašeho počítače byly
+	nastaveny smysluplně (v rozsahu několika minut od 'správného' času) -
+	můžete použít <tt>ntpdate pool.ntp.org</tt>, nebo jen požijte příkaz
+	<tt>date</tt> a nastavte čas podle vašich hodinek. Spusťte ntpd, a za
+	nějaký čas (může to trvat až půl hodiny!), by měl výstup příkazu
+	<code>ntpq -pn</code> vypadat nějak takto:
+	</p>
+<pre class="code ntpq">
+avbidder:~$ ntpq -p
+     remote           refid      st t when poll reach   delay   offset  jitter
+==============================================================================
++81.6.42.224     193.5.216.14     2 u   68 1024  377  158.995   51.220  50.287
+*217.162.232.173 130.149.17.8     2 u  191 1024  176   79.245    3.589  27.454
+-129.132.57.95   131.188.3.222    3 u  766 1024  377   22.302   -2.928   0.508
+</pre>
+	<p>
+	IP adresy budou jiné, neboť vám byly náhodně přideleny časové servery.
+	Podstatné jsou řádky začínající hvězdičkou (<tt>*</tt>), které značí,
+	že váš počítač dostává časové informace z internetu - a už se o to nebudete
+	muset více starat!
+	</p>
+	<p>
+	Hledání adresy pro <code>pool.ntp.org</code> (nebo
+	<code>0.pool.ntp.org</code>, <code>1.pool.ntp.org</code> atd.) obvykle
+	vrátí IP adresy serverů ve vaší zemi nebo v její blízkosti. Pro většinu
+	uživatelů to bude znamenat nejlepší výsledky.
+	</p>
+
+	<p>Můžete také použít <a href="/zone/@">zóny kontinentů</a> (Například
+	<a href="/zone/europe">europe</a>,
+	<a href="/zone/north-america">north-america</a>,
+	<a href="/zone/oceania">oceania</a>
+	or <a href="/zone/asia">asia</a>.pool.ntp.org),
+	a zóny zemí (tedy ch.pool.ntp.org pro Švýcarsko) - ve všech těchto zónách
+	můžete použít opět jména 0, 1 or 2, tedy 0.ch.pool.ntp.org. Zóna země
+	nemusí pro vaši zemi existovat, nebo může obsahovat jen jeden nebo dva
+	časové servery.
+	</p>
+	<p>
+	Používáte-li <b>novější verzi Windows</b>, můžete použít vestavěného ntp
+	klienta systému. Jako správce zadejte příkaz</p>
+<pre class="code">
+w32tm /config /syncfromflags:manual /manualpeerlist:0.pool.ntp.org,1.pool.ntp.org,2.pool.ntp.org,3.pool.ntp.org
+</pre>
+	<p>
+	do příkazové řádky. Bude to fungovat ve Windows 2003 a novějších.
+	Používáte-li starší verzi Windows, zkuste</p>
+<pre class="code">
+net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
+</pre>
+	<p>
+	Téhož dosáhnete, když jako správce klepnete pravým tlačítkem na hodiny
+	ve stavové liště, vyberete 'Upravit datum a čas' a zadáte jméno serveru
+	do karty 'Čas sítě'.
+	</p>
+
+	<p>
+	Firma Meinberg vytvořila port
+	<a href="http://www.meinberg.de/english/sw/ntp.htm">ntp démona pro Windows</a>.
+	</p>
+
+	<p>
+	Je-li váš systém Windows součástí domény, možná nebudete moci nezávisle
+	nastavovat čas na vašem počítači.
+
+	Více informací o nastacení času v systému Windows najdete na stránce
+	<a href="http://technet.microsoft.com/en-us/library/cc773013%28WS.10%29.aspx">How
+	Windows Time Service Works</a>.
+	</p>
+</div>
+
+<div class="block">
+	<h3>Poznámky</h3>
+	<p><span class="hook">Máte-li statickou IP adresu a rozumné připojení k
+	internetu</span> (kapacita není až tak důležitá, ale musí být stabilní a
+	ne příliš vytížené), zvažte prosím věnování vašeho serveru klastru.
+	Nepřijdete o víc než několik set bytů za sekundu a pomůžete tomuto projektu
+	přežít. Další informace najdete na <a href="/join.html">stánce věnované
+	informacím o připojení</a>, prosíme přečtěte si ji.
+	</p>
+
+	<p><span class="hook">Má-li váš poskytovatel připojení k internetu časový
+	server</span>, nebo víte-li o dobrém časovém serveru ve vaší blízkosti,
+	měli byste použít ten a ne tento klastr - pravděpodobně dostanete přesnější
+	čas a použijete méně síťových prostředků. Pokud víte pouze o jednom časovém
+	serveru ve vaší blízkosti, můžete použít ten a třeba další dva z 
+	pool.ntp.org a podobně.</p>
+
+	<p><span class="hook">Vzácně se může stát, že dostanete přidělen stejný
+	časový server dvakrát</span> - restart ntp serveru obvykle tento problém
+	vyřeší. Používáte-li zónu příslušné země, může to být způsobeno tím, že je
+	v ní jen jeden server - v tom případě raději použijte zónu příslušného
+	kontinentu. Jednotlivé <a href="/zone">zóny a jejich obsah si můžete
+	prohlédnout</a>, abyste věděli kolik serverů máme přiřazeno do dané zóny.</p>
+
+	<p><span class="hook">Buďte prátelští</span>. Mnoho serverů poskytují 
+	dobrovolníci a téměř všechny servery jsou ve skutečnosti souborové servery
+	nebo e-mailové servery nebo webové servery, na kterých jen také běží ještě
+	ntp. Nepoužívejte prosím ve své konfiguraci více než čtyři časové servery
+	a nehrajte si prosím s <tt>burst</tt> nebo <tt>minpoll</tt> - dosáhnete jen
+	zvýšené zátěže na časových serverech dobrovolníků.</p>
+
+	<p><span class="hook">Ujistěte se, že máte správně <i>nakonfigurovanou
+	časovou zónu</i> vašeho počítače</span>. Sám ntpd časové zóny nepoužívá,
+	pracuje jen s UTC.</p>
+
+	<p><span class="hook">Synchronizujete-li nějakou síť pomocí
+	pool.ntp.org</span>, nastavte si prosím jeden počítač jako časový server
+	a synchronizujte ostatní počítače s ním. (Budete si muset něco přečíst -
+	ale není to vůbec složité. A vždy je tu <a href="news:comp.protocols.time.ntp"
+	>konference comp.protocols.time.ntp</a>.)</p>
+
+	<p class="thanks">Na tomto místě bychom rádi poděkovali těm, kteří věnují
+	svůj čas a své časové servery této síti.</p>
+</div>
