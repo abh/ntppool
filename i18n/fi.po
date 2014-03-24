@@ -21,6 +21,9 @@ msgstr "Pohjois-Amerikka"
 msgid "South America"
 msgstr "Etelä-Amerikka"
 
+msgid "Europe"
+msgstr "Eurooppa"
+
 msgid "Global"
 msgstr "Globaali"
 
