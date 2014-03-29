@@ -21,10 +21,19 @@ my %not_a_map_table;
 
 sub looks_like_map_table {
     my ($self, $table) = @_;
-    return 1 if $table eq "location_socialmedia";
     my $r = $self->SUPER::looks_like_map_table($table) && !exists $not_a_map_table{$table};
     return $r;
+}
 
+sub plural_to_singular {
+    my ($self, $word) = @_;
+
+    if ($word eq "log_status") {
+       return $word;
+    }
+    else {
+        $self->SUPER::plural_to_singular($word);
+    }
 }
 
 sub auto_relationship_name_one_to_many {

@@ -447,3 +447,16 @@ insert ignore into server_zones select id,@zid from servers;
 #62
 alter table server_notes add modified_on timestamp not null;
 update server_notes set modified_on = created_on;
+
+#63
+CREATE TABLE `log_status` (
+  `server_id` int(10) unsigned NOT NULL primary key,
+  `last_check` datetime not null,
+  `ts_archived` datetime NOT NULL,
+  KEY `log_scores_server_ts_idx` (`server_id`,`last_check`),
+  KEY `last_check_idx` (`last_check`),
+  CONSTRAINT `log_status_server` FOREIGN KEY (`server_id`) REFERENCES `servers` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+
+#64
+insert ignore into log_status select id, now(), now() from servers order by id;
