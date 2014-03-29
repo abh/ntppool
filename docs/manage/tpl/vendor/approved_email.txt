@@ -15,7 +15,7 @@ hostnames are below.  They will be active within a few hours.
 Please subscribe to the (announce-only, very low traffic - typically a
 few mails a year or less) vendor information mailing list. We
 recommend everyone in your organization involved with project are
-subscribed: http://eepurl.com/PN-3f
+subscribed: http://www.ntppool.org/vendors/list
 
 If you are a commercial organization/product/company consider
 contributing back to the pool so we can keep the service sustainable

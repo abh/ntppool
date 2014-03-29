@@ -1,7 +1,7 @@
 [% page.style = 'bare.html' -%]
-From: Ask Bjoern Hansen <ask@develooper.com>
+From: Ask Bjoern Hansen <ask@ntppool.org>
 To: [% admin.username %] <[% admin.email %]>
-Reply-To: ntppool-server-support@develooper.com
+Reply-To: server-owner-help@ntppool.org
 Subject: NTP Pool: Problems with your NTP service ([% bad_servers.0.ip %])
 
 Hi [% admin.username || admin.email %],
@@ -35,7 +35,7 @@ response is necessary.
 Thank you for offering your ntp service to the pool!
 
 
-  - ask
+Ask (and the other NTP Pool volunteers)
 
 -- 
-[% config.base_url('ntppool') %]/ | http://askask.com/ | http://develooper.com/
+[% config.base_url('ntppool') %]/ | http://askask.com/
