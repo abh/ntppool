@@ -459,4 +459,4 @@ CREATE TABLE `log_status` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8
 
 #64
-insert ignore into log_status select id, now(), now() from servers order by id;
+insert ignore into log_status select id, "2014-01-01 00:00:00", 0 from servers order by id;
