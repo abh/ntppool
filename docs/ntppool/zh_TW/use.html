@@ -1,0 +1,107 @@
+[% page.title = '如何設定 NTP 來使用此伺服器池？' %]
+
+<div class="block">
+	<h3><a name="use"></a>如何使用 pool.ntp.org？</h3>
+
+	<p>
+	如果您只是想用網路來同步計算機時鐘，適用於 <b>Linux、*BSD、Windows
+	等</b>系統（<a href="http://www.ntp.org">ntp.org 釋出的</a> ntpd
+	程式）的配置檔案十分簡單：
+	</p>
+
+<pre class="code">
+driftfile /var/lib/ntp/ntp.drift
+
+server 0.pool.ntp.org
+server 1.pool.ntp.org
+server 2.pool.ntp.org
+server 3.pool.ntp.org</pre>
+	<p>
+	0、1、2 和 3.pool.ntp.org 域名指向每小時隨機更換的一組伺服器。
+	確保你的計算機時鐘設定為合理的時間（與「真實」時間相差不大）——您可以使用
+	<tt>ntpdate pool.ntp.org</tt>，或對著手錶使用 <tt>date</tt> 命令。
+	啟動 ntpd，一段時間後（可能耗時一小時！）<code> ntpq -pn</code>
+	應當輸出類似的內容：
+	</p>
+<pre class="code ntpq">
+avbidder:~$ ntpq -p
+     remote           refid      st t when poll reach   delay   offset  jitter
+==============================================================================
++81.6.42.224     193.5.216.14     2 u   68 1024  377  158.995   51.220  50.287
+*217.162.232.173 130.149.17.8     2 u  191 1024  176   79.245    3.589  27.454
+-129.132.57.95   131.188.3.222    3 u  766 1024  377   22.302   -2.928   0.508
+</pre>
+	<p>
+	IP 位址會不同，因為您會被隨機分配到時間伺服器。關鍵在於以星號（<tt
+	>*</tt>）開始的行，這意味著您的計算機與網際網路校時——您不必再為此擔心了！
+	</p>
+	<p>
+	查詢 <code>pool.ntp.org</code>（或
+	<code>0.pool.ntp.org</code>、<code>1.pool.ntp.org</code>
+	等）往往會返回您的國家或鄰國的 IP 位址。這能為多數使用者提供優化。
+	</p>
+
+	<p>您也可以使用 <a href="/zone/@">洲界區域</a>（例如
+	<a href="/zone/europe">europe</a>、<a
+	href="/zone/north-america">north-america</a>、<a
+	href="/zone/oceania">oceania</a>、或
+	<a href="/zone/asia">asia</a>.pool.ntp.org）和國界區域（如
+	ch.pool.ntp.org 瑞士）——所有的區域都可以加 0、1 或 2 字首，如
+	0.ch.pool.ntp.org。注意您的國家可能沒有區域或只有一兩臺伺服器。
+	</p>
+	<p>
+	如果您在使用 <b>較新版 Windows</b>，您可以使用系統內建的 NTP 客戶端。
+	以管理員許可權在命令提示符執行</p>
+<pre class="code">
+w32tm /config /syncfromflags:manual /manualpeerlist:0.pool.ntp.org,1.pool.ntp.org,2.pool.ntp.org,3.pool.ntp.org
+</pre>
+	<p>
+	這適用於 Windows 2003 或更新版。如果您使用舊版 Windows 可以嘗試
+	</p>
+<pre class="code">
+net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
+</pre>
+	<p>
+	同樣也可以以管理員許可權右擊工作列的時鐘，選擇「調整日期/時間」並在「Internet
+	時間」選項卡中鍵入伺服器名稱。
+	</p>
+
+	<p>
+	Meinberg <a href="http://www.meinberg.de/english/sw/ntp.htm">將 NTP
+	服務移植到了 Windows</a>。
+	</p>
+
+	<p>
+	如果您的 Windows 系統隸屬於一個域，您可能無法獨立修改計算機時間。
+
+	關於在 Windows 上設定時間的更多資訊，請參見 <a href="http://technet.microsoft.com/zh-tw/library/cc773013%28WS.10%29.aspx">How Windows Time Service Works</a>。
+	</p>
+</div>
+
+<div class="block">
+	<h3>附加說明</h3>
+	<p><span class="hook">如果您有固定 IP 位址和可覌的網路連線</span>（頻寬不重要，但需要穩定和低負載），請考慮將您的伺服器捐贈給伺服器池。這只會消耗不超過每秒幾百位元組的流量，卻能讓此專案存活。請參見<a
+	href="/join.html">加入頁面</a>。
+	</p>
+
+	<p><span class="hook">如果您的網際網路提供商有臺時間伺服器</span>或者您知道附近更好的時間伺服器，請用那些伺服器而不是這裡列出的伺服器——您可能會獲取到更好的時間並佔用更少的網路資源。如果您只知道附近的一臺時間伺服器，您當然可以搭配
+	pool.ntp.org 的兩臺使用。</p>
+
+	<p><span class="hook">偶爾發生您被先後兩次分配給同一臺時間伺服器的問題</span>——重啟
+	NTP 伺服器往往能解決問題。如果您使用國界區域，請注意該國可能只有一臺伺服器參與了本專案——這種情況下最好改用洲界區域。您可以<a
+	href="/zone">瀏覽區域列表</a>來看看每個區域各有多少伺服器。</p>
+
+	<p><span class="hook">請行善</span>。很多伺服器是由志願者捐獻的，幾乎所有時間伺服器本可以做為郵件或網頁伺服器。所以請勿在配置中同時使用超過四臺伺服器，也切勿用
+	<tt>burst</tt> 或 <tt>minpoll</tt>
+	來捉弄對方——您只會對志願者伺服器造成額外負載。</p>
+
+	<p><span class="hook">確信計算機的<i>時區設定</i>正確</span>。ntpd
+	不對時區做任何改變，它內部使用 UTC 時間。</p>
+
+	<p><span class="hook">如果您正在將一個網路同步至
+	pool.ntp.org</span>，請將其中一臺計算機設定為時間伺服器然後讓其它計算機同步到這臺計算機。（您可能要閱讀手冊——雖然不是很困難。而且
+	<a href="news:comp.protocols.time.ntp">comp.protocols.time.ntp
+	新聞組</a>總是可以幫助你。）</a></p>
+
+	<p class="thanks">在這裡，我想對向此網路捐獻和伺服器和時間精力的人們表達由衷的感謝。</p>
+</div>
