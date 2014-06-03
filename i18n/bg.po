@@ -1,85 +1,63 @@
 msgid ""
 msgstr ""
-"Last-Translator: Ask Bjørn Hansen <ask@develooper.com>\n"
+"Last-Translator: Hristo Benev <hristo.benev@hbcom.info>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 msgid "go up"
-msgstr "go up"
+msgstr "нагоре"
 
 # zone names
 msgid "Africa"
-msgstr "Africa"
+msgstr "Африка"
 
 msgid "Asia"
-msgstr "Asia"
+msgstr "Азия"
 
 msgid "North America"
-msgstr "North America"
+msgstr "Северна Америка"
 
 msgid "South America"
-msgstr "South America"
+msgstr "Южна Америка"
 
 msgid "Europe"
-msgstr "Europe"
-
-msgid "Oceania"
-msgstr "Oceania"
+msgstr "Европа"
 
 msgid "Global"
-msgstr "Global"
+msgstr "Глобално"
 
 msgid "All Pool Servers"
-msgstr "All Pool Servers"
+msgstr "Всички сървъри"
 
 # navigation
 msgid "Translations"
-msgstr "Translations"
-
-# index.html
-msgid  "Introduction"
-msgstr "Introduction"
-
-msgid  "Active Servers"
-msgstr "Active Servers"
-
-msgid  "Links"
-msgstr "Links"
-
-msgid  "Terms of service"
-msgstr "Terms of service"
-
-msgid  "Subscribe in a reader"
-msgstr "Subscribe in a reader"
-
-msgid  "Older news"
-msgstr "Older news"
+msgstr "Преводи"
 
 # mailinglists.html
 msgid  "NTP Pool mailing lists"
-msgstr "NTP Pool mailing lists"
+msgstr "пощенски списък на NTP Pool"
 
 msgid  "subscribe"
-msgstr "subscribe"
+msgstr "абонирай се"
 
 msgid  "archive"
-msgstr "archive"
+msgstr "архив"
 
 msgid  "Announcement list"
-msgstr "Announcement list"
+msgstr "Списък за анонси"
 
 msgid  "Discussion list"
-msgstr "Discussion list"
+msgstr "Списък за дискусии"
 
 msgid  "Development list"
-msgstr "Development list"
+msgstr "Списък за разработчици"
 
 msgid  "announcement_list_description"
-msgstr "Very very low traffic announcements of NTP Pool news.  All server operators should be subscribed to the announcement list."
+msgstr "Новини от NTP Pool - нисък трафик.  Всички оператори на сървъри трябва за се абонират за списъка за анонси."
 
 msgid  "discussion_list_description"
-msgstr "Server operators (and users) who wish to be more involved in the project can subscribe to the discussion list.<br/> Of course, general discussions about ntp should take place on the %1 Usenet newsgroup (also on <a href=\"%2\">Google Groups</a>)."
+msgstr "Операторите на сървъри (и потребителите) които искат да допринесат повече за проекта могат да се абонират за списъка за дискусии.<br/> Разбира се общи дискусии относно ntp трябва да бъдат на %1 Usenet newsgroup (също на <a href=\"%2\">Google Groups</a>)."
 
 msgid  "development_list_description"
 msgstr "More technical (and ideally always pragmatic) discussions about the current development of the <a href=\"%1\">ntp pool code</a> and <a href=\"%2\">pgeodns</a> happens on the timekeepers-dev list."
