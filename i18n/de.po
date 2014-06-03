@@ -25,6 +25,9 @@ msgstr "Südamerika"
 msgid "Europe"
 msgstr "Europa"
 
+msgid "Oceania"
+msgstr "Ozeanien"
+
 msgid "Global"
 msgstr "Weltweit"
 
@@ -115,3 +118,22 @@ msgstr "Zus&auml;tzliche Links"
 
 msgid  "Can you translate?"
 msgstr "Können Sie übersetzen?"
+
+# index.html
+msgid  "Introduction"
+msgstr "Anleitung"
+
+msgid  "Active Servers"
+msgstr "Aktive Server"
+
+msgid  "Links"
+msgstr "Links"
+
+msgid  "Terms of service"
+msgstr "Nutzungsbedinungen"
+
+msgid  "Subscribe in a reader"
+msgstr "Einen Leser abonnieren"
+
+msgid  "Older news"
+msgstr "Ältere Neuigkeiten"
