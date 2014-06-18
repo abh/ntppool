@@ -18,9 +18,7 @@ sub search {
 
     my @users;
 
-    local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
-
-    warn "getting servers";
+    #local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
 
     my $servers = NP::Model->server->get_servers
       (
@@ -31,8 +29,7 @@ sub search {
        require_objects => [ 'user' ]
       );
     if ($servers) {
-        warn "got servdrs!", Data::Dump::pp($servers);
-
+        #warn "got servers!", Data::Dump::pp($servers);
         push @users, $_->user for @$servers;
     }
 
@@ -48,7 +45,7 @@ sub search {
        with_objects => [ 'servers_all.zones' ]
     );
     push @users, @$users;
-    warn "USERS: ", join ", ", map { $_->username } @users; 
+    #warn "USERS: ", join ", ", map { $_->username } @users; 
 
     if (@users) {
         $result->{users} = [];
