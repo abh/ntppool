@@ -38,7 +38,8 @@ while (my $zone = $zones->next) {
   else {
     my $cc = $zone->name;
     $cc = 'gb' if $cc eq 'uk';
-    my $country = Locale::Object::Country->new( code_alpha2 => $cc );
+    my $country = Locale::Object::Country->new( code_alpha2 => $cc )
+      or next;
     my $country_name = $country->name;
     $country_name =~ s/,.*//;
     $zone->description($country_name) if $country_name;
