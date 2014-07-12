@@ -18,8 +18,8 @@ my $version = NP::Version->new;
 my $config  = Combust::Config->new;
 
 our %valid_languages = (
-    bg => {name => "Мила Родино", testing => 1},
-    ca => {name => "Català",               testing => 1},
+    bg => {name => "Български", testing => 1},
+    ca => {name => "Català", testing => 1},
     de => {name => "Deutsch"},
     da => {name => "Danish",                testing => 1,},
     en => {name => "English",},
