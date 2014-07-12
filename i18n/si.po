@@ -1,0 +1,138 @@
+msgid ""
+msgstr ""
+"Last-Translator: ශ්‍යාමින් අයේෂ් <me@shyamin.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "go up"
+msgstr "උඩට යන්න"
+
+# zone names
+msgid "Africa"
+msgstr "අප්‍රිකාව"
+
+msgid "Asia"
+msgstr "ආසියාව"
+
+msgid "North America"
+msgstr "උතුරු ඇමරිකාව"
+
+msgid "South America"
+msgstr "දකුණු ඇමරිකාව"
+
+msgid "Europe"
+msgstr "යුරෝපය"
+
+msgid "Oceania"
+msgstr "ඕසියානාව"
+
+msgid "Global"
+msgstr "ලෝකව්‍යාප්ත"
+
+msgid "All Pool Servers"
+msgstr "සියලු සර්වර"
+
+# navigation
+msgid "Translations"
+msgstr "අනුවාදය"
+
+# index.html
+msgid  "Introduction"
+msgstr "හැඳින්වීම"
+
+msgid  "Active Servers"
+msgstr "ක්‍රියාකාරී සර්වර"
+
+msgid  "Links"
+msgstr "ඇමිණුම්"
+
+msgid  "Terms of service"
+msgstr "සේවාවේ කොන්දේසි"
+
+msgid  "Subscribe in a reader"
+msgstr "කියවීමට අනුසන්  වෙන්න"
+
+msgid  "Older news"
+msgstr "පරණ පුවත්"
+
+# mailinglists.html
+msgid  "NTP Pool mailing lists"
+msgstr "NTP සංසදයේ ඊමේල් ලැයිස්තුව"
+
+msgid  "subscribe"
+msgstr "අනුසන්"
+
+msgid  "archive"
+msgstr "තෝම්බුව"
+
+msgid  "Announcement list"
+msgstr "නිවේදන ලැයිස්තුව"
+
+msgid  "Discussion list"
+msgstr "සංවාද ලැයිස්තුව"
+
+msgid  "Development list"
+msgstr "ප්‍රවර්ධනය ලැයිස්තුව"
+
+msgid  "announcement_list_description"
+msgstr "NTP සංසදයේ ඉතාමත් පහළ ප්‍රමුඛතාව සහිත  නිවේදන ලැයිස්තුව. සියලුම සංසදයේ සර්වර් ක්රියාකරවන්නම් නිවේදන ලැයිස්තුවට ඇතුලත් වී සිටීය යුතුය."
+
+msgid  "discussion_list_description"
+msgstr "වැඩිදුර සාකච්චා කිරීමට කැමති සියලුම සර්වර් ක්රියාකරවන්නන් (සහ පරිශීලකයින්) ට සංවාද ලැයිස්තුව සඳහා අනුසන් විය හැක.<br/> ntp පිළිබඳව සාමාන්‍ය සංවාද සඳහා %1 ද. (එලෙසම <a href=\"%2\">Google සංවාද මන්ඩපයද</a>)."
+
+msgid  "development_list_description"
+msgstr "<a href=\"%1\">ntp සංසදයේ කේත</a> සහ <a href=\"%2\">pgeodns</a> පිලිබඳ වර්තමාන සැකසුම් සහ වැඩිදුර තාක්ෂණික  (සහ සාමාන්‍ය උපයෝගික) සංවාද සිදුවන්නේ timekeepers-dev ලයිස්තුවේය."
+
+msgid  "irc_channel_description"
+msgstr "සර්වර ක්රියාකරවන්නම් සඳහා %2 IRC නාලිකාව ද, සාමාන්‍ය පරිශීලකයින් සඳහා %1 ද ක්‍රියාත්මක වේ."
+
+# tpl/server.html
+msgid  "Back to the front page"
+msgstr "නැවතත් ප්‍රධාන පිටුවට"
+
+msgid  "Find"
+msgstr "සොයන්න"
+
+msgid  "Stats for %1"
+msgstr "%1 සඳහා සංඛ්‍යාලේඛන"
+
+msgid  "Not active in the pool, monitoring only"
+msgstr "සන්සදයේ ක්‍රියාත්මක නැත, සොයාබැලීම් පමණි"
+
+msgid  "Zones:"
+msgstr "කලාප:"
+
+msgid  "This server is <span class="deletion">scheduled for deletion</span> on %1."
+msgstr "මෙම සර්වරය %1 ට <span class="deletion">ඉවත්කිරිමට ලේඛනගත කොට ඇත</span>."
+
+msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
+msgstr "වර්තමාන ලකුණු: %1 (ලකුණු %2 ට වඩා වැඩි සර්වර් පමණක් සංසදය තුල බාවිතා වේ)"
+
+msgid  "What do the graphs mean?"
+msgstr "ප්‍රස්තාර වලින් කියැවෙන්නේ කුමක්ද ?"
+
+msgid  "CSV log"
+msgstr "CSV ලොගය"
+
+# tpl/navigation_sidebar.html
+msgid  "News"
+msgstr "පුවත්"
+
+msgid  "How do I <i>use</i> pool.ntp.org?"
+msgstr "pool.ntp.org <i>බාවිතා</i> කරන්නේ කෙසේද ?"
+
+msgid  "How do I <i>join</i> pool.ntp.org?"
+msgstr "pool.ntp.org සඳහා <i>ඇතුලත්</i> වන්නේ කෙසේද ?"
+
+msgid  "Information for vendors"
+msgstr "සැපයුම්කරුවන් සඳහා තොරතුරු"
+
+msgid  "The mailing lists"
+msgstr "ඊමේල් ලැයිස්තු"
+
+msgid  "Additional links"
+msgstr "අමතර ඇමිණුම්"
+
+msgid  "Can you translate?"
+msgstr "ඔබටත් පරිවර්තනය කරන්න හැකිද ?"

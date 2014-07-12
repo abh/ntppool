@@ -29,14 +29,18 @@ sub init {
             warn $bc->errstr;
         }
         if ($bc_user and $bc_user->{id} and $bc_user->{username}) {
+            use Data::Dump qw(pp);
+            warn "Logging in user: ", pp($bc_user);
             my ($email_user) = NP::Model->user->fetch(email      => $bc_user->{email});
             my ($user)       = NP::Model->user->fetch(bitcard_id => $bc_user->{id});
             $user = $email_user if ($email_user and !$user);
             if ($user and $email_user and $user->id != $email_user->id) {
                 my @servers = NP::Model->server->get_servers(query => [user_id => $email_user->id]);
-                for my $server (@servers) {
-                    $server->user_id($user);
-                    $server->save;
+                if (@servers && $servers[0]) {
+                    for my $server (@servers) {
+                        $server->user_id($user);
+                        $server->save;
+                    }
                 }
                 $email_user->delete;
             }

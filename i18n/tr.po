@@ -21,6 +21,12 @@ msgstr "Kuzey Amerika"
 msgid "South America"
 msgstr "Güney Amerika"
 
+msgid "Europe"
+msgstr "Avrupa"
+
+msgid "Oceania"
+msgstr "Okyanusya"
+
 msgid "Global"
 msgstr "Genel"
 
@@ -30,6 +36,25 @@ msgstr "Tüm Havuz Sunucuları"
 # navigation
 msgid "Translations"
 msgstr "Çeviriler"
+
+# index.html
+msgid  "Introduction"
+msgstr "Önsöz"
+
+msgid  "Active Servers"
+msgstr "Aktif Sunucular"
+
+msgid  "Links"
+msgstr "Bağlantılar"
+
+msgid  "Terms of service"
+msgstr "Hizmet koşulları"
+
+msgid  "Subscribe in a reader"
+msgstr "Bir okuyucudan abone olun"
+
+msgid  "Older news"
+msgstr "Daha önceki haberler"
 
 # mailinglists.html
 msgid  "NTP Pool mailing lists"
