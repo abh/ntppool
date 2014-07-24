@@ -4,20 +4,11 @@
 	<h3><a name="use"></a>How do I use pool.ntp.org?</h3>
 
 	<p>
-	If you just want to synchronise your computers clock to the network, the
-	configuration file (for the ntpd program from the <a
-	href="http://www.ntp.org">ntp.org distribution</a>, on any supported operating
-	system - <b>Linux, *BSD, Windows and even some more exotic systems</b>) is
-	really simple:
+	If you just want to synchronise your computers clock to the network, the configuration file (for the ntpd program from the <a href="http://www.ntp.org">ntp.org distribution</a>, on any supported operating system - <b>Linux, *BSD, Windows and even some more exotic systems</b>) is really simple:
 	</p>
 
-<pre class="code">
-driftfile /var/lib/ntp/ntp.drift
+	[% INCLUDE "ntppool/use/sample-config.html" %]
 
-server 0.pool.ntp.org
-server 1.pool.ntp.org
-server 2.pool.ntp.org
-server 3.pool.ntp.org</pre>
 	<p>
 	The 0, 1, 2 and 3.pool.ntp.org names point to a random set of servers that will
 	change every hour.  Make sure your computer's clock is set to something
@@ -26,14 +17,9 @@ server 3.pool.ntp.org</pre>
 	to your wristwatch. Start ntpd, and after some time (this could take as long as
 	half an hour!), <code>ntpq -pn</code> should output something like:
 	</p>
-<pre class="code ntpq">
-avbidder:~$ ntpq -p
-     remote           refid      st t when poll reach   delay   offset  jitter
-==============================================================================
-+81.6.42.224     193.5.216.14     2 u   68 1024  377  158.995   51.220  50.287
-*217.162.232.173 130.149.17.8     2 u  191 1024  176   79.245    3.589  27.454
--129.132.57.95   131.188.3.222    3 u  766 1024  377   22.302   -2.928   0.508
-</pre>
+
+	[% INCLUDE "ntppool/use/sample-ntpq.html" %]
+
 	<p>
 	The IP addresses will be different, because you've been assigned random
 	timeservers. The essential thing is that one of the lines starts with an
