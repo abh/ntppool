@@ -27,7 +27,7 @@ our %valid_languages = (
     fi => {name => "Suomi"},
     fr => {name => "Français",},
     it => { name => "Italiano", testing => 1 },
-    jp => {name => "日本語"},
+    ja => {name => "日本語"},
     ko => {name => "한국어",},
     kz => {name => "Қазақша", testing=>1 },
     nl => {name => "Nederlands",},
