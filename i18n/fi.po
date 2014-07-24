@@ -80,8 +80,8 @@ msgstr "Ei aktiivinen poolissa, vain monitorointi"
 msgid  "Zones:"
 msgstr "Vyöhykkeet:"
 
-msgid  "This server is <span class="deletion">scheduled for deletion</span> on %1."
-msgstr "Palvelimen on <span class="deletion">määrä poistaa</span> %1."
+msgid  "This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
+msgstr "Palvelimen on <span class=\"deletion\">määrä poistaa</span> %1."
 
 msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
 msgstr "Nykyinen tulos: %1 (vain palvelimet joiden tulos on yli %2 ovat mukana poolissa)"

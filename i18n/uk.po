@@ -78,8 +78,8 @@ msgstr "Не бере участь у пулі, тільки спостеріг�
 msgid  "Zones:"
 msgstr "Зони:"
 
-msgid  "This server is <span class="deletion">scheduled for deletion</span> on %1."
-msgstr "Цей сервер <span class="deletion">заплановано до видалення</span> %1."
+msgid  "This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
+msgstr "Цей сервер <span class=\"deletion\">заплановано до видалення</span> %1."
 
 msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
 msgstr "Поточний рейтинг: %1 (в пулі використовуються тільки сервери з рейтингом вище ніж %2)"

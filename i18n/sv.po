@@ -83,7 +83,7 @@ msgstr "Ej aktiv i poolen, endast uppföljning"
 msgid "Zones:"
 msgstr "Zoner:"
 
-msgid "This server is <span class="deletion">scheduled for deletion</span> on %1."
+msgid "This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
 msgstr "Denna server är <span class=\"deletion\">planerad för borttagning</span> den %1."
 
 msgid "Current score: %1 (only servers with a score higher than %2 are used in the pool)"

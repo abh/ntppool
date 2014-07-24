@@ -76,8 +76,8 @@ msgstr "Neaktivan u pool-u, samo monitoring"
 msgid  "Zones:"
 msgstr "Zone:"
 
-msgid  "This server is <span class="deletion">scheduled for deletion</span> on %1."
-msgstr "Ovaj server je <span class="deletion">planiran za brisanje</span> na %1."
+msgid  "This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
+msgstr "Ovaj server je <span class=\"deletion\">planiran za brisanje</span> na %1."
 
 msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
 msgstr "Trenutačni rezultat: %1 (samo serveri sa rezultatom večim od %2 su korišteni u pool-u)"

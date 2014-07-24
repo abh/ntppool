@@ -81,8 +81,8 @@ msgstr "Ikke aktiv i puljen, blir kun overvåket"
 msgid  "Zones:"
 msgstr "Områder:"
 
-msgid  "This server is <span class="deletion">scheduled for deletion</span> on %1."
-msgstr "Denne tjeneren er <span class="deletion">planlagt slettet</span> den %1."
+msgid  "This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
+msgstr "Denne tjeneren er <span class=\"deletion\">planlagt slettet</span> den %1."
 
 msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
 msgstr "Nåværende poeng: %1 (kun tjenere med en høyere poengsum enn %2 blir brukt i puljen)"

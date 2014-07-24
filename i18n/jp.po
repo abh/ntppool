@@ -76,8 +76,8 @@ msgstr "プール内でアクティブではなく、監視のみ"
 msgid  "Zones:"
 msgstr "ゾーン:"
 
-msgid  "This server is <span class="deletion">scheduled for deletion</span> on %1."
-msgstr "このサーバは%1に<span class="deletion">削除予定</span>です。"
+msgid  "This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
+msgstr "このサーバは%1に<span class=\"deletion\">削除予定</span>です。"
 
 msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
 msgstr "現在のスコア: %1 (%2以上のサーバだけがプールに使用されます)"

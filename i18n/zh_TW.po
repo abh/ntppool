@@ -82,7 +82,7 @@ msgstr "該pool沒有可用的伺服器，僅進行監測"
 msgid  "Zones:"
 msgstr "區域:"
 
-msgid  "This server is <span class="deletion">scheduled for deletion</span> on %1."
+msgid  "This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
 msgstr "這個伺服器預計會在 %1 被移除"
 
 msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"

@@ -89,8 +89,8 @@ msgstr "Não está ativo, apenas monitoramento"
 msgid  "Zones:"
 msgstr "Zonas:"
 
-msgid  "This server is <span class="deletion">scheduled for deletion</span> on %1."
-msgstr "Este servidor está <span class="deletion">agendado para exclusão</span> em %1."
+msgid  "This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
+msgstr "Este servidor está <span class=\"deletion\">agendado para exclusão</span> em %1."
 
 msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
 msgstr "Pontuação atual: %1 (apenas servidores com uma pontuação maior do que %2 são usados neste pool)"

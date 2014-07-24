@@ -76,8 +76,8 @@ msgstr "No est&aacute; activo en el grupo, s&oacute;lo para monitorizaci&oacute;
 msgid  "Zones:"
 msgstr "Zonas:"
 
-msgid "This server is <span class="deletion">scheduled for deletion</span> on %1."
-msgstr "Este servidor se <span class="deletion">borrar&aacute;</span> en %1."
+msgid "This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
+msgstr "Este servidor se <span class=\"deletion\">borrar&aacute;</span> en %1."
 
 msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
 msgstr "Puntuaci&oacute;n actual: %1 (s&oacute;lo los servidores con una puntuaci&oacute;n mayor que %2 se usan en el equipo)"

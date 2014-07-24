@@ -81,7 +81,7 @@ msgstr "V poolu neaktivní, pouze monitorování"
 msgid  "Zones:"
 msgstr "Zóny:"
 
-msgid  "This server is <span class="deletion">scheduled for deletion</span> on %1."
+msgid  "This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
 msgstr "<span class=\"deletion\">Odstranění</span> tohoto serveru <span class=\"deletion\">je naplánováno</span> na %1."
 
 msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"

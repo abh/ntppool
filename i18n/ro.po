@@ -78,8 +78,8 @@ msgstr "Nu este activ în comunitate, doar monitorizez"
 msgid  "Zones:"
 msgstr "Zone:"
 # i have to see the context to translate properly
-msgid  "This server is <span class="deletion">scheduled for deletion</span> on %1."
-msgstr "Acest server este <span class="deletion">programat pentru stergere</span> pe %1."
+msgid  "This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
+msgstr "Acest server este <span class=\"deletion\">programat pentru stergere</span> pe %1."
 
 msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
 msgstr "Scor curent: %1 ( doar serverele cu un scor mai mare de %2 sunt folosite în această comunitate )"

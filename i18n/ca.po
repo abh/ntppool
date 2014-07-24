@@ -81,8 +81,8 @@ msgstr "No actiu al pool, només vigilat"
 msgid  "Zones:"
 msgstr "Zones:"
 
-msgid  "This server is <span class="deletion">scheduled for deletion</span> on %1."
-msgstr "Aquest servidor està <span class="deletion">marcat per esborrar-se</span> el %1."
+msgid  "This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
+msgstr "Aquest servidor està <span class=\"deletion\">marcat per esborrar-se</span> el %1."
 
 msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
 msgstr "Puntuació actual: %1 (només servidors amb una puntuació de %2 o més s'utilitzen en el pool)"

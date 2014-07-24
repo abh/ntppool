@@ -79,8 +79,8 @@ msgstr "풀에서 활성화되지 않고 모니터링만 함"
 msgid  "Zones:"
 msgstr "지역:"
 
-msgid  "This server is <span class="deletion">scheduled for deletion</span> on %1."
-msgstr "이 서버는 %1 에 <span class="deletion">삭제될 예정</span>입니다."
+msgid  "This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
+msgstr "이 서버는 %1 에 <span class=\"deletion\">삭제될 예정</span>입니다."
 
 msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
 msgstr "현재 점수: %1 (%2점이 넘는 서버들만 풀에 사용됩니다.)"

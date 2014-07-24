@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Last-Translator: Patrik Kernstock <hello@patschi.net>\n"
-# 29.10.2013: Martin Steghöfer <martin@steghoefer.de>
+"Last-Translator-29.10.2013: Martin Steghöfer <martin@steghoefer.de>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -85,8 +85,8 @@ msgstr "Nicht im Pool aktiv, nur Überwachung."
 msgid  "Zones:"
 msgstr "Zonen:"
 
-msgid  "This server is <span class="deletion">scheduled for deletion</span> on %1."
-msgstr "Dieser Server ist zur <span class="deletion">Löschung</span> am %1 markiert."
+msgid  "This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
+msgstr "Dieser Server ist zur <span class=\"deletion\">Löschung</span> am %1 markiert."
 
 msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
 msgstr "Aktuelle Bewertung: %1 (Nur Server mit einer Bewertung über %2 werden in den Pool aufgenommen)"

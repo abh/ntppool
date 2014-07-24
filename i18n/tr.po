@@ -103,8 +103,8 @@ msgstr "Havuzda aktif değil, sadece izleme"
 msgid  "Zones:"
 msgstr "Bölgeler:"
 
-msgid  "This server is <span class="deletion">scheduled for deletion</span> on %1."
-msgstr "Bu sunucu %1 üzerinde <span class="deletion">silinmek üzere işaretlenmiş</span>."
+msgid  "This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
+msgstr "Bu sunucu %1 üzerinde <span class=\"deletion\">silinmek üzere işaretlenmiş</span>."
 
 msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
 msgstr "Şu anki puan: %1 (havuzda kullanılması için en az puan: %2 )"
