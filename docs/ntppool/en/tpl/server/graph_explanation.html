@@ -1,33 +1,22 @@
 <div id="graph_explanation_box" class="graph_explanation [% graph_explanation ? 'visible' : '' %]">
 
 <h3>The Score graph</h3>
+
 <p>
-A couple of times an hour the pool system checks the time from your
-server and compares it to the local time.  Points are deducted if the
-server can't be reached or if the time offset is more than 100ms (as
-measured relatively crudely from the monitoring systems).  More points
-are deducted the bigger the offset is.
+A couple of times an hour the pool system checks the time from your server and compares it to the local time. Points are deducted if the server can't be reached or if the time offset is more than 100ms (as measured from the monitoring systems). More points are deducted the bigger the offset is.
 </p>
 
 <p>
-
-It's only meant as a tool to visualize trends.  For more exact details
-of what the monitoring system found you can click on the CSV link.
-
+The graph is only meant as a tool to visualize trends. For more exact details of what the monitoring system found you can click on the CSV link.
 </p>
 
 <h3>The Offset graph</h3>
 
 <p>
-The monitoring system works roughly like an <a
-href="http://www.ntp.org/ntpfaq/NTP-s-def.htm#AEN1242">SNTP</a> (<a
-href="http://www.eecis.udel.edu/~mills/database/rfc/rfc2030.txt">RFC
-2030</a>) client, so it is more susceptible by random network
-latencies between the server and the monitoring system than a regular
-ntpd client would be.  In other words: Don't be alarmed by the
-occasional large offset and please don't use the offset as an absolute
-performance metric.
+The monitoring system works roughly like an <a href="http://www.ntp.org/ntpfaq/NTP-s-def.htm#AEN1242">SNTP</a> (<a href="http://tools.ietf.org/html/rfc2030">RFC 2030</a>) client, so it is more susceptible by random network latencies between the server and the monitoring system than a regular ntpd server would be.</p>
+
+<p>
+The monitoring system can be inaccurate as much as 10ms or more.
 </p>
 
 </div>
-
