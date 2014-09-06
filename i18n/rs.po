@@ -1,0 +1,160 @@
+﻿msgid ""
+msgstr ""
+"Last-Translator: Aleksandar Pap <ace@microstuff.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=iso-8859-2\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Project-Id-Version: rs_v1.0\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Language-Team:  <ace@microstuff.org>\n"
+"X-Generator: Poedit 1.5.4\n"
+"Language: Serbian\n"
+"X-Poedit-SourceCharset: iso-8859-2\n"
+
+msgid "go up"
+msgstr "na vrh"
+
+# zone names
+msgid "Africa"
+msgstr "Afrika"
+
+msgid "Asia"
+msgstr "Azija"
+
+msgid "North America"
+msgstr "Severna Amerika"
+
+msgid "South America"
+msgstr "Južna Amerika"
+
+msgid "Europe"
+msgstr "Europa"
+
+msgid "Oceania"
+msgstr "Pacifik"
+
+msgid "Global"
+msgstr "Globalno"
+
+msgid "All Pool Servers"
+msgstr "Svi Pool serveri"
+
+# navigation
+msgid "Translations"
+msgstr "Prevodi"
+
+# index.html
+msgid "Introduction"
+msgstr "Uvod"
+
+msgid "Active Servers"
+msgstr "Aktivni Serveri"
+
+msgid "Links"
+msgstr "Veze"
+
+msgid "Terms of service"
+msgstr "Uslovi korištenja"
+
+msgid "Subscribe in a reader"
+msgstr "Pretplatite se za citanje"
+
+msgid "Older news"
+msgstr "Starije vesti"
+
+# mailinglists.html
+msgid "NTP Pool mailing lists"
+msgstr "NTP Pool mejling lista"
+
+msgid "subscribe"
+msgstr "pretplati se"
+
+msgid "archive"
+msgstr "arhiva"
+
+msgid "Announcement list"
+msgstr "Lista obaveštenja"
+
+msgid "Discussion list"
+msgstr "Diskusiona lista"
+
+msgid "Development list"
+msgstr "Razvojna lista"
+
+msgid "announcement_list_description"
+msgstr ""
+"Povremene objave o NTP Pool novostima .  Svi operatori servera bi trebali da "
+"budu pretplaćeni na listu obaveštenja ."
+
+msgid "discussion_list_description"
+msgstr ""
+"Server operatori (i korisnici) koji bi leli da budu više uključeni u "
+"projekat mogu se pretplatiti na listu za diskusiju.<br/> Naravno, glavne "
+"diskusije o ntp-u bi trebale da se vode na %1 Usenet news grupi  (takodje na "
+"<a href=\"%2\">Google Grupe</a>)."
+
+msgid "development_list_description"
+msgstr ""
+"Tehničke (u idealnom slučaju, praktične) diskusije  o trenutnom razvoju <a "
+"href=\"%1\">ntp pool koda</a> i <a href=\"%2\">pgeodns</a> odvijaju se na "
+"timekeepers-dev listi."
+
+msgid "irc_channel_description"
+msgstr "Postoje %2 IRC kanala za server operatore, a za korisnike %1."
+
+# tpl/server.html
+msgid "Back to the front page"
+msgstr "Nazad na početnu stranicu"
+
+msgid "Find"
+msgstr "Naći"
+
+msgid "Stats for %1"
+msgstr "Statistika za %1"
+
+msgid "Not active in the pool, monitoring only"
+msgstr "Neaktivan u pool-u, samo nadgledanje"
+
+msgid "Zones:"
+msgstr "Zone:"
+
+msgid ""
+"This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
+msgstr ""
+"Ovaj server je <span class=\"deletion\">scheduled for deletion</span> na %1."
+
+msgid ""
+"Current score: %1 (only servers with a score higher than %2 are used in the "
+"pool)"
+msgstr ""
+"Trenutni rezultat: %1 (samo serveri sa rezultatom većim od  %2 se koriste u "
+"pool-u)"
+
+msgid "What do the graphs mean?"
+msgstr "Šta grafici pretstavljaju?"
+
+msgid "CSV log"
+msgstr "CSV dnevnik"
+
+# tpl/navigation_sidebar.html
+msgid "News"
+msgstr "Vesti"
+
+msgid "How do I <i>use</i> pool.ntp.org?"
+msgstr "Kako da <i>use</i> pool.ntp.org?"
+
+msgid "How do I <i>join</i> pool.ntp.org?"
+msgstr "Kako da se pridružim <i>join</i> pool.ntp.org?"
+
+msgid "Information for vendors"
+msgstr "Informacije za prodavce"
+
+msgid "The mailing lists"
+msgstr "Mejling lista"
+
+msgid "Additional links"
+msgstr "Dodatni linkovi"
+
+msgid "Can you translate?"
+msgstr "Možete li prevesti?"

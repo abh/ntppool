@@ -1,0 +1,115 @@
+[% page.title = 'Kako treba da podesim NTP da koristim pool?' %]
+
+<div class="block">
+	<h3><a name="use"></a>Kako da koristim pool.ntp.org?</h3>
+
+	<p>
+	Ako želite samo da sinhronizujete vreme na svojim računarima preko mreže, konfiguracioni fajl (za ntpd program sa <a href="http://www.ntp.org">ntp.org distribucije</a>, za sve podržane operativne sisteme - <b>Linux, *BSD, Windows i još poneki egzotični sistem</b>) je vrlo jednostavno:
+	</p>
+
+	[% INCLUDE "ntppool/use/sample-config.html" %]
+
+	<p>
+	0,1,2 i 3.pool.ntp.org imena usmeravaju na nasumični skup servera koji se 
+	menjaju na svakih sat vremena. Proverite da li su časovnici na vašim racunarima 
+	podešeni na nešto razumno (u okviru par minuta od 'tačnog' vremena) - 
+	trebali bi da koristite <tt>ntpdate pool.ntp.org</tt>, ili da koristite 
+	<tt>date</tt> naredbu i podesite prema vašem ručnom satu.
+	Startujte ntpd, i posle nekog vremena(to bi trebalo da potraje oko pola sata!)
+	<code>ntpq -pn</code> bi trebao da pokazuje nečto ovako:
+	</p>
+
+	[% INCLUDE "ntppool/use/sample-ntpq.html" %]
+
+	<p>
+	
+	IP adrese će biti drugačije, zato što će Vam biti dodeljeni nasumični
+	vremenski serveri. Esencijalna stvar je da će jedna od linija počinjati sa
+	zvezdicom <tt>*</tt>), to znači da Vaš računar dobija vreme sa interneta
+	- nećete više morati da brinete o tome!
+	</p>
+	<p>
+	Gledajući u <code>pool.ntp.org</code> (ili <code>0.pool.ntp.org</code>,
+	<code>1.pool.ntp.org</code>, itd) će povremeno vratiti IP adresu servera u okviru 
+	Vaše zemlje ili u okruženju. Za većinu korisnika ovo bi trebalo da daje 
+	najbolje rezultate.
+	</p>
+
+	<p>Možete takođe koristiti <a href="/zone/@">kontinentalne zone</a> (Na primer
+	<a href="/zone/europe">europa</a>,
+	<a href="/zone/north-america">severna amerika</a>,
+	<a href="/zone/oceania">okeanija</a>
+	ili <a href="/zone/asia">azija</a>.pool.ntp.org),
+	i državnu zonu (kao ch.pool.ntp.org za Švajcarsku) - za sve ove zone, možete
+	koristiti 0,1 ili 2 prefikse, kao 0.ch.pool.ntp.org. Napomena, svakako da ta državna zona
+	nemora da postoji za Vašu zemlju, ili može da sadrži samo jedan ili dva vremenska servera.
+	</p>
+	<p>
+	Ako koristite <b> skoriju verziju Windows-a </b>, možete koristiti ntp
+	klijent koji je ugrađen u operativni sistem. Kao Administrator kucajte</p>
+<pre class="code">
+w32tm /config /syncfromflags:manual /manualpeerlist:0.pool.ntp.org,1.pool.ntp.org,2.pool.ntp.org,3.pool.ntp.org
+</pre>
+    <p>
+	na komandnoj liniji. To će raditi na Windows-u 2003 i novijim. ako koristite
+	stariju verziju, možete probati</p>
+<pre class="code">
+net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
+</pre>
+	<p>
+	Takođe isto možete postići, kao administrator, desni klik na sat u taskbar-u
+	obeležite 'Adjust Date/Time' i upišite ime servera u 'Internet Time' polju.
+	</p>
+
+	<p>
+	Meinberg je napravio port od <a href="http://www.meinberg.de/english/sw/ntp.htm">ntp servisa za windows</a>.
+	</p>
+
+	<p>
+	Ako je Vaš Windows sistem deo domena, postoji mogućnost da ažuriranje vremena na raćunaru nećete moći da obavite nezavisno.
+
+	Za više informacija o podašavanju vremena na windowsu, pogledajte <a href="http://technet.microsoft.com/en-us/library/cc773013%28WS.10%29.aspx">Kako Windows servis za vreme funkcioniše</a>.
+	</p>
+</div>
+
+<div class="block">
+	<h3>Dodatne napomene</h3>
+	<p><span class="hook">Ako imate statičku adresu i pristojnu internet vezu</span> (propusni opesg
+	nije toliko važan, ali je bitno da je stabilan i ne mnogo opterećen), molimo
+	Vas da uzmete u obzir i donirate Vaš server u pool. Saobraćaj Vas neće koštati nešto Više od 
+	par stotina bajtova po sekundi, ali ćete pomoći da projekat opstane.
+	Molimo <a href="/join.html">pročitajte pristupnicu</a> za više informacija.
+	</p>
+
+	<p><span class="hook">Ako Vaš internet provajder ima vremenski server</span>,
+	ili ako imate podtake o dobrom vremenskom serveru blizu Vas, onda bi trebali da
+	koristite taj server - verovatno ćete dobijati bolje vreme i koristićete manje mrežnih
+	resursa. Ako znate za samo jedan vremenski server blizu Vas, možete naravno koristiti taj
+	i još dva iz pool.ntp.org ili slično.
+	</p>
+
+	<p><span class="hook">U retkim slučajevima se može dogoditi da ćete dodeliti 
+	isti vremenski server dva puta</span> -	jednostavno restartovanje ntp servera 
+	uglavnom rešava problem. Ako koristite državno vreme, uzmite u obzir da može biti
+	samo jedan server uključen u projekat - bolje koristite kontinentalnu zonu u tom slučaju.
+	Možete <a href="/zone">pretražiti zone</a> da vidite koliko je servera rasporedjeno u svaku zonu.</p>
+		
+	<p><span class="hook">Budite kolegijalni</span>. 
+	Veliki broj servera je omogućeno od strane volontera, i skoro većina vremenskih servera 
+	su file, mail ili webserver-i koji istovremeno pokreću ntp. Zato nemojte koristiti 
+	više od četiri vremenska servera u svojoj konfiguraciji, ne nemojte praviti trikove sa 
+	<tt>burst</tt> ili <tt>minpoll</tt> - sve što ćete dobiti je dodatni saobraćaj
+	na serverima naših volontera.</p>
+	
+	
+	<p><span class="hook">Vodite računa o tome da <i>konfiguracija vremenske zone</i> na Vašem računaru tačna</span>.
+	ntpd ne zna ništa o vremenskim zonama, on interno koristi samo UTC.</p>
+		
+	<p><span class="hook">Ako sinhronizujete mrežu prema pool.ntpd.org</span>, molimo Vas 
+	da podesite jedan od vaših računara kao vremenski server i sve računare sinhronizujete prema njemu
+	(imaćete da obavite dosta čitanja, elem nije toliko teško. Takođe postoji
+	<a href="news:comp.protocols.time.ntp">comp.protocols.time.ntp grupa za novosti</a>.)</p>
+
+	<p class="thanks">Takodje bi voleo da se zahvalim svima koji posvećuju svoje vreme i
+	servere ovoj mreži</p>
+</div>

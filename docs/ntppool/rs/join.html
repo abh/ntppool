@@ -1,0 +1,91 @@
+[% page.title = 'Pridruživanje NTP pool-u!'  %]
+
+<div class="block">
+	<h3><a name="join">Kako da se pridružim pool.ntp.org?</a></h3>
+	<p>
+	Prvo : Hvala Vam na interesovanju. Korišćenje pool-a je enormno poraslo
+	i jedini način na koji bi mogli da ga olakšamo da svako može da pokrene pool server,
+	je da povećamo broj servera koji učestvuju
+	</p>
+
+	<p>
+	Vaš računar <b>mora imati statičku IP adresu</b> i stalni internet konekciju
+	Vrlo je važno da se vaša IP adresa ne menja ili da se menja vrlo retko (recimo
+	jednom godišnje ili ređe). Potreban protok je vrlo nizak. Svaki klijent će
+	će poslati par UDP paketa na svakih par, do svakih dvadeset minuta.
+	
+	</p>
+
+	<p>
+	Trenutno većina servera dobija od 5-15 NTP paketa po sekundi
+	sa šiljcima u povremenim periodima dana sa 60-120 paketa po sekundi. To je 
+	približno ekvivalentno sa 10-15kbit/sec sa šiljcima od 50-120kbit/sec.
+	Ovaj projekat polako pridobija sve više vremenskih servera, tako da se opterećenje
+	neće dramatično povečati za svaki server. Prostorečeno, biće Vam potrebno najmanje
+	384-512Kbit protoka (u oba smera). 
+	</p>
+	<p>
+	Evo i par servera sa protok/opterećenje graficima: 
+	[% i = 0; FOR server = combust.servers_with_urls; %]
+	   <a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
+	[% END %]
+	</p>
+
+	<p>
+	Serveri koji se pridružuju nebi trebali da imaju <tt>pool.ntp.org</tt>
+	kao njihove nadredjene servere, ali bi trebali da imaju konfigurisane
+	<a href="http://support.ntp.org/bin/view/Servers/StratumTwoTimeServers">dobre servere</a>
+	ručno (ti serveri <b>mogu</b> biti izabrani iz pool-a. Poenta je da su izabrani 
+	statistički umesto da budu dodeljeni nasumično posle svakog restarta servera. 
+	To će omogućiti pristojan kvalitet servisa.)
+ 	
+	Obratite pažnju da nije potrebno da Vaš server bude stratum 1 ili 2 server
+	-jer je ovaj projekat oko balansiranja opterećenja. ne postoji razlog 
+	zašto stratum 3 ili stratum 4 server nebi mogao da se pridruži.
+	</p>
+
+	<p>
+	Imamo stranicu sa <a href="/join/configuration.html">preporukama oko izbora konfiguracije servera koji se pridružuju pool-u</a>.
+	</p>
+	<p>Na kraju, moram da izrazim da je pridruživanje pool-u <b>dugoročna obaveza</b>
+	Mi smo voljni i da Vas izvedemo iz pool-a ako dodje do promena okolnosti
+	, ali zbog načina na koji ntp klijenti funkcionišu <b> biće potrebne nedelje, 
+	meseci pa čak i godine dok saobraćaj totalno ne prestane. </b>
+	</p>
+
+	<p>
+	Ako Vam ovo sve odgovara, prijavite se na <a href="/manage">server menadžment</a>
+	stranicu i zatražite da Vam server bude dodat.
+	Ako imate bilo kakve nevolje sa sistemom, pošaljite mi email na 
+	<a
+	href="mailto:ask@develooper.com">ask@develooper.com</a>.
+	</p>
+	<p>
+	Zamolio bih Vas da se takodje pretplatite na
+	<a href="http://news.ntppool.org/atom.xml">weblog feed</a>
+	i možda na 
+	<a href="https://lists.ntp.org/listinfo/pool">pool mailing
+	lista</a>.
+	</p>
+	<p>
+	Bilo bi lepo (ali ne i neophodno= ako bi ste redirektovali web zahteve na portu 80 sa Vašeg vremenskog 
+	servera na oficijelnu web stranicu projekta na <tt>http://www.pool.ntp.org</tt>.
+	Ako koristite Apache, to možete uraditi sa :
+	</p>
+
+        [% PROCESS tpl/join/virtual_host_example.html %]
+
+	<p>
+	Ponavljam, to je samo ako već svakako koristite web server. Officijelni projekat
+	web stranice će uvek biti predstavljen sa 'www' na početku - ali ponekad ljudi su 
+	lenji i samo kucaju <tt>pool.ntp.org</tt> pa se iznenade kad dobiju slučajnu web stranicu.
+	</p>
+	<p>
+	Jednom dodat u pool, server je konstantno nadgledan za dostupnost i
+	preciznost. Vi možete gledati performanse Vašeg servera koristeći 
+	<a href="scores">web frontend</a> ili <a href="/manage">menadžment stranicu</a>.
+	</p>
+</div>
+
+
+
