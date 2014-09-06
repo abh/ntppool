@@ -1,0 +1,85 @@
+<div class="block">
+
+<h3>Preporuke oko konfigurisanja servera koji se pridružuju u pool</h3>
+
+<p>
+<a href="http://support.ntp.org/bin/view/Support/WebHome">Odeljak za
+podršku</a> na <a href="http://support.ntp.org/">support.ntp.org</a> ima dosta
+korisnih informacija.
+</p>
+
+<p>
+Ako samo želite da <i>koristite</i> pool ,pogledajte <a href="/use.html">korišćenje pool-a</a> stranicu. 
+</p>
+
+<p>
+<a
+href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a>
+Newsgroup-a je najbolje mesto da dobijete pomoć oko ntpd software-a
+</p>
+
+<p>
+Ispod se nalaze informacije od popriličnog značaja ako ćete da se pridružite NTP Pool-u sa Vašim serverom.
+</p>
+
+<h4 id="management-queries">Upiti za upravljanje</h4>
+
+<p>Nek Vam početna konfiguracija ne dozvoljava upite za upravljanje. Za ntpd će to biti, dodavanje "noquery" opcije početnoj "restrict" liniji, na primer:</p>
+
+[% INCLUDE "join/configuration/restrict-default.html" %]
+
+<p>Da bi ste dozvolili komande poput "ntpq -c pe" da rade sa localhost-a možete dodati:</p>
+
+[% INCLUDE "join/configuration/restrict-localhost.html" %]
+
+<h4>Podesiti otprilike 5 servera</h4>
+
+<p>
+Za pravilan rad, ntpd treba da komunicira sa najmanje 3 servera ("Čovek
+sa jednim satom zna tačno vreme. A čovek sa dva sata nikad nije siguran").
+</p>
+
+<p>
+Za servere u pool-u preporučujemo ne manje od 4 i ne više od 7 servera.
+</p>
+
+
+<h4>Nemojte koristiti *.pool.ntp.org servere</h4>
+
+<p>
+Ironično je ubedjivati se da je pool servis najbolji što može,
+ne biste trebali da koristite *.pool.ntp.org aliase
+u svojoj konfiguraciji ako čete taj server pridružiti istom. 
+</p>
+
+<p>
+Za robusnost pool-a je zdravije ako će svi pool operatori "ručno odabrati" dobar lokalni vremenski server.
+For the robustness of the pool it's healthier if all pool operators "hand pick" good local (network wise) time servers.
+NTP.org wiki ima <a
+href="http://support.ntp.org/bin/view/Servers/WebHome">listu javnih 
+servera </a>.
+</p>
+
+
+<h4>Koristite standardni ntpd</h4>
+
+<p>
+Mi smo svi za raznovrsan softver, ali značajan procenat "nešto ne radi" pitanja dolaze zbog sofvera
+koji je drugačiji od ntpd.
+</p>
+
+<p>
+Možete <i>koristiti</i> pool sa bilokojim programom koji komunicira preko NTP,
+ali ako ćete se pridružiti pool-u onda preporučujemo da koristite 
+ <a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
+</p>
+
+
+<h4>Nemojte koristiti drajver za LOKALNI časovnik</h4>
+
+<p>
+Serveri u NTP Pool-u ne bi smeli da imaju LOKALNE časovnike podešene.
+</p>
+
+
+</div>

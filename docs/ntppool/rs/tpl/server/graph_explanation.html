@@ -1,0 +1,22 @@
+<div id="graph_explanation_box" class="graph_explanation [% graph_explanation ? 'visible' : '' %]">
+
+<h3>Grafikon bodovanja</h3>
+
+<p>
+Nekoliko puta na sat pool sistem proverava vreme sa Vašeg servera i poredi ga sa lokalnim vremenom. Tačke se oduzimaju ako je server nedostupan ili je offset veći od 100ms (mereno od strane sistema za monitoring). Više oduzetih tačaka veći je offset.
+</p>
+
+<p>
+Grafik je namenjen kao alat za prikazivanje trenutne situacije. Za više detalja šta je monitoring sistem pronašao možete kliknuti na CSV link.
+</p>
+
+<h3>Offset grafik</h3>
+
+<p>
+Sistem za monitoring radi slično kao <a href="http://www.ntp.org/ntpfaq/NTP-s-def.htm#AEN1242">SNTP</a> (<a href="http://tools.ietf.org/html/rfc2030">RFC 2030</a>) klijent, tako da je osetljiv na slučajne latencije između servera i monitoring sistema nego što bi standardni ntpd server trebao da bude.</p>
+
+<p>
+Monitoring sistem može biti pogrešan od 10ms ili više.
+</p>
+
+</div>
