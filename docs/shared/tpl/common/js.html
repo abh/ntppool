@@ -15,7 +15,7 @@ MACRO show_js(list_js_files) BLOCK;
             END;
 
             %]
-<script type="text/javascript" src="[%- jspath -%]" charset="UTF-8"></script>
+<script type="text/javascript" src="[%- jspath -%]"></script>
 [%
             unique_js.${js} = 1;
         END;
