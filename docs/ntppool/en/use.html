@@ -71,7 +71,26 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
 </div>
 
 <div class="block">
-	<h3>Additional Notes</h3>
+	<h3 id="notes">Additional Notes</h3>
+
+        <p><span class="hook">Consider if the NTP Pool is appropriate
+        for your use</span>. If business, organization or human life
+        depends on having correct time or can be harmed by it being
+        wrong, you shouldn't "just get it off the internet". The NTP
+        Pool is generally very high quality, but it is a service run
+        by volunteers in their spare time. Please talk to your
+        equipment and service vendors about getting local and reliable
+        service setup for you. See also our <a href="/tos.html">terms
+        of service</a>.
+
+        We recommend time servers from 
+        <a href="http://www.meinbergglobal.com/english/products/ntp-time-server.htm">Meinberg</a>,
+        but you can also find time servers from
+        <a href="http://www.endruntechnologies.com/NTP-Servers/gps-cdma-ntp.htm">End Run</a>,
+        <a href="http://www.spectracomcorp.com/ProductsServices/TimingSynchronization/NetworkTimeServers/tabid/112/Default.aspx">Spectracom</a>
+        and many others.
+        </p>
+
 	<p><span class="hook">If you have a static IP address and a reasonable Internet connection</span> (bandwidth
 	is not so important, but it should be stable and not too highly loaded), please
 	consider donating your server to the server pool. It doesn't cost you more than
