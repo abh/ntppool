@@ -12,8 +12,8 @@
 	<p>
 	The 0, 1, 2 and 3.pool.ntp.org names point to a random set of servers that will
 	change every hour.  Make sure your computer's clock is set to something
-	sensible (within a few minutes of the 'true' time) - you could use <tt>ntpdate
-	pool.ntp.org</tt>, or you could just use the <tt>date</tt> command and set it
+	sensible (within a few minutes of the 'true' time) - you could use <code>ntpdate
+	pool.ntp.org</code>, or you could just use the <code>date</code> command and set it
 	to your wristwatch. Start ntpd, and after some time (this could take as long as
 	half an hour!), <code>ntpq -pn</code> should output something like:
 	</p>
@@ -23,7 +23,7 @@
 	<p>
 	The IP addresses will be different, because you've been assigned random
 	timeservers. The essential thing is that one of the lines starts with an
-	asterisk (<tt>*</tt>), this means your computer gets the time from the internet
+	asterisk (<code>*</code>), this means your computer gets the time from the internet
 	- you'll never have to worry about it again!
 	</p>
 	<p>
@@ -113,7 +113,7 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
 	<p><span class="hook">Be friendly</span>. Many servers are provided by volunteers, and almost all time
 	servers are really file or mail or webservers which just happen to also run ntp.
 	So don't use more than four time servers in your configuration, and don't play
-	tricks with <tt>burst</tt> or <tt>minpoll</tt> - all you will gain is extra
+	tricks with <code>burst</code> or <code>minpoll</code> - all you will gain is extra
         load on the volunteer time servers.</p>
 
 	<p><span class="hook">Make sure that the <i>time zone configuration</i> of your computer is correct</span>.
