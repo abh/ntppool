@@ -112,9 +112,6 @@ sub show_manage {
 sub handle_add {
     my $self = shift;
 
-    # temporarily disabled
-    return OK, $self->evaluate_template('tpl/manage/add_disabled.html');
-
     my $host = $self->req_param('host');
     $self->tpl_param('host', $host);
 
