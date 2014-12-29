@@ -9,15 +9,15 @@
 				</ul>
 			</div>
 
-                        [% IF combust.site == 'ntppool' %]
+                        [% IF combust.site == 'ntppool' AND !page.error %]
 
 			<h3>[% |l %]Translations[% END %]</h3>
                         <div id="translations">
 			<ul class="mod">
-                                [% FOR lang_id = combust.valid_languages.keys.sort %] 
+                                [% FOR lang_id = combust.valid_languages.keys.sort %]
                                   [% testing_lang = combust.valid_languages.$lang_id.testing || 0%]
                                   [% NEXT IF testing_lang AND combust.deployment_mode == 'prod' %]
-                                  <li><a href="/[% lang_id %][% combust.request.uri %]">[% combust.valid_languages.$lang_id.name %]</a>
+                                  <li><a href="/[% lang_id %][% combust.request.uri | html %]">[% combust.valid_languages.$lang_id.name %]</a>
                                   [% testing_lang ? '<em class="beta">(beta)</em>' : '' %]
                                   </li>
                                 [% END %]
