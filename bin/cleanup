@@ -34,20 +34,22 @@ my $archive_date = $min_ts->clone->add( hours => 16 );
 my $limit = DateTime->now->subtract( days => 36 );
 #my $limit = DateTime->new(year => 2013, month => 1, day => 1, time_zone => 'UTC');
 
-my $end_of_year = DateTime->new(
-    year      => $min_ts->year,
-    month     => 12,
-    day       => 31, hour => 23,
-    minute    => 59,
-    second => 59,
+my $next_year = DateTime->new(
+    year      => $min_ts->year + 1,
+    month     => 1,
+    day       => 1,
+    hour      => 0,
+    minute    => 0,
+    second    => 0,
     time_zone => 'UTC',
 );
+
 
 if ($archive_date > $limit) {
     $archive_date = $limit;
 }
-if ($archive_date > $end_of_year) {
-    $archive_date = $end_of_year;
+if ($archive_date >= $next_year) {
+    $archive_date = $next_year;
 }
 
 if ($archive_date < $min_ts) {
