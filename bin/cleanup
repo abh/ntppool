@@ -16,6 +16,11 @@ $min_ts = DateTime::Format::MySQL->parse_datetime( $min_ts ) or die "Could not p
 
 my $year = $min_ts->year;
 
+my $meta = "";
+if ($year >= 2015) {
+   $meta = ', `meta` text';
+}
+
 $dbh->do(<<EOT
 CREATE TABLE IF NOT EXISTS `log_scores_archive_${year}` (
   `id` bigint(20) unsigned NOT NULL,
@@ -24,8 +29,8 @@ CREATE TABLE IF NOT EXISTS `log_scores_archive_${year}` (
   `ts` datetime NOT NULL,
   `score` double NOT NULL DEFAULT '0',
   `step` double NOT NULL DEFAULT '0',
-  `offset` double DEFAULT NULL,
-  `meta` text
+  `offset` double DEFAULT NULL
+  $meta
 ) ENGINE=ARCHIVE DEFAULT CHARSET=utf8
 EOT
 );
