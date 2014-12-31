@@ -55,7 +55,7 @@ if ($archive_date < $min_ts) {
     exit;
 }
 
-print "Moving records from before $archive_date\n" if -t STDIN;
+print "Moving records older than $archive_date\n" if -t STDIN;
 
 my $rv = $dbh->do(qq[insert into log_scores_archive_${year} select * from log_scores where ts < ?], {}, $archive_date);
 die unless $rv;
