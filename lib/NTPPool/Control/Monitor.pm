@@ -147,8 +147,15 @@ sub upload {
 
         my %log_score = ( step   => $step,
                           offset => $status->{offset},
-                          ts     => $status->{ts},
+                          ts     => int($status->{ts}),
+                          attributes => {},
                         );
+
+
+        $log_score{attributes}->{leap} = $status->{leap}
+          if $status->{leap};
+
+        delete $log_score{attributes} unless %{ $log_score{attributes} };
 
         $server->add_log_scores
           ({   
@@ -164,7 +171,6 @@ sub upload {
         $server_score->save(cascade => 1);
 
         $db->commit;
-
     }
 
     # return how many server results were saved?

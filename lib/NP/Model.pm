@@ -159,6 +159,7 @@ __PACKAGE__->meta->setup(
     score      => { type => 'scalar', default => '0', length => 64, not_null => 1 },
     step       => { type => 'scalar', default => '0', length => 64, not_null => 1 },
     offset     => { type => 'scalar', length => 64 },
+    attributes => { type => 'text', length => 65535 },
   ],
 
   primary_key_columns => [ 'id' ],
@@ -175,6 +176,8 @@ __PACKAGE__->meta->setup(
     },
   ],
 );
+
+__PACKAGE__->meta->setup_json_columns(qw< attributes >);
 
 push @table_classes, __PACKAGE__;
 }

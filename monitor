@@ -6,7 +6,7 @@ use JSON qw(decode_json encode_json);
 use Capture::Tiny qw(capture_merged);
 use HTTP::Tiny;
 
-my $VERSION = "1.1";
+my $VERSION = "1.2";
 
 $Net::NTP::TIMEOUT = 2;
 
@@ -120,6 +120,11 @@ while (1) {
 
     logsay("Getting servers to check");
     my $response = $ua->get($pool_server);
+    unless ($response->{success}) {
+        warn "Didn't get a successful response from monitoring server: ", $response->{status}, "\n";
+        sleep 5;
+        next;
+    }
 
     my $data = eval { decode_json($response->{content}) } || {};
     my $err = $@;
@@ -162,8 +167,12 @@ while (1) {
 	    $Net::NTP::CLIENT_TIME_RECEIVE = undef;
 	    my $time_then = Time::HiRes::time;
 	    $Net::NTP::CLIENT_TIME_SEND = $time_then;
-        
+
 	    my %pkt = eval { get_ntp_response($server); };
+            if ($pkt{"Leap Indicator"}) {
+                $status->{leap} = $pkt{"Leap Indicator"};
+            }
+
 	    my $time_now = Time::HiRes::time;
 
 	    $status->{ts} = $time_now;

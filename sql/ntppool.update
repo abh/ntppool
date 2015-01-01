@@ -462,4 +462,4 @@ CREATE TABLE `log_status` (
 insert ignore into log_status select id, "2014-01-01 00:00:00", 0 from servers order by id;
 
 #65
-alter table log_scores add meta text;
+alter table log_scores add attributes text;
