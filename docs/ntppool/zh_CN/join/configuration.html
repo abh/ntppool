@@ -1,86 +1,76 @@
 <div class="block">
 
-<h3>Configuration recommendations for servers joining the pool</h3>
+<h3>加入地址池的服务器推荐配置</h3>
 
 <p>
-The <a href="http://support.ntp.org/bin/view/Support/WebHome">Support
-section</a> on <a href="http://support.ntp.org/">support.ntp.org</a> has a lot
-of useful information.
+<a href="http://support.ntp.org/">support.ntp.org</a>上的<a href="http://support.ntp.org/bin/view/Support/WebHome">服务支持部分</a>有大量的有用信息。
 </p>
 
 <p>
-If you just want to <i>use</i> the pool, see the <a href="/use.html">pool usage</a> page.
+如果你只是想<i>使用</i>地址池，请看<a href="/use.html">地址池的使用</a>页面。
 </p>
 
 <p>
-The <a
+<a
 href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a>
-newsgroup is the best place to get help with the ntpd software.
+新闻组是得到ntpd软件帮助的最佳之处。
 </p>
 
 <p>
-Below are some things of particular importance if you are going to
-join the NTP Pool with your server.
+如果你想要让你的服务器加入NTP地址池，下面的信息非常重要。
 </p>
 
-<h4 id="management-queries">Management queries</h4>
+<h4 id="management-queries">管理查询</h4>
 
-<p>Make the default configuration be to not allow "management queries". For ntpd this will be adding the "noquery" option to the default "restrict" lines, for example:</p>
+<p>让默认配置不允许“管理查询”。对于ntpd来说这会将"noquery"选项添加到默认的“限制”行，例如：</p>
 
 [% INCLUDE "join/configuration/restrict-default.html" %]
 
-<p>To allow commands like "ntpq -c pe" to work from localhost you can add:</p>
+<p>为了允许像"ntpq -c pe"这样的命令在本地主机上工作，你可以添加：</p>
 
 [% INCLUDE "join/configuration/restrict-localhost.html" %]
 
-<h4>Setup about 5 servers</h4>
+<h4>设置大约5个服务器</h4>
 
 <p>
-To work properly ntpd needs to talk to at least 3 servers ("A man with
-a watch knows what time it is. A man with two watches is never sure").
+为了正常工作，ntpd至少需要和3台服务器交互（“带一块手表的人知道时间，带两块手表的就没法确定了”）。
 </p>
 
 <p>
-For servers in the pool we recommend configuring no less than 4 and no
-more than 7 servers.
+对于地址池当中的服务器我们推荐配置不少于4台服务器，但不要超过7台。
 </p>
 
 
-<h4>Don't use *.pool.ntp.org servers</h4>
+<h4>不要使用*.pool.ntp.org的服务器</h4>
 
 <p>
-Ironically to make sure the pool service is the best it can be you
-shouldn't use the *.pool.ntp.org aliases in your configuration when
-you are going to add your server to the pool.
+有意思的是，为了确保地址池的服务尽可能好，当你想要将你的服务器添加到地址池当中的时候，不应该在你的配置里使用*.pool.ntp.org这个别名。
 </p>
 
 <p>
-For the robustness of the pool it's healthier if all pool operators "hand pick" good local (network wise) time servers.
-The NTP.org wiki has  a <a
-href="http://support.ntp.org/bin/view/Servers/WebHome">list of public
-servers</a>.
+为保证地址池的健壮性，如果所有的地址池操作者都能“手动挑选”优质的本地（明智的网络选择）时间服务器，地址池将会更加健康。
+NTP.org的文档中有<a
+href="http://support.ntp.org/bin/view/Servers/WebHome">公共服务器清单
+</a>.
 </p>
 
 
-<h4>Use the standard ntpd</h4>
+<h4>使用标准的ntpd</h4>
 
 <p>
-We are all for software diversity, but a significant percentage of the
-"it's not working" questions that come in are for software other than
-ntpd.
+我们都希望软件拥有多样性，但是其他软件出现“它不好使了”这样问题的比率要明显高于
+ntpd。
 </p>
 
 <p>
-You can <i>use</i> the pool with any program speaking NTP, but if you
-are going to join the pool we recommend you
-use <a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
+你可以通过任何支持NTP的程序<i>使用</i>地址池，但是如果你想要加入地址池，我们推荐你使用
+<a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
 </p>
 
 
-<h4>Don't use the LOCAL clock driver</h4>
+<h4>请勿使用本地的时钟驱动器</h4>
 
-<p>Servers in the NTP Pool should not have the LOCAL clock driver
-configured.</p>
+<p>NTP地址池里的服务器不应该使用本地时钟的驱动器进行配置。</p>
 
 
 </div>
