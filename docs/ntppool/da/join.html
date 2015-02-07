@@ -20,15 +20,9 @@
 	Pt. får de fleste servere omkring 5-15 NTP pakker hver sekund, med spidser 
 	på 60-120 pakker i sekundet, et par gange om dagen. Dette svare groft til 
 	10-15 Kbit/s med spidser på 50-120 Kbit/s. Projektet vil stødt kræve 
-	flere servere, så belastningen skulle ikke gerne stige dramatisk for den enkelte server. 
-	Sagt lige ud vil du få brug for 
-	Currently most servers get about 5-15 NTP packets per second
-	with spikes a couple of times a day of 60-120 packets per
-	second.  This is roughly equivalent to 10-15Kbit/sec with
-	spikes of 50-120Kbit/sec.  The project steadily acquires more
-	timeservers, so the load should not increase dramatically for
-	each server.  In plain terms, you probably need at least
-	384-512Kbit bandwidth (in and out-going).
+	flere servere, så belastningen skulle ikke gerne stige dramatisk for den 
+	enkelte server. Sagt lige ud vil du få brug for en 384-512 Kbit 
+	forbindelse (begge retninger).
 	</p>
 	<p>
 	Here are a few servers with traffic/load graphs:
@@ -38,12 +32,12 @@
 	</p>
 
 	<p>
-	The servers joining should not have <tt>pool.ntp.org</tt> as their upstream
-	server(s), but should configure some <a href="http://support.ntp.org/bin/view/Servers/StratumTwoTimeServers">good servers</a> manually (those servers
-	<b>may</b> be chosen from the pool. The point is that they are chosen
-	statically instead of assigned randomly at each server restart.  This
-	will help providing an acceptable quality of service.)
-
+	Tilmeldte servere bør ikke have <tt>pool.ntp.org</tt> som deres upstream server(e),
+	men bør bruge nogen <a href="http://support.ntp.org/bin/view/Servers/StratumTwoTimeServers">
+	gode servere</a>, disse kan dog sagtens være fra pool'en. Poienten er at disse vælges statisk, 
+	frem for at blive valgt tilfældigt ved hver server start. Dette hjælper til at give et acceptabelt
+	service niveau.
+	
 	Note that it is not required that your server is a stratum 1 or 2
 	server - as this project is about load distribution mostly, there is
 	no reason why a stratum 3 or even stratum 4 server shouldn't join.
