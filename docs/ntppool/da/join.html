@@ -1,22 +1,27 @@
 [% page.title = 'Join the NTP Pool!'  %]
 
 <div class="block">
-	<h3><a name="join">How do I join pool.ntp.org?</a></h3>
+	<h3><a name="join">Hvordan tilmelder jeg mig pool.ntp.org?</a></h3>
 	<p>
-	First: Thanks for your interest.  Usage of the pool has grown
-	enormously and the only way we can keep it easy for everyone to run a
-	pool server is to also grow the number of servers participating.
+	Først: Tak for din interesse.  Brugen af 'pool'en' er steget 
+	enormt og den eneste måde vi kan gøre det nemt for alle at 
+	have en server kørende, er ved også at øge antallet af tilmedte servere.
 	</p>
 
 	<p>
-	Your computer <b>must have a static IP address</b> and a permanent
-	internet connection.  It's very imporant that your IP address doesn't
-	change or only does so extremely infrequently (say once a year or
-	less).  The required bandwidth is relatively low.  Each client will
-	only send a couple of UDP packets every few to every 20 minutes.
+	Din server <b>skal have en statisk IP adresse</b> og fast internet forbindelse.
+	Det er meget vigtigt at din IP adresse ikke skifter eller at det gør det 
+	meget sjældent (ca 1 gang om året eller mindre). Den krævede båndbredde er 
+	relativ lille. Hver klient vil kun sende et par UDB pakker ca hver anden 
+	minut eller 20. minut.
 	</p>
 
 	<p>
+	Pt. får de fleste servere omkring 5-15 NTP pakker hver sekund, med spidser 
+	på 60-120 pakker i sekundet, et par gange om dagen. Dette svare groft til 
+	10-15 Kbit/s med spidser på 50-120 Kbit/s. Projektet vil stødt kræve 
+	flere servere, så belastningen skulle ikke gerne stige dramatisk for den enkelte server. 
+	Sagt lige ud vil du få brug for 
 	Currently most servers get about 5-15 NTP packets per second
 	with spikes a couple of times a day of 60-120 packets per
 	second.  This is roughly equivalent to 10-15Kbit/sec with
