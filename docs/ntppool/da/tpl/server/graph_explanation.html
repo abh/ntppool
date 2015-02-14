@@ -1,22 +1,26 @@
 <div id="graph_explanation_box" class="graph_explanation [% graph_explanation ? 'visible' : '' %]">
 
-<h3>The Score graph</h3>
+<h3>Score grafen</h3>
 
 <p>
-A couple of times an hour the pool system checks the time from your server and compares it to the local time. Points are deducted if the server can't be reached or if the time offset is more than 100ms (as measured from the monitoring systems). More points are deducted the bigger the offset is.
+Et par gange i timen vil systemet checke din servers tid og sammenligne den med lokal tid. Der trækkes point
+ hvis din server ikke kan tilgås eller hvis forskellen er mere end 100ms. Jo større forskel der er jo 
+ flere point trækkes der.
 </p>
 
 <p>
-The graph is only meant as a tool to visualize trends. For more exact details of what the monitoring system found you can click on the CSV link.
+Grafen er kun ment som et værktøj til at visualisere tendenser. For mere nøjagtige detaljer, klik da på CSV linket.
 </p>
 
-<h3>The Offset graph</h3>
+<h3>Forskels grafen</h3>
 
 <p>
-The monitoring system works roughly like an <a href="http://www.ntp.org/ntpfaq/NTP-s-def.htm#AEN1242">SNTP</a> (<a href="http://tools.ietf.org/html/rfc2030">RFC 2030</a>) client, so it is more susceptible by random network latencies between the server and the monitoring system than a regular ntpd server would be.</p>
+Overvågnings systemet funger omtrent som  en <a href="http://www.ntp.org/ntpfaq/NTP-s-def.htm#AEN1242">SNTP</a> (<a href="http://tools.ietf.org/html/rfc2030">RFC 2030</a>) 
+klient, så det er mere udsat for tilfældige netværks ??? mellem din server og overvågnings systemet end en regulær
+ntp server vil være.</p>
 
 <p>
-The monitoring system can be inaccurate as much as 10ms or more.
+Overvågnings systemet kan være helt op til 10ms unøjagtigt
 </p>
 
 </div>
