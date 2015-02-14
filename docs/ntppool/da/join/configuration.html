@@ -1,31 +1,30 @@
 <div class="block">
 
-<h3>Configuration recommendations for servers joining the pool</h3>
+<h3>Anbefalede opsætninger for tilmeldte server</h3>
 
 <p>
-The <a href="http://support.ntp.org/bin/view/Support/WebHome">Support
-section</a> on <a href="http://support.ntp.org/">support.ntp.org</a> has a lot
-of useful information.
+<a href="http://support.ntp.org/bin/view/Support/WebHome">Support
+sektionen</a> hos <a href="http://support.ntp.org/">support.ntp.org</a> har en masse nyttig information.
 </p>
 
 <p>
-If you just want to <i>use</i> the pool, see the <a href="/use.html">pool usage</a> page.
+Hvis du bare vil <i>bruge</i>  pool'en, så kig her: <a href="/use.html">pool brug</a>.
 </p>
 
 <p>
-The <a
+<a
 href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a>
-newsgroup is the best place to get help with the ntpd software.
+er et godt sted at få hjælp til ntp softwaren.
 </p>
 
 <p>
-Below are some things of particular importance if you are going to
-join the NTP Pool with your server.
+Herunder er det nogen ting, som har stor betydning, hvis du tilmelder din server.
 </p>
 
-<h4 id="management-queries">Management queries</h4>
+<h4 id="management-queries">Management forespørgsler</h4>
 
-<p>Make the default configuration be to not allow "management queries". For ntpd this will be adding the "noquery" option to the default "restrict" lines, for example:</p>
+<p>Slå adgangen for "management forespørgsler" fra. 
+For ntpd betyder det at man skal tilføje "noquery" til "restrict" linien, f.eks.:</p>
 
 [% INCLUDE "join/configuration/restrict-default.html" %]
 
@@ -33,54 +32,46 @@ join the NTP Pool with your server.
 
 [% INCLUDE "join/configuration/restrict-localhost.html" %]
 
-<h4>Setup about 5 servers</h4>
+<h4>Brug omkring 5 servere</h4>
 
 <p>
-To work properly ntpd needs to talk to at least 3 servers ("A man with
-a watch knows what time it is. A man with two watches is never sure").
+For at fungere rigtigt skal ntp snakke med mindst 3 andre servere
+("En mand med et ur ved hvad tiden er, en mand med 2 kan aldrig være sikker")
 </p>
 
 <p>
-For servers in the pool we recommend configuring no less than 4 and no
-more than 7 servers.
+For servere i pool'en, anbefaler at bruge ikke mindre end 4 andre servere og ikke flere end 7.
 </p>
 
 
-<h4>Don't use *.pool.ntp.org servers</h4>
+<h4>Bruge ikke *.pool.ntp.org servere</h4>
 
 <p>
-Ironically to make sure the pool service is the best it can be you
-shouldn't use the *.pool.ntp.org aliases in your configuration when
-you are going to add your server to the pool.
+Ironisk nok for at sikre at pool'en køre optimalt, skal man ikke bruge *.pool.ntp.org adresser.
 </p>
 
 <p>
-For the robustness of the pool it's healthier if all pool operators "hand pick" good local (network wise) time servers.
-The NTP.org wiki has  a <a
-href="http://support.ntp.org/bin/view/Servers/WebHome">list of public
-servers</a>.
+For at pool'en er robust er det bedre at håndplukke gode lokale servere. Wiki'en på NTP.org har en liste  <a
+href="http://support.ntp.org/bin/view/Servers/WebHome">offentlige servere</a>.
 </p>
 
-
-<h4>Use the standard ntpd</h4>
+<h4>Brug standard ntpd</h4>
 
 <p>
-We are all for software diversity, but a significant percentage of the
-"it's not working" questions that come in are for software other than
-ntpd.
+Vi går ind for mangfoldighed i software, men en betydelig procent af 
+"Det virker ikke" spørgsmål kommer ud af brugen af andet end ntpd.
 </p>
 
 <p>
-You can <i>use</i> the pool with any program speaking NTP, but if you
-are going to join the pool we recommend you
-use <a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
+Du <i>kan</i> bruge et hvilket som helst NTP program i forbindelse med pool'en, men hvis du
+vil tilmelde din server, anbefaler vi at du bruger 
+<a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
 </p>
 
 
-<h4>Don't use the LOCAL clock driver</h4>
+<h4>Brug ikke en lokal klokke</h4>
 
-<p>Servers in the NTP Pool should not have the LOCAL clock driver
-configured.</p>
+<p>Tilmeldte server bør ikke bruge en lokal klokke.</p>
 
 
 </div>
