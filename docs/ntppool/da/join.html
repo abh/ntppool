@@ -25,7 +25,7 @@
 	forbindelse (begge retninger).
 	</p>
 	<p>
-	Here are a few servers with traffic/load graphs:
+	Her er et par servere med trafik/belastnings grafer:
 	[% i = 0; FOR server = combust.servers_with_urls; %]
 	   <a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
 	[% END %]
@@ -38,53 +38,46 @@
 	frem for at blive valgt tilfældigt ved hver server start. Dette hjælper til at give et acceptabelt
 	service niveau.
 	
-	Note that it is not required that your server is a stratum 1 or 2
-	server - as this project is about load distribution mostly, there is
-	no reason why a stratum 3 or even stratum 4 server shouldn't join.
+	Note: Det er ikke påkrævet at din server er en stratum 1 eller 2 - 
+	Da dette project går mere ud på at fordele belastningen, så der er 
+	ikke noget til hinder for at en stratum 3, eller endda stratum 4 kan deltage.
 	</p>
 
 	<p>
-	We have a page with <a href="/join/configuration.html">configuration recommendations for servers joining the pool</a>.
+	Vi har en side med <a href="/join/configuration.html"> anbefalede opsætninger, til servere der 
+	deltager</a>.
+	
 	</p>
-	<p>Finally, I must emphasize that joining the pool is a <b>long term
-	commitment</b>.  We are happy to take you out of the pool again if your
-	circumstances change, but because of how the ntp clients operate <b>it
-	will take weeks, months or even YEARS before the traffic completely
-        goes away</b>.
-	</p>
+	<p>Til sidst skal det understreges at tilmelde sig <b>er et langsigtet engagement</b>. Vi tager
+	dig gerne ud af pool'en igen, hvis dine omstændigheder ændre sig, men på grund af måden ntp klienter 
+	køre så kan det tage <b>måneder, endda år inden trafikken stopper helt</b>.
+		</p>
 
-	<p>
-	If this is all ok, login to the
-	<a href="/manage">server management</a> page and request your server to be added. 
-	If you have any trouble with the system, email me at <a
+	<p>Hvis alt dette er ok, så log ind på <a href="/manage">server management</a> siden og bed om at få
+	din server tilmeldt. Hvis du har nogen problemer med systemet, så skriv mig en mail <a
 	href="mailto:ask@develooper.com">ask@develooper.com</a>.
 	</p>
 	<p>
-	I'd ask you to also subscribe to
-	the <a href="http://news.ntppool.org/atom.xml">weblog feed</a>
-	and maybe to
-	the <a href="https://lists.ntp.org/listinfo/pool">pool mailing
-	list</a>.
+	Jeg vil også bede dig om tilmelde dig <a href="http://news.ntppool.org/atom.xml">weblog feed</a>
+	og måske <a href="https://lists.ntp.org/listinfo/pool">pool mail listen</a>.
 	</p>
 	<p>
-	It would be nice (but it's not necessary) if you could redirect web requests
-	on port 80 of your time server to the official web page of the project at
-	<tt>http://www.pool.ntp.org</tt>. If you run Apache, you could do this with:
+	Det ville også være dejligt hvis du omdirigere alle kald til port 80 til den officielle side for 
+	projektet <tt>http://www.pool.ntp.org</tt>. Dette er dog frivilligt. Køre du apache så kan du gøre
+	det med: 
 	</p>
 
         [% PROCESS tpl/join/virtual_host_example.html %]
 
 	<p>
-	Again, this is only if you run a webserver anyway. The official project web 
-	page will always be given with the 'www' at the beginning - but sometimes
-	people are lazy and just type <tt>pool.ntp.org</tt> and are then surprised
-	to just get a random web page.
+	Igen, detter er kun hvis du køre en web server. Den officielle side vil altid komme frem hvis man starter
+	med 'www' - Men sommetider er folk dovne og skriver <tt>pool.ntp.org</tt> og bliver overrasket over at 
+	få en tilfældig side.
 	</p>
 	<p>
-	Once added to the pool the server is constantly monitored for
-        availability and precision.  You can watch your server's
-        performance using the <a href="scores">web frontend</a> or
-        the <a href="/manage">management page</a>.
+	Når din server er tilmeldt så vil den konstant blive overvåget for tilgængelighed og præcission. Du kan
+	se din servers præstation ved at bruge <a href="scores">frontend</a> eller 
+	<a href="/manage">management siden</a>.
 	</p>
 </div>
 
