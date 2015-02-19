@@ -57,7 +57,10 @@ sub render {
 
             return OK, $self->evaluate_template('tpl/server.html');
         }
-        elsif ($mode eq 'monitors') {
+
+        $self->request->header_out('Vary', undef);
+
+        if ($mode eq 'monitors') {
             $self->cache_control('s-maxage=480,max-age=240') if $public;
             return OK, encode_json({monitors => $self->_monitors($server)}), 'application/json';
         }
