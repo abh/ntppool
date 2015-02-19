@@ -40,9 +40,9 @@ sub graph_path {
     return "$rrd_path/graph/" . $file;
 }
 
-
 sub children {
-    shift->zones;
+    my $self = shift;
+    return $self->{_children} ||= [ sort { $a->name cmp $b->name } $self->zones ];
 }
 
 sub random_subzone_ids {
