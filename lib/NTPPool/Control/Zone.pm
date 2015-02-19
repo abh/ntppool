@@ -61,6 +61,9 @@ sub render {
   elsif ($self->request->path =~ m!\.json$!) {
       my $limit = $self->req_param('limit') || 0;
 
+      # don't Vary: Accept-Language
+      $self->request->header_out('Vary', undef);
+
       my $data = NP::Model->zone_server_count->get_objects(
           query   => [zone_id => $zone->id],
           sort_by => 'date',
