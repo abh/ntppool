@@ -5,19 +5,19 @@ use base qw(Rose::DB::Object::ConventionManager);
 
 use Rose::DB::Object::Metadata;
 
-Rose::DB::Object::Metadata->convention_manager_classes
-    (
-     Rose::DB::Object::Metadata->convention_manager_classes,
-     default => __PACKAGE__,
-     );
+Rose::DB::Object::Metadata->convention_manager_classes(
+    Rose::DB::Object::Metadata->convention_manager_classes,
+    default => __PACKAGE__,);
 
 my %not_a_map_table;
-@not_a_map_table{qw(
-   log_scores
-   server_scores
-   vendor_zones
-   dns_roots
-)} = ();
+@not_a_map_table{
+    qw(
+      log_scores
+      server_scores
+      vendor_zones
+      dns_roots
+      )
+} = ();
 
 sub looks_like_map_table {
     my ($self, $table) = @_;
@@ -29,7 +29,7 @@ sub plural_to_singular {
     my ($self, $word) = @_;
 
     if ($word eq "log_status") {
-       return $word;
+        return $word;
     }
     else {
         $self->SUPER::plural_to_singular($word);

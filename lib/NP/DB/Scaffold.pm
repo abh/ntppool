@@ -3,18 +3,16 @@ use strict;
 use base qw(Combust::RoseDB::Scaffold);
 
 sub db_model_class {
-  my ($self, $db) = @_;
-  die "unknown database [$db]" unless $db eq 'ntppool';
-  "NP::Model";
+    my ($self, $db) = @_;
+    die "unknown database [$db]" unless $db eq 'ntppool';
+    "NP::Model";
 }
 
 sub convention_manager {
-  'NP::DB::ConventionManager';
+    'NP::DB::ConventionManager';
 }
 
-my %json_fields = (
-    log_scores => 'attributes',
-);
+my %json_fields = (log_scores => 'attributes',);
 
 sub json_columns {
     my $self = shift;

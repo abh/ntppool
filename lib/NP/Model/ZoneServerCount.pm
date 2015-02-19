@@ -19,25 +19,27 @@ sub first_stats {
 
     my $id;
     if ($year) {
-        ($id) = $dbh->selectrow_array(qq[select id from zone_server_counts where zone_id=? and year(date)=?
+        ($id) = $dbh->selectrow_array(
+            qq[select id from zone_server_counts where zone_id=? and year(date)=?
                                          $ip_version_sql
                                          order by date limit 1],
-                                      undef,
-                                      $zone->id, $year,
-                                     );
+            undef,
+            $zone->id, $year,
+        );
     }
     else {
-        ($id) = $dbh->selectrow_array(qq[select id from zone_server_counts where zone_id=?
+        ($id) = $dbh->selectrow_array(
+            qq[select id from zone_server_counts where zone_id=?
                                          $ip_version_sql
                                          order by date limit 1],
-                                      undef,
-                                      $zone->id,
-                                     );
+            undef,
+            $zone->id,
+        );
     }
 
     return unless $id;
     $class->fetch(id => $id);
-} 
+}
 
 
 1;

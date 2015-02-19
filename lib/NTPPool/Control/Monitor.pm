@@ -9,7 +9,7 @@ my $json = JSON::XS->new->pretty;
 
 sub error {
     my ($self, $error) = @_;
-    return OK, $json->encode({ error => $error });
+    return OK, $json->encode({error => $error});
 }
 
 sub render {
@@ -19,8 +19,8 @@ sub render {
 
     if ($self->request->path eq '/monitor/map') {
         my $servers = NP::Model->server->get_objects;
-        my $now = DateTime->now;
-        my $map = {
+        my $now     = DateTime->now;
+        my $map     = {
             map {
                 my $deleted = ($_->deletion_on and $_->deletion_on < $now) ? 1 : 0;
                 (   $_->ip => {
@@ -48,6 +48,7 @@ sub render {
     }
 
     my $ip = $self->request->remote_ip;
+
     # TODO: check that the current IP is allowed for this monitor
 
     if ($self->request->method eq 'post') {
@@ -57,7 +58,7 @@ sub render {
     # go through server array and fetch offset for all servers
     my $servers = NP::Model->server->get_check_due($monitor, 50);
 
-    return OK, $json->encode({ servers => [ map { $_->ip } @$servers ]  }), "application/json";
+    return OK, $json->encode({servers => [map { $_->ip } @$servers]}), "application/json";
 }
 
 sub post_data {
@@ -71,10 +72,11 @@ sub post_data {
 }
 
 sub upload {
-    my $self = shift;
+    my $self    = shift;
     my $monitor = shift;
 
     my $data = $self->post_data;
+
     #warn "got data: ", pp($data);
 
     return $self->error('Unknown version') unless $data->{version} and $data->{version} == 1;
@@ -86,19 +88,18 @@ sub upload {
 
     my @warnings;
 
-    for my $status ( @{ $data->{servers} } ) {
+    for my $status (@{$data->{servers}}) {
         my $txn = $db->begin_scoped_work;
 
         # TODO: Normalize IPv6 IP (or transfer data by ID...)
 
-        my $server_score = NP::Model->server_score->get_server_scores
-          (
-           query => [
-                     'monitor_id' => $monitor->id,
-                     'server.ip'  => $status->{server},
-                     ],
-           require_objects => ['server'],
-          );
+        my $server_score = NP::Model->server_score->get_server_scores(
+            query => [
+                'monitor_id' => $monitor->id,
+                'server.ip'  => $status->{server},
+            ],
+            require_objects => ['server'],
+        );
 
         $server_score = $server_score && $server_score->[0];
         my $server = $server_score->server;
@@ -108,18 +109,18 @@ sub upload {
             next;
         }
 
-	my $max_score;
+        my $max_score;
         my $step;
-        if (! $status->{stratum} or $status->{no_response}) {
+        if (!$status->{stratum} or $status->{no_response}) {
             $step = -5;
         }
         else {
             my $offset_abs = abs($status->{offset});
             if ($offset_abs > 3 or $status->{stratum} >= 8) {
                 $step = -4;
-		if ($offset_abs > 3) {
-		    $max_score = -20;
-		}
+                if ($offset_abs > 3) {
+                    $max_score = -20;
+                }
             }
             elsif ($offset_abs > 0.75) {
                 $step = -2;
@@ -131,42 +132,40 @@ sub upload {
                 $step = 1;
             }
         }
-        
 
-        my $ts = DateTime->from_epoch( epoch => $status->{ts} );
+
+        my $ts = DateTime->from_epoch(epoch => $status->{ts});
 
         for my $obj ($server_score, $server) {
-	    my $new_score = ($obj->score_raw * 0.95) + $step;
-	    if (defined $max_score and $new_score > $max_score) {
-		$new_score = $max_score;
-	    }
+            my $new_score = ($obj->score_raw * 0.95) + $step;
+            if (defined $max_score and $new_score > $max_score) {
+                $new_score = $max_score;
+            }
             $obj->score_raw($new_score);
             $obj->score_ts($ts);
             $obj->stratum($status->{stratum});
         }
 
-        my %log_score = ( step   => $step,
-                          offset => $status->{offset},
-                          ts     => int($status->{ts}),
-                          attributes => {},
-                        );
+        my %log_score = (
+            step       => $step,
+            offset     => $status->{offset},
+            ts         => int($status->{ts}),
+            attributes => {},
+        );
 
 
         $log_score{attributes}->{leap} = $status->{leap}
           if $status->{leap};
 
-        delete $log_score{attributes} unless %{ $log_score{attributes} };
+        delete $log_score{attributes} unless %{$log_score{attributes}};
 
-        $server->add_log_scores
-          ({   
-               %log_score,
-               score  => $server->score,
-           },
-           {   
-               %log_score,
-               score  => $server_score->score,
-               monitor_id => $monitor->id,
-           });
+        $server->add_log_scores(
+            {%log_score, score => $server->score,},
+            {   %log_score,
+                score      => $server_score->score,
+                monitor_id => $monitor->id,
+            }
+        );
 
         $server_score->save(cascade => 1);
 
@@ -174,7 +173,7 @@ sub upload {
     }
 
     # return how many server results were saved?
-    return OK, $json->encode({ ok => 1, warnings => \@warnings });
+    return OK, $json->encode({ok => 1, warnings => \@warnings});
 }
 
 1;

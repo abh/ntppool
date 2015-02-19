@@ -8,22 +8,22 @@ use Carp qw(croak);
 use Data::Transformer ();
 
 our @EXPORT_OK = qw(
-   convert_to_html
-   run
-   utf8_safe
-   utf8_safe_tree
-   uniq
+  convert_to_html
+  run
+  utf8_safe
+  utf8_safe_tree
+  uniq
 );
 
 sub convert_to_html {
     my $str = shift;
 
-    encode_entities($str, '<>&"');  # how can we encode everything without messing up UTF8?
+    encode_entities($str, '<>&"');    # how can we encode everything without messing up UTF8?
     $str =~ s!(https?://.+?)(\s|$)!<a href="$1">$1</a>$2!g;
-                             $str =~ s!\n\s*[\n\s]+!<br/><br/>!g;
-                             $str =~ s!\n!<br/>\n!g;
+    $str =~ s!\n\s*[\n\s]+!<br/><br/>!g;
+    $str =~ s!\n!<br/>\n!g;
 
-                             $str;
+    $str;
 }
 
 sub run {
@@ -37,7 +37,7 @@ sub run {
     my $exit_value = $? >> 8;
     return 0
       if $parms->{fail_silent_if}
-          && $exit_value == $parms->{fail_silent_if};
+      && $exit_value == $parms->{fail_silent_if};
 
     my $msg = "system @ar failed: $exit_value ($?)";
     croak($msg) unless $parms->{failok};
@@ -49,12 +49,13 @@ sub utf8_safe {
     my $text = shift;
     $text = Encode::decode("windows-1252", $text)
       unless utf8::is_utf8($text)
-        or utf8::decode($text);
+      or utf8::decode($text);
     return $text;
 }
 
 sub utf8_safe_tree {
-    my $data = shift;    Data::Transformer->new(
+    my $data = shift;
+    Data::Transformer->new(
         normal => sub {
             ${$_[0]} = utf8_safe(${$_[0]}) if ${$_[0]};
         }

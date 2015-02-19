@@ -2,30 +2,29 @@ package NP::Model::VendorZone;
 use strict;
 use NP::Util qw();
 
-my %reserved_zone_names = map { $_ => 1 } 
-  qw(
-     europe
-     north-america
-     south-america
-     america
-     asia
-     africa
+my %reserved_zone_names = map { $_ => 1 } qw(
+  europe
+  north-america
+  south-america
+  america
+  asia
+  africa
 
-     root
-     ntppool
-     vendor
-  );
+  root
+  ntppool
+  vendor
+);
 
 sub validate {
-    my $vz = shift;
+    my $vz     = shift;
     my $errors = {};
     unless ($vz->zone_name) {
-        $errors->{zone_name} = 'A zone name is required.'; 
+        $errors->{zone_name} = 'A zone name is required.';
     }
     elsif (length $vz->zone_name < 4) {
         $errors->{zone_name} = 'The zone name must be 4 or more characters.';
     }
-    
+
     if ($reserved_zone_names{$vz->zone_name}) {
         $errors->{zone_name} = 'That zone name is in use or reserved.';
     }
@@ -44,7 +43,7 @@ sub validate {
     }
 
     $vz->{_validation_errors} = $errors;
-    
+
     %$errors ? 0 : 1;
 }
 
@@ -57,8 +56,9 @@ sub can_edit {
     my ($self, $user) = @_;
     return 0 unless $user;
     return 1 if $user->privileges->vendor_admin;
-    return 1 if $self->status eq 'New'
-        and $user->id == $self->user_id; # TODO: many<->many
+    return 1
+      if $self->status eq 'New'
+      and $user->id == $self->user_id;    # TODO: many<->many
     return 0;
 }
 
@@ -66,7 +66,7 @@ sub can_view {
     my ($self, $user) = @_;
     return 0 unless $user;
     return 1 if $user->privileges->vendor_admin;
-    return 1 if $user->id == $self->user_id; # TODO: many<->many
+    return 1 if $user->id == $self->user_id;       # TODO: many<->many
     return 0;
 }
 

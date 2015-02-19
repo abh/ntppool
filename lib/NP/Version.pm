@@ -1,6 +1,6 @@
 package NP::Version;
 use strict;
-use Sys::Hostname qw(); 
+use Sys::Hostname qw();
 use List::Util ();
 
 my $dir = $ENV{CBROOTLOCAL};
@@ -28,12 +28,13 @@ sub refresh {
     }
 
     $current_revision = $new_revision;
-  
+
     $new_revision;
 }
 
 # OO to be Template Toolkit friendly
 my $singleton;
+
 sub new {
     return $singleton if $singleton;
     my $class = shift;

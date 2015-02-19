@@ -12,7 +12,7 @@ after 'init' => sub {
     my $self = shift;
 };
 
-my $lang_regexp = "(" . join( "|", keys %NTPPool::Control::valid_languages) . ")";
+my $lang_regexp = "(" . join("|", keys %NTPPool::Control::valid_languages) . ")";
 $lang_regexp = qr!^/$lang_regexp/!;
 
 augment 'reference' => sub {

@@ -31,19 +31,20 @@ sub add_directory {
 
     my $pattern = File::Spec->catfile($directory, '*.[pm]o');
 
-    Locale::Maketext::Lexicon->import({
-        '*' => [ Gettext => $pattern ],
-        _auto   => 1,
-        _style  => 'gettext',
-        _decode => 1,
-    });
+    Locale::Maketext::Lexicon->import(
+        {   '*'     => [Gettext => $pattern],
+            _auto   => 1,
+            _style  => 'gettext',
+            _decode => 1,
+        }
+    );
 
     return;
 }
 
 sub init_class {
     my $config = Combust->config;
-    add_directory( $config->root_local . '/i18n' );
+    add_directory($config->root_local . '/i18n');
 }
 
 1;

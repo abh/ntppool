@@ -65,7 +65,7 @@ sub render {
             return OK, encode_json({monitors => $self->_monitors($server)}), 'application/json';
         }
         elsif ($mode eq 'log' or $self->req_param('log') or $mode eq 'json') {
-            $mode = $mode eq 'json' ? $mode : 'log'; 
+            $mode = $mode eq 'json' ? $mode : 'log';
             my $limit = $self->req_param('limit') || 0;
             $limit = 50 unless $limit and $limit !~ m/\D/;
             $limit = 4000 if $limit > 4000;

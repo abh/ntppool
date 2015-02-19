@@ -14,23 +14,22 @@ sub find_dns_servers {
     my $res = Net::DNS::Resolver->new;
 
     my %servers;
-    
+
     my $add_servers = sub {
         my $name = shift;
-        my @ips = host_to_ips($name);
+        my @ips  = host_to_ips($name);
         for my $ip (@ips) {
             unless ($servers{$ip}) {
-                $servers{$ip} = { names => [] };
+                $servers{$ip} = {names => []};
             }
-            push @{ $servers{$ip}->{names} }, $name;
+            push @{$servers{$ip}->{names}}, $name;
         }
     };
 
     my $pool_domain = Combust::Config->new->site->{ntppool}->{pool_domain}
       or die "pool_domain configuration not setup";
 
-    my $dns_domains =
-      Combust::Config->new->site->{ntppool}->{dns_domains} || $pool_domain;
+    my $dns_domains = Combust::Config->new->site->{ntppool}->{dns_domains} || $pool_domain;
 
     my @domains = split /\s+/, $dns_domains;
     for my $domain (@domains) {
@@ -60,6 +59,7 @@ sub find_dns_servers {
 }
 
 my $resolver;
+
 sub _res {
     return $resolver = Net::DNS::Resolver->new;
 }
@@ -86,8 +86,8 @@ sub get_dns_info {
 
     for my $ns (keys %servers) {
         $res->nameserver($ns);
-        $sockets{$ns}->{soa_socket}     = $res->bgsend($pool_domain,           'SOA');
-        $sockets{$ns}->{status_socket}  = $res->bgsend("_status.$pool_domain",  'TXT');
+        $sockets{$ns}->{soa_socket}    = $res->bgsend($pool_domain,           'SOA');
+        $sockets{$ns}->{status_socket} = $res->bgsend("_status.$pool_domain", 'TXT');
     }
 
     for my $i (1 .. 5) {
@@ -165,10 +165,10 @@ sub get_dns_info {
 }
 
 sub host_to_ips {
-    my $host = shift;
-    my $res = _res();
+    my $host  = shift;
+    my $res   = _res();
     my $query = $res->search($host);
-  
+
     my @ips;
 
     if ($query) {
@@ -176,7 +176,8 @@ sub host_to_ips {
             next unless $rr->type eq "A";
             push @ips, $rr->address;
         }
-    } else {
+    }
+    else {
         warn "query failed: ", $res->errorstring, "\n";
     }
     return @ips;

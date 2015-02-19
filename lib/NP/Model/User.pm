@@ -2,12 +2,15 @@ package NP::Model::User;
 use strict;
 use Net::IP;
 
-sub BAD_SERVER_THRESHOLD { -15 }
+sub BAD_SERVER_THRESHOLD {-15}
 
 sub is_staff {
-    my $self = shift;
+    my $self       = shift;
     my $privileges = $self->privileges;
-    return $privileges->see_all_servers or $privileges->see_all_user_profiles or $privileges->support_staff;
+    return
+         $privileges->see_all_servers
+      or $privileges->see_all_user_profiles
+      or $privileges->support_staff;
 }
 
 sub who {
@@ -17,30 +20,30 @@ sub who {
 
 sub privileges {
     my $self = shift;
-    $self->user_privilege(@_) || $self->user_privilege({ user_id => $self->id })->save;
+    $self->user_privilege(@_) || $self->user_privilege({user_id => $self->id})->save;
 }
 
 sub bad_servers {
-    my $s = [ grep { $_->score < BAD_SERVER_THRESHOLD } shift->servers ];
+    my $s = [grep { $_->score < BAD_SERVER_THRESHOLD } shift->servers];
     wantarray ? @$s : $s;
 }
 
 sub servers {
     my $self = shift;
+
     #local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
-    my $s = NP::Model->server->get_servers
-        ( query =>
-          [ user_id     => $self->id,
-            or =>
-              [ deletion_on => undef, # not deleted
-                deletion_on => { 'gt' => DateTime->today } # deleted in the future
-              ],
-          ],
-        );
-    $s = [ sort { $a->ip cmp $b->ip  }
-           @$s ];
+    my $s = NP::Model->server->get_servers(
+        query => [
+            user_id => $self->id,
+            or      => [
+                deletion_on => undef,                       # not deleted
+                deletion_on => {'gt' => DateTime->today}    # deleted in the future
+            ],
+        ],
+    );
+    $s = [sort { $a->ip cmp $b->ip } @$s];
     wantarray ? @$s : $s;
-} 
+}
 
 package NP::Model::User::Manager;
 use strict;
@@ -48,8 +51,8 @@ use strict;
 
 sub admins_to_notify {
     my $class = shift;
-    my $ids = NP::Model->dbh->selectcol_arrayref
-      (qq[SELECT DISTINCT u.id
+    my $ids   = NP::Model->dbh->selectcol_arrayref(
+        qq[SELECT DISTINCT u.id
            FROM
              servers s
              JOIN users u ON(s.user_id=u.id)
@@ -67,13 +70,12 @@ sub admins_to_notify {
                   )
           ORDER BY s.user_id
         ],
-       undef,
-       NP::Model::User->BAD_SERVER_THRESHOLD,
-       NP::Model::Zone->deletion_grace_days + 2,
-      );
+        undef,
+        NP::Model::User->BAD_SERVER_THRESHOLD,
+        NP::Model::Zone->deletion_grace_days + 2,
+    );
     return unless $ids and @$ids;
-    $class->get_users
-      (query => [ id => $ids ]);
+    $class->get_users(query => [id => $ids]);
 }
 
 1;

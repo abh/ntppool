@@ -11,7 +11,7 @@ sub render {
     my $self = shift;
 
     if ($self->request->path =~ m!^/manage! and $self->site ne 'manage') {
-        return $self->redirect( $self->manage_url( $self->request->path ));
+        return $self->redirect($self->manage_url($self->request->path));
     }
 
     if ($self->request->path eq '/ntppool') {
@@ -19,7 +19,7 @@ sub render {
     }
 
     if ($self->request->uri =~ m!^/robots.txt$!) {
-        $self->force_template_processing(1)
+        $self->force_template_processing(1);
     }
     else {
         my @r = $self->localize_url;
@@ -34,17 +34,18 @@ sub servers_with_urls {
 
     # local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
 
-    my $servers = NP::Model->server->get_servers
-        (query => [ or =>
-                    [ 'in_pool' => 1,
-                      'in_server_list' => 1,
-                     ],
-                    'deletion_on' => undef,
-                    'score_raw' => { gt => 0 },
-                   ],
-         require_objects => ['server_urls'],
-         sort_by         => 'id',
-         );
+    my $servers = NP::Model->server->get_servers(
+        query => [
+            or => [
+                'in_pool'        => 1,
+                'in_server_list' => 1,
+            ],
+            'deletion_on' => undef,
+            'score_raw'   => {gt => 0},
+        ],
+        require_objects => ['server_urls'],
+        sort_by         => 'id',
+    );
     $servers;
 }
 

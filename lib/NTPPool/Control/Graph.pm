@@ -26,9 +26,10 @@ sub render {
     # we only have one graph type now
     $type = 'offset';
 
-    return $self->redirect('/graph/' . $server->ip . "/$type" , 301) unless $p eq $server->ip;
+    return $self->redirect('/graph/' . $server->ip . "/$type", 301) unless $p eq $server->ip;
 
-    my $graph = eval { $gearman->do_task('update_graphs', $server->id, {uniq => 'graphs-' . $server->id}); };
+    my $graph =
+      eval { $gearman->do_task('update_graphs', $server->id, {uniq => 'graphs-' . $server->id}); };
 
     my $err = $@ || !$graph;
     warn "update_graphs error: $err" if $err;

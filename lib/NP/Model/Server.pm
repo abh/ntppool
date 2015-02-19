@@ -13,13 +13,13 @@ POSIX::tzset();
 my $config = Combust::Config->new;
 
 sub active_score {
-    return 10
-};
+    return 10;
+}
 
 sub insert {
     my $self = shift;
 
-    my $ip = Net::IP->new( $self->ip );
+    my $ip = Net::IP->new($self->ip);
     $self->ip($ip->short);
 
     $self->join_zone('.');
@@ -38,9 +38,7 @@ sub setup_server {
     $self->deletion_on(undef);
     $self->score_raw($start_score);
 
-    my $monitors = NP::Model->monitor->get_objects
-      ( query => [ ip_version => $self->ip_version ]
-      );
+    my $monitors = NP::Model->monitor->get_objects(query => [ip_version => $self->ip_version]);
 
     for my $monitor (@$monitors) {
         $self->add_server_scores(
@@ -56,15 +54,16 @@ sub setup_server {
 
 sub _resolve_zone {
     my ($zone_name) = @_;
-    my $zone = ref $zone_name
-                 ? $zone_name
-                 : NP::Model->zone->fetch(name => $zone_name);
+    my $zone =
+      ref $zone_name
+      ? $zone_name
+      : NP::Model->zone->fetch(name => $zone_name);
 
     unless ($zone) {
         warn "Could not find the zone: $zone_name";
         return;
     }
-    $zone
+    $zone;
 }
 
 sub join_zone {
@@ -79,9 +78,10 @@ sub join_zone {
 sub leave_zone {
     my ($self, $zone_name) = @_;
     my $zone = _resolve_zone($zone_name) or return;
+
     # TODO: figure out how to do this on the $self object... :-/
     my $zones = $self->zones;
-    $zones = [ grep { $zone->id != $_->id } @$zones ];
+    $zones = [grep { $zone->id != $_->id } @$zones];
     $self->zones($zones);
 }
 
@@ -89,7 +89,7 @@ sub leave_zone {
 
 sub zones_display {
     my $self = shift;
-    my $zones = [ grep { $_->name ne '.' } sort { $a->name cmp $b->name } @{ $self->zones } ];
+    my $zones = [grep { $_->name ne '.' } sort { $a->name cmp $b->name } @{$self->zones}];
     wantarray ? @$zones : $zones;
 }
 
@@ -99,9 +99,9 @@ sub deleted {
 }
 
 sub score {
-  my $self = shift;
-  croak "Can't set 'score' - use 'score_raw'" if @_;
-  sprintf "%0.1f", $self->score_raw;
+    my $self = shift;
+    croak "Can't set 'score' - use 'score_raw'" if @_;
+    sprintf "%0.1f", $self->score_raw;
 }
 
 sub admin { shift->user(@_) }
@@ -114,21 +114,21 @@ sub url {
 sub urls {
     my $urls = shift->server_urls;
     return unless $urls and @$urls;
-    [ map { $_->url } @$urls ]
+    [map { $_->url } @$urls];
 }
 
 sub history {
     my ($self, $options) = @_;
-    ref $options or $options = { count => $options };
+    ref $options or $options = {count => $options};
 
-    my $count = $options->{count};
-    my $since = $options->{since};
+    my $count      = $options->{count};
+    my $since      = $options->{since};
     my $monitor_id = $options->{monitor_id};
 
     $count ||= 50;
 
     if ($since) {
-        $since = DateTime->from_epoch( epoch => $since );
+        $since = DateTime->from_epoch(epoch => $since);
     }
 
     my $history = NP::Model->log_score->get_log_scores(
@@ -137,13 +137,13 @@ sub history {
             ($monitor_id && $monitor_id eq '*' ? () : (monitor_id => $monitor_id)),
             ($since ? (ts => {'>' => $since}) : ())
         ],
-        sort_by => 'ts ' . ( defined $since ? "" : "desc"),
-        limit   => $count,
+        sort_by => 'ts ' . (defined $since ? "" : "desc"),
+        limit => $count,
     );
 }
 
 sub alert {
-    my $self  = shift;
+    my $self = shift;
     return NP::Model->server_alert->fetch_or_create(server => $self);
 }
 
@@ -154,7 +154,7 @@ sub note {
 }
 
 sub mode7check {
-    my $self = shift;
+    my $self  = shift;
     my $mode7 = $self->note('mode7check');
     return unless $mode7->id;
     return $mode7;
@@ -163,9 +163,9 @@ sub mode7check {
 sub log_scores_csv {
     my ($self, $options) = @_;
     my $history = $self->history($options);
-    my $csv = Text::CSV_XS->new();
+    my $csv     = Text::CSV_XS->new();
     $csv->combine(qw(ts_epoch ts offset step score),
-                  defined $options->{monitor_id} ? qw(monitor_id monitor_name) : ());
+        defined $options->{monitor_id} ? qw(monitor_id monitor_name) : ());
     my $out = $csv->string . "\n";
 
     my %monitors;
@@ -178,16 +178,19 @@ sub log_scores_csv {
         if ($options->{monitor_id}) {
             $monitor_id = $l->monitor_id;
             if ($monitor_id) {
-                $monitor_name = defined $monitors{ $monitor_id }
-                     ? $monitors{ $monitor_id }
-                     : ($monitors{ $monitor_id } = $l->monitor->name || "");
+                $monitor_name =
+                  defined $monitors{$monitor_id}
+                  ? $monitors{$monitor_id}
+                  : ($monitors{$monitor_id} = $l->monitor->name || "");
             }
         }
 
         $csv->combine(
-                      $l->ts->epoch, $l->ts->strftime("%F %T"), map ({ $l->$_ } qw(offset step score)),
-                      ($options->{monitor_id} ? ($monitor_id, $monitor_name) : ())
-                     );
+            $l->ts->epoch,
+            $l->ts->strftime("%F %T"),
+            map ({$l->$_} qw(offset step score)),
+            ($options->{monitor_id} ? ($monitor_id, $monitor_name) : ())
+        );
         $out .= $csv->string . "\n";
     }
     $out;
@@ -195,17 +198,17 @@ sub log_scores_csv {
 
 
 sub netspeed_human {
-  my $self = shift;
-  my $netspeed = $self->netspeed;
-  _netspeed_human($netspeed);
+    my $self     = shift;
+    my $netspeed = $self->netspeed;
+    _netspeed_human($netspeed);
 }
 
 sub _netspeed_human {
-  my $netspeed = shift;
+    my $netspeed = shift;
 
-  return ($netspeed/1_000_000) . ' Gbit' if ($netspeed / 1_000_000 > 1);
-  return ($netspeed/1_000) . ' Mbit' if ($netspeed / 1_000 >= 1);
-  return "$netspeed Kbit";
+    return ($netspeed / 1_000_000) . ' Gbit' if ($netspeed / 1_000_000 > 1);
+    return ($netspeed / 1_000) . ' Mbit' if ($netspeed / 1_000 >= 1);
+    return "$netspeed Kbit";
 }
 
 
@@ -214,7 +217,7 @@ mkpath "$rrd_path/graph/" unless -e "$rrd_path/graph";
 
 sub graph_path {
     my ($self, $name) = @_;
-    my $dir  = int( $self->id / 500 ) * 500;
+    my $dir = int($self->id / 500) * 500;
     my $file = $dir . '/' . $self->id . ($name ? "-$name" : "") . ".png";
     return "$rrd_path/graph/" . $file;
 }
@@ -256,8 +259,8 @@ sub find_server {
 
 sub get_bad_servers_to_remove {
     my $class = shift;
-    $class->get_objects_from_sql
-        (sql => q[
+    $class->get_objects_from_sql(
+        sql => q[
                   SELECT s.*
                     FROM
                       servers s
@@ -270,7 +273,7 @@ sub get_bad_servers_to_remove {
                        AND (sa.last_email_time  < DATE_SUB(NOW(), INTERVAL 5 DAY))
                        AND (sa.last_score+10) >= s.score_raw
                   ]
-         );
+    );
 }
 
 sub get_check_due {
@@ -282,9 +285,8 @@ sub get_check_due {
 
     my $interval = $monitor->ip_version eq 'v6' ? 10 : 12;
 
-    $class->get_objects_from_sql
-      (
-       sql => q[SELECT s.*
+    $class->get_objects_from_sql(
+        sql => q[SELECT s.*
          FROM servers s
          LEFT JOIN server_scores ss
          ON (s.id=ss.server_id)
@@ -296,8 +298,8 @@ sub get_check_due {
          ORDER BY score_ts
          LIMIT ?
        ],
-       args => [ $monitor->id, $interval, $monitor->ip_version, $limit ]
-      );
+        args => [$monitor->id, $interval, $monitor->ip_version, $limit]
+    );
 }
 
 1;

@@ -65,8 +65,8 @@ sub init {
     return OK;
 }
 
-sub bc_user_class { NP::Model->user }
-sub bc_info_required { 'username,email' }
+sub bc_user_class    { NP::Model->user }
+sub bc_info_required {'username,email'}
 
 
 sub render {
@@ -163,7 +163,8 @@ sub handle_add {
         $self->tpl_param(servers => \@added);
         my $msg = $self->evaluate_template('tpl/manage/add_email.txt');
         my $email =
-          Email::Simple->new(ref $msg ? $$msg : $msg);  # until we decide what eval_tpl should return :)
+          Email::Simple->new(ref $msg ? $$msg : $msg)
+          ;    # until we decide what eval_tpl should return :)
         $email->header_set('Message-ID' => join("-", int(rand(1000)), $$, time) . '@' . hostname);
         $email->header_set('Date' => Email::Date::format_date);
         my $return = send SMTP => $email, 'localhost';
@@ -205,7 +206,7 @@ sub _get_server_ips {
             }
         }
         else {
-            warn "query failed: ", join(" ",$host, $type, $res->errorstring), "\n";
+            warn "query failed: ", join(" ", $host, $type, $res->errorstring), "\n";
         }
     }
     warn "GOT IPS: ", join ", ", @ips;
@@ -274,7 +275,7 @@ sub get_server_info {
 
     my %server;
 
-    $server{ip} = $ip->short;
+    $server{ip}         = $ip->short;
     $server{ip_version} = 'v' . $ip->version;
 
     {
@@ -307,7 +308,8 @@ sub get_server_info {
     }
 
     unless ($ntp{Stratum} > 0 and $ntp{Stratum} < 6) {
-        $server{error} = "Invalid stratum response from $server{ip} (Your server is in stratum $ntp{Stratum}).  Is your server configured properly? Is public access allowed?  If you just restarted your ntpd, then it might still be stabilizing the timesources - try again in 10-20 minutes.\n"
+        $server{error} =
+          "Invalid stratum response from $server{ip} (Your server is in stratum $ntp{Stratum}).  Is your server configured properly? Is public access allowed?  If you just restarted your ntpd, then it might still be stabilizing the timesources - try again in 10-20 minutes.\n";
     }
 
     $server{ntp} = \%ntp;
@@ -349,7 +351,7 @@ sub handle_update {
 
     # deletion and non-js netspeed
     if ($self->request->uri =~ m!^/manage/server/update/server!) {
-        return $self->handle_mode7_check if $self->req_param('mode7check');
+        return $self->handle_mode7_check     if $self->req_param('mode7check');
         return $self->handle_update_netspeed if $self->req_param('Update');
         if ($self->req_param('Delete')) {
             return $self->handle_delete;
@@ -359,20 +361,18 @@ sub handle_update {
 }
 
 sub handle_mode7_check {
-    my $self = shift;
-    my $server = $self->req_server or return NOT_FOUND;
+    my $self     = shift;
+    my $server   = $self->req_server or return NOT_FOUND;
     my $ntpcheck = $config_ntp->{ntpcheck};
-    my $ua = LWP::UserAgent->new;
-    my $url = URI->new("$ntpcheck");
+    my $ua       = LWP::UserAgent->new;
+    my $url      = URI->new("$ntpcheck");
     $url->path("/check/" . $server->ip);
     $url->query("queue=1");
     warn "URL: $url";
     $ua->post($url);
     return $self->redirect('/manage/servers') if $self->req_param('noscript');
 
-    my $return = {
-        queued => 1,
-    };
+    my $return = {queued => 1,};
 
     return OK, encode_json($return);
 
