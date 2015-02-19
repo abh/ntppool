@@ -14,73 +14,81 @@ my $m = WWW::Mechanize::Cached->new();
 
 # my $load_number = NTPPool::Server::Note->get_max_isc_load_number;
 
-for my $server_list_url (qw(http://ntp.isc.org/bin/view/Servers/StratumOneTimeServers http://ntp.isc.org/bin/view/Servers/StratumTwoTimeServers)) {
-  my $server_list = $m->get($server_list_url);
+for my $server_list_url (
+    qw(http://ntp.isc.org/bin/view/Servers/StratumOneTimeServers http://ntp.isc.org/bin/view/Servers/StratumTwoTimeServers)
+  )
+{
+    my $server_list = $m->get($server_list_url);
 
-  my $te = HTML::TableExtract->new(keep_html => 1, 
-                                   headers => ['ISO:', 'HostName:', 'AccessPolicy:', 'Notify?', 'LastModified:'] );
-  $te->parse($m->content);
+    my $te = HTML::TableExtract->new(
+        keep_html => 1,
+        headers   => ['ISO:', 'HostName:', 'AccessPolicy:', 'Notify?', 'LastModified:']
+    );
+    $te->parse($m->content);
 
-  foreach my $row ($te->rows) {
-      my ($iso, $hostname, $access, $notify, $last_modified) = @$row;
-      my ($wikiname) = ($hostname =~ m!/bin/view/Servers/([^\"/]+)!);
-      my $url = "http://ntp.isc.org/bin/view/Servers/$wikiname";
-      $m->get($url);
-      my $ste = HTML::TableExtract->new( depth => 2 );
-      $ste->parse($m->content);
+    foreach my $row ($te->rows) {
+        my ($iso, $hostname, $access, $notify, $last_modified) = @$row;
+        my ($wikiname) = ($hostname =~ m!/bin/view/Servers/([^\"/]+)!);
+        my $url = "http://ntp.isc.org/bin/view/Servers/$wikiname";
+        $m->get($url);
+        my $ste = HTML::TableExtract->new(depth => 2);
+        $ste->parse($m->content);
 
-      #foreach my $ts ($ste->tables) {
-      #     print "Table found at ", join(',', $ts->coords), ":\n";
-      my %server;
+        #foreach my $ts ($ste->tables) {
+        #     print "Table found at ", join(',', $ts->coords), ":\n";
+        my %server;
 
-      foreach my $row ($ste->rows) {
-          my ($name, $note) = @$row;
-          $name =~ s/\s*//g;
-          $name =~ s/:$//;
-          $note =~ s/^\s*(.*?)\s*$/$1/;
-          $server{lc $name} = $note;
-      }
+        foreach my $row ($ste->rows) {
+            my ($name, $note) = @$row;
+            $name =~ s/\s*//g;
+            $name =~ s/:$//;
+            $note =~ s/^\s*(.*?)\s*$/$1/;
+            $server{lc $name} = $note;
+        }
 
-      $server{countrycode} =~ s/^\s*(\S+)\s.*/$1/;
-      $server{countrycode} = lc $server{countrycode};
-      
-      # TODO: lookup the server by wiki name so we can support changing IP addresses
+        $server{countrycode} =~ s/^\s*(\S+)\s.*/$1/;
+        $server{countrycode} = lc $server{countrycode};
+
+        # TODO: lookup the server by wiki name so we can support changing IP addresses
 
 
-      $server{ipaddress} =~ s/^\s*(\S+)[\s,]+.*/$1/;
+        $server{ipaddress} =~ s/^\s*(\S+)[\s,]+.*/$1/;
 
-      my ($email) = ($server{servercontact} =~ m/([a-z0-9.-]+\@[a-z0-9.-]+)/i);
-      warn Data::Dumper->Dump([\%server], [$wikiname]) and next unless $email;
+        my ($email) = ($server{servercontact} =~ m/([a-z0-9.-]+\@[a-z0-9.-]+)/i);
+        warn Data::Dumper->Dump([\%server], [$wikiname]) and next unless $email;
 
-      warn Data::Dumper->Dump([\$email], ["${wikiname}-admin"])
-        and warn Data::Dumper->Dump([\%server], [$wikiname])
-        and next unless $server{ipaddress} =~ m/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/;
+        warn Data::Dumper->Dump([\$email], ["${wikiname}-admin"])
+          and warn Data::Dumper->Dump([\%server], [$wikiname])
+          and next
+          unless $server{ipaddress} =~ m/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/;
 
-      die "could not parse email address" unless $email;
-      my $admin = NTPPool::Admin->find_or_create({ email => $email });
-      
-      my ($server) = NTPPool::Server->search(ip => $server{ipaddress});
+        die "could not parse email address" unless $email;
+        my $admin = NTPPool::Admin->find_or_create({email => $email});
 
-      unless ($server) {
-          $server = NTPPool::Server->create({ ip => $server{ipaddress}, admin => $admin });
-          $server->note('created_on_wiki', 1);
-      }
+        my ($server) = NTPPool::Server->search(ip => $server{ipaddress});
 
-      # TODO: only if the server came from the wiki then update the admin name
-      $server->admin($admin) if $server->note('created_on_wiki');
+        unless ($server) {
+            $server = NTPPool::Server->create({ip => $server{ipaddress}, admin => $admin});
+            $server->note('created_on_wiki', 1);
+        }
 
-      $server->hostname($server{hostname});
-      $server->in_server_list(1);
-      my $in_pool = $server{poolmember} =~ m/yes/i;
-      $server->in_pool($in_pool);
-      $server->note('wikiname', $wikiname);
-      for my $n (qw(servercontact notificationmessage servicearea serversynchronization serverstratum serverlocation accesspolicy accessdetails)) {
-          $server->note($n, $server{$n});
-      }
-      $server->update;
-  }
+        # TODO: only if the server came from the wiki then update the admin name
+        $server->admin($admin) if $server->note('created_on_wiki');
+
+        $server->hostname($server{hostname});
+        $server->in_server_list(1);
+        my $in_pool = $server{poolmember} =~ m/yes/i;
+        $server->in_pool($in_pool);
+        $server->note('wikiname', $wikiname);
+        for my $n (
+            qw(servercontact notificationmessage servicearea serversynchronization serverstratum serverlocation accesspolicy accessdetails)
+          )
+        {
+            $server->note($n, $server{$n});
+        }
+        $server->update;
+    }
 
 }
-
 
 

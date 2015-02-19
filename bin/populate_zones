@@ -26,28 +26,29 @@ while (<DATA>) {
 my $zones = NP::Model->zone->get_zones_iterator;
 
 while (my $zone = $zones->next) {
-  next if length($zone->name) == 1;
-  if (length($zone->name) > 2) {
-    my $name = $zone->name;
-    $name =~ s/-/ /;
-    $name =~ s/\b(.)/\U$1/g;
-    my $obj = Locale::Object::Continent->new( name => $name );
-    $zone->parent($global);
-    $zone->description($obj->name);
-  }
-  else {
-    my $cc = $zone->name;
-    $cc = 'gb' if $cc eq 'uk';
-    my $country = Locale::Object::Country->new( code_alpha2 => $cc )
-      or next;
-    my $country_name = $country->name;
-    $country_name =~ s/,.*//;
-    $zone->description($country_name) if $country_name;
-    my $continent = NP::Model->zone->get_zones(query => [ description => $country->continent->name ]);
-    $zone->parent_id($continent->[0]->id) if $continent and $continent->[0];
-  }
+    next if length($zone->name) == 1;
+    if (length($zone->name) > 2) {
+        my $name = $zone->name;
+        $name =~ s/-/ /;
+        $name =~ s/\b(.)/\U$1/g;
+        my $obj = Locale::Object::Continent->new(name => $name);
+        $zone->parent($global);
+        $zone->description($obj->name);
+    }
+    else {
+        my $cc = $zone->name;
+        $cc = 'gb' if $cc eq 'uk';
+        my $country = Locale::Object::Country->new(code_alpha2 => $cc)
+          or next;
+        my $country_name = $country->name;
+        $country_name =~ s/,.*//;
+        $zone->description($country_name) if $country_name;
+        my $continent =
+          NP::Model->zone->get_zones(query => [description => $country->continent->name]);
+        $zone->parent_id($continent->[0]->id) if $continent and $continent->[0];
+    }
 
-  $zone->save;
+    $zone->save;
 }
 
 

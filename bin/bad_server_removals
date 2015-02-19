@@ -22,7 +22,7 @@ my $production = $config->site->{ntppool}->{servername} eq 'www.pool.ntp.org';
 NP::Model->dbh->selectrow_array(q[SELECT GET_LOCK("notifications", 0)]) or exit;
 
 my $servers = NP::Model->server->get_bad_servers_to_remove;
-my $tpl = Combust::Template->new;
+my $tpl     = Combust::Template->new;
 
 my $i = 0;
 
@@ -31,21 +31,24 @@ $deletion_date->add(days => 7);
 
 for my $server (@$servers) {
 
-    my $param = { server => $server,
-                  admin  => $server->admin,
-                };
+    my $param = {
+        server => $server,
+        admin  => $server->admin,
+    };
 
     $server->deletion_on($deletion_date);
-    $server->add_logs
-      ({ user_id => undef,
-         type    => 'delete',
-         message => "Deletion scheduled for " . $deletion_date->ymd . " by the system",
-       });
-    
-    my $txt = $tpl->process('tpl/bad_server_removal.txt', $param, { site => 'ntppool' });
+    $server->add_logs(
+        {   user_id => undef,
+            type    => 'delete',
+            message => "Deletion scheduled for " . $deletion_date->ymd . " by the system",
+        }
+    );
+
+    my $txt = $tpl->process('tpl/bad_server_removal.txt', $param, {site => 'ntppool'});
     my $email = Email::Simple->new($txt);
     $email->header_set("Date" => Email::Date::format_date());
-    $email->header_set('Message-ID' => '<' . join(".", int(rand(1000)), $$, time) . '@' . hostname . '>');
+    $email->header_set(
+        'Message-ID' => '<' . join(".", int(rand(1000)), $$, time) . '@' . hostname . '>');
 
     $server->save;
 

@@ -29,11 +29,8 @@ sub update_graphs {
     my $server = NP::Model->server->fetch(id => $server_id) or return 0;
     my $path = $server->graph_path("offset");
     $url->path($server->url);
-    NP::Util::run("phantomjs",
-                  "--disk-cache=yes",
-                  "$ENV{CBROOTLOCAL}/phantom/graph.js",
-                  $url->as_string,
-                  $path);
+    NP::Util::run("phantomjs", "--disk-cache=yes", "$ENV{CBROOTLOCAL}/phantom/graph.js",
+        $url->as_string, $path);
     open my $fh, "<", $path or die "Could not open graph: $!";
     my $data = do { local $/ = undef; <$fh> };
     printf "Done with %i %s %s\n", $server_id, $path, $url->as_string;

@@ -6,25 +6,22 @@ use NP::Model;
 use Net::IP;
 
 
-my $servers = NP::Model->server->get_servers_iterator
-(
-   query => [ ip_version => 'v6' ]
-);
+my $servers = NP::Model->server->get_servers_iterator(query => [ip_version => 'v6']);
 
 while (my $server = $servers->next) {
-      print $server->ip, "\n";
-      my $ip = Net::IP->new($server->ip);
-      unless ($ip) {
-          $server->deletion_on('now');
-          $server->update;
-          next;
-      }
+    print $server->ip, "\n";
+    my $ip = Net::IP->new($server->ip);
+    unless ($ip) {
+        $server->deletion_on('now');
+        $server->update;
+        next;
+    }
 
-      if ($server->ip ne $ip->short) {
-          print "Updating to ", $ip->short, "\n";
-          $server->ip($ip->short);
-          $server->update;
-      }
+    if ($server->ip ne $ip->short) {
+        print "Updating to ", $ip->short, "\n";
+        $server->ip($ip->short);
+        $server->update;
+    }
 
 }
 

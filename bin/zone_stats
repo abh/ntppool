@@ -8,7 +8,7 @@ use Locale::Object;
 use DateTime;
 use File::Path qw(mkpath);
 
-my $base_path = "$ENV{CBROOTLOCAL}/rrd/zone";
+my $base_path   = "$ENV{CBROOTLOCAL}/rrd/zone";
 my $target_path = "$ENV{CBROOTLOCAL}/rrd/zonetargets";
 
 for my $path ($base_path, $target_path, "$base_path/graph") {
@@ -16,18 +16,17 @@ for my $path ($base_path, $target_path, "$base_path/graph") {
 }
 
 my $time = time;
- 
+
 use NP::Model;
 
-my %growth_targets =
-  (
-   2005 => 0.45,
-   2006 => 0.50,
-   2007 => 0.35,
-   2008 => 0.32,
-   2009 => 0.30,
-   default => 0.25
-  );
+my %growth_targets = (
+    2005    => 0.45,
+    2006    => 0.50,
+    2007    => 0.35,
+    2008    => 0.32,
+    2009    => 0.30,
+    default => 0.25
+);
 
 my $zones = NP::Model->zone->get_zones_iterator;
 my $dbh   = NP::Model->dbh;
@@ -49,18 +48,19 @@ while (my $zone = $zones->next) {
 
         my $data = $data{$ip_version} = {};
 
-        $data->{count_active}    = $zone->server_count($ip_version);
-        $data->{count_registered}       = $zone->server_count_all($ip_version);
-        $data->{netspeed_active} = $zone->netspeed_active($ip_version) || 0;
+        $data->{count_active}     = $zone->server_count($ip_version);
+        $data->{count_registered} = $zone->server_count_all($ip_version);
+        $data->{netspeed_active}  = $zone->netspeed_active($ip_version) || 0;
 
-        # printf "%-8s %s %3i %3i\n", $zone->name, $ip_version, $data->{count_active}, $data->{count_registered};
-        $dbh->do(q[replace into zone_server_counts (zone_id,ip_version,date,count_active,count_registered,netspeed_active)
+# printf "%-8s %s %3i %3i\n", $zone->name, $ip_version, $data->{count_active}, $data->{count_registered};
+        $dbh->do(
+            q[replace into zone_server_counts (zone_id,ip_version,date,count_active,count_registered,netspeed_active)
                values (?,?,NOW(),?,?,?)],
-                 undef,
-                 $zone->id,
-                 $ip_version,
-                 $data->{count_active}, $data->{count_registered}, $data->{netspeed_active}
-                );
+            undef,
+            $zone->id,
+            $ip_version,
+            $data->{count_active}, $data->{count_registered}, $data->{netspeed_active}
+        );
 
     }
 

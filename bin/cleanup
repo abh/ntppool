@@ -12,16 +12,17 @@ use DateTime::Format::MySQL;
 my $dbh = NP::Model->dbh;
 
 my ($min_ts) = $dbh->selectrow_array(q[select min(ts) from log_scores]);
-$min_ts = DateTime::Format::MySQL->parse_datetime( $min_ts ) or die "Could not parse date from mysql";
+$min_ts = DateTime::Format::MySQL->parse_datetime($min_ts) or die "Could not parse date from mysql";
 
 my $year = $min_ts->year;
 
 my $meta = "";
 if ($year >= 2015) {
-   $meta = ', `meta` text';
+    $meta = ', `meta` text';
 }
 
-$dbh->do(<<EOT
+$dbh->do(
+    <<EOT
 CREATE TABLE IF NOT EXISTS `log_scores_archive_${year}` (
   `id` bigint(20) unsigned NOT NULL,
   `monitor_id` int(10) unsigned NOT NULL,
@@ -35,8 +36,9 @@ CREATE TABLE IF NOT EXISTS `log_scores_archive_${year}` (
 EOT
 );
 
-my $archive_date = $min_ts->clone->add( hours => 16 );
-my $limit = DateTime->now->subtract( days => 36 );
+my $archive_date = $min_ts->clone->add(hours => 16);
+my $limit = DateTime->now->subtract(days => 36);
+
 #my $limit = DateTime->new(year => 2013, month => 1, day => 1, time_zone => 'UTC');
 
 my $next_year = DateTime->new(
@@ -58,13 +60,15 @@ if ($archive_date >= $next_year) {
 }
 
 if ($archive_date < $min_ts) {
+
     # no work todo
     exit;
 }
 
 print "Moving records older than $archive_date\n" if -t STDIN;
 
-my $rv = $dbh->do(qq[insert into log_scores_archive_${year} select * from log_scores where ts < ?], {}, $archive_date);
+my $rv = $dbh->do(qq[insert into log_scores_archive_${year} select * from log_scores where ts < ?],
+    {}, $archive_date);
 die unless $rv;
 print "Inserted $rv records\n" if -t STDIN;
 
