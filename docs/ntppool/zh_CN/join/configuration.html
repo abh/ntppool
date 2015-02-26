@@ -1,0 +1,76 @@
+<div class="block">
+
+<h3>加入地址池的服务器推荐配置</h3>
+
+<p>
+<a href="http://support.ntp.org/">support.ntp.org</a>上的<a href="http://support.ntp.org/bin/view/Support/WebHome">服务支持部分</a>有大量的有用信息。
+</p>
+
+<p>
+如果你只是想<i>使用</i>地址池，请看<a href="/use.html">地址池的使用</a>页面。
+</p>
+
+<p>
+<a
+href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a>
+新闻组是得到ntpd软件帮助的最佳之处。
+</p>
+
+<p>
+如果你想要让你的服务器加入NTP地址池，下面的信息非常重要。
+</p>
+
+<h4 id="management-queries">管理查询</h4>
+
+<p>让默认配置不允许“管理查询”。对于ntpd来说这会将"noquery"选项添加到默认的“限制”行，例如：</p>
+
+[% INCLUDE "join/configuration/restrict-default.html" %]
+
+<p>为了允许像"ntpq -c pe"这样的命令在本地主机上工作，你可以添加：</p>
+
+[% INCLUDE "join/configuration/restrict-localhost.html" %]
+
+<h4>设置大约5个服务器</h4>
+
+<p>
+为了正常工作，ntpd至少需要和3台服务器交互（“带一块手表的人知道时间，带两块手表的就没法确定了”）。
+</p>
+
+<p>
+对于地址池当中的服务器我们推荐配置不少于4台服务器，但不要超过7台。
+</p>
+
+
+<h4>不要使用*.pool.ntp.org的服务器</h4>
+
+<p>
+有意思的是，为了确保地址池的服务尽可能好，当你想要将你的服务器添加到地址池当中的时候，不应该在你的配置里使用*.pool.ntp.org这个别名。
+</p>
+
+<p>
+为保证地址池的健壮性，如果所有的地址池操作者都能“手动挑选”优质的本地（明智的网络选择）时间服务器，地址池将会更加健康。
+NTP.org的文档中有<a
+href="http://support.ntp.org/bin/view/Servers/WebHome">公共服务器清单
+</a>.
+</p>
+
+
+<h4>使用标准的ntpd</h4>
+
+<p>
+我们都希望软件拥有多样性，但是其他软件出现“它不好使了”这样问题的比率要明显高于
+ntpd。
+</p>
+
+<p>
+你可以通过任何支持NTP的程序<i>使用</i>地址池，但是如果你想要加入地址池，我们推荐你使用
+<a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
+</p>
+
+
+<h4>请勿使用本地的时钟驱动器</h4>
+
+<p>NTP地址池里的服务器不应该使用本地时钟的驱动器进行配置。</p>
+
+
+</div>

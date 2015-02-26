@@ -1,0 +1,139 @@
+msgid ""
+msgstr ""
+"Last-Translator: Popcorner <pop-corner@qq.com>\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "go up"
+msgstr "回到顶部"
+
+# zone names
+msgid "Africa"
+msgstr "非洲"
+
+msgid "Asia"
+msgstr "亚洲"
+
+msgid "North America"
+msgstr "北美洲"
+
+msgid "South America"
+msgstr "南美洲"
+
+msgid "Europe"
+msgstr "欧洲"
+
+msgid "Oceania"
+msgstr "大洋洲"
+
+msgid "Global"
+msgstr "全球"
+
+msgid "All Pool Servers"
+msgstr "全部服务器"
+
+# navigation
+msgid "Translations"
+msgstr "语言"
+
+# index.html
+msgid  "Introduction"
+msgstr "简介"
+
+msgid  "Active Servers"
+msgstr "可用服务器"
+
+msgid  "Links"
+msgstr "友情链接"
+
+msgid  "Terms of service"
+msgstr "服务条款"
+
+msgid  "Subscribe in a reader"
+msgstr "订阅到阅读器"
+
+msgid  "Older news"
+msgstr "更早的新闻"
+
+# mailinglists.html
+msgid  "NTP Pool mailing lists"
+msgstr "NTP地址池邮件列表"
+
+msgid  "subscribe"
+msgstr "订阅"
+
+msgid  "archive"
+msgstr "归档新闻"
+
+msgid  "Announcement list"
+msgstr "公告列表"
+
+msgid  "Discussion list"
+msgstr "讨论清单"
+
+msgid  "Development list"
+msgstr "开发列表"
+
+msgid  "announcement_list_description"
+msgstr "仅发布极少的NTP地址池新闻。所有的服务器操作者都应该订阅这个公告列表。"
+
+msgid  "discussion_list_description"
+msgstr "想要更加积极的参与这个项目的服务器操作者（以及用户）可以订阅这个讨论清单。<br/> 当然，通常关于ntp的讨论应该在 %1 Usenet新闻组(也在<a href=\"%2\">Google Groups</a>上)."
+
+msgid  "development_list_description"
+msgstr "更多关于当前<a href=\"%1\">ntp地址池的程序</a>以及<a href=\"%2\">pgeodns</a>的开发相关的讨论会出现在这个实时的开发清单上。"
+
+msgid  "irc_channel_description"
+msgstr "我们为开发者提供了 %2 IRC频道，另外还有用户的：%1。"
+
+# tpl/server.html
+msgid  "Back to the front page"
+msgstr "回到首页"
+
+msgid  "Find"
+msgstr "查找"
+
+msgid  "Stats for %1"
+msgstr "%1 统计"
+
+msgid  "Not active in the pool, monitoring only"
+msgstr "在地址池中不可用，仅供监控。"
+
+msgid  "Zones:"
+msgstr "区域:"
+
+msgid  "This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
+msgstr "此服务器将会在 %1 <span class=\"deletion\">被删除</span>。"
+
+msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
+msgstr "当前分数： %1 (只有分数高于 %2 的服务器才会在地址池中被使用)"
+
+msgid  "What do the graphs mean?"
+msgstr "这个图表意味着什么？"
+
+msgid  "CSV log"
+msgstr "CSV 日志"
+
+# tpl/navigation_sidebar.html
+msgid  "News"
+msgstr "新闻"
+
+msgid  "How do I <i>use</i> pool.ntp.org?"
+msgstr "我如何<i>使用</i> pool.ntp.org?"
+
+msgid  "How do I <i>join</i> pool.ntp.org?"
+msgstr "我如何<i>加入</i> pool.ntp.org?"
+
+msgid  "Information for vendors"
+msgstr "为服务商提供的资讯"
+
+msgid  "The mailing lists"
+msgstr "邮件列表"
+
+msgid  "Additional links"
+msgstr "其他链接"
+
+msgid  "Can you translate?"
+msgstr "你能翻译么？"
