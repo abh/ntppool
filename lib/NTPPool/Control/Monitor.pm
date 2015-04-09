@@ -24,6 +24,7 @@ sub render {
             map {
                 my $deleted = ($_->deletion_on and $_->deletion_on < $now) ? 1 : 0;
                 (   $_->ip => {
+                        ip      => $_->ip,
                         id      => $_->id + 0,
                         deleted => ($deleted ? $JSON::true : $JSON::false),
                         c       => $_->created_on->epoch,
