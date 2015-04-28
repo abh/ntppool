@@ -72,7 +72,8 @@ sub init {
             return $self->redirect($self->_url($self->site, $self->request->path));
         }
         else {
-            $self->request->header_out('Strict-Transport-Security', 'maxage=' . (86400 * 31));
+            # we're setting Strict-Transport-Security with haproxy
+            # $self->request->header_out('Strict-Transport-Security', 'max-age=' . (86400 * 7 * 20));
         }
     }
 
