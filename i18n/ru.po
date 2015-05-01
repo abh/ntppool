@@ -105,3 +105,11 @@ msgstr "The mailing lists"
 
 msgid  "Additional links"
 msgstr "Additional links"
+
+#tpl/server.html
+msgid "Green/orange/red small dots are offsets (in milliseconds, using the left axis).<br>
+Blue/red \"double size\" dots are points/scores (using the right axis).<br>
+The y-axes (both) aren't linear to highlight what is usually the most interesting area of the data.<br>"
+msgstr "Зеленые/оранжевые/красные маленькие точки показывают смещение (погрешность времени) (в мс, на левой оси).<br>
+Синие/красные \"двойного размера\" точки отображают рейтинг (на правой оси).<br>
+Оси y (обе) не линейны загруженности.<br>"
