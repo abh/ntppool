@@ -20,17 +20,17 @@ sub render {
         $self->tpl_param('manage_site', 1);
     }
 
-    return $self->redirect('/scores/') if ($self->request->uri =~ m!^/s/?$!);
+    # "tell me your IP" form
+    if ($self->request->uri eq '/scores/') {
+        return OK, $self->evaluate_template('tpl/server.html');
+    }
 
     if (my $ip = ($self->req_param('ip') || $self->req_param('server_ip'))) {
         my $server = NP::Model->server->find_server($ip) or return 404;
         return $self->redirect('/scores/' . $server->ip) if $server;
     }
 
-    # "tell me your IP" form
-    if ($self->request->uri eq '/scores/') {
-        return OK, $self->evaluate_template('tpl/server.html');
-    }
+    return $self->redirect('/scores/') if ($self->request->uri =~ m!^/s(cores)/?$!);
 
     if ($self->request->uri =~ m!^/s/([^/]+)!) {
         my $server = NP::Model->server->find_server($1) or return 404;
@@ -138,6 +138,9 @@ sub render {
             return $self->redirect('/scores/' . $server->ip);
         }
     }
+
+    # if we didn't match on any URL, show the form
+    return OK, $self->evaluate_template('tpl/server.html');
 }
 
 sub _monitors {
