@@ -1,0 +1,85 @@
+[% page.title = 'Join the NTP Pool!'  %]
+
+<div class="block">
+	<h3><a name="join">Hvordan tilmelder jeg mig pool.ntp.org?</a></h3>
+	<p>
+	Først: Tak for din interesse.  Brugen af 'pool'en' er steget 
+	enormt og den eneste måde vi kan gøre det nemt for alle at 
+	have en server kørende, er ved også at øge antallet af tilmedte servere.
+	</p>
+
+	<p>
+	Din server <b>skal have en statisk IP adresse</b> og fast internet forbindelse.
+	Det er meget vigtigt at din IP adresse ikke skifter eller at det gør det 
+	meget sjældent (ca 1 gang om året eller mindre). Den krævede båndbredde er 
+	relativ lille. Hver klient vil kun sende et par UDB pakker ca hver anden 
+	minut eller 20. minut.
+	</p>
+
+	<p>
+	Pt. får de fleste servere omkring 5-15 NTP pakker hver sekund, med spidser 
+	på 60-120 pakker i sekundet, et par gange om dagen. Dette svare groft til 
+	10-15 Kbit/s med spidser på 50-120 Kbit/s. Projektet vil stødt kræve 
+	flere servere, så belastningen skulle ikke gerne stige dramatisk for den 
+	enkelte server. Sagt lige ud vil du få brug for en 384-512 Kbit 
+	forbindelse (begge retninger).
+	</p>
+	<p>
+	Her er et par servere med trafik/belastnings grafer:
+	[% i = 0; FOR server = combust.servers_with_urls; %]
+	   <a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
+	[% END %]
+	</p>
+
+	<p>
+	Tilmeldte servere bør ikke have <tt>pool.ntp.org</tt> som deres upstream server(e),
+	men bør bruge nogen <a href="http://support.ntp.org/bin/view/Servers/StratumTwoTimeServers">
+	gode servere</a>, disse kan dog sagtens være fra pool'en. Poienten er at disse vælges statisk, 
+	frem for at blive valgt tilfældigt ved hver server start. Dette hjælper til at give et acceptabelt
+	service niveau.
+	
+	Note: Det er ikke påkrævet at din server er en stratum 1 eller 2 - 
+	Da dette project går mere ud på at fordele belastningen, så der er 
+	ikke noget til hinder for at en stratum 3, eller endda stratum 4 kan deltage.
+	</p>
+
+	<p>
+	Vi har en side med <a href="/join/configuration.html"> anbefalede opsætninger, til servere der 
+	deltager</a>.
+	
+	</p>
+	<p>Til sidst skal det understreges at tilmelde sig <b>er et langsigtet engagement</b>. Vi tager
+	dig gerne ud af pool'en igen, hvis dine omstændigheder ændre sig, men på grund af måden ntp klienter 
+	køre så kan det tage <b>måneder, endda år inden trafikken stopper helt</b>.
+		</p>
+
+	<p>Hvis alt dette er ok, så log ind på <a href="/manage">server management</a> siden og bed om at få
+	din server tilmeldt. Hvis du har nogen problemer med systemet, så skriv mig en mail <a
+	href="mailto:ask@develooper.com">ask@develooper.com</a>.
+	</p>
+	<p>
+	Jeg vil også bede dig om tilmelde dig <a href="http://news.ntppool.org/atom.xml">weblog feed</a>
+	og måske <a href="https://lists.ntp.org/listinfo/pool">pool mail listen</a>.
+	</p>
+	<p>
+	Det ville også være dejligt hvis du omdirigere alle kald til port 80 til den officielle side for 
+	projektet <tt>http://www.pool.ntp.org</tt>. Dette er dog frivilligt. Køre du apache så kan du gøre
+	det med: 
+	</p>
+
+        [% PROCESS tpl/join/virtual_host_example.html %]
+
+	<p>
+	Igen, detter er kun hvis du køre en web server. Den officielle side vil altid komme frem hvis man starter
+	med 'www' - Men sommetider er folk dovne og skriver <tt>pool.ntp.org</tt> og bliver overrasket over at 
+	få en tilfældig side.
+	</p>
+	<p>
+	Når din server er tilmeldt så vil den konstant blive overvåget for tilgængelighed og præcission. Du kan
+	se din servers præstation ved at bruge <a href="scores">frontend</a> eller 
+	<a href="/manage">management siden</a>.
+	</p>
+</div>
+
+
+

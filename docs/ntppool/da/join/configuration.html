@@ -1,0 +1,77 @@
+<div class="block">
+
+<h3>Anbefalede opsætninger for tilmeldte server</h3>
+
+<p>
+<a href="http://support.ntp.org/bin/view/Support/WebHome">Support
+sektionen</a> hos <a href="http://support.ntp.org/">support.ntp.org</a> har en masse nyttig information.
+</p>
+
+<p>
+Hvis du bare vil <i>bruge</i>  pool'en, så kig her: <a href="/use.html">pool brug</a>.
+</p>
+
+<p>
+<a
+href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a>
+er et godt sted at få hjælp til ntp softwaren.
+</p>
+
+<p>
+Herunder er det nogen ting, som har stor betydning, hvis du tilmelder din server.
+</p>
+
+<h4 id="management-queries">Management forespørgsler</h4>
+
+<p>Slå adgangen for "management forespørgsler" fra. 
+For ntpd betyder det at man skal tilføje "noquery" til "restrict" linien, f.eks.:</p>
+
+[% INCLUDE "join/configuration/restrict-default.html" %]
+
+<p>To allow commands like "ntpq -c pe" to work from localhost you can add:</p>
+
+[% INCLUDE "join/configuration/restrict-localhost.html" %]
+
+<h4>Brug omkring 5 servere</h4>
+
+<p>
+For at fungere rigtigt skal ntp snakke med mindst 3 andre servere
+("En mand med et ur ved hvad tiden er, en mand med 2 kan aldrig være sikker")
+</p>
+
+<p>
+For servere i pool'en, anbefaler at bruge ikke mindre end 4 andre servere og ikke flere end 7.
+</p>
+
+
+<h4>Bruge ikke *.pool.ntp.org servere</h4>
+
+<p>
+Ironisk nok for at sikre at pool'en køre optimalt, skal man ikke bruge *.pool.ntp.org adresser.
+</p>
+
+<p>
+For at pool'en er robust er det bedre at håndplukke gode lokale servere. Wiki'en på NTP.org har en liste  <a
+href="http://support.ntp.org/bin/view/Servers/WebHome">offentlige servere</a>.
+</p>
+
+<h4>Brug standard ntpd</h4>
+
+<p>
+Vi går ind for mangfoldighed i software, men en betydelig procent af 
+"Det virker ikke" spørgsmål kommer ud af brugen af andet end ntpd.
+</p>
+
+<p>
+Du <i>kan</i> bruge et hvilket som helst NTP program i forbindelse med pool'en, men hvis du
+vil tilmelde din server, anbefaler vi at du bruger 
+<a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
+</p>
+
+
+<h4>Brug ikke en lokal klokke</h4>
+
+<p>Tilmeldte server bør ikke bruge en lokal klokke.</p>
+
+
+</div>
