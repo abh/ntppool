@@ -1,0 +1,9 @@
+#!/bin/sh
+#
+# the development docker image runs this script by default
+# to start the application. To start the docker container
+# for development, use ./docker/app
+
+perl Makefile.PL
+make templates
+(cd combust/services/httpd && ./run)
