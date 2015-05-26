@@ -3,7 +3,7 @@
 rm -f .nospin.start
 
 docker run -t -i \
- -v $(PWD):/ntppool \
+ -v $(pwd):/ntppool \
  -p 8299:8299 \
  --rm \
  quay.io/ntppool/app-base:dev ./docker-run

@@ -1,6 +1,6 @@
 #!/bin/sh
 
 docker run -t -i \
- -v $(PWD):/ntppool \
+ -v $(pwd):/ntppool \
  --rm \
  quay.io/ntppool/app-base:dev /bin/bash
