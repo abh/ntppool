@@ -17,6 +17,25 @@ git submodule update --init
 
 ```
 
+## Development under Docker
+
+If you have [Docker](http://docker.io/)
+[installed](https://docs.docker.com/installation/) you can run a
+container with most of the dependencies already ready with
+
+    cp combust.docker.conf.sample combust.docker.conf
+    ./docker/app
+
+Edit hostnames and database config in the new file after copying it.
+
+The docker container will "export" the web application to port 8299
+on the docker host. If you are running Docker on OS X or Windows it
+will be running in a virtual machine so the IP will be different
+than "localhost".
+
+
+## Non-Docker install
+
 The easiest way to install Perl 5.16.x (if your system didn't come
 with this) is to use [perlbrew](http://perlbrew.pl):
 
