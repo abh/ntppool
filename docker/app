@@ -2,9 +2,15 @@
 
 rm -f .nospin.start
 
+app="$@"
+
+if [ "$app" == "" ]; then
+  app=./docker-run
+  ports="-p 8299:8299"
+fi
+
 docker run -t -i \
  -v $(pwd):/ntppool \
- -p 8299:8299 \
+ $ports \
  --rm \
- quay.io/ntppool/app-base:dev ./docker-run
-
+ quay.io/ntppool/app-base:dev $app

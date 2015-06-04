@@ -26,13 +26,18 @@ container with most of the dependencies already ready with
     cp combust.docker.conf.sample combust.docker.conf
     ./docker/app
 
-Edit hostnames and database config in the new file after copying it.
+(Edit hostnames and database config in the new file after copying it.)
 
 The docker container will "export" the web application to port 8299
 on the docker host. If you are running Docker on OS X or Windows it
 will be running in a virtual machine so the IP will be different
 than "localhost".
 
+You can also run the other utilities, generally with a variation of
+
+    ./docker/app sh ./pool zone
+
+This for example would generate the json DNS data for the GeoDNS server.
 
 ## Non-Docker install
 
