@@ -56,6 +56,12 @@ sub populate {
 
     while (my $zone = $zones->next) {
         my $name = $zone->name;
+
+        my $ttl;
+        if ($name eq 'br') {
+            $ttl = 75;
+        }
+
         $name = ''       if $name eq '@';
         $name = "$name." if $name;
 
@@ -77,6 +83,9 @@ sub populate {
                 foreach my $z (@zones) {
                     (my $pgeodns_group = "$z${name}") =~ s/\.$//;
                     $data->{$pgeodns_group}->{a} = [];
+                    if ($ttl) {
+                        $data->{$pgeodns_group}->{ttl} = $ttl;
+                    }
                     @$entries = shuffle(@$entries);
                     foreach my $e (@$entries) {
                         push @{$data->{$pgeodns_group}->{a}}, $e;
@@ -89,6 +98,9 @@ sub populate {
                 @$entries = shuffle(@$entries);
                 foreach my $z (@zones) {
                     (my $pgeodns_group = "$z${name}") =~ s/\.$//;
+                    if ($ttl) {
+                        $data->{$pgeodns_group}->{ttl} = $ttl;
+                    }
                     $data->{$pgeodns_group}->{a} = [];
                     for (my $i = 0; $i < $min_non_duplicate_size; $i++) {
                         my $e = shift @$entries;
