@@ -66,7 +66,7 @@ remote           refid      st t when poll reach   delay   offset  jitter
   ist. F&uuml;hren Sie dazu folgendes Kommando als Administrator aus:
  </p>
 <pre class="code">
-w32tm /config /syncfromflags:manual /manualpeerlist:0.pool.ntp.org,1.pool.ntp.org,2.pool.ntp.org,3.pool.ntp.org
+w32tm /config /syncfromflags:manual /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 </pre>
 Dieses Kommando funktioniert auf Versionen ab Windows 2003. Wenn Sie eine ältere Windows-Version benutzen, können Sie folgendes Kommando probieren:
 <pre class="code">

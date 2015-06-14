@@ -69,7 +69,7 @@ avbidder:~$ ntpq -p
 	Windows</b>, voc&ecirc; pode usar o cliente ntp que j&aacute; vem no 
 	sistema. Na posi&ccedil;&atilde;o de administrador,	digite</p>
 <pre class="code">
-w32tm /config /syncfromflags:manual 
+w32tm /config /syncfromflags:manual /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 /manualpeerlist:0.pool.ntp.org,1.pool.ntp.org,2.pool.ntp.org,3.pool.ntp.org
 </pre>
 	<p>

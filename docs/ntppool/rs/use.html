@@ -48,7 +48,7 @@
 	Ako koristite <b> skoriju verziju Windows-a </b>, možete koristiti ntp
 	klijent koji je ugrađen u operativni sistem. Kao Administrator kucajte</p>
 <pre class="code">
-w32tm /config /syncfromflags:manual /manualpeerlist:0.pool.ntp.org,1.pool.ntp.org,2.pool.ntp.org,3.pool.ntp.org
+w32tm /config /syncfromflags:manual /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 </pre>
     <p>
 	na komandnoj liniji. To će raditi na Windows-u 2003 i novijim. ako koristite

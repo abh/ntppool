@@ -62,7 +62,7 @@ avbidder:~$ ntpq -p
 	Používáte-li <b>novější verzi Windows</b>, můžete použít vestavěného ntp
 	klienta systému. Jako správce zadejte příkaz</p>
 <pre class="code">
-w32tm /config /syncfromflags:manual /manualpeerlist:0.pool.ntp.org,1.pool.ntp.org,2.pool.ntp.org,3.pool.ntp.org
+w32tm /config /syncfromflags:manual /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 </pre>
 	<p>
 	do příkazové řádky. Bude to fungovat ve Windows 2003 a novějších.

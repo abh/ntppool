@@ -61,7 +61,7 @@ avbidder:~$ ntpq -p
 	Om du har en <b>någorlunda ny version av Windows</b>, så kan du använda systemets
 	inbyggda klient för ntp. När du är inloggad som administratör, skriver du</p>
 <pre class="code">
-w32tm /config /syncfromflags:manual /manualpeerlist:0.pool.ntp.org,1.pool.ntp.org,2.pool.ntp.org,3.pool.ntp.org
+w32tm /config /syncfromflags:manual /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 </pre>
 	<p>
 	i ett kommandofönster.  Det fungerarar på Windows 2003 och nyare.  På äldre version

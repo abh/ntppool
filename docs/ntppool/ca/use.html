@@ -61,7 +61,7 @@ avbidder:~$ ntpq -p
 	Si esteu fent servir <b>una versió recent de Windows</b>, també podeu utilitzar
 	el client ntp incorporat al vostre sistema. Executeu com a administrador:</p>
 <pre class="code">
-w32tm /config /syncfromflags:manual /manualpeerlist:0.pool.ntp.org,1.pool.ntp.org,2.pool.ntp.org,3.pool.ntp.org
+w32tm /config /syncfromflags:manual /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 </pre>
 	<p>
 	Això funcionarà amb Windows 2003 o versions més recents. Si en feu servir una versió més

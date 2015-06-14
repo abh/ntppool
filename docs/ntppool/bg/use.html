@@ -60,7 +60,7 @@ avbidder:~$ ntpq -p
 	Ако използвате <b>сравнително нова версия на Windows</b>, можете да използвате вградения ntp
 	клиент. Като администратор въведете</p>
 <pre class="code">
-w32tm /config /syncfromflags:manual /manualpeerlist:0.pool.ntp.org,1.pool.ntp.org,2.pool.ntp.org,3.pool.ntp.org
+w32tm /config /syncfromflags:manual /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 </pre>
 	<p>
 	в командната линия. Тази команда работи на Windows 2003 или по-нови. Ако използвате

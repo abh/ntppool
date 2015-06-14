@@ -55,7 +55,7 @@ avbidder:~$ ntpq -p
 	Eğer Windows'un <b>son versiyonlarından birini</b> kullanıyorsanız, sistem dahilinde olan 
 	ntp aracını kullanabilirsiniz. Yönetici olarak komut satırına şu komutu yazın</p>
 <pre class="code">
-w32tm /config /syncfromflags:manual /manualpeerlist:0.pool.ntp.org,1.pool.ntp.org,2.pool.ntp.org,3.pool.ntp.org
+w32tm /config /syncfromflags:manual /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 </pre>
 	<p>
 	. Bu Windows 2003 ve daha sonrası için çalışacaktır. Eğer daha eski bir sürüm kullanıyorsanız 

@@ -40,7 +40,7 @@
 	<p>
 	如果您正在使用 <b> Windows 的最新版本</b>您可以使用系统内置的ntp客户端： 以管理员权限在命令行运行如下指令：</p>
 <pre class="code">
-w32tm /config /syncfromflags:manual /manualpeerlist:0.pool.ntp.org,1.pool.ntp.org,2.pool.ntp.org,3.pool.ntp.org
+w32tm /config /syncfromflags:manual /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 </pre>
 	<p>
 	这在Windows 2003及之后的版本中被支持。 如果您使用旧版的Windows，您可以尝试如下指令：</p>
