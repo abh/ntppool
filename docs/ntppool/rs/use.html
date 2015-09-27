@@ -4,7 +4,7 @@
 	<h3><a name="use"></a>Kako da koristim pool.ntp.org?</h3>
 
 	<p>
-	Ako želite samo da sinhronizujete vreme na svojim računarima preko mreže, konfiguracioni fajl (za ntpd program sa <a href="http://www.ntp.org">ntp.org distribucije</a>, za sve podržane operativne sisteme - <b>Linux, *BSD, Windows i još poneki egzotični sistem</b>) je vrlo jednostavno:
+	Ako želite samo da sinhronizujete vreme na svojim računarima preko mreže, konfiguracioni fajl (za ntpd program sa <a href="http://www.ntp.org">ntp.org distribucije</a>, za sve podržane operativne sisteme - <b>Linux, *BSD, Windows i još poneki egzotični sistem</b>) je vrlo jednostavan:
 	</p>
 
 	[% INCLUDE "ntppool/use/sample-config.html" %]
@@ -15,7 +15,7 @@
 	podešeni na nešto razumno (u okviru par minuta od 'tačnog' vremena) - 
 	trebali bi da koristite <tt>ntpdate pool.ntp.org</tt>, ili da koristite 
 	<tt>date</tt> naredbu i podesite prema vašem ručnom satu.
-	Startujte ntpd, i posle nekog vremena(to bi trebalo da potraje oko pola sata!)
+	Startujte ntpd, i posle nekog vremena (to bi trebalo da potraje oko pola sata!)
 	<code>ntpq -pn</code> bi trebao da pokazuje nečto ovako:
 	</p>
 
@@ -25,7 +25,7 @@
 	
 	IP adrese će biti drugačije, zato što će Vam biti dodeljeni nasumični
 	vremenski serveri. Esencijalna stvar je da će jedna od linija počinjati sa
-	zvezdicom <tt>*</tt>), to znači da Vaš računar dobija vreme sa interneta
+	zvezdicom (<tt>*</tt>), to znači da Vaš računar dobija vreme sa interneta
 	- nećete više morati da brinete o tome!
 	</p>
 	<p>
@@ -39,7 +39,7 @@
 	<a href="/zone/europe">europa</a>,
 	<a href="/zone/north-america">severna amerika</a>,
 	<a href="/zone/oceania">okeanija</a>
-	ili <a href="/zone/asia">azija</a>.pool.ntp.org),
+	ili <a href="/zone/asia">azija</a>.pool.ntp.org)
 	i državnu zonu (kao ch.pool.ntp.org za Švajcarsku) - za sve ove zone, možete
 	koristiti 0,1 ili 2 prefikse, kao 0.ch.pool.ntp.org. Napomena, svakako da ta državna zona
 	nemora da postoji za Vašu zemlju, ili može da sadrži samo jedan ili dva vremenska servera.
@@ -95,9 +95,9 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
 	Možete <a href="/zone">pretražiti zone</a> da vidite koliko je servera rasporedjeno u svaku zonu.</p>
 		
 	<p><span class="hook">Budite kolegijalni</span>. 
-	Veliki broj servera je omogućeno od strane volontera, i skoro većina vremenskih servera 
+	Veliki broj servera je omogućen od strane volontera, i skoro većina vremenskih servera 
 	su file, mail ili webserver-i koji istovremeno pokreću ntp. Zato nemojte koristiti 
-	više od četiri vremenska servera u svojoj konfiguraciji, ne nemojte praviti trikove sa 
+	više od četiri vremenska servera u svojoj konfiguraciji i nemojte praviti trikove sa 
 	<tt>burst</tt> ili <tt>minpoll</tt> - sve što ćete dobiti je dodatni saobraćaj
 	na serverima naših volontera.</p>
 	
@@ -111,5 +111,5 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
 	<a href="news:comp.protocols.time.ntp">comp.protocols.time.ntp grupa za novosti</a>.)</p>
 
 	<p class="thanks">Takodje bi voleo da se zahvalim svima koji posvećuju svoje vreme i
-	servere ovoj mreži</p>
+	servere ovoj mreži .</p>
 </div>

@@ -55,7 +55,7 @@ msgid "Links"
 msgstr "Veze"
 
 msgid "Terms of service"
-msgstr "Uslovi korištenja"
+msgstr "Uslovi koršćenja"
 
 msgid "Subscribe in a reader"
 msgstr "Pretplatite se za citanje"
@@ -92,7 +92,7 @@ msgstr ""
 "Server operatori (i korisnici) koji bi leli da budu više uključeni u "
 "projekat mogu se pretplatiti na listu za diskusiju.<br/> Naravno, glavne "
 "diskusije o ntp-u bi trebale da se vode na %1 Usenet news grupi  (takodje na "
-"<a href=\"%2\">Google Grupe</a>)."
+"<a href=\"%2\">Google Grupi</a>)."
 
 msgid "development_list_description"
 msgstr ""
@@ -108,7 +108,7 @@ msgid "Back to the front page"
 msgstr "Nazad na početnu stranicu"
 
 msgid "Find"
-msgstr "Naći"
+msgstr "Nađi"
 
 msgid "Stats for %1"
 msgstr "Statistika za %1"
@@ -142,13 +142,13 @@ msgid "News"
 msgstr "Vesti"
 
 msgid "How do I <i>use</i> pool.ntp.org?"
-msgstr "Kako da <i>use</i> pool.ntp.org?"
+msgstr "Kako da <i>koristim</i> pool.ntp.org?"
 
 msgid "How do I <i>join</i> pool.ntp.org?"
-msgstr "Kako da se pridružim <i>join</i> pool.ntp.org?"
+msgstr "Kako da se <i>pridružim</i> pool.ntp.org?"
 
 msgid "Information for vendors"
-msgstr "Informacije za prodavce"
+msgstr "Informacije za vendore"
 
 msgid "The mailing lists"
 msgstr "Mejling lista"
