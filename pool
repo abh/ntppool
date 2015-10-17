@@ -130,8 +130,8 @@ if ($cmd eq "add") {
     # do we have a hostname or an IP?
     my $hostname = shift @ARGV;
     my $ip;
-    if (Net::IP::ip_is_ipv4($hostname) or Net::IP::ip_is_ipv6($hostname)) {
-        $ip       = Net::IP::ip_compress_address($hostname);
+    if ($ip = Net::IP->new($hostname)) {
+        $ip       = $ip->ip();
         $hostname = undef;
     }
     else {
