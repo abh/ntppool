@@ -37,7 +37,7 @@ our %valid_languages = (
     rs => {name => "српски srpski"},
     ru => {name => "русский",},
     sv => {name => "Svenska"},
-    tr => {name => "Türkçe",              testing => 1},
+    tr => {name => "Türkçe"},
     uk => {name => "Українська"},
     zh => {name => "中国（简体）", testing => 1 },
 );
