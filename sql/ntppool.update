@@ -463,3 +463,6 @@ insert ignore into log_status select id, "2014-01-01 00:00:00", 0 from servers o
 
 #65
 alter table log_scores add attributes text;
+
+#66
+alter table vendor_zones add fb_user int null;
