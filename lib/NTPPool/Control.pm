@@ -2,7 +2,7 @@ package NTPPool::Control;
 use strict;
 use utf8;
 use Combust::Constant qw(OK);
-use base qw(Combust::Control Combust::Control::StaticFiles Combust::Control::Bitcard);
+use base qw(Combust::Control Combust::Control::StaticFiles NTPPool::Control::Login);
 
 use Carp qw(cluck);
 use Storable qw(retrieve);
@@ -11,8 +11,6 @@ use I18N::LangTags::Detect ();
 use List::Util qw(first);
 use NP::I18N;
 use NP::Version;
-
-$Combust::Control::Bitcard::cookie_name = 'npuid';
 
 my $version = NP::Version->new;
 my $config  = Combust::Config->new;

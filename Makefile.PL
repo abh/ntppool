@@ -15,7 +15,7 @@ WriteMakefile(
     VERSION_FROM => 'lib/NTPPool.pm',
     AUTHOR       => 'Ask Bjørn Hansen <ask@develooper.com>',
     EXE_FILES => ['bin/*'],
-    PREREQ_PM => { 
+    PREREQ_PM => {
                   'Net::DNS' => 0.63,
                   'Data::Transformer' => 0,
                   'Net::NTP' => 0,
@@ -60,7 +60,7 @@ WriteMakefile(
                   'Socket6' => 0,
                   'IO::Socket::INET6' => 0,
 
-		  'JSON::XS' => 2,
+                  'JSON::XS' => 2,
 
                  # For deployment scripts
                   'File::Find::Rule'  => 0,

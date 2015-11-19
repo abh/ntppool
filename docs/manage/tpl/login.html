@@ -1,0 +1,24 @@
+
+[% IF message %]
+<p><span class="error">[% message | html %]</span></p>
+[% ELSE %]
+<script src="//cdn.auth0.com/js/lock-7.min.js"></script>
+<script>
+var lock = new Auth0Lock('[% auth0_client %]', '[% auth0_domain %]');
+lock.show({
+  callbackURL: '[% callback_url | html %]'
+});
+</script>
+
+[% END %]
+
+<p>
+Continue to <a href="[% login_url | html %]">login</a>.
+</p>
+
+[% IF combust.deployment_mode == "devel" %]
+<pre>
+callback: [% callback_url | html %]
+login   : [% login_url | html %]
+</pre>
+[% END %]

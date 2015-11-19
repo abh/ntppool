@@ -466,3 +466,16 @@ alter table log_scores add attributes text;
 
 #66
 alter table vendor_zones add fb_user int null;
+
+#67
+create table `user_identities` (
+   id int unsigned not null primary key auto_increment,
+   profile_id varchar(255) not null,
+   user_id int unsigned not null,
+   provider varchar(255) not null,
+   data text,
+   email varchar(255),
+   unique key (profile_id),
+   CONSTRAINT `user_identities_user_id` FOREIGN KEY (`user_id`)
+      REFERENCES `users` (`id`) on delete cascade
+) engine=InnoDB default charset=utf8;
