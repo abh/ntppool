@@ -27,7 +27,7 @@ server 3.pool.ntp.org</pre>
 	"true") - voc&ecirc; poderia usar <tt>ntpdate pool.ntp.org</tt> ou poderia 
 	simplesmente usar o comando <tt>date</tt> e configur&aacute;-lo 
 	manualmente. Execute o ntpd e, ap&oacute;s algum tempo (isso pode demorar 
-	at&eacute; meia hora!), <tt>ntpq -pn</tt> deveria mostrar algo como:
+	at&eacute; meia hora!), <code>ntpq -pn</code> deveria mostrar algo como:
 	</p>
 <pre class="code ntpq">
 avbidder:~$ ntpq -p
@@ -46,23 +46,23 @@ avbidder:~$ ntpq -p
 	preocupar com isso novamente!
 	</p>
 	<p>
-	Como o <tt>pool.ntp.org</tt> ir&aacute; atribuir a voc&ecirc; servidores 
-	de tempo de todo o mundo, a qualidade do tempo pode n&atilde;o ser ideal. 
-	Voc&ecirc; consegue um resultado um pouco melhor se voc&ecirc; usar as 
-	<a href="/zone/@">zonas	continentais</a> (Por exemplo
+	A procura por <code>pool.ntp.org</code> (ou <code>0.pool.ntp.org</code>,
+	<code>1.pool.ntp.org</code>, etc.) normalmente vai retornar endere&ccedil;os
+	IP de servidores no seu pa&iacute;s ou pr&oacute;ximo a ele. Para a maioria
+	dos usu&aacute;rios, isso vai dar melhores resultados.</p>
+
+	Voc&ecirc; tamb&eacute;m pode user as <a href="/zone/@">zonas
+	continentais</a> (Por exemplo
 	<a href="/zone/europe">europe</a>,
 	<a href="/zone/north-america">north-america</a>,
 	<a href="/zone/oceania">oceania</a>
 	ou <a href="/zone/asia">asia</a>.pool.ntp.org),
-	e um tempo ainda melhor se voc&ecirc; usar a zona de pa&iacute;s (como 
+	e uma zona de pa&iacute;s (como
 	ch.pool.ntp.org	na  Su&iacute;&ccedil;a) - para todos essas zonas, 
 	voc&ecirc; pode novamente usar os prefixos 0, 1 ou 2, como 
 	0.ch.pool.ntp.org. Note, por&eacute;m, que a zona de pa&iacute;s pode 
 	n&atilde;o existir para o seu pa&iacute;s ou pode conter apenas um ou dois 
-	servidores de tempo. Se voc&ecirc; conhece servidores de tempo que 
-	est&atilde;o realmente pr&oacute;ximos a voc&ecirc; (medido por 
-	dist&acirc;ncia de rede, com <tt>traceroute</tt> ou	<tt>ping</tt>), o tempo 
-	provavelmente ser&aacute; ainda melhor.
+	servidores de tempo.
 	</p>
 	<p>
 	Se voc&ecirc; est&aacute; usando <b>uma vers&atilde;o recente do 
