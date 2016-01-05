@@ -202,7 +202,7 @@ sub localize_url {
 
         $uri->path("/$lang" . $uri->path);
         $self->request->header_out('Vary', 'Accept-Language');
-        $self->cache_control('s-maxage=900, maxage=3600');
+        $self->cache_control('s-maxage=900, max-age=3600, stale-while-revalidate=90, stale-if-error=43200');
         return $self->redirect($uri->as_string);
     }
     return;
