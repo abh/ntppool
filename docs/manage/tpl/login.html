@@ -16,6 +16,34 @@ lock.show({
 Continue to <a href="[% login_url | html %]">login</a>.
 </p>
 
+<p>
+Note that the login system changed in January 2016.
+</p>
+
+<p>
+Create a new account with the same email address you used previously
+to reset your password if the system says your account doesn't exist.
+</p>
+
+<p>
+If you need help, please fill out the form below.
+</p>
+
+<p>
+<form action="https://mailform.ntppool.org/send/jsrthkgjkw45ht3f"
+    method="POST">
+    <input type="text" name="name" placeholder="Your name"><br>
+    <input type="email" name="_replyto" placeholder="Your email address"><br>
+    <textarea cols="60" rows="10" name="text" placeholder="message ..."></textarea>
+    <br>
+    <input type="hidden" name="subject" value="NTP Pool login help">
+
+    <br>
+    <input type="text" name="_gotcha" value="" style="display:none" />
+    <input type="submit" value="Send">
+    <input type="hidden" name="_next" value="[% callback_url %]">
+</form>
+
 [% IF combust.deployment_mode == "devel" %]
 <pre>
 callback: [% callback_url | html %]
