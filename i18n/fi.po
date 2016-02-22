@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Last-Translator: Joni Kähärä <joni.kahara@async.fi>\n"
+"Last-Translator: Jyri-Petteri Paloposki <jyri-petteri.paloposki@iki.fi>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -24,15 +24,37 @@ msgstr "Etelä-Amerikka"
 msgid "Europe"
 msgstr "Eurooppa"
 
+msgid "Oceania"
+msgstr "Oseania"
+
 msgid "Global"
-msgstr "Globaali"
+msgstr "Maailmanlaajuinen"
 
 msgid "All Pool Servers"
-msgstr "Kaikki Poolin Palvelimet"
+msgstr "Kaikki palvelimet"
 
 # navigation
 msgid "Translations"
 msgstr "Käännökset"
+
+# index.html
+msgid  "Introduction"
+msgstr "Johdanto"
+
+msgid  "Active Servers"
+msgstr "Aktiiviset palvelimet"
+
+msgid  "Links"
+msgstr "Linkit"
+
+msgid  "Terms of service"
+msgstr "Käyttöehdot"
+
+msgid  "Subscribe in a reader"
+msgstr "Tilaa lukijaan"
+
+msgid  "Older news"
+msgstr "Vanhemmat uutiset"
 
 # mailinglists.html
 msgid  "NTP Pool mailing lists"
@@ -54,15 +76,16 @@ msgid  "Development list"
 msgstr "Kehityslista"
 
 msgid  "announcement_list_description"
-msgstr "NTP Poolin ilmoituslista, hyvin vähän liikennettä. Kaikkien poolin palvelimia operoivien tahojen tulisi liittyä tähän."
+msgstr "NTP Poolin ilmoituslista, jolla on hyvin vähän liikennettä. Kaikkien poolin palvelinten ylläpitäjien tulisi liittyä tähän."
 
 msgid  "discussion_list_description"
-
-msgstr "Palvelimia operoivien tahojen (ja käyttäjien) jotka haluavat olla enemmän mukana projektissa voivat liittyä tähän.<br/>Tietenkin, yleisen keskustelun tulisi tapahtua %1 Usenet-uutisryhmässä (myös <a href=\"%2\">Google Groupsissa</a>)."
+msgstr "Palvelinylläpitäjien (ja käyttäjien) jotka haluavat osallistua projektiin enemmän kannattaa liittyä keskustelulistalle.<br/>Yleisen ntp-aiheisen keskustelun tulisi tapahtua %1 Usenet-uutisryhmässä (myös <a href=\"%2\">Google Groupsissa</a>)."
 
 msgid  "development_list_description"
+msgstr "Teknisemmät (ja toivottavasti myös käytännöllisemmät) <a href=\"%1\">poolin koodiin</a> ja <a href=\"%2\">pgeodns:n</a> kehittämiseen liittyvät keskustelut käydään timekeepers-dev-listalla."
 
-msgstr "Teknisemmät (ja toivottavasti myös käytännöllisemmät) <a href=\"%1\">poolin koodin</a> ja <a href=\"%2\">pgeodns:n</a> kehittämiseen liittyvä keskustelu tapahtuu timekeepers-dev-listalla."
+msgid  "irc_channel_description"
+msgstr "Palvelinylläpitäjille ja käyttäjille on IRC-kanava %2 %1-verkossa."
 
 # tpl/server.html
 msgid  "Back to the front page"
@@ -72,25 +95,25 @@ msgid  "Find"
 msgstr "Etsi"
 
 msgid  "Stats for %1"
-msgstr "%1 Tilastot"
+msgstr "%1:n tilastot"
 
 msgid  "Not active in the pool, monitoring only"
-msgstr "Ei aktiivinen poolissa, vain monitorointi"
+msgstr "Ei aktiivinen poolissa, vain seuranta"
 
 msgid  "Zones:"
 msgstr "Vyöhykkeet:"
 
 msgid  "This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
-msgstr "Palvelimen on <span class=\"deletion\">määrä poistaa</span> %1."
+msgstr "Palvelin on <span class=\"deletion\">määritetty poistumaan</span> %1."
 
 msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
-msgstr "Nykyinen tulos: %1 (vain palvelimet joiden tulos on yli %2 ovat mukana poolissa)"
+msgstr "Nykyinen pistemäärä: %1 (vain palvelimet joiden tulos on yli %2 ovat mukana poolissa)"
 
 msgid  "What do the graphs mean?"
 msgstr "Mitä graafit tarkoittavat?"
 
 msgid  "CSV log"
-msgstr "CSV-logi"
+msgstr "CSV-loki"
 
 # tpl/navigation_sidebar.html
 msgid  "News"
