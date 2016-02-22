@@ -13,16 +13,17 @@ lock.show({
 [% END %]
 
 <p>
-Continue to <a href="[% login_url | html %]">login</a>.
-</p>
-
-<p>
 Note that the login system changed in January 2016.
 </p>
 
 <p>
-Create a new account with the same email address you used previously
-to reset your password if the system says your account doesn't exist.
+<strong><a href="[% login_url | html %]">Continue to login</a></strong>.
+</p>
+
+<p>
+If the system says your account doesn't exist then create a new
+account with the same email address you used previously to reset your
+password.
 </p>
 
 <p>
@@ -40,7 +41,7 @@ If you need help, please fill out the form below.
 
     <br>
     <input type="text" name="_gotcha" value="" style="display:none" />
-    <input type="submit" value="Send">
+    <input type="submit" value="Request help">
     <input type="hidden" name="_next" value="[% callback_url %]">
 </form>
 
