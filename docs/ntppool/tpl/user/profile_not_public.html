@@ -1,12 +1,11 @@
 <div class="block">
 <p>
-[% user.username || 'User #' _ user.id %] does not have a public profile.
+This profile is private.
 </p>
 
 <p>
-If you are [% user.username || 'User #' _ user.id %], you can see your
-servers and change your profile status in the <a href="[%
-combust.manage_url %]">manage system</a>.
+You can see your own servers and change your profile status in
+the <a href="[% combust.manage_url %]">manage system</a>.
 </p>
 
 </div>

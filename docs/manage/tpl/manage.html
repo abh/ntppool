@@ -5,10 +5,9 @@
 <div id="admin" class="block">
         <div>
 	<h3>Admin information</h3>
-	[% user = combust.user %]	
-			Username: <b>[% user.username %]</b><br>
-			[% PROCESS tpl/manage/profile_link.html %]<br>
-	                Email: <b>[% user.email %]</b><br>
+	[% user = combust.user %]
+	[% PROCESS tpl/manage/profile_link.html %]<br>
+	Email: <b>[% user.email %]</b><br>
         </div>
 
 	<div class="servers" >

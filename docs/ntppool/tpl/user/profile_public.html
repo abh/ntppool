@@ -1,8 +1,8 @@
-[% page.title = (user.username || user.email) _ "'s pool servers" %]
+[% page.title = (user.username user.id) _ "'s pool servers" %]
 
 <div id="userprofile" class="block">
 
-<h3>[% user.username || user.email | html %]'s pool servers</h3>
+<h3>[% user.username || user.id | html %]'s pool servers</h3>
 
 [% IF combust.user.privileges.see_all_user_profiles %]
 <p>[% user.email | html %]</p>
