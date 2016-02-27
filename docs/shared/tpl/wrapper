@@ -1,4 +1,4 @@
-[%- 
+[%-
 
    MACRO language_url(url) BLOCK;
        combust.www_url("/" _ current_language _ url);

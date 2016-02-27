@@ -4,7 +4,7 @@
 MACRO show_js(list_js_files) BLOCK;
   IF list_js_files && list_js_files.list && list_js_files.list.size;
   FOR js_elem = list_js_files.list;
-    FOR js = js_elem.list;   
+    FOR js = js_elem.list;
         IF !unique_js.${js};
             IF js.match('^(https?:)?//');
                 jspath = js;
