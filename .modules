@@ -23,8 +23,6 @@ I18N::LangTags
 IO::Compress::Gzip
 JSON::XS
 Locale::Maketext::Lexicon
-DBD::SQLite
-Locale::Object
 Math::BaseCalc
 Math::Random::Secure
 Module::Refresh

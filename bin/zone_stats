@@ -4,7 +4,6 @@ eval 'exec $CBROOT/bin/perl $0 ${1+"$@"}'
 use strict;
 use warnings;
 use Data::Dumper;
-use Locale::Object;
 use DateTime;
 use File::Path qw(mkpath);
 
