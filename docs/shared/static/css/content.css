@@ -149,6 +149,9 @@ p.thanks {font-style: italic; font-weight: bold;}
           margin-bottom: 15px;
 }
 
+#login-form {
+	padding-bottom: 30px;
+}
 
 /* zones */
 table.servertable {
