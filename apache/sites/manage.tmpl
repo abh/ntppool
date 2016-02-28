@@ -8,9 +8,6 @@
 
     PerlModule NTPPool
 
-    Alias /zone/graph/ [% root_local %]/rrd/zone/graph/
-    Alias /scores/graph/ [% root_local %]/rrd/server/graph/
-
     <Location />
        SetHandler perl-script
        [% PH %] NTPPool::Control::Manage::Root->super

@@ -213,17 +213,6 @@ sub _netspeed_human {
     return "$netspeed Kbit";
 }
 
-
-my $rrd_path = "$ENV{CBROOTLOCAL}/rrd/server";
-mkpath "$rrd_path/graph/" unless -e "$rrd_path/graph";
-
-sub graph_path {
-    my ($self, $name) = @_;
-    my $dir = int($self->id / 500) * 500;
-    my $file = $dir . '/' . $self->id . ($name ? "-$name" : "") . ".png";
-    return "$rrd_path/graph/" . $file;
-}
-
 sub graph_uri {
     my ($self, $name) = @_;
     return unless $name;
