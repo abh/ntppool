@@ -30,15 +30,22 @@ sub search {
         push @users, $_->user for @$servers;
     }
 
-    warn "getting users";
+    my $user_query = [
+        or => [
+            username => {like => $q . '%'},
+            email    => {like => '%' . $q . '%'},
+        ]
+    ];
+
+    my $include_identities = 0;
+
+    if ($q =~ m/^id:(\d+)/i) {
+        $user_query = [id => $1];
+        $include_identities = 1;
+    }
 
     my $users = NP::Model->user->get_users(
-        query => [
-            or => [
-                username => {like => $q . '%'},
-                email    => {like => '%' . $q . '%'},
-            ]
-        ],
+        query         => $user_query,
         multi_many_ok => 1,
         with_objects  => ['servers_all.zones']
     );
