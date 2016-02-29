@@ -29,19 +29,6 @@
                  %]
 
 		<link rel="shortcut icon" href="[% combust.static_url("/images/favicon.ico") %]" type="image/x-icon" />
-
-<script>
-var _prum = [['id', '5241b172abe53d2337000000'],
-             ['mark', 'firstbyte', (new Date()).getTime()]];
-(function() {
-    var s = document.getElementsByTagName('script')[0]
-      , p = document.createElement('script');
-    p.async = 'async';
-    p.src = '//rum-static.pingdom.net/prum.min.js';
-    s.parentNode.insertBefore(p, s);
-})();
-</script>
-
 </head>
 <body>
 [% PROCESS "tpl/google-analytics.html" %]
@@ -96,15 +83,6 @@ var _prum = [['id', '5241b172abe53d2337000000'],
    } catch(err) {}
 </script>
 [% END %]
-
-<script type="text/javascript">
-  (function(w, d) { var a = function() { var a = d.createElement('script'); a.type = 'text/javascript';
-    a.async = 'async'; a.src = '//' + ((w.location.protocol === 'https:') ? 's3.amazonaws.com/cdx-radar/' :
-    'radar.cedexis.com/') + '01-11862-radar10.min.js'; d.body.appendChild(a); };
-    if (w.addEventListener) { w.addEventListener('load', a, false); }
-    else if (w.attachEvent) { w.attachEvent('onload', a); }
-  }(window, document));
-</script>
 
 </body>
 </html>
