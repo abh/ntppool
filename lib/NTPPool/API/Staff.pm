@@ -58,7 +58,7 @@ sub search {
         for my $user (@users) {
             my $data = $user->get_data_hash;
             push @{$result->{users}}, {
-                id       => $data->{id},
+                id       => 0 + $data->{id},
                 name     => $data->{name},
                 username => $data->{username},
                 email    => $data->{email},
