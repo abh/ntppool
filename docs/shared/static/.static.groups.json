@@ -24,7 +24,7 @@
   "admin.js": {
       "files": [
           "cdn/libs/hogan/2/hogan.min.js",
-          "cdn/libs/underscore/1.3/underscore-min.js",
+          "cdn/libs/underscore/1.8/underscore-min.js",
           "cdn/libs/jquery-plugins/jeditable/1.7/jquery.jeditable.min.js",
           "js/admin-templates.js",
           "js/admin.js"
