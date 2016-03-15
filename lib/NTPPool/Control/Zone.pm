@@ -67,7 +67,7 @@ sub render {
         my $data = NP::Model->zone_server_count->get_objects(
             query   => [zone_id => $zone->id],
             sort_by => 'date',
-            limit   => 5000,
+            limit   => 20000,
         );
 
         my @dates = NP::Util::uniq(map { $_->date->epoch } @$data);
@@ -104,7 +104,7 @@ sub render {
               }
         } @out ? @out : @$data;
 
-        $self->cache_control('s-maxage=43200, maxage=7200');
+        $self->cache_control('s-maxage=43200, max-age=7200');
 
         return OK, encode_json({history => \@data}), 'application/json';
     }
@@ -119,7 +119,7 @@ sub render {
     }
 
     unless ($self->show_servers_access) {
-        $self->cache_control('s-maxage=900, maxage=1800');
+        $self->cache_control('s-maxage=900, max-age=1800');
     }
     else {
         $self->cache_control('private');
