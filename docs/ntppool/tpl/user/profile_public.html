@@ -1,4 +1,4 @@
-[% page.title = (user.username user.id) _ "'s pool servers" %]
+[% page.title = (user.username || user.id) _ "'s pool servers" %]
 
 <div id="userprofile" class="block">
 
