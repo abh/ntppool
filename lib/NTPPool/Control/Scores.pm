@@ -30,7 +30,7 @@ sub render {
         return $self->redirect('/scores/' . $server->ip) if $server;
     }
 
-    return $self->redirect('/scores/') if ($self->request->uri =~ m!^/s(cores)/?$!);
+    return $self->redirect('/scores/') if ($self->request->uri =~ m!^/s(cores)?/?$!);
 
     if ($self->request->uri =~ m!^/s/([^/]+)!) {
         my $server = NP::Model->server->find_server($1) or return 404;
@@ -139,8 +139,8 @@ sub render {
         }
     }
 
-    # if we didn't match on any URL, show the form
-    return OK, $self->evaluate_template('tpl/server.html');
+    # if we didn't match on any URL, return 404
+    return 404;
 }
 
 sub _monitors {
