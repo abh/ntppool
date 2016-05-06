@@ -33,7 +33,7 @@ sub update_graphs {
     printf "Processing %i\n", $server_id;
     NP::Model->db->ping;
     my $server = NP::Model->server->fetch(id => $server_id) or return 0;
-    my ($xfh, $filename) = tempfile();
+    my ($xfh, $filename) = tempfile(SUFFIX => '.png');
     $url->path($server->url);
     NP::Util::run("phantomjs", "--disk-cache=yes", "$ENV{CBROOTLOCAL}/phantom/graph.js",
         $url->as_string, $filename);
