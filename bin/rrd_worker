@@ -13,6 +13,8 @@ use Combust::Config;
 use NP::Model;
 use NP::Util qw(run);
 
+$ENV{PATH} = "$ENV{PATH}:/usr/local/phantomjs/bin";
+
 $| = 1;
 
 print "Starting, registering worker\n";
@@ -40,6 +42,7 @@ sub update_graphs {
     open my $fh, "<", $filename or die "Could not open graph: $!";
     my $data = do { local $/ = undef; <$fh> };
     printf "Done with %i %s %s\n", $server_id, $filename, $url->as_string;
+    printf "Got %i bytes\n", length($data);
     unlink $filename;
     return $data;
 }
