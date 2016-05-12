@@ -1,7 +1,7 @@
 body {
     color: #222;
     font-size: 15px;
-    font-family: "adelle-1","adelle-2", "Georgia";
+    font-family: merriweather, "Georgia", serif;
     font-weight: 400;
 }
 
@@ -26,9 +26,11 @@ h1, h2, h3, h4, h5 {color: #454545;}
 }
 
 ul#nav li {
-	font: 125% "p22-underground-1","p22-underground-2", sans-serif;
+	font-size: 30px;
+	font-family: 'Economica', sans-serif;
+           /*"p22-underground-1","p22-underground-2", sans-serif;*/
         font-variant: small-caps;
-        font-weight: 600;
+        font-weight: 700;
         list-style: none;
         }
 	ul#nav li a {
