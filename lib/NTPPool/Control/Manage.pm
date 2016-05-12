@@ -74,6 +74,7 @@ sub render {
 
     if ($self->request->uri =~ m!^/manage/logout!) {
         $self->cookie($self->user_cookie_name, 0);
+        $self->cookie("xs", 0);
         $self->redirect('/manage');
     }
 
@@ -149,10 +150,9 @@ sub render {
 
             $user = $user || $identity->user;
 
+            my $base36 = Math::BaseCalc->new(digits => ['a' .. 'k', 'm' .. 'z', 2 .. 9]);
             if (!$user) {
-                my $base36 = Math::BaseCalc->new(digits => ['a' .. 'k', 'm' .. 'z', 2 .. 9]);
                 my $username = join "", map { $base36->to_base(irand) } (undef) x 3;
-
                 $user = NP::Model->user->create(
                     email    => $identity->email,
                     name     => $userdata->{name},
@@ -167,6 +167,7 @@ sub render {
 
             $identity->save;
 
+            $self->cookie("xs", join "", map { $base36->to_base(irand) } (undef) x 6);
             $self->cookie($self->user_cookie_name, $user->id);
             $self->user($user);
 
@@ -270,6 +271,9 @@ sub login_url {
 
 sub manage_dispatch {
     my $self = shift;
+
+    $self->tpl_param('xs', $self->cookie('xs'));
+
     return $self->handle_add if $self->request->uri =~ m!^/manage/server/add!;
     return $self->handle_update
       if $self->request->uri =~ m!^/manage/(server|profile)/update!;
