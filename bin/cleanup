@@ -25,7 +25,7 @@ $dbh->do(
     <<EOT
 CREATE TABLE IF NOT EXISTS `log_scores_archive_${year}` (
   `id` bigint(20) unsigned NOT NULL,
-  `monitor_id` int(10) unsigned NOT NULL,
+  `monitor_id` int(10) unsigned,
   `server_id` int(10) unsigned NOT NULL,
   `ts` datetime NOT NULL,
   `score` double NOT NULL DEFAULT '0',
