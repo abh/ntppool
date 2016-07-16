@@ -20,14 +20,14 @@ sub render {
         $self->tpl_param('manage_site', 1);
     }
 
-    # "tell me your IP" form
-    if ($self->request->uri eq '/scores/') {
-        return OK, $self->evaluate_template('tpl/server.html');
-    }
-
     if (my $ip = ($self->req_param('ip') || $self->req_param('server_ip'))) {
         my $server = NP::Model->server->find_server($ip) or return 404;
         return $self->redirect('/scores/' . $server->ip) if $server;
+    }
+
+    # "tell me your IP" form
+    if ($self->request->uri eq '/scores/') {
+        return OK, $self->evaluate_template('tpl/server.html');
     }
 
     return $self->redirect('/scores/') if ($self->request->uri =~ m!^/s(cores)?/?$!);
