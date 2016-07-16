@@ -31,6 +31,9 @@ sub data {
         $data->{www} = $www_record;
         $data->{web} = $www_record;
         $data->{gb}  = {alias => 'uk'};
+        for my $i (0..3) {
+            $data->{"$i.gb"}  = {alias => "$i.uk"};
+        }
 
         $data->{""}->{ns} = {map { $_ => undef } split /[\s+,]/, $self->ns_list};
         $data;
@@ -82,6 +85,12 @@ sub populate {
                 # possible duplicates, not enough servers
                 foreach my $z (@zones) {
                     (my $pgeodns_group = "$z${name}") =~ s/\.$//;
+
+                    # already has an alias, so don't add more data
+                    if ($data->{$pgeodns_group}->{alias}) {
+                        next;
+                    }
+
                     $data->{$pgeodns_group}->{a} = [];
                     if ($ttl) {
                         $data->{$pgeodns_group}->{ttl} = $ttl;
