@@ -99,7 +99,7 @@ msgid  "Information for vendors"
 msgstr "Informacje dla sprzedawców"
 
 msgid  "The mailing lists"
-msgstr "Listy mejlingowe"
+msgstr "Listy mailingowe"
 
 msgid  "Additional links"
 msgstr "Dodatkowe linki"
