@@ -40,7 +40,7 @@
 		[% IF combust.deployment_mode != 'prod' %]
 		<p class="develwarning">Note: This is a development/test version of
 		the NTP Pool system!  For the real site with real data, go to <a
-		href="http://www.pool.ntp.org/">www.pool.ntp.org</a>.  Discussion and
+		href="https://www.ntppool.org/">ntppool.org</a>.  Discussion and
 		bug reports for the beta/test site here, see <a
 		href="https://lists.ntp.org/listinfo/pool-dev">pool-dev</a>.
 		</p>
@@ -63,7 +63,7 @@
 
 <div id="doc3" class="yui-t2">
 	<div id="ft">
-		Comments and questions to <a href="http://www.askask.com/">Ask Bj&oslash;rn Hansen</a> &#8212;
+		Comments and questions to <a href="https://www.askask.com/">Ask Bj&oslash;rn Hansen</a> &#8212;
 		<a href="mailto:ask@develooper.com">ask@develooper.com</a>
 	</div>
 </div>
@@ -72,13 +72,13 @@
 
 [% IF combust.site == 'ntppool' %]
 <!-- ipv6 testing -->
-<script type="text/javascript" src="http://ipv64.v6test.develooper.com/js/v1/v6test.js"></script>
+<script type="text/javascript" src="//ipv64.v6test.develooper.com/js/v1/v6test.js"></script>
 
 <script type="text/javascript">
    // v6.target = '';
    if (!v6.target) { v6.only_once = true }
    v6.site = 'EED5EB02-235D-11DF-8ACC-F064064DD970';
-   v6.api_server = 'http://ipv64.v6test.develooper.com';
+   v6.api_server = '//ipv64.v6test.develooper.com';
    try {
      v6.test();
    } catch(err) {}
