@@ -4,4 +4,4 @@ sleep 1
 exec </dev/null
 exec 2>&1
 echo Starting
-exec init_perlbrew ~/ntppool/monitor $MONITOR_API_V6 $MONITOR_API_URL
+exec init_perlbrew ~/ntppool/monitor $MONITOR_API_V4 $MONITOR_API_URL
