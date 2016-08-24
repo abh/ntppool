@@ -9,28 +9,18 @@
 	程式）的配置檔案十分簡單：
 	</p>
 
-<pre class="code">
-driftfile /var/lib/ntp/ntp.drift
+[% INCLUDE "ntppool/use/sample-config.html" %]
 
-server 0.pool.ntp.org
-server 1.pool.ntp.org
-server 2.pool.ntp.org
-server 3.pool.ntp.org</pre>
 	<p>
-	0、1、2 和 3.pool.ntp.org 域名指向每小時隨機更換的一組伺服器。
+	其中 0、1、2 和 3.pool.ntp.org 域名指向每小時隨機更換的一組伺服器。
 	確保你的計算機時鐘設定為合理的時間（與「真實」時間相差不大）——您可以使用
 	<tt>ntpdate pool.ntp.org</tt>，或對著手錶使用 <tt>date</tt> 命令。
 	啟動 ntpd，一段時間後（可能耗時一小時！）<code> ntpq -pn</code>
 	應當輸出類似的內容：
 	</p>
-<pre class="code ntpq">
-avbidder:~$ ntpq -p
-     remote           refid      st t when poll reach   delay   offset  jitter
-==============================================================================
-+81.6.42.224     193.5.216.14     2 u   68 1024  377  158.995   51.220  50.287
-*217.162.232.173 130.149.17.8     2 u  191 1024  176   79.245    3.589  27.454
--129.132.57.95   131.188.3.222    3 u  766 1024  377   22.302   -2.928   0.508
-</pre>
+
+[% INCLUDE "ntppool/use/sample-ntpq.html" %]
+
 	<p>
 	IP 位址會不同，因為您會被隨機分配到時間伺服器。關鍵在於以星號（<tt
 	>*</tt>）開始的行，這意味著您的計算機與網際網路校時——您不必再為此擔心了！
@@ -38,7 +28,7 @@ avbidder:~$ ntpq -p
 	<p>
 	查詢 <code>pool.ntp.org</code>（或
 	<code>0.pool.ntp.org</code>、<code>1.pool.ntp.org</code>
-	等）往往會返回您的國家或鄰國的 IP 位址。這能為多數使用者提供優化。
+	等）往往會返回您的國家或鄰國的 IP 位址。這能為多數使用者提供最佳結果。
 	</p>
 
 	<p>您也可以使用 <a href="/zone/@">洲界區域</a>（例如
@@ -80,6 +70,23 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
 
 <div class="block">
 	<h3>附加說明</h3>
+
+       <!-- Line-breaks in HTML does not work well for Chinese as the language does not use spaces... -->
+       <!-- But for now, whatever. -->
+       <p><span class="hook">請仔細考慮 NTP 池是否適合您使用</span>。
+       如果時間的正確性關乎商業、組織的穩定甚至是人命，或者是在其他時間錯誤會有害的情況下，你不應該僅僅是「從網上抓個時間下來」。
+       NTP 池總體來說非常優質，但是它是一個由志願者利用閒暇時間運行的服務，並不能提供多少保障。
+       請與您的裝置和服務供應商交流，以瞭解有關您獲得本地可靠時間服務的方法。
+       您也可以參考我們的 <a href="/tos.html">服務條款</a>。
+
+       我們向您推薦來自
+        <a href="http://www.meinbergglobal.com/english/products/ntp-time-server.htm">Meinberg</a>的時間伺服器，
+        但您也能從
+        <a href="http://www.endruntechnologies.com/NTP-Servers/gps-cdma-ntp.htm">End Run</a>,
+        <a href="http://spectracom.com/products-services/precision-timing#anchor-2172">Spectracom</a>
+        或是其他的站點找到時間伺服器。
+        </p>
+
 	<p><span class="hook">如果您有固定 IP 位址和可覌的網路連線</span>（頻寬不重要，但需要穩定和低負載），請考慮將您的伺服器捐贈給伺服器池。這只會消耗不超過每秒幾百位元組的流量，卻能讓此專案存活。請參見<a
 	href="/join.html">加入頁面</a>。
 	</p>
