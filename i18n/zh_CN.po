@@ -1,4 +1,5 @@
 # wustudent <12fogcity@tongji.edu.cn>
+# Star Brilliant <m13253@hotmail.com>, 2015.
 # Mingye Wang (Arthur2e5) <arthur200126@gmail.com>, 2016.
 msgid ""
 msgstr ""
@@ -37,11 +38,11 @@ msgid "Global"
 msgstr "全球"
 
 msgid "All Pool Servers"
-msgstr "所有库服务器"
+msgstr "所有池服务器"
 
 # navigation
 msgid "Translations"
-msgstr "语言"
+msgstr "翻译"
 
 # index.html
 msgid "Introduction"
@@ -64,60 +65,60 @@ msgstr "旧新闻"
 
 # mailinglists.html
 msgid "NTP Pool mailing lists"
-msgstr "NTP 池邮件列表"
+msgstr "NTP 池的邮件列表"
 
 msgid "subscribe"
 msgstr "订阅"
 
 msgid "archive"
-msgstr "文章归档"
+msgstr "归档"
 
 msgid "Announcement list"
-msgstr "公告列表"
+msgstr "公告邮件列表"
 
 msgid "Discussion list"
-msgstr "讨论列表"
+msgstr "讨论邮件列表"
 
 msgid "Development list"
 msgstr "开发列表"
 
 # This usage is so un-gettext-ish... Oh my.
-msgid "announcement_list_description"
-msgstr "NTP Pool 的公告邮件量非常的少，请所有服务器管理员务必要订阅！"
+msgstr "极低流量的 NTP 池新闻。所有服务器管理员都应当订阅此公告列表。"
 
 msgid "discussion_list_description"
-msgstr "不管你是服务器管理员还是用户，如果你想更多的参与这个项目，请订阅我们的讨论清单。<br/> 一般有关 NTP 的讨论则应该在 %1 Usenet 新闻群组上（或是在 <a href=\"%2\">Google Groups</a>）"
+msgstr "希望进一步参与项目的服务器管理员（和用户）可以加入此讨论列表。<br/>当然，关于 NTP 的常规讨论应当在位于 %1 的 Usenet 新闻组（和 <a href=\"%2\">Google 网上论坛</a>）上举行。"
 
 msgid "development_list_description"
-msgstr "更多有关目前开发 <a href=\"%1\">ntp pool 代码</a> 以及 <a href=\"%2\">pgeodns</a> 相关技术的讨论会在 timekeepers-dev 清单上。"
+msgstr "有关 <a href=\"%1\">ntp pool 代码</a>和 <a href=\"%2\">pgeodns</a> 眼下开发的技术性（理论上总是很务实的）讨论于 timekeepers-dev 列表举行。"
 
 msgid "irc_channel_description"
-msgstr "我们在 %1 服务器提供一个叫做 %2 的 IRC 频道给所有用户以及维护人员。"
+msgstr "%1 上有个供服务器管理员和用户使用的 %2 频道。"
 
 # tpl/server.html
 msgid "Back to the front page"
-msgstr "回到首页"
+msgstr "回到主页"
 
 msgid "Find"
-msgstr "搜索"
+msgstr "查找"
 
 msgid "Stats for %1"
-msgstr "%1的统计信息"
+msgstr "%1 的统计信息"
 
 msgid "Not active in the pool, monitoring only"
-msgstr "在池中不可用，只能进行查看"
+msgstr "在池中不活跃，仅监测。"
 
+# Since Chinese does not have plural forms, I am using the phrase "zone list" to indicate we are showing more than one zones.
 msgid "Zones:"
-msgstr "区域："
+msgstr "区域列表："
 
-msgid "This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
-msgstr "这个服务器预计于 %1 被<span class=\"deletion\">删除</span>。"
+msgid "This server is <span class="deletion">scheduled for deletion</span> on %1."
+msgstr "此服务器计划在 %1 <span class=\"deletion\">被删除</span>。"
 
 msgid "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
-msgstr "目前得分: %1 (只有得分高于 %2 的服务器会被存入池中)"
+msgstr "当前评分：%1（本池仅使用评分高于 %2 的服务器）"
 
 msgid "What do the graphs mean?"
-msgstr "这些图表意味着什么？"
+msgstr "这些图表有什么含义？"
 
 msgid "CSV log"
 msgstr "CSV 日志"
@@ -133,13 +134,13 @@ msgid "How do I <i>join</i> pool.ntp.org?"
 msgstr "如何<u>加入</u> pool.ntp.org？"
 
 msgid "Information for vendors"
-msgstr "为供应商提供的信息"
+msgstr "为厂商提供的信息"
 
 msgid "The mailing lists"
 msgstr "邮件列表"
 
 msgid "Additional links"
-msgstr "附加链接"
+msgstr "补充链接"
 
 msgid "Can you translate?"
-msgstr "您能帮助我们翻译吗？"
+msgstr "您可以协助翻译吗？"

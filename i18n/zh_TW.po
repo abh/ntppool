@@ -1,4 +1,5 @@
 # Peter Dave Hello <hsu@peterdavehello.org>
+# Star Brilliant <m13253@hotmail.com>, 2015.
 # Mingye Wang (Arthur2e5) <arthur200126@gmail.com>, 2016.
 msgid ""
 msgstr ""
@@ -12,7 +13,7 @@ msgstr ""
 "X-Generator: Poedit 1.8.7\n"
 
 msgid "go up"
-msgstr "回到上方"
+msgstr "返回頂部"
 
 # zone names
 msgid "Africa"
@@ -22,26 +23,26 @@ msgid "Asia"
 msgstr "亞洲"
 
 msgid "North America"
-msgstr "北美"
+msgstr "北美洲"
 
 msgid "South America"
-msgstr "南美"
+msgstr "南美洲"
 
 msgid "Europe"
 msgstr "歐洲"
 
 msgid "Oceania"
-msgstr "澳洲"
+msgstr "大洋洲"
 
 msgid "Global"
 msgstr "全球"
 
 msgid "All Pool Servers"
-msgstr "所有可用伺服器"
+msgstr "所有池伺服器"
 
 # navigation
 msgid "Translations"
-msgstr "語言"
+msgstr "翻譯"
 
 # index.html
 msgid "Introduction"
@@ -70,19 +71,19 @@ msgid "subscribe"
 msgstr "訂閱"
 
 msgid "archive"
-msgstr "存檔"
+msgstr "歸檔"
 
 msgid "Announcement list"
-msgstr "公告列表"
+msgstr "公告郵件列表"
 
 msgid "Discussion list"
-msgstr "討論列表"
+msgstr "討論郵件列表"
 
 msgid "Development list"
 msgstr "開發列表"
 
 msgid "announcement_list_description"
-msgstr "NTP Pool 的最新消息的資料量非常非常的少，請所有伺服器管理員務必要訂閱！"
+msgstr "NTP Pool 的公告消息的資料量非常的少，請所有伺服器管理員務必要訂閱！"
 
 msgid "discussion_list_description"
 msgstr "不管你是伺服器管理員還是使用者，如果你想更多的參與這個專案，請訂閱我們的討論清單。<br/> 一般有關 NTP 的討論則應該在 %1 Usenet 新聞群組上（或是在 <a href=\"%2\">Google Groups</a>）。"
@@ -104,19 +105,20 @@ msgid "Stats for %1"
 msgstr "%1 的統計"
 
 msgid "Not active in the pool, monitoring only"
-msgstr "該 pool 沒有可用的伺服器，僅進行監測"
+msgstr "在池中不活躍，僅監測"
 
+# Since Chinese does not have plural forms, I am using the phrase "zone list" to indicate we are showing more than one zones.
 msgid "Zones:"
-msgstr "區域："
+msgstr "區域列表："
 
 msgid "This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
 msgstr "這個伺服器預計會在 %1 被<span class=\"deletion\">移除</span>。"
 
 msgid "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
-msgstr "目前的分數: %1（只有分數高於 %2 的伺服器會被放在pool裡面）"
+msgstr "當前評分：%1（本池僅使用評分高於 %2 的伺服器）"
 
 msgid "What do the graphs mean?"
-msgstr "圖示說明"
+msgstr "這些圖表有什麼含義？"
 
 msgid "CSV log"
 msgstr "CSV 日誌"
@@ -125,6 +127,7 @@ msgstr "CSV 日誌"
 msgid "News"
 msgstr "新聞"
 
+# Avoiding oblique generation for Chinese.
 msgid "How do I <i>use</i> pool.ntp.org?"
 msgstr "如何<u>使用</u> pool.ntp.org？"
 
@@ -132,13 +135,13 @@ msgid "How do I <i>join</i> pool.ntp.org?"
 msgstr "如何<u>加入</u> pool.ntp.org？"
 
 msgid "Information for vendors"
-msgstr "為服務提供者所準備的資訊"
+msgstr "為廠商提供的資訊"
 
 msgid "The mailing lists"
 msgstr "郵件列表"
 
 msgid "Additional links"
-msgstr "其他連結"
+msgstr "補充連結"
 
 msgid "Can you translate?"
 msgstr "想要幫我們翻譯嗎？"
