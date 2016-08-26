@@ -40,9 +40,9 @@ job_servers = 127.0.0.1:4730
 #   params.  LOGDIR is $CBROOT/apache/logs
 
 [database-ntppool]
-data_source = dbi:mysql:database=ntppool;host=mysql.internal
-user        = ntppool-devel
-#password    = abc123
+data_source = dbi:mysql:database=ntppool;host=mysql
+user        = ntppool
+password    = pooldev
 time_zone   = UTC
 default=1
 
@@ -58,27 +58,27 @@ maxclients          = 3
 
 
 [ntppool]
-servername=ntp.plys.net
-#servername = ntp.internal
+servername=ntp-dev.ngrok.com
 aliases    = *
 deployment_mode = devel
 siteadmin  = ask@develooper.com
 
 googleanalytics = UA-52057-3
-bitcard_token = abc123
 pool_domain = pool.internal
 dns_domains = pool.internal
 
 ntpcheck = http://localhost:8087/
 
 [ntpgraphs]
-servername = ntpgraphs.embla.bn.dev
+servername = ntp-graphs-dev.ngrok.com
 deployment_mode = devel
 
 [manage]
-#servername = ntpmanage.internal
-servername=ntpmanage.ngrok.com
+servername=ntppool-manage-dev.ngrok.com
 deployment_mode = devel
-siteadmin  = ask@develooper.com
-bitcard_token = abc123
+siteadmin  = ...
 ssl_only = 1
+
+auth0_domain = example.auth0.com
+auth0_client = ...
+auth0_secret = ...
