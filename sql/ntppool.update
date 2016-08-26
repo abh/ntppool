@@ -432,17 +432,20 @@ alter table vendor_zones
   add unique key (zone_name, dns_root_id);
 
 #59
-alter table vendor_zones
-  add constraint `dns_root_fk` foreign key (`dns_root_id`) references `dns_roots` (`id`);
+select now();
 
 #60
+
 alter table vendor_zones
   modify dns_root_id int unsigned not null;
+
+alter table vendor_zones
+  add constraint `dns_root_fk` foreign key (`dns_root_id`) references `dns_roots` (`id`);
 
 #61
 -- bug #48
 select @zid := id from zones where name = ".";
-insert ignore into server_zones select id,@zid from servers;
+insert ignore into server_zones select null,id,@zid from servers;
 
 #62
 alter table server_notes add modified_on timestamp not null;
