@@ -4,64 +4,63 @@
 
 <p>
 <a href="http://support.ntp.org/">support.ntp.org:in</a>
-<a href="http://support.ntp.org/bin/view/Support/WebHome">tukioisiossa</a>
+<a href="http://support.ntp.org/bin/view/Support/WebHome">tukiosiossa</a>
 on paljon hyödyllistä tietoa.
 </p>
 
 <p>
-Jos haluat vain <b>käyttää</b> poolia, katso <a href="/fi/use.html">kuinka käytän poolia</a>.
+Jos haluat vain <b>käyttää</b> poolia, mene <a href="/fi/use.html">kuinka käytän</a>-sivulle.
 </p>
 
 <p>
-<a href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp-uutisryhmä</a>
+<a href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a>-uutisryhmä
 on paras paikka etsiä apua ntpd-ohjelmaan liittyen.
 </p>
 
 <p>
-Alla on joitain huomioon otettavia seikkoja jos aiot liittää palvelimesi pooliin.
+Alla on joitain erityisiä huomioon otettavia seikkoja jos aiot liittää palvelimesi pooliin.
 </p>
 
-<h4 id="management-queries">Management queries</h4>
+<h4 id="management-queries">Hallintakyselyt</h4>
 
-<p>Make the default configuration be to not allow "management queries". For ntpd this will be adding the "noquery" option to the default "restrict" lines, for example:</p>
+<p>Muuta oletusasetukseksi ns. hallintakyselyjen estäminen. Ntpd:llä tämä onnistuu lisäämällä noquery-asetus restrict-riville, esimerkiksi:</p>
 
 [% INCLUDE "join/configuration/restrict-default.html" %]
 
-<p>To allow commands like "ntpq -c pe" to work from localhost you can add:</p>
+<p>Salliaksesi "ntpq -c pe"-tyyppiset kyselyt paikallisesti voit lisätä:</p>
 
 [% INCLUDE "join/configuration/restrict-localhost.html" %]
 
 <h4>Käytä noin viittä palvelinta</h4>
 
 <p>
-Toimiakseen kunnolla ntpd tarvitsee vähintään kolme palvelinta joihin synkronoitua
-("Mies jolla on kello tietää paljonko se on. Mies jolla on kaksi kelloa ei voi ikinä
-olla varma.")
+Toimiakseen kunnolla ntpd tarvitsee vähintään kolme palvelinta joihin synkronoitua.
+(”Mies jolla on kello tietää paljonko se on. Mies jolla on kaksi kelloa ei voi ikinä
+olla varma.”)
 </p>
 
 <p>
-Suosittelemme pooliin kuuluville palvelimille vähintään neljän mutta ei enempää
-kuin seitsemän palvelimen käyttämistä.
+Suosittelemme pooliin kuuluville palvelimille vähintään neljän mutta enintään seitsemän palvelimen käyttämistä.
 </p>
 
-<h4>Älä käytä *.pool.ntp.org:in palvelimia</h4>
+<h4>Älä käytä *.pool.ntp.org:ia palvelimena</h4>
 
 <p>
-Ironista on että varmistaaksesi parhaan mahdollisen palvelun tason, liitäessäsi palvelimesi
-pooliin  sinun ei tule käyttää *.pool.ntp.org-aliaksia asetustiedostossasi.
+Ironista on, että varmistaaksesi parhaan mahdollisen palvelulaadun pooliin liitettävissä
+palvelimissa ei pidä käyttää *.pool.ntp.org-aliaksia.
 </p>
 
 <p>
-Poolin luotettavuuden varmistamiseksi poolin operaattoreiden tulisi valita käsin hyvät paikalliset
-(verkkomielessä) palvelimet. NTP.org:in wikissä on lista
-<a href="http://support.ntp.org/bin/view/Servers/WebHome">julkisista palvelimista</a>.
+Poolin luotettavuuden varmistamiseksi poolin ylläpitäjien tulisi valita käsin (verkkoyhteyden kannalta) hyvät
+paikalliset aikapalvelimet. NTP.org:in wikissä on
+<a href="http://support.ntp.org/bin/view/Servers/WebHome">lista julkisista palvelimista</a>.
 </p>
 
-<h4>Käytä standardia ntpd:tä</h4>
+<h4>Käytä tavallista ntpd:tä</h4>
 
 <p>
-Suosimme ohjelmiston monimuotoisuutta, mutta merkittävä osuus "se ei toimi"
--kysymyksistä joita meille esitetään liittyy muihin kuin ntpd:hen.
+Suosimme ohjelmistojen monimuotoisuutta, mutta merkittävä osuus meille tulevista ”ei toimi”-kysymyksistä
+liittyy muihin ohjelmoistoihin kuin ntpd:hen.
 </p>
 
 <p>
@@ -73,5 +72,14 @@ mikäli aiot liittyä pooliin, suosittelemme käyttämään
 <h4>Älä käytä LOCAL-kelloajuria</h4>
 
 <p>Poolin palvelimilla ei pitäisi olla LOCAL-kelloajuria konfiguroituna.</p>
+
+<h4>Varo PTR-DNS-kyselyitä</h4>
+
+<p>Jotkut palvelinylläpitäjät ovat ilmoittaneet että osa NTP-käyttäjistä (tai
+heidän palomuuriohjelmistonsa) tekee ns. käänteisnimipalvelukyselyitä (PTR) NTP-palvelimen
+IP-osoitteelle. Huomaa, että tämä voi aiheuttaa kyselymäärien kasvamisen. Ko. tietueiden
+TTL-arvojen kasvattaminen on suositeltavaa mikäli DNS-kyselyjen määrä on ongelma,
+ja yleensä auttaa pitämään kyselymäärät kohtuullisina.
+</p>
 
 </div>
