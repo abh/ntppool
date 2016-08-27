@@ -24,8 +24,8 @@
 
 <h3>[% 'News' | l %]</h3>
         <p>
-        	<a href="http://news.ntppool.org/atom.xml" rel="alternate" type="application/rss+xml"><img width="16" height="16" src="[% combust.static_url('/images/feed-icon16x16.png')
-%]" alt="Atom feed" style="vertical-align:middle;border:0"/></a>&nbsp;<a href="http://news.ntppool.org/atom.xml" rel="alternate" type="application/rss+xml">[%
+               <a href="https://news.ntppool.org/atom.xml" rel="alternate" type="application/rss+xml"><img width="16" height="16" src="[% combust.static_url('/images/feed-icon16x16.png')
+%]" alt="Atom feed" style="vertical-align:middle;border:0"/></a>&nbsp;<a href="https://news.ntppool.org/atom.xml" rel="alternate" type="application/rss+xml">[%
  'Subscribe in a reader' | l %]
  			</a>
 		</p>
@@ -35,12 +35,12 @@
         [% TRY;
               INCLUDE _syndicate/news.html;
           CATCH;
-             'Could not load news - see the <a href="http://news.ntppool.org/">weblog</a> instead.';
+             'Could not load news - see the <a href="https://news.ntppool.org/">weblog</a> instead.';
           END
          %]
 
 		<li class="last">
-			<a href="http://news.ntppool.org/archives.html">[% 'Older news' | l %]...</a>
+			<a href="https://news.ntppool.org/archives.html">[% 'Older news' | l %]...</a>
 		</li>
 	</ul>
 
