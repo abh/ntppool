@@ -2,7 +2,7 @@
 
 <div class="block">
 	<h3><a name="use"></a>Hoe gebruik ik pool.ntp.org?</h3>
-	
+
 	<p>
 	Wanneer je alleen de klok van je computers wilt synchroniseren met het
 	netwerk, is de configuratiefile (voor het ntpd programma van de <a
@@ -34,7 +34,7 @@ avbidder:~$ ntpq -p
 +81.6.42.224     193.5.216.14     2 u   68 1024  377  158.995   51.220  50.287
 *217.162.232.173 130.149.17.8     2 u  191 1024  176   79.245    3.589  27.454
 -129.132.57.95   131.188.3.222    3 u  766 1024  377   22.302   -2.928   0.508
-</pre> 
+</pre>
 	<p>
 	De IP adressen zullen anders zijn, omdat je willekeurige tijdservers
 	krijgt toegewezen. Het is wel belangrijk dat één van de regels begint met een
@@ -51,7 +51,7 @@ avbidder:~$ ntpq -p
 	<a href="/zone/north-america">north-america</a>,
 	<a href="/zone/oceania">oceania</a>
 	of <a href="/zone/asia">asia</a>.pool.ntp.org),
-	en nog betere tijd wanneer je gebruik maakt van de land zone (zoals 
+	en nog betere tijd wanneer je gebruik maakt van de land zone (zoals
 	nl.pool.ntp.org voor Nederland) - voor al deze zones kun je de 0, 1 en 2 prefixes
 	gebruiken zoals 0.nl.pool.ntp.prg. Houd er echter rekening mee dat een land zone
 	niet zou kunnen bestaan voor een land, of slechts één of twee tijdservers zou kunnen
@@ -96,13 +96,13 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 	maar je help dit project ermee overleven.
 	<a href="/join.html">Lees de aanmeldingspagina</a> alsjeblieft voor meer informatie.
 	</p>
-	
+
 	<p><span class="hook">Wanneer je internet provider beschikt over een tijdserver</span>,
 	of als je een goede tijdserver in je omgeving kent zou je die moeten gebruiken
 	en niet deze lijst - je krijgt waarschijnlijk een nauwkeuriger tijd en gebruikt ook
 	minder netwerkbronnen. Wanneer je slechts één tijdserver dichtbij weet kun je
 	uiteraard die gebruiken en zeg maar twee van pool.ntp.org.</p>
-	
+
 	<p><span class="hook">Het kan sporadisch voorkomen dat je twee keer aan dezelfde
 	server wordt toegewezen</span> - het eenvoudigweg herstarten van de ntp server
 	lost meestal dit probleem op. Wanneer je een landzone gebruikt, houd er dan rekening
@@ -110,23 +110,23 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 	project - in dat geval is het beter een continentale zone te gebruiken.
 	Je kunt <a href="/zone">door de zones bladeren</a> om te zien hoeveel servers
 	we in elke zone hebben.</p>
-	
+
 	<p><span class="hook">Wees vriendelijk</span>. Veel servers worden ter beschikking
 	gesteld door vrijwilligers en vrijwel alle tijdservers zijn in werkelijkheid
 	file, mail of webservers waarop ook nog eens ntp draait. Dus gebruik niet meer dan
 	drie tijdservers in je configuratie, en speel niet met trucjes met <tt>burst</tt>
 	of <tt>minpoll</tt> - alles wat je daarmee bereikt is dat project vroeger of
 	later zal stoppen.
-	
+
 	<p><span class="hook">Zorg ervoor dat de <i>tijdzone configuratie</i> van je computer correct is</span>.
 	ntpd zelf doet niets aan de tijdzone, het gebruikt alleen UTC intern.</p>
-	
+
 	<p><span class="hook">Wanneer je een netwerk synchroniseert met pool.ntp.org</span>,
 	configureer dan zo mogelijk één van je computers als tijdservers en synchroniseer
 	de andere computers met die server. (dat kost wat leeswerk - het is echter niet moeilijk.
 	En er is altijd de <a href="news:comp.protocols.time.ntp"
 	>comp.protocols.time.ntp nieuwsgroep</a>.)</p>
-	
+
 	<p class="thanks">Op dit punt wil ik iedereen bedanken die zijn tijd en servers
 	bijdraagt aan dit netwerk.</p>
 </div>

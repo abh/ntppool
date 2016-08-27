@@ -2,11 +2,11 @@
 
 <div class="block">
 	<h3><a name="use"></a>&iquest;C&oacute;mo utilizo pool.ntp.org?</h3>
-	
+
 	<p>
 	Si &uacute;nicamente quieres sincronizar el reloj de tus ordenadores con la hora de la red,
-	el archivo de configuraci&oacute;n (para el ntpd que se distribuye en 
-	<a href="http://www.ntp.org">ntp.org </a> en cualquiera de los sistemas operativos 
+	el archivo de configuraci&oacute;n (para el ntpd que se distribuye en
+	<a href="http://www.ntp.org">ntp.org </a> en cualquiera de los sistemas operativos
 	soportados - <b>Linux, *BSD, Windows e incluso algunos otros sistemas m&aacute;s ex&oacute;ticos</b>),
 	es muy sencillo:
 	</p>
@@ -37,10 +37,10 @@ avbidder:~$ ntpq -p
 +81.6.42.224     193.5.216.14     2 u   68 1024  377  158.995   51.220  50.287
 *217.162.232.173 130.149.17.8     2 u  191 1024  176   79.245    3.589  27.454
 -129.132.57.95   131.188.3.222    3 u  766 1024  377   22.302   -2.928   0.508
-</pre> 
+</pre>
 	<p>
-	Las direcciones IP podr&iacute;an ser diferentes, porque se asignan servidores de hora 
-	de forma aleatoria. Lo m&aacute;s importante es que las l&iacute;neas que empiezan con asterisco (<tt>*</tt>), 
+	Las direcciones IP podr&iacute;an ser diferentes, porque se asignan servidores de hora
+	de forma aleatoria. Lo m&aacute;s importante es que las l&iacute;neas que empiezan con asterisco (<tt>*</tt>),
 	indican que tu ordenador obtiene la hora de Internet.
 	&iexcl;Ya no te tendr&aacute;s que preocuparte por ello nunca m&aacute;s!
 	</p>
@@ -80,7 +80,7 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 </pre>
 
 	<p>
-	Puedes tambi&eacute;n conseguirlo, haciendo clic derecho en el reloj de la barra 
+	Puedes tambi&eacute;n conseguirlo, haciendo clic derecho en el reloj de la barra
 	de tareas (como administrador) y seleccionar 'Ajustar fecha y hora' e introducir el
 	nombre del servidor en la pesta&ntilde;a 'Hora de Internet'.
 	</p>
@@ -92,7 +92,7 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 	<p>
 	Si tu sistema Windows forma parte de un dominio, no puedes actualizar la hora de tu ordenador
 	de forma independiente. Para m&aacute;s informaci&oacute;n acerca de c&oacute;mo ajustar la
-	hora en Windows, echa un vistazo a 
+	hora en Windows, echa un vistazo a
 	<a href="http://technet.microsoft.com/es-es/library/cc757178%28WS.10%29.aspx">Introducci&oacute;n al servicio de hora de Windows</a>.
 	</p>
 </div>
@@ -100,18 +100,18 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 <div class="block">
 	<h3>Notas adicionales</h3>
 	<p><span class="hook">Si tienes una direcci&oacute;n IP est&aacute;tica y una conexi&oacute;n a Internet razonable</span>
-	(el ancho de banda no es tan importante, simplemente deber&iacute;a ser estable y no estar demasiado sobrecargado), 
+	(el ancho de banda no es tan importante, simplemente deber&iacute;a ser estable y no estar demasiado sobrecargado),
 	por favor, considera donar tu servidor a la lista de servidores. No te costar&aacute; m&aacute;s que algunos
 	cientos de bytes por segundo de tr&aacute;fico y nos ayudar&aacute;s a mantener este proyecto vivo.
 	Por favor, lee <a href="/join.html">la p&aacute;gina de participaci&oacute;n</a> para obtener m&aacute;s informaci&oacute;n.
 	</p>
-	
-	<p><span class="hook">Si tu proveedor de Internet tiene un servidor de hora</span>, o si conoces un 
+
+	<p><span class="hook">Si tu proveedor de Internet tiene un servidor de hora</span>, o si conoces un
 	servidor de hora fiable cercano, deber&iacute;as usarlo en lugar de los de esta lista.
 	Probablemente obtendr&aacute;s una hora m&aacute;s precisa y usar&aacute;s menos recursos de red.
 	Si solo conoces un servidor de hora cercano, puedes por supuesto usarlo y usar dos m&aacute;s de pool.ntp.org.
 	</p>
-	
+
 	<p><span class="hook">Es raro, pero alguna vez puede ocurrir que se asigne dos veces el mismo servidor</span>.
 	Normalmente, con solo reiniciar el servicio ntp es suficiente para soluciona el problema.
 	Si usas una zona de pa&iacute;s, por favor, piensa que hay posibilidad de que solo
@@ -119,7 +119,7 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 	una zona continental. Puedes <a href="/zone">explorar las zonas</a> para ver cuantos
 	servidores tenemos en cada una.
 	</p>
-	
+
 	<p><span class="hook">S&eacute; ben&eacute;volo</span>. Algunos servidores est&aacute;n administrados por voluntarios,
 	y en la mayor&iacute;a de las ocasiones, los servidores son realmente servidores de archivos,
 	de correo o web, los cuales tambi&eacute;n ejecutan el servicio ntp.
@@ -127,17 +127,17 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 	con con <tt>burst</tt> o <tt>minpoll</tt>. Todo lo que conseguir&aacute;s es una carga extra
 	en los servidores de los voluntarios.
         </p>
-	
+
 	<p><span class="hook">Aseg&uacute;rate de que la <i>configuraci&oacute;n de zona horaria</i> de tu ordenador sea correcta</span>.
 	ntpd no hace nada con las zonas horarias, solo usa la zona horaria UTC (Tiempo Universal Coordinado) internamente.
 	</p>
-	
+
 	<p><span class="hook">Si estas sincronizando una red de ordenadores con pool.ntp.org</span>,
 	por favor, configura uno de tus ordenadores como servidor de hora y configura el resto de ordenadores para que se sincronicen con &eacute;ste,
 	(tendr&aacute;s que leer un poco para hacerlo, pero no es dif&iacute;cil).
-	Y siempre puedes contar con el <a href="news:comp.protocols.time.ntp">grupo de noticias comp.protocols.time.ntp</a> 
+	Y siempre puedes contar con el <a href="news:comp.protocols.time.ntp">grupo de noticias comp.protocols.time.ntp</a>
 	</p>
-	
+
 	<p class="thanks">
 	Llegados a este punto, quisiera dar las gracias a esas personas que donan su tiempo y servidores de hora a esta red.
 	</p>

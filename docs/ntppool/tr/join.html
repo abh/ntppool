@@ -3,25 +3,25 @@
 <div class="block">
 	<h3><a name="join">pool.ntp.org'a nasıl katılabilirim?</a></h3>
 	<p>
-	Öncelikle: İlginiz için teşekkürler. Havuz kullanımı gün geçtikçe 
-	çok hızlı bir şekilde artıyor ve bu hizmeti herkese kesintisiz 
+	Öncelikle: İlginiz için teşekkürler. Havuz kullanımı gün geçtikçe
+	çok hızlı bir şekilde artıyor ve bu hizmeti herkese kesintisiz
 	sunabilmenin tek yolu ortak sunucu sayısınında artmasıdır.
 	</p>
 
 	<p>
-	Bilgisayarınızın <b>IP adresi sabit olmalı</b> ve sabit internet 
-	bağlantınız olmalı. IP adresinizin değişmemesi çok önemli yada 
-	nadiren değişebilir (yılda bir kez yada daha az). Gereken bant 
-	genişliği çok çok azdır. Bağlanan bilgisayarlar her 20 dakikada 
+	Bilgisayarınızın <b>IP adresi sabit olmalı</b> ve sabit internet
+	bağlantınız olmalı. IP adresinizin değişmemesi çok önemli yada
+	nadiren değişebilir (yılda bir kez yada daha az). Gereken bant
+	genişliği çok çok azdır. Bağlanan bilgisayarlar her 20 dakikada
 	bir iki UDP paketi gönderir.
 	</p>
 
 	<p>
-	Şu anda bir çok sunucu gün içinde en fazla saniyede 5-15 NTP paketi, 
+	Şu anda bir çok sunucu gün içinde en fazla saniyede 5-15 NTP paketi,
 	günde iki kere olmak üzere de saniyede 60-120 paket alıyor. Bu kabaca
-	saniyede 10-15Kbit, en fazlada saniyede 50-120Kbit ediyor. Proje 
-	sürekli zaman sunucusu kabul etmektedir, yani sunucu başına düşen yük 
-	aşırı derecede yükselmemektedir. Açık bir ifade ile en azından 
+	saniyede 10-15Kbit, en fazlada saniyede 50-120Kbit ediyor. Proje
+	sürekli zaman sunucusu kabul etmektedir, yani sunucu başına düşen yük
+	aşırı derecede yükselmemektedir. Açık bir ifade ile en azından
 	384-512Kbit bant genişliğine ihtiyaç duyacaksınız (giden ve gelen).
 	</p>
 	<p>
@@ -33,9 +33,9 @@
 
 	<p>
 	Katılacak sunucuların <tt>pool.ntp.org</tt> olarak üst sunucusu olmamalı,
-	buradaki <a href="http://support.ntp.org/bin/view/Servers/StratumTwoTimeServers">iyi sunuculardan</a> 
-	elle ayarlanmalı (bu sunucular <b>belki</b> havuzdan seçilebilir. Dikkat edilmesi 
-	gereken nokta ise sunucunun her yeniden başlamasında rastgele değil sabit 
+	buradaki <a href="http://support.ntp.org/bin/view/Servers/StratumTwoTimeServers">iyi sunuculardan</a>
+	elle ayarlanmalı (bu sunucular <b>belki</b> havuzdan seçilebilir. Dikkat edilmesi
+	gereken nokta ise sunucunun her yeniden başlamasında rastgele değil sabit
 	olarak seçilmeli. Bu kabul edilebilir bir kalite sunmamıza yardımcı olacaktır.)
 
 	Sunucunuzun stratum 1 yada 2 sunucu olması gerekli değildir. Bu proje
@@ -46,9 +46,9 @@
 	<p>
 	<a href="/join/configuration.html">Havuza katılan sunucular için ayar önerileri</a> sayfamıza da bakabilirsiniz.
 	</p>
-	<p>Son olarak, havuza katılma işlemi <b>uzun süren</b> bir süreçtir. 
-	Sunucunuzun durumunun değişmesine bağlı olarak havuzdan çıkarılabilirsiniz. 
-	<b>NTP bağlantısı kuran bilgisayarların çalışma şekillerine göre sunucunuzdan 
+	<p>Son olarak, havuza katılma işlemi <b>uzun süren</b> bir süreçtir.
+	Sunucunuzun durumunun değişmesine bağlı olarak havuzdan çıkarılabilirsiniz.
+	<b>NTP bağlantısı kuran bilgisayarların çalışma şekillerine göre sunucunuzdan
 	trafiğin tamamen gitmesi haftalar, aylar hatta YILLAR sürebilir.</b>
 	</p>
 
@@ -59,24 +59,24 @@
 	</p>
 	<p>
 	Aynı zamanda isterseniz <a href="https://news.ntppool.org/atom.xml">haber beslemesi</a>
-	veya <a href="https://lists.ntp.org/listinfo/pool">havuz posta listesine</a> 
+	veya <a href="https://lists.ntp.org/listinfo/pool">havuz posta listesine</a>
 	abone olabilirsiniz.
 	</p>
 	<p>
-	Gerekli değil fakat sunucunuzun 80 portunu <tt>http://www.pool.ntp.org</tt> adresindeki 
-	projenin resmi sitesine yönlendirebilirseniz seviniriz. Eğer Apache kullanıyorsanız 
-	bunu aşağıdaki gibi yapabilirsiniz: 
+	Gerekli değil fakat sunucunuzun 80 portunu <tt>http://www.pool.ntp.org</tt> adresindeki
+	projenin resmi sitesine yönlendirebilirseniz seviniriz. Eğer Apache kullanıyorsanız
+	bunu aşağıdaki gibi yapabilirsiniz:
 	</p>
 
         [% PROCESS tpl/join/virtual_host_example.html %]
 
 	<p>
 	Resmi proje sitemizin adresinin başında her zaman 'www' olmalı bazen
-	insanlar üşeniyorlar ve direk <tt>pool.ntp.org</tt> yazıyorlar daha sonra karşılarına 
+	insanlar üşeniyorlar ve direk <tt>pool.ntp.org</tt> yazıyorlar daha sonra karşılarına
 	farklı bir sayfa çıkabiliyor.
 	</p>
 	<p>
-	Sunucunuz havuza eklendiğinde belirli aralıklarla ölçülerek izlenecektir. Sunucunuzun 
+	Sunucunuz havuza eklendiğinde belirli aralıklarla ölçülerek izlenecektir. Sunucunuzun
 	performansını görmek isterseniz <a href="scores">puanlar</a> yada <a href="/manage">yönetim</a>
 	sayfasını açabilirsiniz.
 	</p>
