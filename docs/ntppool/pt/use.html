@@ -12,13 +12,8 @@
 	&eacute; realmente simples:
 	</p>
 
-<pre class="code">
-driftfile /var/lib/ntp/ntp.drift
+	[% INCLUDE "ntppool/use/sample-config.html" %]
 
-server 0.pool.ntp.org
-server 1.pool.ntp.org
-server 2.pool.ntp.org
-server 3.pool.ntp.org</pre>
 	<p>
 	Os nomes 0, 1, 2 e 3.pool.ntp.org apontam para um conjunto
 	aleat&oacute;rio de servidores que v&atilde;o alterar a cada hora.
@@ -29,14 +24,9 @@ server 3.pool.ntp.org</pre>
 	manualmente. Execute o ntpd e, ap&oacute;s algum tempo (isso pode demorar
 	at&eacute; meia hora!), <code>ntpq -pn</code> deveria mostrar algo como:
 	</p>
-<pre class="code ntpq">
-avbidder:~$ ntpq -p
-     remote           refid      st t when poll reach   delay   offset  jitter
-==============================================================================
-+81.6.42.224     193.5.216.14     2 u   68 1024  377  158.995   51.220  50.287
-*217.162.232.173 130.149.17.8     2 u  191 1024  176   79.245    3.589  27.454
--129.132.57.95   131.188.3.222    3 u  766 1024  377   22.302   -2.928   0.508
-</pre>
+
+	[% INCLUDE "ntppool/use/sample-ntpq.html" %]
+
 	<p>
 	Os endere&ccedil;os IP v&atilde;o ser diferentes porque foi
 	atribu&iacute;do a voc&ecirc; servidores de tempo aleat&oacute;rios. A

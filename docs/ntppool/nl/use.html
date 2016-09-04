@@ -11,13 +11,8 @@
 	exotische systemen</b>) erg eenvoudig:
 	</p>
 
-<pre class="code">
-driftfile /var/lib/ntp/ntp.drift
+	[% INCLUDE "ntppool/use/sample-config.html" %]
 
-server 0.pool.ntp.org
-server 1.pool.ntp.org
-server 2.pool.ntp.org
-server 3.pool.ntp.org</pre>
 	<p>
 	De 0, 1, 2 en 3.pool.ntp.org namen wijzen naar een willekeurige verzameling van
 	servers die elk uur wijzigt. zorg ervoor dat de klok van de computer ingesteld
@@ -27,14 +22,9 @@ server 3.pool.ntp.org</pre>
 	Start ntpd en na enige tijd (dit kan tot een half uur duren!), zou
 	<tt>ntpq -pn</tt> een soortgelijke uitvoer moeten geven:
 	</p>
-<pre class="code ntpq">
-avbidder:~$ ntpq -p
-     remote           refid      st t when poll reach   delay   offset  jitter
-==============================================================================
-+81.6.42.224     193.5.216.14     2 u   68 1024  377  158.995   51.220  50.287
-*217.162.232.173 130.149.17.8     2 u  191 1024  176   79.245    3.589  27.454
--129.132.57.95   131.188.3.222    3 u  766 1024  377   22.302   -2.928   0.508
-</pre>
+
+	[% INCLUDE "ntppool/use/sample-ntpq.html" %]
+
 	<p>
 	De IP adressen zullen anders zijn, omdat je willekeurige tijdservers
 	krijgt toegewezen. Het is wel belangrijk dat één van de regels begint met een

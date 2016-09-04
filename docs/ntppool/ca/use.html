@@ -11,13 +11,8 @@
 	força senzill:
 	</p>
 
-<pre class="code">
-driftfile /var/lib/ntp/ntp.drift
+    [% INCLUDE "ntppool/use/sample-config.html" %]
 
-server 0.pool.ntp.org
-server 1.pool.ntp.org
-server 2.pool.ntp.org
-server 3.pool.ntp.org</pre>
 	<p>
 	Els noms 0, 1, 2 i 3.pool.ntp.org apunten a un conjunt aleatori que canviarà cada
 	hora. Assegureu-vos de que el rellotge del vostre ordinador està ajustat
@@ -27,14 +22,9 @@ server 3.pool.ntp.org</pre>
 	al cap d'un temps (podria trigar fins a mitja hora!) <tt>ntpq -pn</tt>hauria
 	d'imprimir alguna cosa així:
 	</p>
-<pre class="code ntpq">
-avbidder:~$ ntpq -p
-     remote           refid      st t when poll reach   delay   offset  jitter
-==============================================================================
-+81.6.42.224     193.5.216.14     2 u   68 1024  377  158.995   51.220  50.287
-*217.162.232.173 130.149.17.8     2 u  191 1024  176   79.245    3.589  27.454
--129.132.57.95   131.188.3.222    3 u  766 1024  377   22.302   -2.928   0.508
-</pre>
+
+	[% INCLUDE "ntppool/use/sample-ntpq.html" %]
+
 	<p>
 	L'adreça IP serà diferent, ja que haureu obtingut un servidor de temps aleatori.
 	El tema és que una de les línies comenci amb un asterisc (<tt>*</tt>). Això
