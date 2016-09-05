@@ -1,130 +1,123 @@
-[% page.title = 'How do I setup NTP to use the pool?' %]
+[% page.title = 'Korleis sett eg opp NTP til å bruke pulja?' %]
 
 <div class="block">
-	<h3 id="use">How do I use pool.ntp.org?</h3>
+	<h3 id="use">Korleis nyttar eg pool.ntp.org?</h3>
 
 	<p>
-	If you just want to synchronise your computers clock to the network, the configuration file (for the ntpd program from the <a href="http://www.ntp.org">ntp.org distribution</a>, on any supported operating system - <b>Linux, *BSD, Windows and even some more exotic systems</b>) is really simple:
+	Det er veldig enkelt om du vil nytte pulja til synkronisering av klokkene til datamaskinene dine, konfigurasjonsfila (for ntpd-programvara frå <a href="http://www.ntp.org">ntp.org distribusjonen</a>, passar eitkvart OS - <b>Linux, *BSD, Windows og andre system</b>):
 	</p>
 
 	[% INCLUDE "ntppool/use/sample-config.html" %]
 
 	<p>
-	The 0, 1, 2 and 3.pool.ntp.org names point to a random set of servers that will
-	change every hour.  Make sure your computer's clock is set to something
-	sensible (within a few minutes of the 'true' time) - you could use <code>ntpdate
-	pool.ntp.org</code>, or you could just use the <code>date</code> command and set it
-	to your wristwatch. Start ntpd, and after some time (this could take as long as
-	half an hour!), <code>ntpq -pn</code> should output something like:
+	Underdomena 0, 1, 2, og 3.pool.ntp.org peikar til tenarar som endrar seg kvar heile
+	time. Pass på at tiden til di lokale maskin ikkje er satt altfor mykje feil (innan nokre par minutt av korrekt tid. Du kan bruke <code>ntpdate
+	pool.ntp.org</code>,eller du kan bruke <code>date</code> kommandoen for å stille
+	klokka til armbandsuret ditt. Start ntpd,  etter litt tid (kan ta opptil ein halv time!), <code>ntpq -pn</code> skal du få ein respons som dette:
 	</p>
 
 	[% INCLUDE "ntppool/use/sample-ntpq.html" %]
 
 	<p>
-	The IP addresses will be different, because you've been assigned random
-	timeservers. The essential thing is that one of the lines starts with an
-	asterisk (<code>*</code>), this means your computer gets the time from the internet
-	- you'll never have to worry about it again!
+	IP-adressa vil vere anleis, fordi du har blitt tildelt tilfeldige
+	tidstenarar. Det grunnleggjande er at linjene startar med
+	stjerneteikn (<code>*</code>), som tyder at maskina di stille klokka etter
+	internett - du treng med andre ord ikkje å bry deg i det heile.
 	</p>
 	<p>
-	Looking up <code>pool.ntp.org</code> (or <code>0.pool.ntp.org</code>,
-	<code>1.pool.ntp.org</code>, etc) will usually return IP addresses for servers
-	in or close to your country. For most users this will give the best results.
+	DNS-spørringar mot <code>pool.ntp.org</code> (eller <code>0.pool.ntp.org</code>,
+	<code>1.pool.ntp.org</code>, etc) vil normalt returnere IP-adresser for tenarar
+	i eller i nærleiken av ditt land. For dei fleste gjev dette best resulat.
 	</p>
 
-	<p>You can also use the <a href="/zone/@">continental zones</a> (For example
+	<p>Du kan og nytte<a href="/zone/@">kontinentalsoner</a> (Til dømes
 	<a href="/zone/europe">europe</a>,
 	<a href="/zone/north-america">north-america</a>,
 	<a href="/zone/oceania">oceania</a>
 	or <a href="/zone/asia">asia</a>.pool.ntp.org),
-	and a country zone (like
-	ch.pool.ntp.org in Switzerland) - for all these zones, you can again use the 0,
-	1 or 2 prefixes, like 0.ch.pool.ntp.org.  Note, however, that the country zone
-	might not exist for your country, or might contain only one or two timeservers.
+	eller ein landskode (som
+	no.pool.ntp.org i Noreg) - for alle sonene, kan du om att nytte 0,
+	1 eller 2 prefiksa, som 0.no.pool.ntp.org.  Merk imidlertid at, landkoden ikkje
+	alltid eksisterar for ditt territorium, eller kanskje berre har ein eller to tenarar.
 	</p>
 	<p>
-	If you're using <b>a recent Windows version</b>, you can use the ntp
-	client that is built into the system. As administrator enter</p>
+	Om du nyttar ei <b>nyaere Windows-utgåve</b>, kan du nytte den innebygde
+	NTP-klienten. Via ein brukar med Administrator-rettar skriv fylgjande i kommandoprosessoren:</p>
 <pre class="code">
 w32tm /config /syncfromflags:manual /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 </pre>
 	<p>
-	at the command prompt.  This will work on Windows 2003 and newer.  If you use an
-	older version of windows you can try</p>
+	Kommandoen fungerer op system frå XP/ Server 2003 og nyare.  Nyttar du imidlertid
+	ei eldre utgåve av Windows kan du prøve:</p>
 <pre class="code">
 net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
 </pre>
 	<p>
-	The same can be achieved by, as administrator, right-clicking the clock in the taskbar,
-	selecting 'Adjust Date/Time' and entering the server name in the 'Internet Time' tab.
+	Tiden kan og justerast (med Administrator-rettar), ved å høgreklikke på klokka i Windows (nede til høgre) og så velgje 'Juster dato/klokkeslett' og deretter skrive inn tenarnamn.
 	</p>
 
 	<p>
-	Meinberg made a port of the <a href="http://www.meinberg.de/english/sw/ntp.htm">ntp daemon for windows</a>.
+	Meinberg har laga ein ombygd <a href="http://www.meinberg.de/english/sw/ntp.htm">ntp daemon (tenar) for Windows</a>.
 	</p>
 
 	<p>
-	If your Windows system is part of a domain, you might not be able to independently update your computer time.
+	Om ditt Windows-system er meldt inn i domene, kan det hende at tidsinnstillingane er sentralt styrde, dermed kan ikkje du endre på desse.
 
-	For more information about setting the time on windows, see <a href="http://technet.microsoft.com/en-us/library/cc773013%28WS.10%29.aspx">How Windows Time Service Works</a>.
+	For meir informasjon om innstilling av tid i Windows, sjå (Engelsk)<a href="http://technet.microsoft.com/en-us/library/cc773013%28WS.10%29.aspx">How Windows Time Service Works</a> på Microsoft sine nettsider.
 	</p>
 </div>
 
 <div class="block">
-	<h3 id="notes">Additional Notes</h3>
+	<h3 id="notes">Tillegg</h3>
 
-        <p><span class="hook">Consider if the NTP Pool is appropriate
-        for your use</span>. If business, organization or human life
-        depends on having correct time or can be harmed by it being
-        wrong, you shouldn't "just get it off the internet". The NTP
-        Pool is generally very high quality, but it is a service run
-        by volunteers in their spare time. Please talk to your
-        equipment and service vendors about getting local and reliable
-        service setup for you. See also our <a href="/tos.html">terms
-        of service</a>.
+        <p><span class="hook">Vurder om NTP-Pool prosjektet er egna
+        for ditt bruk</span>. Er du ei bedrift, organisasjon eller
+        er om det kan vere livstrugande med feil tid - bør du ikkje
+        nytte motta tid direkte frå internett. NTP pulja har generelt 
+        veldig høg ytelse og nøyaktigheit, me er ei teneste driven på
+        frivillig basis. Snakk heller med utstyrs/ teneste -leverandørar
+        for å sette opp ei lokal tidstenest for deg. Hugs å les <a href="/tos.html">
+        våre tenestevilkår</a>.
 
-        We recommend time servers from 
+        Me anbefalar tidstenarar frå
         <a href="http://www.meinbergglobal.com/english/products/ntp-time-server.htm">Meinberg</a>,
-        but you can also find time servers from
+        men du kan og anskffe tenarar frå
         <a href="http://www.endruntechnologies.com/NTP-Servers/gps-cdma-ntp.htm">End Run</a>,
         <a href="http://spectracom.com/products-services/precision-timing#anchor-2172">Spectracom</a>
-        and many others.
+        og mange fleire.
         </p>
 
-	<p><span class="hook">If you have a static IP address and a reasonable Internet connection</span> (bandwidth
-	is not so important, but it should be stable and not too highly loaded), please
-	consider donating your server to the server pool. It doesn't cost you more than
-	a few hundred bytes per second traffic, but you help this project survive.
+	<p><span class="hook">Har du ei statisk IP-adresse og stabil Internett-tilkopling</span> (bandbreidde er mindre viktig, men den bør vere stabil og ikkje for hardt lasta), vurder
+	å donere tenaren din til bruk i pulja. Det kostar ikkje meir enn eitt par hundre bytar
+	per sekund med trafikk, og du hjelp dette prosjektet med å overleve.
 	Please <a href="/join.html">read the joining page</a> for more information.
 	</p>
 
-	<p><span class="hook">If your Internet provider has a timeserver</span>, or if you know of a good timeserver
-	near you, you should use that and not this list - you'll probably get better
-	time and you'll use fewer network resources.  If you know only one timeserver
-	near you, you can of course use that and two from pool.ntp.org or so.</p>
+	<p><span class="hook">Har din netleverandør (ISP) ein tidsstenar</span>, eller kjenner 
+	du til ein nøyaktig tenar nærme deg bør du nytte den og ikkje pulja. Du vil oppnå meir
+	nøyaktig tid og mindre bruk av nettverksressursar. Kjenner du berre til ein tidsstenar
+	nærme deg kan du til dømes nytte den som primær og ein frå pool.ntp.org som sekundær.</p>
 
-	<p><span class="hook">It can rarely happen that you are assigned the same timeserver twice</span> -
-	just restarting the ntp server usually solves this problem.  If you
-	use a country zone, please note that it may be because there is only
-	one server known in the project - better use a continental zone in
-	that case.  You can <a href="/zone">browse the zones</a> to see how
-	many servers we have in each zone.</p>
+	<p><span class="hook">Det hender uheldigvis somme gonger at du er tilnytta same tenar to gonger</span> -
+	ein omstart av tidstenaren løyser normalt problemet. Har du spesifisert landkode, kan
+	det hende at det berre er ein tenar tilknytta den koden i prosjektet. Bruk heller ei 
+	kontintental sone istadenfor. Du kan <a href="/zone">leite i sonelista</a> for å sjå kor
+	mange tenarar som er tilknytta ulike soner</p>
 
-	<p><span class="hook">Be friendly</span>. Many servers are provided by volunteers, and almost all time
-	servers are really file or mail or webservers which just happen to also run ntp.
-	So don't use more than four time servers in your configuration, and don't play
-	tricks with <code>burst</code> or <code>minpoll</code> - all you will gain is extra
-        load on the volunteer time servers.</p>
+	<p><span class="hook">Ver venleg</span>.Mange tenarar der driven på frivillig basis, i
+	dei fleste tilfelle køyrer tenarane normalt filtenester, e-post og webtenester, samt NTP.
+	Så ikkje nytt meir enn fire tenarar i konfigurasjonen din. Ikkje bruk 
+	triks som <code>burst</code> eller <code>minpoll</code> - du lagar då berre unødig last
+          på dei frivillige tenarane.</p>
 
-	<p><span class="hook">Make sure that the <i>time zone configuration</i> of your computer is correct</span>.
-	ntpd itself does not do anything about the time zones, it just uses UTC
-	internally.</p>
+	<p><span class="hook">Ver sikker på att<i>tidssonekonfigurasjonen</i> på di maskin er korrekt</span>.
+	ntpd sjølv tek ikkje hensyn til tidssoner, den nyttar UTC-tid
+	internt.</p>
 
-	<p><span class="hook">If you are synchronising a network to pool.ntp.org</span>, please set up one of your
-	computers as a time server and synchronize the other computers to that one.
-	(you'll have some reading to do - it's not difficult though. And there's always
-	the <a href="news:comp.protocols.time.ntp">comp.protocols.time.ntp newsgroup</a>.)</p>
+	<p><span class="hook">Synkronsierar du eit nettverk mot pool.ntp.org</span>, vennligast sett opp ein av maskinene din som tidstenar og få dei andre maskinene til å synkronisere mot denne.
+	(du har att litt lesning - men det er heldigivs ikkje for vanskeleg. Du har og alltid <a href="news:comp.protocols.time.ntp">comp.protocols.time.ntp nyheitsgruppa</a>.)</p>
 
-	<p class="thanks">At this point, I'd like to thank those donating their time and timeservers to
-	this network.</p>
+	<p class="thanks">På dette punktet il eg takke alle som donerar eiga tid og
+	tidstenarar til
+	dette nettverket</p>
 </div>
