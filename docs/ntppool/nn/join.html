@@ -3,89 +3,89 @@
 <div class="block">
 	<h3><a name="join">How do I join pool.ntp.org?</a></h3>
 	<p>
-	First: Thanks for your interest.  Usage of the pool has grown
-	enormously and the only way we can keep it easy for everyone to run a
-	pool server is to also grow the number of servers participating.
+	Fyrst av alt, takk så mykje for interessa i prosjektet. Bruken av pulja
+	har auka enormt og einaste måten me kan halde drifta og effektiviteten
+	av pulja enkel er å auke mengda tenarar som er med i prosjektet.
 	</p>
 
 	<p>
-	Your computer <b>must have a static IP address</b> and a permanent
-	internet connection.  It's very imporant that your IP address doesn't
-	change or only does so extremely infrequently (say once a year or
-	less).  The required bandwidth is relatively low.  Each client will
-	only send a couple of UDP packets every few to every 20 minutes.
+	Datamaskina di må ha ei <b>statisk IP-adresse</b> og  permanent
+	internett-tilgang. Det er særs viktig at IP-adressa er fast eller i det
+	minste skjeldan endrar seg (t.d. ein gong årleg eller skjeldnare). Kravet
+	til bandbreidde er relativt lågt. Kvar klient sender berre eitt par
+	UDP-førespurnader på eit intervall frå eit par sekund til omlag 20 minutt.
 	</p>
 
 	<p>
-	Currently most servers get about 5-15 NTP packets per second
-	with spikes a couple of times a day of 60-120 packets per
-	second.  This is roughly equivalent to 10-15Kbit/sec with
-	spikes of 50-120Kbit/sec.  The project steadily acquires more
-	timeservers, so the load should not increase dramatically for
-	each server.  In plain terms, you probably need at least
-	384-512Kbit bandwidth (in and out-going).
+	På dette tidspunkt er mottek pr tenar i snitt 5 til 15 NTP-pakker kvart sekund.
+	På dei travlaste tidene av døgnet kan talet komme opp i 60 til 120 pakker pr.
+	sekund. Grovt reikna 10 til 15 kilobit/s, med toppar på 50 til 120 kilobit/s.
+	Talet tenarar med i pulja aukar jamnt og trutt, så det er ikkje forventa att
+	last pr. tenar kjem til å auke dramatisk dei kommande åra. I korte trekk treng
+	du minst 384-512 kilobit/s bandbreidde (ned og opp-straums).
 	</p>
 	<p>
-	Here are a few servers with traffic/load graphs:
+	Under er eit par tenarar med trafikk/last -grafar:
 	[% i = 0; FOR server = combust.servers_with_urls; %]
 	   <a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
 	[% END %]
 	</p>
 
 	<p>
-	The servers joining should not have <tt>pool.ntp.org</tt> as their upstream
-	server(s), but should configure some <a href="http://support.ntp.org/bin/view/Servers/StratumTwoTimeServers">good servers</a> manually (those servers
-	<b>may</b> be chosen from the pool. The point is that they are chosen
-	statically instead of assigned randomly at each server restart.  This
-	will help providing an acceptable quality of service.)
+	Tenarane som blir med skal ikkje ha<tt>pool.ntp.org</tt> som tidsreferanse,
+	men heller konfiguerast med nokre <a href="http://support.ntp.org/bin/view/Servers/StratumTwoTimeServers">gode tenarar</a> manuelt (desse 
+	<b>kan</b> bli valde frå pulja. Poenget er uansett at dei skal vere
+	valt på statistisk grunnlag, istadenfor som normalt med tilfeldige tenarar. Desse
+	enkle vala vil sikre akseptabel kvalitet av tenesta.)
 
-	Note that it is not required that your server is a stratum 1 or 2
-	server - as this project is about load distribution mostly, there is
-	no reason why a stratum 3 or even stratum 4 server shouldn't join.
+	NB: Det er som sagt ikkje krav til at tenaren din er ein stratum 1 eller 2 tenar
+	 - på det grunnlag at prosjektet mest har som må å oppna god lastdistribuering. Derfor
+	 har me ikkje noko imot at ein stratum 3 elle 4 tenar kan bli med.
 	</p>
 
 	<p>
-	We have a page with <a href="/join/configuration.html">configuration recommendations for servers joining the pool</a>.
+	Me har ei side med <a href="/join/configuration.html">anbefalte konfigurasjonsinnstillingar for tenarar</a> som blir medi pulja.
 	</p>
-	<p>Finally, I must emphasize that joining the pool is a <b>long term
-	commitment</b>.  We are happy to take you out of the pool again if your
-	circumstances change, but because of how the ntp clients operate <b>it
-	will take weeks, months or even YEARS before the traffic completely
-        goes away</b>.
+	<p>Tilslutt må eg vektleggje at det å bli med i pulja er eit<b>langsiktig
+	engasjement</b>. Om dette endrar seg, tek me med glede tenaren din ut frå 
+	pulja. Grunna måten NTP-klientane fungerer, <b>tek det alt frå veker til år
+	før trafikken fullstendig går bort frå di IP-adresse.
 	</p>
 
 	<p>
-	If this is all ok, login to the
-	<a href="/manage">server management</a> page and request your server to be added. 
-	If you have any trouble with the system, email me at <a
+	Om dette høyrest greitt ut, logg på til
+	<a href="/manage">tenaradministrasjon</a>-sida og send ein førespurnad om å få
+	lagt til din tenar. 
+	Opplever du problem med systemet, send meg ein e-post på <a
 	href="mailto:ask@develooper.com">ask@develooper.com</a>.
 	</p>
 	<p>
-	I'd ask you to also subscribe to
-	the <a href="http://news.ntppool.org/atom.xml">weblog feed</a>
-	and maybe to
-	the <a href="https://lists.ntp.org/listinfo/pool">pool mailing
-	list</a>.
+	Eg vil og gjerne etterspørre deg til å abonnerere
+	på <a href="http://news.ntppool.org/atom.xml">weblog-feeden/a>
+	og kanskje til
+	<a href="https://lists.ntp.org/listinfo/pool">e-postlista for
+	prosjektet</a>.
 	</p>
 	<p>
-	It would be nice (but it's not necessary) if you could redirect web requests
-	on port 80 of your time server to the official web page of the project at
-	<tt>http://www.pool.ntp.org</tt>. If you run Apache, you could do this with:
+	Det ville og vore flott om du kunne vidaresendt trafikk på port 80 på din
+	tidstenar til den offisielle  websida til prosjektet på
+	<tt>http://www.pool.ntp.org</tt>. Brukar du Apache som tenar, kan du gjere
+	dette:
 	</p>
 
         [% PROCESS tpl/join/virtual_host_example.html %]
 
 	<p>
-	Again, this is only if you run a webserver anyway. The official project web 
-	page will always be given with the 'www' at the beginning - but sometimes
-	people type <tt>pool.ntp.org</tt> and are then surprised to get a random web
-        page.
+	Merk: du treng berre å gjere dette om du køyrer ein webserver. Den offisielle 
+	websida byrjar alltid med 'www' på starten i adressefelte - men nokon gonger 
+	skriv folk <tt>pool.ntp.org</tt> og då blir ein overraska om ein får ei annan
+	side.
 	</p>
 	<p>
-	Once added to the pool the server is constantly monitored for
-        availability and precision.  You can watch your server's
-        performance using the <a href="scores">web frontend</a> or
-        the <a href="/manage">management page</a>.
+	Så snart tenaren er lagt til i pulja blir den overvaka konstant for
+        måling av tilgjengelegheit pg nøyaktighet. Du kan sjå ytelsen
+        for tenaren din ved å bruke<a href="scores">web frontend'en</a>
+        eller <a href="/manage">administrasjonsgrensesnittet</a>.
 	</p>
 </div>
 
