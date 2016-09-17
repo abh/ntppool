@@ -1,13 +1,13 @@
 msgid ""
 msgstr ""
-"Last-Translator: wustudent <12fogcity@tongji.edu.cn>\n"
+"Last-Translator: mmliar <mmliar621@gmail.com>\n"
 "Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 msgid "go up"
-msgstr "回到上方"
+msgstr "回到页首"
 
 # zone names
 msgid "Africa"
@@ -17,10 +17,10 @@ msgid "Asia"
 msgstr "亚洲"
 
 msgid "North America"
-msgstr "北美"
+msgstr "北美洲"
 
 msgid "South America"
-msgstr "南美"
+msgstr "南美洲"
 
 msgid "Europe"
 msgstr "欧洲"
@@ -29,7 +29,7 @@ msgid "Global"
 msgstr "全球"
 
 msgid "All Pool Servers"
-msgstr "所有库服务器"
+msgstr "所有的服务器"
 
 # navigation
 msgid "Translations"
@@ -37,7 +37,7 @@ msgstr "语言"
 
 # mailinglists.html
 msgid  "NTP Pool mailing lists"
-msgstr "NTP池-邮件清单"
+msgstr "NTP服务器群邮件列表"
 
 msgid  "subscribe"
 msgstr "订阅"
@@ -77,35 +77,35 @@ msgid  "Stats for %1"
 msgstr "%1的统计信息"
 
 msgid  "Not active in the pool, monitoring only"
-msgstr "在池中不可用，只能进行查看"
+msgstr "审查中，暂未被正式加入到服务器群中"
 
 msgid  "Zones:"
 msgstr "区域:"
 
 msgid  "This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
-msgstr "这个服务器预计于 %1 被删除"
+msgstr "这个服务器<span class=\"deletion\">计划于 %1 被删除</span>"
 
 msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
-msgstr "目前得分: %1 (只有得分高于 %2 的服务器会被存入池中)"
+msgstr "目前得分: %1 (只有得分高于 %2 的服务器会被加入到服务器群中)"
 
 msgid  "What do the graphs mean?"
 msgstr "这些图表意味着什么？"
 
 msgid  "CSV log"
-msgstr "CSV 日志"
+msgstr "CSV日志"
 
 # tpl/navigation_sidebar.html
 msgid  "News"
 msgstr "新闻"
 
 msgid  "How do I <i>use</i> pool.ntp.org?"
-msgstr "我如何能<i>使用</i> pool.ntp.org?"
+msgstr "我该如何<i>使用</i>pool.ntp.org?"
 
 msgid  "How do I <i>join</i> pool.ntp.org?"
-msgstr "我如何能<i>加入</i> pool.ntp.org?"
+msgstr "我该如何<i>加入</i>pool.ntp.org?"
 
 msgid  "Information for vendors"
-msgstr "为供应商提供的信息"
+msgstr "为制造商提供的信息"
 
 msgid  "The mailing lists"
 msgstr "邮件列表"
