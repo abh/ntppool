@@ -75,7 +75,6 @@ sub _here_url {
                       . $self->request->uri 
                       . '?' . $args
                       );
-    warn "HERE: ", $here->as_string;
     $here->as_string;
 }
 
