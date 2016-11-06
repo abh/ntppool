@@ -1,9 +1,10 @@
 [%- page.style='bare.html' %]To: vendors@rt.ntppool.org
 From: ask@ntppool.org
-Reply-To: ([% combust.user.name %]) [% combust.user.email %]
+Reply-To: [% combust.user.email %]
 Subject: New vendor zone application: [% vz.zone_name %]
 
-[% combust.user.name %] requested the "[% vz.zone_name %]" zone for [% vz.organization_name %].
+[% combust.user.name %] ([% combust.user.email %]) requested the "[%
+vz.zone_name %]" zone for [% vz.organization_name %].
 
 [% combust.manage_url('/manage/vendor/zone', id = vz.id) %]
 
