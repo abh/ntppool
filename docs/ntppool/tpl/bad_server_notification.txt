@@ -18,7 +18,7 @@ problem has been resolved; the system will figure that out by itself.
 The NTP system is entirely based on IPs, so if the IP changed it will
 consider it a new system.  You can schedule this the old IP for
 removal and add the new one on the management web site -
-http://www.pool.ntp.org/manage
+https://manage.ntppool.org/
 
 [% FILTER repeat(70) %]-[% END %]
 [%- FOR server = bad_servers %]
@@ -28,6 +28,10 @@ http://www.pool.ntp.org/manage
 
 You can see the stats for all your servers in the pool at 
     [% config.base_url('ntppool') %]/manage
+
+If you haven't logged in for a long time, you might need to
+recreate your account since the login system was upgraded:
+    https://news.ntppool.org/2016/04/login-upgrade/
 
 If you have any questions, just reply to this email.  Otherwise no
 response is necessary.
