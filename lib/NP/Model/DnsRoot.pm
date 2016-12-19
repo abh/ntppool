@@ -61,8 +61,8 @@ sub populate {
         my $name = $zone->name;
 
         my $ttl;
-        if ($name eq 'br') {
-            $ttl = 75;
+        if ($name eq 'br' or $name eq 'au') {
+            $ttl = 55;
         }
 
         $name = ''       if $name eq '@';
