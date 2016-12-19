@@ -27,7 +27,7 @@ https://manage.ntppool.org/
 [% FILTER repeat(70) %]-[% END %]
 
 You can see the stats for all your servers in the pool at 
-    [% config.base_url('ntppool') %]/manage
+    [% config.base_url('manage') %]/manage
 
 If you haven't logged in for a long time, you might need to
 recreate your account since the login system was upgraded:
