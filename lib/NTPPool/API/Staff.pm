@@ -21,11 +21,10 @@ sub search {
     #local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
 
     my $servers = NP::Model->server->get_servers(
-        query => [or => [($ip ? (ip => $ip->ip) : ()), hostname => {like => $q . '%'},]],
+        query => [or => [($ip ? (ip => $ip->short) : ()), hostname => {like => $q . '%'},]],
         require_objects => ['user']
     );
     if ($servers) {
-
         #warn "got servers!", Data::Dump::pp($servers);
         push @users, $_->user for @$servers;
     }
