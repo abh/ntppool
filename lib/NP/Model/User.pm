@@ -9,8 +9,8 @@ sub is_staff {
     my $privileges = $self->privileges;
     return
          $privileges->see_all_servers
-      or $privileges->see_all_user_profiles
-      or $privileges->support_staff;
+      || $privileges->see_all_user_profiles
+      || $privileges->support_staff;
 }
 
 sub who {
