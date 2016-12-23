@@ -1,7 +1,7 @@
 version: '2'
 services:
   mysql:
-    image: mariadb:10.0
+    image: mariadb:10.1
     volumes:
       - "./.data/db:/var/lib/mysql"
     restart: always
