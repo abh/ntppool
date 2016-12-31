@@ -17,10 +17,10 @@ msgid "Asia"
 msgstr "亚洲"
 
 msgid "North America"
-msgstr "北美"
+msgstr "北美洲"
 
 msgid "South America"
-msgstr "南美"
+msgstr "南美洲"
 
 msgid "Europe"
 msgstr "欧洲"
@@ -29,7 +29,7 @@ msgid "Global"
 msgstr "全球"
 
 msgid "All Pool Servers"
-msgstr "所有库服务器"
+msgstr "所有池服务器"
 
 # navigation
 msgid "Translations"
@@ -37,7 +37,7 @@ msgstr "语言"
 
 # mailinglists.html
 msgid  "NTP Pool mailing lists"
-msgstr "NTP池-邮件清单"
+msgstr "NTP池邮件列表"
 
 msgid  "subscribe"
 msgstr "订阅"
@@ -55,16 +55,16 @@ msgid  "Development list"
 msgstr "开发列表"
 
 msgid  "announcement_list_description"
-msgstr "公告列表简介"
+msgstr "公告列表描述"
 
 msgid  "discussion_list_description"
-msgstr "讨论列表简介"
+msgstr "讨论列表描述"
 
 msgid  "development_list_description"
-msgstr "开发列表简介"
+msgstr "开发列表描述"
 
 msgid  "irc_channel_description"
-msgstr "IRC频道简介"
+msgstr "IRC频道描述"
 
 # tpl/server.html
 msgid  "Back to the front page"
@@ -83,13 +83,13 @@ msgid  "Zones:"
 msgstr "区域:"
 
 msgid  "This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
-msgstr "这个服务器预计于 %1 被删除"
+msgstr "预定于 %1 删除此服务器"
 
 msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
-msgstr "目前得分: %1 (只有得分高于 %2 的服务器会被存入池中)"
+msgstr "目前得分: %1 (只有得分高于 %2 的服务器会被加入池中)"
 
 msgid  "What do the graphs mean?"
-msgstr "这些图表意味着什么？"
+msgstr "这些图表意义是什么？"
 
 msgid  "CSV log"
 msgstr "CSV 日志"
@@ -99,13 +99,13 @@ msgid  "News"
 msgstr "新闻"
 
 msgid  "How do I <i>use</i> pool.ntp.org?"
-msgstr "我如何能<i>使用</i> pool.ntp.org?"
+msgstr "我该如何<i>使用</i> pool.ntp.org?"
 
 msgid  "How do I <i>join</i> pool.ntp.org?"
-msgstr "我如何能<i>加入</i> pool.ntp.org?"
+msgstr "我如何<i>加入</i> pool.ntp.org?"
 
 msgid  "Information for vendors"
-msgstr "为供应商提供的信息"
+msgstr "供应商须知"
 
 msgid  "The mailing lists"
 msgstr "邮件列表"
@@ -114,4 +114,4 @@ msgid  "Additional links"
 msgstr "附加链接"
 
 msgid  "Can you translate?"
-msgstr "您能帮助我们翻译吗?"
+msgstr "您能帮我们翻译吗?"
