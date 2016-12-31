@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Last-Translator: wustudent <12fogcity@tongji.edu.cn>\n"
+"Last-Translator: truechimer\n"
 "Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -25,6 +25,9 @@ msgstr "南美洲"
 msgid "Europe"
 msgstr "欧洲"
 
+msgid "Oceania"
+msgstr "大洋洲"
+
 msgid "Global"
 msgstr "全球"
 
@@ -34,6 +37,25 @@ msgstr "所有池服务器"
 # navigation
 msgid "Translations"
 msgstr "语言"
+
+# index.html
+msgid  "Introduction"
+msgstr "简介"
+
+msgid  "Active Servers"
+msgstr "当前服务器"
+
+msgid  "Links"
+msgstr "链接"
+
+msgid  "Terms of service"
+msgstr "服务条款"
+
+msgid  "Subscribe in a reader"
+msgstr "使用阅读器订阅"
+
+msgid  "Older news"
+msgstr "更早的新闻"
 
 # mailinglists.html
 msgid  "NTP Pool mailing lists"
