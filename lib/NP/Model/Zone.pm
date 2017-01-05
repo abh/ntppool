@@ -26,7 +26,9 @@ sub sub_zone_count {
 
 sub children {
     my $self = shift;
-    return $self->{_children} ||= [sort { $a->name cmp $b->name } $self->zones];
+    $self->{_children} ||= [sort { $a->name cmp $b->name } $self->zones];
+    # the template using this gets confused if it gets an arrayref
+    return @{ $self->{_children} };
 }
 
 sub random_subzone_ids {
