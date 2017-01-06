@@ -93,6 +93,9 @@ sub init {
         return $self->redirect($path, 301);
     }
 
+    $self->tpl_param('pool_domain' => Combust::Config->new->site->{ntppool}->{pool_domain}
+          || 'pool.ntp.org');
+
     return OK;
 }
 
