@@ -1,0 +1,138 @@
+msgid ""
+msgstr ""
+"Last-Translator: Shimi <ntppool@shimi.net>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "go up"
+msgstr "לך למעלה"
+
+# zone names
+msgid "Africa"
+msgstr "אפריקה"
+
+msgid "Asia"
+msgstr "אסיה"
+
+msgid "North America"
+msgstr "צפון אמריקה"
+
+msgid "South America"
+msgstr "דרום אמריקה"
+
+msgid "Europe"
+msgstr "אירופה"
+
+msgid "Oceania"
+msgstr "אוקיאניה"
+
+msgid "Global"
+msgstr "גלובלי"
+
+msgid "All Pool Servers"
+msgstr "כל שרתי ה-Pool"
+
+# navigation
+msgid "Translations"
+msgstr "תרגומים"
+
+# index.html
+msgid  "Introduction"
+msgstr "הקדמה"
+
+msgid  "Active Servers"
+msgstr "שרתים פעילים"
+
+msgid  "Links"
+msgstr "קישורים"
+
+msgid  "Terms of service"
+msgstr "תנאי השירות"
+
+msgid  "Subscribe in a reader"
+msgstr "הרשם עם תוכנת קריאה"
+
+msgid  "Older news"
+msgstr "חדשות קודמות"
+
+# mailinglists.html
+msgid  "NTP Pool mailing lists"
+msgstr "רשימות תפוצה של ה-NTP Pool"
+
+msgid  "subscribe"
+msgstr "הרשם"
+
+msgid  "archive"
+msgstr "ארכיון"
+
+msgid  "Announcement list"
+msgstr "תפוצת הכרזות"
+
+msgid  "Discussion list"
+msgstr "תפוצת דיונים"
+
+msgid  "Development list"
+msgstr "תפוצת פיתוח"
+
+msgid  "announcement_list_description"
+msgstr "הכרזות חדשות בנוגע ל NTP Pool הנשלחות לעתים נדירות מאוד. כל מפעילי השרתים צריכים להיות רשומים לתפוצת ההכרזות."
+
+msgid  "discussion_list_description"
+msgstr "מפעילי שרתים (ומשתמשים) אשר מעוניינים להיות מעורבים יותר בפרוייקט יכולים להרשם אל רשימת הדיונים.<br/> כמובן, שדיונים כלליים אודות ntp מקומם בקבוצת היוזנט %1 (וגם ב<a href=\"%2\">קבוצות גוגל</a>)."
+
+msgid  "development_list_description"
+msgstr "דיונים יותר טכניים (ובאופן אידאלי תמיד פרגמטיים) אודות הפיתוח הנוכחי של <a href=\"%1\">קוד ה-ntp pool</a> ושל <a href=\"%2\">pgeodns</a> מתרחשים ברשימת התפוצה timekeepers-dev."
+
+msgid  "irc_channel_description"
+msgstr "ישנו ערוץ IRC בשם %2 עבור מפעילי שרתים ומשתמשים ברשת %1."
+
+# tpl/server.html
+msgid  "Back to the front page"
+msgstr "בחזרה לדף הראשי"
+
+msgid  "Find"
+msgstr "מצא"
+
+msgid  "Stats for %1"
+msgstr "סטטיסטיקות עבור %1"
+
+msgid  "Not active in the pool, monitoring only"
+msgstr "לא פעיל כעת ב-pool, מנוטר בלבד"
+
+msgid  "Zones:"
+msgstr "איזורים:"
+
+msgid  "This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
+msgstr "שרת זה <span class=\"deletion\">מיועד למחיקה</span> בתאריך %1."
+
+msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
+msgstr "תוצאה נוכחית: %1 (רק שרתים עם תוצאה גבוהה מ-%2 יהיו בשימוש ב-pool)"
+
+msgid  "What do the graphs mean?"
+msgstr "מה משמעות הגרפים?"
+
+msgid  "CSV log"
+msgstr "לוג CSV"
+
+# tpl/navigation_sidebar.html
+msgid  "News"
+msgstr "חדשות"
+
+msgid  "How do I <i>use</i> pool.ntp.org?"
+msgstr "איך אני <i>משתמש</i> ב-pool.ntp.org?"
+
+msgid  "How do I <i>join</i> pool.ntp.org?"
+msgstr "איך אני <i>מצטרף</i> אל pool.ntp.org?"
+
+msgid  "Information for vendors"
+msgstr "מידע עבור יצרנים"
+
+msgid  "The mailing lists"
+msgstr "רשימות התפוצה"
+
+msgid  "Additional links"
+msgstr "קישורים נוספים"
+
+msgid  "Can you translate?"
+msgstr "האם תוכל לתרגם?"
