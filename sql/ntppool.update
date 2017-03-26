@@ -482,3 +482,10 @@ create table `user_identities` (
    CONSTRAINT `user_identities_user_id` FOREIGN KEY (`user_id`)
       REFERENCES `users` (`id`) on delete cascade
 ) engine=InnoDB default charset=utf8;
+
+#68
+select @uk_id := id from zones where name = "uk";
+select @gb_id := id from zones where name = "gb";
+insert ignore into server_zones select server_id, @uk_id
+ from server_zones where zone_id = @gb_id;
+delete from zones where name = 'gb';
