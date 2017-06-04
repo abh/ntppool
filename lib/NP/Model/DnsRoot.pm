@@ -36,6 +36,8 @@ sub data {
         }
 
         $data->{""}->{ns} = {map { $_ => undef } split /[\s+,]/, $self->ns_list};
+        $data->{"_dmarc"}->{txt} = "v=DMARC1; p=reject; pct=100; rua=mailto:re+h6dgrfy2ghh@dmarc.postmarkapp.com; sp=reject; aspf=r;";
+
         $data;
     };
 }
