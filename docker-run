@@ -6,9 +6,12 @@
 
 set -ex
 
-perl Makefile.PL
+if [ -z $CBROOT ]; then
+  export CBROOTLOCAL=`pwd`
+  export CBROOT=$CBROOTLOCAL/combust
+fi
 
-HULK=/usr/bin/hulk \
-  make templates
+confd -onetime -confdir=confd -backend env
+export CBCONFIG=/tmp/combust.conf
 
-(cd combust/services/httpd && ./run)
+exec ./combust/bin/httpd

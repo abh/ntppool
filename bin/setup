@@ -8,8 +8,8 @@ use NP::Version;
 use Combust::Util qw(run);
 
 # we run this in a deployment script ...
-#system("$ENV{CBROOTLOCAL}/bin/deploy/compress_static_files");
-#run("$ENV{CBROOT}/bin/deploy/static_version_cache");
+system("$ENV{CBROOT}/bin/deploy/compress_static_files");
+run("$ENV{CBROOT}/bin/deploy/static_version_cache");
 
 my $release_version = NP::Version->installed_version;
 
@@ -17,4 +17,3 @@ open my $fh, '>', "$ENV{CBROOTLOCAL}/REVISION"
   or die "Could not open REVISION file for writing: $!";
 print $fh "$release_version\n";
 close $fh;
-
