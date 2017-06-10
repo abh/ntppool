@@ -1,0 +1,4 @@
+
+[template]
+src = "combust.conf.tmpl"
+dest = "/tmp/combust.conf"

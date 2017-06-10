@@ -1,0 +1,96 @@
+perl = /usr/bin/perl
+servername = ntppool
+port = 8980
+
+# external_port.  Set to a non-zero value to set the port number used
+# for external redirects (301's, 302's)
+external_port = 80
+
+# source ip's allowed to be frontend proxies, where the
+# X-Forwarded-For header is honored.  Defaults to 127.0.0.1. The
+# special option "*" will allow any IP to set the source IP (use only
+# when the httpd is "firewalled in".
+# proxyip_forwarders = 127.0.0.1, 10.15.0.10, 10.15.0.11,
+proxyip_forwarders = 207.171.3.0/27, 10.220.0.0/16, 127.0.0.1
+
+docs_name = docs
+
+# add Apache::Reload to the httpd configuration; good for development! (default 0)
+# 0 = disabled, 1 = enabled, 2 = enabled with debugging on
+apache_reload = 1
+
+# use Template::Timer to insert timing information in the TT output (default 0)
+# template_timer = 1
+
+# path for log files and the httpd.pid file
+# log_path = apache/logs
+
+# path for temporary work files (compiled template cache etc)
+# work_path = tmp
+
+# Gearman Job Servers
+job_servers = {{ getenv "GEARMAND_SERVICE_HOST" }}:{{ getenv "GEARMAND_SERVICE_PORT" }}
+
+use_cronolog = 0
+
+{{range ls "/"}}
+   value: {{.}}
+{{end}}
+
+[database-ntppool]
+# configure database access for use with the db_open() function
+data_source = {{ getenv "db_dsn" }}
+user        = {{ getenv "db_user" }}
+password    = {{ getenv "db_pass" }}
+time_zone   = UTC
+default=1
+
+[database-combust]
+alias = ntppool
+
+# Apache specific configuration
+[apache]
+maxclients          = 5
+keepalive           = On
+keepalivetimeout    = 30
+#startservers        = 2
+#minspareservers     = 1
+#maxspareservers     = 10
+#maxrequestsperchild = 500
+
+
+# Configure sites
+
+{{ $mode := or (getenv "deployment_mode") "test"}}
+
+[ntppool]
+{{ $names := split (getenv "web_hostname") "," }}
+servername = {{ index $names 0 }}
+{{ if gt (len $names) 1 }}
+aliases = {{ range $names }}{{.}}, {{ end}}
+{{ end }}
+
+pool_domain = {{ getenv "pool_domain" }}
+static_base = {{ getenv "static_base" }}
+# www_cname  = beta-lb.ntppool.org.
+deployment_mode = {{ $mode }}
+
+#[ntpgraphs]
+#servername = graphs-beta.grundclock.com
+#deployment_mode = {{ $mode }}
+
+[manage]
+{{ $names := split (getenv "manage_hostname") "," }}
+servername = {{ index $names 0 }}
+aliases = {{ range $names }}{{.}}{{ end}}
+
+deployment_mode = {{ $mode }}
+static_base = {{ getenv "static_base" }}
+
+ssl_only = 1
+port = 443
+external_port = 443
+
+auth0_domain = {{ getenv "auth0_domain" }}
+auth0_client = {{ getenv "auth0_client" }}
+auth0_secret = {{ getenv "auth0_secret" }}
