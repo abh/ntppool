@@ -383,7 +383,7 @@ sub _get_server_ips {
         return ($ip->short);
     }
 
-    my $res = Net::DNS::Resolver->new;
+    my $res = Net::DNS::Resolver->new( domain => undef);
     my @ips;
     for my $type (qw(A AAAA)) {
         my $query = $res->query($host, $type);
