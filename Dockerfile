@@ -1,4 +1,4 @@
-FROM quay.io/ntppool/app-base:latest
+FROM quay.io/ntppool/base-os:latest
 
 ADD . /ntppool
 
