@@ -12,7 +12,7 @@ use Data::Dumper;
 use Sys::Hostname qw(hostname);
 use Geo::IP;
 use Net::IP;
-use LWP::Simple;
+use LWP::Simple qw(get);
 use Email::Simple;
 use Email::Date;
 use Email::Send 'SMTP';
@@ -42,7 +42,7 @@ sub closedbconnection {
 }
 
 # tools
-sub ntpdate {
+sub ntpdate_local {
     my ($host, $error) = @_;
 
     my %ntp = eval { get_ntp_response($host); };
@@ -66,6 +66,33 @@ sub ntpdate {
 
     return 1;
 }
+
+sub ntpdate {
+    my ($host, $error) = @_;
+
+    my $js = get("https://trace2.ntppool.org/ntp/$host");
+
+    my $json = JSON::XS->new->utf8;
+    my %ntp   = %{ $json->decode($js) };
+
+    #warn Data::Dumper->Dump([\%ntp]);
+
+    my @error;
+
+    $ntp{Stratum} ||= '';
+    push @error, "Bad stratum: $ntp{Stratum}"
+      unless $ntp{Stratum}
+          and $ntp{Stratum} < 6;
+
+    if (@error) {
+        print @error, "\n";
+        warn Data::Dumper->Dump([\%ntp]);
+        return undef;
+    }
+
+    return 1;
+}
+
 
 sub logsay {
     my $msg = join " ", @_;

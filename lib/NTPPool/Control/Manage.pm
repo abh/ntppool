@@ -5,7 +5,6 @@ use NP::Model;
 use Combust::Constant qw(OK NOT_FOUND);
 use Socket qw(inet_ntoa);
 use Socket6;
-use Net::NTP;
 use Geo::IP;
 use Email::Send 'SMTP';
 use Sys::Hostname qw(hostname);
@@ -486,10 +485,26 @@ sub get_server_info {
         }
     }
 
-    local $Net::NTP::TIMEOUT = 3;
-    my %ntp = eval { get_ntp_response($server{ip}); };
-    warn "checking $ip / $server{ip}";
-    warn Data::Dumper->Dump([\%ntp]);
+    my $ua = LWP::UserAgent->new(timeout => 2);
+    my $res = $ua->get("https://trace2.ntppool.org/ntp/$server{ip}");
+    if ($res->code != 200) {
+        warn "trace2 response code for $server{ip}: ", $res->code;
+        $server{error} = "Could not check NTP status";
+        return \%server;
+    }
+
+    warn "JS: ", $res->decoded_content();
+
+    my $json = JSON::XS->new->utf8;
+    my %ntp   = eval { +%{ $json->decode($res->decoded_content) } };
+    if ($@) {
+        $server{error} = "Could not decode NTP response from trace server";
+        return \%server;
+    }
+
+    warn "NTP response: ", Data::Dumper->Dump([\%ntp]);
+
+    my @error;
 
     unless (defined $ntp{Stratum}) {
         $server{error} = "Didn't get an NTP response from $server{ip}\n";
