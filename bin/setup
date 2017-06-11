@@ -7,8 +7,7 @@ use warnings;
 use NP::Version;
 use Combust::Util qw(run);
 
-# we run this in a deployment script ...
-system("$ENV{CBROOT}/bin/deploy/compress_static_files");
+run("$ENV{CBROOT}/bin/deploy/compress_static_files");
 run("$ENV{CBROOT}/bin/deploy/static_version_cache");
 
 my $release_version = NP::Version->installed_version;

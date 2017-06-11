@@ -2,3 +2,4 @@
 .static.versions.store
 *-min.css
 *-min.js
+*.map

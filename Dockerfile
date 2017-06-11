@@ -1,4 +1,4 @@
-FROM quay.io/ntppool/base-os:v2.0
+FROM quay.io/ntppool/base-os:v2.1
 
 ENV HULK /usr/bin/hulk
 USER ntppool
