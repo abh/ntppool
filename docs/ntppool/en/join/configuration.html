@@ -1,0 +1,95 @@
+<div class="block">
+
+<h3>Configuration recommendations for servers joining the pool</h3>
+
+<p>
+The <a href="http://support.ntp.org/bin/view/Support/WebHome">Support
+section</a> on <a href="http://support.ntp.org/">support.ntp.org</a> has a lot
+of useful information.
+</p>
+
+<p>
+If you just want to <i>use</i> the pool, see the <a href="/use.html">pool usage</a> page.
+</p>
+
+<p>
+The <a
+href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a>
+newsgroup is the best place to get help with the ntpd software.
+</p>
+
+<p>
+Below are some things of particular importance if you are going to
+join the NTP Pool with your server.
+</p>
+
+<h4 id="management-queries">Management queries</h4>
+
+<p>Make the default configuration be to not allow "management queries". For ntpd this will be adding the "noquery" option to the default "restrict" lines, for example:</p>
+
+[% INCLUDE "join/configuration/restrict-default.html" %]
+
+<p>To allow commands like "ntpq -c pe" to work from localhost you can add:</p>
+
+[% INCLUDE "join/configuration/restrict-localhost.html" %]
+
+<h4>Setup about 5 servers</h4>
+
+<p>
+To work properly ntpd needs to talk to at least 3 servers ("A man with
+a watch knows what time it is. A man with two watches is never sure").
+</p>
+
+<p>
+For servers in the pool we recommend configuring no less than 4 and no
+more than 7 servers.
+</p>
+
+
+<h4>Don't use *.pool.ntp.org servers</h4>
+
+<p>
+Ironically to make sure the pool service is the best it can be you
+shouldn't use the *.pool.ntp.org aliases in your configuration when
+you are going to add your server to the pool.
+</p>
+
+<p>
+For the robustness of the pool it's healthier if all pool operators "hand pick" good local (network wise) time servers.
+The NTP.org wiki has  a <a
+href="http://support.ntp.org/bin/view/Servers/WebHome">list of public
+servers</a>.
+</p>
+
+
+<h4>Use the standard ntpd</h4>
+
+<p>
+We are all for software diversity, but a significant percentage of the
+"it's not working" questions that come in are for software other than
+ntpd.
+</p>
+
+<p>
+You can <i>use</i> the pool with any program speaking NTP, but if you
+are going to join the pool we recommend you
+use <a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
+</p>
+
+
+<h4>Don't use the LOCAL clock driver</h4>
+
+<p>Servers in the NTP Pool should not have the LOCAL clock driver
+configured.</p>
+
+<h4>Beware of PTR DNS queries</h4>
+
+<p>Some server operators have reported that some of the NTP users (or
+their firewall software) does a "reverse DNS" (PTR) query for the IP address
+of the NTP server. Beware that this might cause the number of queries to
+go up. Increasing the "time to live" on those records is recommended if
+the number of DNS queries is a concern, and will generally make the number
+of queries negligible.
+</p>
+
+</div>
