@@ -1,0 +1,12 @@
+#!/bin/sh
+set -ex
+
+ROOT=$CBROOTLOCAL
+
+$ROOT/bin/cron/hourly
+
+# todo: use real cron daemon instead?
+
+while sleep 900; do
+    $ROOT/bin/cron/hourly
+done
