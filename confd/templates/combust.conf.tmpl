@@ -82,7 +82,7 @@ deployment_mode = {{ $mode }}
 [manage]
 {{ $names := split (getenv "manage_hostname") "," }}
 servername = {{ index $names 0 }}
-aliases = {{ range $names }}{{.}}{{ end}}
+aliases = {{ range $names }}{{.}}, {{ end}}
 
 deployment_mode = {{ $mode }}
 static_base = {{ getenv "static_base" }}
