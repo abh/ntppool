@@ -3,6 +3,8 @@ set -ex
 
 ROOT=$CBROOTLOCAL
 
+mkdir -p $ROOT/data/syndicate
+
 $ROOT/bin/cron/hourly
 
 # todo: use real cron daemon instead?

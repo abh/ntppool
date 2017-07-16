@@ -5,12 +5,17 @@ ENV CBCONFIG=
 ENV HULK /usr/bin/hulk
 
 WORKDIR /ntppool
+VOLUME /ntppool/data
+
 EXPOSE 8299
 CMD ./docker-run
 
 ADD . /ntppool
 
-RUN ls -al docs/ntppool; mkdir docs/ntppool/_syndicate; chown ntppool docs/ntppool/_syndicate
+RUN chown ntppool data
+RUN rm -fr docs/ntppool/_syndicate; ln -s /ntppool/data/syndicate docs/ntppool/_syndicate
+
+#RUN ls -al docs/ntppool; mkdir docs/ntppool/_syndicate; chown ntppool docs/ntppool/_syndicate
 
 # because quay.io sets timestamps to 1980 for some reason ...
 RUN find ./docs -type f -print0 | xargs -0 touch
