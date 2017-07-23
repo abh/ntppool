@@ -75,6 +75,12 @@ static_base = {{ getenv "static_base" }}
 # www_cname  = beta-lb.ntppool.org.
 deployment_mode = {{ $mode }}
 
+{{ if eq (getenv "web_tls") "yes" }}
+ssl_only = 1
+port = 443
+external_port = 443
+{{ end }}
+
 #[ntpgraphs]
 #servername = graphs-beta.grundclock.com
 #deployment_mode = {{ $mode }}
