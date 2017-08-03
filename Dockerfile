@@ -1,4 +1,4 @@
-FROM quay.io/ntppool/base-os:v2.1
+FROM quay.io/ntppool/base-os:v2.2
 
 USER root
 ENV CBCONFIG=
@@ -13,7 +13,10 @@ CMD ./docker-run
 ADD . /ntppool
 
 RUN chown ntppool data
-RUN rm -fr docs/ntppool/_syndicate; ln -s /ntppool/data/syndicate docs/ntppool/_syndicate
+RUN rm -fr docs/ntppool/_syndicate && \
+    mkdir -p data/syndicate && \
+    ln -s /ntppool/data/syndicate docs/ntppool/_syndicate && \
+    chown ntppool data/syndicate
 
 #RUN ls -al docs/ntppool; mkdir docs/ntppool/_syndicate; chown ntppool docs/ntppool/_syndicate
 
