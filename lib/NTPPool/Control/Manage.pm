@@ -13,6 +13,7 @@ use Email::Date qw();
 use JSON::XS qw(encode_json decode_json);
 use Net::DNS;
 use LWP::UserAgent qw();
+use Mozilla::CA qw();
 use Math::BaseCalc qw();
 use Math::Random::Secure qw(irand);
 
@@ -211,7 +212,13 @@ sub _get_auth0_user {
 
     my ($auth0_domain, $auth0_client, $auth0_secret) = $self->_auth0_config();
 
-    my $ua  = LWP::UserAgent->new;
+    my $ua = LWP::UserAgent->new(
+        ssl_opts => {
+            SSL_verify_mode => 0x02,
+            SSL_ca_file     => Mozilla::CA::SSL_ca_file()
+        }
+    );
+
     my $url = URI->new("https://${auth0_domain}/oauth/token");
 
     my %form = (
