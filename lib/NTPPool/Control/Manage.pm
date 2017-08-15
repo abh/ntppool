@@ -116,6 +116,7 @@ sub render {
                     profile_id => $userdata->{user_id},
                     email      => $email,
                     data       => encode_json($userdata),
+                    provider   => $provider,
                 );
 
                 # look for an account with a verified email address we
