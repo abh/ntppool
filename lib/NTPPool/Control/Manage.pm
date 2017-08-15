@@ -107,7 +107,7 @@ sub render {
                 $identity->data(encode_json($userdata));
             }
             else {
-                warn "Didn't find identity ...";
+                warn "Didn't find identity in the database";
 
                 if (!$email) {
                     return $self->login("Email not verified");
@@ -139,7 +139,7 @@ sub render {
                     warn "Testing email: $email";
                     my ($email_user) = NP::Model->user->fetch(email => $email);
                     if ($email_user) {
-                        warn "FOUND EMAIL USER!";
+                        warn "Found email user in the database";
                         $user = $email_user;
                         last;
                     }
