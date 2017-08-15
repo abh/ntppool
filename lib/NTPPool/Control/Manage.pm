@@ -12,6 +12,7 @@ use Email::Date qw();
 use JSON::XS qw(encode_json decode_json);
 use Net::DNS;
 use LWP::UserAgent qw();
+use Mozilla::CA qw();
 use Math::BaseCalc qw();
 use Math::Random::Secure qw(irand);
 
@@ -105,7 +106,7 @@ sub render {
                 $identity->data(encode_json($userdata));
             }
             else {
-                warn "Didn't find identity ...";
+                warn "Didn't find identity in the database";
 
                 if (!$email) {
                     return $self->login("Email not verified");
@@ -115,6 +116,7 @@ sub render {
                     profile_id => $userdata->{user_id},
                     email      => $email,
                     data       => encode_json($userdata),
+                    provider   => $provider,
                 );
 
                 # look for an account with a verified email address we
@@ -136,7 +138,7 @@ sub render {
                     warn "Testing email: $email";
                     my ($email_user) = NP::Model->user->fetch(email => $email);
                     if ($email_user) {
-                        warn "FOUND EMAIL USER!";
+                        warn "Found email user in the database";
                         $user = $email_user;
                         last;
                     }
@@ -209,7 +211,13 @@ sub _get_auth0_user {
 
     my ($auth0_domain, $auth0_client, $auth0_secret) = $self->_auth0_config();
 
-    my $ua  = LWP::UserAgent->new;
+    my $ua = LWP::UserAgent->new(
+        ssl_opts => {
+            SSL_verify_mode => 0x02,
+            SSL_ca_file     => Mozilla::CA::SSL_ca_file()
+        }
+    );
+
     my $url = URI->new("https://${auth0_domain}/oauth/token");
 
     my %form = (
