@@ -1,0 +1,15 @@
+# internal to the cluster service, accessible on web.perlweb.svc.cluster.local:8240
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+  labels:
+    app: ntppool
+spec:
+  ports:
+  - port: 8980
+    protocol: TCP
+    #targetPort: 8980
+  selector:
+    app: ntppool
+    tier: frontend

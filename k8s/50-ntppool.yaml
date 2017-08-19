@@ -1,0 +1,124 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: ntppool
+  # these labels can be applied automatically
+  # from the labels in the pod template if not set
+  labels:
+    app: ntppool
+    tier: frontend
+spec:
+  replicas: 3
+  revisionHistoryLimit: 3
+  strategy:
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 1
+    type: RollingUpdate
+  # selector can be applied automatically
+  # from the labels in the pod template if not set,
+  # but we are specifying the selector here to
+  # demonstrate its usage.
+#  selector:
+#    matchLabels:
+#      tier: frontend
+#    matchExpressions:
+#      - {key: tier, operator: In, values: [frontend]}
+  template:
+    metadata:
+      labels:
+        app: ntppool
+    spec:
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: ntppool-ntpkube-pull-secret
+      containers:
+      - name: ntppool
+        image: quay.io/ntppool/ntppool:fe62d85
+        #imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: 200m
+            memory: 450Mi
+          limits:
+            cpu: 1
+            memory: 700Mi  
+        command: ["/ntppool/docker-run"]
+        env:
+        - name: auth0_secret
+          valueFrom:
+            secretKeyRef:
+              name: ntppool-secrets
+              key: auth0_secret
+        - name: db_pass
+          valueFrom:
+            secretKeyRef:
+              name: ntppool-secrets
+              key: db_pass
+        envFrom:
+        - configMapRef:
+            name: ntppool-env
+        ports:
+        - containerPort: 8980
+
+        volumeMounts:
+        - name: data
+          mountPath: /ntppool/data
+
+#        readinessProbe:
+#          httpGet:
+#            path: /health
+#            port: 8980
+#          initialDelaySeconds: 10
+#          timeoutSeconds: 1
+#          periodSeconds: 5
+#          successThreshold: 1
+#          failureThreshold: 3
+#        livenessProbe:
+#          httpGet:
+#            port: 8980
+#            path: /health
+#          initialDelaySeconds: 120
+#          periodSeconds: 60
+
+
+
+      - name: ntppool-cron
+        image: quay.io/ntppool/ntppool:a49976b
+        resources:
+          requests:
+            cpu: 50m
+            memory: 100Mi
+          limits:
+            cpu: 500m
+            memory: 200Mi
+        command: ["/ntppool/bin/cron/runner"]
+        env:
+        - name: auth0_secret
+          valueFrom:
+            secretKeyRef:
+              name: ntppool-secrets
+              key: auth0_secret
+        - name: db_pass
+          valueFrom:
+            secretKeyRef:
+              name: ntppool-secrets
+              key: db_pass
+        envFrom:
+        - configMapRef:
+            name: ntppool-env
+
+        volumeMounts:
+        - name: data
+          mountPath: /ntppool/data
+
+      securityContext:
+        runAsUser: 1000
+        fsGroup: 1000
+
+      volumes:
+      # - name: config-volume
+      #   configMap:
+      #     name: ntppool
+      - name: data
+        emptyDir: {}

@@ -1,0 +1,19 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: gearmand
+  labels:
+    app: gearmand
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: gearmand
+    spec:
+      containers:
+      - image: pataquets/gearmand
+        name: gearmand
+        ports:
+        - containerPort: 4730
+        imagePullPolicy: Always
