@@ -1,7 +1,6 @@
 [% page.style = 'bare.html' -%]
 From: Ask Bjoern Hansen <ask@ntppool.org>
 To: [% admin.username %] <[% admin.email %]>
-Cc: ask@ntppool.org
 Reply-To: server-owner-help@ntppool.org
 Subject: NTP Pool: [% server.ip %] - Your server is being removed from the pool.ntp.org project
 

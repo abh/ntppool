@@ -1,0 +1,93 @@
+[% page.title = 'Join the NTP Pool!'  %]
+
+<div class="block">
+	<h3><a name="join">How do I join pool.ntp.org?</a></h3>
+	<p>
+	Fyrst av alt, takk så mykje for interessa i prosjektet. Bruken av pulja
+	har auka enormt og einaste måten me kan halde drifta og effektiviteten
+	av pulja enkel er å auke mengda tenarar som er med i prosjektet.
+	</p>
+
+	<p>
+	Datamaskina di må ha ei <b>statisk IP-adresse</b> og  permanent
+	internett-tilgang. Det er særs viktig at IP-adressa er fast eller i det
+	minste skjeldan endrar seg (t.d. ein gong årleg eller skjeldnare). Kravet
+	til bandbreidde er relativt lågt. Kvar klient sender berre eitt par
+	UDP-førespurnader på eit intervall frå eit par sekund til omlag 20 minutt.
+	</p>
+
+	<p>
+	På dette tidspunkt er mottek pr tenar i snitt 5 til 15 NTP-pakker kvart sekund.
+	På dei travlaste tidene av døgnet kan talet komme opp i 60 til 120 pakker pr.
+	sekund. Grovt reikna 10 til 15 kilobit/s, med toppar på 50 til 120 kilobit/s.
+	Talet tenarar med i pulja aukar jamnt og trutt, så det er ikkje forventa att
+	last pr. tenar kjem til å auke dramatisk dei kommande åra. I korte trekk treng
+	du minst 384-512 kilobit/s bandbreidde (ned og opp-straums).
+	</p>
+	<p>
+	Under er eit par tenarar med trafikk/last -grafar:
+	[% i = 0; FOR server = combust.servers_with_urls; %]
+	   <a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
+	[% END %]
+	</p>
+
+	<p>
+	Tenarane som blir med skal ikkje ha<tt>pool.ntp.org</tt> som tidsreferanse,
+	men heller konfiguerast med nokre <a href="http://support.ntp.org/bin/view/Servers/StratumTwoTimeServers">gode tenarar</a> manuelt (desse 
+	<b>kan</b> bli valde frå pulja. Poenget er uansett at dei skal vere
+	valt på statistisk grunnlag, istadenfor som normalt med tilfeldige tenarar. Desse
+	enkle vala vil sikre akseptabel kvalitet av tenesta.)
+
+	NB: Det er som sagt ikkje krav til at tenaren din er ein stratum 1 eller 2 tenar
+	 - på det grunnlag at prosjektet mest har som må å oppna god lastdistribuering. Derfor
+	 har me ikkje noko imot at ein stratum 3 elle 4 tenar kan bli med.
+	</p>
+
+	<p>
+	Me har ei side med <a href="/join/configuration.html">anbefalte konfigurasjonsinnstillingar for tenarar</a> som blir medi pulja.
+	</p>
+	<p>Tilslutt må eg vektleggje at det å bli med i pulja er eit<b>langsiktig
+	engasjement</b>. Om dette endrar seg, tek me med glede tenaren din ut frå 
+	pulja. Grunna måten NTP-klientane fungerer, <b>tek det alt frå veker til år
+	før trafikken fullstendig går bort frå di IP-adresse.
+	</p>
+
+	<p>
+	Om dette høyrest greitt ut, logg på til
+	<a href="/manage">tenaradministrasjon</a>-sida og send ein førespurnad om å få
+	lagt til din tenar. 
+	Opplever du problem med systemet, send meg ein e-post på <a
+	href="mailto:ask@develooper.com">ask@develooper.com</a>.
+	</p>
+	<p>
+	Eg vil og gjerne etterspørre deg til å abonnerere
+	på <a href="http://news.ntppool.org/atom.xml">weblog-feeden/a>
+	og kanskje til
+	<a href="https://lists.ntp.org/listinfo/pool">e-postlista for
+	prosjektet</a>.
+	</p>
+	<p>
+	Det ville og vore flott om du kunne vidaresendt trafikk på port 80 på din
+	tidstenar til den offisielle  websida til prosjektet på
+	<tt>http://www.pool.ntp.org</tt>. Brukar du Apache som tenar, kan du gjere
+	dette:
+	</p>
+
+        [% PROCESS tpl/join/virtual_host_example.html %]
+
+	<p>
+	Merk: du treng berre å gjere dette om du køyrer ein webserver. Den offisielle 
+	websida byrjar alltid med 'www' på starten i adressefelte - men nokon gonger 
+	skriv folk <tt>pool.ntp.org</tt> og då blir ein overraska om ein får ei annan
+	side.
+	</p>
+	<p>
+	Så snart tenaren er lagt til i pulja blir den overvaka konstant for
+        måling av tilgjengelegheit pg nøyaktighet. Du kan sjå ytelsen
+        for tenaren din ved å bruke<a href="scores">web frontend'en</a>
+        eller <a href="/manage">administrasjonsgrensesnittet</a>.
+	</p>
+</div>
+
+
+

@@ -99,9 +99,9 @@ sub render {
             }
 
             my $email = $userdata->{email_verified} && $userdata->{email};
+            my $provider = $userdata->{identities} && $userdata->{identities}->[0] && $userdata->{identities}->[0]->{provider};
 
             if ($identity) {
-                my $provider = $userdata->{identities} && $userdata->{identities}->[0] && $userdata->{identities}->[0]->{provider};
                 $identity->provider($provider) if $provider;
                 $identity->data(encode_json($userdata));
             }
