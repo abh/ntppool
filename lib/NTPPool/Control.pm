@@ -29,6 +29,7 @@ our %valid_languages = (
     ko => {name => "한국어",},
     kz => {name => "Қазақша",        testing => 1},
     nl => {name => "Nederlands",},
+    no => {name => "Norsk", testing => 1},
     pl => {name => "Polish",                testing => 1},
     pt => {name => "Português"},
     ro => {name => "Română",              testing => 1},
