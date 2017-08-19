@@ -8,11 +8,11 @@ metadata:
     app: ntppool
     tier: frontend
 spec:
-  replicas: 3
+  replicas: 2
   revisionHistoryLimit: 3
   strategy:
     rollingUpdate:
-      maxSurge: 2
+      maxSurge: 1
       maxUnavailable: 1
     type: RollingUpdate
   # selector can be applied automatically
@@ -28,13 +28,14 @@ spec:
     metadata:
       labels:
         app: ntppool
+        tier: frontend
     spec:
       restartPolicy: Always
       imagePullSecrets:
         - name: ntppool-ntpkube-pull-secret
       containers:
       - name: ntppool
-        image: quay.io/ntppool/ntppool:fe62d85
+        image: quay.io/ntppool/ntppool:cbaa51c
         #imagePullPolicy: Always
         resources:
           requests:
@@ -84,7 +85,7 @@ spec:
 
 
       - name: ntppool-cron
-        image: quay.io/ntppool/ntppool:a49976b
+        image: quay.io/ntppool/ntppool:cbaa51c
         resources:
           requests:
             cpu: 50m
