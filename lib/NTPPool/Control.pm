@@ -266,8 +266,8 @@ sub cache_control {
 sub post_process {
     my $self = shift;
 
-    # IE8 is old cruft by now.
-    $self->request->header_out('X-UA-Compatible', 'IE=9');
+    $self->request->header_out('X-Content-Type-Options', 'nosniff');
+    $self->request->header_out('X-Frame-Options', 'deny');
 
     $self->request->header_out('X-NPV',
         $version->current_release . " (" . $version->hostname . ")");
