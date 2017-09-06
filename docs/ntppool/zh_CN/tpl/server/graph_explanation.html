@@ -1,0 +1,22 @@
+<div id="graph_explanation_box" class="graph_explanation [% graph_explanation ? 'visible' : '' %]">
+
+<h3>评分图</h3>
+
+<p>
+服务器群的系统每小时会多次审查你的服务器时间，并于自身的时间加以比较。如果无法连接服务器，或时间偏差≥100毫秒（ms），你的服务器将会被扣分。偏差越大，扣的分也就越多。
+</p>
+
+<p>
+图标仅用于将趋势可视化。如需更详细的监控结果，请点击CSV链接。
+</p>
+
+<h3>时间偏差图</h3>
+
+<p>
+审查系统的工作模式和<a href="http://www.ntp.org/ntpfaq/NTP-s-def.htm#AEN1242">SNTP</a>客户端差不多 （<a href="http://tools.ietf.org/html/rfc2030">RFC 2030</a>），所以审查系统和服务器之间的网络延迟一般来说比正常的ntpd服务器要高一些。</p>
+
+<p>
+监控系统的误差≥10毫秒（ms）。
+</p>
+
+</div>
