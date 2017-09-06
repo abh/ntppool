@@ -1,28 +1,28 @@
 <div class="block">
 
-<h3>服务器加入NTP池的设置建议</h3>
+<h3>加入NTP服务器池的设置建议</h3>
 
 <p>
-<a href="http://support.ntp.org/">support.ntp.org</a>上的<a href="http://support.ntp.org/bin/view/Support/WebHome">支持页面</a> 有着许多有用的信息。
+<a href="http://support.ntp.org/">support.ntp.org</a>上的<a href="http://support.ntp.org/bin/view/Support/WebHome">支持页面</a> 有许多有用的信息。
 </p>
 
 <p>
-如果您只是想要 <i>使用</i> NTP池, 请参阅 <a href="/use.html">池的用法</a> 页面。
+如果您只是想要<i>使用</i>NTP服务器池, 请参阅 <a href="/use.html">池的用法</a>页面。
 </p>
 
 <p>
 <a
 href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a>
-新闻组是您与ntpd 软件一起获得帮助的最佳途径。
+新闻组是您获取ntpd软件帮助的最佳途径。
 </p>
 
 <p>
-如果您将要把您的服务器加入NTP池，下方是一些特别重要的注意事项：
+如果您将要把您的服务器加入NTP服务器池，下方是一些特别重要的注意事项：
 </p>
 
-<h4 id="management-queries">管理层查询</h4>
+<h4 id="management-queries">管理查询</h4>
 
-<p>您应注意使默认设置中的“管理层查询”（"management queries"）不被允许，由于ntpd会将“非查询”（"noquery"）选项加入默认的“限制”（"restrict"）行，例如：</p>
+<p>您应注意使默认设置中的“管理查询”（"management queries"）不被允许，由于ntpd会将“非查询”（"noquery"）选项加入默认的“限制”（"restrict"）行，例如：</p>
 
 [% INCLUDE "join/configuration/restrict-default.html" %]
 
@@ -44,30 +44,35 @@ href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.tim
 <h4>请不要使用 *.pool.ntp.org 的服务器</h4>
 
 <p>
-如果您想把您的服务器加入池中，为使池的服务达到最佳水平，您不应该在设置中使用*.pool.ntp.org的别名。
+为使池的服务达到最佳水平，您不应该在设置中使用*.pool.ntp.org的别名。
 </p>
 
 <p>
-为使池保持稳健，如果所有的池操作者“手动选取”（"hand pick"）（相对于网络中）（(network wise)）的优质本地时间服务器的话，那将会更好。
-NTP.org 的wiki页面有一个 <a
-href="http://support.ntp.org/bin/view/Servers/WebHome">公共服务器清单</a>.
+为使池保持稳健，如果所有的池管理员“手动选取”（"hand pick"）（相对于网络中）（(network wise)）的优质本地时间服务器的话，那将会更好。
+NTP.org 的wiki页面有一个<a
+href="http://support.ntp.org/bin/view/Servers/WebHome">公共服务器列表</a>.
 </p>
 
 
 <h4>使用标准的 ntpd</h4>
 
 <p>
-我们一直支持软件多样性，但是很大一部分有关“它不工作”的问题出现在 ntpd 以外的其他软件中。
+我们一直支持软件多样性，但是很大一部分有关“它不工作”的问题出现在ntpd以外的其他软件中。
 </p>
 
 <p>
-您能在任何遵循NTP协议的软件中<i>使用</i> 这个池，但如果您想加入池中，我们推荐您使用 <a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
+您能在任何遵循NTP协议的软件中<i>使用</i>这个池，但如果您想加入池中，我们推荐您使用 <a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
 </p>
 
 
-<h4>请勿使用本地时钟驱动！</h4>
+<h4>请勿使用本地（LOCAL）时钟驱动！</h4>
 
-<p>NTP池中的服务器不应有本地时钟驱动的设置。</p>
+<p>NTP池中的服务器不应有本地（LOCAL）时钟驱动的设置。</p>
 
+<h4>注意DNS PTR查询</h4>
 
+<p>一些服务器管理员反映有些NTP用户（或者他们的防火墙软件）会查询NTP服务器IP地址的逆向DNS（PTR）记录。
+请注意这可能导致查询数量的上升。如果这成问题的话我们推荐加大这些记录的TTL值来减少查询次数。
+</p>
+  
 </div>
