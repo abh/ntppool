@@ -612,7 +612,7 @@ __PACKAGE__->meta->setup(
   columns => [
     id        => { type => 'serial', not_null => 1 },
     server_id => { type => 'integer', not_null => 1 },
-    url       => { type => 'varchar', default => '', length => 255, not_null => 1 },
+    url       => { type => 'varchar', length => 255, not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
@@ -701,7 +701,7 @@ __PACKAGE__->meta->setup(
 
   columns => [
     id                => { type => 'serial', not_null => 1 },
-    email             => { type => 'varchar', default => '', length => 255, not_null => 1 },
+    email             => { type => 'varchar', length => 255, not_null => 1 },
     name              => { type => 'varchar', length => 255 },
     pass              => { type => 'varchar', length => 255 },
     nomail            => { type => 'enum', check_in => [ '0', 1 ], default => '0', not_null => 1 },
@@ -1005,7 +1005,7 @@ __PACKAGE__->meta->setup(
 
   columns => [
     id          => { type => 'serial', not_null => 1 },
-    name        => { type => 'varchar', default => '', length => 255, not_null => 1 },
+    name        => { type => 'varchar', length => 255, not_null => 1 },
     description => { type => 'varchar', length => 255 },
     parent_id   => { type => 'integer' },
     dns         => { type => 'integer', default => 1, not_null => 1 },

@@ -489,3 +489,12 @@ select @gb_id := id from zones where name = "gb";
 insert ignore into server_zones select server_id, @uk_id
  from server_zones where zone_id = @gb_id;
 delete from zones where name = 'gb';
+
+#69
+alter table log_scores
+  modify `score` double NOT NULL DEFAULT 0,
+  modify `step` double NOT NULL DEFAULT 0;
+
+#70
+alter table server_notes
+  modify `name` varchar(255) NOT NULL DEFAULT '';
