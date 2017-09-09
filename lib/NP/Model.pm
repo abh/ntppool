@@ -257,6 +257,7 @@ __PACKAGE__->meta->setup(
     ip         => { type => 'varchar', length => 40, not_null => 1 },
     ip_version => { type => 'enum', check_in => [ 'v4', 'v6' ], not_null => 1 },
     api_key    => { type => 'varchar', length => 40, not_null => 1 },
+    config     => { type => 'text', length => 65535, not_null => 1 },
     last_seen  => { type => 'datetime' },
     created_on => { type => 'datetime', default => 'now', not_null => 1 },
   ],
@@ -289,6 +290,8 @@ __PACKAGE__->meta->setup(
     },
   ],
 );
+
+__PACKAGE__->meta->setup_json_columns(qw< config >);
 
 push @table_classes, __PACKAGE__;
 }

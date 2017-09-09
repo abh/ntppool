@@ -498,3 +498,7 @@ alter table log_scores
 #70
 alter table server_notes
   modify `name` varchar(255) NOT NULL DEFAULT '';
+
+#71
+alter table monitors add config text not null after api_key;
+update monitors set config='{"samples": 1}' where config='';

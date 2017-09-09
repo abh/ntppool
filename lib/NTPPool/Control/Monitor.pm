@@ -43,7 +43,7 @@ sub render {
     # go through server array and fetch offset for all servers
     my $servers = NP::Model->server->get_check_due($monitor, 50);
 
-    return OK, $json->encode({servers => [map { $_->ip } @$servers]}), "application/json";
+    return OK, $json->encode({servers => [map { $_->ip } @$servers], config => $monitor->config}), "application/json";
 }
 
 sub render_server_map {
