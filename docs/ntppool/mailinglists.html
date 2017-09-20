@@ -6,16 +6,16 @@
 	<p>
 	   [%|l%]Currently, there are three mailing lists for the pool.ntp.org project. They are all <i>in English</i>.[% END %]
         </p>
-        
+
         <h3>[% "Announcement list" | loc %]</h3>
 
 	<p>[%|l%]announcement_list_description[%END%]
 	<br>
-	<a href="http://news.ntppool.org/">timekeepers news</a>
-        | <a href="http://news.ntppool.org/atom.xml">
+	<a href="https://news.ntppool.org/">timekeepers news</a>
+        | <a href="https://news.ntppool.org/atom.xml">
           <img width="16" height="16" src="[% combust.static_url('/images/feed-icon16x16.png') %]"
                alt="Atom feed" style="vertical-align:middle;border:0"/></a>
-	| <a href="http://news.ntppool.org/archives.html"
+	| <a href="https://news.ntppool.org/archives.html"
 	>[% "archive" | loc %]</a>
 	</p>
 
@@ -23,8 +23,8 @@
 	<p>
 	[% | l('<a href="news:comp.protocols.time.ntp">comp.protocols.time.ntp</a>', 'http://groups.google.com/group/comp.protocols.time.ntp') %]discussion_list_description[% END %]<br>
 
-	<a href="https://lists.ntp.org/listinfo/pool">timekeepers</a>	
-	| <a href="mailto:pool-request@lists.ntp.org?subject=subscribe">[% "subscribe" | l %]</a> 
+	<a href="https://lists.ntp.org/listinfo/pool">timekeepers</a>
+	| <a href="mailto:pool-request@lists.ntp.org?subject=subscribe">[% "subscribe" | l %]</a>
 	| <a href="https://lists.ntp.org/pipermail/pool/" >[% "archive" | loc %]</a>
 	</p>
 

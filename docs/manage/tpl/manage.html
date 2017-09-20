@@ -5,11 +5,9 @@
 <div id="admin" class="block">
         <div>
 	<h3>Admin information</h3>
-	[% user = combust.user %]	
-			Username: <b>[% user.username %]</b><br>
-			[% PROCESS tpl/manage/profile_link.html %]<br>
-	                Email: <b>[% user.email %]</b><br>
-                        <span>(change your email address in your <a href="[% combust.account_url %]">Bitcard Account</a>)</span>
+	[% user = combust.user %]
+	[% PROCESS tpl/manage/profile_link.html %]<br>
+	Email: <b>[% user.email %]</b><br>
         </div>
 
 	<div class="servers" >
@@ -18,8 +16,8 @@
                 </h3>
 		<div class="value">
 			<span class="add"><a href="#add">Add a server</a></span>
-			[% servers = user.servers; 
-			   FOR server = servers; %] 
+			[% servers = user.servers;
+			   FOR server = servers; %]
 			[% PROCESS tpl/manage/server.html, server => server %]
 			[% END %]
 			[% IF servers.list.size > 1 %]
@@ -27,11 +25,11 @@
 			[% END %]
 		</div>
 	</div>
-	
-	
+
+
 	<a name="add"></a>
 	[% PROCESS tpl/manage/add_form.html %]
-	
+
 	[% IF servers %]
 	<div class="server_desc">
 		<p>
@@ -64,7 +62,7 @@
 	</div>
 	[% ELSE %]
 
-	<i>No servers registered to your email address. Send  a mail if that was not what you expected!</i> 
+	<i>No servers registered to your email address. Send  a mail if that was not what you expected!</i>
 
 	[% END %]
 
@@ -73,7 +71,7 @@
 
         <p>
         The current NTP implementations (and the pool system) are very IP focused, so to "change" the IP address
-        of your server, please delete the old server and just add the new IP. 
+        of your server, please delete the old server and add the new IP.
         </p>
 
 
@@ -83,5 +81,5 @@
 	</p>
 
         </div>
-	
+
 </div>

@@ -3,7 +3,8 @@
 	font-size: 114%;
 }
 	.mod h3, #sidebar h3 {
-		font-family: "p22-underground-1","p22-underground-2",serif;
+		font-family: 'Economica', sans-serif;
+                     /*"p22-underground-1","p22-underground-2",serif;*/
  		font-size: 144%;
 		padding: 3px 0;
 		margin-bottom: 2px;
@@ -21,51 +22,12 @@
 
 	#quickstart li {margin-bottom: 10px;}
 
-#mainbar h1, h2, h3, h4 {margin: 15px 0 0 0;}
-
-/** old block code **/
-/* .block {margin-bottom: 10px;}
-       .block h1, h2, h3, h4 {
-              padding: 3px 0;
-              font-family: "p22-underground-1","p22-underground-2",serif;
-              font-weight: 500;
-        }
-	.block h1 {
-		font-size: 186%;
-	}
-	.block h2 {
-		font-size: 167%;
-	}
-	.block h3 {
-		font-size: 154%;
-		color: #454545;
-	}
-	.block h4 {
-		font-size: 120%;
-		color: #454545;
-	}
-
-		.block ul.bullet {
-			margin-left: 25px;
-		}
-			.block ul.bullet li {
-				list-style-type: disc;
-				margin-bottom: 5px;
-			}
-	.block fieldset input.text, textarea, select {
-		border: 1px solid #aaa;
-		margin-top: 3px;
-		padding: 3px;
-	}
-		.block fieldset input.button {
-			margin-top: 10px;
-		}
-	.block p.desc {font-size: 92%;}
-	*/
-/* p {margin-bottom: 7px; line-height: 1.3;} */
+#mainbar h1, h2, h3, h4 {margin: 15px 0 0 0;
+	font-family: 'Bree Serif', serif;
+}
 
 pre,tt {
-         font-family: "source-code-pro-1", "source-code-pro-2", monospace;
+         font-family: source-code-pro, "source-code-pro-1", "source-code-pro-2", monospace;
          font-weight: 400;
          font-size: 15px;
          line-height: 18px;
@@ -149,6 +111,9 @@ p.thanks {font-style: italic; font-weight: bold;}
           margin-bottom: 15px;
 }
 
+#login-form {
+	padding-bottom: 30px;
+}
 
 /* zones */
 table.servertable {
@@ -204,7 +169,7 @@ p.develwarning {
 
 #dnsinfo td { padding: 8px }
 
-span.s_his      { font-family: "ubuntu-mono-1","ubuntu-mono-2", monospace; }
+span.s_his      { font-family: source-code-pro, monospace; }
 span.s_his_ok   { color: green; font-size:80%; }  /* # */
 span.s_his_tol  { color: yellow; }  /* x */
 span.s_his_big  { color: #ffa500; }  /* o */
@@ -256,7 +221,6 @@ em.beta  { color: #888 }
 /* graph formatting */
 .graph {
   font-size: 90%;
-  /* font-family: "ubuntu-mono-1","ubuntu-mono-2", monospace; */
 }
 
 .graph rect {

@@ -1,6 +1,6 @@
 [%- page.style='bare.html' %]From: (Ask Bjoern Hansen) vendors@ntppool.org
-To: ([% vz.user.username %]) [% vz.user.email %]
-Bcc: ask@ntppool.org
+To: ([% vz.user.name %]) [% vz.user.email %]
+Cc: ask+vs@ntppool.org
 Subject: Vendor zone activated: [% vz.zone_name %]
 
 Hi [% vz.user.name %],

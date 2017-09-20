@@ -1,0 +1,9 @@
+#!/bin/sh
+mysqladmin -uroot -proot -hmysql create ntppool
+mysql_upgrade
+set -ex
+./combust/bin/cmysql ntppool < sql/tables.sql
+./combust/bin/cmysql ntppool < sql/zones.sql
+./combust/bin/database_update ntppool
+./combust/bin/database_update combust
+./combust/bin/database_update ntppool

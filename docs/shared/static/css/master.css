@@ -1,7 +1,7 @@
 body {
     color: #222;
     font-size: 15px;
-    font-family: "adelle-1","adelle-2", "Georgia";
+    font-family: merriweather, "Georgia", serif;
     font-weight: 400;
 }
 
@@ -26,9 +26,11 @@ h1, h2, h3, h4, h5 {color: #454545;}
 }
 
 ul#nav li {
-	font: 125% "p22-underground-1","p22-underground-2", sans-serif;
+	font-size: 30px;
+	font-family: 'Economica', sans-serif;
+           /*"p22-underground-1","p22-underground-2", sans-serif;*/
         font-variant: small-caps;
-        font-weight: 600;
+        font-weight: 700;
         list-style: none;
         }
 	ul#nav li a {
@@ -51,10 +53,33 @@ ul#nav li {
 
 div#tagline {font-size: 122%; font-style: italic; text-align: right; margin: 0; padding: 0; float: right;}
 
+em {font-style:italic;}
+
 #ft {
 	text-align: right;
 	margin-right: 10px;
 	font-size: 88%;
 }
 
-em {font-style:italic;}
+#ft .color-dot {
+  -moz-border-radius: 99px;
+  -webkit-border-radius: 99px;
+  border-radius: 99px;
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 5px;
+}
+
+#ft .color-dot.critical {
+  background-color: #e74c3c;
+}
+#ft .color-dot.major {
+  background-color: #e67e22;
+}
+#ft .color-dot.minor {
+  background-color: #f1c40f;
+}
+#ft .color-dot.none {
+  background-color: #2ecc71;
+}

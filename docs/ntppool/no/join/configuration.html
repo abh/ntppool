@@ -1,0 +1,93 @@
+<div class="block">
+
+<h3>Konfigurasjonsanbefalingar for tenarar i pulja</h3>
+
+<p>
+The <a href="http://support.ntp.org/bin/view/Support/WebHome">Hjelpeseksjonen</a> på <a href="http://support.ntp.org/">support.ntp.org</a> har mykje
+hjelpsam informasjon.
+</p>
+
+<p>
+Om du berre ynskjer å <i>nytte</i> pulja, sjå<a href="/use.html">"bruk"</a>-sida.
+</p>
+
+<p>
+Nyhendegruppende på<a
+href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a>
+er den beste staden å få hjelp
+med ntpd-programvara
+</p>
+
+<p>
+I avsnitta under er det tips ein bør tenkje på om du har tenkt å bli med
+i pulja med din tenar.
+</p>
+
+<h4 id="management-queries">Administrasjonsspørsmål</h4>
+
+<p>Sett opp standard konfigurasjon å ikkje tillate "management queries". For ntpd legg ein til eit "noquery"-val for dei opphavlege "restrict"-linjene, til dømes:</p>
+
+[% INCLUDE "join/configuration/restrict-default.html" %]
+
+<p>For å tillate kommandoar som "ntpq -c pe" til å fungere frå localhost kan du 
+leggje til:</p>
+
+[% INCLUDE "join/configuration/restrict-localhost.html" %]
+
+<h4>Oppsett med fem tenarar</h4>
+
+<p>
+For at ntpd skal fungere skikkeleg treng ein minst 3 tenarar ("Ein person med ei 
+klokke veit kva tida er, med to klokker kan ein aldri være heilt sikker").
+</p>
+
+<p>
+For tenarar som skal vere med i pulja anbefalar me å minst fire og maksimalt 
+sju tenarar.
+</p>
+
+
+<h4>Ikkje nytt *.pool.ntp.org -tenarar</h4>
+
+<p>
+Irontisk nok for å bidra best mogleg til pulja bør du ikkje bruke *.pool.ntp.org 
+alias i konfigurasjonen når du legg til tenaren din i NTP Pool-prosjektet.
+</p>
+
+<p>
+For å sikre at tensta av pulja er robust, ber vi at alle tenaroperatørane "handplukkar" gode regionale (nettverksmessig) tidstenarar.
+Wikisidene på NTP.org har ei <a
+href="http://support.ntp.org/bin/view/Servers/WebHome">liste over offentlege 
+ tenarar</a>.
+</p>
+
+
+<h4>Bruk standard ntpd</h4>
+
+<p>
+Me er alle for god mangfald når det gjeld programvare, men ein betydeleg 
+andel av "det fungerer ikkje" -spørsmåla som kjem inn gjeld annan programvare enn
+ntpd.
+</p>
+
+<p>
+Du kan<i>nytte</i> pulja med alle program som støttar NTP, men ynskjer du 
+å bli med i pulja tilrår me å
+nytte <a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
+</p>
+
+
+<h4>Aldri nytt lokal (LOCAL) klokkedrivar</h4>
+
+<p>Tenarar i NTP-pulja skal ikkje den lokal klokkedrivaren (aka. LOCAL clock driver) konfigurert.</p>
+
+<h4>Ver oppmerksam på PTR DNS-spørjingar</h4>
+
+<p>Nokre av tenaradministratorane har rapportert at nokre klientar (eller
+brannmurprogramvara deira) gjer eitt revers DNS (PTR) oppslag for å finne IP
+adressa til NTP tenaren. Slike tilfelle kan gjere at tenaren får fleire
+spørjingar. Om tal DNS-oppslag er ei bekymring for stabiliteten på tenesta, 
+kan ein auke TTL (levetid) på oppslaga - for å oppnå færre spørjingar.
+</p>
+
+</div>

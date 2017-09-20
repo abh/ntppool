@@ -26,13 +26,13 @@ Abaixo est&atilde;o algumas coisas de import&acirc;ncia particular, se
 voc&ecirc; vai juntar o NTP Pool com seu servidor.
 </p>
 
-<h4 id="management-queries">Management queries</h4>
+<h4 id="management-queries">Gerenciamento de consultas</h4>
 
-<p>Make the default configuration be to not allow "management queries". For ntpd this will be adding the "noquery" option to the default "restrict" lines, for example:</p>
+<p>Faz com que a configura&ccedil;&atilde;o padr&atilde;o seja n&atilde;o "Gerenciamento de consultas". Para ntpd, isso vai adicionar a opção "noquery" &agrave;s linhas "restrict" padr&atilde;o, por exemplo:</p>
 
 [% INCLUDE "join/configuration/restrict-default.html" %]
 
-<p>To allow commands like "ntpq -c pe" to work from localhost you can add:</p>
+<p>Para permitir comandos como "ntpq -c pe" funcionarem do localhost, voc&ecirc; pode adicionar:</p>
 
 [% INCLUDE "join/configuration/restrict-localhost.html" %]
 

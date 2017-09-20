@@ -2,43 +2,33 @@
 
 <div class="block">
 	<h3><a name="use"></a>Hur använder jag pool.ntp.org?</h3>
-	
+
 	<p>
 	Om du helt enkelt vill synkronisera din dators tid med nätverket, så är
 	konfigurerings-filen (för programmet ntpd från <a
 	href="http://www.ntp.org">ntp.org distribution</a>, för alla understödda
-	typer av datorsystem - <b>Linux, *BSD, Windows och även med några mer 
+	typer av datorsystem - <b>Linux, *BSD, Windows och även med några mer
 	exotiska system</b>) riktigt enkel:
 	</p>
 
-<pre class="code">
-driftfile /var/lib/ntp/ntp.drift
+	[% INCLUDE "ntppool/use/sample-config.html" %]
 
-server 0.pool.ntp.org
-server 1.pool.ntp.org
-server 2.pool.ntp.org
-server 3.pool.ntp.org</pre>
 	<p>
 	Namnen 0, 1, 2 och 3.pool.ntp.org pekar på några slumpvis valda servrar
 	och ändras varje timme.  Se till att din dators klocka går hyfsat rätt
 	(inom några minuter från 'korrekt' tid). Du skulle kunna använda <tt>ntpdate
 	pool.ntp.org</tt>, eller helt enkelt använda kommandot <tt>date</tt> för att
 	ställa klockan efter ditt armbandsur. Starta sedan <tt>ntpd</tt>, och efter ett tag
-	(Det kan ta så mycket som en halv timme!), kommer kommandot <tt>ntpq -pn</tt> att 
+	(Det kan ta så mycket som en halv timme!), kommer kommandot <tt>ntpq -pn</tt> att
 	svara något i stil med:
 	</p>
-<pre class="code ntpq">
-avbidder:~$ ntpq -p
-     remote           refid      st t when poll reach   delay   offset  jitter
-==============================================================================
-+81.6.42.224     193.5.216.14     2 u   68 1024  377  158.995   51.220  50.287
-*217.162.232.173 130.149.17.8     2 u  191 1024  176   79.245    3.589  27.454
--129.132.57.95   131.188.3.222    3 u  766 1024  377   22.302   -2.928   0.508
-</pre> 
+
+	[% INCLUDE "ntppool/use/sample-ntpq.html" %]
+
 	<p>
-	Du kommer att se andra IP-adresser, eftersom din dator tilldelas några slumpvis utvalda 
+	Du kommer att se andra IP-adresser, eftersom din dator tilldelas några slumpvis utvalda
 	tidsservrar. Det centrala är att en av raderna inleds med en asterisk
-	(<tt>*</tt>), vilket innebär att din dator får sin tid via internet och 
+	(<tt>*</tt>), vilket innebär att din dator får sin tid via internet och
 	du inte behöver bry dig i fortsättningen!
 	</p>
 	<p>
@@ -61,7 +51,7 @@ avbidder:~$ ntpq -p
 	Om du har en <b>någorlunda ny version av Windows</b>, så kan du använda systemets
 	inbyggda klient för ntp. När du är inloggad som administratör, skriver du</p>
 <pre class="code">
-w32tm /config /syncfromflags:manual /manualpeerlist:0.pool.ntp.org,1.pool.ntp.org,2.pool.ntp.org,3.pool.ntp.org
+w32tm /config /syncfromflags:manual /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 </pre>
 	<p>
 	i ett kommandofönster.  Det fungerarar på Windows 2003 och nyare.  På äldre version
@@ -79,48 +69,48 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
 	</p>
 
 	<p>
-	Om din Windows-dator ingår i en domän, är det möjligt att du inte har möjlighet att själv ställa din 
+	Om din Windows-dator ingår i en domän, är det möjligt att du inte har möjlighet att själv ställa din
 	dators klocka.
-	
+
 	För mer information om att ställa klockan i Windows, läs <a href="http://technet.microsoft.com/en-us/library/cc773013%28WS.10%29.aspx">How Windows Time Service Works</a>.
 	</p>
 </div>
 
 <div class="block">
 	<h3>Anmärkningar</h3>
-	<p><span class="hook">Om du har en fast IP-adress och hyfsad anslutningshastighet</span> 
+	<p><span class="hook">Om du har en fast IP-adress och hyfsad anslutningshastighet</span>
 	(Behöver inte vara jättehög, men skall vara stabil och inte alltför belastad), är
 	du välkommen att ansluta din server till vår serverpool. Det drar bara några kilobytes trafik
 	per sekund, men bidrar till projektets överlevnad.
 	Var vänlig <a href="/join.html">läs inträdes-sidan</a> för ytterligare information.
 	</p>
-	
-	<p><span class="hook">Om din internet-leverantör har en tidsserver</span>, eller om du 
-	känner till en bra tidsserver i din närhet, då skall du använda den, i stället 
+
+	<p><span class="hook">Om din internet-leverantör har en tidsserver</span>, eller om du
+	känner till en bra tidsserver i din närhet, då skall du använda den, i stället
 	för vår lista - det ger troligen en mer exakt tid, samtidigt som det förbrukar mindre
 	nätverksresurser.  Om du bara känner till en tidsserver i din närhet, så kan du givetvis
 	använda den i kombination med ett par servrar från t.ex. pool.ntp.org.</p>
-	
+
 	<p><span class="hook">Någon enstaka gång kan det hända att du tilldelas samma server
 	två gånger</span>. Vanligtvis går problemet att lösa genom att starta om ntp-servern.
 	Om du använder en lands-zon, så kan det bero på att projektet bara innehåller en enda server
 	från landet i fråga. I så fall är det bättre att använda den närmaste kontinentala zonen
 	i stället.  Du kan <a href="/zone">undersöka zonerna</a> för att se antalet servrar i varje zon.</p>
-	
+
 	<p><span class="hook">Var hövlig</span>. Många servrar tillhandahålls av frivilliga krafter.
 	Det är nästan alltid frågan om fil- epost- eller webservrar, som dessutom köra ntp.
 	Så nöj dig med tre tidsservrar i din konfiguration och undvik fula knep, såsom
-	<tt>burst</tt> eller <tt>minpoll</tt>. Det enda du kan åstadkomma den vägen är 
+	<tt>burst</tt> eller <tt>minpoll</tt>. Det enda du kan åstadkomma den vägen är
 	projektet förr eller senare dör.</p>
-	
+
 	<p><span class="hook">Se till att din dator har <i>rätt tidszon</i> inställd</span>.
 	Själva programmet ntpd bryr sig inte om tidszoner, utan arbretar med UTC internt.</p>
-	
+
 	<p><span class="hook">Om du synkroniserar ditt nätverk mot pool.ntp.org</span>, konfigurera
 	då en av dina egna datorer som tidsserver för resten av ditt eget nätverk.
 	(du får läsa på en del, men det är inte så svårt. Och så finns ju alltid nyhetsgruppen
 	<a href="news:comp.protocols.time.ntp">comp.protocols.time.ntp newsgroup</a> att tillgå. På engelska.)</p>
-	
+
 	<p class="thanks">Slutligen vill jag härmed tacka alla som bidrar med sin egen tid
 	och med sina tidsservrar till detta nätverk.</p>
 </div>

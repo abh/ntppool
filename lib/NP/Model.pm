@@ -745,6 +745,12 @@ __PACKAGE__->meta->setup(
       type       => 'one to many',
     },
 
+    user_identities => {
+      class      => 'NP::Model::UserIdentity',
+      column_map => { id => 'user_id' },
+      type       => 'one to many',
+    },
+
     user_privilege => {
       class                => 'NP::Model::UserPrivilege',
       column_map           => { id => 'user_id' },
@@ -823,6 +829,54 @@ __PACKAGE__->make_manager_methods('user_equipment_applications');
 eval { require NP::Model::UserEquipmentApplication }
   or $@ !~ m:^Can't locate NP/Model/UserEquipmentApplication.pm: and die $@;
 
+{ package NP::Model::UserIdentity;
+
+use strict;
+
+use base qw(NP::Model::_Object);
+
+__PACKAGE__->meta->setup(
+  table   => 'user_identities',
+
+  columns => [
+    id         => { type => 'serial', not_null => 1 },
+    profile_id => { type => 'varchar', length => 255, not_null => 1 },
+    user_id    => { type => 'integer', not_null => 1 },
+    provider   => { type => 'varchar', length => 255, not_null => 1 },
+    data       => { type => 'text', length => 65535 },
+    email      => { type => 'varchar', length => 255 },
+  ],
+
+  primary_key_columns => [ 'id' ],
+
+  unique_key => [ 'profile_id' ],
+
+  foreign_keys => [
+    user => {
+      class       => 'NP::Model::User',
+      key_columns => { user_id => 'id' },
+    },
+  ],
+);
+
+push @table_classes, __PACKAGE__;
+}
+
+{ package NP::Model::UserIdentity::Manager;
+
+use strict;
+
+our @ISA = qw(Combust::RoseDB::Manager);
+
+sub object_class { 'NP::Model::UserIdentity' }
+
+__PACKAGE__->make_manager_methods('user_identities');
+}
+
+# Allow user defined methods to be added
+eval { require NP::Model::UserIdentity }
+  or $@ !~ m:^Can't locate NP/Model/UserIdentity.pm: and die $@;
+
 { package NP::Model::UserPrivilege;
 
 use strict;
@@ -894,6 +948,7 @@ __PACKAGE__->meta->setup(
     created_on          => { type => 'datetime', default => 'now', not_null => 1 },
     modified_on         => { type => 'timestamp', not_null => 1 },
     dns_root_id         => { type => 'integer', not_null => 1 },
+    fb_user             => { type => 'integer' },
   ],
 
   primary_key_columns => [ 'id' ],
@@ -1079,6 +1134,7 @@ eval { require NP::Model::ZoneServerCount }
   sub server_zone { our $server_zone ||= bless [], 'NP::Model::ServerZone::Manager' }
   sub user { our $user ||= bless [], 'NP::Model::User::Manager' }
   sub user_equipment_application { our $user_equipment_application ||= bless [], 'NP::Model::UserEquipmentApplication::Manager' }
+  sub user_identity { our $user_identity ||= bless [], 'NP::Model::UserIdentity::Manager' }
   sub user_privilege { our $user_privilege ||= bless [], 'NP::Model::UserPrivilege::Manager' }
   sub vendor_zone { our $vendor_zone ||= bless [], 'NP::Model::VendorZone::Manager' }
   sub zone { our $zone ||= bless [], 'NP::Model::Zone::Manager' }

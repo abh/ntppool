@@ -165,7 +165,8 @@ sub log_scores_csv {
     my $history = $self->history($options);
     my $csv     = Text::CSV_XS->new();
     $csv->combine(qw(ts_epoch ts offset step score),
-        defined $options->{monitor_id} ? qw(monitor_id monitor_name) : ());
+        defined $options->{monitor_id} ? qw(monitor_id monitor_name) : (), qw(leap));
+
     my $out = $csv->string . "\n";
 
     my %monitors;
@@ -188,8 +189,9 @@ sub log_scores_csv {
         $csv->combine(
             $l->ts->epoch,
             $l->ts->strftime("%F %T"),
-            map ({$l->$_} qw(offset step score)),
-            ($options->{monitor_id} ? ($monitor_id, $monitor_name) : ())
+            map ({ $l->$_ } qw(offset step score)),
+            ($options->{monitor_id} ? ($monitor_id, $monitor_name) : ()),
+            ($l->attributes ? $l->attributes->{leap} : 0),
         );
         $out .= $csv->string . "\n";
     }
@@ -209,17 +211,6 @@ sub _netspeed_human {
     return ($netspeed / 1_000_000) . ' Gbit' if ($netspeed / 1_000_000 > 1);
     return ($netspeed / 1_000) . ' Mbit' if ($netspeed / 1_000 >= 1);
     return "$netspeed Kbit";
-}
-
-
-my $rrd_path = "$ENV{CBROOTLOCAL}/rrd/server";
-mkpath "$rrd_path/graph/" unless -e "$rrd_path/graph";
-
-sub graph_path {
-    my ($self, $name) = @_;
-    my $dir = int($self->id / 500) * 500;
-    my $file = $dir . '/' . $self->id . ($name ? "-$name" : "") . ".png";
-    return "$rrd_path/graph/" . $file;
 }
 
 sub graph_uri {

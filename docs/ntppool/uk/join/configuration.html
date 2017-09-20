@@ -4,7 +4,7 @@
 
 <p>
 Багато корисної інформації містить <a href="http://support.ntp.org/bin/view/Support/WebHome">розділ
-підтримки</a> on <a href="http://support.ntp.org/">support.ntp.org</a>.
+підтримки</a> на <a href="http://support.ntp.org/">support.ntp.org</a>.
 </p>
 
 <p>
@@ -22,13 +22,13 @@ href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.tim
 вашого серверу в NTP пул.
 </p>
 
-<h4 id="management-queries">Management queries</h4>
+<h4 id="management-queries">Запити керування</h4>
 
-<p>Make the default configuration be to not allow "management queries". For ntpd this will be adding the "noquery" option to the default "restrict" lines, for example:</p>
+<p>Зробіть налаштування для заорони "запитів керування". Для ntpd це робиться додаванням параметру "noquery" до стандартний рядків "restrict", наприклад:</p>
 
 [% INCLUDE "join/configuration/restrict-default.html" %]
 
-<p>To allow commands like "ntpq -c pe" to work from localhost you can add:</p>
+<p>Щоб дозволити команди подібні до "ntpq -c pe" з localhost можна додати:</p>
 
 [% INCLUDE "join/configuration/restrict-localhost.html" %]
 

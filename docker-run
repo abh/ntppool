@@ -1,0 +1,14 @@
+#!/bin/sh
+#
+# the development docker image runs this script by default
+# to start the application. To start the docker container
+# for development, use ./docker/app
+
+set -ex
+
+perl Makefile.PL
+
+HULK=/usr/bin/hulk \
+  make templates
+
+(cd combust/services/httpd && ./run)

@@ -31,8 +31,13 @@ sub data {
         $data->{www} = $www_record;
         $data->{web} = $www_record;
         $data->{gb}  = {alias => 'uk'};
+        for my $i (0..3) {
+            $data->{"$i.gb"}  = {alias => "$i.uk"};
+        }
 
         $data->{""}->{ns} = {map { $_ => undef } split /[\s+,]/, $self->ns_list};
+        $data->{"_dmarc"}->{txt} = "v=DMARC1; p=reject; pct=100; rua=mailto:re+h6dgrfy2ghh@dmarc.postmarkapp.com; sp=reject; aspf=r;";
+
         $data;
     };
 }
@@ -56,6 +61,12 @@ sub populate {
 
     while (my $zone = $zones->next) {
         my $name = $zone->name;
+
+        my $ttl;
+        if ($name eq 'br' or $name eq 'au') {
+            $ttl = 55;
+        }
+
         $name = ''       if $name eq '@';
         $name = "$name." if $name;
 
@@ -76,7 +87,16 @@ sub populate {
                 # possible duplicates, not enough servers
                 foreach my $z (@zones) {
                     (my $pgeodns_group = "$z${name}") =~ s/\.$//;
+
+                    # already has an alias, so don't add more data
+                    if ($data->{$pgeodns_group}->{alias}) {
+                        next;
+                    }
+
                     $data->{$pgeodns_group}->{a} = [];
+                    if ($ttl) {
+                        $data->{$pgeodns_group}->{ttl} = $ttl;
+                    }
                     @$entries = shuffle(@$entries);
                     foreach my $e (@$entries) {
                         push @{$data->{$pgeodns_group}->{a}}, $e;
@@ -89,6 +109,9 @@ sub populate {
                 @$entries = shuffle(@$entries);
                 foreach my $z (@zones) {
                     (my $pgeodns_group = "$z${name}") =~ s/\.$//;
+                    if ($ttl) {
+                        $data->{$pgeodns_group}->{ttl} = $ttl;
+                    }
                     $data->{$pgeodns_group}->{a} = [];
                     for (my $i = 0; $i < $min_non_duplicate_size; $i++) {
                         my $e = shift @$entries;

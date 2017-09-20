@@ -24,26 +24,11 @@ sub sub_zone_count {
     SUB_ZONE_COUNT;
 }
 
-
-my $rrd_path = "$ENV{CBROOTLOCAL}/rrd/zone";
-mkpath "$rrd_path/graph/" unless -e "$rrd_path/graph";
-
-sub rrd_path {
-    my $self = shift;
-    "$rrd_path/" . $self->name . ".rrd";
-}
-
-sub graph_path {
-    my $self       = shift;
-    my $ip_version = shift;
-    my $suffix     = ($ip_version eq 'v6' ? '-v6' : '');
-    my $file       = $self->name . "$suffix.png";
-    return "$rrd_path/graph/" . $file;
-}
-
 sub children {
     my $self = shift;
-    return $self->{_children} ||= [sort { $a->name cmp $b->name } $self->zones];
+    $self->{_children} ||= [sort { $a->name cmp $b->name } $self->zones];
+    # the template using this gets confused if it gets an arrayref
+    return @{ $self->{_children} };
 }
 
 sub random_subzone_ids {

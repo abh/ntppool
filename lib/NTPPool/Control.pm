@@ -2,7 +2,7 @@ package NTPPool::Control;
 use strict;
 use utf8;
 use Combust::Constant qw(OK);
-use base qw(Combust::Control Combust::Control::StaticFiles Combust::Control::Bitcard);
+use base qw(Combust::Control Combust::Control::StaticFiles NTPPool::Control::Login);
 
 use Carp qw(cluck);
 use Storable qw(retrieve);
@@ -12,33 +12,34 @@ use List::Util qw(first);
 use NP::I18N;
 use NP::Version;
 
-$Combust::Control::Bitcard::cookie_name = 'npuid';
-
 my $version = NP::Version->new;
 my $config  = Combust::Config->new;
 
 our %valid_languages = (
-    bg => {name => "Мила Родино", testing => 1},
-    ca => {name => "Català",               testing => 1},
+    bg => {name => "Български", testing => 1},
+    ca => {name => "Català", testing => 1},
     de => {name => "Deutsch"},
     da => {name => "Danish",                testing => 1,},
     en => {name => "English",},
     es => {name => "Español"},
     fi => {name => "Suomi"},
     fr => {name => "Français",},
+    hi => {name => "हिन्दी", testing => 1},
     it => {name => "Italiano",              testing => 1},
     ja => {name => "日本語"},
     ko => {name => "한국어",},
     kz => {name => "Қазақша",        testing => 1},
     nl => {name => "Nederlands",},
+    no => {name => "Norsk", testing => 1},
     pl => {name => "Polish",                testing => 1},
     pt => {name => "Português"},
     ro => {name => "Română",              testing => 1},
     rs => {name => "српски srpski"},
     ru => {name => "русский",},
     sv => {name => "Svenska"},
-    tr => {name => "Türkçe",              testing => 1},
+    tr => {name => "Türkçe"},
     uk => {name => "Українська"},
+    zh => {name => "中国（简体）", testing => 1 },
 );
 
 NP::I18N::loc_lang('en');
@@ -72,7 +73,8 @@ sub init {
             return $self->redirect($self->_url($self->site, $self->request->path));
         }
         else {
-            $self->request->header_out('Strict-Transport-Security', 'maxage=' . (86400 * 31));
+            # we're setting Strict-Transport-Security with haproxy
+            # $self->request->header_out('Strict-Transport-Security', 'max-age=' . (86400 * 7 * 20));
         }
     }
 
@@ -92,6 +94,9 @@ sub init {
         # :: is for ipv6 "null" addresses in /scores urls
         return $self->redirect($path, 301);
     }
+
+    $self->tpl_param('pool_domain' => Combust::Config->new->site->{ntppool}->{pool_domain}
+          || 'pool.ntp.org');
 
     return OK;
 }
@@ -200,7 +205,7 @@ sub localize_url {
 
         $uri->path("/$lang" . $uri->path);
         $self->request->header_out('Vary', 'Accept-Language');
-        $self->cache_control('s-maxage=900, maxage=3600');
+        $self->cache_control('s-maxage=900, max-age=3600, stale-while-revalidate=90, stale-if-error=43200');
         return $self->redirect($uri->as_string);
     }
     return;

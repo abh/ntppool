@@ -1,13 +1,13 @@
 [% page.style = 'bare.html' -%]
-From: Ask Bjoern Hansen <ask@develooper.com>
+From: Ask Bjoern Hansen <ask@ntppool.org>
 To: [% admin.username %] <[% admin.email %]>
-Cc: ask@develooper.com
+Reply-To: server-owner-help@ntppool.org
 Subject: NTP Pool: [% server.ip %] - Your server is being removed from the pool.ntp.org project
 
 Hi [% admin.username || admin.email %],
 
 Due to unresolved problems with your timeserver it is being removed
-from the pool.ntp.org project.
+from the NTP Pool (pool.ntp.org) project.
 
 Server IP: [% server.ip %][% IF server.hostname %] ([% server.hostname %])[% END %]
 
@@ -15,11 +15,12 @@ The server has been scheduled for removal on [% server.deletion_on.strftime("%B 
 
 If you perceive this to be in error (or fixed the server problem) and
 want to add the server to the project again, please contact me or go
-to [% config.base_url('ntppool') %]/manage to use the automated admin 
+to [% config.base_url('manage') %]/manage to use the automated admin 
 interface to cancel the deletion.
 
-
-  - ask
+If you haven't logged in for a long time, you might need to
+recreate your account since the login system was upgraded:
+    https://news.ntppool.org/2016/04/login-upgrade/
 
 -- 
-[% config.base_url('ntppool') %]/ | http://askask.com/ | http://develooper.com/
+[% config.base_url('ntppool') %]/ | http://askask.com/

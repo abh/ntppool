@@ -1,0 +1,146 @@
+msgid ""
+msgstr ""
+"Last-Translator: Ask Bjørn Hansen <ask@develooper.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Project-Id-Version: NTPPOOL_hi_IN_Translation\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Language-Team: AslamKhan-HELLPC.NET\n"
+"Language: hi_IN\n"
+"X-Generator: Poedit 2.0.2\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+
+msgid "go up"
+msgstr "ऊपर जायें"
+
+# zone names
+msgid "Africa"
+msgstr "अफ्रीका"
+
+msgid "Asia"
+msgstr "एशिया"
+
+msgid "North America"
+msgstr "उत्तरी अमेरिका"
+
+msgid "South America"
+msgstr "दक्षिण अमेरिका"
+
+msgid "Europe"
+msgstr "यूरोप"
+
+msgid "Oceania"
+msgstr "ओसीनिया"
+
+msgid "Global"
+msgstr "ग्लोबल"
+
+msgid "All Pool Servers"
+msgstr "सभी पूल सर्वर"
+
+# navigation
+msgid "Translations"
+msgstr "अनुवाद"
+
+# index.html
+msgid "Introduction"
+msgstr "परिचय"
+
+msgid "Active Servers"
+msgstr "सक्रिय सर्वर"
+
+msgid "Links"
+msgstr "लिंक्स"
+
+msgid "Terms of service"
+msgstr "सेवा की शर्तें"
+
+msgid "Subscribe in a reader"
+msgstr "पाठक की सदस्यता लें"
+
+msgid "Older news"
+msgstr "पुराने समाचार"
+
+# mailinglists.html
+msgid "NTP Pool mailing lists"
+msgstr "एनटीपी पूल मेलिंग सूची"
+
+msgid "subscribe"
+msgstr "सदस्यता लें"
+
+msgid "archive"
+msgstr "संग्रह"
+
+msgid "Announcement list"
+msgstr "घोषणा सूची"
+
+msgid "Discussion list"
+msgstr "चर्चा सूची"
+
+msgid "Development list"
+msgstr "विकास कार्य सूची"
+
+msgid "announcement_list_description"
+msgstr "एनटीपी पूल समाचार की बहुत कम ट्रैफिक की घोषणाएं. सभी सर्वर ऑपरेटरों को घोषणा सूची में सब्सक्राइब करना आवश्यक है"
+
+msgid "discussion_list_description"
+msgstr "सर्वर ऑपरेटर (और उपयोगकर्ता), जो परियोजना में अधिक शामिल होना चाहते हैं, चर्चा सूची की सदस्यता ले सकते हैं.<br/> बेशक, एनटीपी के बारे में सामान्य चर्चा %1 यूज़नेट न्यूज ग्रुप पर होनी चाहिए (<a href=\"%2\">Google ग्रुप्स</a>पर भी उपलब्ध"
+
+msgid "development_list_description"
+msgstr "<a href=\"%1\">एनटीपी पूल कोड</a> और <a href=\"%2\">pgeodns</a> के वर्तमान विकास कार्य के बारे में अधिक तकनीकी (और आदर्श रूप में हमेशा व्यावहारिक) चर्चा timekeepers-dev सूची पर होती है"
+
+msgid "irc_channel_description"
+msgstr "%1 पर सर्वर ऑपरेटरों और उपयोगकर्ताओं के लिए %2 आईआरसी चैनल है"
+
+# tpl/server.html
+msgid "Back to the front page"
+msgstr "वापस मुख्य पृष्ठ पर जाएं"
+
+msgid "Find"
+msgstr "खोजें"
+
+msgid "Stats for %1"
+msgstr "%1 के लिए आंकड़े"
+
+msgid "Not active in the pool, monitoring only"
+msgstr "पूल में सक्रिय नहीं, केवल निगरानी"
+
+msgid "Zones:"
+msgstr "ज़ोन:"
+
+msgid "This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
+msgstr "यह सर्वर %1 को <span class=\"deletion\">हटाने के लिए निर्धारित </span> है."
+
+msgid "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
+msgstr "वर्तमान स्कोर: %1 (पूल में केवल %2 से अधिक स्कोर वाले सर्वर का उपयोग किया गया है)"
+
+msgid "What do the graphs mean?"
+msgstr "ग्राफ का क्या मतलब है?"
+
+msgid "CSV log"
+msgstr "सीएसवी लॉग"
+
+# tpl/navigation_sidebar.html
+msgid "News"
+msgstr "समाचार"
+
+msgid "How do I <i>use</i> pool.ntp.org?"
+msgstr "पूल.एनटीपी.ओआरजी (pool.ntp.org) का कैसे <i>उपयोग</i> करें?"
+
+msgid "How do I <i>join</i> pool.ntp.org?"
+msgstr "पूल.एनटीपी.ओआरजी (pool.ntp.org) में कैसे <i>शामिल</i> हों?"
+
+msgid "Information for vendors"
+msgstr "विक्रेताओं के लिए जानकारी"
+
+msgid "The mailing lists"
+msgstr "मेलिंग सूची"
+
+msgid "Additional links"
+msgstr "अन्य लिंक"
+
+msgid "Can you translate?"
+msgstr "क्या आप अनुवाद कर सकते हैं?"

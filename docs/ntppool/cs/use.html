@@ -11,13 +11,8 @@
 	i na několika exotičtějsích systémech</b>):
 	</p>
 
-<pre class="code">
-driftfile /var/lib/ntp/ntp.drift
+	[% INCLUDE "ntppool/use/sample-config.html" %]
 
-server 0.pool.ntp.org
-server 1.pool.ntp.org
-server 2.pool.ntp.org
-server 3.pool.ntp.org</pre>
 	<p>
 	Jména 0, 1, 2 and 3.pool.ntp.org ukazují na náhodně vybranou skupinu serverů,
 	která se mění každou hodinu. Zajistěte, aby hodiny vašeho počítače byly
@@ -27,14 +22,9 @@ server 3.pool.ntp.org</pre>
 	nějaký čas (může to trvat až půl hodiny!), by měl výstup příkazu
 	<code>ntpq -pn</code> vypadat nějak takto:
 	</p>
-<pre class="code ntpq">
-avbidder:~$ ntpq -p
-     remote           refid      st t when poll reach   delay   offset  jitter
-==============================================================================
-+81.6.42.224     193.5.216.14     2 u   68 1024  377  158.995   51.220  50.287
-*217.162.232.173 130.149.17.8     2 u  191 1024  176   79.245    3.589  27.454
--129.132.57.95   131.188.3.222    3 u  766 1024  377   22.302   -2.928   0.508
-</pre>
+
+	[% INCLUDE "ntppool/use/sample-ntpq.html" %]
+
 	<p>
 	IP adresy budou jiné, neboť vám byly náhodně přideleny časové servery.
 	Podstatné jsou řádky začínající hvězdičkou (<tt>*</tt>), které značí,
@@ -62,7 +52,7 @@ avbidder:~$ ntpq -p
 	Používáte-li <b>novější verzi Windows</b>, můžete použít vestavěného ntp
 	klienta systému. Jako správce zadejte příkaz</p>
 <pre class="code">
-w32tm /config /syncfromflags:manual /manualpeerlist:0.pool.ntp.org,1.pool.ntp.org,2.pool.ntp.org,3.pool.ntp.org
+w32tm /config /syncfromflags:manual /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 </pre>
 	<p>
 	do příkazové řádky. Bude to fungovat ve Windows 2003 a novějších.
@@ -105,7 +95,7 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
 	server</span>, nebo víte-li o dobrém časovém serveru ve vaší blízkosti,
 	měli byste použít ten a ne tento klastr - pravděpodobně dostanete přesnější
 	čas a použijete méně síťových prostředků. Pokud víte pouze o jednom časovém
-	serveru ve vaší blízkosti, můžete použít ten a třeba další dva z 
+	serveru ve vaší blízkosti, můžete použít ten a třeba další dva z
 	pool.ntp.org a podobně.</p>
 
 	<p><span class="hook">Vzácně se může stát, že dostanete přidělen stejný
@@ -115,7 +105,7 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
 	kontinentu. Jednotlivé <a href="/zone">zóny a jejich obsah si můžete
 	prohlédnout</a>, abyste věděli kolik serverů máme přiřazeno do dané zóny.</p>
 
-	<p><span class="hook">Buďte prátelští</span>. Mnoho serverů poskytují 
+	<p><span class="hook">Buďte prátelští</span>. Mnoho serverů poskytují
 	dobrovolníci a téměř všechny servery jsou ve skutečnosti souborové servery
 	nebo e-mailové servery nebo webové servery, na kterých jen také běží ještě
 	ntp. Nepoužívejte prosím ve své konfiguraci více než čtyři časové servery

@@ -2,87 +2,77 @@
 
 <div class="block">
 	<h3><a name="use"></a>Como eu posso usar o pool.ntp.org?</h3>
-	
+
 	<p>
 	Se voc&ecirc; quiser apenas sincronizar os rel&oacute;gios do seu
 	computador &agrave; rede, o arquivo de configura&ccedil;&atilde;o (para o
-	programa ntpd da <a	href="http://www.ntp.org">distribui&ccedil;&atilde;o 
+	programa ntpd da <a	href="http://www.ntp.org">distribui&ccedil;&atilde;o
 	do ntp.org</a>, em qualquer sistema operacional com suporte - <b>Linux,
-	*BSD, Windows e at&eacute; mesmo nos sistemas mais ex&oacute;ticos</b>) 
+	*BSD, Windows e at&eacute; mesmo nos sistemas mais ex&oacute;ticos</b>)
 	&eacute; realmente simples:
 	</p>
 
-<pre class="code">
-driftfile /var/lib/ntp/ntp.drift
+	[% INCLUDE "ntppool/use/sample-config.html" %]
 
-server 0.pool.ntp.org
-server 1.pool.ntp.org
-server 2.pool.ntp.org
-server 3.pool.ntp.org</pre>
 	<p>
-	Os nomes 0, 1, 2 e 3.pool.ntp.org apontam para um conjunto 
-	aleat&oacute;rio de servidores que v&atilde;o alterar a cada hora. 
-	Certifique-se de que o rel&oacute;gio do seu computador est&aacute; 
-	definido para algo sens&iacute;vel (dentro de alguns minutos do tempo 
-	"true") - voc&ecirc; poderia usar <tt>ntpdate pool.ntp.org</tt> ou poderia 
-	simplesmente usar o comando <tt>date</tt> e configur&aacute;-lo 
-	manualmente. Execute o ntpd e, ap&oacute;s algum tempo (isso pode demorar 
-	at&eacute; meia hora!), <tt>ntpq -pn</tt> deveria mostrar algo como:
+	Os nomes 0, 1, 2 e 3.pool.ntp.org apontam para um conjunto
+	aleat&oacute;rio de servidores que v&atilde;o alterar a cada hora.
+	Certifique-se de que o rel&oacute;gio do seu computador est&aacute;
+	definido para algo sens&iacute;vel (dentro de alguns minutos do tempo
+	"true") - voc&ecirc; poderia usar <tt>ntpdate pool.ntp.org</tt> ou poderia
+	simplesmente usar o comando <tt>date</tt> e configur&aacute;-lo
+	manualmente. Execute o ntpd e, ap&oacute;s algum tempo (isso pode demorar
+	at&eacute; meia hora!), <code>ntpq -pn</code> deveria mostrar algo como:
 	</p>
-<pre class="code ntpq">
-avbidder:~$ ntpq -p
-     remote           refid      st t when poll reach   delay   offset  jitter
-==============================================================================
-+81.6.42.224     193.5.216.14     2 u   68 1024  377  158.995   51.220  50.287
-*217.162.232.173 130.149.17.8     2 u  191 1024  176   79.245    3.589  27.454
--129.132.57.95   131.188.3.222    3 u  766 1024  377   22.302   -2.928   0.508
-</pre> 
+
+	[% INCLUDE "ntppool/use/sample-ntpq.html" %]
+
 	<p>
-	Os endere&ccedil;os IP v&atilde;o ser diferentes porque foi 
-	atribu&iacute;do a voc&ecirc; servidores de tempo aleat&oacute;rios. A 
-	quest&atilde;o essencial &eacute; que uma das linhas comece com	um 
-	asterisco (<tt>*</tt>), o que significa que seu computador est&aacute; 
-	obtendo a hora da Internet - voc&ecirc; nunca mais ter&aacute; que se 
+	Os endere&ccedil;os IP v&atilde;o ser diferentes porque foi
+	atribu&iacute;do a voc&ecirc; servidores de tempo aleat&oacute;rios. A
+	quest&atilde;o essencial &eacute; que uma das linhas comece com	um
+	asterisco (<tt>*</tt>), o que significa que seu computador est&aacute;
+	obtendo a hora da Internet - voc&ecirc; nunca mais ter&aacute; que se
 	preocupar com isso novamente!
 	</p>
 	<p>
-	Como o <tt>pool.ntp.org</tt> ir&aacute; atribuir a voc&ecirc; servidores 
-	de tempo de todo o mundo, a qualidade do tempo pode n&atilde;o ser ideal. 
-	Voc&ecirc; consegue um resultado um pouco melhor se voc&ecirc; usar as 
-	<a href="/zone/@">zonas	continentais</a> (Por exemplo
+	A procura por <code>pool.ntp.org</code> (ou <code>0.pool.ntp.org</code>,
+	<code>1.pool.ntp.org</code>, etc.) normalmente vai retornar endere&ccedil;os
+	IP de servidores no seu pa&iacute;s ou pr&oacute;ximo a ele. Para a maioria
+	dos usu&aacute;rios, isso vai dar melhores resultados.</p>
+
+	Voc&ecirc; tamb&eacute;m pode user as <a href="/zone/@">zonas
+	continentais</a> (Por exemplo
 	<a href="/zone/europe">europe</a>,
 	<a href="/zone/north-america">north-america</a>,
 	<a href="/zone/oceania">oceania</a>
 	ou <a href="/zone/asia">asia</a>.pool.ntp.org),
-	e um tempo ainda melhor se voc&ecirc; usar a zona de pa&iacute;s (como 
-	ch.pool.ntp.org	na  Su&iacute;&ccedil;a) - para todos essas zonas, 
-	voc&ecirc; pode novamente usar os prefixos 0, 1 ou 2, como 
-	0.ch.pool.ntp.org. Note, por&eacute;m, que a zona de pa&iacute;s pode 
-	n&atilde;o existir para o seu pa&iacute;s ou pode conter apenas um ou dois 
-	servidores de tempo. Se voc&ecirc; conhece servidores de tempo que 
-	est&atilde;o realmente pr&oacute;ximos a voc&ecirc; (medido por 
-	dist&acirc;ncia de rede, com <tt>traceroute</tt> ou	<tt>ping</tt>), o tempo 
-	provavelmente ser&aacute; ainda melhor.
+	e uma zona de pa&iacute;s (como
+	ch.pool.ntp.org	na  Su&iacute;&ccedil;a) - para todos essas zonas,
+	voc&ecirc; pode novamente usar os prefixos 0, 1 ou 2, como
+	0.ch.pool.ntp.org. Note, por&eacute;m, que a zona de pa&iacute;s pode
+	n&atilde;o existir para o seu pa&iacute;s ou pode conter apenas um ou dois
+	servidores de tempo.
 	</p>
 	<p>
-	Se voc&ecirc; est&aacute; usando <b>uma vers&atilde;o recente do 
-	Windows</b>, voc&ecirc; pode usar o cliente ntp que j&aacute; vem no 
+	Se voc&ecirc; est&aacute; usando <b>uma vers&atilde;o recente do
+	Windows</b>, voc&ecirc; pode usar o cliente ntp que j&aacute; vem no
 	sistema. Na posi&ccedil;&atilde;o de administrador,	digite</p>
 <pre class="code">
-w32tm /config /syncfromflags:manual 
+w32tm /config /syncfromflags:manual /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 /manualpeerlist:0.pool.ntp.org,1.pool.ntp.org,2.pool.ntp.org,3.pool.ntp.org
 </pre>
 	<p>
 	no prompt de comando. Isso vai funcionar em servidores Windows 2003 ou
-	mais novos. Se voc&ecirc; usa uma vers&atilde;o antiga do Windows, 
+	mais novos. Se voc&ecirc; usa uma vers&atilde;o antiga do Windows,
 	voc&ecirc; pode	tentar</p>
 <pre class="code">
 net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
 </pre>
 	<p>
-	O mesmo pode ser alcan&ccedil;ado por, como administrador, clicando com 
-	bot&atilde;o direito no rel&oacute;gio da barra de tarefas, e selecionando 
-	"Ajustar data/hora" e digitando o nome do servidor na aba "Hor&aacute;rio 
+	O mesmo pode ser alcan&ccedil;ado por, como administrador, clicando com
+	bot&atilde;o direito no rel&oacute;gio da barra de tarefas, e selecionando
+	"Ajustar data/hora" e digitando o nome do servidor na aba "Hor&aacute;rio
 	na internet".
 	</p>
 
@@ -92,12 +82,12 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
 	</p>
 
 	<p>
-	Se o seu sistema Windows &eacute; parte de um dom&iacute;nio, voc&ecirc; 
-	pode n&atilde;o ser capaz de atualizar independentemente o o 
+	Se o seu sistema Windows &eacute; parte de um dom&iacute;nio, voc&ecirc;
+	pode n&atilde;o ser capaz de atualizar independentemente o o
 	hor&aacute;rio do seu computador.
-	
-	Para mais informa&ccedil;&otilde;es sobre configura&ccedil;&atilde;o do 
-	hor&aacute;rio no Windows, veja <a 
+
+	Para mais informa&ccedil;&otilde;es sobre configura&ccedil;&atilde;o do
+	hor&aacute;rio no Windows, veja <a
 	href="http://technet.microsoft.com/en-us/library/cc773013%28WS.10%29.aspx">
 	como funciona o servi&ccedil;o de hor&aacute;rio no Windows</a>.
 	</p>
@@ -105,59 +95,59 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
 
 <div class="block">
 	<h3>Notas adicionais</h3>
-	<p><span class="hook">Se voc&ecirc; tiver um endere&ccedil;o IP 
-	est&aacute;tico e uma conex&atilde;o Internet razo&aacute;vel</span> 
+	<p><span class="hook">Se voc&ecirc; tiver um endere&ccedil;o IP
+	est&aacute;tico e uma conex&atilde;o Internet razo&aacute;vel</span>
 	(largura de banda n&atilde;o &eacute; t&atilde;o importante, mas ela
-	deveria ser est&aacute;vel e n&atilde;o t&atilde;o carregada), por 
-	favor considere doar seu servidor para o pool de servidores. Ele 
-	n&atilde;o custa a voc&ecirc; mais do que algumas centenas de bytes 
-	por segundo de tr&aacute;fego, mas isso ajuda este projeto a 
-	sobreviver. Por favor, <a href="/join.html">leia a p&aacute;gina 
+	deveria ser est&aacute;vel e n&atilde;o t&atilde;o carregada), por
+	favor considere doar seu servidor para o pool de servidores. Ele
+	n&atilde;o custa a voc&ecirc; mais do que algumas centenas de bytes
+	por segundo de tr&aacute;fego, mas isso ajuda este projeto a
+	sobreviver. Por favor, <a href="/join.html">leia a p&aacute;gina
 	sobre como se juntar</a> para mais informa&ccedil;&otilde;es.
 	</p>
-	
-	<p><span class="hook">Se seu provedor de Internet possui um servidor 
-	de tempo</span> ou se voc&ecirc; conhece algum servidor de tempo bom 
-	e pr&oacute;ximo a voc&ecirc;, voc&ecirc; deveria usar este, e n&atilde;o 
-	esta lista - voc&ecirc; provavelmente ter&aacute; melhor tempo e 
-	voc&ecirc; usar&aacute; menos recursos de rede. Se voc&ecirc; conhece 
-	apenas um servidor de tempo perto de voc&ecirc;, &eacute; claro que 
+
+	<p><span class="hook">Se seu provedor de Internet possui um servidor
+	de tempo</span> ou se voc&ecirc; conhece algum servidor de tempo bom
+	e pr&oacute;ximo a voc&ecirc;, voc&ecirc; deveria usar este, e n&atilde;o
+	esta lista - voc&ecirc; provavelmente ter&aacute; melhor tempo e
+	voc&ecirc; usar&aacute; menos recursos de rede. Se voc&ecirc; conhece
+	apenas um servidor de tempo perto de voc&ecirc;, &eacute; claro que
 	voc&ecirc; pode usar este mais dois do pool.ntp.org e por a&iacute; vai.</p>
-	
-	<p><span class="hook">Raramente pode acontecer de voc&ecirc; receber 
-	o mesmo servidor de tempo duas vezes seguidas</span> - apenas 
-	reiniciar o servidor ntp normalmente resolve este problema. Se 
-	voc&ecirc; usa uma zone de pa&iacute;s, note que isso pode ser 
-	por causa que h&aacute; apenas um servidor conhecido no projeto 
-	- &eacute; melhor usar uma zona continental neste caso. Voc&ecirc; 
-	pode <a href="/zone">explorar as zonas</a> para ver como quantos 
+
+	<p><span class="hook">Raramente pode acontecer de voc&ecirc; receber
+	o mesmo servidor de tempo duas vezes seguidas</span> - apenas
+	reiniciar o servidor ntp normalmente resolve este problema. Se
+	voc&ecirc; usa uma zone de pa&iacute;s, note que isso pode ser
+	por causa que h&aacute; apenas um servidor conhecido no projeto
+	- &eacute; melhor usar uma zona continental neste caso. Voc&ecirc;
+	pode <a href="/zone">explorar as zonas</a> para ver como quantos
 	servidores n&oacute;s temos em cada zona.</p>
-	
-	<p><span class="hook">Seja amig&aacute;vel</span>. Muitos servidores 
-	s&atilde;o fornecidos por volunt&aacute;rios e a maioria deles 
-	s&atilde;o na verdade servidores de arquivos, e-mail ou web, que 
-	por acaso tamb&eacute;m executa ntp. Ent&atilde;o, n&atilde;o use 
-	mais do que quatro servidores de tempo na sua 
-	configura&ccedil;&atilde;o e n&atilde;o pregue pe&ccedil;as com 
-	<tt>burst</tt> ou <tt>minpoll</tt> - tudo que voc&ecirc; vai 
-	ganhar &eacute; uma carga extra nos servidores de tempo 
+
+	<p><span class="hook">Seja amig&aacute;vel</span>. Muitos servidores
+	s&atilde;o fornecidos por volunt&aacute;rios e a maioria deles
+	s&atilde;o na verdade servidores de arquivos, e-mail ou web, que
+	por acaso tamb&eacute;m executa ntp. Ent&atilde;o, n&atilde;o use
+	mais do que quatro servidores de tempo na sua
+	configura&ccedil;&atilde;o e n&atilde;o pregue pe&ccedil;as com
+	<tt>burst</tt> ou <tt>minpoll</tt> - tudo que voc&ecirc; vai
+	ganhar &eacute; uma carga extra nos servidores de tempo
 	volunt&aacute;rios.</p>
-	
+
 	<p><span class="hook">Certifique-se de que a <i>
-	configura&ccedil;&atilde;o do fuso hor&aacute;rio</i> do seu 
-	computador est&aacute; correta</span>. O ntpd em si n&atilde;o 
-	faz nada sobre os fusos hor&aacute;rios, apenas usando UTC 
+	configura&ccedil;&atilde;o do fuso hor&aacute;rio</i> do seu
+	computador est&aacute; correta</span>. O ntpd em si n&atilde;o
+	faz nada sobre os fusos hor&aacute;rios, apenas usando UTC
 	internamente.</p>
-	
-	<p><span class="hook">Se voc&ecirc; est&aacute; sincronizando 
-	uma rede ao pool.ntp.org</span>, por favor configure um de seus 
-	computadores como um servidor de tempo e sincronize os outros 
-	computador para aquele. (voc&ecirc; ter&aacute; que fazer alguma 
-	leitura, apesar de n&atilde;o ser dif&iacute;cil. E h&aacute; 
-	sempre o <a href="news:comp.protocols.time.ntp">grupo de 
+
+	<p><span class="hook">Se voc&ecirc; est&aacute; sincronizando
+	uma rede ao pool.ntp.org</span>, por favor configure um de seus
+	computadores como um servidor de tempo e sincronize os outros
+	computador para aquele. (voc&ecirc; ter&aacute; que fazer alguma
+	leitura, apesar de n&atilde;o ser dif&iacute;cil. E h&aacute;
+	sempre o <a href="news:comp.protocols.time.ntp">grupo de
 	not&iacute;cias comp.protocols.time.ntp</a>.)</p>
-	
-	<p class="thanks">Neste ponto, eu gostaria de agradecer 
-	&agrave;queles que doaram seus tempos e servidores de tempo a 
+
+	<p class="thanks">Neste ponto, eu gostaria de agradecer
+	&agrave;queles que doaram seus tempos e servidores de tempo a
 	esta rede.</p>
 </div>

@@ -1,6 +1,7 @@
 #!/usr/bin/env perl
 
 use 5.008001;
+use utf8;
 
 use strict;
 use warnings;
@@ -14,7 +15,7 @@ WriteMakefile(
     VERSION_FROM => 'lib/NTPPool.pm',
     AUTHOR       => 'Ask Bjørn Hansen <ask@develooper.com>',
     EXE_FILES => ['bin/*'],
-    PREREQ_PM => { 
+    PREREQ_PM => {
                   'Net::DNS' => 0.63,
                   'Data::Transformer' => 0,
                   'Net::NTP' => 0,
@@ -28,10 +29,6 @@ WriteMakefile(
                   'Rose::DB::Object' => 0,
 
                   'Locale::Maketext::Lexicon' => 0.84,
-
-                  # Locale::Object needs DBD::SQLite
-                  'DBD::SQLite'    => 0,
-                  'Locale::Object' => 0,
 
                   'Gearman::Client' => 0,
                   'Text::CSV_XS' => 0,
@@ -59,7 +56,7 @@ WriteMakefile(
                   'Socket6' => 0,
                   'IO::Socket::INET6' => 0,
 
-		  'JSON::XS' => 2,
+                  'JSON::XS' => 2,
 
                  # For deployment scripts
                   'File::Find::Rule'  => 0,

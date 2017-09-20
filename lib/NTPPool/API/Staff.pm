@@ -21,24 +21,30 @@ sub search {
     #local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
 
     my $servers = NP::Model->server->get_servers(
-        query => [or => [($ip ? (ip => $ip->ip) : ()), hostname => {like => $q . '%'},]],
+        query => [or => [($ip ? (ip => $ip->short) : ()), hostname => {like => $q . '%'},]],
         require_objects => ['user']
     );
     if ($servers) {
-
         #warn "got servers!", Data::Dump::pp($servers);
         push @users, $_->user for @$servers;
     }
 
-    warn "getting users";
+    my $user_query = [
+        or => [
+            username => {like => $q . '%'},
+            email    => {like => '%' . $q . '%'},
+        ]
+    ];
+
+    my $include_identities = 0;
+
+    if ($q =~ m/^id:(\d+)/i) {
+        $user_query = [id => $1];
+        $include_identities = 1;
+    }
 
     my $users = NP::Model->user->get_users(
-        query => [
-            or => [
-                username => {like => $q . '%'},
-                email    => {like => '%' . $q . '%'},
-            ]
-        ],
+        query         => $user_query,
         multi_many_ok => 1,
         with_objects  => ['servers_all.zones']
     );
@@ -51,7 +57,7 @@ sub search {
         for my $user (@users) {
             my $data = $user->get_data_hash;
             push @{$result->{users}}, {
-                id       => $data->{id},
+                id       => 0 + $data->{id},
                 name     => $data->{name},
                 username => $data->{username},
                 email    => $data->{email},

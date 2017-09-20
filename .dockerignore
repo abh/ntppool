@@ -1,0 +1,4 @@
+influxdb/*
+*.dump.xz
+*.dump.gz
+

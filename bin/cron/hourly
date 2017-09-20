@@ -8,7 +8,7 @@ function getnews () {
     targettemp="$targetpath/$1.tmp"
     url=$2
 
-    curl -s \
+    curl -f -L -s \
       $url > ${targettemp}
 
     if [ $? -eq 0 ]; then
@@ -17,9 +17,4 @@ function getnews () {
 
 }
 
-getnews "news" "http://news.ntppool.org/www_syndicate.html";
-
-
-
-
-
+getnews "news" "https://news.ntppool.org/syndicate/";

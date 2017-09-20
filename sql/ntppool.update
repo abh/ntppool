@@ -432,17 +432,20 @@ alter table vendor_zones
   add unique key (zone_name, dns_root_id);
 
 #59
-alter table vendor_zones
-  add constraint `dns_root_fk` foreign key (`dns_root_id`) references `dns_roots` (`id`);
+select now();
 
 #60
+
 alter table vendor_zones
   modify dns_root_id int unsigned not null;
+
+alter table vendor_zones
+  add constraint `dns_root_fk` foreign key (`dns_root_id`) references `dns_roots` (`id`);
 
 #61
 -- bug #48
 select @zid := id from zones where name = ".";
-insert ignore into server_zones select id,@zid from servers;
+insert ignore into server_zones select null,id,@zid from servers;
 
 #62
 alter table server_notes add modified_on timestamp not null;
@@ -463,3 +466,26 @@ insert ignore into log_status select id, "2014-01-01 00:00:00", 0 from servers o
 
 #65
 alter table log_scores add attributes text;
+
+#66
+alter table vendor_zones add fb_user int null;
+
+#67
+create table `user_identities` (
+   id int unsigned not null primary key auto_increment,
+   profile_id varchar(255) not null,
+   user_id int unsigned not null,
+   provider varchar(255) not null,
+   data text,
+   email varchar(255),
+   unique key (profile_id),
+   CONSTRAINT `user_identities_user_id` FOREIGN KEY (`user_id`)
+      REFERENCES `users` (`id`) on delete cascade
+) engine=InnoDB default charset=utf8;
+
+#68
+select @uk_id := id from zones where name = "uk";
+select @gb_id := id from zones where name = "gb";
+insert ignore into server_zones select server_id, @uk_id
+ from server_zones where zone_id = @gb_id;
+delete from zones where name = 'gb';

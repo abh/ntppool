@@ -82,5 +82,14 @@ use <a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
 <p>Servers in the NTP Pool should not have the LOCAL clock driver
 configured.</p>
 
+<h4>Beware of PTR DNS queries</h4>
+
+<p>Some server operators have reported that some of the NTP users (or
+their firewall software) does a "reverse DNS" (PTR) query for the IP address
+of the NTP server. Beware that this might cause the number of queries to
+go up. Increasing the "time to live" on those records is recommended if
+the number of DNS queries is a concern, and will generally make the number
+of queries negligible.
+</p>
 
 </div>

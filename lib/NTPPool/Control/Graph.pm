@@ -33,7 +33,7 @@ sub render {
 
     my $err = $@ || !$graph;
     warn "update_graphs error: $err" if $err;
-    my $ttl = $err ? 10 : 7200;
+    my $ttl = $err || length($graph)==0 ? 10 : 7200;
 
     my $mtime = time;
     $self->request->update_mtime($mtime);

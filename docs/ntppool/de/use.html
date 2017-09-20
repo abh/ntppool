@@ -9,13 +9,8 @@
   Dienst, unabh&auml;ngig davon, welches Betriebssystem Sie einsetzen:
  </p>
 
-<pre class="code">
-driftfile /var/lib/ntp/ntp.drift
+ [% INCLUDE "ntppool/use/sample-config.html" %]
 
-server 0.pool.ntp.org
-server 1.pool.ntp.org
-server 2.pool.ntp.org
-server 3.pool.ntp.org</pre>
  <p>
   Die Ziffern 0, 1, 2 und 3 zusammen mit <i>pool.ntp.org</i> zeigen auf
   einen Satz von Servern, der sich st&uuml;ndlich &auml;ndert. Bevor der
@@ -27,14 +22,9 @@ server 3.pool.ntp.org</pre>
   Status des Dienstes abgerufen werden. Die Ausgabe des Kommandos <tt>ntpq -pn</tt>
   sollte in etwa wie folgt aussehen:
  </p>
-<pre class="code ntpq">
-avbidder:~$ ntpq -p
-remote           refid      st t when poll reach   delay   offset  jitter
-==============================================================================
-+81.6.42.224     193.5.216.14     2 u   68 1024  377  158.995   51.220  50.287
-*217.162.232.173 130.149.17.8     2 u  191 1024  176   79.245    3.589  27.454
--129.132.57.95   131.188.3.222    3 u  766 1024  377   22.302   -2.928   0.508
-</pre> 
+
+ [% INCLUDE "ntppool/use/sample-ntpq.html" %]
+
  <p>
   Die IP-Adressen werden andere sein, da zuf&auml;llige Zeitserver aus
   dem NTP Pool eingesetzt werden. Ausschlaggebend ist, dass einer der
@@ -61,12 +51,12 @@ remote           refid      st t when poll reach   delay   offset  jitter
   Zeitsynchronisation damit vermutlich besser sein.
  </p>
  <p>
-  Sollten Sie eine neuere Version von <b>Windows</b> einsetzten,
+  Sollten Sie eine neuere Version von <b>Windows</b> einsetzen,
   k&ouml;nnen Sie den NTP-Client nutzen, der in das System integriert
   ist. F&uuml;hren Sie dazu folgendes Kommando als Administrator aus:
  </p>
 <pre class="code">
-w32tm /config /syncfromflags:manual /manualpeerlist:0.pool.ntp.org,1.pool.ntp.org,2.pool.ntp.org,3.pool.ntp.org
+w32tm /config /syncfromflags:manual /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 </pre>
 Dieses Kommando funktioniert auf Versionen ab Windows 2003. Wenn Sie eine ältere Windows-Version benutzen, können Sie folgendes Kommando probieren:
 <pre class="code">
@@ -130,7 +120,7 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
   eingesetzt. Also nutzen Sie bitte nicht mehr als vier Zeitserver
   in Ihrer Konfiguration und spielen Sie niemandem b&ouml;se Streiche mit
   <tt>burst</tt> oder <tt>minpoll</tt>. Das Einzige, was Sie damit erreichen
-  k&ouml;nnen ist zusätzliche Beansprungung des Servers eines Freiwilligen.</p>
+  k&ouml;nnen ist zusätzliche Beanspruchung des Servers eines Freiwilligen.</p>
 
  <p><span class="hook">Vergewissern Sie sich, dass die
   <i>Zeitzonenkonfiguration</i> Ihres Computers korrekt ist</span>. <i>ntpd</i>

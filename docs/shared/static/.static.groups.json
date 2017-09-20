@@ -2,6 +2,7 @@
       "files": [ #"css/reset-fonts-grids.css",
                  #"cdn/libs/yui/2.3/reset/reset.css",
                  #"cdn/libs/yui/2.3/fonts/fonts.css",
+                 "css/fonts.css",
                  "cdn/libs/bootstrap/2.1/css/bootstrap.min.css",
                  #"cdn/libs/yui/2.3/grids/grids.css",
                  "css/master.css",
@@ -23,8 +24,8 @@
   },
   "admin.js": {
       "files": [
-          "cdn/libs/hogan/2/hogan.min.js",
-          "cdn/libs/underscore/1.3/underscore-min.js",
+          "cdn/libs/hogan/3/hogan.min.js",
+          "cdn/libs/underscore/1.8/underscore-min.js",
           "cdn/libs/jquery-plugins/jeditable/1.7/jquery.jeditable.min.js",
           "js/admin-templates.js",
           "js/admin.js"

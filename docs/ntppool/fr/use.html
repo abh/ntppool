@@ -5,26 +5,15 @@
 <p>
 Si vous voulez simplement synchroniser les horloges de vos ordinateurs au réseau, le fichier de configuration (pour le programme ntpd de la <a href="http://www.ntp.org/">distribution ntp.org</a>, sur n'importe lequel des systèmes d'exploitation supportés : <b>Linux, *BSD, Windows et même quelques systèmes plus exotiques</b>) est vraiment simple :
 </p>
-<pre style="background-color:#e0e0e0;">
-driftfile /var/lib/ntp/ntp.drift
 
-server 0.pool.ntp.org
-server 1.pool.ntp.org
-server 2.pool.ntp.org
-server 3.pool.ntp.org
-</pre>
+[% INCLUDE "ntppool/use/sample-config.html" %]
+
 <p>
 Les noms 0, 1, 2 et 3.pool.ntp.org pointent vers un ensemble aléatoire de serveurs qui change toutes les heures. Vérifiez que l'horloge de votre ordinateur est réglée à peu près correctement (dans un intervalle de quelques minutes autour de la « vraie » heure) : vous pouvez utiliser <tt>ntpdate pool.ntp.org</tt> ou simplement la commande <tt>date</tt> pour mettre l'horloge de votre ordinateur à l'heure de votre montre. Démarrez ntpd et après un certain temps (cela peut durer jusqu'à une demi-heure !), <tt>ntpq -pn</tt> devrait avoir pour sortie quelque chose comme :
 </p>
-<pre style="background-color:#e0e0e0;">
-avbidder:~$ ntpq -p
-     remote           refid      st t when poll reach   delay   offset  jitter
-==============================================================================
-+81.6.42.224     193.5.216.14     2 u   68 1024  377  158.995   51.220  50.287
-*217.162.232.173 130.149.17.8     2 u  191 1024  176   79.245    3.589  27.454
--129.132.57.95   131.188.3.222    3 u  766 1024  377   22.302   -2.928   0.508
 
-</pre> 
+[% INCLUDE "ntppool/use/sample-ntpq.html" %]
+
 <p>
 Les adresses IP seront différentes car on vous aura assigné des serveurs de temps de manière aléatoire. Le point important est qu'une des lignes commence par un astérisque  (<tt>*</tt>) : cela signifie que votre ordinateur obtient l'heure à partir d'Internet. Vous n'aurez plus à vous en soucier !
 </p>
@@ -54,7 +43,7 @@ Meinberg a réalisé un port du <a href="http://www.meinberg.de/english/sw/ntp.h
 </p>
 
 <p>
-Si votre système Windows fait partie d'un domaine, il se peut que vous ne puissiez pas ajuster l'horloge de l'ordinateur de manière indépendante. 
+Si votre système Windows fait partie d'un domaine, il se peut que vous ne puissiez pas ajuster l'horloge de l'ordinateur de manière indépendante.
 If your Windows system is part of a domain, you might not be able to independently update your computer time. Voir <a href="http://technet.microsoft.com/en-us/library/cc773013%28WS.10%29.aspx">How Windows Time Service Works</a>.
 </p>
 

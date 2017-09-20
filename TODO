@@ -3,6 +3,14 @@ http://github.com/abh/ntppool/issues
 
 multi server:
 
+  - move "score_ts" into a server-per-monitor table
+  - calculate score per monitor + aggregate into the total "score_raw", too.
+  - http api to get IPs to check
+  - api (anyevent daemon?) to send back monitor results
+  - server calculates scores
+
+multi server:
+
   - monitor script
     - use Getopt::Long
     - return score results every N servers instead of just at the end

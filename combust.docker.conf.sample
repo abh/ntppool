@@ -1,0 +1,84 @@
+perl = /perl5/perls/perl-5.20.2/bin/perl
+
+port = 8299
+
+# external_port.  Set to a non-zero value to set the port number used
+# for external redirects (301's, 302's)
+#external_port = 8299
+
+# source ip's allowed to be frontend proxies, where the
+# X-Forwarded-For header is honored.  Defaults to 127.0.0.1. The
+# special option "*" will allow any IP to set the source IP (use only
+# when the httpd is "firewalled in".
+# proxyip_forwarders = 127.0.0.1, 10.15.0.10, 10.15.0.11,
+
+docs_name = docs
+apache_reload = 1
+
+# use Template::Timer to insert timing information in the TT output (default 0)
+# template_timer = 1
+
+# path for log files and the httpd.pid file
+# log_path = apache/logs
+
+# path for temporary work files (compiled template cache etc)
+# work_path = tmp
+
+# Gearman Job Servers (for Combust::Gearman::* / Gearman).  Defaults to
+# 127.0.0.1 on the default port.
+# job_servers = 10.50.0.100, 10.50.0.101
+job_servers = 127.0.0.1:4730
+
+# use cronolog for logging:
+# use_cronolog = 1
+#   activate cronologging
+# cronolog_path = /usr/sbin/cronolog
+#   path to cronolog binary
+# cronolog_template = %Y/%m/LOGFILE.%Y%m%d
+# cronolog_params   = -l LOGDIR/LOGFILE.latest
+#   access and errror will be substituted for LOGFILE in template and
+#   params.  LOGDIR is $CBROOT/apache/logs
+
+[database-ntppool]
+data_source = dbi:mysql:database=ntppool;host=mysql
+user        = ntppool
+password    = pooldev
+time_zone   = UTC
+default=1
+
+[database-combust]
+alias=ntppool
+
+
+# HTTP configuration
+[apache]
+maxclients          = 3
+#keepalive           = Off
+#keepalivetimeout    = 300
+
+
+[ntppool]
+servername=ntp-dev.ngrok.com
+aliases    = *
+deployment_mode = devel
+siteadmin  = ask@develooper.com
+
+googleanalytics = UA-52057-3
+pool_domain = pool.internal
+dns_domains = pool.internal
+
+ntpcheck = http://localhost:8087/
+
+[ntpgraphs]
+servername = ntp-graphs-dev.ngrok.com
+deployment_mode = devel
+
+[manage]
+servername=ntppool-manage-dev.ngrok.com
+deployment_mode = devel
+siteadmin  = ...
+ssl_only = 1
+
+auth0_domain = example.auth0.com
+auth0_client = ...
+auth0_secret = ...

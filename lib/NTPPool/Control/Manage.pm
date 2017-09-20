@@ -10,9 +10,12 @@ use Geo::IP;
 use Email::Send 'SMTP';
 use Sys::Hostname qw(hostname);
 use Email::Date qw();
-use JSON::XS qw(encode_json);
+use JSON::XS qw(encode_json decode_json);
 use Net::DNS;
 use LWP::UserAgent qw();
+use Mozilla::CA qw();
+use Math::BaseCalc qw();
+use Math::Random::Secure qw(irand);
 
 my $config     = Combust::Config->new;
 my $config_ntp = $config->site->{ntppool};
@@ -21,7 +24,7 @@ sub init {
     my $self = shift;
     $self->SUPER::init(@_);
 
-    if ($self->req_param('sig') or $self->req_param('bc_id')) {
+    if (0 and $self->req_param('sig') or $self->req_param('bc_id')) {
         my $bc = $self->bitcard;
         my $bc_user = eval { $bc->verify($self->request) };
         warn $@ if $@;
@@ -53,7 +56,7 @@ sub init {
             $user->name($bc_user->{name});
             $user->bitcard_id($bc_user->{id});
             $user->save;
-            $self->cookie($Combust::Control::Bitcard::cookie_name, $uid);
+            $self->cookie($self->user_cookie_name, $uid);
             $self->user($user);
         }
     }
@@ -65,18 +68,115 @@ sub init {
     return OK;
 }
 
-sub bc_user_class    { NP::Model->user }
-sub bc_info_required {'username,email'}
-
-
 sub render {
     my $self = shift;
 
     $self->cache_control('private');
 
     if ($self->request->uri =~ m!^/manage/logout!) {
-        $self->cookie($Combust::Control::Bitcard::cookie_name, 0);
-        $self->redirect($self->bitcard->logout_url(r => $self->config->base_url('ntppool')));
+        $self->cookie($self->user_cookie_name, 0);
+        $self->cookie("xs", 0);
+        $self->redirect('/manage');
+    }
+
+    if ($self->request->uri =~ m!^/manage/login!) {
+
+        if (my $code = $self->req_param('code')) {
+            my ($userdata, $error) = $self->_get_auth0_user($code);
+            if ($error) {
+                return $self->login($error);
+            }
+            warn "Error: ", Data::Dump::pp(\$error);
+
+            my ($identity, $user);
+
+            # check if profile exists for any of the identities
+            for my $identity_id ($userdata->{user_id},
+                map { join "|", $_->{provider}, $_->{user_id} } @{$userdata->{identities}})
+            {
+                warn "Identity id: '$identity_id'";
+                $identity = NP::Model->user_identity->fetch(profile_id => $identity_id);
+                last if $identity;
+            }
+
+            my $email = $userdata->{email_verified} && $userdata->{email};
+            my $provider = $userdata->{identities} && $userdata->{identities}->[0] && $userdata->{identities}->[0]->{provider};
+
+            if ($identity) {
+                $identity->provider($provider) if $provider;
+                $identity->data(encode_json($userdata));
+            }
+            else {
+                warn "Didn't find identity in the database";
+
+                if (!$email) {
+                    return $self->login("Email not verified");
+                }
+
+                $identity = NP::Model->user_identity->create(
+                    profile_id => $userdata->{user_id},
+                    email      => $email,
+                    data       => encode_json($userdata),
+                    provider   => $provider,
+                );
+
+                # look for an account with a verified email address we
+                # can recognize.
+                my %uniq;
+                my @emails =
+                  map { $_->{profileData}->{email} }
+                  grep {
+                    my $p = $_->{profileData};
+                    my $ok =
+                         $p
+                      && $p->{email}
+                      && $p->{email_verified}
+                      && !$uniq{$p->{email}}++;
+                    $ok;
+                  } ({ profileData => $userdata }, @{$userdata->{identities}});
+
+                for my $email (@emails) {
+                    warn "Testing email: $email";
+                    my ($email_user) = NP::Model->user->fetch(email => $email);
+                    if ($email_user) {
+                        warn "Found email user in the database";
+                        $user = $email_user;
+                        last;
+                    }
+                }
+            }
+
+            # we do this outside the identity check just in case for
+            # some reason we have an identity without a user
+            # associated.
+
+            $user = $user || $identity->user;
+
+            my $base36 = Math::BaseCalc->new(digits => ['a' .. 'k', 'm' .. 'z', 2 .. 9]);
+            if (!$user) {
+                my $username = join "", map { $base36->to_base(irand) } (undef) x 3;
+                $user = NP::Model->user->create(
+                    email    => $identity->email,
+                    name     => $userdata->{name},
+                    username => $username,
+                );
+                $user->save;
+            }
+
+            if ($identity->user_id != $user->id) {
+                $identity->user_id($user->id);
+            }
+
+            $identity->save;
+
+            $self->cookie("xs", join "", map { $base36->to_base(irand) } (undef) x 6);
+            $self->cookie($self->user_cookie_name, $user->id);
+            $self->user($user);
+
+            my $r = $self->req_param('r') || '/manage';
+            return $self->redirect( $r );
+        }
+
     }
 
     return $self->login unless $self->user;
@@ -84,8 +184,104 @@ sub render {
     return $self->manage_dispatch;
 }
 
+sub _auth0_config {
+    my $self = shift;
+
+    return @{$self->{_auth0_config}} if $self->{_auth0_config};
+
+    my $site = $self->site;
+
+    my $auth0_domain = $self->config->site->{$site}->{auth0_domain}
+      or die "auth0_domain not configured for site $site";
+
+    my $auth0_client = $self->config->site->{$site}->{auth0_client}
+      or die "auth0_client not configured for site $site";
+
+    my $auth0_secret = $self->config->site->{$site}->{auth0_secret}
+      or die "auth0_secret not configured for site $site";
+
+    $self->{_auth0_config} = [$auth0_domain, $auth0_client, $auth0_secret];
+
+    return @{$self->{_auth0_config}};
+}
+
+sub _get_auth0_user {
+    my ($self, $code) = @_;
+
+    # https://auth0.com/docs/protocols#3-getting-the-access-token
+
+    my ($auth0_domain, $auth0_client, $auth0_secret) = $self->_auth0_config();
+
+    my $ua = LWP::UserAgent->new(
+        ssl_opts => {
+            SSL_verify_mode => 0x02,
+            SSL_ca_file     => Mozilla::CA::SSL_ca_file()
+        }
+    );
+
+    my $url = URI->new("https://${auth0_domain}/oauth/token");
+
+    my %form = (
+        'code'          => $self->req_param('code'),
+        'client_id'     => $auth0_client,
+        'redirect_uri'  => $self->callback_url,
+        'client_secret' => $auth0_secret,
+        'grant_type'    => 'authorization_code',
+    );
+    my $resp = $ua->post($url, \%form);
+    use Data::Dump qw(pp);
+    pp($resp);
+
+    $resp->is_success or return undef, "Could not fetch oauth token";
+
+    my $data = decode_json($resp->decoded_content())
+      or return undef, "Could not decode token data";
+
+    $resp = $ua->get("https://${auth0_domain}/userinfo/?access_token=" . $data->{access_token});
+    $resp->is_success or return undef, "Could not fetch user data";
+
+    my $user = decode_json($resp->decoded_content())
+      or return undef, "Could not decode user data";
+
+    return $user, undef;
+
+}
+
+sub callback_url {
+    my $self = shift;
+
+    my $uri  = URI->new($self->config->base_url($self->site));
+    $uri->path('/manage/login');
+
+    my $here = $self->_here_url;
+    if ($here =~ m{manage/login}) {
+        $here = "/manage";
+    }
+
+    $uri->query_form(r => $here);
+    $uri->as_string();
+}
+
+sub login_url {
+    my $self = shift;
+
+#    return 'https://ntp.auth0.com/authorize?response_type=code'
+#    . '&client_id=kDlOYWYyIQlLMjgyzrKJhQmARaM8rOaM&connection=github'
+#    . '&state=&redirect_uri=' . $self->_here_url;
+
+    my ($auth0_domain, $auth0_client) = $self->_auth0_config();
+
+    return
+        "https://${auth0_domain}/authorize?response_type=code"
+      . "&client_id=${auth0_client}"
+      . '&redirect_uri=' . $self->callback_url;
+}
+
 sub manage_dispatch {
     my $self = shift;
+
+    $self->tpl_param('xs', $self->cookie('xs'));
+
     return $self->handle_add if $self->request->uri =~ m!^/manage/server/add!;
     return $self->handle_update
       if $self->request->uri =~ m!^/manage/(server|profile)/update!;

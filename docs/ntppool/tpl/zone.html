@@ -18,14 +18,12 @@
 
 	[% IF zone.dns and zone.parent.dns and zone.server_count >= 6 %]
 	<p>
-	To use this pool zone, add the following to your ntp.conf file:
+	To use this specific pool zone, add the following to your ntp.conf file:
 
 	[% IF zone.server_count >= 20  %]
 
 	<pre>[% FOR i = [0..max_zone_number] %]
-	   server [% i %].[% zone.fqdn %]
-	[%- END %]
-	</pre>
+	   server [% i %].[% zone.fqdn %][%- END %]</pre>
 
 	[% ELSE # server count >= 6 and < 20  %]
 
@@ -33,9 +31,7 @@
 	[%- i = zone.random_subzone_ids(1) %]
 	   server [% i %].[% zone.fqdn %]
 	[%- FOR i = zone.parent.random_subzone_ids(2) %]
-	   server [% i %].[% zone.parent.fqdn %]
-	[%- END %]
-	</pre>
+	   server [% i %].[% zone.parent.fqdn %][%- END %]</pre>
 
 	[% END  # server_count >= 20 %]
 
@@ -55,11 +51,18 @@
 	</p>
 
 	<pre>[% FOR i = [0..max_zone_number] %]
-	   server [% i %].[% parent.fqdn %]
-	[%- END %]
-	</pre>
+	   server [% i %].[% parent.fqdn %][%- END %]</pre>
 
 	[% END %]
+
+        <p>
+        In most cases it's best to use <b>[% pool_domain %]</b> to find
+        an NTP server (or 0.[% pool_domain %], 1.[% pool_domain %],
+        etc if you need multiple server names). The system will try
+        finding the closest available servers for you. If you
+        distribute software or equipment that uses NTP, please see
+        our <a href="/vendors.html">information for vendors</a>.
+        </p>
 
         <table id="zone_counts">
         <tr> 

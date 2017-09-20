@@ -55,7 +55,6 @@ msgid  "discussion_list_description"
 msgstr "Эта рассылка предназначена для администраторов серверов пула и просто пользователей, которые хотят более активно участвовать в проекте.<br/> Разумеется, обсуждение общих вопросов, относящихся к NTP, должно происходить в Usenet-конференции %1 (<a href=\"%2\">доступна</a> через сервис Google Groups)."
 
 msgid  "development_list_description"
-
 msgstr "Здесь обсуждаются технические вопросы, связанные с разработкой <a href=\"%1\">исходного кода пула NTP</a> и <a href=\"%2\">pgeodns</a>."
 
 
@@ -89,22 +88,22 @@ msgstr "Журнал в формате CSV"
 
 # tpl/navigation_sidebar.html
 msgid  "News"
-msgstr "News"
+msgstr "Новости"
 
 msgid  "How do I <i>use</i> pool.ntp.org?"
-msgstr "How do I <i>use</i> pool.ntp.org?"
+msgstr "Как <i>использовать</i> pool.ntp.org?"
 
 msgid  "How do I <i>join</i> pool.ntp.org?"
-msgstr "How do I <i>join</i> pool.ntp.org?"
+msgstr "Как <i>присоединиться</i> к pool.ntp.org?"
 
 msgid  "Information for vendors"
-msgstr "Information for vendors"
+msgstr "Информация для поставщиков"
 
 msgid  "The mailing lists"
-msgstr "The mailing lists"
+msgstr "Список E-mail рассылки"
 
 msgid  "Additional links"
-msgstr "Additional links"
+msgstr "Дополнительные ссылки"
 
 #tpl/server.html
 msgid "Green/orange/red small dots are offsets (in milliseconds, using the left axis).<br>

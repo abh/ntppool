@@ -1,36 +1,33 @@
 <div id="graph_explanation_box" class="graph_explanation [% graph_explanation ? 'visible' : '' %]">
 
 
-<h3>Tulosgraafi</h3>
+<h3>Pistegraafi</h3>
 
 <p>
 Muutamia kertoja tunnissa järjestelmä tarkistaa ajan palvelimeltasi ja
 vertaa sitä paikalliseen aikaan. Pisteitä vähennetään mikäli palvelimeen
-ei saada yhteyttä tai mikäli aika heittää enemmän kuin 100 millisekuntia
-(mitattuna suhteellisen karkeasti monitorointijärjestelmästä). Mitä suurempi
-erotus on, sitä enemmän pisteitä vähennetään.
+ei saada yhteyttä tai mikäli aika poikkeaa enemmän kuin 100 millisekuntia
+(mitattuna valvontajärjestelmästä). Mitä suurempi ero on, sitä
+enemmän pisteitä vähennetään.
 </p>
 
 <p>
-Kun tulos laskee, muuttuu kuvaajan yläosan taustan väri kuvaamaan sitä kuinka
-"vakavasta" häiriöstä oli kyse. Väriskaala ulottuu sinisestä (hyvin pieni
-ongelma) keltaisen ja oranssin kautta punaiseen (palvelimen kello on useita
-sekunteja pielessä tai siihen ei saada lainkaan yhteyttä). Johtuen graafin
-keskiarvoistamistavasta ei väristä aina voi päätellä mitä tarkalleen ottaen
-tapahtui. Sen tarkoitus on vain visualisoida trendejä. Saat tarkempia
-yksityiskohtia lataamalla linkistä CSV-muotoisen raportin.
+Graafin on tarkoitus ainoastaan visualisoida kehityssuuntia. Tarkempia tietoja
+valvontajärjestelmän tuloksista näet oheisen linkin kautta löytyvästä CSV-tiedostosta.
 </p>
 
 <h3>Poikkeamagraafi</h3>
 
 <p>
-Monitorointijärjestelmä toimii suurin piirtein kuin
+Valvontajärjestelmä toimii suurin piirtein kuten
 <a href="http://www.ntp.org/ntpfaq/NTP-s-def.htm#AEN1242">SNTP</a>-asiakas
-(<a href="http://www.eecis.udel.edu/~mills/database/rfc/rfc2030.txt">RFC 2030</a>),
-joten se on herkempi palvelimen ja monitorointijärjetelmän välisille satunnaisille
-latenssivaihteluille kuin tavallinen ntp-asiakasohjelma olisi. Toisin sanoen:
-älä hätäänny ajoittaisista suuristakaan poikkeamista äläkä pidä poikkeamaa
-absoluuttisena suorituskyvyn mittana.
+(<a href="http://tools.ietf.org/html/rfc2030">RFC 2030</a>),
+joten se on herkempi palvelimen ja valvontajärjestelmän välisille satunnaisille
+verkkoviiveille kuin tavallinen ntp-asiakasohjelma olisi.
+</p>
+
+<p>
+Valvontajärjestelmän epätarkkuus voi olla jopa 10 millisekuntia tai enemmän.
 </p>
 
 </div>
