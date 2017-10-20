@@ -4,7 +4,7 @@ KUBE="kubectl -n ntpbeta"
 
 $KUBE rollout pause deploy ntppool
 
-$KUBE apply -f ntppool-quay-secrets.yaml
+set -ex
 
 for f in ??-*.yaml; do
   $KUBE apply -f $f
