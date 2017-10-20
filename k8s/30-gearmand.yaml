@@ -17,3 +17,10 @@ spec:
         ports:
         - containerPort: 4730
         imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: 10m
+            memory: 50Mi
+          limits:
+            cpu: 100m
+            memory: 200Mi
