@@ -36,6 +36,7 @@ WriteMakefile(
                   'Template::Plugin::Time::Duration' => 0,
                   'DateTime::Format::Duration' => 0,
                   'Email::Send' => 0,
+                  'Email::Sender' => 0,
                   'Email::Date' => 0,
 
                   'Geo::IP' => 1.39,

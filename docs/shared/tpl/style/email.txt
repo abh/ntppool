@@ -1,0 +1,12 @@
+[% IF combust.deployment_mode != "prod";
+   IF !config; 
+     config=combust.config;
+   END;
+   www_url = config.base_url("ntppool") _ "/";
+ -%]
+[%- IF www_url -%]
+(This message is from the NTP Pool test system at [% www_url %] )
+[% ELSE %]
+(This message is from a development instance of the NTP Pool system)
+[% END; END -%]
+[% content %]

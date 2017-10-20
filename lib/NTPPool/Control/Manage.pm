@@ -6,9 +6,8 @@ use Combust::Constant qw(OK NOT_FOUND);
 use Socket qw(inet_ntoa);
 use Socket6;
 use Geo::IP;
-use Email::Send 'SMTP';
-use Sys::Hostname qw(hostname);
-use Email::Date qw();
+use NP::Email ();
+use Email::Stuffer ();
 use JSON::XS qw(encode_json decode_json);
 use Net::DNS;
 use LWP::UserAgent qw();
@@ -352,17 +351,27 @@ sub handle_add {
         for my $server (@servers) {
             unless ($server->{error} or $server->{listed}) {
                 $s = $self->_add_server($server);
+                $server->{id} = $s->id;
                 push @added, $server;
             }
         }
         $self->tpl_param(servers => \@added);
         my $msg = $self->evaluate_template('tpl/manage/add_email.txt');
-        my $email =
-          Email::Simple->new(ref $msg ? $$msg : $msg)
-          ;    # until we decide what eval_tpl should return :)
-        $email->header_set('Message-ID' => join("-", int(rand(1000)), $$, time) . '@' . hostname);
-        $email->header_set('Date' => Email::Date::format_date);
-        my $return = send SMTP => $email, 'localhost';
+        my $email = Email::Stuffer
+          ->from(NP::Email::address("sender"))
+          ->to(NP::Email::address("notifications"))
+          ->reply_to($self->user->email)
+          ->text_body($msg);
+
+        warn "added: ", Data::Dump::pp(\@added);
+
+        my $subject = "Subject: New addition to the NTP Pool: " . join(", ", map { $_->{ip} } @added);
+        if (grep { $_->{hostname} } @added) {
+            $subject .= "(" . join(", ", map { $_->{hostname} } @added) . ")";
+        }
+        $email->subject($subject);
+
+        my $return = NP::Email::sendmail($email->email);
         warn Data::Dumper->Dump([\$msg, \$email, \$return], [qw(msg email return)]);
 
         return $self->redirect('/manage/servers#s-' . ($s && $s->ip));

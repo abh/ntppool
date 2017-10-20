@@ -24,6 +24,13 @@
 
 	<h3>Status</h3>
 	<blockquote>[% vz.status %]</blockquote>
+        [% IF vz.status == "Pending" %]
+        <p>
+          If your application hasn't been processed or responded to
+          within a week, please email the <a href="mailto:[% "vendors"
+          | email %]?subject=Vendor zone [% vz.zone_name | html %] application">vendor support</a> address.
+        </p>
+        [% END %]
 
 	[% IF vz.can_edit(combust.user) %]
 	 <form method="edit" action="/manage/vendor/zone" style="display:inline">

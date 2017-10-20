@@ -73,5 +73,4 @@ sub can_view {
 sub contact_information_html { NP::Util::convert_to_html(shift->contact_information) }
 sub request_information_html { NP::Util::convert_to_html(shift->request_information) }
 
-
 1;

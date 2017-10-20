@@ -51,6 +51,7 @@ sub tt {
         filters => {
             l   => [\&loc_filter, 1],
             loc => [\&loc_filter, 1],
+            email => [\&email_address_filter, 0],
         }
     ) or die "Could not initialize Combust::Template object: $Template::ERROR";
 }
@@ -105,6 +106,12 @@ sub loc_filter {
     my $tt   = shift;
     my @args = @_;
     return sub { NP::I18N::loc($_[0], @args) };
+}
+
+sub email_address_filter {
+    # static filter
+    my $label = shift;
+    return NP::Email::address($label);
 }
 
 # should be moved to the manage class when sure we don't use is_logged_in on the ntppool site
