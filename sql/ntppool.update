@@ -502,3 +502,6 @@ alter table server_notes
 #71
 alter table monitors add config text not null after api_key;
 update monitors set config='{"samples": 1}' where config='';
+
+#72
+delete from zones where name = 'ap';

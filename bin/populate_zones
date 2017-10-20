@@ -24,6 +24,7 @@ my $gi = Geo::IP->new();
 my %continents = ();
 
 while (my $line = <DATA>) {
+    next if m/^\s*\#/;
     next unless $csv->parse($line);
     my $row = [$csv->fields];
     my $name = $row->[0];
@@ -71,7 +72,7 @@ AI,"Anguilla"
 AL,"Albania"
 AM,"Armenia"
 AO,"Angola"
-AP,"Asia/Pacific Region"
+#AP,"Asia/Pacific Region"
 AQ,"Antarctica"
 AR,"Argentina"
 AS,"American Samoa"
