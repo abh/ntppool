@@ -15,7 +15,6 @@ use Net::IP;
 use LWP::Simple qw(get);
 use Email::Simple;
 use Email::Date;
-use Email::Send 'SMTP';
 use File::Path qw(mkpath);
 use JSON::XS ();
 use Math::Random::Secure qw(irand);
