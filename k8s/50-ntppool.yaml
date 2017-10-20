@@ -12,7 +12,7 @@ spec:
   revisionHistoryLimit: 3
   strategy:
     rollingUpdate:
-      maxSurge: 1
+      maxSurge: 2
       maxUnavailable: 1
     type: RollingUpdate
   # selector can be applied automatically
@@ -35,7 +35,7 @@ spec:
         - name: ntppool-ntpkube-pull-secret
       containers:
       - name: ntppool
-        image: quay.io/ntppool/ntppool:cbaa51c
+        image: quay.io/ntppool/ntppool:kube
         #imagePullPolicy: Always
         resources:
           requests:
@@ -46,6 +46,8 @@ spec:
             memory: 700Mi  
         command: ["/ntppool/docker-run"]
         env:
+        - name: RELOAD
+          value: "1"
         - name: auth0_secret
           valueFrom:
             secretKeyRef:
@@ -66,26 +68,24 @@ spec:
         - name: data
           mountPath: /ntppool/data
 
-#        readinessProbe:
-#          httpGet:
-#            path: /health
-#            port: 8980
-#          initialDelaySeconds: 10
-#          timeoutSeconds: 1
-#          periodSeconds: 5
-#          successThreshold: 1
-#          failureThreshold: 3
-#        livenessProbe:
-#          httpGet:
-#            port: 8980
-#            path: /health
-#          initialDelaySeconds: 120
-#          periodSeconds: 60
-
-
+        readinessProbe:
+          httpGet:
+            path: /combust-healthz
+            port: 8980
+          initialDelaySeconds: 5
+          timeoutSeconds: 1
+          periodSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            port: 8980
+            path: /combust-healthz
+          initialDelaySeconds: 60
+          periodSeconds: 20
 
       - name: ntppool-cron
-        image: quay.io/ntppool/ntppool:cbaa51c
+        image: quay.io/ntppool/ntppool:kube
         resources:
           requests:
             cpu: 50m
@@ -118,8 +118,5 @@ spec:
         fsGroup: 1000
 
       volumes:
-      # - name: config-volume
-      #   configMap:
-      #     name: ntppool
       - name: data
         emptyDir: {}

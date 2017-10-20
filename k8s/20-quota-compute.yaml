@@ -4,8 +4,8 @@ metadata:
   name: compute-resources
 spec:
   hard:
-    pods: "8"
-    requests.cpu: "3"
+    pods: "12"
+    requests.cpu: "5"
     requests.memory: 5Gi
-    limits.cpu: "8"
+    limits.cpu: "10"
     limits.memory: 8Gi
