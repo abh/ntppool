@@ -1,6 +1,9 @@
 FROM quay.io/ntppool/base-os:v3.0.4
 
 USER root
+
+RUN apk --no-cache upgrade
+
 ENV CBCONFIG=
 ENV HULK /usr/bin/hulk
 
@@ -32,4 +35,3 @@ RUN perl Makefile.PL && \
 RUN bash -c "ls -la docs/shared/static{,/.g,/css}"
 
 USER ntppool
-
