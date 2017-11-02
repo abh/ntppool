@@ -365,7 +365,7 @@ sub handle_add {
 
         warn "added: ", Data::Dump::pp(\@added);
 
-        my $subject = "Subject: New addition to the NTP Pool: " . join(", ", map { $_->{ip} } @added);
+        my $subject = "New addition to the NTP Pool: " . join(", ", map { $_->{ip} } @added);
         if (grep { $_->{hostname} } @added) {
             $subject .= "(" . join(", ", map { $_->{hostname} } @added) . ")";
         }
