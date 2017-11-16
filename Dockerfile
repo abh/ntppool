@@ -1,4 +1,4 @@
-FROM quay.io/ntppool/base-os:v3.0.4
+FROM quay.io/ntppool/base-os:v3.1.0
 
 USER root
 
@@ -11,11 +11,12 @@ WORKDIR /ntppool
 VOLUME /ntppool/data
 
 EXPOSE 8299
-CMD ./docker-run
+ENTRYPOINT ["./docker/entrypoint"]
+CMD ["./docker-run"]
 
 ADD . /ntppool
 
-RUN chown ntppool data
+RUN mkdir /var/ntppool && chown ntppool data /var/ntppool
 RUN rm -fr docs/ntppool/_syndicate && \
     mkdir -p data/syndicate && \
     ln -s /ntppool/data/syndicate docs/ntppool/_syndicate && \

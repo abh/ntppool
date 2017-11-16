@@ -12,7 +12,7 @@ spec:
   revisionHistoryLimit: 3
   strategy:
     rollingUpdate:
-      maxSurge: 2
+      maxSurge: 1
       maxUnavailable: 1
     type: RollingUpdate
   # selector can be applied automatically
@@ -44,7 +44,7 @@ spec:
           limits:
             cpu: 1
             memory: 700Mi  
-        command: ["/ntppool/docker-run"]
+        command: ["/ntppool/docker/entrypoint", "/ntppool/docker-run"]
         env:
         - name: RELOAD
           value: "1"
@@ -93,7 +93,7 @@ spec:
           limits:
             cpu: 500m
             memory: 200Mi
-        command: ["/ntppool/bin/cron/runner"]
+        command: ["/ntppool/docker/entrypoint", "/ntppool/bin/cron/runner"]
         env:
         - name: auth0_secret
           valueFrom:

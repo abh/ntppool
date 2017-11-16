@@ -56,4 +56,6 @@ for my $admin (@$admins) {
     }
 }
 
+print "done\n";
+
 1;

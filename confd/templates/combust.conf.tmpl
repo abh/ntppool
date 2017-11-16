@@ -28,15 +28,12 @@ log_path = stdout
 
 # path for temporary work files (compiled template cache etc)
 # work_path = tmp
+work_path = /var/ntppool/
 
 # Gearman Job Servers
 job_servers = {{ getenv "GEARMAND_SERVICE_HOST" }}:{{ getenv "GEARMAND_SERVICE_PORT" }}
 
 use_cronolog = 0
-
-{{range ls "/"}}
-   value: {{.}}
-{{end}}
 
 [database-ntppool]
 # configure database access for use with the db_open() function

@@ -1,17 +1,12 @@
 #!/bin/sh
 #
-# the development docker image runs this script by default
-# to start the application. To start the docker container
-# for development, use ./docker/app
+# The development docker image runs this script by default to start
+# the application. To start the docker container for development, use
+# ./docker/app
+#
+# Before the command is run, "./docker/entrypoint" is run to setup the
+# configuration (and maybe other things in the future).
 
 set -ex
-
-if [ -z $CBROOT ]; then
-  export CBROOTLOCAL=`pwd`
-  export CBROOT=$CBROOTLOCAL/combust
-fi
-
-confd -onetime -confdir=confd -backend env
-export CBCONFIG=/tmp/combust.conf
 
 exec ./combust/bin/httpd

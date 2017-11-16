@@ -1,0 +1,12 @@
+#!/bin/sh
+set -ex
+
+if [ -z $CBROOT ]; then
+  export CBROOTLOCAL=`pwd`
+  export CBROOT=$CBROOTLOCAL/combust
+fi
+
+confd -onetime -confdir=confd -backend env
+export CBCONFIG=/var/ntppool/combust.conf
+
+exec "$@"
