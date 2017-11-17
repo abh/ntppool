@@ -13,4 +13,4 @@ docker run -t -i \
  -v $(pwd):/ntppool \
  $ports \
  --rm \
- quay.io/ntppool/app-base:dev $app
+ quay.io/ntppool/ntppool-devel:kube $app

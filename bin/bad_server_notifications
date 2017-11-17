@@ -33,6 +33,9 @@ for my $admin (@$admins) {
     my $param = {admin => $admin};
     my @bad_servers = $admin->bad_servers;
     $param->{bad_servers} = \@bad_servers;
+
+    print "Notifying of bad servers ", $admin->email, " for ", join(", ", map {$_->ip} @bad_servers), "\n"; 
+
     my $msg = $tpl->process('tpl/bad_server_notification.txt',
         $param, {site => 'ntppool', config => $config});
 
@@ -51,11 +54,9 @@ for my $admin (@$admins) {
     }
 
     #last;
-    if ($deployment_mode ne "prod") {
+    if ($deployment_mode eq "devel") {
         last if ++$i == 1;
     }
 }
-
-print "done\n";
 
 1;

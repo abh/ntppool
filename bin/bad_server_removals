@@ -28,6 +28,8 @@ $deletion_date->add(days => 2);
 
 for my $server (@$servers) {
 
+    print "Notifying of server removal: ", $server->admin->email, " for ", $server->ip, "\n";
+
     my $param = {
         server => $server,
         admin  => $server->admin,
