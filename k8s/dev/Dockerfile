@@ -1,4 +1,4 @@
-FROM quay.io/ntppool/base-os:v3.1.0
+FROM quay.io/ntppool/base-os:v3.2.1
 USER root
 VOLUME /ntppool
 VOLUME /ntppool/data
