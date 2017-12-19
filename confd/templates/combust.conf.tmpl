@@ -31,7 +31,7 @@ log_path = stdout
 work_path = /var/ntppool/
 
 # Gearman Job Servers
-job_servers = {{ getenv "GEARMAND_SERVICE_HOST" }}:{{ getenv "GEARMAND_SERVICE_PORT" }}
+#job_servers = {{ getenv "GEARMAND_SERVICE_HOST" }}:{{ getenv "GEARMAND_SERVICE_PORT" }}
 
 use_cronolog = 0
 
@@ -65,7 +65,7 @@ keepalivetimeout    = 30
 {{ $names := split (getenv "web_hostname") "," }}
 servername = {{ index $names 0 }}
 {{ if gt (len $names) 1 }}
-aliases = {{ range $names }}{{.}}, {{ end}}
+aliases = {{ range $names }}{{.}}, {{ end}} web
 {{ end }}
 
 pool_domain = {{ getenv "pool_domain" }}
@@ -92,7 +92,7 @@ external_port = 443
 [manage]
 {{ $names := split (getenv "manage_hostname") "," }}
 servername = {{ index $names 0 }}
-aliases = {{ range $names }}{{.}}, {{ end}}
+aliases = {{ range $names }}{{.}}, {{ end}} manage
 
 deployment_mode = {{ $mode }}
 static_base = {{ getenv "static_base" }}

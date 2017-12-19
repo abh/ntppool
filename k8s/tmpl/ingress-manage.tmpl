@@ -6,7 +6,7 @@ metadata:
     ingress.kubernetes.io/configuration-snippet: |
       proxy_pass_header Server;
     kubernetes.io/tls-acme: "true"
-    ingress.class: nginx
+    ingress.class: haproxy
 
 spec:
   rules:
@@ -17,8 +17,8 @@ spec:
       - path: /
         backend:
           serviceName: web
-          servicePort: 8980
-  {{ end }} 
+          servicePort: 80
+  {{ end }}
 
   tls:
   - hosts:

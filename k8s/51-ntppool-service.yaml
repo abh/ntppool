@@ -7,9 +7,9 @@ metadata:
     app: ntppool
 spec:
   ports:
-  - port: 8980
+  - port: 80
     protocol: TCP
-    #targetPort: 8980
+    targetPort: 8980
   selector:
     app: ntppool
     tier: frontend

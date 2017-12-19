@@ -3,7 +3,7 @@ kind: Ingress
 metadata:
   name: ntpbeta-web
   annotations:
-    ingress.class: nginx
+    ingress.class: haproxy
     ingress.kubernetes.io/configuration-snippet: |
       proxy_pass_header Server;
 {{ if eq "$web_tls" "yes" }}
@@ -18,7 +18,7 @@ spec:
       - path: /
         backend:
           serviceName: web
-          servicePort: 8980
+          servicePort: 80
   {{ end }}
 
   # web_tls: $web_tls
