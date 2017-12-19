@@ -12,8 +12,6 @@ my $ua = LWP::UserAgent->new(
     }
 );
 
-my $url = URI->new(Combust::Config->new->base_url('ntppool'));
-
 sub render {
     my $self = shift;
 
@@ -57,7 +55,9 @@ sub get_graph {
     # in kubernetes the hostname is 'web' and we might not be able to
     # reach this service with the external name from the splash
     # instance; todo: detect kubernetes and only change it then?
-    $url->host("web");
+
+    # my $url = URI->new(Combust::Config->new->base_url('ntppool'));
+    my $url = URI->new("http://web/");
     $url->path($server->url);
     $url->query_form(graph_only => 1);
 
