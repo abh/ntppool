@@ -52,12 +52,11 @@ sub render {
 
 sub get_graph {
     my $server = shift;
-    # in kubernetes the hostname is 'web' and we might not be able to
-    # reach this service with the external name from the splash
-    # instance; todo: detect kubernetes and only change it then?
-
-    # my $url = URI->new(Combust::Config->new->base_url('ntppool'));
-    my $url = URI->new("http://web/");
+    my $url = URI->new(Combust::Config->new->base_url('ntppool'));
+    # if the site doesn't require TLS and can't be reached
+    # from inside kubernetes on the external hostname, this might
+    # work.
+    # my $url = URI->new("http://web/");
     $url->path($server->url);
     $url->query_form(graph_only => 1);
 
