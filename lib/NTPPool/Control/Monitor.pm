@@ -32,6 +32,13 @@ sub render {
         return $self->error('Not a registered monitor');
     }
 
+    my $config = $monitor->config;
+    $config->{ip} = $monitor->ip;
+
+    if ($self->request->path eq '/monitor/config') {
+        return OK, $json->encode({config => $config}), "application/json";
+    }
+
     my $ip = $self->request->remote_ip;
 
     # TODO: check that the current IP is allowed for this monitor
@@ -43,7 +50,8 @@ sub render {
     # go through server array and fetch offset for all servers
     my $servers = NP::Model->server->get_check_due($monitor, 50);
 
-    return OK, $json->encode({servers => [map { $_->ip } @$servers], config => $monitor->config}), "application/json";
+    return OK, $json->encode({servers => [map { $_->ip } @$servers], config => $config}),
+      "application/json";
 }
 
 sub render_server_map {
