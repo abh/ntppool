@@ -167,9 +167,10 @@ sub upload {
             attributes => {},
         );
 
-
-        $log_score{attributes}->{leap} = $status->{leap}
-          if $status->{leap};
+        for my $a (qw(leap error)) {
+            $log_score{attributes}->{$a} = $status->{$a}
+              if $status->{$a};
+        }
 
         delete $log_score{attributes} unless %{$log_score{attributes}};
 

@@ -164,8 +164,11 @@ sub log_scores_csv {
     my ($self, $options) = @_;
     my $history = $self->history($options);
     my $csv     = Text::CSV_XS->new();
-    $csv->combine(qw(ts_epoch ts offset step score),
-        defined $options->{monitor_id} ? qw(monitor_id monitor_name) : (), qw(leap));
+    $csv->combine(
+        qw(ts_epoch ts offset step score),
+        defined $options->{monitor_id} ? qw(monitor_id monitor_name) : (),
+        qw(leap error)
+    );
 
     my $out = $csv->string . "\n";
 
@@ -191,7 +194,8 @@ sub log_scores_csv {
             $l->ts->strftime("%F %T"),
             map ({ $l->$_ } qw(offset step score)),
             ($options->{monitor_id} ? ($monitor_id, $monitor_name) : ()),
-            ($l->attributes ? $l->attributes->{leap} : 0),
+            ($l->attributes ? $l->attributes->{leap}  : 0),
+            ($l->attributes ? $l->attributes->{error} : ""),
         );
         $out .= $csv->string . "\n";
     }
