@@ -275,10 +275,13 @@ sub get_check_due {
     my $class   = shift;
     my $monitor = shift or return;
     my $limit   = shift || 200;
+    my $options = shift || {};
 
-    # local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
-
-    my $interval = $monitor->ip_version eq 'v6' ? 10 : 12;
+    # these numbers make sense for 2 monitors, if there are more they
+    # should be adjusted to spread out the checks somewhat evenly in
+    # time and between the monitors.
+    my $interval     = $options->{interval} || 15;
+    my $interval_all = $options->{interval} || 8;
 
     $class->get_objects_from_sql(
         sql => q[SELECT s.*
@@ -287,13 +290,14 @@ sub get_check_due {
          ON (s.id=ss.server_id)
          WHERE
            monitor_id = ?
-           AND (ss.score_ts IS NULL or ss.score_ts < DATE_SUB( NOW(), INTERVAL ? minute))
            AND s.ip_version = ?
+           AND (ss.score_ts IS NULL or ss.score_ts < DATE_SUB( NOW(), INTERVAL ? minute) )
+           AND (s.score_ts IS NULL or s.score_ts < DATE_SUB( NOW(), INTERVAL ? minute) )
            AND (deletion_on IS NULL or deletion_on > NOW())
          ORDER BY score_ts
          LIMIT ?
        ],
-        args => [$monitor->id, $interval, $monitor->ip_version, $limit]
+        args => [$monitor->id, $monitor->ip_version, $interval, $interval_all, $limit]
     );
 }
 
