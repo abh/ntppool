@@ -5,8 +5,7 @@ use NP::Model;
 use Combust::Constant qw(OK NOT_FOUND);
 use Socket qw(inet_ntoa);
 use Socket6;
-use Geo::IP;
-use NP::Email ();
+use NP::Email      ();
 use Email::Stuffer ();
 use JSON::XS qw(encode_json decode_json);
 use Net::DNS;
@@ -17,6 +16,14 @@ use Math::Random::Secure qw(irand);
 
 my $config     = Combust::Config->new;
 my $config_ntp = $config->site->{ntppool};
+
+my $ua = LWP::UserAgent->new(
+    timeout  => 2,
+    ssl_opts => {
+        SSL_verify_mode => 0x02,
+        SSL_ca_file     => Mozilla::CA::SSL_ca_file()
+    }
+);
 
 sub init {
     my $self = shift;
@@ -73,7 +80,7 @@ sub render {
 
     if ($self->request->uri =~ m!^/manage/logout!) {
         $self->cookie($self->user_cookie_name, 0);
-        $self->cookie("xs", 0);
+        $self->cookie("xs",                    0);
         $self->redirect('/manage');
     }
 
@@ -209,13 +216,6 @@ sub _get_auth0_user {
     # https://auth0.com/docs/protocols#3-getting-the-access-token
 
     my ($auth0_domain, $auth0_client, $auth0_secret) = $self->_auth0_config();
-
-    my $ua = LWP::UserAgent->new(
-        ssl_opts => {
-            SSL_verify_mode => 0x02,
-            SSL_ca_file     => Mozilla::CA::SSL_ca_file()
-        }
-    );
 
     my $url = URI->new("https://${auth0_domain}/oauth/token");
 
@@ -502,7 +502,6 @@ sub get_server_info {
         }
     }
 
-    my $ua = LWP::UserAgent->new(timeout => 2);
     my $res = $ua->get("https://trace2.ntppool.org/ntp/$server{ip}");
     if ($res->code != 200) {
         warn "trace2 response code for $server{ip}: ", $res->code;
@@ -539,8 +538,8 @@ sub get_server_info {
         return \%server;
     }
 
-    my $geo_ip = eval "Geo::IP->new(GEOIP_STANDARD)";
-    $server{geoip_country} = $geo_ip && $geo_ip->country_code_by_addr($server{ip}) || '';
+    my $res = $ua->get("http://geoip/api/country?ip=$server{ip}");
+    $server{geoip_country} = $res->decoded_content if $res->is_success;
 
     my $country = $self->req_param('explicit_zone_' . $server{ip}) || $server{geoip_country};
 
@@ -584,7 +583,6 @@ sub handle_mode7_check {
     my $self     = shift;
     my $server   = $self->req_server or return NOT_FOUND;
     my $ntpcheck = $config_ntp->{ntpcheck};
-    my $ua       = LWP::UserAgent->new;
     my $url      = URI->new("$ntpcheck");
     $url->path("/check/" . $server->ip);
     $url->query("queue=1");

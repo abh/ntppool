@@ -10,7 +10,6 @@ use Socket;
 use Time::HiRes;
 use Data::Dumper;
 use Sys::Hostname qw(hostname);
-use Geo::IP;
 use Net::IP;
 use LWP::Simple qw(get);
 use Email::Simple;
@@ -19,7 +18,6 @@ use File::Path qw(mkpath);
 use JSON::XS ();
 use Math::Random::Secure qw(irand);
 
-my $geo_ip = eval "Geo::IP->new(GEOIP_STANDARD)";
 my $config = Combust::Config->new;
 my $config_ntp = $config->site->{ntppool};
 
@@ -114,9 +112,8 @@ sub server_information {
     push @r, sprintf "score: %.1f, in pool: %i, in server list: %i\n",
       $server->score, $server->in_pool, $server->in_server_list;
     push @r, "Hostname: " . $server->hostname . "\n";
-    my $country = $geo_ip->country_code_by_addr($server->ip);
-    $country = lc $country if $country;
-    push @r, "Country: $country  -  " if $country;
+    my $country = get("http://geoip/api/country?ip=" . $server->ip);
+    push @r, "Country: $country, " if $country;
     push @r, "Netspeed: " . $server->netspeed . "\n";
     push @r, "Zones: ", join(", ", map { $_->name } @zones), "\n";
     push @r, sprintf "in_pool: %i, in_server_list: %i\n", $server->in_pool, $server->in_server_list;
