@@ -29,43 +29,6 @@ sub init {
     my $self = shift;
     $self->SUPER::init(@_);
 
-    if (0 and $self->req_param('sig') or $self->req_param('bc_id')) {
-        my $bc = $self->bitcard;
-        my $bc_user = eval { $bc->verify($self->request) };
-        warn $@ if $@;
-        unless ($bc_user) {
-            warn $bc->errstr;
-        }
-        if ($bc_user and $bc_user->{id} and $bc_user->{username}) {
-            use Data::Dump qw(pp);
-            warn "Logging in user: ", pp($bc_user);
-            my ($email_user) = NP::Model->user->fetch(email      => $bc_user->{email});
-            my ($user)       = NP::Model->user->fetch(bitcard_id => $bc_user->{id});
-            $user = $email_user if ($email_user and !$user);
-            if ($user and $email_user and $user->id != $email_user->id) {
-                my @servers = NP::Model->server->get_servers(query => [user_id => $email_user->id]);
-                if (@servers && $servers[0]) {
-                    for my $server (@servers) {
-                        $server->user_id($user);
-                        $server->save;
-                    }
-                }
-                $email_user->delete;
-            }
-            unless ($user) {
-                ($user) = NP::Model->user->create(bitcard_id => $bc_user->{id});
-            }
-            my $uid = $user->id;
-            $user->username($bc_user->{username});
-            $user->email($bc_user->{email});
-            $user->name($bc_user->{name});
-            $user->bitcard_id($bc_user->{id});
-            $user->save;
-            $self->cookie($self->user_cookie_name, $uid);
-            $self->user($user);
-        }
-    }
-
     if ($self->is_logged_in) {
         $self->request->env->{REMOTE_USER} = $self->user->username;
     }
@@ -105,7 +68,10 @@ sub render {
             }
 
             my $email = $userdata->{email_verified} && $userdata->{email};
-            my $provider = $userdata->{identities} && $userdata->{identities}->[0] && $userdata->{identities}->[0]->{provider};
+            my $provider =
+                 $userdata->{identities}
+              && $userdata->{identities}->[0]
+              && $userdata->{identities}->[0]->{provider};
 
             if ($identity) {
                 $identity->provider($provider) if $provider;
@@ -138,7 +104,7 @@ sub render {
                       && $p->{email_verified}
                       && !$uniq{$p->{email}}++;
                     $ok;
-                  } ({ profileData => $userdata }, @{$userdata->{identities}});
+                  } ({profileData => $userdata}, @{$userdata->{identities}});
 
                 for my $email (@emails) {
                     warn "Testing email: $email";
@@ -179,7 +145,7 @@ sub render {
             $self->user($user);
 
             my $r = $self->req_param('r') || '/manage';
-            return $self->redirect( $r );
+            return $self->redirect($r);
         }
 
     }
@@ -248,7 +214,7 @@ sub _get_auth0_user {
 sub callback_url {
     my $self = shift;
 
-    my $uri  = URI->new($self->config->base_url($self->site));
+    my $uri = URI->new($self->config->base_url($self->site));
     $uri->path('/manage/login');
 
     my $here = $self->_here_url;
@@ -272,7 +238,8 @@ sub login_url {
     return
         "https://${auth0_domain}/authorize?response_type=code"
       . "&client_id=${auth0_client}"
-      . '&redirect_uri=' . $self->callback_url;
+      . '&redirect_uri='
+      . $self->callback_url;
 }
 
 sub manage_dispatch {
@@ -356,12 +323,9 @@ sub handle_add {
             }
         }
         $self->tpl_param(servers => \@added);
-        my $msg = $self->evaluate_template('tpl/manage/add_email.txt');
-        my $email = Email::Stuffer
-          ->from(NP::Email::address("sender"))
-          ->to(NP::Email::address("notifications"))
-          ->reply_to($self->user->email)
-          ->text_body($msg);
+        my $msg   = $self->evaluate_template('tpl/manage/add_email.txt');
+        my $email = Email::Stuffer->from(NP::Email::address("sender"))
+          ->to(NP::Email::address("notifications"))->reply_to($self->user->email)->text_body($msg);
 
         warn "added: ", Data::Dump::pp(\@added);
 
@@ -399,7 +363,7 @@ sub _get_server_ips {
         return ($ip->short);
     }
 
-    my $res = Net::DNS::Resolver->new( domain => undef);
+    my $res = Net::DNS::Resolver->new(domain => undef);
     my @ips;
     for my $type (qw(A AAAA)) {
         my $query = $res->query($host, $type);
@@ -512,7 +476,7 @@ sub get_server_info {
     warn "JS: ", $res->decoded_content();
 
     my $json = JSON::XS->new->utf8;
-    my %ntp   = eval { +%{ $json->decode($res->decoded_content) } };
+    my %ntp = eval { +%{$json->decode($res->decoded_content)} };
     if ($@) {
         $server{error} = "Could not decode NTP response from trace server";
         return \%server;
