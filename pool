@@ -18,7 +18,7 @@ use File::Path qw(mkpath);
 use JSON::XS ();
 use Math::Random::Secure qw(irand);
 
-my $config = Combust::Config->new;
+my $config     = Combust::Config->new;
 my $config_ntp = $config->site->{ntppool};
 
 use NP::Model;
@@ -50,7 +50,7 @@ sub ntpdate_local {
     $ntp{Stratum} ||= '';
     push @error, "Bad stratum: $ntp{Stratum}"
       unless $ntp{Stratum}
-          and $ntp{Stratum} < 6;
+      and $ntp{Stratum} < 6;
 
     if (@error) {
         print @error, "\n";
@@ -70,7 +70,7 @@ sub ntpdate {
     my $js = get("https://trace2.ntppool.org/ntp/$host");
 
     my $json = JSON::XS->new->utf8;
-    my %ntp   = %{ $json->decode($js) };
+    my %ntp  = %{$json->decode($js)};
 
     #warn Data::Dumper->Dump([\%ntp]);
 
@@ -79,7 +79,7 @@ sub ntpdate {
     $ntp{Stratum} ||= '';
     push @error, "Bad stratum: $ntp{Stratum}"
       unless $ntp{Stratum}
-          and $ntp{Stratum} < 6;
+      and $ntp{Stratum} < 6;
 
     if (@error) {
         print @error, "\n";
@@ -148,7 +148,7 @@ if ($cmd eq "add") {
 
     # look if the email address is already registered
     my $email = shift @ARGV;
-    my $user = find_user_by_email($email);
+    my $user  = find_user_by_email($email);
 
     # do we have a hostname or an IP?
     my $hostname = shift @ARGV;
@@ -203,7 +203,7 @@ elsif ($cmd eq "addmonitor") {
     die "ip_version must be v4 or v6" unless $ip_version =~ m/^v[46]$/;
 
     my $db = NP::Model->db;
-    my $txn  = $db->begin_scoped_work or die $db->error;
+    my $txn = $db->begin_scoped_work or die $db->error;
 
     # look if the email address is already registered
     my $user = find_user_by_email($email);
@@ -225,27 +225,32 @@ elsif ($cmd eq "addmonitor") {
     }
 
     my $monitor = NP::Model->monitor->create(
-        ip       => $ip,
-        user_id  => $user->id,
+        name       => "",
+        config     => "",
+        created_on => DateTime->now,
+        ip         => $ip,
+        user_id    => $user->id,
         ip_version => $ip_version,
     );
 
     require Math::BaseCalc;
-    my $base36 = Math::BaseCalc->new(digits => ['a'..'k', 'm'..'z', 2..9]);
+    my $base36 = Math::BaseCalc->new(digits => ['a' .. 'k', 'm' .. 'z', 2 .. 9]);
 
     my @numbers = map { $base36->to_base(irand) } (undef) x 3;
     my $api_key = join "", @numbers;
 
-    $monitor->api_key( $api_key );
+    $monitor->api_key($api_key);
 
     $monitor->save;
 
     my $id = $monitor->id;
 
-    $db->dbh->do( q[ insert into server_scores (monitor_id, server_id, score_raw)
-                      select ?, id, score_raw from servers
+    $db->dbh->do(
+        q[ insert into server_scores (monitor_id, server_id, score_raw, created_on)
+                      select ?, id, score_raw, NOW() from servers
                       where ip_version = ? and deletion_on is null
-                     ], {}, $monitor->id, $monitor->ip_version );
+                     ], {}, $monitor->id, $monitor->ip_version
+    );
 
     for my $f (qw(ip ip_version api_key)) {
         printf "%-10s: %s\n", $f, $monitor->$f;
