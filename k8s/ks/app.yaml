@@ -1,11 +1,23 @@
 apiVersion: 0.1.0
 environments:
-  default:
+  beta:
+    destination:
+      namespace: ntpbeta
+      server: https://kube-controllers.dev:443
+    k8sVersion: v1.8.9+coreos.1
+    path: beta
+  dev:
     destination:
       namespace: ntpdev
       server: https://192.168.99.100:8443
-    k8sVersion: v1.8.0
-    path: default
+    k8sVersion: v1.10.0
+    path: dev
+  prod:
+    destination:
+      namespace: ntppool
+      server: https://kube-controllers.dev:443
+    k8sVersion: v1.8.9+coreos.1
+    path: prod
 kind: ksonnet.io/app
 name: ntppool
 registries:
