@@ -4,7 +4,7 @@ local envParams = params + {
   components+: {
     ns+: {
       name: "ntpbeta"
-    }
+    },
   }
 };
 

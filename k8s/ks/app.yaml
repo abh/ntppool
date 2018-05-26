@@ -4,7 +4,7 @@ environments:
     destination:
       namespace: ntpbeta
       server: https://kube-controllers.dev:443
-    k8sVersion: v1.8.9+coreos.1
+    k8sVersion: v1.8.9
     path: beta
   dev:
     destination:
@@ -16,7 +16,7 @@ environments:
     destination:
       namespace: ntppool
       server: https://kube-controllers.dev:443
-    k8sVersion: v1.8.9+coreos.1
+    k8sVersion: v1.8.9
     path: prod
 kind: ksonnet.io/app
 name: ntppool

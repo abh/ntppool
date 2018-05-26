@@ -4,7 +4,10 @@ local envParams = params + {
   components+: {
     ns+: {
       name: "ntpdev"
-    }
+    },
+    mailhog+: {
+      enabled: true,
+    },
   }
 };
 
