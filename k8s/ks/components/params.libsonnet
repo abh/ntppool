@@ -38,5 +38,13 @@
       replicas: 1,
       type: "ClusterIP",
     },
+    ntppool: {
+      containerPort: 8980,
+      image: "quay.io/ntppool/ntppool-devel:kube",
+      name: "ntppool",
+      replicas: 1,
+      servicePort: 80,
+      type: "ClusterIP",
+    },
   },
 }
