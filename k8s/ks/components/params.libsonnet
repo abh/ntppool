@@ -17,7 +17,7 @@
       containerPort: 25,
       image: "namshi/smtp",
       name: "smtp",
-      replicas: 1,
+      replicas: 2,
       servicePort: 25,
       type: "ClusterIP",
       settings: {
@@ -43,6 +43,14 @@
       image: "quay.io/ntppool/ntppool-devel:kube",
       name: "ntppool",
       replicas: 1,
+      servicePort: 80,
+      type: "ClusterIP",
+    },
+    splash: {
+      containerPort: 8050,
+      image: "scrapinghub/splash:latest",
+      name: "splash",
+      replicas: 2,
       servicePort: 80,
       type: "ClusterIP",
     },

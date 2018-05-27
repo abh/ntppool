@@ -8,6 +8,12 @@ local envParams = params + {
     mailhog+: {
       enabled: true,
     },
+    smtp+: {
+      replicas: 1,
+    },
+    splash+: {
+      replicas: 1,
+    },
   }
 };
 
