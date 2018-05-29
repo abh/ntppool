@@ -84,6 +84,16 @@ local params = std.extVar('__ksonnet/params').components.smtp;
                   containerPort: params.containerPort,
                 },
               ],
+              resources: {
+                limits: {
+                  cpu: '200m',
+                  memory: '80Mi',
+                },
+                requests: {
+                  cpu: '20m',
+                  memory: '20Mi',
+                },
+              },
             },
           ],
         },

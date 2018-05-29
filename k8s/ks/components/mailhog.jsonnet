@@ -12,14 +12,14 @@ local params = std.extVar('__ksonnet/params').components.mailhog;
       spec: {
         ports: [
           {
-            name: "smtp",
+            name: 'smtp',
             port: params.smtpPort,
-            targetPort: "smtp",
+            targetPort: 'smtp',
           },
           {
-            name: "http",
+            name: 'http',
             port: params.httpPort,
-            targetPort: "http",
+            targetPort: 'http',
           },
         ],
         selector: {
@@ -68,16 +68,28 @@ local params = std.extVar('__ksonnet/params').components.mailhog;
                     containerPort: params.httpPort,
                   },
                 ],
-          livenessProbe: {
-            tcpSocket: {
-              port: "smtp"
-            },
-            initialDelaySeconds: 10,
-            timeoutSeconds: 1,
-          },
-          readinessProbe: {
-                 tcpSocket:{port: "smtp"}
-         },},
+                livenessProbe: {
+                  tcpSocket: {
+                    port: 'smtp',
+                  },
+                  initialDelaySeconds: 10,
+                  timeoutSeconds: 1,
+                },
+                readinessProbe: {
+                  tcpSocket: { port: 'smtp' },
+                },
+                resources: {
+                  limits: {
+                    cpu: '50m',
+                    memory: '150Mi',
+                  },
+                  requests: {
+                    cpu: '10m',
+                    memory: '50Mi',
+                  },
+                },
+
+              },
             ],
           },
         },

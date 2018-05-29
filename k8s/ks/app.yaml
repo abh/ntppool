@@ -2,7 +2,7 @@ apiVersion: 0.1.0
 environments:
   beta:
     destination:
-      namespace: ntpbeta
+      namespace: ntpbeta2
       server: https://kube-controllers.dev:443
     k8sVersion: v1.8.9
     path: beta
@@ -12,6 +12,12 @@ environments:
       server: https://192.168.99.100:8443
     k8sVersion: v1.10.0
     path: dev
+  docker:
+    destination:
+      namespace: ntpdev
+      server: https://localhost:6443
+    k8sVersion: v1.9.6
+    path: docker
   prod:
     destination:
       namespace: ntppool

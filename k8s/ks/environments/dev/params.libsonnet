@@ -1,24 +1,30 @@
-local params = std.extVar("__ksonnet/params");
-local globals = import "globals.libsonnet";
-local envParams = params + {
+local params = std.extVar('__ksonnet/params');
+local globals = import 'globals.libsonnet';
+local envParams = params {
   components+: {
     ns+: {
-      name: "ntpdev"
+      name: 'ntpdev',
     },
     mailhog+: {
       enabled: true,
     },
-    smtp+: {
-      replicas: 1,
+    ntppool+: {
+      image: 'quay.io/ntppool/ntppool-devel:kube',
     },
-    splash+: {
-      replicas: 1,
+    config+: {
+      data+: {
+        manage_tls: "false",
+      },
     },
-  }
+    secrets+: {
+      data+: import 'secrets.libsonnet',
+    },
+  },
 };
 
 {
   components: {
-    [x]: envParams.components[x] + globals for x in std.objectFields(envParams.components)
-  }
+    [x]: envParams.components[x] + globals
+    for x in std.objectFields(envParams.components)
+  },
 }

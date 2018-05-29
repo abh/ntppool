@@ -1,5 +1,5 @@
 local env = std.extVar('__ksonnet/environments');
-local params = std.extVar('__ksonnet/params').components.splash;
+local params = std.extVar('__ksonnet/params').components.geoip;
 [
   {
     apiVersion: 'v1',
@@ -10,14 +10,7 @@ local params = std.extVar('__ksonnet/params').components.splash;
     spec: {
       ports: [
         {
-          name: 'http',
           port: params.servicePort,
-          targetPort: params.containerPort,
-        },
-        {
-          // do both port 80 and 8050 for the service for now
-          name: 'http-old',
-          port: params.containerPort,
           targetPort: params.containerPort,
         },
       ],
@@ -44,6 +37,7 @@ local params = std.extVar('__ksonnet/params').components.splash;
         metadata: {
           labels: {
             app: params.name,
+            tier: 'geoip',
           },
         },
         spec: {
@@ -58,12 +52,12 @@ local params = std.extVar('__ksonnet/params').components.splash;
               ],
               resources: {
                 limits: {
-                  cpu: '1',
-                  memory: '700Mi',
+                  cpu: '300m',
+                  memory: '100Mi',
                 },
                 requests: {
-                  cpu: '10m',
-                  memory: '250Mi',
+                  cpu: '20m',
+                  memory: '50Mi',
                 },
               },
             },

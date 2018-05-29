@@ -1,19 +1,25 @@
 local env = std.extVar('__ksonnet/environments');
 local params = std.extVar('__ksonnet/params').components.ntppool;
+local config = std.extVar('__ksonnet/params').components.config.data;
 
-local secrets_data = import '../secrets.libsonnet';
+local appBase = import 'ntppool-app.libsonnet';
+
+local web_tls = std.objectHas(config, 'web_tls') && config.web_tls == 'true';
+local manage_tls = std.objectHas(config, 'manage_tls') && config.manage_tls == 'true';
+
+
+local resourcesLow = {
+  limits: {
+    cpu: '500m',
+    memory: '200Mi',
+  },
+  requests: {
+    cpu: '50m',
+    memory: '100Mi',
+  },
+};
 
 [
-  {
-    apiVersion: 'v1',
-    kind: 'Secret',
-    metadata: {
-      name: params.name + '-secrets',
-    },
-    type: 'Opaque',
-    data: secrets_data,
-  },
-
   {
     apiVersion: 'v1',
     kind: 'Service',
@@ -33,115 +39,76 @@ local secrets_data = import '../secrets.libsonnet';
       type: params.type,
     },
   },
-  {
-    apiVersion: 'apps/v1beta2',
-    kind: 'Deployment',
-    metadata: {
-      name: params.name,
-      labels: {
-        app: 'ntppool',
-        component: 'web',
-      },
-    },
-    spec: {
-      replicas: params.replicas,
-      selector: {
-        matchLabels: {
-          app: params.name,
-          tier: 'frontend',
-        },
-      },
-      template: {
-        metadata: {
-          labels: {
-            app: params.name,
-            tier: 'frontend',
+  appBase.Deployment {
+    name: 'ntppool',
+    tier: 'frontend',
+    params: params,
+    containers: [
+      appBase.Container {
+        name: 'httpd',
+        params: params,
+        args: ['/ntppool/docker-run'],
+        ports: [
+          {
+            containerPort: params.containerPort,
           },
-        },
-        spec: {
-          containers: [
-            {
-              image: params.image,
-              name: params.name,
-              imagePullPolicy: 'IfNotPresent',
-              command: [
-                '/ntppool/docker/entrypoint',
-                '/ntppool/docker-run',
-              ],
-              env: [
-                {
-                  name: 'CBCONFIG',
-                  value: '/var/ntppool/combust.conf',
-                },
-                {
-                  name: 'auth0_secret',
-                  valueFrom: {
-                    secretKeyRef: {
-                      key: 'auth0_secret',
-                      name: 'ntppool-secrets',
-                    },
-                  },
-                },
-                {
-                  name: 'db_pass',
-                  valueFrom: {
-                    secretKeyRef: {
-                      key: 'db_pass',
-                      name: 'ntppool-secrets',
-                    },
-                  },
-                },
-              ],
-              envFrom: [
-                {
-                  configMapRef: {
-                    name: 'ntppool-env',
-                  },
-                },
-              ],
-              ports: [
-                {
-                  containerPort: params.containerPort,
-                },
-              ],
-              readinessProbe: {
-                failureThreshold: 3,
-                httpGet: {
-                  httpHeaders: [
-                    {
-                      name: 'Host',
-                      value: 'web.ntp.cluster',
-                    },
-                  ],
-                  path: '/combust-healthz',
-                  port: 8980,
-                  scheme: 'HTTP',
-                },
-                initialDelaySeconds: 4,
-                periodSeconds: 3,
-                successThreshold: 1,
-                timeoutSeconds: 1,
+        ],
+        readinessProbe: {
+          failureThreshold: 3,
+          httpGet: {
+            httpHeaders: [
+              {
+                name: 'Host',
+                value: 'web.ntp.cluster',
               },
-              volumeMounts: [
-                {
-                  mountPath: '/ntppool',
-                  name: 'host-ntppool',
-                },
-              ],
-            },
-          ],
-          volumes: [
-            {
-              hostPath: {
-                path: '/Users/ask/.shared/src/ntppool',
-                type: '',
-              },
-              name: 'host-ntppool',
-            },
-          ],
-
+            ],
+            path: '/combust-healthz',
+            port: 8980,
+            scheme: 'HTTP',
+          },
+          initialDelaySeconds: 4,
+          periodSeconds: 3,
+          successThreshold: 1,
+          timeoutSeconds: 1,
         },
       },
-    },
+      appBase.Container {
+        name: 'httpd-cron',
+        params: params,
+        args: ['/ntppool/bin/cron/runner'],
+        resources: resourcesLow,
+      },
+    ],
   },
+
+  appBase.CronJob {
+    name: 'server-notifications',
+    schedule: '*/15 * * * *',
+    params: params,
+    containers: [
+      appBase.Container {
+        name: 'server-removals',
+        params: params,
+        args: ['sh', '/ntppool/bin/bad_server_notifications'],
+        resources: resourcesLow,
+      },
+    ],
+  },
+
+  appBase.CronJob {
+    name: 'server-removals',
+    schedule: '50 */3 * * *',
+    params: params,
+    containers: [
+      appBase.Container {
+        name: 'server-removals',
+        params: params,
+        args: ['sh', '/ntppool/bin/bad_server_removals'],
+        resources: resourcesLow,
+      },
+    ],
+  },
+
+  appBase.Ingress('web', std.split(config.web_hostname, ','), web_tls),
+  appBase.Ingress('manage', std.split(config.manage_hostname, ','), manage_tls),
 ]
