@@ -4,16 +4,16 @@
 	<h3 id="use">Hogyan használhatom a pool.ntp.org-ot?</h3>
 
 	<p>
-	Ha szeretnéd az számítógépeid óráit a hálózatról szinkronizálni, akkor csak az alábbi egyszerű beállításokra van szükséged az <a href="http://www.ntp.org">ntp.org</a>-ról letölthető ntpd program konfigurációs állományában, bármely támogatott operációs rendszer esetén(Linux, *BSD, Windows vagy akár számos egzotikus operációs rendszer):
+	Ha szeretnéd az számítógépeid óráit a hálózatról szinkronizálni, akkor csak az alábbi egyszerű beállításokra van szükséged az <a href="http://www.ntp.org">ntp.org</a>-ról letölthető ntpd program konfigurációs állományában, bármely támogatott operációs rendszer esetén (Linux, *BSD, Windows vagy akár számos egzotikus operációs rendszer):
 	</p>
 
 	[% INCLUDE "ntppool/use/sample-config.html" %]
 
 	<p>
-	A 0, 1, 2 and 3.pool.ntp.org nevek óránként mindig más, véletlenszerűen választott NTP szerverek címeire oldódnak fel.
-	Győződj meg róla, hogy a géped órája megközelítőleg(maximum pár perces eltéréssel) a pontos időre legyen beállítva.
+	A 0, 1, 2 és 3.pool.ntp.org nevek óránként mindig más, véletlenszerűen választott NTP szerverek címeire oldódnak fel.
+	Győződj meg róla, hogy a géped órája megközelítőleg (maximum pár perces eltéréssel) a pontos időre legyen beállítva.
 	Ehhez használhatod a <code>ntpdate pool.ntp.org</code> parancsot, vagy kézi beállításhoz a <code>date</code> utasítást.
-	Ezek után indítsd el az ntpd-t és kis idő múltán(ez akár fél óra is lehet!), az <code>ntpq -pn</code> parancsnak az alábbihoz hasonló kimenettel kell visszatérnie:
+	Ezek után indítsd el az ntpd-t és kis idő múltán (ez akár fél óra is lehet!), az <code>ntpq -pn</code> parancsnak az alábbihoz hasonló kimenettel kell visszatérnie:
 	</p>
 
 	[% INCLUDE "ntppool/use/sample-ntpq.html" %]
@@ -34,11 +34,11 @@
 	<a href="/zone/oceania">Óceánia</a>
 	vagy <a href="/zone/asia">Ázsia</a>),
 	és az országos zónák (mint például hu.pool.ntp.org Magyarországon) - ezekhez a zónákhoz ismét csak használhatók a 0,
-	1 or 2 prefixek, például 0.hu.pool.ntp.org. Elképzelhető, hogy egy adott országos zóna nem létezik vagy csak alig 1-2 szervert tartalmaz.
+	1 vagy 2 prefixek, például 0.hu.pool.ntp.org. Elképzelhető, hogy egy adott országos zóna nem létezik vagy csak alig 1-2 szervert tartalmaz.
 	</p>
 	<p>
 	Ha <b>friss Windows verziót</b> futtatsz, akkor használhatod a beépített NTP klienst az időszinkronhoz.
-	Ennek beállításához rendszergazdaként üssd be parancssorba(cmd.exe) az alábbi utasítást:</p>
+	Ennek beállításához rendszergazdaként üsd be parancssorba (cmd.exe) az alábbi utasítást:</p>
 <pre class="code">
 w32tm /config /syncfromflags:manual /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 </pre>
@@ -49,7 +49,7 @@ w32tm /config /syncfromflags:manual /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.o
 net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
 </pre>
 	<p>
-	Az automatikus internetes időszinkronizálás beállítható a grafikus felületen is. Ehhez rendszergazdaként kattints jobb egérgombbal az órára a tálcán, az előugró menüben pedig válasszd a "Dátum és idő beállítása" menüpontot. Az előugró ablakban az "Internetes idő" fülön tudod megadni a kívánt NTP szerver címét.	
+	Az automatikus internetes időszinkronizálás beállítható a grafikus felületen is. Ehhez rendszergazdaként kattints jobb egérgombbal az órára a tálcán, az előugró menüben pedig válaszd a "Dátum és idő beállítása" menüpontot. Az előugró ablakban az "Internetes idő" fülön tudod megadni a kívánt NTP szerver címét.	
 	</p>
 
 	<p>
@@ -57,7 +57,7 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
 	</p>
 
 	<p>
-	Nem fogod tudni beállítani az NTP-t, ha a Windows-od tartományba van léptetve(például: céges számítógépek).
+	Nem fogod tudni beállítani az NTP-t, ha a Windows-od tartományba van léptetve (például: céges számítógépek).
 
 	Erről bővebben a <a href="http://technet.microsoft.com/en-us/library/cc773013%28WS.10%29.aspx">How Windows Time Service Works</a> oldalon olvashatsz.
 	</p>
@@ -67,7 +67,7 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
 	<h3 id="notes">Kiegészítő megjegyzések</h3>
 
         <p><span class="hook">Fontold meg, hogy az NTP Pool megfelelő-e számodra</span>.
-		Ha üzleti érdek vagy akér emberélet múlik a pontos időn, akkor ne az internetről szerezd be azt.
+		Ha üzleti érdek vagy akár emberélet múlik a pontos időn, akkor ne az internetről szerezd be azt.
 		Az NTP Pool projekt szerverei általánosságban nagyon pontos időt szolgáltatnak, de ne felejtsd el, hogy ezek önkéntesek által a szabadidejükben üzemeltetett kiszolgálók.
 		Kérlek vedd fel a kapcsolatot az eszközeid gyártójával, hogy megtudd, mi lenne a megfelelő és megbízható módja az esetedben az időszinkronizálásnak. Itt megtekintheted az NTP Pool <a href="/tos.html">felhasználási feltételeit<> is.
 
@@ -78,13 +78,13 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
         </p>
 
 	<p><span class="hook">Ha van állandó IP címed és egy megbízható internet kapcsolatod</span> (a sávszélesség nem olyan fontos, mint az, hogy legyen stabil és nem túl terhelt a kapcsolat), kérlek
-	fontold meg, hogy csatlakozz egy szerverrel a pool-ba. Részedre ez nem jelent jelentősen többlet forgalmat(pár Bps), de ennek a projektnek nagy segítség lenne.
+	fontold meg, hogy csatlakozz egy szerverrel a pool-ba. Részedre ez nem jelent jelentősen többlet forgalmat (pár Bps), de ennek a projektnek nagy segítség lenne.
 	További részletek a <a href="/join.html">csatlakozással kapcsolatos aloldalon</a> találhatók.
 	</p>
 
 	<p><span class="hook">Ha az internet szolgáltatód biztosít időszinkron szervert</span>, vagy ismersz a közeledben egy megbízható szervert, akkor javasolt inkább azt használnod ez a lista helyett.
 	Valószínűleg pontosabb lesz a szinkron és kevesebb hálózati erőforrásra lesz ehhez szükséged.
-	time and you'll use fewer network resources.  Ha csak egy szerver van a közeledben, akkor természetesen használd azt és még kettőt a pool.ntp.org-ból.
+	Ha csak egy szerver van a közeledben, akkor természetesen használd azt és még kettőt a pool.ntp.org-ból.
 	</p>
 
 	<p><span class="hook">Ritkán megtörténhet, hogy a véletlenszerűen választott NTP szerverek között kétszer is szerepel valamelyik</span>.
@@ -100,7 +100,7 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
 	<p><span class="hook">Győződj meg róla, hogy a számítógéped <i>időzóna beállítása</i> megfelelő-e</span>.
 	Az ntpd nem állít be időzónát, csak az UTC szerinti időhöz szinkronizál.</p>
 
-	<p><span class="hook">Ha egy hálózat több eszköét szeretnéd a pool.ntp.org-hoz szinkronizálni</span>, akkor kérlek
+	<p><span class="hook">Ha egy hálózat több eszközét szeretnéd a pool.ntp.org-hoz szinkronizálni</span>, akkor kérlek
 	állíts be egy saját NTP szervert a hálózatodon és a többi gépet ahhoz szinkronizáld.
 	(ennek lehet, hogy egy kicsit utána kell majd nézned de egyáltalán nem bonyolult és ha mégis elakadnál, akkor még ott a
 	<a href="news:comp.protocols.time.ntp">comp.protocols.time.ntp hírcsoport</a>.)</p>
