@@ -1,95 +1,81 @@
 <div class="block">
 
-<h3>Configuration recommendations for servers joining the pool</h3>
+<h3>Beállítási javaslatok a csatlakozni kívánó szervereknek</h3>
 
 <p>
-The <a href="http://support.ntp.org/bin/view/Support/WebHome">Support
-section</a> on <a href="http://support.ntp.org/">support.ntp.org</a> has a lot
-of useful information.
+A <a href="http://support.ntp.org/">support.ntp.org</a> weboldal 
+<a href="http://support.ntp.org/bin/view/Support/WebHome">támogatás menüpontja</a>
+sok hasznos információt tartalmaz.
 </p>
 
 <p>
-If you just want to <i>use</i> the pool, see the <a href="/use.html">pool usage</a> page.
+Ha csak <i>használni</i> szeretnéd a pool szervereit, akkor a <a href="/use.html">pool használata</a> oldalon találsz információt.
 </p>
 
 <p>
-The <a
-href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a>
-newsgroup is the best place to get help with the ntpd software.
+A <a href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a>
+levelezőlista a legjobb hely, ha az ntpd szoftverrel kapcsolatban van szükséged segítségre.
 </p>
 
 <p>
-Below are some things of particular importance if you are going to
-join the NTP Pool with your server.
+Ha a szervereddel csatlakozni szeretnél a poolhoz, akkor az alábbiak különösen fontosak.
 </p>
 
-<h4 id="management-queries">Management queries</h4>
+<h4 id="management-queries">Menedzsment kérések</h4>
 
-<p>Make the default configuration be to not allow "management queries". For ntpd this will be adding the "noquery" option to the default "restrict" lines, for example:</p>
+<p>A szervered alapértelmezés szerint ne fogadjon beállítás jellegű kéréseket. Ha ntpd-t használsz, akkor ezt az alapértelmezett "restrict" sorokba írt "noquery" paraméterrel tudod beállítani:</p>
 
 [% INCLUDE "join/configuration/restrict-default.html" %]
 
-<p>To allow commands like "ntpq -c pe" to work from localhost you can add:</p>
+<p>Ahhoz, hogy az "ntpq -c pe" és hasonló parancsok működjenek localhost-ról a következő sorok szükségesek:</p>
 
 [% INCLUDE "join/configuration/restrict-localhost.html" %]
 
-<h4>Setup about 5 servers</h4>
-
+<h4>Használj kb. 5 másik szervert</h4>
 <p>
-To work properly ntpd needs to talk to at least 3 servers ("A man with
-a watch knows what time it is. A man with two watches is never sure").
+Az ntpd megfelelő működéséhez minimum 3 másik szervert be kell állítani. ("Egy órával tudod, hogy mennyi az idő. Ha két órád van, sosem lehetsz biztos.")
 </p>
 
 <p>
-For servers in the pool we recommend configuring no less than 4 and no
-more than 7 servers.
+A pool-ban lévő szervereknek minimum 4, de maximum 7 másik szervert javasolt beállítani.
 </p>
 
 
-<h4>Don't use *.pool.ntp.org servers</h4>
+<h4>Ne használj *.pool.ntp.org szervereket</h4>
 
 <p>
-Ironically to make sure the pool service is the best it can be you
-shouldn't use the *.pool.ntp.org aliases in your configuration when
-you are going to add your server to the pool.
+Irónikus módon a pool megfelelő működéséhez az a legjobb, ha a csatlakozni kívánó hoszt nem *.pool.ntp.org címeket használ a további szerverek felvételéhez.
 </p>
 
 <p>
-For the robustness of the pool it's healthier if all pool operators "hand pick" good local (network wise) time servers.
-The NTP.org wiki has  a <a
-href="http://support.ntp.org/bin/view/Servers/WebHome">list of public
-servers</a>.
+A pool megbízhatósága szempontjából az a legjobb, ha minden üzemeltető kézzel választja ki a szervere által használt további szervereket. 
+Ezek lehetőség szerint stabil, minél közelebbi szerverek legyenek.
+Az NTP.org wiki oldalán megtalálható a <a href="http://support.ntp.org/bin/view/Servers/WebHome">publikus szerverek listája</a>.
 </p>
 
 
-<h4>Use the standard ntpd</h4>
+<h4>Használd az ntpd szervert</h4>
 
 <p>
-We are all for software diversity, but a significant percentage of the
-"it's not working" questions that come in are for software other than
-ntpd.
+A "nem működik" problémák jelentős része az eltérő NTP szerver implementációkból fakad.
 </p>
 
 <p>
-You can <i>use</i> the pool with any program speaking NTP, but if you
-are going to join the pool we recommend you
-use <a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
+A pool szervereit bármilyen NTP klienssel <i>használhatod</i>, de ha a szerveredet a poolban szeretnéd publikálni, akkor javasolt az 
+<a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a> használata.
 </p>
 
 
-<h4>Don't use the LOCAL clock driver</h4>
+<h4>Ne használd a LOCAL driver-t</h4>
 
-<p>Servers in the NTP Pool should not have the LOCAL clock driver
-configured.</p>
+<p>Fontos, hogy a poolban szereplő szerverek konfigurációjában ne szerepeljen a LOCAL driver.</p>
 
-<h4>Beware of PTR DNS queries</h4>
+<h4>Kerüld el a PTR DNS lekérdezéseket</h4>
 
-<p>Some server operators have reported that some of the NTP users (or
-their firewall software) does a "reverse DNS" (PTR) query for the IP address
-of the NTP server. Beware that this might cause the number of queries to
-go up. Increasing the "time to live" on those records is recommended if
-the number of DNS queries is a concern, and will generally make the number
-of queries negligible.
+<p>
+A szerverek üzemeltetőinek az a tapasztalata, hogy néhány felhasználó(vagy a tűzfaluk)
+lekérdezi az NTP szerver IP címéhez tartozó PTR rekordot. Ez a lekérdezések számának jelentős növekedését okozza. 
+Az érintett rekordok TTL értékének növelésével csökkenthető a feleselges DNS kérések száma.
 </p>
 
 </div>
