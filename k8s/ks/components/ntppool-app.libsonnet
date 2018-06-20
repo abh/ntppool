@@ -1,6 +1,8 @@
 local params = std.extVar('__ksonnet/params').components.ntppool;
 local config = std.extVar('__ksonnet/params').components.config.data;
 
+local affinity = import 'affinity.libsonnet';
+
 local ingress(name, domains, tls) = {
   apiVersion: 'extensions/v1beta1',
   kind: 'Ingress',
@@ -164,6 +166,7 @@ local volumes = [
           },
         },
         spec: {
+          affinity: affinity.PodAnti("tier", deployment.tier),
           containers:
             deployment.containers,
           volumes: volumes,

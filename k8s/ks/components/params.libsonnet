@@ -64,7 +64,7 @@
     },
     ntppool: {
       containerPort: 8980,
-      image: 'quay.io/ntppool/ntppool:6fafd82a',
+      image: 'quay.io/ntppool/ntppool:20e7ba0',
       name: 'ntppool',
       imagePullSecrets: [],
       replicas: 2,

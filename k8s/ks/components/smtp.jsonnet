@@ -1,5 +1,6 @@
 local env = std.extVar('__ksonnet/environments');
 local params = std.extVar('__ksonnet/params').components.smtp;
+local affinity = import 'affinity.libsonnet';
 [
   {
     apiVersion: 'v1',
@@ -40,6 +41,7 @@ local params = std.extVar('__ksonnet/params').components.smtp;
           },
         },
         spec: {
+          affinity: affinity.PodAnti("app", params.name),
           containers: [
             {
               image: params.image,

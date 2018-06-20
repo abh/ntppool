@@ -1,5 +1,6 @@
 local env = std.extVar('__ksonnet/environments');
 local params = std.extVar('__ksonnet/params').components.splash;
+local affinity = import 'affinity.libsonnet';
 [
   {
     apiVersion: 'v1',
@@ -37,16 +38,19 @@ local params = std.extVar('__ksonnet/params').components.splash;
       replicas: params.replicas,
       selector: {
         matchLabels: {
-          app: params.name,
+          app: 'ntppool',
+          tier: params.name,
         },
       },
       template: {
         metadata: {
           labels: {
-            app: params.name,
+            app: 'ntppool',
+            tier: params.name,
           },
         },
         spec: {
+          affinity: affinity.PodAnti('tier', params.name),
           containers: [
             {
               image: params.image,
