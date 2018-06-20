@@ -20,6 +20,7 @@ sub stathat_api {
 
 sub data {
     my $self = shift;
+    # return a singleton for the root so other methods can add to the data
     return $self->{_dns_data} ||= do {
 
         my $www_record = {
@@ -31,12 +32,13 @@ sub data {
         $data->{www} = $www_record;
         $data->{web} = $www_record;
         $data->{gb}  = {alias => 'uk'};
-        for my $i (0..3) {
-            $data->{"$i.gb"}  = {alias => "$i.uk"};
+        for my $i (0 .. 3) {
+            $data->{"$i.gb"} = {alias => "$i.uk"};
         }
 
         $data->{""}->{ns} = {map { $_ => undef } split /[\s+,]/, $self->ns_list};
-        $data->{"_dmarc"}->{txt} = "v=DMARC1; p=reject; pct=100; rua=mailto:re+h6dgrfy2ghh@dmarc.postmarkapp.com; sp=reject; aspf=r;";
+        $data->{"_dmarc"}->{txt} =
+          "v=DMARC1; p=reject; pct=100; rua=mailto:re+h6dgrfy2ghh@dmarc.postmarkapp.com; sp=reject; aspf=r;";
 
         $data;
     };
@@ -54,6 +56,12 @@ sub TO_JSON {
 }
 
 sub populate {
+    my $self = shift;
+    $self->populate_vendor_zones;
+    $self->populate_country_zones;
+}
+
+sub populate_country_zones {
     my $self = shift;
 
     my $zones = NP::Model->zone->get_zones_iterator(query => [dns => 1]);
@@ -129,6 +137,52 @@ sub populate {
             push @{$data->{$pgeodns_group}->{aaaa}}, $_ for @$entries;
         }
 
+    }
+}
+
+sub populate_vendor_zones {
+    my $root = shift;
+
+    my $vendor_zones = NP::Model->vendor_zone->get_vendor_zones(
+        query => [
+            status      => 'Approved',
+            dns_root_id => $root->id
+        ],
+        order => 'approved_on',
+    );
+
+    my %vendors;
+
+    for my $vendor (@$vendor_zones) {
+        my $name = $vendor->zone_name;
+        $vendors{$name} = {
+            type   => $vendor->client_type,
+            vendor => $vendor
+        };
+    }
+
+    if ($root->origin eq 'pool.ntp.org') {
+        my $vendordir = "vendordns";
+        opendir my $dir, $vendordir or die "could not open '$vendordir' dir: $!";
+        my @vendor_files =
+          grep { $_ !~ /\~$/ and -f $_ } map {"$vendordir/$_"} readdir($dir);
+        closedir $dir;
+        map { s!.*/!!; $vendors{$_} = {type => 'ntp'} } @vendor_files;
+    }
+
+    for my $name (sort keys %vendors) {
+        next unless $name;    # vendor_name="" on separate dns root
+        my $client_type = $vendors{$name}->{type};
+        my $sntp        = $client_type eq 'sntp' or $client_type eq 'all';
+        my $ntp         = $client_type eq 'ntp' or $client_type eq 'all';
+        if ($sntp) {
+            $root->data->{"$name"}->{alias} = "";
+        }
+        if ($ntp) {
+            for my $i (0 .. 3) {
+                $root->data->{"$i.$name"}->{alias} = $i;
+            }
+        }
     }
 }
 

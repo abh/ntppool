@@ -36,6 +36,46 @@ BEGIN {
   our $VERSION = 0;
 }
 
+{ package NP::Model::ApiKey;
+
+use strict;
+
+use base qw(NP::Model::_Object);
+
+__PACKAGE__->meta->setup(
+  table   => 'api_keys',
+
+  columns => [
+    id          => { type => 'serial', not_null => 1 },
+    api_key     => { type => 'varchar', length => 255 },
+    grants      => { type => 'text', length => 65535 },
+    created_on  => { type => 'datetime', default => 'now', not_null => 1 },
+    modified_on => { type => 'timestamp', not_null => 1 },
+  ],
+
+  primary_key_columns => [ 'id' ],
+
+  unique_key => [ 'api_key' ],
+);
+
+push @table_classes, __PACKAGE__;
+}
+
+{ package NP::Model::ApiKey::Manager;
+
+use strict;
+
+our @ISA = qw(Combust::RoseDB::Manager);
+
+sub object_class { 'NP::Model::ApiKey' }
+
+__PACKAGE__->make_manager_methods('api_keies');
+}
+
+# Allow user defined methods to be added
+eval { require NP::Model::ApiKey }
+  or $@ !~ m:^Can't locate NP/Model/ApiKey.pm: and die $@;
+
 { package NP::Model::DnsRoot;
 
 use strict;
@@ -1123,6 +1163,7 @@ eval { require NP::Model::ZoneServerCount }
     $_->clear_object_cache for @cache_classes;
   }
 
+  sub api_key { our $api_key ||= bless [], 'NP::Model::ApiKey::Manager' }
   sub dns_root { our $dns_root ||= bless [], 'NP::Model::DnsRoot::Manager' }
   sub log { our $log ||= bless [], 'NP::Model::Log::Manager' }
   sub log_score { our $log_score ||= bless [], 'NP::Model::LogScore::Manager' }
