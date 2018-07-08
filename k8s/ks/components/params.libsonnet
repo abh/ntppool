@@ -64,7 +64,7 @@
     },
     ntppool: {
       containerPort: 8980,
-      image: 'quay.io/ntppool/ntppool:20e7ba0',
+      image: 'quay.io/ntppool/ntppool:f77db0c',
       name: 'ntppool',
       imagePullSecrets: [],
       replicas: 2,
@@ -81,7 +81,7 @@
     },
     geoip: {
       containerPort: 8009,
-      image: 'quay.io/abh/geoipapi:0.1',
+      image: 'quay.io/abh/geoipapi:0.2',
       name: 'geoip',
       replicas: 2,
       servicePort: 80,

@@ -25,6 +25,7 @@ local envParams = params {
         manage_hostname: 'manage-beta.grundclock.com,kube-manage.grundclock.com',
         pool_domain: 'beta.grundclock.com',
         static_base: 'https://st.pimg.net/ntpbeta/',
+        www_cname: 'beta-lb.ntppool.org.',
 
         web_tls: 'true',
         web_hostname: 'web.beta.grundclock.com,graphs-beta.grundclock.com,kube-beta.grundclock.com,www.beta.grundclock.com',

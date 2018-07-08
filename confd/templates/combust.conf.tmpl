@@ -70,7 +70,11 @@ aliases = {{ range $names }}{{.}}, {{ end}} web
 
 pool_domain = {{ getenv "pool_domain" }}
 static_base = {{ getenv "static_base" }}
-# www_cname  = beta-lb.ntppool.org.
+{{ $www_cname := or (getenv "www_cname") ""}}
+{{ if gt (len $www_cname) 0 }}
+www_cname = {{ $www_cname }}
+{{ end }}
+
 deployment_mode = {{ $mode }}
 
 email_default       = {{ getenv "email_default" }}
