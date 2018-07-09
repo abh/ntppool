@@ -1,7 +1,7 @@
-version: '2'
+version: '3'
 services:
   mysql:
-    image: mariadb:10.1
+    image: mariadb:10.2
     volumes:
       - "./.data/db:/var/lib/mysql"
     restart: always
@@ -11,23 +11,23 @@ services:
       MYSQL_USER: ntppool
       MYSQL_PASSWORD: pooldev
   update-db:
-    image: quay.io/ntppool/app-base:master
+    image: quay.io/ntppool/ntppool:kube
     volumes:
       - .:/ntppool
     command: sh ./bin/initialize_schema
-    environment:
-      - DB=
     depends_on:
       - mysql
     links:
       - mysql
   web:
-    image: quay.io/ntppool/app-base:master
+    image: quay.io/ntppool/ntppool:kube
     command: ./docker-run
     volumes:
       - .:/ntppool
     ports:
       - "8299:8299"
+    env_file:
+      - ntppool.env
     depends_on:
       - mysql
       - update-db

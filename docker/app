@@ -9,8 +9,11 @@ if [ "$app" == "" ]; then
   ports="-p 8299:8299"
 fi
 
+set -ex
+
 docker run -t -i \
  -v $(pwd):/ntppool \
+ --env-file=ntppool.env \
  $ports \
  --rm \
- quay.io/ntppool/ntppool-devel:kube $app
+ quay.io/ntppool/ntppool-devel:kube ./docker/entrypoint $app

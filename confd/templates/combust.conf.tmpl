@@ -1,6 +1,6 @@
 perl = /usr/bin/perl
 servername = ntppool
-port = 8980
+port = {{getenv "port" "8299"}}
 
 # external_port.  Set to a non-zero value to set the port number used
 # for external redirects (301's, 302's)
@@ -101,9 +101,11 @@ aliases = {{ range $names }}{{.}}, {{ end}} manage
 deployment_mode = {{ $mode }}
 static_base = {{ getenv "static_base" }}
 
+{{ if eq (getenv "manage_tls") "yes" }}
 ssl_only = 1
 port = 443
 external_port = 443
+{{ end }}
 
 auth0_domain = {{ getenv "auth0_domain" }}
 auth0_client = {{ getenv "auth0_client" }}

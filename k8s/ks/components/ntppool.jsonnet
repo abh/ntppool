@@ -4,8 +4,8 @@ local config = std.extVar('__ksonnet/params').components.config.data;
 
 local appBase = import 'ntppool-app.libsonnet';
 
-local web_tls = std.objectHas(config, 'web_tls') && config.web_tls == 'true';
-local manage_tls = std.objectHas(config, 'manage_tls') && config.manage_tls == 'true';
+local web_tls = std.objectHas(config, 'web_tls') && config.web_tls == 'yes';
+local manage_tls = std.objectHas(config, 'manage_tls') && config.manage_tls == 'yes';
 
 
 local resourcesLow = {
@@ -63,7 +63,7 @@ local resourcesLow = {
               },
             ],
             path: '/combust-healthz',
-            port: 8980,
+            port: params.containerPort,
             scheme: 'HTTP',
           },
           initialDelaySeconds: 4,

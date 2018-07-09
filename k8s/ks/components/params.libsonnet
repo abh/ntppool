@@ -27,7 +27,7 @@
         pool_domain: 'ntp-test2.empty.us',
         web_hostname: 'web.ntp.cluster,graphs.ntp.cluster',
         manage_hostname: 'manage.ntp.cluster',
-        manage_tls: 'true',
+        manage_tls: 'yes',
       },
       name: 'config',
     },
@@ -63,7 +63,7 @@
       type: 'ClusterIP',
     },
     ntppool: {
-      containerPort: 8980,
+      containerPort: 8299,
       image: 'quay.io/ntppool/ntppool:f77db0c',
       name: 'ntppool',
       imagePullSecrets: [],

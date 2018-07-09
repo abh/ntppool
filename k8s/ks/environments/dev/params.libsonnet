@@ -13,7 +13,7 @@ local envParams = params {
     },
     config+: {
       data+: {
-        manage_tls: "false",
+        manage_tls: "no",
       },
     },
     secrets+: {

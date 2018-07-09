@@ -27,7 +27,7 @@ local envParams = params {
         static_base: 'https://st.pimg.net/ntpbeta/',
         www_cname: 'beta-lb.ntppool.org.',
 
-        web_tls: 'true',
+        web_tls: 'yes',
         web_hostname: 'web.beta.grundclock.com,graphs-beta.grundclock.com,kube-beta.grundclock.com,www.beta.grundclock.com',
       },
     },
