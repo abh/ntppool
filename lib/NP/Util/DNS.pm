@@ -11,7 +11,7 @@ use Combust::Config;
 
 sub find_dns_servers {
 
-    my $res = Net::DNS::Resolver->new;
+    my $res = _res();
 
     my %servers;
 
@@ -61,7 +61,7 @@ sub find_dns_servers {
 my $resolver;
 
 sub _res {
-    return $resolver = Net::DNS::Resolver->new;
+    return $resolver = Net::DNS::Resolver->new(defnames => 0);
 }
 
 sub get_dns_info {
@@ -167,7 +167,7 @@ sub get_dns_info {
 sub host_to_ips {
     my $host  = shift;
     my $res   = _res();
-    my $query = $res->search($host);
+    my $query = $res->query($host);
 
     my @ips;
 
@@ -178,7 +178,7 @@ sub host_to_ips {
         }
     }
     else {
-        warn "query failed: ", $res->errorstring, "\n";
+        warn "query for '$host' failed: ", $res->errorstring, "\n";
     }
     return @ips;
 }
