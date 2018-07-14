@@ -18,7 +18,8 @@ local affinity = import 'affinity.libsonnet';
         },
       ],
       selector: {
-        app: params.name,
+        app: "ntppool",
+        tier: params.name,
       },
       type: params.type,
     },
@@ -45,7 +46,7 @@ local affinity = import 'affinity.libsonnet';
           },
         },
         spec: {
-          affinity: affinity.PodAnti("tier", params.name),
+          affinity: affinity.PodAnti('tier', params.name),
           containers: [
             {
               image: params.image,
@@ -55,6 +56,30 @@ local affinity = import 'affinity.libsonnet';
                   containerPort: params.containerPort,
                 },
               ],
+              readinessProbe: {
+                failureThreshold: 3,
+                httpGet: {
+                  path: '/healthz',
+                  port: params.containerPort,
+                  scheme: 'HTTP',
+                },
+                initialDelaySeconds: 3,
+                periodSeconds: 10,
+                successThreshold: 1,
+                timeoutSeconds: 1,
+              },
+              livenessProbe: {
+                httpGet: {
+                  path: '/healthz',
+                  port: params.containerPort,
+                  scheme: 'HTTP',
+                },
+                initialDelaySeconds: 10,
+                periodSeconds: 60,
+                successThreshold: 1,
+                failureThreshold: 3,
+                timeoutSeconds: 2,
+              },
               resources: {
                 limits: {
                   cpu: '300m',

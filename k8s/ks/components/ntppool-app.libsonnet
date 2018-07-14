@@ -196,7 +196,7 @@ local volumes = [
       successfulJobsHistoryLimit: 3,
       failedJobsHistoryLimit: 5,
       schedule: cronjob.schedule,
-      suspend: false,
+      suspend: params.cronSuspend,
       jobTemplate: {
         spec: {
           template: {

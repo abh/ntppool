@@ -41,7 +41,7 @@ local affinity = import 'affinity.libsonnet';
           },
         },
         spec: {
-          affinity: affinity.PodAnti("app", params.name),
+          affinity: affinity.PodAnti('app', params.name),
           containers: [
             {
               image: params.image,
@@ -74,7 +74,12 @@ local affinity = import 'affinity.libsonnet';
                 },
                 {
                   name: 'SMARTHOST_PASSWORD',
-                  value: params.settings.smarthost_password,
+                  valueFrom: {
+                    secretKeyRef: {
+                      key: 'smtp_pass',
+                      name: 'ntppool-secrets',
+                    },
+                  },
                 },
                 {
                   name: 'SMARTHOST_ALIASES',

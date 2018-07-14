@@ -2,6 +2,7 @@
   global: {
     // User-defined global parameters; accessible to all component and environments, Ex:
     // replicas: 4,
+    cronSuspend: false,
   },
   components: {
     // Component-level parameters, defined initially from 'ks prototype use ...'
@@ -81,7 +82,7 @@
     },
     geoip: {
       containerPort: 8009,
-      image: 'quay.io/abh/geoipapi:0.2',
+      image: 'quay.io/abh/geoipapi:0.3',
       name: 'geoip',
       replicas: 2,
       servicePort: 80,

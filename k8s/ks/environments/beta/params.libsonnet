@@ -35,7 +35,6 @@ local envParams = params {
       settings+: {
         relay_networks: ':10.2.0.0/16:10.3.0.0/16',
         smarthost_address: 'smtp.sparkpostmail.com',
-        smarthost_password: '69bfbe7df516cb93e7d224a3d658431850848cec',
         smarthost_port: '587',
         smarthost_user: 'SMTP_Injection',
       },
