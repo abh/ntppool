@@ -2,6 +2,8 @@ perl = /usr/bin/perl
 servername = ntppool
 port = {{getenv "port" "8299"}}
 
+{{ $mode := or (getenv "deployment_mode") "test"}}
+
 # external_port.  Set to a non-zero value to set the port number used
 # for external redirects (301's, 302's)
 external_port = 80
@@ -15,9 +17,15 @@ proxyip_forwarders = 207.171.3.0/27, 10.220.0.0/16, 127.0.0.1, 10.2.0.0/16
 
 docs_name = docs
 
+
+
 # add Apache::Reload to the httpd configuration; good for development! (default 0)
 # 0 = disabled, 1 = enabled, 2 = enabled with debugging on
+{{ if eq $mode "devel" }}
 apache_reload = 1
+{{ else }}
+apache_reload = 0
+{{ end }}
 
 # use Template::Timer to insert timing information in the TT output (default 0)
 # template_timer = 1
@@ -48,18 +56,15 @@ alias = ntppool
 
 # Apache specific configuration
 [apache]
+{{ if eq $mode "prod" }}
+maxclients          = 15
+{{ else }}
 maxclients          = 5
+{{ end }}
 keepalive           = On
-keepalivetimeout    = 30
-#startservers        = 2
-#minspareservers     = 1
-#maxspareservers     = 10
-#maxrequestsperchild = 500
-
+keepalivetimeout    = 5
 
 # Configure sites
-
-{{ $mode := or (getenv "deployment_mode") "test"}}
 
 [ntppool]
 {{ $names := split (getenv "web_hostname") "," }}
