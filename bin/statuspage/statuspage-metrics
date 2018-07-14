@@ -1,0 +1,69 @@
+# -*- cperl -*-
+eval 'exec $CBROOT/bin/perl $0 ${1+"$@"}'
+  unless $running_under_some_shell;
+use strict;
+use warnings;
+use LWP::UserAgent;
+use NP::Model;
+use DateTime;
+use DateTime::Format::MySQL;
+
+my $api_base  = 'api.statuspage.io';
+my $batch_size = 2000;
+
+my $verbose = -t STDIN;
+
+my $dbh = NP::Model->dbh;
+
+my $settings = NP::Model->system_setting->fetch(key => 'statuspage');
+if (!$settings) {
+    warn "no statuspage settings available\n";
+    exit 2;
+}
+$settings = $settings->value;
+
+my $api_key   = $settings->{api_key} or die "no statuspage api_key";
+my $page_id   = $settings->{page_id} or die "no statuspage page_id";
+my $metric_id = $settings->{metrics}->{checks} or die "no statuspage metrics->check key";
+
+my $ua = LWP::UserAgent->new();
+
+$ua->default_header("Authorization" => "OAuth " . $api_key);
+
+warn "Getting data\n" if $verbose;
+
+my ($data) = $dbh->selectall_arrayref(
+    'select unix_timestamp(ts)-unix_timestamp(ts)%60 as m, count(*)
+    from log_scores
+    where ts > date_sub(now(), interval 10 minute)
+    group by m order by m'
+);
+
+shift @$data;
+
+while (@$data) {
+    my @batch = splice @$data, 0, (scalar(@$data) > $batch_size ? $batch_size : scalar(@$data));
+
+    my @form = map {
+        my @d = @$_;
+        ("data[${metric_id}][][timestamp]", $d[0], "data[${metric_id}][][value]", $d[1])
+    } @batch;
+
+    warn "Posting ", scalar @batch, "\n" if $verbose;
+    post(\@form);
+}
+
+sub post {
+    my $form = shift;
+    my $resp = $ua->post("https://api.statuspage.io/v1/pages/${page_id}/metrics/data.json", $form);
+    if ($resp->is_success) {
+        print "ok!\n" if $verbose;
+    }
+    else {
+        print STDERR $resp->status_line, "\n";
+        print $resp->decoded_content, "\n";
+        exit 2;
+    }
+}
+
+#pp($resp);

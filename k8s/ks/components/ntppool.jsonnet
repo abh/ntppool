@@ -87,7 +87,7 @@ local resourcesLow = {
     params: params,
     containers: [
       appBase.Container {
-        name: 'server-removals',
+        name: 'server-notifications',
         params: params,
         args: ['sh', '/ntppool/bin/bad_server_notifications'],
         resources: resourcesLow,
@@ -108,6 +108,49 @@ local resourcesLow = {
       },
     ],
   },
+
+  appBase.CronJob {
+    name: 'zone-stats',
+    schedule: '57 */4 * * *',
+    params: params,
+    containers: [
+      appBase.Container {
+        name: 'zone-stats',
+        params: params,
+        args: ['sh', '/ntppool/bin/zone_stats'],
+        resources: resourcesLow,
+      },
+    ],
+  },
+
+  appBase.CronJob {
+    name: 'combust-cleanup',
+    schedule: '30 * * * *',
+    params: params,
+    containers: [
+      appBase.Container {
+        name: 'combust-cleanup',
+        params: params,
+        args: ['sh', '/ntppool/combust/bin/cron/hourly'],
+        resources: resourcesLow,
+      },
+    ],
+  },
+
+  appBase.CronJob {
+    name: 'ntppool-cleanup',
+    schedule: '53,23 * * * *',
+    params: params,
+    containers: [
+      appBase.Container {
+        name: 'ntppool-cleanup',
+        params: params,
+        args: ['sh', '/ntppool/bin/cleanup'],
+        // resources: resourcesLow,
+      },
+    ],
+  },
+
 
   appBase.Ingress('web', std.split(config.web_hostname, ','), web_tls),
   appBase.Ingress('manage', std.split(config.manage_hostname, ','), manage_tls),

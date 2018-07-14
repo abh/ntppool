@@ -529,3 +529,13 @@ CREATE TABLE api_keys (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 insert into api_keys values (null, md5(rand()), '{"zonefiles": true}',now(),now());
+
+#75
+CREATE TABLE system_settings (
+  id      int(10) unsigned NOT NULL primary key auto_increment,
+  `key`   varchar(255),
+  value   text,
+  created_on  datetime not null,
+  modified_on timestamp not null,
+  unique key (`key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

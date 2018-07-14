@@ -733,6 +733,48 @@ __PACKAGE__->make_manager_methods('server_zones');
 eval { require NP::Model::ServerZone }
   or $@ !~ m:^Can't locate NP/Model/ServerZone.pm: and die $@;
 
+{ package NP::Model::SystemSetting;
+
+use strict;
+
+use base qw(NP::Model::_Object);
+
+__PACKAGE__->meta->setup(
+  table   => 'system_settings',
+
+  columns => [
+    id          => { type => 'serial', not_null => 1 },
+    key         => { type => 'varchar', length => 255 },
+    value       => { type => 'text', length => 65535 },
+    created_on  => { type => 'datetime', default => 'now', not_null => 1 },
+    modified_on => { type => 'timestamp', not_null => 1 },
+  ],
+
+  primary_key_columns => [ 'id' ],
+
+  unique_key => [ 'key' ],
+);
+
+__PACKAGE__->meta->setup_json_columns(qw< value >);
+
+push @table_classes, __PACKAGE__;
+}
+
+{ package NP::Model::SystemSetting::Manager;
+
+use strict;
+
+our @ISA = qw(Combust::RoseDB::Manager);
+
+sub object_class { 'NP::Model::SystemSetting' }
+
+__PACKAGE__->make_manager_methods('system_settings');
+}
+
+# Allow user defined methods to be added
+eval { require NP::Model::SystemSetting }
+  or $@ !~ m:^Can't locate NP/Model/SystemSetting.pm: and die $@;
+
 { package NP::Model::User;
 
 use strict;
@@ -1176,6 +1218,7 @@ eval { require NP::Model::ZoneServerCount }
   sub server_score { our $server_score ||= bless [], 'NP::Model::ServerScore::Manager' }
   sub server_url { our $server_url ||= bless [], 'NP::Model::ServerUrl::Manager' }
   sub server_zone { our $server_zone ||= bless [], 'NP::Model::ServerZone::Manager' }
+  sub system_setting { our $system_setting ||= bless [], 'NP::Model::SystemSetting::Manager' }
   sub user { our $user ||= bless [], 'NP::Model::User::Manager' }
   sub user_equipment_application { our $user_equipment_application ||= bless [], 'NP::Model::UserEquipmentApplication::Manager' }
   sub user_identity { our $user_identity ||= bless [], 'NP::Model::UserIdentity::Manager' }

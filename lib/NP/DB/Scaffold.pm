@@ -12,7 +12,7 @@ sub convention_manager {
     'NP::DB::ConventionManager';
 }
 
-my %json_fields = (log_scores => 'attributes', monitors => 'config');
+my %json_fields = (log_scores => 'attributes', monitors => 'config', system_settings => 'value');
 
 sub json_columns {
     my $self = shift;
