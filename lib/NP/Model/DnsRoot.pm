@@ -1,4 +1,6 @@
 package NP::Model::DnsRoot;
+use strict;
+use warnings;
 use Combust::Config;
 use List::Util qw(shuffle);
 use NP::Model;
@@ -11,7 +13,7 @@ sub ttl {
 }
 
 sub serial {
-    return $self->{_dns_serial} ||= time;
+    return shift->{_dns_serial} ||= time;
 }
 
 sub stathat_api {
@@ -38,7 +40,7 @@ sub data {
 
         $data->{""}->{ns} = {map { $_ => undef } split /[\s+,]/, $self->ns_list};
         $data->{"_dmarc"}->{txt} =
-          "v=DMARC1; p=reject; pct=100; rua=mailto:re+h6dgrfy2ghh@dmarc.postmarkapp.com; sp=reject; aspf=r;";
+          "v=DMARC1; p=reject; pct=100; rua=mailto:re+h6dgrfy2ghh\@dmarc.postmarkapp.com; sp=reject; aspf=r;";
 
         # Fastly TLS verification
         $data->{""}->{txt} = "_globalsign-domain-verification=yRdIt507tQIZyVRXF6VBvVbEIWhqpzJaxh8r1qdSUr";
@@ -170,7 +172,10 @@ sub populate_vendor_zones {
         my @vendor_files =
           grep { $_ !~ /\~$/ and -f $_ } map {"$vendordir/$_"} readdir($dir);
         closedir $dir;
-        map { s!.*/!!; $vendors{$_} = {type => 'ntp'} } @vendor_files;
+        for my $vendor (@vendor_files) {
+            $vendor =~ s!.*/!!;
+            $vendors{$vendor} = {type => 'ntp'};
+        }
     }
 
     for my $name (sort keys %vendors) {
