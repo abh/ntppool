@@ -53,6 +53,7 @@ sub render {
         if (my $code = $self->req_param('code')) {
             my ($userdata, $error) = $self->_get_auth0_user($code);
             if ($error) {
+                warn "auth0 user error: $error";
                 return $self->login($error);
             }
             warn "Error: ", Data::Dump::pp(\$error);
