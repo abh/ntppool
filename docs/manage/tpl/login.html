@@ -1,16 +1,14 @@
+<h2>Login</h2>
 
 [% IF message %]
 <p><span class="error">[% message | html %]</span></p>
 [% END %]
 
-<div id='login-form'></div>
-
-<noscript>
 <p>
-Javascript is required to login. <a href="[% login_url | html %]">Continue to login</a>.
+<a href="[% login_url | html %]">Continue to login</a>.
 </p>
-</noscript>
 
+<p>
 If you need help, please fill out the form below.
 </p>
 
@@ -36,35 +34,4 @@ login   : [% login_url | html %]
 </pre>
 [% END %]
 
-<script src="//cdn.auth0.com/js/lock-9.min.js"></script>
-<script>
-var lock = new Auth0Lock('[% auth0_client %]', '[% auth0_domain %]');
-lock.show({
-  callbackURL: '[% callback_url | html %]',
-  container: 'login-form',
-  socialBigButtons: false,
-  icon: '/static/images/logo.v1.png',
-  // theme: '',
-  sso: true
-});
-lock.once('signin ready', function() {
-    var msg = $('<div><br>If the system says your account doesn\'t exist then create a new account with the same email address you used previously.</div>');
-    msg.appendTo('.a0-body-content');
-});
-</script>
-
-<style>
-#a0-lock.a0-theme-default .a0-panel .a0-top-header {
-    display: none;
-}
-@media screen and (max-width: 650px) {
-    #a0-lock.a0-theme-default .a0-panel {
-        margin-left: 30px;
-    }
-}
-@media screen and (min-width: 650px) {
-    #a0-lock.a0-theme-default .a0-panel {
-        width: 500px;
-    }
-}
-</style>
+    <!-- var msg = $('<div><br>If the system says your account doesn\'t exist then create a new account with the same email address you used previously.</div>'); -->

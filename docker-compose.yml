@@ -1,4 +1,4 @@
-version: '3'
+version: '2'
 services:
   mysql:
     image: mariadb:10.2
@@ -11,7 +11,7 @@ services:
       MYSQL_USER: ntppool
       MYSQL_PASSWORD: pooldev
   update-db:
-    image: quay.io/ntppool/ntppool:kube
+    image: quay.io/ntppool/ntppool:master
     volumes:
       - .:/ntppool
     command: sh ./bin/initialize_schema
@@ -20,7 +20,7 @@ services:
     links:
       - mysql
   web:
-    image: quay.io/ntppool/ntppool:kube
+    image: quay.io/ntppool/ntppool:master
     command: ./docker-run
     volumes:
       - .:/ntppool

@@ -9,6 +9,7 @@ use NP::Email      ();
 use Email::Stuffer ();
 use JSON::XS qw(encode_json decode_json);
 use Net::DNS;
+use Net::OAuth2::Profile::WebServer;
 use LWP::UserAgent qw();
 use Mozilla::CA qw();
 use Math::BaseCalc qw();
@@ -229,17 +230,22 @@ sub callback_url {
 sub login_url {
     my $self = shift;
 
-#    return 'https://ntp.auth0.com/authorize?response_type=code'
-#    . '&client_id=kDlOYWYyIQlLMjgyzrKJhQmARaM8rOaM&connection=github'
-#    . '&state=&redirect_uri=' . $self->_here_url;
+    my ($auth0_domain, $auth0_client, $auth0_secret) = $self->_auth0_config();
 
-    my ($auth0_domain, $auth0_client) = $self->_auth0_config();
+    my $auth = Net::OAuth2::Profile::WebServer->new(
+        name              => 'NTP Pool Login',
+        client_id         => $auth0_client,
+        client_secret     => $auth0_secret,
+        site              => 'https://' + $auth0_domain,
+        authorize_path    => '/authorize',
+        access_token_path => '/token',
+        scope             => 'openid email',
+        redirect_uri      => $self->callback_url,
+    );
 
-    return
-        "https://${auth0_domain}/authorize?response_type=code"
-      . "&client_id=${auth0_client}"
-      . '&redirect_uri='
-      . $self->callback_url;
+    warn "AUTH RESP TEST: ", $auth->authorize_response->as_string();
+
+    return "https://" . $auth0_domain . $auth->authorize;
 }
 
 sub manage_dispatch {
