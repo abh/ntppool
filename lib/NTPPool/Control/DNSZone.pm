@@ -2,7 +2,7 @@ package NTPPool::Control::DNSZone;
 use strict;
 use base qw(NTPPool::Control);
 use Combust::Constant qw(OK);
-use NP::Util::DNS;
+use NP::Model qw();
 
 sub render {
     my $self = shift;
