@@ -3,17 +3,21 @@ eval 'exec $CBROOT/bin/perl $0 ${1+"$@"}'
   unless $running_under_some_shell;
 use strict;
 use warnings;
+use v5.14;
 use LWP::UserAgent;
 use NP::Model;
-use DateTime;
-use DateTime::Format::MySQL;
+use URI::URL;
+use URI::QueryParam;
+use JSON qw(decode_json);
 
 my $api_base  = 'api.statuspage.io';
 my $batch_size = 2000;
 
 my $verbose = -t STDIN or -d "/run/secrets/kubernetes.io";
 
-my $dbh = NP::Model->dbh;
+my $minutes = shift || 10;
+
+my $ua = LWP::UserAgent->new(timeout => 15);
 
 my $settings = NP::Model->system_setting->fetch(key => 'statuspage');
 if (!$settings) {
@@ -24,22 +28,25 @@ $settings = $settings->value;
 
 my $api_key   = $settings->{api_key} or die "no statuspage api_key";
 my $page_id   = $settings->{page_id} or die "no statuspage page_id";
-my $metric_id = $settings->{metrics}->{checks} or die "no statuspage metrics->check key";
-
-my $ua = LWP::UserAgent->new();
-
-$ua->default_header("Authorization" => "OAuth " . $api_key);
+my $metric_id = $settings->{metrics}->{dns_queries} or die "no statuspage metrics->dns_queries key";
 
 warn "Getting data\n" if $verbose;
 
-my ($data) = $dbh->selectall_arrayref(
-    'select unix_timestamp(ts)-unix_timestamp(ts)%60 as m, count(*)
-    from log_scores
-    where ts > date_sub(now(), interval 10 minute)
-    group by m order by m'
-);
+my $url = URI::URL->new("http://trickster.ntpsystem:9090/");
+$url->path('/api/v1/query_range');
+$url->query_param(query => 'sum (zone:dns_queries:irate{zone="pool.ntp.org"})');
+$url->query_param(timeout => 30);
+$url->query_param(start => (time - ($minutes * 60)));
+$url->query_param(end   => time);
+$url->query_param(step  => 60);
 
-shift @$data;
+print "fetching ", $url->as_string, "\n";
+
+my $data = decode_json($ua->get($url->as_string)->decoded_content);
+
+$ua->default_header("Authorization" => "OAuth " . $api_key);
+
+$data = $data->{data}->{result}->[0]->{values};
 
 while (@$data) {
     my @batch = splice @$data, 0, (scalar(@$data) > $batch_size ? $batch_size : scalar(@$data));
@@ -65,5 +72,3 @@ sub post {
         exit 2;
     }
 }
-
-#pp($resp);
