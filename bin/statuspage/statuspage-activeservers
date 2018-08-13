@@ -11,7 +11,7 @@ use DateTime::Format::MySQL;
 my $api_base  = 'api.statuspage.io';
 my $batch_size = 2000;
 
-my $verbose = -t STDIN or -d "/run/secrets/kubernetes.io";
+my $verbose = (-t STDIN or -d "/run/secrets/kubernetes.io");
 
 my $dbh = NP::Model->dbh;
 

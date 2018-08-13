@@ -13,7 +13,7 @@ use JSON qw(decode_json);
 my $api_base  = 'api.statuspage.io';
 my $batch_size = 2000;
 
-my $verbose = -t STDIN or -d "/run/secrets/kubernetes.io";
+my $verbose = (-t STDIN or -d "/run/secrets/kubernetes.io");
 
 my $minutes = shift || 10;
 
