@@ -76,9 +76,9 @@ sub populate_country_zones {
         my $name = $zone->name;
 
         my $ttl;
-        if ($name eq 'br' or $name eq 'au') {
-            $ttl = 55;
-        }
+        #if ($name eq 'br' or $name eq 'au') {
+        #    $ttl = 55;
+        #}
 
         $name = ''       if $name eq '@';
         $name = "$name." if $name;
