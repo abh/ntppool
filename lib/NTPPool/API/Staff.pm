@@ -137,7 +137,7 @@ sub edit_server {
         my $hostname  = $value;
         my $server_ip = Net::IP->new($server->ip);
 
-        my $res = Net::DNS::Resolver->new;
+        my $res = Net::DNS::Resolver->new(defnames => 0);
         my $reply = $res->query($hostname, $server->ip_version eq 'v4' ? 'A' : 'AAAA');
 
         my $error = "";
