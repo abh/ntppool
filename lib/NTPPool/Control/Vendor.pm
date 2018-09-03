@@ -193,7 +193,10 @@ sub render_admin {
         }
     }
 
-    my $pending = NP::Model->vendor_zone->get_vendor_zones(query => [status => 'Pending']);
+    my $pending = NP::Model->vendor_zone->get_vendor_zones(
+        query   => [status => 'Pending'],
+        sort_by => 'id desc',
+    );
 
     $self->tpl_param(pending_zones => $pending);
 
