@@ -3,7 +3,7 @@ use strict;
 use base qw(NTPPool::Control::Manage);
 use NP::Model;
 use Combust::Constant qw(OK NOT_FOUND);
-use NP::Email ();
+use NP::Email      ();
 use Email::Stuffer ();
 use Sys::Hostname qw(hostname);
 
@@ -82,17 +82,14 @@ sub render_submit {
     $vz->status('Pending');
     $vz->save;
 
-    $self->tpl_param('vz', $vz);
+    $self->tpl_param('vz',     $vz);
     $self->tpl_param('config', $self->config);
 
     my $msg = $self->evaluate_template('tpl/vendor/submit_email.txt');
-    my $email = Email::Stuffer
-      ->from(NP::Email::address("sender"))
-      ->to(NP::Email::address("vendors"))
-      ->cc(NP::Email::address("notifications"))
-      ->reply_to($self->user->email)
-      ->subject("New vendor zone application: " . $vz->zone_name)
-      ->text_body($msg);
+    my $email =
+      Email::Stuffer->from(NP::Email::address("sender"))->to(NP::Email::address("vendors"))
+      ->cc(NP::Email::address("notifications"))->reply_to($self->user->email)
+      ->subject("New vendor zone application: " . $vz->zone_name)->text_body($msg);
 
     my $return = NP::Email::sendmail($email->email);
     warn Data::Dumper->Dump([\$msg, \$email, \$return], [qw(msg email return)]);
@@ -176,13 +173,12 @@ sub render_admin {
 
                 my $msg = $self->evaluate_template('tpl/vendor/approved_email.txt');
 
-                my $email = Email::Stuffer
-                  ->from(NP::Email::address("vendors"))
+                my $email =
+                  Email::Stuffer->from(NP::Email::address("vendors"))
                   ->to(NP::Email::address($vz->user->email))
                   ->cc(NP::Email::address("notifications"))
                   ->reply_to(NP::Email::address("vendors"))
-                  ->subject("Vendor zone activated: " . $vz->zone_name)
-                  ->text_body($msg);
+                  ->subject("Vendor zone activated: " . $vz->zone_name)->text_body($msg);
 
                 my $return = NP::Email::sendmail($email->email);
                 warn Data::Dumper->Dump([\$msg, \$email, \$return], [qw(msg email return)]);
