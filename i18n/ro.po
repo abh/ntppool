@@ -59,9 +59,6 @@ msgstr "Administratorii de servere ( şi utilizatori ) care doresc să se implic
 msgid  "development_list_description"
 msgstr "Discuţiile tehnice ( şi mai întotdeauna pragmatice ) despre progresul acestui proiect îl găsiţi pe <a href=\"%1\">comunitatea NTP</a> si <a href=\"%2\">pgeodns</a> au loc in lista timekeepers-dev"
 
-msgid  "irc_channel_description"
-msgstr "Există canalul %2 de IRC pentru administratorii de servere şi utilizatori pe %1."
-
 # tpl/server.html
 msgid  "Back to the front page"
 msgstr "Înapoi la prima pagină"

@@ -62,9 +62,6 @@ msgstr "Operátoři serverů (a uživatelé), kteří chtějí být více zapoje
 msgid  "development_list_description"
 msgstr "Více technické (a ideálně vždy pragmatické) diskuse o současném vývoji <a href=\"%1\">ntp pool kódu</a> a <a href=\"%2\">pgeodns</a> probíhají v konferenci timekeepers-dev."
 
-msgid  "irc_channel_description"
-msgstr "Pro operátory serverů a uživatele existuje IRC kanál %2 na %1."
-
 # tpl/server.html
 msgid  "Back to the front page"
 msgstr "Návrat na hlavní stranu"

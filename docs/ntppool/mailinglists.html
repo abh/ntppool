@@ -1,17 +1,17 @@
 [% page.title = "NTP Pool mailing lists" | loc %]
 
+        <h2>[%|loc%]NTP Pool Forums[% END %]</h2>
 
-	<h2>[%|loc%]NTP Pool mailing lists[% END %]</h1>
+        <h3>[%|loc%]Discourse forum[% END %]</h3>
+	<p>[%|l%]forum_description[%END%]
+	<a href="https://community.ntppool.org/">community.ntppool.org</a>
+    </p>
 
-	<p>
-	   [%|l%]Currently, there are three mailing lists for the pool.ntp.org project. They are all <i>in English</i>.[% END %]
-        </p>
+        <h3>[% "News site" | loc %]</h3>
 
-        <h3>[% "Announcement list" | loc %]</h3>
-
-	<p>[%|l%]announcement_list_description[%END%]
+	<p>[%|l%]news_description[%END%]
 	<br>
-	<a href="https://news.ntppool.org/">timekeepers news</a>
+	<a href="https://news.ntppool.org/">NTP Pool News</a>
         | <a href="https://news.ntppool.org/atom.xml">
           <img width="16" height="16" src="[% combust.static_url('/images/feed-icon16x16.png') %]"
                alt="Atom feed" style="vertical-align:middle;border:0"/></a>
@@ -28,22 +28,8 @@
 	| <a href="https://lists.ntp.org/pipermail/pool/" >[% "archive" | loc %]</a>
 	</p>
 
-	<h3>[%|l%]Development list[% END %]</h3>
+	<h3>[%|l%]Development[% END %]</h3>
 	<p>
-          [% | l('http://git.develooper.com/ntppool.git', 'http://geo.bitnames.com/') %]development_list_description[% END %]<br>
- 	<a
-	href="https://lists.ntp.org/listinfo/pool-dev"
-	>pool-dev</a>
-	| <a
-	href="mailto:mailto:pool-dev-request@lists.ntp.org?subject=subscribe"
-	>[% "subscribe" | l %]</a>
-	| <a
-	href="https://lists.ntp.org/pipermail/pool-dev">[% "archive" | loc %]</a>
-	</p>
-
-        <h3>[%|l%]IRC channel[% END %]</h3>
-        <p>
-          [% | l('irc.ntppool.org', '#ntppool') %]irc_channel_description[% END %]
-        </p>
-
+        [% | l('https://github.com/abh/ntppool/', 'https://github.com/abh/geodns/', 'https://community.ntppool.org/c/dev') %]development_list_description[% END %]<br>
+        <a href="https://community.ntppool.org/c/dev">Discourse development forum</a>
 

@@ -57,35 +57,35 @@ msgid  "Older news"
 msgstr "Older news"
 
 # mailinglists.html
-msgid  "NTP Pool mailing lists"
-msgstr "NTP Pool mailing lists"
-
 msgid  "subscribe"
 msgstr "subscribe"
 
 msgid  "archive"
 msgstr "archive"
 
-msgid  "Announcement list"
-msgstr "Announcement list"
+msgid  "NTP Pool Forum"
+msgstr "NTP Pool Forum"
+
+msgid  "News site"
+msgstr "News site"
 
 msgid  "Discussion list"
 msgstr "Discussion list"
 
-msgid  "Development list"
-msgstr "Development list"
+msgid  "Development"
+msgstr "Development"
 
-msgid  "announcement_list_description"
-msgstr "Very very low traffic announcements of NTP Pool news.  All server operators should be subscribed to the announcement list."
+msgid  "forum_description"
+msgstr "Questions (and answers) about the NTP Pool, suggestions for improvements and topics related to time keeping and operating NTP servers."
+
+msgid  "news_description"
+msgstr "Announcements and news are posted on the news site or the forum."
 
 msgid  "discussion_list_description"
 msgstr "Server operators (and users) who wish to be more involved in the project can subscribe to the discussion list.<br/> Of course, general discussions about ntp should take place on the %1 Usenet newsgroup (also on <a href=\"%2\">Google Groups</a>)."
 
 msgid  "development_list_description"
-msgstr "More technical (and ideally always pragmatic) discussions about the current development of the <a href=\"%1\">ntp pool code</a> and <a href=\"%2\">pgeodns</a> happens on the timekeepers-dev list."
-
-msgid  "irc_channel_description"
-msgstr "There's a %2 IRC channel for server operators and users on %1."
+msgstr "More technical (and ideally pragmatic) discussions about development of the <a href=\"%1\">ntp pool code</a> and <a href=\"%2\">geodns</a> happens in the  <a href=\"%3\">development forum</a>."
 
 # tpl/server.html
 msgid  "Back to the front page"

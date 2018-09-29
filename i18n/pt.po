@@ -70,9 +70,6 @@ msgstr "Administradores (e usuários) de servidores que queiram se envolver mais
 msgid  "development_list_description"
 msgstr "Discussões mais técnicas (e idealmente sempre programática) sobre o atual desenvolvimento do <a href=\"%1\">código do ntp pool</a> e <a href=\"%2\">pgeodns</a> ocorrem na lsita dos desenvolvedores mantenedores dos relógios."
 
-msgid  "irc_channel_description"
-msgstr "Existe um canal IRC #ntppool para administradores e usuários de servidor no irc.ntppool.org."
-
 # tpl/server.html
 msgid  "Back to the front page"
 msgstr "Voltar para a página inicial"

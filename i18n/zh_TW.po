@@ -63,9 +63,6 @@ msgstr "不管你是伺服器管理員還是使用者，如果你想更多的參
 msgid  "development_list_description"
 msgstr "更多有關目前開發<a href=\"%1\">ntp pool 程式碼</a> 以及 <a href=\"%2\">pgeodns</a> 相關技術的討論會在timekeepers-dev清單上."
 
-msgid  "irc_channel_description"
-msgstr "我們有一提供一個叫做 %2 的IRC頻道給所有使用者以及維護人員，伺服器位置為 %1"
-
 # tpl/server.html
 msgid  "Back to the front page"
 msgstr "回到首頁"

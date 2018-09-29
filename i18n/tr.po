@@ -84,9 +84,6 @@ msgstr "Sunucu operatörleri ve kullanıcılardan projede daha aktif olmak istey
 msgid  "development_list_description"
 msgstr "<a href=\"%1\">NTP havuz kodu</a> ve <a href=\"%2\">pgeodns</a> geliştirmeleri hakkındaki daha teknik (ve öyle de olmalı) tartışmalar timekeepers-dev listesinde olmalı."
 
-msgid  "irc_channel_description"
-msgstr "%1 üzerinde operatörler ve kullanıcılar için %2 IRC kanalı bulunmaktadır."
-
 # tpl/server.html
 msgid  "Back to the front page"
 msgstr "Ana sayfaya dön"

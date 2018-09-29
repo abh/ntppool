@@ -84,9 +84,6 @@ msgstr "Palvelinylläpitäjien (ja käyttäjien) jotka haluavat osallistua proje
 msgid  "development_list_description"
 msgstr "Teknisemmät (ja toivottavasti myös käytännöllisemmät) <a href=\"%1\">poolin koodiin</a> ja <a href=\"%2\">pgeodns:n</a> kehittämiseen liittyvät keskustelut käydään timekeepers-dev-listalla."
 
-msgid  "irc_channel_description"
-msgstr "Palvelinylläpitäjille ja käyttäjille on IRC-kanava %2 %1-verkossa."
-
 # tpl/server.html
 msgid  "Back to the front page"
 msgstr "Takaisin etusivulle"

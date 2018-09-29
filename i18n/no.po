@@ -84,9 +84,6 @@ msgstr "Tenaradministatorar (og gjerne brukarar) som ynskjer å involvere seg me
 msgid  "development_list_description"
 msgstr "Meir tekniske (og helst sett løysingsorienterte) diskusjonar om aktuell utvikling innan<a href=\"%1\">prosjektkoden</a> og <a href=\"%2\">pgeodns</a> skjer på timekeepers-dev diskusjonslista."
 
-msgid  "irc_channel_description"
-msgstr "Det er ein %2 IRC-kanal for tjenaroperatørar og brukarar på %1."
-
 # tpl/server.html
 msgid  "Back to the front page"
 msgstr "Attende til framsida"

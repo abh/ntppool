@@ -62,9 +62,6 @@ msgstr "Tjeneroperatører (og brukere) som ønsker å være mer involverte i pro
 msgid  "development_list_description"
 msgstr "Mer tekniske (og ideelt sett løsningsorienterte) diskusjoner om aktuell utvikling innen <a href=\"%1\">ntp pulje-koden</a> og <a href=\"%2\">pgeodns</a> skjer på timekeepers-dev listen."
 
-msgid  "irc_channel_description"
-msgstr "Det finnes en %2 IRC-kanal for tjeneroperatører og brukere på %1."
-
 # tpl/server.html
 msgid  "Back to the front page"
 msgstr "Tilbake til forsiden"

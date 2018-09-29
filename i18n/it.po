@@ -59,9 +59,6 @@ msgstr "Operatori server (e utenti) che desiderano essere maggiormente coinvolti
 msgid  "development_list_description"
 msgstr "Discussioni maggiormente tecniche (e possibilmente sempre pragmatiche) riguardo lo sviluppo corrente del <a href=\"%1\">codice ntp pool</a> e <a href=\"%2\">pgeodns</a> si tengono presso la lista timekeepers-dev."
 
-msgid  "irc_channel_description"
-msgstr "C'è un %2 canale IRC per operatori server e utenti su %1."
-
 # tpl/server.html
 msgid  "Back to the front page"
 msgstr "Torna alla pagina principale"

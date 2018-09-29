@@ -84,9 +84,6 @@ msgstr "වැඩිදුර සාකච්චා කිරීමට කැම
 msgid  "development_list_description"
 msgstr "<a href=\"%1\">ntp සංසදයේ කේත</a> සහ <a href=\"%2\">pgeodns</a> පිලිබඳ වර්තමාන සැකසුම් සහ වැඩිදුර තාක්ෂණික  (සහ සාමාන්‍ය උපයෝගික) සංවාද සිදුවන්නේ timekeepers-dev ලයිස්තුවේය."
 
-msgid  "irc_channel_description"
-msgstr "සර්වර ක්රියාකරවන්නම් සඳහා %2 IRC නාලිකාව ද, සාමාන්‍ය පරිශීලකයින් සඳහා %1 ද ක්‍රියාත්මක වේ."
-
 # tpl/server.html
 msgid  "Back to the front page"
 msgstr "නැවතත් ප්‍රධාන පිටුවට"

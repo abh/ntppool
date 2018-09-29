@@ -68,9 +68,6 @@ msgstr ""
 "ontwikkeling van de <a href=\"%1\">broncode van ntp pool</a> en <a href="
 "\"%2\">pgeodns</a> vinden plaats op de lijst timekeepers-dev."
 
-msgid "irc_channel_description"
-msgstr "Er is een %2 IRC-kanaal voor serverbeheerders en gebruikers op %1."
-
 # tpl/server.html
 msgid "Back to the front page"
 msgstr "Terug naar de voorpagina"

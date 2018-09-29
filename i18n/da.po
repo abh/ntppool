@@ -91,10 +91,7 @@ msgid "discussion_list_description"
 msgstr "Serveroperatører (og brugere) som ønsker at være mere engageret i projektet kan abonnere på diskussionslisten.<br/>Generel diskussion omkring ntp bør selvfølgelig tage sted i %1 Usenet-nyhedsgruppen (også på <a href=\"%2\">Google Groups</a>)."
 
 msgid "development_list_description"
-msgstr "Mere tekniske (og ideelt set altid pragmatiske) diskussioner om den nuværende udvikling af <a href=\"%1\">ntp pool-koden</a> og <a href=\"%2\">pgeodns</a> sker på timekeepers-dev-listen."
-
-msgid "irc_channel_description"
-msgstr "Der er en #ntppool IRC kanal for serveroperatører og brugere på irc.ntppool.org."
+msgstr "Mere tekniske (og ideelt set altid pragmatiske) diskussioner om den nuværende udvikling af <a href=\"%1\">ntp pool-koden</a> og <a href=\"%2\">geodns</a> sker på timekeepers-dev-listen."
 
 # tpl/server.html
 msgid "Back to the front page"

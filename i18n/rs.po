@@ -100,9 +100,6 @@ msgstr ""
 "href=\"%1\">ntp pool koda</a> i <a href=\"%2\">pgeodns</a> odvijaju se na "
 "timekeepers-dev listi."
 
-msgid "irc_channel_description"
-msgstr "Postoje %2 IRC kanala za server operatore, a za korisnike %1."
-
 # tpl/server.html
 msgid "Back to the front page"
 msgstr "Nazad na početnu stranicu"
