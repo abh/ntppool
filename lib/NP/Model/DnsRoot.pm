@@ -153,7 +153,7 @@ sub populate_vendor_zones {
             status      => 'Approved',
             dns_root_id => $root->id
         ],
-        order => 'approved_on',
+        sort_by => 'approved_on',
     );
 
     my %vendors;
