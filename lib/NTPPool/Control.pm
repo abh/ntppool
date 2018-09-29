@@ -17,29 +17,29 @@ my $config  = Combust::Config->new;
 
 our %valid_languages = (
     bg => {name => "Български", testing => 1},
-    ca => {name => "Català", testing => 1},
+    ca => {name => "Català",    testing => 1},
+    da => {name => "Dansk"},
     de => {name => "Deutsch"},
-    da => {name => "Danish",                testing => 1,},
     en => {name => "English",},
     es => {name => "Español"},
     fi => {name => "Suomi"},
     fr => {name => "Français",},
-    hi => {name => "हिन्दी", testing => 1},
-    it => {name => "Italiano",              testing => 1},
+    hi => {name => "हिन्दी"},
+    it => {name => "Italiano"},
     ja => {name => "日本語"},
     ko => {name => "한국어",},
-    kz => {name => "Қазақша",        testing => 1},
+    kz => {name => "Қазақша",   testing => 1},
     nl => {name => "Nederlands",},
-    no => {name => "Norsk", testing => 1},
-    pl => {name => "Polish",                testing => 1},
+    no => {name => "Norsk"},
+    pl => {name => "Język",     testing => 1},
     pt => {name => "Português"},
-    ro => {name => "Română",              testing => 1},
+    ro => {name => "Română",    testing => 1},
     rs => {name => "српски srpski"},
-    ru => {name => "Русский",},
+    ru => {name => "Русский"},
     sv => {name => "Svenska"},
     tr => {name => "Türkçe"},
     uk => {name => "Українська"},
-    zh => {name => "中国（简体）", testing => 1 },
+    zh => {name => "中国（简体）"},
 );
 
 NP::I18N::loc_lang('en');
@@ -74,8 +74,8 @@ sub init {
             return $self->redirect($self->_url($self->site, $self->request->path));
         }
         else {
-            # we're setting Strict-Transport-Security with haproxy
-            # $self->request->header_out('Strict-Transport-Security', 'max-age=' . (86400 * 7 * 20));
+           # we're setting Strict-Transport-Security with haproxy
+           # $self->request->header_out('Strict-Transport-Security', 'max-age=' . (86400 * 7 * 20));
         }
     }
 
@@ -212,7 +212,8 @@ sub localize_url {
 
         $uri->path("/$lang" . $uri->path);
         $self->request->header_out('Vary', 'Accept-Language');
-        $self->cache_control('s-maxage=900, max-age=3600, stale-while-revalidate=90, stale-if-error=43200');
+        $self->cache_control(
+            's-maxage=900, max-age=3600, stale-while-revalidate=90, stale-if-error=43200');
         return $self->redirect($uri->as_string);
     }
     return;
