@@ -1,4 +1,4 @@
-FROM quay.io/ntppool/base-os:v3.3.1
+FROM quay.io/ntppool/base-os:v3.6.0
 
 USER root
 
