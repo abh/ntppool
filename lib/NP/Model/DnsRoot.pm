@@ -43,7 +43,7 @@ sub data {
           "v=DMARC1; p=reject; pct=100; rua=mailto:re+h6dgrfy2ghh\@dmarc.postmarkapp.com; sp=reject; aspf=r;";
 
         # Fastly TLS verification
-        $data->{""}->{txt} = "_globalsign-domain-verification=yRdIt507tQIZyVRXF6VBvVbEIWhqpzJaxh8r1qdSUr";
+        $data->{""}->{txt} = "_globalsign-domain-verification=mVYWxIl-2ab_B1yPPFxEmDCLrBcl6ucouXJOU_P0_C";
 
         $data;
     };
