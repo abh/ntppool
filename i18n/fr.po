@@ -4,6 +4,12 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Language-Team: \n"
+"Language: fr\n"
+"X-Generator: Poedit 1.8.7.1\n"
 
 msgid "go up"
 msgstr "remonter"
@@ -32,72 +38,70 @@ msgid "Translations"
 msgstr "Traductions"
 
 # mailinglists.html
-msgid  "NTP Pool mailing lists"
+msgid "NTP Pool mailing lists"
 msgstr "Listes de diffusion sur le Réservoir NTP"
 
-msgid  "subscribe"
+msgid "subscribe"
 msgstr "souscrire"
 
-msgid  "archive"
+msgid "archive"
 msgstr "archive"
 
-msgid  "Announcement list"
+msgid "Announcement list"
 msgstr "Liste d'annonces"
 
-msgid  "Discussion list"
+msgid "Discussion list"
 msgstr "Liste de discussion"
 
-msgid  "Development list"
+msgid "Development list"
 msgstr "Liste de développement"
 
-msgid  "announcement_list_description"
-msgstr "Annonces des nouvelles du Réservoir NTP à très très faible trafic. Tous les administrateurs de serveurs devrait s'inscrire à cette liste de diffusion."
+msgid "announcement_list_description"
+msgstr "Annonces des nouvelles du Réservoir NTP à très très faible trafic. Tous les administrateurs de serveurs devraient s'inscrire à cette liste de diffusion."
 
-msgid  "discussion_list_description"
-msgstr "Les administrateurs de serveurs (et les utilisateurs) qui veulent s'impliquer plus dans le projet peuvent souscrire à la liste de discussion.<br/> Bien sûr, les discussions générale à propos de ntp devraient avoir lieu dans le newsgroup Usenet %1 (voir aussi les <a href=\"%2\">Google Groups</a>)"
+msgid "discussion_list_description"
+msgstr "Les administrateurs de serveurs (et les utilisateurs) qui veulent s'impliquer plus dans le projet peuvent souscrire à la liste de discussion.<br/>Bien sûr, les discussions générales à propos de ntp devraient avoir lieu dans le newsgroup Usenet %1 (voir aussi les <a href=\"%2\">Google Groups</a>)"
 
-msgid  "development_list_description"
+msgid "development_list_description"
 msgstr "Les discussions plus techniques (et idéalement plus pragmatiques) sur le développement actuel du <a href=\"%1\">code du réservoir ntp</a> et de <a href=\"%2\">pgeodns</a> ont lieu sur la liste timekeepers-dev."
 
-
 # tpl/server.html
-msgid  "Back to the front page"
+msgid "Back to the front page"
 msgstr "Retour à la page d'accueil"
 
-msgid  "Find"
+msgid "Find"
 msgstr "Trouver"
 
-msgid  "Stats for %1"
+msgid "Stats for %1"
 msgstr "Statistiques pour %1"
 
-msgid  "Not active in the pool, monitoring only"
+msgid "Not active in the pool, monitoring only"
 msgstr "Pas actif dans le réservoir, surveillance uniquement"
 
-msgid  "Zones:"
-msgstr "Zones :"
+msgid "Zones:"
+msgstr "Zones&nbsp;:"
 
-msgid  "This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
+msgid "This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
 msgstr "Ce serveur est <span class=\"deletion\">planifié pour suppression</span> le %1."
 
-msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
-msgstr "Score actuel: %1 (seuls les serveurs avec un score dépassant %2 seront utilisés dans le réservoir)"
+msgid "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
+msgstr "Score actuel&nbsp;: %1 (seuls les serveurs avec un score dépassant %2 seront utilisés dans le réservoir)"
 
-msgid  "What do the graphs mean?"
-msgstr "Que veulent dire les graphes ?"
+msgid "What do the graphs mean?"
+msgstr "Que veulent dire les graphes&nbsp;?"
 
-msgid  "CSV log"
-msgstr "journal CSV"
-
+msgid "CSV log"
+msgstr "Journal CSV"
 
 # tpl/navigation_sidebar.html
 msgid "News"
 msgstr "Actualités"
 
 msgid "How do I <i>use</i> pool.ntp.org?"
-msgstr "Comment puis-je <i>utiliser</i> pool.ntp.org?"
+msgstr "Comment puis-je <i>utiliser</i> pool.ntp.org&nbsp;?"
 
 msgid "How do I <i>join</i> pool.ntp.org?"
-msgstr "Comment puis-je <i>rejoindre</i> pool.ntp.org?"
+msgstr "Comment puis-je <i>rejoindre</i> pool.ntp.org&nbsp;?"
 
 msgid "Information for vendors"
 msgstr "Informations pour les fournisseurs"
@@ -109,4 +113,4 @@ msgid "Additional links"
 msgstr "Liens supplémentaires"
 
 msgid "Can you translate?"
-msgstr "Pouvez-vous traduire?"
+msgstr "Pouvez-vous traduire&nbsp;?"
