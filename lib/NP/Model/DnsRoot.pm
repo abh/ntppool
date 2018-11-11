@@ -1,4 +1,6 @@
 package NP::Model::DnsRoot;
+use strict;
+use warnings;
 use Combust::Config;
 use List::Util qw(shuffle);
 use NP::Model;
@@ -11,7 +13,7 @@ sub ttl {
 }
 
 sub serial {
-    return $self->{_dns_serial} ||= time;
+    return shift->{_dns_serial} ||= time;
 }
 
 sub stathat_api {
@@ -20,6 +22,7 @@ sub stathat_api {
 
 sub data {
     my $self = shift;
+    # return a singleton for the root so other methods can add to the data
     return $self->{_dns_data} ||= do {
 
         my $www_record = {
@@ -31,12 +34,16 @@ sub data {
         $data->{www} = $www_record;
         $data->{web} = $www_record;
         $data->{gb}  = {alias => 'uk'};
-        for my $i (0..3) {
-            $data->{"$i.gb"}  = {alias => "$i.uk"};
+        for my $i (0 .. 3) {
+            $data->{"$i.gb"} = {alias => "$i.uk"};
         }
 
         $data->{""}->{ns} = {map { $_ => undef } split /[\s+,]/, $self->ns_list};
-        $data->{"_dmarc"}->{txt} = "v=DMARC1; p=reject; pct=100; rua=mailto:re+h6dgrfy2ghh@dmarc.postmarkapp.com; sp=reject; aspf=r;";
+        $data->{"_dmarc"}->{txt} =
+          "v=DMARC1; p=reject; pct=100; rua=mailto:re+h6dgrfy2ghh\@dmarc.postmarkapp.com; sp=reject; aspf=r;";
+
+        # Fastly TLS verification
+        $data->{""}->{txt} = "_globalsign-domain-verification=yRdIt507tQIZyVRXF6VBvVbEIWhqpzJaxh8r1qdSUr";
 
         $data;
     };
@@ -55,6 +62,12 @@ sub TO_JSON {
 
 sub populate {
     my $self = shift;
+    $self->populate_vendor_zones;
+    $self->populate_country_zones;
+}
+
+sub populate_country_zones {
+    my $self = shift;
 
     my $zones = NP::Model->zone->get_zones_iterator(query => [dns => 1]);
     my $data = $self->data;
@@ -63,9 +76,9 @@ sub populate {
         my $name = $zone->name;
 
         my $ttl;
-        if ($name eq 'br' or $name eq 'au') {
-            $ttl = 55;
-        }
+        #if ($name eq 'br' or $name eq 'au') {
+        #    $ttl = 55;
+        #}
 
         $name = ''       if $name eq '@';
         $name = "$name." if $name;
@@ -129,6 +142,59 @@ sub populate {
             push @{$data->{$pgeodns_group}->{aaaa}}, $_ for @$entries;
         }
 
+    }
+}
+
+sub populate_vendor_zones {
+    my $root = shift;
+
+    my $vendor_zones = NP::Model->vendor_zone->get_vendor_zones(
+        query => [
+            status      => 'Approved',
+            dns_root_id => $root->id
+        ],
+        order => 'approved_on',
+    );
+
+    my %vendors;
+
+    for my $vendor (@$vendor_zones) {
+        my $name = $vendor->zone_name;
+        $vendors{$name} = {
+            type   => $vendor->client_type,
+            vendor => $vendor
+        };
+    }
+
+    if ($root->origin eq 'pool.ntp.org') {
+        my $vendordir = "vendordns";
+        opendir my $dir, $vendordir or die "could not open '$vendordir' dir: $!";
+        my @vendor_files =
+          grep { $_ !~ /\~$/ and -f $_ } map {"$vendordir/$_"} readdir($dir);
+        closedir $dir;
+        for my $vendor (@vendor_files) {
+            $vendor =~ s!.*/!!;
+            $vendors{$vendor} = {type => 'ntp'};
+        }
+    }
+
+    for my $name (sort keys %vendors) {
+        next unless $name;    # vendor_name="" on separate dns root
+        my $client_type = $vendors{$name}->{type};
+        my $sntp        = ($client_type eq 'sntp' or $client_type eq 'all');
+        my $ntp         = ($client_type eq 'ntp'  or $client_type eq 'all');
+        unless ($sntp or $ntp) {
+            $sntp = 1;
+            $ntp  = 1;
+        }
+        if ($sntp) {
+            $root->data->{"$name"}->{alias} = "";
+        }
+        if ($ntp) {
+            for my $i (0 .. 3) {
+                $root->data->{"$i.$name"}->{alias} = $i;
+            }
+        }
     }
 }
 

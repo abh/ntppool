@@ -1,0 +1,28 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ntpbeta-manage
+  annotations:
+    ingress.kubernetes.io/configuration-snippet: |
+      proxy_pass_header Server;
+    kubernetes.io/tls-acme: "true"
+    ingress.class: haproxy
+
+spec:
+  rules:
+  {{ range ("$manage_hostnames" | split ",") }}
+  - host: {{ . }}
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: web
+          servicePort: 80
+  {{ end }}
+
+  tls:
+  - hosts:
+    {{ range ("$manage_hostnames" | split ",") -}}
+    - {{ . }}
+    {{ end -}}
+    secretName: manage-tls

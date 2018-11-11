@@ -2,9 +2,7 @@ package NTPPool::Control::Manage::Equipment;
 use strict;
 use base qw(NTPPool::Control::Manage);
 use Combust::Constant qw(OK NOT_FOUND);
-use Email::Send 'SMTP';
 use Sys::Hostname qw(hostname);
-use Email::Date qw();
 
 use NP::Model;
 
@@ -106,55 +104,6 @@ sub render_edit {
 
     return $self->render_application($ea->id, 'show');
 
-}
-
-sub render_admin {
-    my $self = shift;
-    return $self->redirect("/manage/vendor")
-      unless $self->user->privileges->vendor_admin;
-
-    if (my $id = $self->req_param('id')) {
-        my $vz = $id ? NP::Model->vendor_zone->fetch(id => $id) : undef;
-        return 404 unless $vz;
-
-        if ($self->req_param('show')) {
-            return $self->render_zone($id, 'show');
-        }
-
-        if (my $status = $self->req_param('status_change')) {
-            if ($vz->status eq 'Pending' and $status =~ m/^Reject/) {
-                $vz->status('Rejected');
-                $vz->save;
-                $self->tpl_param("msg" => $vz->zone_name . ' rejected');
-            }
-            elsif ($vz->status =~ m/(Pending|Rejected)/ and $status =~ m/^Approved/) {
-                $vz->status('Approved');
-                $vz->save;
-
-                $self->tpl_param('vz' => $vz);
-
-                my $msg = $self->evaluate_template('tpl/vendor/approved_email.txt');
-                my $email = Email::Simple->new(ref $msg ? $$msg : $msg)
-                  ;    # until we decide what eval_tpl should return :)
-                $email->header_set(
-                    'Message-ID' => join("-", int(rand(1000)), $$, time) . '@' . hostname);
-                $email->header_set('Date' => Email::Date::format_date);
-                my $sender = Email::Send->new({mailer => 'SMTP'});
-                $sender->mailer_args([Host => 'localhost']);
-                my $return = $sender->send($email);
-                warn Data::Dumper->Dump([\$msg, \$email, \$return], [qw(msg amil return)]);
-
-                $self->tpl_param("msg" => $vz->zone_name . ' approved');
-
-            }
-        }
-    }
-
-    my $pending = NP::Model->vendor_zone->get_vendor_zones(query => [status => 'Pending'],);
-
-    $self->tpl_param(pending_zones => $pending);
-
-    return OK, $self->evaluate_template('tpl/vendor/admin.html');
 }
 
 sub user_has_active_applications {

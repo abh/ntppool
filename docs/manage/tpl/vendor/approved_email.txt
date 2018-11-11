@@ -1,15 +1,11 @@
-[%- page.style='bare.html' %]From: (Ask Bjoern Hansen) vendors@ntppool.org
-To: ([% vz.user.name %]) [% vz.user.email %]
-Cc: ask+vs@ntppool.org
-Subject: Vendor zone activated: [% vz.zone_name %]
+[%- page.style = 'email.txt' -%]
+Hello,
 
-Hi [% vz.user.name %],
-
-Your vendor pool zone "[% vz.zone_name %]" has been setup.  The
-hostnames are below.  They will be active within a few hours.
+Your vendor pool zone "[% vz.zone_name %]" has been setup. The
+hostnames below will be active within the next 20 minutes.
 
 [%- FOR i = [0..3] -%]
-   [% i %].[% vz.zone_name %].pool.ntp.org
+   [% i %].[% vz.zone_name %].[% vz.dns_root.origin %]
 [% END %]
 
 Please subscribe to the (announce-only, very low traffic - typically a
@@ -17,14 +13,13 @@ few mails a year or less) vendor information mailing list. We
 recommend everyone in your organization involved with project are
 subscribed: http://www.ntppool.org/vendors/list
 
-If you are a commercial organization/product/company consider
-contributing back to the pool so we can keep the service sustainable
+If you are a commercial organization please consider contributing
+back to the pool so we can keep the service sustainable
 even with the commercial usage:
     http://www.pool.ntp.org/vendors/contribute.html
 
-If you do not, you seriously diminish the chances that we can continue
-to offer this service to you.
-
+The contributions makes it possible for our team of volunteers
+to run a global high quality service.
 
 
 Kind regards,

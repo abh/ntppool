@@ -1,0 +1,74 @@
+# -*- cperl -*-
+eval 'exec $CBROOT/bin/perl $0 ${1+"$@"}'
+  unless $running_under_some_shell;
+use strict;
+use warnings;
+use v5.14;
+use LWP::UserAgent;
+use NP::Model;
+use URI::URL;
+use URI::QueryParam;
+use JSON qw(decode_json);
+
+my $api_base  = 'api.statuspage.io';
+my $batch_size = 2000;
+
+my $verbose = (-t STDIN or -d "/run/secrets/kubernetes.io");
+
+my $minutes = shift || 10;
+
+my $ua = LWP::UserAgent->new(timeout => 15);
+
+my $settings = NP::Model->system_setting->fetch(key => 'statuspage');
+if (!$settings) {
+    warn "no statuspage settings available\n";
+    exit 2;
+}
+$settings = $settings->value;
+
+my $api_key   = $settings->{api_key} or die "no statuspage api_key";
+my $page_id   = $settings->{page_id} or die "no statuspage page_id";
+my $metric_id = $settings->{metrics}->{dns_queries} or die "no statuspage metrics->dns_queries key";
+
+warn "Getting data\n" if $verbose;
+
+my $url = URI::URL->new("http://trickster.ntpsystem:9090/");
+$url->path('/api/v1/query_range');
+$url->query_param(query => 'sum (zone:dns_queries:irate{zone="pool.ntp.org"})');
+$url->query_param(timeout => 30);
+$url->query_param(start => (time - ($minutes * 60)));
+$url->query_param(end   => time);
+$url->query_param(step  => 60);
+
+print "fetching ", $url->as_string, "\n";
+
+my $data = decode_json($ua->get($url->as_string)->decoded_content);
+
+$ua->default_header("Authorization" => "OAuth " . $api_key);
+
+$data = $data->{data}->{result}->[0]->{values};
+
+while (@$data) {
+    my @batch = splice @$data, 0, (scalar(@$data) > $batch_size ? $batch_size : scalar(@$data));
+
+    my @form = map {
+        my @d = @$_;
+        ("data[${metric_id}][][timestamp]", $d[0], "data[${metric_id}][][value]", $d[1])
+    } @batch;
+
+    warn "Posting ", scalar @batch, "\n" if $verbose;
+    post(\@form);
+}
+
+sub post {
+    my $form = shift;
+    my $resp = $ua->post("https://api.statuspage.io/v1/pages/${page_id}/metrics/data.json", $form);
+    if ($resp->is_success) {
+        print "ok!\n" if $verbose;
+    }
+    else {
+        print STDERR $resp->status_line, "\n";
+        print $resp->decoded_content, "\n";
+        exit 2;
+    }
+}

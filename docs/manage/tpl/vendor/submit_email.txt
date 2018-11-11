@@ -1,8 +1,4 @@
-[%- page.style='bare.html' %]To: vendors@rt.ntppool.org
-From: vendors@ntppool.org
-Reply-To: [% combust.user.email %]
-Cc: ask+vs@ntppool.org
-Subject: New vendor zone application: [% vz.zone_name %]
+[%- page.style = 'email.txt' %]
 
 [% combust.user.name %] ([% combust.user.email %]) requested the "[%
 vz.zone_name %]" zone for [% vz.organization_name %].

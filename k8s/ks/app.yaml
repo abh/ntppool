@@ -1,0 +1,36 @@
+apiVersion: 0.1.0
+environments:
+  beta:
+    destination:
+      namespace: ntpbeta
+      server: https://kube-controllers.dev:443
+    k8sVersion: v1.8.9
+    path: beta
+  dev:
+    destination:
+      namespace: ntpdev
+      server: https://192.168.99.100:8443
+    k8sVersion: v1.10.0
+    path: dev
+  docker:
+    destination:
+      namespace: ntpdev
+      server: https://localhost:6443
+    k8sVersion: v1.9.6
+    path: docker
+  prod:
+    destination:
+      namespace: ntppool
+      server: https://kube-controllers.dev:443
+    k8sVersion: v1.8.9
+    path: prod
+kind: ksonnet.io/app
+name: ntppool
+registries:
+  incubator:
+    gitVersion:
+      commitSha: 40285d8a14f1ac5787e405e1023cf0c07f6aa28c
+      refSpec: master
+    protocol: github
+    uri: github.com/ksonnet/parts/tree/master/incubator
+version: 0.0.1

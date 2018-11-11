@@ -1,6 +1,6 @@
 package NTPPool;
 
-our $VERSION = '2.01';
+our $VERSION = '3.0';
 
 use NTPPool::Control;
 use NTPPool::Control::Basic;

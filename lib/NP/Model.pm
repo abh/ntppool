@@ -36,6 +36,46 @@ BEGIN {
   our $VERSION = 0;
 }
 
+{ package NP::Model::ApiKey;
+
+use strict;
+
+use base qw(NP::Model::_Object);
+
+__PACKAGE__->meta->setup(
+  table   => 'api_keys',
+
+  columns => [
+    id          => { type => 'serial', not_null => 1 },
+    api_key     => { type => 'varchar', length => 255 },
+    grants      => { type => 'text', length => 65535 },
+    created_on  => { type => 'datetime', default => 'now', not_null => 1 },
+    modified_on => { type => 'timestamp', not_null => 1 },
+  ],
+
+  primary_key_columns => [ 'id' ],
+
+  unique_key => [ 'api_key' ],
+);
+
+push @table_classes, __PACKAGE__;
+}
+
+{ package NP::Model::ApiKey::Manager;
+
+use strict;
+
+our @ISA = qw(Combust::RoseDB::Manager);
+
+sub object_class { 'NP::Model::ApiKey' }
+
+__PACKAGE__->make_manager_methods('api_keies');
+}
+
+# Allow user defined methods to be added
+eval { require NP::Model::ApiKey }
+  or $@ !~ m:^Can't locate NP/Model/ApiKey.pm: and die $@;
+
 { package NP::Model::DnsRoot;
 
 use strict;
@@ -257,6 +297,7 @@ __PACKAGE__->meta->setup(
     ip         => { type => 'varchar', length => 40, not_null => 1 },
     ip_version => { type => 'enum', check_in => [ 'v4', 'v6' ], not_null => 1 },
     api_key    => { type => 'varchar', length => 40, not_null => 1 },
+    config     => { type => 'text', length => 65535, not_null => 1 },
     last_seen  => { type => 'datetime' },
     created_on => { type => 'datetime', default => 'now', not_null => 1 },
   ],
@@ -289,6 +330,8 @@ __PACKAGE__->meta->setup(
     },
   ],
 );
+
+__PACKAGE__->meta->setup_json_columns(qw< config >);
 
 push @table_classes, __PACKAGE__;
 }
@@ -612,7 +655,7 @@ __PACKAGE__->meta->setup(
   columns => [
     id        => { type => 'serial', not_null => 1 },
     server_id => { type => 'integer', not_null => 1 },
-    url       => { type => 'varchar', default => '', length => 255, not_null => 1 },
+    url       => { type => 'varchar', length => 255, not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
@@ -690,6 +733,48 @@ __PACKAGE__->make_manager_methods('server_zones');
 eval { require NP::Model::ServerZone }
   or $@ !~ m:^Can't locate NP/Model/ServerZone.pm: and die $@;
 
+{ package NP::Model::SystemSetting;
+
+use strict;
+
+use base qw(NP::Model::_Object);
+
+__PACKAGE__->meta->setup(
+  table   => 'system_settings',
+
+  columns => [
+    id          => { type => 'serial', not_null => 1 },
+    key         => { type => 'varchar', length => 255 },
+    value       => { type => 'text', length => 65535 },
+    created_on  => { type => 'datetime', default => 'now', not_null => 1 },
+    modified_on => { type => 'timestamp', not_null => 1 },
+  ],
+
+  primary_key_columns => [ 'id' ],
+
+  unique_key => [ 'key' ],
+);
+
+__PACKAGE__->meta->setup_json_columns(qw< value >);
+
+push @table_classes, __PACKAGE__;
+}
+
+{ package NP::Model::SystemSetting::Manager;
+
+use strict;
+
+our @ISA = qw(Combust::RoseDB::Manager);
+
+sub object_class { 'NP::Model::SystemSetting' }
+
+__PACKAGE__->make_manager_methods('system_settings');
+}
+
+# Allow user defined methods to be added
+eval { require NP::Model::SystemSetting }
+  or $@ !~ m:^Can't locate NP/Model/SystemSetting.pm: and die $@;
+
 { package NP::Model::User;
 
 use strict;
@@ -701,7 +786,7 @@ __PACKAGE__->meta->setup(
 
   columns => [
     id                => { type => 'serial', not_null => 1 },
-    email             => { type => 'varchar', default => '', length => 255, not_null => 1 },
+    email             => { type => 'varchar', length => 255, not_null => 1 },
     name              => { type => 'varchar', length => 255 },
     pass              => { type => 'varchar', length => 255 },
     nomail            => { type => 'enum', check_in => [ '0', 1 ], default => '0', not_null => 1 },
@@ -1005,7 +1090,7 @@ __PACKAGE__->meta->setup(
 
   columns => [
     id          => { type => 'serial', not_null => 1 },
-    name        => { type => 'varchar', default => '', length => 255, not_null => 1 },
+    name        => { type => 'varchar', length => 255, not_null => 1 },
     description => { type => 'varchar', length => 255 },
     parent_id   => { type => 'integer' },
     dns         => { type => 'integer', default => 1, not_null => 1 },
@@ -1120,6 +1205,7 @@ eval { require NP::Model::ZoneServerCount }
     $_->clear_object_cache for @cache_classes;
   }
 
+  sub api_key { our $api_key ||= bless [], 'NP::Model::ApiKey::Manager' }
   sub dns_root { our $dns_root ||= bless [], 'NP::Model::DnsRoot::Manager' }
   sub log { our $log ||= bless [], 'NP::Model::Log::Manager' }
   sub log_score { our $log_score ||= bless [], 'NP::Model::LogScore::Manager' }
@@ -1132,6 +1218,7 @@ eval { require NP::Model::ZoneServerCount }
   sub server_score { our $server_score ||= bless [], 'NP::Model::ServerScore::Manager' }
   sub server_url { our $server_url ||= bless [], 'NP::Model::ServerUrl::Manager' }
   sub server_zone { our $server_zone ||= bless [], 'NP::Model::ServerZone::Manager' }
+  sub system_setting { our $system_setting ||= bless [], 'NP::Model::SystemSetting::Manager' }
   sub user { our $user ||= bless [], 'NP::Model::User::Manager' }
   sub user_equipment_application { our $user_equipment_application ||= bless [], 'NP::Model::UserEquipmentApplication::Manager' }
   sub user_identity { our $user_identity ||= bless [], 'NP::Model::UserIdentity::Manager' }

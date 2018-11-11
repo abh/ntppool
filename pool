@@ -10,18 +10,15 @@ use Socket;
 use Time::HiRes;
 use Data::Dumper;
 use Sys::Hostname qw(hostname);
-use Geo::IP;
 use Net::IP;
-use LWP::Simple;
+use LWP::Simple qw(get);
 use Email::Simple;
 use Email::Date;
-use Email::Send 'SMTP';
 use File::Path qw(mkpath);
 use JSON::XS ();
 use Math::Random::Secure qw(irand);
 
-my $geo_ip = eval "Geo::IP->new(GEOIP_STANDARD)";
-my $config = Combust::Config->new;
+my $config     = Combust::Config->new;
 my $config_ntp = $config->site->{ntppool};
 
 use NP::Model;
@@ -42,7 +39,7 @@ sub closedbconnection {
 }
 
 # tools
-sub ntpdate {
+sub ntpdate_local {
     my ($host, $error) = @_;
 
     my %ntp = eval { get_ntp_response($host); };
@@ -53,7 +50,7 @@ sub ntpdate {
     $ntp{Stratum} ||= '';
     push @error, "Bad stratum: $ntp{Stratum}"
       unless $ntp{Stratum}
-          and $ntp{Stratum} < 6;
+      and $ntp{Stratum} < 6;
 
     if (@error) {
         print @error, "\n";
@@ -66,6 +63,33 @@ sub ntpdate {
 
     return 1;
 }
+
+sub ntpdate {
+    my ($host, $error) = @_;
+
+    my $js = get("https://trace2.ntppool.org/ntp/$host");
+
+    my $json = JSON::XS->new->utf8;
+    my %ntp  = %{$json->decode($js)};
+
+    #warn Data::Dumper->Dump([\%ntp]);
+
+    my @error;
+
+    $ntp{Stratum} ||= '';
+    push @error, "Bad stratum: $ntp{Stratum}"
+      unless $ntp{Stratum}
+      and $ntp{Stratum} < 6;
+
+    if (@error) {
+        print @error, "\n";
+        warn Data::Dumper->Dump([\%ntp]);
+        return undef;
+    }
+
+    return 1;
+}
+
 
 sub logsay {
     my $msg = join " ", @_;
@@ -88,9 +112,8 @@ sub server_information {
     push @r, sprintf "score: %.1f, in pool: %i, in server list: %i\n",
       $server->score, $server->in_pool, $server->in_server_list;
     push @r, "Hostname: " . $server->hostname . "\n";
-    my $country = $geo_ip->country_code_by_addr($server->ip);
-    $country = lc $country if $country;
-    push @r, "Country: $country  -  " if $country;
+    my $country = get("http://geoip/api/country?ip=" . $server->ip);
+    push @r, "Country: $country, " if $country;
     push @r, "Netspeed: " . $server->netspeed . "\n";
     push @r, "Zones: ", join(", ", map { $_->name } @zones), "\n";
     push @r, sprintf "in_pool: %i, in_server_list: %i\n", $server->in_pool, $server->in_server_list;
@@ -125,7 +148,7 @@ if ($cmd eq "add") {
 
     # look if the email address is already registered
     my $email = shift @ARGV;
-    my $user = find_user_by_email($email);
+    my $user  = find_user_by_email($email);
 
     # do we have a hostname or an IP?
     my $hostname = shift @ARGV;
@@ -180,7 +203,7 @@ elsif ($cmd eq "addmonitor") {
     die "ip_version must be v4 or v6" unless $ip_version =~ m/^v[46]$/;
 
     my $db = NP::Model->db;
-    my $txn  = $db->begin_scoped_work or die $db->error;
+    my $txn = $db->begin_scoped_work or die $db->error;
 
     # look if the email address is already registered
     my $user = find_user_by_email($email);
@@ -202,27 +225,32 @@ elsif ($cmd eq "addmonitor") {
     }
 
     my $monitor = NP::Model->monitor->create(
-        ip       => $ip,
-        user_id  => $user->id,
+        name       => "",
+        config     => "",
+        created_on => DateTime->now,
+        ip         => $ip,
+        user_id    => $user->id,
         ip_version => $ip_version,
     );
 
     require Math::BaseCalc;
-    my $base36 = Math::BaseCalc->new(digits => ['a'..'k', 'm'..'z', 2..9]);
+    my $base36 = Math::BaseCalc->new(digits => ['a' .. 'k', 'm' .. 'z', 2 .. 9]);
 
     my @numbers = map { $base36->to_base(irand) } (undef) x 3;
     my $api_key = join "", @numbers;
 
-    $monitor->api_key( $api_key );
+    $monitor->api_key($api_key);
 
     $monitor->save;
 
     my $id = $monitor->id;
 
-    $db->dbh->do( q[ insert into server_scores (monitor_id, server_id, score_raw)
-                      select ?, id, score_raw from servers
+    $db->dbh->do(
+        q[ insert into server_scores (monitor_id, server_id, score_raw, created_on)
+                      select ?, id, score_raw, NOW() from servers
                       where ip_version = ? and deletion_on is null
-                     ], {}, $monitor->id, $monitor->ip_version );
+                     ], {}, $monitor->id, $monitor->ip_version
+    );
 
     for my $f (qw(ip ip_version api_key)) {
         printf "%-10s: %s\n", $f, $monitor->$f;
@@ -325,45 +353,6 @@ elsif ($cmd eq "zone") {
 
     my $roots = NP::Model->dns_root->get_objects;
     for my $root (@$roots) {
-
-        my $vendor_zones = NP::Model->vendor_zone->get_vendor_zones(
-            query => [status => 'Approved', dns_root_id => $root->id],
-            order => 'approved_on',
-        );
-
-        my %vendors;
-
-        for my $vendor (@$vendor_zones) {
-            my $name = $vendor->zone_name;
-            $vendors{$name} = {
-                type   => $vendor->client_type,
-                vendor => $vendor
-            };
-        }
-
-        if ($root->origin eq 'pool.ntp.org') {
-            my $vendordir = "vendordns";
-            opendir my $dir, $vendordir or die "could not open '$vendordir' dir: $!";
-            my @vendor_files =
-              grep { $_ !~ /\~$/ and -f $_ } map {"$vendordir/$_"} readdir($dir);
-            closedir $dir;
-            map { s!.*/!!; $vendors{$_} = {type => 'ntp'} } @vendor_files;
-        }
-
-        for my $name (sort keys %vendors) {
-            next unless $name;    # vendor_name="" on separate dns root
-            my $client_type = $vendors{$name}->{type};
-            my $sntp        = $client_type eq 'sntp' or $client_type eq 'all';
-            my $ntp         = $client_type eq 'ntp' or $client_type eq 'all';
-            if ($sntp) {
-                $root->data->{"$name"}->{alias} = "";
-            }
-            if ($ntp) {
-                for my $i (0 .. 3) {
-                    $root->data->{"$i.$name"}->{alias} = $i;
-                }
-            }
-        }
 
         # TODO:
         #   Make NP::DNS::Root optionally limit how many IPs per zone

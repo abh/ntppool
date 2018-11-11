@@ -15,27 +15,11 @@ sub error {
 sub render {
     my $self = shift;
 
-    $self->no_cache(1);
-
     if ($self->request->path eq '/monitor/map') {
-        my $servers = NP::Model->server->get_objects;
-        my $now     = DateTime->now;
-        my $map     = {
-            map {
-                my $deleted = ($_->deletion_on and $_->deletion_on < $now) ? 1 : 0;
-                (   $_->ip => {
-                        ip      => $_->ip,
-                        id      => $_->id + 0,
-                        deleted => ($deleted ? $JSON::true : $JSON::false),
-                        c       => $_->created_on->epoch,
-                        ($deleted ? (d => $_->deletion_on->epoch) : ()),
-                    }
-                  )
-            } @$servers
-        };
-        $self->cache_control('max-age=900');
-        return OK, $json->encode($map);
+        return $self->render_server_map;
     }
+
+    $self->no_cache(1);
 
     my $api_key = $self->req_param('api_key')
       or return $self->error('Missing required api_key parameter');
@@ -46,6 +30,21 @@ sub render {
 
     if (!$monitor) {
         return $self->error('Not a registered monitor');
+    }
+
+    if (  !$monitor->last_seen
+        or $monitor->last_seen > DateTime->now()->add(DateTime::Duration->new(minutes => 2)))
+    {
+        $monitor->last_seen(DateTime->now);
+        $monitor->save;
+    }
+
+
+    my $config = $monitor->config;
+    $config->{ip} = $monitor->ip;
+
+    if ($self->request->path eq '/monitor/config') {
+        return OK, $json->encode({config => $config}), "application/json";
     }
 
     my $ip = $self->request->remote_ip;
@@ -59,7 +58,29 @@ sub render {
     # go through server array and fetch offset for all servers
     my $servers = NP::Model->server->get_check_due($monitor, 50);
 
-    return OK, $json->encode({servers => [map { $_->ip } @$servers]}), "application/json";
+    return OK, $json->encode({servers => [map { $_->ip } @$servers], config => $config}),
+      "application/json";
+}
+
+sub render_server_map {
+    my $self    = shift;
+    my $servers = NP::Model->server->get_objects;
+    my $now     = DateTime->now;
+    my $map     = {
+        map {
+            my $deleted = ($_->deletion_on and $_->deletion_on < $now) ? 1 : 0;
+            (   $_->ip => {
+                    ip      => $_->ip,
+                    id      => $_->id + 0,
+                    deleted => ($deleted ? $JSON::true : $JSON::false),
+                    c       => $_->created_on->epoch,
+                    ($deleted ? (d => $_->deletion_on->epoch) : ()),
+                }
+              )
+        } @$servers
+    };
+    $self->cache_control('max-age=900');
+    return OK, $json->encode($map);
 }
 
 sub post_data {
@@ -154,9 +175,10 @@ sub upload {
             attributes => {},
         );
 
-
-        $log_score{attributes}->{leap} = $status->{leap}
-          if $status->{leap};
+        for my $a (qw(leap error)) {
+            $log_score{attributes}->{$a} = $status->{$a}
+              if $status->{$a};
+        }
 
         delete $log_score{attributes} unless %{$log_score{attributes}};
 

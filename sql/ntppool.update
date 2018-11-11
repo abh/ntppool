@@ -489,3 +489,53 @@ select @gb_id := id from zones where name = "gb";
 insert ignore into server_zones select server_id, @uk_id
  from server_zones where zone_id = @gb_id;
 delete from zones where name = 'gb';
+
+#69
+alter table log_scores
+  modify `score` double NOT NULL DEFAULT 0,
+  modify `step` double NOT NULL DEFAULT 0;
+
+#70
+alter table server_notes
+  modify `name` varchar(255) NOT NULL DEFAULT '';
+
+#71
+alter table monitors add config text not null after api_key;
+update monitors set config='{"samples": 1}' where config='';
+
+#72
+delete from zones where name = 'ap';
+
+#73
+-- unused for now
+create table `log_scores_archive_status` (
+  id int unsigned not null primary key auto_increment,
+  archiver varchar(255) not null,
+  unique key (archiver),
+  log_score_id bigint unsigned,
+  modified_on  timestamp not null,
+  CONSTRAINT `log_score_id` FOREIGN KEY (`log_score_id`)
+      REFERENCES `log_scores` (`id`)
+) engine=InnoDB default charset=utf8;
+
+#74
+CREATE TABLE api_keys (
+  id      int(10) unsigned NOT NULL primary key auto_increment,
+  api_key varchar(255),
+  grants  text,
+  created_on  datetime not null,
+  modified_on timestamp not null,
+  unique key (api_key)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+insert into api_keys values (null, md5(rand()), '{"zonefiles": true}',now(),now());
+
+#75
+CREATE TABLE system_settings (
+  id      int(10) unsigned NOT NULL primary key auto_increment,
+  `key`   varchar(255),
+  value   text,
+  created_on  datetime not null,
+  modified_on timestamp not null,
+  unique key (`key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

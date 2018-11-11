@@ -5,13 +5,11 @@ use NP::Model;
 use Combust::Constant qw(OK NOT_FOUND);
 use Socket qw(inet_ntoa);
 use Socket6;
-use Net::NTP;
-use Geo::IP;
-use Email::Send 'SMTP';
-use Sys::Hostname qw(hostname);
-use Email::Date qw();
+use NP::Email      ();
+use Email::Stuffer ();
 use JSON::XS qw(encode_json decode_json);
 use Net::DNS;
+use Net::OAuth2::Profile::WebServer;
 use LWP::UserAgent qw();
 use Mozilla::CA qw();
 use Math::BaseCalc qw();
@@ -20,46 +18,17 @@ use Math::Random::Secure qw(irand);
 my $config     = Combust::Config->new;
 my $config_ntp = $config->site->{ntppool};
 
+my $ua = LWP::UserAgent->new(
+    timeout  => 2,
+    ssl_opts => {
+        SSL_verify_mode => 0x02,
+        SSL_ca_file     => Mozilla::CA::SSL_ca_file()
+    }
+);
+
 sub init {
     my $self = shift;
     $self->SUPER::init(@_);
-
-    if (0 and $self->req_param('sig') or $self->req_param('bc_id')) {
-        my $bc = $self->bitcard;
-        my $bc_user = eval { $bc->verify($self->request) };
-        warn $@ if $@;
-        unless ($bc_user) {
-            warn $bc->errstr;
-        }
-        if ($bc_user and $bc_user->{id} and $bc_user->{username}) {
-            use Data::Dump qw(pp);
-            warn "Logging in user: ", pp($bc_user);
-            my ($email_user) = NP::Model->user->fetch(email      => $bc_user->{email});
-            my ($user)       = NP::Model->user->fetch(bitcard_id => $bc_user->{id});
-            $user = $email_user if ($email_user and !$user);
-            if ($user and $email_user and $user->id != $email_user->id) {
-                my @servers = NP::Model->server->get_servers(query => [user_id => $email_user->id]);
-                if (@servers && $servers[0]) {
-                    for my $server (@servers) {
-                        $server->user_id($user);
-                        $server->save;
-                    }
-                }
-                $email_user->delete;
-            }
-            unless ($user) {
-                ($user) = NP::Model->user->create(bitcard_id => $bc_user->{id});
-            }
-            my $uid = $user->id;
-            $user->username($bc_user->{username});
-            $user->email($bc_user->{email});
-            $user->name($bc_user->{name});
-            $user->bitcard_id($bc_user->{id});
-            $user->save;
-            $self->cookie($self->user_cookie_name, $uid);
-            $self->user($user);
-        }
-    }
 
     if ($self->is_logged_in) {
         $self->request->env->{REMOTE_USER} = $self->user->username;
@@ -75,7 +44,7 @@ sub render {
 
     if ($self->request->uri =~ m!^/manage/logout!) {
         $self->cookie($self->user_cookie_name, 0);
-        $self->cookie("xs", 0);
+        $self->cookie("xs",                    0);
         $self->redirect('/manage');
     }
 
@@ -84,6 +53,7 @@ sub render {
         if (my $code = $self->req_param('code')) {
             my ($userdata, $error) = $self->_get_auth0_user($code);
             if ($error) {
+                warn "auth0 user error: $error";
                 return $self->login($error);
             }
             warn "Error: ", Data::Dump::pp(\$error);
@@ -100,7 +70,10 @@ sub render {
             }
 
             my $email = $userdata->{email_verified} && $userdata->{email};
-            my $provider = $userdata->{identities} && $userdata->{identities}->[0] && $userdata->{identities}->[0]->{provider};
+            my $provider =
+                 $userdata->{identities}
+              && $userdata->{identities}->[0]
+              && $userdata->{identities}->[0]->{provider};
 
             if ($identity) {
                 $identity->provider($provider) if $provider;
@@ -133,7 +106,7 @@ sub render {
                       && $p->{email_verified}
                       && !$uniq{$p->{email}}++;
                     $ok;
-                  } ({ profileData => $userdata }, @{$userdata->{identities}});
+                  } ({profileData => $userdata}, @{$userdata->{identities}});
 
                 for my $email (@emails) {
                     warn "Testing email: $email";
@@ -174,7 +147,7 @@ sub render {
             $self->user($user);
 
             my $r = $self->req_param('r') || '/manage';
-            return $self->redirect( $r );
+            return $self->redirect($r);
         }
 
     }
@@ -212,13 +185,6 @@ sub _get_auth0_user {
 
     my ($auth0_domain, $auth0_client, $auth0_secret) = $self->_auth0_config();
 
-    my $ua = LWP::UserAgent->new(
-        ssl_opts => {
-            SSL_verify_mode => 0x02,
-            SSL_ca_file     => Mozilla::CA::SSL_ca_file()
-        }
-    );
-
     my $url = URI->new("https://${auth0_domain}/oauth/token");
 
     my %form = (
@@ -250,7 +216,7 @@ sub _get_auth0_user {
 sub callback_url {
     my $self = shift;
 
-    my $uri  = URI->new($self->config->base_url($self->site));
+    my $uri = URI->new($self->config->base_url($self->site));
     $uri->path('/manage/login');
 
     my $here = $self->_here_url;
@@ -265,16 +231,22 @@ sub callback_url {
 sub login_url {
     my $self = shift;
 
-#    return 'https://ntp.auth0.com/authorize?response_type=code'
-#    . '&client_id=kDlOYWYyIQlLMjgyzrKJhQmARaM8rOaM&connection=github'
-#    . '&state=&redirect_uri=' . $self->_here_url;
+    my ($auth0_domain, $auth0_client, $auth0_secret) = $self->_auth0_config();
 
-    my ($auth0_domain, $auth0_client) = $self->_auth0_config();
+    my $auth = Net::OAuth2::Profile::WebServer->new(
+        name              => 'NTP Pool Login',
+        client_id         => $auth0_client,
+        client_secret     => $auth0_secret,
+        site              => 'https://' + $auth0_domain,
+        authorize_path    => '/authorize',
+        access_token_path => '/token',
+        scope             => 'openid email',
+        redirect_uri      => $self->callback_url,
+    );
 
-    return
-        "https://${auth0_domain}/authorize?response_type=code"
-      . "&client_id=${auth0_client}"
-      . '&redirect_uri=' . $self->callback_url;
+    warn "AUTH RESP TEST: ", $auth->authorize_response->as_string();
+
+    return "https://" . $auth0_domain . $auth->authorize;
 }
 
 sub manage_dispatch {
@@ -353,17 +325,24 @@ sub handle_add {
         for my $server (@servers) {
             unless ($server->{error} or $server->{listed}) {
                 $s = $self->_add_server($server);
+                $server->{id} = $s->id;
                 push @added, $server;
             }
         }
         $self->tpl_param(servers => \@added);
-        my $msg = $self->evaluate_template('tpl/manage/add_email.txt');
-        my $email =
-          Email::Simple->new(ref $msg ? $$msg : $msg)
-          ;    # until we decide what eval_tpl should return :)
-        $email->header_set('Message-ID' => join("-", int(rand(1000)), $$, time) . '@' . hostname);
-        $email->header_set('Date' => Email::Date::format_date);
-        my $return = send SMTP => $email, 'localhost';
+        my $msg   = $self->evaluate_template('tpl/manage/add_email.txt');
+        my $email = Email::Stuffer->from(NP::Email::address("sender"))
+          ->to(NP::Email::address("notifications"))->reply_to($self->user->email)->text_body($msg);
+
+        warn "added: ", Data::Dump::pp(\@added);
+
+        my $subject = "New addition to the NTP Pool: " . join(", ", map { $_->{ip} } @added);
+        if (grep { $_->{hostname} } @added) {
+            $subject .= "(" . join(", ", map { $_->{hostname} } @added) . ")";
+        }
+        $email->subject($subject);
+
+        my $return = NP::Email::sendmail($email->email);
         warn Data::Dumper->Dump([\$msg, \$email, \$return], [qw(msg email return)]);
 
         return $self->redirect('/manage/servers#s-' . ($s && $s->ip));
@@ -391,7 +370,7 @@ sub _get_server_ips {
         return ($ip->short);
     }
 
-    my $res = Net::DNS::Resolver->new;
+    my $res = Net::DNS::Resolver->new(domain => undef, defnames => 0);
     my @ips;
     for my $type (qw(A AAAA)) {
         my $query = $res->query($host, $type);
@@ -494,10 +473,25 @@ sub get_server_info {
         }
     }
 
-    local $Net::NTP::TIMEOUT = 3;
-    my %ntp = eval { get_ntp_response($server{ip}); };
-    warn "checking $ip / $server{ip}";
-    warn Data::Dumper->Dump([\%ntp]);
+    my $res = $ua->get("https://trace2.ntppool.org/ntp/$server{ip}");
+    if ($res->code != 200) {
+        warn "trace2 response code for $server{ip}: ", $res->code;
+        $server{error} = "Could not check NTP status";
+        return \%server;
+    }
+
+    warn "JS: ", $res->decoded_content();
+
+    my $json = JSON::XS->new->utf8;
+    my %ntp = eval { +%{$json->decode($res->decoded_content)} };
+    if ($@) {
+        $server{error} = "Could not decode NTP response from trace server";
+        return \%server;
+    }
+
+    warn "NTP response: ", Data::Dumper->Dump([\%ntp]);
+
+    my @error;
 
     unless (defined $ntp{Stratum}) {
         $server{error} = "Didn't get an NTP response from $server{ip}\n";
@@ -515,8 +509,8 @@ sub get_server_info {
         return \%server;
     }
 
-    my $geo_ip = eval "Geo::IP->new(GEOIP_STANDARD)";
-    $server{geoip_country} = $geo_ip && $geo_ip->country_code_by_addr($server{ip}) || '';
+    my $res = $ua->get("http://geoip/api/country?ip=$server{ip}");
+    $server{geoip_country} = $res->decoded_content if $res->is_success;
 
     my $country = $self->req_param('explicit_zone_' . $server{ip}) || $server{geoip_country};
 
@@ -560,7 +554,6 @@ sub handle_mode7_check {
     my $self     = shift;
     my $server   = $self->req_server or return NOT_FOUND;
     my $ntpcheck = $config_ntp->{ntpcheck};
-    my $ua       = LWP::UserAgent->new;
     my $url      = URI->new("$ntpcheck");
     $url->path("/check/" . $server->ip);
     $url->query("queue=1");

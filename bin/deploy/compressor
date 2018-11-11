@@ -1,0 +1,18 @@
+#!/bin/sh
+set -e
+
+input=$1
+output=$2
+map=$3
+
+filename=$(basename "$input")
+extension="${filename##*.}"
+filename="${filename%.*}"
+
+if [ "$extension" == "css" ]; then
+  csso -i "$input" -o "$output" -m "$map"
+
+elif [ "$extension" == "js" ]; then
+   map_base=$(basename "$map")
+   uglifyjs --compress --source-map filename="$map_base" -o "$output" "$input"
+fi

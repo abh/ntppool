@@ -3,9 +3,8 @@ use strict;
 use base qw(NTPPool::Control::Manage);
 use NP::Model;
 use Combust::Constant qw(OK NOT_FOUND);
-use Email::Send;
-use Email::Simple;
-use Email::Simple::Creator;
+use NP::Email      ();
+use Email::Stuffer ();
 use Sys::Hostname qw(hostname);
 
 sub manage_dispatch {
@@ -83,17 +82,17 @@ sub render_submit {
     $vz->status('Pending');
     $vz->save;
 
-    $self->tpl_param('vz', $vz);
+    $self->tpl_param('vz',     $vz);
+    $self->tpl_param('config', $self->config);
 
     my $msg = $self->evaluate_template('tpl/vendor/submit_email.txt');
     my $email =
-      Email::Simple->new(ref $msg ? $$msg : $msg);  # until we decide what eval_tpl should return :)
-    $email->header_set('Message-ID' => join("-", int(rand(1000)), $$, time) . '@' . hostname);
-    $email->header_set('Date' => Email::Date::format_date);
-    my $sender = Email::Send->new({mailer => 'SMTP'});
-    $sender->mailer_args([Host => 'localhost']);
-    my $return = $sender->send($email);
-    warn Data::Dumper->Dump([\$msg, \$email, \$return], [qw(msg amil return)]);
+      Email::Stuffer->from(NP::Email::address("sender"))->to(NP::Email::address("vendors"))
+      ->cc(NP::Email::address("notifications"))->reply_to($self->user->email)
+      ->subject("New vendor zone application: " . $vz->zone_name)->text_body($msg);
+
+    my $return = NP::Email::sendmail($email->email);
+    warn Data::Dumper->Dump([\$msg, \$email, \$return], [qw(msg email return)]);
 
     return OK, $self->evaluate_template('tpl/vendor/submitted.html');
 }
@@ -170,17 +169,19 @@ sub render_admin {
                 $vz->save;
 
                 $self->tpl_param('vz' => $vz);
+                $self->tpl_param('config', $self->config);
 
                 my $msg = $self->evaluate_template('tpl/vendor/approved_email.txt');
-                my $email = Email::Simple->new(ref $msg ? $$msg : $msg)
-                  ;    # until we decide what eval_tpl should return :)
-                $email->header_set(
-                    'Message-ID' => join("-", int(rand(1000)), $$, time) . '@' . hostname);
-                $email->header_set('Date' => Email::Date::format_date);
-                my $sender = Email::Send->new({mailer => 'SMTP'});
-                $sender->mailer_args([Host => 'localhost']);
-                my $return = $sender->send($email);
-                warn Data::Dumper->Dump([\$msg, \$email, \$return], [qw(msg amil return)]);
+
+                my $email =
+                  Email::Stuffer->from(NP::Email::address("vendors"))
+                  ->to(NP::Email::address($vz->user->email))
+                  ->cc(NP::Email::address("notifications"))
+                  ->reply_to(NP::Email::address("vendors"))
+                  ->subject("Vendor zone activated: " . $vz->zone_name)->text_body($msg);
+
+                my $return = NP::Email::sendmail($email->email);
+                warn Data::Dumper->Dump([\$msg, \$email, \$return], [qw(msg email return)]);
 
                 $self->tpl_param("msg" => $vz->zone_name . ' approved');
 
@@ -188,7 +189,10 @@ sub render_admin {
         }
     }
 
-    my $pending = NP::Model->vendor_zone->get_vendor_zones(query => [status => 'Pending'],);
+    my $pending = NP::Model->vendor_zone->get_vendor_zones(
+        query   => [status => 'Pending'],
+        sort_by => 'id desc',
+    );
 
     $self->tpl_param(pending_zones => $pending);
 

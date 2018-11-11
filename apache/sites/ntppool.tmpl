@@ -48,6 +48,11 @@
       [% PH %] NTPPool::Control::Monitor->super
     </Location>
 
+    <Location /api/dns-zone>
+      SetHandler perl-script
+      [% PH %] NTPPool::Control::DNSZone->super
+    </Location>
+
     <Location /static>
       SetHandler perl-script
       [% PH %] NTPPool::Control::Basic->super

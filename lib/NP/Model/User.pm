@@ -1,6 +1,6 @@
 package NP::Model::User;
 use strict;
-use Net::IP;
+use Net::IP ();
 
 sub BAD_SERVER_THRESHOLD {-15}
 
@@ -41,7 +41,25 @@ sub servers {
             ],
         ],
     );
-    $s = [sort { $a->ip cmp $b->ip } @$s];
+    $s = [
+        sort {
+            my $r = 0;
+            my $ia = Net::IP->new($a->ip);
+            my $ib = Net::IP->new($b->ip);
+
+            if (my $c = $ia->version <=> $ib->version) {
+                return $c;
+            }
+
+            if ($ia->bincomp('lt', $ib)) {
+                $r = -1;
+            }
+            elsif ($ia->bincomp('gt', $ib)) {
+                $r = 1;
+            }
+            $r;
+        } @$s
+    ];
     wantarray ? @$s : $s;
 }
 

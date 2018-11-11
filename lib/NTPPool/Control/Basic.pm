@@ -14,10 +14,6 @@ sub render {
         return $self->redirect($self->manage_url($self->request->path));
     }
 
-    if ($self->request->path eq '/ntppool') {
-        return $self->redirect("http://news.ntppool.org/atom.xml");
-    }
-
     if ($self->request->uri =~ m!^/robots.txt$!) {
         $self->force_template_processing(1);
     }
