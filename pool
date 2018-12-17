@@ -23,8 +23,6 @@ my $config_ntp = $config->site->{ntppool};
 
 use NP::Model;
 
-use constant LOGFILE => "$ENV{CBROOTLOCAL}/log";
-
 my $pool_domain = $config_ntp->{pool_domain}
   or die "pool_domain configuration not setup";
 
@@ -88,16 +86,6 @@ sub ntpdate {
     }
 
     return 1;
-}
-
-
-sub logsay {
-    my $msg = join " ", @_;
-    open LOG, ">>" . LOGFILE
-      or die "Opening log (" . LOGFILE . "): $!\n";
-    my (undef, undef, undef, $d, $m, $y, undef) = localtime time;
-    printf LOG "%04d%02d%02d clockmaster %s\n", $y + 1900, $m + 1, $d, $msg;
-    close LOG;
 }
 
 sub server_information {
@@ -187,11 +175,6 @@ if ($cmd eq "add") {
     }
 
     $server->save;
-
-    unless (defined $hostname) { $hostname = $ip; }
-    my $z = join " ", @ARGV;
-    logsay($server->id . " add $email $hostname $z");
-
 }
 elsif ($cmd eq "addmonitor") {
     if ($#ARGV < 2) {
@@ -316,7 +299,6 @@ elsif ($cmd eq "rm") {
     my $server = NP::Model->server->find_server($arg);
     die "Could not find server $arg\n" unless $server;
     my $server_desc = (join " / ", grep { defined $_ } $server->ip, $server->hostname);
-    logsay($server->id, "rm", $server_desc);
     printf "%i, %s - %s\n", $server->id, $server_desc, $server->user->email;
     my $date = DateTime->today;
     $server->deletion_on($date);
@@ -335,7 +317,6 @@ elsif ($cmd eq "ip") {
     die "Could not find server $from\n" unless $server;
     print server_information($server);
     my $server_desc = (join " / ", grep { defined $_ } $server->ip, $server->hostname);
-    logsay($server->id, "ip", "$server_desc => $to");
     printf "%i, %s (%s) => %s\n", $server->id, $server_desc, $server->admin->email, $to;
     $server->add_logs(
         {   user_id => undef,
