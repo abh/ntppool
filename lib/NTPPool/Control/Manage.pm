@@ -281,6 +281,8 @@ sub handle_add {
     my $self = shift;
 
     my $host = $self->req_param('host');
+    $host =~ s/^\s+|\s+$//g;
+
     $self->tpl_param('host', $host);
 
     my @servers;
