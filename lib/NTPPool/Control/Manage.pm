@@ -340,7 +340,7 @@ sub handle_add {
 
         my $subject = "New addition to the NTP Pool: " . join(", ", map { $_->{ip} } @added);
         if (grep { $_->{hostname} } @added) {
-            $subject .= "(" . join(", ", map { $_->{hostname} } @added) . ")";
+            $subject .= " (" . join(", ", map { $_->{hostname} } @added) . ")";
         }
         $email->subject($subject);
 
