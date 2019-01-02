@@ -22,6 +22,7 @@ sub stathat_api {
 
 sub data {
     my $self = shift;
+
     # return a singleton for the root so other methods can add to the data
     return $self->{_dns_data} ||= do {
 
@@ -42,8 +43,20 @@ sub data {
         $data->{"_dmarc"}->{txt} =
           "v=DMARC1; p=reject; pct=100; rua=mailto:re+h6dgrfy2ghh\@dmarc.postmarkapp.com; sp=reject; aspf=r;";
 
-        # Fastly TLS verification
-        $data->{""}->{txt} = "_globalsign-domain-verification=mVYWxIl-2ab_B1yPPFxEmDCLrBcl6ucouXJOU_P0_C";
+        $data->{""}->{txt} = [
+            # Fastly TLS verification
+            {txt => "_globalsign-domain-verification=mVYWxIl-2ab_B1yPPFxEmDCLrBcl6ucouXJOU_P0_C"},
+        ];
+
+        if ($self->origin eq "pool.ntp.org") {
+            # google domain verification
+            $data->{"v4zgfk4oagsu"}->{cname} = "gv-35off4weczdcxg.dv.googlehosted.com.";
+            push @{$data->{""}->{txt}}, {txt => "facebook-domain-verification=sfjgxys7hmryn50lszk658gi7amidt"};
+        }
+        elsif ($self->origin eq "beta.grundclock.com") {
+            $data->{"fchof3xzaiyl"}->{cname} = "gv-fveibxaoathoje.dv.googlehosted.com.";
+            push @{$data->{""}->{txt}}, {txt => "facebook-domain-verification=9gahpfmem9gwjmxypka1o3v3fgnb4k"};
+        }
 
         $data;
     };
@@ -76,6 +89,7 @@ sub populate_country_zones {
         my $name = $zone->name;
 
         my $ttl;
+
         #if ($name eq 'br' or $name eq 'au') {
         #    $ttl = 55;
         #}
