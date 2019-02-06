@@ -48,6 +48,11 @@ $ua->default_header("Authorization" => "OAuth " . $api_key);
 
 $data = $data->{data}->{result}->[0]->{values};
 
+if (scalar(@$data) > (2 * $batch_size)) {
+    print "too much data returned, entries: ", scalar(@$data);
+    exit 2;
+}
+
 while (@$data) {
     my @batch = splice @$data, 0, (scalar(@$data) > $batch_size ? $batch_size : scalar(@$data));
 
