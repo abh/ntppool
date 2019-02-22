@@ -98,6 +98,8 @@ sub render {
 
             $self->request->header_out('Access-Control-Allow-Origin' => '*');
 
+            my %relevant_monitors;
+
             my $history = $server->history($options);
             $history = [
                 map {
@@ -106,6 +108,7 @@ sub render {
                     my @fields = qw(offset step score monitor_id);
                     @h{@fields} = map { my $v = $h->$_; defined $v ? $v + 0 : $v } @fields;
                     $h{ts} = $h->ts->epoch;
+                    $relevant_monitors{$h{monitor_id}} = 1;
                     \%h;
                 } @$history
             ];
@@ -114,14 +117,17 @@ sub render {
                 $history = [reverse @$history];
             }
 
+            # if it hasn't changed for a while, cache it for longer
             if (@$history && $history->[-1]->{ts} < time - 86400) {
                 $self->cache_control('maxage=28800');
             }
 
+            my $monitors = [grep { $relevant_monitors{$_->{id}} } @{$self->_monitors($server)}];
+
             return OK,
               encode_json(
                 {   history  => $history,
-                    monitors => $self->_monitors($server),
+                    monitors => $monitors,
                     server   => {ip => $server->ip}
                 }
               ),
