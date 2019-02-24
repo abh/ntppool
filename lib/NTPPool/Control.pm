@@ -275,12 +275,29 @@ sub cache_control {
 sub post_process {
     my $self = shift;
 
-    $self->request->header_out('X-Content-Type-Options', 'nosniff');
-    $self->request->header_out('X-Frame-Options', 'deny');
-    $self->request->header_out('Referrer-Policy', 'origin-when-cross-origin');
+    my @headers = (
 
-    $self->request->header_out('X-NPV',
-        $version->current_release . " (" . $version->hostname . ")");
+        # report-uri.com headers
+        [   'Report-To' =>
+              '{"group":"default","max_age":31536000,"endpoints":[{"url":"https://ntp.report-uri.com/a/d/g"}],"include_subdomains":true}'
+        ],
+        ['NEL' => '{"report_to":"default","max_age":31536000,"include_subdomains":true}'],
+        [   'Content-Security-Policy-Report-Only' =>
+              q[default-src 'none'; form-action 'none'; frame-ancestors 'none'; report-uri https://ntp.report-uri.com/r/d/csp/wizard]
+        ],
+
+        # security features
+        ['X-Content-Type-Options' => 'nosniff'],
+        ['X-Frame-Options'        => 'deny'],
+        ['Referrer-Policy'        => 'origin-when-cross-origin'],
+
+        # ntppool version / build
+        ['X-NPV' => $version->current_release . " (" . $version->hostname . ")"],
+    );
+
+    for my $h (@headers) {
+        $self->request->header_out($h->[0], $h->[1]);
+    }
 
     if (my $cache = $self->cache_control) {
         my $req = $self->request;
