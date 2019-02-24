@@ -277,6 +277,7 @@ sub post_process {
 
     $self->request->header_out('X-Content-Type-Options', 'nosniff');
     $self->request->header_out('X-Frame-Options', 'deny');
+    $self->request->header_out('Referrer-Policy', 'origin-when-cross-origin');
 
     $self->request->header_out('X-NPV',
         $version->current_release . " (" . $version->hostname . ")");
