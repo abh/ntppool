@@ -283,7 +283,7 @@ sub post_process {
         ],
         ['NEL' => '{"report_to":"default","max_age":31536000,"include_subdomains":true}'],
         [   'Content-Security-Policy-Report-Only' =>
-              q[default-src 'none'; form-action 'none'; frame-ancestors 'none'; report-uri https://ntp.report-uri.com/r/d/csp/wizard]
+              q[default-src 'none'; form-action 'none'; frame-ancestors 'none'; connect-src 'self' 8ll7xvh0qt1p.statuspage.io; font-src fonts.gstatic.com; img-src st.pimg.net *.mapper.ntppool.org; script-src cdn.statuspage.io st.pimg.net www.mapper.ntppool.org; style-src fonts.googleapis.com st.pimg.net; report-uri https://ntp.report-uri.com/r/d/csp/wizard]
         ],
 
         # security features
