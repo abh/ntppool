@@ -30,6 +30,7 @@
                  %]
 
 		<link rel="shortcut icon" href="[% combust.static_url("/images/favicon.ico") %]" type="image/x-icon" />
+
 </head>
 <body>
 [% PROCESS "tpl/google-analytics.html" %]
@@ -74,6 +75,8 @@
 
 [% PROCESS tpl/common/js.html %]
 
+<script defer src="https://www.mapper.ntppool.org/mapper.js"></script>
+
 <script type="text/javascript" src="//cdn.statuspage.io/se-v2.js"></script>
 <script>
 var sp = new StatusPage.page({ page: '8ll7xvh0qt1p'});
@@ -84,8 +87,6 @@ sp.summary({
   }
 });
 </script>
-
-<img src="https://www.mapper.ntppool.org/none">
 
 </body>
 </html>
