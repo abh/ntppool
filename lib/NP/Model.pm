@@ -36,6 +36,101 @@ BEGIN {
   our $VERSION = 0;
 }
 
+{ package NP::Model::Account;
+
+use strict;
+
+use base qw(NP::Model::_Object);
+
+__PACKAGE__->meta->setup(
+  table   => 'accounts',
+
+  columns => [
+    id              => { type => 'serial', not_null => 1 },
+    name            => { type => 'varchar', length => 255 },
+    account_plan_id => { type => 'integer' },
+  ],
+
+  primary_key_columns => [ 'id' ],
+
+  foreign_keys => [
+    account_plan => {
+      class       => 'NP::Model::AccountPlan',
+      key_columns => { account_plan_id => 'id' },
+    },
+  ],
+
+  relationships => [
+    vendor_zones => {
+      class      => 'NP::Model::VendorZone',
+      column_map => { id => 'account_id' },
+      type       => 'one to many',
+    },
+  ],
+);
+
+push @table_classes, __PACKAGE__;
+}
+
+{ package NP::Model::Account::Manager;
+
+use strict;
+
+our @ISA = qw(Combust::RoseDB::Manager);
+
+sub object_class { 'NP::Model::Account' }
+
+__PACKAGE__->make_manager_methods('accounts');
+}
+
+# Allow user defined methods to be added
+eval { require NP::Model::Account }
+  or $@ !~ m:^Can't locate NP/Model/Account.pm: and die $@;
+
+{ package NP::Model::AccountPlan;
+
+use strict;
+
+use base qw(NP::Model::_Object);
+
+__PACKAGE__->meta->setup(
+  table   => 'account_plans',
+
+  columns => [
+    id        => { type => 'serial', not_null => 1 },
+    plan_type => { type => 'varchar', length => 255 },
+    plan_key  => { type => 'varchar', length => 255 },
+  ],
+
+  primary_key_columns => [ 'id' ],
+
+  relationships => [
+    accounts => {
+      class      => 'NP::Model::Account',
+      column_map => { id => 'account_plan_id' },
+      type       => 'one to many',
+    },
+  ],
+);
+
+push @table_classes, __PACKAGE__;
+}
+
+{ package NP::Model::AccountPlan::Manager;
+
+use strict;
+
+our @ISA = qw(Combust::RoseDB::Manager);
+
+sub object_class { 'NP::Model::AccountPlan' }
+
+__PACKAGE__->make_manager_methods('account_plans');
+}
+
+# Allow user defined methods to be added
+eval { require NP::Model::AccountPlan }
+  or $@ !~ m:^Can't locate NP/Model/AccountPlan.pm: and die $@;
+
 { package NP::Model::ApiKey;
 
 use strict;
@@ -1033,7 +1128,7 @@ __PACKAGE__->meta->setup(
     created_on          => { type => 'datetime', default => 'now', not_null => 1 },
     modified_on         => { type => 'timestamp', not_null => 1 },
     dns_root_id         => { type => 'integer', not_null => 1 },
-    fb_user             => { type => 'integer' },
+    account_id          => { type => 'integer' },
   ],
 
   primary_key_columns => [ 'id' ],
@@ -1041,6 +1136,11 @@ __PACKAGE__->meta->setup(
   unique_key => [ 'zone_name', 'dns_root_id' ],
 
   foreign_keys => [
+    account => {
+      class       => 'NP::Model::Account',
+      key_columns => { account_id => 'id' },
+    },
+
     dns_root => {
       class       => 'NP::Model::DnsRoot',
       key_columns => { dns_root_id => 'id' },
@@ -1205,6 +1305,8 @@ eval { require NP::Model::ZoneServerCount }
     $_->clear_object_cache for @cache_classes;
   }
 
+  sub account { our $account ||= bless [], 'NP::Model::Account::Manager' }
+  sub account_plan { our $account_plan ||= bless [], 'NP::Model::AccountPlan::Manager' }
   sub api_key { our $api_key ||= bless [], 'NP::Model::ApiKey::Manager' }
   sub dns_root { our $dns_root ||= bless [], 'NP::Model::DnsRoot::Manager' }
   sub log { our $log ||= bless [], 'NP::Model::Log::Manager' }
