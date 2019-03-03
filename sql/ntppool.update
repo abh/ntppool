@@ -560,10 +560,23 @@ create table account_users (
   user_id    int(10) unsigned not null,
   constraint `account_users_account_fk` foreign key (`account_id`) references accounts (`id`),
   constraint `account_users_user_fk` foreign key (`user_id`) references users (`id`),
-  unique key (account_id, user_id)
+  primary key (account_id, user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 #77
 alter table vendor_zones
   change fb_user account_id int unsigned default null,
   add constraint `vendor_zone_account_fk` foreign key (`account_id`) references accounts (`id`);
+
+#78
+alter table accounts
+  add `organization_name` varchar(150) default NULL,
+  add `organization_url` varchar(150) default NULL;
+
+#todo
+alter table users
+   drop organization_url,
+   drop organization_name,
+   drop bitcard_id,
+   drop nomail,
+   drop pass;

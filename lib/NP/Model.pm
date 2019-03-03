@@ -46,9 +46,11 @@ __PACKAGE__->meta->setup(
   table   => 'accounts',
 
   columns => [
-    id              => { type => 'serial', not_null => 1 },
-    name            => { type => 'varchar', length => 255 },
-    account_plan_id => { type => 'integer' },
+    id                => { type => 'serial', not_null => 1 },
+    name              => { type => 'varchar', length => 255 },
+    account_plan_id   => { type => 'integer' },
+    organization_name => { type => 'varchar', length => 150 },
+    organization_url  => { type => 'varchar', length => 150 },
   ],
 
   primary_key_columns => [ 'id' ],
@@ -61,6 +63,13 @@ __PACKAGE__->meta->setup(
   ],
 
   relationships => [
+    users => {
+      map_class => 'NP::Model::AccountUser',
+      map_from  => 'account',
+      map_to    => 'user',
+      type      => 'many to many',
+    },
+
     vendor_zones => {
       class      => 'NP::Model::VendorZone',
       column_map => { id => 'account_id' },
@@ -130,6 +139,53 @@ __PACKAGE__->make_manager_methods('account_plans');
 # Allow user defined methods to be added
 eval { require NP::Model::AccountPlan }
   or $@ !~ m:^Can't locate NP/Model/AccountPlan.pm: and die $@;
+
+{ package NP::Model::AccountUser;
+
+use strict;
+
+use base qw(NP::Model::_Object);
+
+__PACKAGE__->meta->setup(
+  table   => 'account_users',
+
+  columns => [
+    account_id => { type => 'integer', not_null => 1 },
+    user_id    => { type => 'integer', not_null => 1 },
+  ],
+
+  primary_key_columns => [ 'account_id', 'user_id' ],
+
+  foreign_keys => [
+    account => {
+      class       => 'NP::Model::Account',
+      key_columns => { account_id => 'id' },
+    },
+
+    user => {
+      class       => 'NP::Model::User',
+      key_columns => { user_id => 'id' },
+    },
+  ],
+);
+
+push @table_classes, __PACKAGE__;
+}
+
+{ package NP::Model::AccountUser::Manager;
+
+use strict;
+
+our @ISA = qw(Combust::RoseDB::Manager);
+
+sub object_class { 'NP::Model::AccountUser' }
+
+__PACKAGE__->make_manager_methods('account_users');
+}
+
+# Allow user defined methods to be added
+eval { require NP::Model::AccountUser }
+  or $@ !~ m:^Can't locate NP/Model/AccountUser.pm: and die $@;
 
 { package NP::Model::ApiKey;
 
@@ -901,6 +957,13 @@ __PACKAGE__->meta->setup(
   ],
 
   relationships => [
+    accounts => {
+      map_class => 'NP::Model::AccountUser',
+      map_from  => 'user',
+      map_to    => 'account',
+      type      => 'many to many',
+    },
+
     logs => {
       class      => 'NP::Model::Log',
       column_map => { id => 'user_id' },
@@ -1307,6 +1370,7 @@ eval { require NP::Model::ZoneServerCount }
 
   sub account { our $account ||= bless [], 'NP::Model::Account::Manager' }
   sub account_plan { our $account_plan ||= bless [], 'NP::Model::AccountPlan::Manager' }
+  sub account_user { our $account_user ||= bless [], 'NP::Model::AccountUser::Manager' }
   sub api_key { our $api_key ||= bless [], 'NP::Model::ApiKey::Manager' }
   sub dns_root { our $dns_root ||= bless [], 'NP::Model::DnsRoot::Manager' }
   sub log { our $log ||= bless [], 'NP::Model::Log::Manager' }

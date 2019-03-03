@@ -1,0 +1,37 @@
+# -*- cperl -*-
+eval 'exec $CBROOT/bin/perl $0 ${1+"$@"}'
+  unless $running_under_some_shell;
+use strict;
+use Data::Dumper;
+
+use NP::Model;
+
+local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
+
+my $zones = NP::Model->vendor_zone->get_vendor_zones_iterator(
+    query   => [account_id => undef],
+    sort_by => 'user_id',
+);
+
+while (my $vz = $zones->next) {
+    my $name = $vz->zone_name;
+    print "name: $name, user: ${\$vz->user_id} org: [${\$vz->organization_name}]\n";
+
+    my $account;
+
+    my $accounts = $vz->user->accounts;
+    if (@$accounts > 0) {
+        print "we found an account ...\n";
+        $account = $accounts->[0];
+    }
+    else {
+        $account = NP::Model->account->create(
+            name  => $vz->organization_name,
+            users => [$vz->user_id],
+        );
+        $account->save;
+    }
+
+    $vz->account_id($account->id);
+    $vz->save;
+}
