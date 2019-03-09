@@ -36,7 +36,7 @@ job_servers = 127.0.0.1:4730
 #   path to cronolog binary
 # cronolog_template = %Y/%m/LOGFILE.%Y%m%d
 # cronolog_params   = -l LOGDIR/LOGFILE.latest
-#   access and errror will be substituted for LOGFILE in template and
+#   access and error will be substituted for LOGFILE in template and
 #   params.  LOGDIR is $CBROOT/apache/logs
 
 [database-ntppool]
