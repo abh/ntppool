@@ -12,10 +12,9 @@
 
 	<div class="servers" >
 		<h3>Your Servers
-                   <img id="busy" style="display: none; float: right;" src="[% combust.static_url("/images/progress.gif") %]">
+                   <img class="busy" src="[% combust.static_url("/images/progress.gif") %]">
                 </h3>
 		<div class="value">
-			<span class="add"><a href="#add">Add a server</a></span>
 			[% servers = user.servers;
 			   FOR server = servers; %]
 			[% PROCESS tpl/manage/server.html, server => server %]
@@ -34,17 +33,18 @@
 	<div class="server_desc">
 		<p>
 		<a name="netspeed"></a>The <b>net speed</b> is used to balance the
-		load between the pool servers.  If your connection is asymmetric
-		(like most DSL connections) you should use the <i>lower</i> speed.
-		This does NOT always mean wire speed of your server.
+		load between the pool servers. If your server can handle more or you'd
+    like less NTP requests, you can adjust this value. The query load to
+    your IP should adjust within 10-30 minutes. 
+    This speed does mean wire speed of your server, it's just a relative
+    value to other servers.
 		</p>
 
 		<p>
 		The amount of queries your server will get is
 		generally directly proportional to the netspeed, so a
 		50Mbit setting will get about 5 times more traffic
-		than the 10Mbit setting. The pool will only use a
-		fraction of the "netspeed setting".  Be aware that the
+		than the 10Mbit setting. Be aware that the
 		amount of queries to your server will grow over time.
 		</p>
 

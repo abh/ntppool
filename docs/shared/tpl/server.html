@@ -92,7 +92,7 @@ This server is <span class="deletion">scheduled for deletion</span> on %1.
 
 <div data-server-ip="[% server.ip %]" id="graph" class="graph"></div>
 <div class="graph-legend"></div>
-<p class="graph_desc" style="display: none; color: #777; margin-top: 5px">
+<p class="graph_desc">
 Green/orange/red small dots are offsets (in milliseconds, using the left axis).<br>
 Blue/red "double size" dots are points/scores (using the right axis).<br>
 The y-axes (both) aren't linear to highlight what is usually the most interesting area of the data.<br>
@@ -114,7 +114,7 @@ and enable javascript to see the new graphs.<br><br>
    data-offset-graph-url="[% server.graph_uri('offset') %]"
 ></div>
 
-<span style="font-size:60%"># [% server.id %], <a href="[% server.url %]/log?limit=200&monitor=*">[% "CSV log" | l %]</a>
+<span class="server-id"># [% server.id %], <a href="[% server.url %]/log?limit=200&monitor=*">[% "CSV log" | l %]</a>
 
 
 [% UNLESS manage_site %]

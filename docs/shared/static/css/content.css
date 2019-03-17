@@ -68,6 +68,11 @@ a.up {display: block; text-align: right; font-variant: small-caps;}
 		#servers .area .global {width: 100px; padding-left: 50px; height: 23px; margin-top: 5px;}
                 #servers .count {  }
 
+
+        .graph-desc { display: none; color: #777; margin-top: 5px; }
+        .server-id  { font-size: 60%; }
+
+
 #activity {
 	float: right;
 	padding: 10px;
@@ -101,8 +106,10 @@ p.thanks {font-style: italic; font-weight: bold;}
 		border-right: 1px solid #ccc;
 		margin: 0 10px 10px 0;
 	}
-		#admin .value span {font-size: 107%;}
-		#admin .server_desc {font-size: 88%;}
+	#admin .value span {font-size: 107%;}
+	#admin .server_desc {font-size: 88%;}
+
+        #admin .busy { display: none; float: right; }
 
 /* user profile */
 #userprofile .server {

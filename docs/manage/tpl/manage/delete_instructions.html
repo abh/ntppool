@@ -12,6 +12,8 @@ on the removal date.
 <form method="post" action="/manage/server/delete">
 
 <input type="hidden" name="server" value="[% server.id %]" />
+<input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
+
 
 <p>[% server.ip %] - date of deletion: <br/>
 <select name="deletion_date">
