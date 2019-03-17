@@ -13,8 +13,8 @@ if (!NP) var NP = {};
         $('#zones_' + server_id ).html(data.zones);
     };
 
-    NP.update_netspeed = function(server_id, netspeed) {
-        var pars = { "netspeed": netspeed, "server": server_id };
+    NP.update_netspeed = function(server_id, netspeed, auth_token) {
+        var pars = { "netspeed": netspeed, "server": server_id, "auth_token": auth_token };
         $('#netspeed_' + server_id ).fadeOut(50);
         jQuery.getJSON( '/manage/server/update/netspeed', pars,
             function(data, textStatus) {

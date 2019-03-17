@@ -104,9 +104,6 @@ sub edit_server {
 
     return {error => 'No access'} unless $self->user && $self->user->is_staff;
 
-    # TODO:
-    #  check auth_token
-
     my ($field, $server_ip) = $self->_required_param(qw(id server));
     my $value = $self->_optional_param('value') || '';
 

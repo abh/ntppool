@@ -15,6 +15,7 @@ Please verify the following information.
 [% END %]
 
 <form method="post" action="/manage/server/add" id="add_server_form">
+<input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
 
 [% FOR server = servers %]
 
@@ -61,7 +62,7 @@ Please verify the following information.
         [% FOR zone = all_zones %]
             <option value="[% zone.name %]">[% zone.description %]</option>
         [% END %]
-    </select>
+    </select><br>
         If the country of your server isn't listed, please email <a
         href="mailto:server-owner-help@ntppool.org">server-owner-help@ntppool.org</a>.
     </div>

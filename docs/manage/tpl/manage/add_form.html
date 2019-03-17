@@ -21,6 +21,7 @@
 	<form action="/manage/server/add#add" method="post">
 	<fieldset>
 	<input type="text" class="text" name="host" value="[% host | html %]">
+        <input type="hidden" name="auth_token" value="[% combust.auth_token %]">
 	<input type="submit" class="button" value="Submit">
 	</fieldset>
 	</form>

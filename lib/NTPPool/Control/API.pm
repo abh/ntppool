@@ -9,5 +9,14 @@ sub post_process {
     return $self->SUPER::post_process(@_);
 }
 
+sub check_auth {
+    my $self = shift;
+    my $method = shift;
+
+    if (!$self->check_auth_token) {
+        return "";
+    }
+    return "ok";
+}
 
 1;

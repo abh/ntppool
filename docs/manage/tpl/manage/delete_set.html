@@ -11,6 +11,7 @@ in rotation about two weeks prior to this date.
 <p>
 <form action="/manage/server/delete" method="post">
 <input type="hidden" name="server" value="[% server.id %]" />
+<input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
 <input type="submit" name="cancel_deletion" value="Cancel deletion of [% server.ip %]" />
 </form>
 </p>

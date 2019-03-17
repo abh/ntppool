@@ -280,6 +280,8 @@ sub show_manage {
 sub handle_add {
     my $self = shift;
 
+    return 403 unless $self->check_auth_token;
+
     my $host = $self->req_param('host');
     $host =~ s/^\s+|\s+$//g;
 
@@ -573,6 +575,7 @@ sub handle_update_netspeed {
     my $self = shift;
     my $server = $self->req_server or return NOT_FOUND;
     if (my $netspeed = $self->req_param('netspeed')) {
+        return 403 unless $self->check_auth_token;
         $server->netspeed($netspeed) if $netspeed =~ m/^\d+$/;
         if ($server->netspeed < 768) {
             $server->leave_zone('@');
@@ -615,8 +618,11 @@ sub handle_delete {
     my $server = $self->req_server or return NOT_FOUND;
     $self->tpl_param(server => $server);
 
+
     if ($self->request->method eq 'post') {
         if (my $date = $self->req_param('deletion_date')) {
+            return 403 unless $self->check_auth_token;
+
             my @date = split /-/, $date;
             $date = $date[1] && DateTime->new(
                 year      => $date[0],
@@ -638,6 +644,8 @@ sub handle_delete {
             }
         }
         if ($self->req_param('cancel_deletion')) {
+            return 403 unless $self->check_auth_token;
+
             $server->deletion_on(undef);
             $server->add_logs(
                 {   user_id => $self->user->id,
