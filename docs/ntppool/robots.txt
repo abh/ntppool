@@ -7,3 +7,5 @@ Disallow: /
 
 User-Agent: *
 Disallow: /dns.html
+Disallow: /monitor/
+
