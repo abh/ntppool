@@ -15,7 +15,9 @@ if (!NP) { var NP = {}; }
             var q = $(this).find('input:first').val();
             $('#users').html("Loading ...");
             $.post('/api/staff/search',
-                    { q: q },
+                    { q: q,
+                      auth_token: NP.token
+                    },
                     function(r) {
                         var reg = new RegExp(q, 'gi');
                         _.each(r.users, function(user) {

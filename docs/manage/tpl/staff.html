@@ -1,4 +1,5 @@
 [% page.js.push(combust.static_group("admin.js")) %]
+<script type="text/javascript">NP.token='[% combust.auth_token %]';</script>
 
 [% PROCESS tpl/manage/navigation.html %]
 
