@@ -101,8 +101,15 @@ sub populate_country_zones {
 
             my $min_non_duplicate_size = 2;
             my $response_records       = 3;
-            my @zones                  = ("", "0.", "1.", "2.", "3.");
+            my @zones                  = ("0.", "1.", "2.", "3.");
             my $zone_count             = scalar @zones;
+
+            # add all servers to the non-numbered "NTP" zone
+            (my $pgeodns_group = "${name}") =~ s/\.$//;
+            push @{$data->{$pgeodns_group}->{a}}, $_ for @$entries;
+            if ($ttl) {
+                $data->{$pgeodns_group}->{ttl} = $ttl;
+            }
 
             $min_non_duplicate_size = int(@$entries / $zone_count)
               if (@$entries / $zone_count > $min_non_duplicate_size);
