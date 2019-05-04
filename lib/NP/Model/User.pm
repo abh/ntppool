@@ -86,7 +86,7 @@ sub admins_to_notify {
                        AND (sa.last_score+10) >= s.score_raw
                       )
                   )
-          ORDER BY s.user_id
+          ORDER BY u.id
         ],
         undef,
         NP::Model::User->BAD_SERVER_THRESHOLD,
