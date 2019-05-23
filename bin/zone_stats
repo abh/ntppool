@@ -32,12 +32,17 @@ while (my $zone = $zones->next) {
 
         # printf "%-8s %s %3i %3i\n", $zone->name, $ip_version, $data->{count_active}, $data->{count_registered};
         $dbh->do(
-            q[replace into zone_server_counts (zone_id,ip_version,date,count_active,count_registered,netspeed_active)
-               values (?,?,NOW(),?,?,?)],
+            q[insert into zone_server_counts
+                 (zone_id,ip_version,date,count_active,count_registered,netspeed_active)
+                 values (?,?,NOW(),?,?,?)
+                 on duplicate key update
+                 count_active=?, count_registered=?, netspeed_active=?
+            ],
             undef,
             $zone->id,
             $ip_version,
-            $data->{count_active}, $data->{count_registered}, $data->{netspeed_active}
+            $data->{count_active}, $data->{count_registered}, $data->{netspeed_active},
+            $data->{count_active}, $data->{count_registered}, $data->{netspeed_active},
         );
 
     }

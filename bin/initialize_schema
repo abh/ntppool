@@ -1,6 +1,6 @@
 #!/bin/sh
-mysqladmin -uroot -proot -hmysql create ntppool
-mysql_upgrade
+mysqladmin -uroot -proot -hmysql create ntppool ntpbeta
+#mysql_upgrade
 set -ex
 ./combust/bin/cmysql ntppool < sql/tables.sql
 ./combust/bin/cmysql ntppool < sql/zones.sql
