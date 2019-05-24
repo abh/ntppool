@@ -1,4 +1,4 @@
-FROM quay.io/ntppool/base-os:v3.9.0
+FROM quay.io/ntppool/base-os:v3.9.1
 
 USER root
 
@@ -9,10 +9,6 @@ ENV HULK /usr/bin/hulk
 
 WORKDIR /ntppool
 VOLUME /ntppool/data
-
-EXPOSE 8299
-ENTRYPOINT ["./docker/entrypoint"]
-CMD ["./docker-run"]
 
 ADD . /ntppool
 
@@ -34,5 +30,9 @@ RUN perl Makefile.PL && \
   chown -R ntppool tmp logs
 
 RUN bash -c "ls -la docs/shared/static{,/.g,/css}"
+
+EXPOSE 8299
+ENTRYPOINT ["./docker/entrypoint"]
+CMD ["./docker-run"]
 
 USER ntppool
