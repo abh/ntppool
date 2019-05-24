@@ -66,6 +66,7 @@ local volumes = [
 
     image: params.image,
     imagePullPolicy:: 'IfNotPresent',
+    //imagePullPolicy:: 'Always',
 
     command: [
       '/ntppool/docker/entrypoint',
@@ -113,12 +114,13 @@ local volumes = [
 
     resources: {
       limits: {
-        cpu: '1',
-        memory: '600Mi',
+        cpu: '2',
+        memory: '1400Mi',
       },
       requests: {
         cpu: '10m',
-        memory: '300Mi',
+        # in development ~300Mi is fine, production needs more
+        memory: '700Mi',
       },
     },
     volumeMounts: [
@@ -166,11 +168,18 @@ local volumes = [
           },
         },
         spec: {
-          affinity: affinity.PodAnti("tier", deployment.tier),
+          affinity: affinity.PodAnti('tier', deployment.tier),
           containers:
             deployment.containers,
           volumes: volumes,
-          [if std.length(params.imagePullSecrets)>0 then 'imagePullSecrets']: params.imagePullSecrets,
+          [if std.length(params.imagePullSecrets) > 0 then 'imagePullSecrets']: params.imagePullSecrets,
+          tolerations: [
+            {
+              effect: 'NoSchedule',
+              key: 'node-role.kubernetes.io/master',
+              operator: 'Exists',
+            },
+          ],
 
         },
       },
@@ -193,10 +202,11 @@ local volumes = [
     },
     spec: {
       concurrencyPolicy: 'Forbid',
-      successfulJobsHistoryLimit: 3,
-      failedJobsHistoryLimit: 5,
+      successfulJobsHistoryLimit: 2,
+      failedJobsHistoryLimit: 2,
       schedule: cronjob.schedule,
       suspend: params.cronSuspend,
+      startingDeadlineSeconds: 172400,
       jobTemplate: {
         spec: {
           template: {
@@ -204,6 +214,7 @@ local volumes = [
               activeDeadlineSeconds: 1800,
               restartPolicy: 'Never',
               volumes: volumes,
+              [if std.length(params.imagePullSecrets) > 0 then 'imagePullSecrets']: params.imagePullSecrets,
               containers: cronjob.containers,
             },
           },

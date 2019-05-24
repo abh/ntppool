@@ -3,6 +3,7 @@
     // User-defined global parameters; accessible to all component and environments, Ex:
     // replicas: 4,
     cronSuspend: false,
+    cronStatuspage: false,
   },
   components: {
     // Component-level parameters, defined initially from 'ks prototype use ...'
@@ -38,8 +39,20 @@
     },
     quota: {
     },
+    ntppool: {
+      containerPort: 8299,
+
+      #image: 'quay.io/ntppool/ntppool:0b5f8ac',
+      image: 'quay.io/ntppool/ntppool:6e92c54',
+
+      name: 'ntppool',
+      imagePullSecrets: [],
+      replicas: 2,
+      servicePort: 80,
+      type: 'ClusterIP',
+    },
     smtp: {
-      containerPort: 25,
+      containerPort: 2525,
       image: 'namshi/smtp',
       name: 'smtp',
       replicas: 2,
@@ -63,15 +76,6 @@
       replicas: 1,
       type: 'ClusterIP',
     },
-    ntppool: {
-      containerPort: 8299,
-      image: 'quay.io/ntppool/ntppool:f77db0c',
-      name: 'ntppool',
-      imagePullSecrets: [],
-      replicas: 2,
-      servicePort: 80,
-      type: 'ClusterIP',
-    },
     splash: {
       containerPort: 8050,
       image: 'scrapinghub/splash:latest',
@@ -82,7 +86,7 @@
     },
     geoip: {
       containerPort: 8009,
-      image: 'quay.io/abh/geoipapi:0.3',
+      image: 'quay.io/abh/geoipapi:0.6.1',
       name: 'geoip',
       replicas: 2,
       servicePort: 80,

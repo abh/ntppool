@@ -8,8 +8,8 @@ local params = std.extVar('__ksonnet/params').components.quota;
   },
   spec: {
     hard: {
-      'limits.cpu': '12',
-      'limits.memory': '8Gi',
+      'limits.cpu': '16',
+      'limits.memory': '12Gi',
       pods: '15',
       'requests.cpu': '5',
       'requests.memory': '5Gi',

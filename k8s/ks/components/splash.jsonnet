@@ -23,7 +23,8 @@ local affinity = import 'affinity.libsonnet';
         },
       ],
       selector: {
-        app: params.name,
+        app: 'ntppool',
+        tier: params.name,
       },
       type: params.type,
     },
@@ -63,11 +64,11 @@ local affinity = import 'affinity.libsonnet';
               resources: {
                 limits: {
                   cpu: '1',
-                  memory: '700Mi',
+                  memory: '500Mi',
                 },
                 requests: {
                   cpu: '10m',
-                  memory: '250Mi',
+                  memory: '90Mi',
                 },
               },
             },

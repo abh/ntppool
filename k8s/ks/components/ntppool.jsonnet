@@ -19,7 +19,7 @@ local resourcesLow = {
   },
 };
 
-[
+std.prune([
   {
     apiVersion: 'v1',
     kind: 'Service',
@@ -137,21 +137,33 @@ local resourcesLow = {
     ],
   },
 
+  + if params.cronStatuspage then
   appBase.CronJob {
-    name: 'ntppool-cleanup',
-    schedule: '53,23 * * * *',
+    name: 'statuspage',
+    schedule: '*/2 * * * *',
     params: params,
     containers: [
       appBase.Container {
-        name: 'ntppool-cleanup',
+        name: 'activeservers',
         params: params,
-        args: ['sh', '/ntppool/bin/cleanup'],
-        // resources: resourcesLow,
+        args: ['sh', '/ntppool/bin/statuspage/statuspage-activeservers'],
+        resources: resourcesLow,
+      },
+      appBase.Container {
+        name: 'metrics',
+        params: params,
+        args: ['sh', '/ntppool/bin/statuspage/statuspage-metrics'],
+        resources: resourcesLow,
+      },
+      appBase.Container {
+        name: 'dnsqueries',
+        params: params,
+        args: ['sh', '/ntppool/bin/statuspage/statuspage-dnsqueries'],
+        resources: resourcesLow,
       },
     ],
   },
 
-
   appBase.Ingress('web', std.split(config.web_hostname, ','), web_tls),
   appBase.Ingress('manage', std.split(config.manage_hostname, ','), manage_tls),
-]
+])

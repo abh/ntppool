@@ -5,12 +5,16 @@ local envParams = params {
     ns+: {
       name: 'ntpbeta',
     },
+    ntppool+: {
+      replicas: 2,
+    },
     config+: {
       data+: {
         auth0_client: 'B9BhV7ihWP7BErj2w1WqcZujqH9gwF43',
-        auth0_domain: 'ntp.auth0.com',
+        auth0_domain: 'login.ntppool.org',
+        #auth0_domain: 'ntp.auth0.com',
 
-        db_dsn: 'dbi:mysql:database=ntpbeta;host=lax10.ntppool.net;mysql_enable_utf8=1',
+        db_dsn: 'dbi:mysql:database=ntpbeta;host=ntp-db-mysql-master.ntpdb;mysql_enable_utf8=1',
         db_user: 'ntpbeta',
 
         deployment_mode: 'test',
@@ -33,7 +37,7 @@ local envParams = params {
     },
     smtp+: {
       settings+: {
-        relay_networks: ':10.2.0.0/16:10.3.0.0/16',
+        relay_networks: ':10.2.0.0/16:10.3.0.0/16:10.42.0.0/16',
         smarthost_address: 'smtp.sparkpostmail.com',
         smarthost_port: '587',
         smarthost_user: 'SMTP_Injection',

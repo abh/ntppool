@@ -87,7 +87,7 @@ local affinity = import 'affinity.libsonnet';
                 },
                 requests: {
                   cpu: '20m',
-                  memory: '50Mi',
+                  memory: '10Mi',
                 },
               },
             },

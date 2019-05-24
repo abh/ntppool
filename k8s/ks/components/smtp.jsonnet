@@ -58,7 +58,7 @@ local affinity = import 'affinity.libsonnet';
                 },
                 {
                   name: 'PORT',
-                  value: '25',
+                  value: std.toString(params.containerPort),
                 },
                 {
                   name: 'SMARTHOST_ADDRESS',
@@ -94,11 +94,11 @@ local affinity = import 'affinity.libsonnet';
               resources: {
                 limits: {
                   cpu: '200m',
-                  memory: '80Mi',
+                  memory: '50Mi',
                 },
                 requests: {
-                  cpu: '20m',
-                  memory: '20Mi',
+                  cpu: '10m',
+                  memory: '10Mi',
                 },
               },
             },
