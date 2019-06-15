@@ -25,31 +25,33 @@ h1, h2, h3, h4, h5 {color: #454545;}
 	margin-bottom: 15px;
 }
 
-ul#nav li {
+ul#navbar-nav li {
 	font-size: 30px;
 	font-family: 'Economica', sans-serif;
-           /*"p22-underground-1","p22-underground-2", sans-serif;*/
         font-variant: small-caps;
         font-weight: 700;
         list-style: none;
         }
-	ul#nav li a {
+	ul#navbar-nav li a {
 		float: left;
 		display: block;
-		width: 150px;
-		height: 45px;
+		width: 190px;
+		height: 70px;
 		color: #7B7A7D;
 		padding: 5px 0 0 40px;
 		text-decoration: none;
 	}
-		ul#nav li a:hover {color: #3885B4;}
-	ul#nav li.join a {
-		width: 145px;
+	ul#navbar-nav li a:hover {color: #3885B4;}
+	ul#navbar-nav li.join a {
+		width: 180px;
 		background: no-repeat url(../images/join_pool.v1.png);}
-	ul#nav li.use a {
-		width: 140px;
+	ul#navbar-nav li.use a {
+		width: 180px;
 		background: no-repeat url(../images/use_pool.v1.png);}
-	ul#nav li.manage a {background: no-repeat url(../images/manage_servers.v1.png);}
+	ul#navbar-nav li.manage a {
+                width: 180px;
+                background: no-repeat url(../images/manage_servers.v1.png);
+                }
 
 div#tagline {font-size: 122%; font-style: italic; text-align: right; margin: 0; padding: 0; float: right;}
 

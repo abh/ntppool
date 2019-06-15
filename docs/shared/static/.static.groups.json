@@ -1,6 +1,6 @@
 { "common.css": {
       "files": [ "css/fonts.css",
-                 "cdn/libs/bootstrap/3/css/bootstrap.min.css",
+                 "cdn/libs/bootstrap/4/css/bootstrap.min.css",
                  "css/master.css",
                  "css/content.css"
       ]
