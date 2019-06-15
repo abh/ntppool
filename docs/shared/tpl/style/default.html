@@ -4,39 +4,36 @@
 [% title = page.title || 'the internet cluster of ntp servers' %]
 <title>pool.ntp.org: [% title | html %]</title>
 
-                [%- IF page.canonical %]
-                <link rel="canonical" href="[% page.canonical | html %]">
-                [% END -%]
+[%- IF page.canonical %]
+<link rel="canonical" href="[% page.canonical | html %]">
+[% END -%]
 
-                <script type="text/javascript">
-                  if (!NP) var NP = {};
-                </script>
+<script type="text/javascript">
+  if (!NP) var NP = {};
+</script>
 
-                <!--
-<link href='https://fonts.googleapis.com/css?family=Merriweather:400,700|Bree+Serif|Economica:400,700|Source+Code+Pro:400,700&subset=latin,cyrillic-ext,latin-ext,cyrillic' rel='stylesheet' type='text/css'>
-                -->
+[% page.css.unshift( combust.static_group("common.css") );
+   FOR css_elem = page.css;
+       FOR css = css_elem.list;
+           IF css.match('^/');
+               t_css = css;
+           ELSE;
+               t_css = '/css/' _ css;
+           END;
+ %]<link rel="stylesheet" href="[% combust.static_url(t_css) %]" type="text/css">
+ [% END; # FOR css
+   END;  # FOR css_elem
+ %]
 
-                [% page.css.unshift( combust.static_group("common.css") );
-                   FOR css_elem = page.css;
-                       FOR css = css_elem.list;
-                           IF css.match('^/');
-                               t_css = css;
-                           ELSE;
-                               t_css = '/css/' _ css;
-                           END;
-                 %]<link rel="stylesheet" href="[% combust.static_url(t_css) %]" type="text/css">
-[%                     END; # FOR css
-                   END;  # FOR css_elem
-                 %]
-
-		<link rel="shortcut icon" href="[% combust.static_url("/images/favicon.ico") %]" type="image/x-icon" />
+<link rel="shortcut icon" href="[% combust.static_url("/images/favicon.ico") %]" type="image/x-icon" />
 
 </head>
+
 <body>
 [% PROCESS "tpl/google-analytics.html" %]
 
-<div class="container-fluid">
-	<div id="hd" class="row-fluid">
+<div class="container">
+	<div id="hd" class="row">
 		<h1>pool.ntp.org</h1>
 		[% IF combust.deployment_mode != 'prod' %]
 		<p class="develwarning">Note: This is a development/test version of
@@ -48,12 +45,12 @@
 		[% END %]
 
 	</div>
-	<div class="row-fluid">
-		<div id="sidebar" class="span2">
+	<div class="row">
+		<div id="sidebar" class="col-md-2">
 			<h1><a href="/">pool.ntp.org</a></h1>
             [% PROCESS tpl/navigation_sidebar.html %]
 		</div>
-		<div id="mainbar" class="span10">
+		<div id="mainbar" class="col-md-10">
 			[% PROCESS tpl/navigation_topbar.html %]
 			<br class="clearboth"/>
 			[% content %]
