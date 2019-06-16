@@ -5,11 +5,13 @@
 		<h3>[% 'Active Servers' | l %]</h3>
 		<ul id="servers">
 			[% FOR zone = combust.count_by_continent %]
+                        [% IF zone.server_count > 0 %]
 			<li class="area">
 				<span class="location [% zone.name %] [% IF zone.name == '@' || zone.name == '.'; "global"; END  %]">[% zone.name == '@' ? '<b>' : '' %]
 				<a href="[% zone.url %]">[% zone.description | l %]</a>
 				[% zone.name == '@' ? '</b>' : '' %]</span>&nbsp;<span class="count">[% zone.server_count %]</span>
 			</li>
+                        [% END %]
 			[% END %]
 		</ul>
 		<span class="date">As of [% USE date; date.format(date.now, '%Y-%m-%d'); %]</span>
