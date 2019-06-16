@@ -44,16 +44,17 @@ a.up {display: block; text-align: right; font-variant: small-caps;}
 
 /* index */
 #activity .date {display: block; font-size: 92%; text-align: right; clear: both; margin-top: 40px;}
+
 #servers .area {
 	clear: both;
 	padding: 4px 0;
-	font-size: 122%;
+	font-size: 115%;
 	list-style: none;
 }
 	#servers .area .location {
 		display: block;
-		width: 100px;
-		height: 38px;
+		width: 175px;
+		height: 40px;
 		float: left;
 		padding-left: 50px;
 		font-size: 100%;
@@ -66,8 +67,8 @@ a.up {display: block; text-align: right; font-variant: small-caps;}
 		#servers .area .europe {background: no-repeat url(../images/globe_flat_europe.v1.png);}
 		#servers .area .asia {background: no-repeat url(../images/globe_flat_asia.v1.png);}
 		#servers .area .oceania {background: no-repeat url(../images/globe_flat_oceania.v1.png);}
-		#servers .area .global {width: 100px; padding-left: 50px; height: 23px; margin-top: 5px;}
-                #servers .count {  }
+		#servers .area .global {padding-left: 50px; margin-top: 5px;}
+                #servers .count { margin: 10px; }
 
 
         .graph-desc { display: none; color: #777; margin-top: 5px; }
@@ -80,6 +81,8 @@ a.up {display: block; text-align: right; font-variant: small-caps;}
 	border: 1px solid #ddd;
 	margin: 0 0 10px 10px;
 }
+#activity h3 { margin: 0; }
+#activity ul { padding-inline-start: 0px; }
 
 #news {}
 
