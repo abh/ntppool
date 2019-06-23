@@ -17,12 +17,25 @@ h1, h2, h3, h4, h5 {color: #454545;}
 
 #sidebar h1 a {
 	display: block;
-	width: 125px;
-	height: 138px;
-	background: no-repeat url(../images/logo.v1.png);
+        width: 125px;
+        height: 138px;
+	background: no-repeat url(../images/logo-2019@x2.v1.png);
+        background-size: 100px 125px;
+        background-position: center center;
+        background-repeat: no-repeat;
 	text-indent: -9000px;
 	margin: auto;
 	margin-bottom: 15px;
+}
+
+#nav .feather {
+  width: 30px;
+  height: 30px;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
 }
 
 ul#nav li {
@@ -35,24 +48,18 @@ ul#nav li {
 	ul#nav li a {
 		float: left;
 		display: block;
-		width: 190px;
 		height: 40px;
-		color: #7B7A7D;
-		padding: 0px 0 0px 40px;
+		color: #5A595B;
+		padding: 10px 10 10px 40px;
+                margin-right: 20px;
 		text-decoration: none;
 	}
 	ul#nav li a:hover {color: #3885B4;}
 	ul#nav li.join a {
-		width: 180px;
-		background: no-repeat url(../images/join_pool.v1.png);
 	}
 	ul#nav li.use a {
-		width: 180px;
-		background: no-repeat url(../images/use_pool.v1.png);
 	}
 	ul#nav li.manage a {
-        width: 180px;
-        background: no-repeat url(../images/manage_servers.v1.png);
     }
 
 div#tagline {font-size: 122%; font-style: italic; text-align: right; margin: 0; padding: 0; float: right;}
@@ -87,3 +94,4 @@ em {font-style:italic;}
 #ft .color-dot.none {
   background-color: #2ecc71;
 }
+
