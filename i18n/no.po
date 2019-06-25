@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Last-Translator: Nils Jarle Haugen <nils@gaupne.net>\n"
+"Last-Translator: Imre Kristoffer Eilertsen <imreeil42@gmail.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
