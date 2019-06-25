@@ -1,0 +1,27 @@
+[%
+UNLESS combust.user;
+RETURN;
+END;
+%]
+
+<div id="" class="manage-sidebar list-group">
+    [% IF combust.user.is_staff %]
+    <a class="list-group-item [% page.is_admin ? " active" : "" %]" href="/manage">Admin search</a>
+    [% END %]
+
+    <a class="list-group-item [% page.is_servers ? " active" : "" %]" href="/manage/servers">My Servers</a>
+    <a class="list-group-item [% page.is_vendor ? " active" : "" %]" href="/manage/vendor">NTP DNS Zones</a>
+
+    [% IF combust.user.privileges.vendor_admin %]
+    <a class="list-group-item [% page.is_vendor_admin ? " active" : "" %]" href="/manage/vendor/admin">Vendor admin</a>
+    [% END %]
+
+    <!--
+    <a class="list-group-item [% page.is_account ? " active" : "" %]" href="/manage/account">Account</a>
+    -->
+
+    <a class="list-group-item" href="/manage/logout">Logout</a>
+
+    <!--    <a class="list-group-item disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a> -->
+
+</div>

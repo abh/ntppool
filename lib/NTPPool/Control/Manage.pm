@@ -30,6 +30,8 @@ sub init {
     my $self = shift;
     $self->SUPER::init(@_);
 
+    $self->tpl_params->{page} ||= {};
+
     if ($self->is_logged_in) {
         $self->request->env->{REMOTE_USER} = $self->user->username;
     }
@@ -269,11 +271,13 @@ sub manage_dispatch {
 
 sub show_staff {
     my $self = shift;
+    $self->tpl_params->{page}->{is_admin} = 1;
     return OK, $self->evaluate_template('tpl/staff.html');
 }
 
 sub show_manage {
     my $self = shift;
+    $self->tpl_params->{page}->{is_servers} = 1;
     return OK, $self->evaluate_template('tpl/manage.html');
 }
 

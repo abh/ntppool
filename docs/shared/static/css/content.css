@@ -11,6 +11,10 @@
 		margin-bottom: 2px;
 	}
 
+#sidebar .manage-sidebar .list-group-item {
+         padding: .6rem .75rem .5reml .5rem;
+}
+
 #activity ul {
    margin: 0;
 }

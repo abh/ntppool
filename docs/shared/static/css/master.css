@@ -15,12 +15,16 @@ h1, h2, h3, h4, h5 {color: #454545;}
 		font-size: 88%; border: 1px solid #f00; border-top: 0;
 		 background-color: #fafafa;}
 
+#sidebar {
+         padding: 0 10px 0 10px;
+}
+
 #sidebar h1 a {
 	display: block;
-        width: 125px;
+        width: 140px;
         height: 138px;
 	background: no-repeat url(../images/logo-2019@x2.v1.png);
-        background-size: 100px 125px;
+        background-size: 120px 150px;
         background-position: center center;
         background-repeat: no-repeat;
 	text-indent: -9000px;

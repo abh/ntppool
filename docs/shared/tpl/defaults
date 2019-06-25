@@ -1,10 +1,8 @@
-[%-  page = {
-            title = template.title,
-            style = template.style or 'default.html',
-            css   = [],
-            js    = [],
-            js_final = "",
-    };
+[%- page.title = template.title;
+    page.style = template.style or 'default.html';
+    page.js    = [];
+    page.css   = [];
+    js_final   = "";
 
     # don't include any whitespace from here...
     RETURN;

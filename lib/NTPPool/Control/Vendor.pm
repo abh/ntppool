@@ -24,8 +24,11 @@ sub manage_dispatch {
     return $self->render_admin if $self->request->uri =~ m!^/manage/vendor/admin$!;
 
     return $self->redirect('/manage/vendor/new') unless @{$self->user->vendor_zones};
-    return OK, $self->evaluate_template('tpl/vendor.html')
-      if $self->request->uri =~ m!^/manage/vendor/?$!;
+
+    $self->tpl_params->{page}->{is_vendor} = 1;
+
+    return $self->render_zones if $self->request->uri =~ m!^/manage/vendor/?$!;
+
     return NOT_FOUND;
 }
 
@@ -42,6 +45,12 @@ sub render_form {
     }
 
     return OK, $self->evaluate_template('tpl/vendor/form.html');
+}
+
+sub render_zones {
+    my $self = shift;
+
+    return OK, $self->evaluate_template('tpl/vendor.html');
 }
 
 sub render_zone {
@@ -149,6 +158,8 @@ sub render_admin {
     my $self = shift;
     return $self->redirect("/manage/vendor")
       unless $self->user->privileges->vendor_admin;
+
+    $self->tpl_params->{page}->{is_vendor_admin} = 1;
 
     if (my $id = $self->req_param('id')) {
         my $vz = $id ? NP::Model->vendor_zone->fetch(id => $id) : undef;
