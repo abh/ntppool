@@ -39,10 +39,10 @@ msgstr "Omsetjingar"
 
 # index.html
 msgid  "Introduction"
-msgstr "Instroduksjon"
+msgstr "Introduksjon"
 
 msgid  "Active Servers"
-msgstr "AAktive tenarar"
+msgstr "Aktive tenarar"
 
 msgid  "Links"
 msgstr "Lenkjer"
@@ -79,7 +79,7 @@ msgid  "announcement_list_description"
 msgstr "Kortfatta og presise kunngjeringar med nyhende om NTP Pool-prosjektet. Alle tenar-administratorar bør abonnere på denne lista."
 
 msgid  "discussion_list_description"
-msgstr "Tenaradministatorar (og gjerne brukarar) som ynskjer å involvere seg meir i prosjektet kan abonnere til denne diskusjonslista. <br/> Generelle diskusjonar om ntp bør takast på %1 Usenet nyhendegruppa (og på <a href=\"%2\">Google Groups</a>)."
+msgstr "Tenaradministatorar (og gjerne brukarar) som ynskjer å involvere seg meir i prosjektet kan abonnere til denne diskusjonslista. <br/> Generelle diskusjonar om NTP bør takast på %1 Usenet-nyhendegruppa (og på <a href=\"%2\">Google Groups</a>)."
 
 msgid  "development_list_description"
 msgstr "Meir tekniske (og helst sett løysingsorienterte) diskusjonar om aktuell utvikling innan<a href=\"%1\">prosjektkoden</a> og <a href=\"%2\">pgeodns</a> skjer på timekeepers-dev diskusjonslista."
