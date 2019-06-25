@@ -31,7 +31,7 @@ msgid "Global"
 msgstr "Global"
 
 msgid "All Pool Servers"
-msgstr "Alle Puljetenarar"
+msgstr "Alle puljetenarar"
 
 # navigation
 msgid "Translations"
