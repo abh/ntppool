@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Last-Translator: Daniel Aleksandersen <code@daniel.priv.no>\n"
+"Last-Translator: Imre Kristoffer Eilertsen <imreeil42@gmail.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -24,25 +24,62 @@ msgstr "Sør-Amerika"
 msgid "Europe"
 msgstr "Europa"
 
+msgid "Oceania"
+msgstr "Oseania"
+
 msgid "Global"
 msgstr "Globalt"
 
 msgid "All Pool Servers"
-msgstr "Alle Puljetjenere"
+msgstr "Alle puljetjenere"
 
 # navigation
 msgid "Translations"
 msgstr "Oversettelser"
 
+# index.html
+msgid  "Introduction"
+msgstr "Introduksjon"
+
+msgid  "Active Servers"
+msgstr "Aktive tjenere"
+
+msgid  "Links"
+msgstr "Lenker"
+
+msgid  "Terms of service"
+msgstr "Bruksvilkår"
+
+msgid  "Subscribe in a reader"
+msgstr "Abonner i en RSS-leser"
+
+msgid  "Older news"
+msgstr "Eldre nyheter"
+
 # mailinglists.html
 msgid  "NTP Pool mailing lists"
-msgstr "NTP Pulje epostlister"
+msgstr "NTP-pulje-E-postlister"
 
 msgid  "subscribe"
 msgstr "abonner"
 
 msgid  "archive"
 msgstr "arkiv"
+
+msgid  "NTP Pool Forum"
+msgstr "NTP-puljeforum"
+
+msgid  "News site"
+msgstr "Nyhetsside"
+
+msgid  "Development"
+msgstr "Utvikling"
+
+msgid  "forum_description"
+msgstr "Spørsmål (og svar) om NTP-puljen, forslag til forbedringer, og temaer relatert til tidtaking og å drifte NTP-tjenere."
+
+msgid  "news_description"
+msgstr "Annonseringer og nyheter blir lagt ut på nyhetssiden eller i forumet."
 
 msgid  "Announcement list"
 msgstr "Liste for kunngjøringer"
@@ -70,7 +107,7 @@ msgid  "Find"
 msgstr "Finn"
 
 msgid  "Stats for %1"
-msgstr "Statestikk for %1"
+msgstr "Statistikk for %1"
 
 msgid  "Not active in the pool, monitoring only"
 msgstr "Ikke aktiv i puljen, blir kun overvåket"
@@ -104,10 +141,10 @@ msgid  "Information for vendors"
 msgstr "Informasjon for leverandører"
 
 msgid  "The mailing lists"
-msgstr "Epostlistene"
+msgstr "E-postlistene"
 
 msgid  "Additional links"
-msgstr "Yttligere lenker"
+msgstr "Ytterligere lenker"
 
 msgid  "Can you translate?"
 msgstr "Kan du oversette?"
