@@ -51,6 +51,7 @@ Please verify the following information.
         IF zone.name == "."; NEXT; END;
    %]
      <a href="[% combust.www_url(zone.url) %]">[% zone.description %]</a>[% UNLESS loop.last %], [% END %]
+     <input type="hidden" name="explicit_zone_[% server.ip %]" value="[% zone.name %]">
    [% END %]
 [% ELSE %]
 
