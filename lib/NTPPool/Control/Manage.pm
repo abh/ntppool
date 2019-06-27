@@ -594,8 +594,10 @@ sub handle_update_netspeed {
 
     my $return = {
         netspeed => $self->netspeed_human($server->netspeed),
-        zones    => join " ",
-        map { join "", '<a href="/zone/', $_->name, '">', $_->name, '</a>' } $server->zones_display,
+        zones    => $self->evaluate_template(
+            'tpl/manage/server_zones.html',
+            {page_style => "bare.html", server => $server}
+        )
     };
 
     #warn Data::Dumper->Dump([\$return],[qw(return)]);

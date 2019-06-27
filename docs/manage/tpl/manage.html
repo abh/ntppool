@@ -10,6 +10,7 @@
 	Email: <b>[% user.email %]</b><br>
         </div>
 
+        [% IF user.servers %]
 	<div class="servers" >
 		<h3>Your Servers
                    <img class="busy" src="[% combust.static_url("/images/progress.gif") %]">
@@ -24,10 +25,12 @@
 			[% END %]
 		</div>
 	</div>
+        [% END %]
 
-
+        <div>
 	<a name="add"></a>
 	[% PROCESS tpl/manage/add_form.html %]
+        </div>
 
 	[% IF servers %]
 	<div class="server_desc">
@@ -61,12 +64,7 @@
 		</p>
 
 	</div>
-	[% ELSE %]
-
-	<i>No servers registered to your email address. Send  a mail if that was not what you expected!</i>
-
 	[% END %]
-
 
         <div class="block server_desc">
 

@@ -14,11 +14,7 @@ Current score: <b>[% server.score %]</b><br />
 [% IF server.stratum %]Stratum: <b>[% server.stratum %]</b><br/>[% END %]
 
 Zones:
-<span id="zones_[% server.id %]">
-[% FOR zone = server.zones_display %]
-<a href="[% combust.www_url(zone.url) %]">[% zone.name %]</a>
-[% END  %]
-</span>
+[% PROCESS tpl/manage/server_zones.html %]
 <br />
 
 <input type="hidden" name="server" value="[% server.id %]">
