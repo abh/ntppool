@@ -1,0 +1,99 @@
+<div class="block">
+
+<h3>Oppsettsanbefalinger for tjenere som vil bli med i puljen</h3>
+
+<p>
+<a href="http://support.ntp.org/bin/view/Support/WebHome">Brukerstøtteseksjonen</a>
+på <a href="http://support.ntp.org/">support.ntp.org</a> har massevis
+av nyttig informasjon.
+</p>
+
+<p>
+Hvis du bare vil <i>bruke</i> puljen, gå til <a href="/use.html">puljebrukssiden</a>.
+</p>
+
+<p>
+<a href="https://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a>-nyhetsgruppen
+er det beste stedet å få hjelp med ntpd-programvaren.
+</p>
+
+<p>
+Nedenfor er noen spesielt viktige ting hvis du vil bli med i NTP-puljen
+med tjeneren din.
+</p>
+
+<p>Internet Engineering Task Force har publisert er utkast om 
+<a href="https://tools.ietf.org/html/draft-ietf-ntp-bcp">
+skikk og bruk for Network Time Protocol</a> som vi anbefaler.</p>
+
+<h4 id="management-queries">Behandlingsforespørsler</h4>
+
+<p>Sørg for at standardoppsettet ikke tillater "behandlingsforespørsler". For ntpd gjøres dette ved å
+legge til "noquery"-innstillingene til de forvalgte "restrict"-linjene, for eksempel:</p>
+
+[% INCLUDE "join/configuration/restrict-default.html" %]
+
+<p>For å tillate at kommandoer som "ntpq -c pe" skal virke fra localhost, kan du legge til:</p>
+
+[% INCLUDE "join/configuration/restrict-localhost.html" %]
+
+<h4>Sett opp omkring 5 tjenere</h4>
+
+<p>
+For at det skal virke riktig, må ntpd snakke med minst 3 tjenere («En mann med
+en klokke vet hva klokken er. En mann med to klokker er aldri sikker»).
+</p>
+
+<p>
+For tjenere i puljen, anbefaler vi å sette ikke mindre enn 4 og ikke mere enn
+7 tjenere.
+</p>
+
+
+<h4>Ikke bruk *.pool.ntp.org-tjenere</h4>
+
+<p>
+Ironisk nok, for å sikre at puljetjenesten er så bra som den kan få blitt, burde du
+ikke bruke *.pool.ntp.org-aliaser i oppsettet ditt når du vil legge til tjeneren
+din i puljen.
+</p>
+
+<p>
+For å sikre stødigheten til puljen, er det best om alle puljeoperatører
+"håndvelger" gode lokale (nettverksmessig) tidstjenere.
+NTP.org-wikien har en <a
+href="https://support.ntp.org/bin/view/Servers/WebHome">liste over
+offentlige tjenere</a>.
+</p>
+
+
+<h4>Bruk det vanlige ntpd-programmet</h4>
+
+<p>
+Vi støtter programvarevariasjon fullt og helt, men en betydelig andel av
+"Det virker ikke"-spørsmålene vi får inn dreier seg om programvare som
+ikke er ntpd.
+</p>
+
+<p>
+Du kan <i>bruke</i> puljen til ethvert program som forstår NTP, men dersom
+du vil bli med i puljen, anbefaler vi at du bruker
+<a href="https://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
+</p>
+
+
+<h4>Ikke bruke den LOKALE klokkedriveren</h4>
+
+<p>Tjenere i NTP-puljen burde ikke ha satt opp den LOKALE klokkedriveren.</p>
+
+<h4>Vær oppmerksom på PTR DNS-forespørsler</h4>
+
+<p>Noen tjeneroperatører har meldt ifra om at noen av NTP-brukeren (eller
+brannmurprogrammene deres) utfører en "reversert DNS"-forespørsel (PTR)
+etter IP-adressen til NTP-tjeneren. Bemerk at dette kan få antallet
+forespørsler til å stige. Å øke "levetiden" til disse loggene er anbefalt dersom
+antallet DNS-forespørsler er en bekymring, og vil generelt gjøre antallet
+forespørsler ganske lite.
+</p>
+
+</div>
