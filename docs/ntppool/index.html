@@ -7,9 +7,15 @@
 			[% FOR zone = combust.count_by_continent %]
                         [% IF zone.server_count > 0 %]
 			<li class="area">
-				<span class="location [% zone.name %] [% IF zone.name == '@' || zone.name == '.'; "global"; END  %]">[% zone.name == '@' ? '<b>' : '' %]
+                                [% zone_class = zone.name;
+                                   IF zone.name == '@'; zone_class = "global"; END;
+                                   IF zone.name == '.'; zone_class = "all-servers"; END; ""
+                                %]
+				<span class="location-img [% zone.name %] [% zone_class %]-img"></span>
+                                <span class="location [% zone.name %] [% zone_class %]">
 				<a href="[% zone.url %]">[% zone.description | l %]</a>
-				[% zone.name == '@' ? '</b>' : '' %]</span>&nbsp;<span class="count">[% zone.server_count %]</span>
+                                </span>
+                                <span class="count">[% zone.server_count %]</span>
 			</li>
                         [% END %]
 			[% END %]

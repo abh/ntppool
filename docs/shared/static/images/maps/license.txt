@@ -1,0 +1,2 @@
+The map svg files are licensed from http://www.mapglyphs.com for the
+NTP Pool only.

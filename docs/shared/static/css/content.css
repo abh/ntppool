@@ -55,24 +55,40 @@ a.up {display: block; text-align: right; font-variant: small-caps;}
 	font-size: 115%;
 	list-style: none;
 }
+
+
+
 	#servers .area .location {
 		display: block;
-		width: 175px;
+		width: 125px;
 		height: 40px;
 		float: left;
-		padding-left: 50px;
 		font-size: 100%;
 	}
+        #servers .count {
+                margin: 10px;
+        }
+
+	#servers .area .location-img {
+		display: block;
+		width: 50px;
+		height: 40px;
+		float: left;
+		font-size: 100%;
+                filter: invert(.35);
+	}
+
 		#servers .area .location a {text-decoration: none;}
 		#servers .area .location a:hover {border-bottom: 1px solid #7EC6EC;}
-		#servers .area .africa {background: no-repeat url(../images/globe_flat_africa.v1.png);}
-		#servers .area .north-america {background: no-repeat url(../images/globe_flat_namerica.v1.png);}
-		#servers .area .south-america {background: no-repeat url(../images/globe_flat_samerica.v1.png);}
-		#servers .area .europe {background: no-repeat url(../images/globe_flat_europe.v1.png);}
-		#servers .area .asia {background: no-repeat url(../images/globe_flat_asia.v1.png);}
-		#servers .area .oceania {background: no-repeat url(../images/globe_flat_oceania.v1.png);}
-		#servers .area .global {padding-left: 50px; margin-top: 5px;}
-                #servers .count { margin: 10px; }
+		#servers .area .africa-img {background: no-repeat url(../images/maps/wrld-af.v1.svg);}
+		#servers .area .antarctica-img {background: no-repeat url(../images/maps/wrld-an.v1.svg);}
+		#servers .area .north-america-img {background: no-repeat url(../images/maps/wrld-na.v1.svg);}
+		#servers .area .south-america-img {background: no-repeat url(../images/maps/wrld-sa.v1.svg);}
+		#servers .area .europe-img {background: no-repeat url(../images/maps/wrld-eu.v1.svg);}
+		#servers .area .asia-img {background: no-repeat url(../images/maps/wrld-as.v1.svg);}
+		#servers .area .oceania-img {background: no-repeat url(../images/maps/wrld-oc.v1.svg);}
+		#servers .area .global-img {background: no-repeat url(../images/maps/wrld.v1.svg);}
+		#servers .area .all-servers {font-weight: bold; margin-top: 5px;}
 
 
         .graph-desc { display: none; color: #777; margin-top: 5px; }
