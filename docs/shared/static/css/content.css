@@ -273,3 +273,8 @@ em.beta  { color: #888 }
   shape-rendering: crispEdges;
   stroke-dasharray: 2, 2, 2, 2;
 }
+
+img.atom-logo {
+  vertical-align: middle;
+  margin-right: 3px;
+}
