@@ -4,9 +4,6 @@ use NTPPool::Control::Manage;
 use base qw(NTPPool::Control::Manage);
 use NP::Model;
 use Combust::Constant qw(OK NOT_FOUND);
-use NP::Email      ();
-use Email::Stuffer ();
-use Sys::Hostname qw(hostname);
 
 sub manage_dispatch {
     my $self = shift;

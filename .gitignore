@@ -1,4 +1,5 @@
 *~
+*.bak
 cbsetup
 combust.conf
 combust.conf.testing
@@ -17,3 +18,5 @@ dns/
 db/
 
 *.gzip
+*.dump
+node_modules

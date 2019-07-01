@@ -4,3 +4,4 @@ influxdb/*
 *~
 backup/
 .data/
+*.dump

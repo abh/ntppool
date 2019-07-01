@@ -9,6 +9,7 @@ use NTPPool::Control::DNSStatus;
 use NTPPool::Control::Manage;
 use NTPPool::Control::Vendor;
 use NTPPool::Control::Manage::Account;
+use NTPPool::Control::Manage::Server;
 use NTPPool::Control::Manage::Equipment;
 use NTPPool::Control::Zone;
 use NTPPool::Control::UserProfile;

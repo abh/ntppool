@@ -28,6 +28,16 @@
        [% PH %] NTPPool::Control::Vendor->super
     </Location>
 
+    <Location /manage/server/>
+       SetHandler perl-script
+       [% PH %] NTPPool::Control::Manage::Server->super
+    </Location>
+
+    <Location /manage/servers>
+       SetHandler perl-script
+       [% PH %] NTPPool::Control::Manage::Server->super
+    </Location>
+
     <Location /manage/account>
        SetHandler perl-script
        [% PH %] NTPPool::Control::Manage::Account->super
