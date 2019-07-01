@@ -45,8 +45,9 @@ if (!NP) var NP = {};
             $(this).hide(70);
         });
 
-        $("#profile_link a.profile_link_change")
-            .live('click',
+        var profile_link = $("#profile_link a.profile_link_change");
+        if (profile_link !== undefined) {
+                profile_link.on('click',
                 function(event) {
                     event.preventDefault();
                     $.post(this.href, {},
@@ -56,5 +57,7 @@ if (!NP) var NP = {};
                     );
                 }
             );
+
+        }
     });
 }());

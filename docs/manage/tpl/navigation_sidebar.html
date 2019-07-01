@@ -4,24 +4,39 @@ RETURN;
 END;
 %]
 
-<div id="" class="manage-sidebar list-group">
+<ul class="manage-sidebar nav nav-pills flex-column">
     [% IF combust.user.is_staff %]
-    <a class="list-group-item [% page.is_admin ? " active" : "" %]" href="/manage">Admin search</a>
+    <li class="nav-item">
+    <a class="nav-link [% page.is_admin ? " active" : "" %]" href="[% combust.manage_url('/manage') %]">Admin search</a>
+    </li>
     [% END %]
 
-    <a class="list-group-item [% page.is_servers ? " active" : "" %]" href="/manage/servers">My Servers</a>
-    <a class="list-group-item [% page.is_vendor ? " active" : "" %]" href="/manage/vendor">NTP DNS Zones</a>
+    <li class="nav-item">
+    <a class="nav-link [% page.is_servers ? " active" : "" %]" href="[% combust.manage_url('/manage/servers') %]">My Servers</a>
+    </li>
+
+    <li class="nav-item">
+    <a class="nav-link [% page.is_vendor ? " active" : "" %]" href="[% combust.manage_url('/manage/vendor') %]">NTP DNS Zones</a>
+    </li>
 
     [% IF combust.user.privileges.vendor_admin %]
-    <a class="list-group-item [% page.is_vendor_admin ? " active" : "" %]" href="/manage/vendor/admin">Vendor admin</a>
+    <li class="nav-item">
+    <a class="nav-link [% page.is_vendor_admin ? " active" : "" %]" href="[% combust.manage_url('/manage/vendor/admin') %]">Vendor admin</a>
+    </li>
     [% END %]
 
-    <!--
-    <a class="list-group-item [% page.is_account ? " active" : "" %]" href="/manage/account">Account</a>
-    -->
+    <li class="nav-item dropdown">
+      <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Account</a>
+      <div class="dropdown-menu">
+        [% FOR a = combust.user.accounts %]
+        <a class="dropdown-item" href="[% combust.current_url(a => a.id_token) | html %]">[% a.name | html %]</a>
+        [% END %]
+        <div class="dropdown-divider"></div>
+        <a class="dropdown-item" href="[% combust.manage_url('/manage/account') %]">Edit</a>
+      </div>
+    </li>
 
-    <a class="list-group-item" href="/manage/logout">Logout</a>
-
-    <!--    <a class="list-group-item disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a> -->
-
-</div>
+    <li class="nav-item">
+    <a class="nav-link" href="[% combust.manage_url('/manage/logout') %]">Logout</a>
+    </li>
+</ul>

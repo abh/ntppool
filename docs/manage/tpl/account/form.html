@@ -1,0 +1,67 @@
+[% PROCESS tpl/manage/navigation.html %]
+
+<div class="row">
+
+	<div class="span4">
+
+		<h3>Account information</h3>
+
+		<form action="/manage/account" method="post" accept-charset="utf-8">
+			<fieldset>
+				<input type="hidden" name="id" value="[% account.id || 'new' %]" />
+
+				<b>Account name</b><br />
+				[% IF errors and errors.zone_name %]
+				<div class="error">
+					[% errors.name | html %]<br />
+					<small>Contact <a href="vendors@ntppool.org">vendors@ntppool.org</a> for help.</small>
+				</div>
+				[% END %]
+				<input type="text" class="text" name="name" value="[% account.name | html %]" id="name" size="18"
+					maxsize="60">
+
+				<br />
+				<br>
+				<b>Organization name</b><br>(can be the same as the account name)<br>
+				[% IF errors.organization_name %]<div class="error">[% errors.organization_name | html %]</div>[% END %]
+				<input type="text" class="text" name="organization_name" value="[% account.organization_name | html %]"
+					id="organization_name" size="65">
+				<br>
+				<br>
+
+				<b>Organization website</b><br>
+				[% IF errors.organization_url %]<div class="error">[% errors.organization_url | html %]</div>[% END %]
+				<input type="text" class="text" name="organization_url" value="[% account.organization_url | html %]"
+					id="organization_url" size="65">
+				<br>
+				<br>
+
+				<!--
+	<b>Contact information</b><br>
+	Email addresses, direct phone numbers for your NOC or
+	network/engineering technical support (only visible to the NTP Pool
+	admins)<br>
+	[% IF errors.contact_information %]<div class="error">[% errors.contact_information | html %]</div>[% END %]
+	<textarea name="contact_information" rows="12" cols="65">[% account.contact_information | html %]</textarea>
+	<br>
+-->
+
+				<p><input type="submit" class="button" value="Update"></p>
+			</fieldset>
+		</form>
+	</div>
+
+	<div class="span4">
+		<h3>Account users</h3>
+
+		<ul>
+			[% FOR user = account.users %]
+			<li>[% user.email | html %]</li>
+			[% END %]
+		</ul>
+
+		<a href="/manage/account/users?id=[% account.id %]">Update account users</a>
+
+	</div>
+
+</div>

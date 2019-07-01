@@ -1,7 +1,7 @@
-[%- page.title = template.title;
-    page.style = template.style or 'default.html';
-    page.js    = [];
-    page.css   = [];
+[%- page.title = page.title or template.title;
+    page.style = page.style or template.style or 'default.html';
+    page.js    = page.js or [];
+    page.css   = page.css or [];
     js_final   = "";
 
     # don't include any whitespace from here...

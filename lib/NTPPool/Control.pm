@@ -243,7 +243,14 @@ sub www_url {
 
 sub manage_url {
     my $self = shift;
-    return $self->_url('manage', @_);
+    my $url = shift;
+    my $args = shift || {};
+    if ($self->user and !$args->{a}) {
+        my $account = $self->current_account;
+        $args->{a} = $account->id_token() if $account;
+    }
+
+    return $self->_url('manage', $url, $args);
 }
 
 sub count_by_continent {

@@ -50,6 +50,9 @@ sub render_form {
 sub render_zones {
     my $self = shift;
 
+    my $accounts = $self->user->accounts;
+    $self->tpl_param('accounts' => $accounts);
+
     return OK, $self->evaluate_template('tpl/vendor.html');
 }
 

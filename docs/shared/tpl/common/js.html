@@ -1,5 +1,7 @@
 [%
-  page.js.unshift("cdn/libs/jquery/1.12.1/jquery.min.js");
+  page.js.unshift("cdn/libs/bootstrap/4/js/bootstrap.min.js");
+  page.js.unshift("cdn/libs/popper/1/popper.min.js");
+  page.js.unshift("cdn/libs/jquery/3/jquery.min.js");
 
 MACRO show_js(list_js_files) BLOCK;
   IF list_js_files && list_js_files.list && list_js_files.list.size;

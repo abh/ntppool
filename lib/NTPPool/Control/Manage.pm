@@ -34,10 +34,51 @@ sub init {
 
     if ($self->is_logged_in) {
         $self->request->env->{REMOTE_USER} = $self->user->username;
+        $self->tpl_param('account' => $self->current_account);
     }
 
     return OK;
 }
+
+sub current_account {
+    my $self = shift;
+    return $self->{_current_account} if exists $self->{_current_account};
+
+    return $self->{_current_account} = do {
+
+        if (my $account_token = $self->req_param('a')) {
+            my $account_id = NP::Model::Account->token_id($account_token);
+            my $account = $account_id ? NP::Model->account->fetch(id => $account_id) : undef;
+            return $account if $account->can_edit($self->user);
+        }
+
+        my ($accounts) = NP::Model->account->get_accounts
+          (
+           require_objects => [ 'users' ],
+           query => ['users.id' => $self->user->id]
+          );
+
+        if ($accounts && @$accounts) {
+            return $accounts->[0];
+        }
+        return undef;
+    };
+}
+
+sub current_url {
+    my $self = shift;
+    my $args = shift;
+
+    $args = { $self->request->args, $args ? %$args : {} };
+
+    my $here = URI->new($self->config->base_url($self->site)
+                      . $self->request->uri
+                      );
+    $here->query_form($args);
+
+    $here->as_string;
+}
+
 
 sub render {
     my $self = shift;
