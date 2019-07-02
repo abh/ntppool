@@ -8,15 +8,16 @@
 	[% user = combust.user %]
 	[% PROCESS tpl/manage/profile_link.html %]<br>
 	Email: <b>[% user.email %]</b><br>
+        Account: [% account.name %], [% account.id_token %] (#[% account.id %])
         </div>
 
-        [% IF user.servers %]
+        [% IF account.servers %]
 	<div class="servers" >
 		<h3>Your Servers
                    <img class="busy" src="[% combust.static_url("/images/progress.gif") %]">
                 </h3>
 		<div class="value">
-			[% servers = user.servers;
+			[% servers = account.servers;
 			   FOR server = servers; %]
 			[% PROCESS tpl/manage/server.html, server => server %]
 			[% END %]

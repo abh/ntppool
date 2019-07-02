@@ -98,6 +98,15 @@ local volumes = [
           },
         },
       },
+      {
+        name: 'account_id_key',
+        valueFrom: {
+          secretKeyRef: {
+            key: 'account_id_key',
+            name: 'ntppool-secrets',
+          },
+        },
+      },
     ],
     envFrom: [
       {

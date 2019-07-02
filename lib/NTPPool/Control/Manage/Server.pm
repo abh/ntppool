@@ -177,6 +177,7 @@ sub _add_server {
     $s->hostname($server->{hostname} || '');
     $s->ip_version($server->{ip_version});
     $s->admin($self->user);
+    $s->account($self->current_account);
     $s->in_pool(1);
     $s->deleted(0);
     $s->deletion_on(undef);

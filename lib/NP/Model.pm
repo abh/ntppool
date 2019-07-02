@@ -51,6 +51,8 @@ __PACKAGE__->meta->setup(
     account_plan_id   => { type => 'integer' },
     organization_name => { type => 'varchar', length => 150 },
     organization_url  => { type => 'varchar', length => 150 },
+    public_profile    => { type => 'integer', default => '0', not_null => 1 },
+    url_slug          => { type => 'varchar', length => 150 },
   ],
 
   primary_key_columns => [ 'id' ],
@@ -63,6 +65,12 @@ __PACKAGE__->meta->setup(
   ],
 
   relationships => [
+    servers => {
+      class      => 'NP::Model::Server',
+      column_map => { id => 'account_id' },
+      type       => 'one to many',
+    },
+
     users => {
       map_class => 'NP::Model::AccountUser',
       map_from  => 'account',
@@ -551,6 +559,7 @@ __PACKAGE__->meta->setup(
     ip             => { type => 'varchar', length => 40, not_null => 1 },
     ip_version     => { type => 'enum', check_in => [ 'v4', 'v6' ], default => 'v4', not_null => 1 },
     user_id        => { type => 'integer', not_null => 1 },
+    account_id     => { type => 'integer' },
     hostname       => { type => 'varchar', length => 255 },
     stratum        => { type => 'integer' },
     in_pool        => { type => 'integer', default => '0', not_null => 1 },
@@ -568,6 +577,11 @@ __PACKAGE__->meta->setup(
   unique_key => [ 'ip' ],
 
   foreign_keys => [
+    account => {
+      class       => 'NP::Model::Account',
+      key_columns => { account_id => 'id' },
+    },
+
     user => {
       class       => 'NP::Model::User',
       key_columns => { user_id => 'id' },

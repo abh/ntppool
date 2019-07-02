@@ -2,8 +2,6 @@ package NP::Model::User;
 use strict;
 use Net::IP ();
 
-sub BAD_SERVER_THRESHOLD {-15}
-
 sub is_staff {
     my $self       = shift;
     my $privileges = $self->privileges;
@@ -23,49 +21,9 @@ sub privileges {
     $self->user_privilege(@_) || $self->user_privilege({user_id => $self->id})->save;
 }
 
-sub bad_servers {
-    my $s = [grep { $_->score < BAD_SERVER_THRESHOLD } shift->servers];
-    wantarray ? @$s : $s;
-}
-
-sub servers {
-    my $self = shift;
-
-    #local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
-    my $s = NP::Model->server->get_servers(
-        query => [
-            user_id => $self->id,
-            or      => [
-                deletion_on => undef,                       # not deleted
-                deletion_on => {'gt' => DateTime->today}    # deleted in the future
-            ],
-        ],
-    );
-    $s = [
-        sort {
-            my $r = 0;
-            my $ia = Net::IP->new($a->ip);
-            my $ib = Net::IP->new($b->ip);
-
-            if (my $c = $ia->version <=> $ib->version) {
-                return $c;
-            }
-
-            if ($ia->bincomp('lt', $ib)) {
-                $r = -1;
-            }
-            elsif ($ia->bincomp('gt', $ib)) {
-                $r = 1;
-            }
-            $r;
-        } @$s
-    ];
-    wantarray ? @$s : $s;
-}
 
 package NP::Model::User::Manager;
 use strict;
-
 
 sub admins_to_notify {
     my $class = shift;

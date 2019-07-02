@@ -38,27 +38,28 @@ sub init {
 
 sub current_account {
     my $self = shift;
-    return $self->{_current_account} if exists $self->{_current_account};
 
-    return $self->{_current_account} = do {
+    if (exists $self->{_current_account}) {
+        return $self->{_current_account};
+    }
 
-        if (my $account_token = $self->req_param('a')) {
-            my $account_id = NP::Model::Account->token_id($account_token);
-            my $account = $account_id ? NP::Model->account->fetch(id => $account_id) : undef;
-            return $account if $account->can_edit($self->user);
-        }
+    if (my $account_token = $self->req_param('a')) {
+        my $account_id = NP::Model::Account->token_id($account_token);
+        my $account = $account_id ? NP::Model->account->fetch(id => $account_id) : undef;
+        warn "decoded account id ", $account->id if $account;
+        return $self->{_current_account} = $account if $account->can_edit($self->user);
+    }
 
-        my ($accounts) = NP::Model->account->get_accounts
-          (
-           require_objects => [ 'users' ],
-           query => ['users.id' => $self->user->id]
-          );
+    my ($accounts) = NP::Model->account->get_accounts(
+        require_objects => ['users'],
+        query           => ['users.id' => $self->user->id]
+    );
 
-        if ($accounts && @$accounts) {
-            return $accounts->[0];
-        }
-        return undef;
-    };
+    if ($accounts && @$accounts) {
+        warn "got fallback account id ", $accounts->[0]->id;
+        return $self->{_current_account} = $accounts->[0];
+    }
+    return $self->{_current_account} = undef;
 }
 
 sub current_url {

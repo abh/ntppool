@@ -1,12 +1,16 @@
 # -*- cperl -*-
 eval 'exec $CBROOT/bin/perl $0 ${1+"$@"}'
   unless $running_under_some_shell;
+use 5.20.0;
 use strict;
 use Data::Dumper;
 
 use NP::Model;
 
 local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
+
+my $db = NP::Model->db;
+my $txn = $db->begin_scoped_work;
 
 my $zones = NP::Model->vendor_zone->get_vendor_zones_iterator(
     query   => [account_id => undef],
@@ -35,3 +39,39 @@ while (my $vz = $zones->next) {
     $vz->account_id($account->id);
     $vz->save;
 }
+
+
+my $servers = NP::Model->server->get_servers_iterator(
+    query   => [account_id => undef],
+    sort_by => 'user_id',
+);
+
+while (my $s = $servers->next) {
+    print "ip: ${\$s->ip}, user: ${\$s->user_id}\n";
+
+    my $account;
+
+    my $accounts = $s->user->accounts;
+    if (@$accounts > 0) {
+        ($account) = grep { $_->url_slug && $_->url_slug eq $s->user->username } @$accounts;
+        print "we found an account: ${\$account->id} ...\n" if $account;
+    }
+    unless ($account) {
+        $account = NP::Model->account->create(
+            name  => $s->user->name,
+            users => [$s->user_id],
+            public_profile => $s->user->public_profile,
+            url_slug => $s->user->username,
+        );
+        $account->save;
+    }
+
+    say "account id: ${\$account->id}";
+
+    $s->account_id($account->id);
+    $s->save;
+}
+
+say "committing ...";
+$db->commit;
+say "done";
