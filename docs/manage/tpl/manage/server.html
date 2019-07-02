@@ -1,10 +1,11 @@
 <a name="s-[% server.ip %]"></a>
 <span id="server_[% server.id %]">
 <form method="post" action="/manage/server/update/server">
-<input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
+<input type="hidden" name="auth_token" value="[% combust.auth_token %]">
+<input type="hidden" name="a" value="[% combust.current_account.id_token %]">
 
 [% IF server.hostname %]Hostname: <b>[% server.hostname | html %]</b><br />[% END %]
-IP: <b><a href="[% combust.www_url(server.url) %]">[% server.ip | html %]</a></b><br />
+IP: <b><a href="[% combust.www_url(server.url) %]">[% server.ip | html %]</a></b><br>
 [% IF server.deletion_on %]
 This server is <span class="deletion">scheduled for deletion</span>
 on [% server.deletion_on.strftime("%B %d, %Y") %].
@@ -39,10 +40,11 @@ Zones:
 <input type="submit" name="Update" value="Update">
 </noscript>
 
+<br>
 [% IF server.deletion_on %]
-<input type="submit" name="Delete" value="Cancel Deletion">
+<input type="submit" name="Delete" class="btn btn-outline-secondary btn-sm" value="Cancel Deletion">
 [% ELSE %]
-<input type="submit" name="Delete" value="Delete">
+<input type="submit" name="Delete" class="btn btn-outline-secondary btn-sm" value="Delete">
 [% END %]
 
 <br><br>

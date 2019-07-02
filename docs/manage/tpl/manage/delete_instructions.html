@@ -9,25 +9,33 @@ removal date and stop monitoring and remove the server from the system
 on the removal date.
 </p>
 
+[% server.ip %] - set date of deletion:
+
 <form method="post" action="/manage/server/delete">
 
 <input type="hidden" name="server" value="[% server.id %]" />
 <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
 
+<div class="form-row">
 
-<p>[% server.ip %] - date of deletion: <br/>
-<select name="deletion_date">
+<div class="col">
+<select class="form-control" name="deletion_date">
 <option>Select a date ...</option>
 [% FOR date = dates %]
 <option value="[% date.strftime("%Y-%m-%d") %]">[% date.strftime("%B %d, %Y") %]</option>
 [% END %]
 </select>
-</p>
+</div>
 
-<input type="submit" name="submitbtn" value="Schedule Deletion" />
+<div class="col">
+<input type="submit" class="btn btn-primary" name="submitbtn" value="Schedule Deletion" />
+</div>
+
+</div>
 
 </form>
 
-<p><a href="/manage">Cancel</a> and return to overview page</p>
+
+<p><br><a href="[% combust.manage_url('/manage/servers') %]">Cancel</a> and return to servers page</p>
 
 </div>
