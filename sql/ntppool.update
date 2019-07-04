@@ -704,8 +704,11 @@ alter table accounts
 alter table accounts
    add public_profile tinyint(1) not null default 0,
    add url_slug varchar(150) default null,
-   add created_on   datetime not null,
+   add created_on   datetime,
    add modified_on  timestamp not null;
+
+update accounts set created_on = now();
+alter table accounts modify created_on datetime not null;
 
 alter table servers
   add account_id int unsigned default null after user_id,
