@@ -144,7 +144,9 @@ p.thanks {font-style: italic; font-weight: bold;}
 
 #login-form {
 	padding-bottom: 30px;
+        padding-top: 20px;
 }
+        #login-form input.gotcha { display: none; }
 
 /* zones */
 table.servertable {

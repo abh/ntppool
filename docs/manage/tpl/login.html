@@ -1,11 +1,14 @@
 <h2>Login</h2>
 
+<div id="login-form" class="row no-gutters">
+<div class="col">
+
 [% IF message %]
-<p><span class="error">[% message | html %]</span></p>
+<p><span class="error lead">[% message | html %]</span></p>
 [% END %]
 
-<p style="margin-top: 20px; margin-bottom: 15px">
-<a class="btn btn-primary btn-lg" data-toggle="dropdown" href="[% login_url | html %]">
+<p>
+<a class="btn btn-primary btn-lg" href="[% login_url | html %]">
 Continue to login
 </a>
 </p>
@@ -31,10 +34,12 @@ see <a href="https://www.ntppool.org/vendors">vendor information</a>.
     <input type="hidden" name="subject" value="NTP Pool login help">
 
     <br>
-    <input type="text" name="_gotcha" value="" style="display:none" />
+    <input type="text" name="_gotcha" value="" class="gotcha" />
     <input type="submit" value="Request help">
     <input type="hidden" name="_next" value="[% callback_url %]">
 </form>
+
+</div></div>
 
 [% IF combust.deployment_mode == "devel" %]
 <pre>
