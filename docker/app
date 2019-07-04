@@ -16,6 +16,7 @@ set -ex
 docker run -t -i \
  -v $(pwd):/ntppool \
  --env-file=ntppool.env \
+ --network ntppool_default \
  $ports \
  --rm \
  $IMAGE ./docker/entrypoint $app
