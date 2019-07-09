@@ -11,12 +11,12 @@ hostnames below will be active within the next 20 minutes.
 Please subscribe to the (announce-only, very low traffic - typically a
 few mails a year or less) vendor information mailing list. We
 recommend everyone in your organization involved with project are
-subscribed: http://www.ntppool.org/vendors/list
+subscribed: https://www.ntppool.org/vendors/list
 
 If you are a commercial organization please consider contributing
 back to the pool so we can keep the service sustainable
 even with the commercial usage:
-    http://www.pool.ntp.org/vendors/contribute.html
+    https://www.ntppool.org/vendors/contribute.html
 
 The contributions makes it possible for our team of volunteers
 to run a global high quality service.
