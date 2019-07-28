@@ -49,8 +49,10 @@ sub current_account {
     if (my $account_token = $self->req_param('a')) {
         my $account_id = NP::Model::Account->token_id($account_token);
         my $account = $account_id ? NP::Model->account->fetch(id => $account_id) : undef;
-        warn "decoded account id ", $account->id if $account;
-        return $self->{_current_account} = $account if $account->can_edit($self->user);
+        if ($account) {
+            return $self->{_current_account} = $account
+                if $account->can_edit($self->user);
+        }
     }
 
     my ($accounts) = NP::Model->account->get_accounts(
