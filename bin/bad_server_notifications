@@ -1,61 +1,98 @@
 # -*- cperl -*-
 eval 'exec $CBROOT/bin/perl $0 ${1+"$@"}'
   unless $running_under_some_shell;
-use strict;
 use warnings;
+use v5.20;
+use warnings 'all';
 use lib "$ENV{CBROOTLOCAL}/lib";
 use lib "$ENV{CBROOT}/lib";
 use Combust::Config;
 use Combust::Template;
 
 use Email::Stuffer;
+use Email::Address::XS;
 use NP::Email;
 use NP::Model;
 
-my $config = Combust::Config->new;
+my $config          = Combust::Config->new;
 my $deployment_mode = $config->site->{ntppool}->{deployment_mode};
 
 my $dbh = NP::Model->dbh;
 
+warn "get lock";
+
 $dbh->selectrow_array(q[SELECT GET_LOCK("notifications", 0)]) or exit;
+
+warn "deleting alert records of good servers";
 
 $dbh->do(
     q[delete from sa using server_alerts sa inner join servers s on (s.id=sa.server_id) where s.score_raw > 10]
 );
 
-my $admins = NP::Model->user->admins_to_notify;
+warn "Getting accounts to notify";
+
+my ($accounts) = NP::Model->account->accounts_to_notify;
 
 my $tpl = Combust::Template->new;
 
 my $i = 0;
 
-for my $admin (@$admins) {
-    my $param = {admin => $admin};
-    my @bad_servers = $admin->bad_servers;
+warn "looping accounts";
+
+sub address_name {
+    my $e = shift;
+    return $e->name || $e->phrase;
+}
+
+sub greeting {
+    my ($account, @addresses) = @_;
+
+    if (scalar(@addresses) == 1) {
+        return address_name($addresses[0]);
+    }
+    elsif (scalar(@addresses) > 5) {
+        return $account->name ? ($account->name . " admins") : "server admins";
+    }
+
+    my $last     = pop @addresses;
+    my $greeting = join(", ", map { address_name($_) } @addresses);
+    $greeting .= " and " . address_name($last);
+
+    return $greeting;
+}
+
+for my $account (@$accounts) {
+
+    my $param       = {account => $account};
+    my @bad_servers = $account->bad_servers;
     $param->{bad_servers} = \@bad_servers;
 
-    print "Notifying of bad servers ", $admin->email, " for ", join(", ", map {$_->ip} @bad_servers), "\n"; 
+    my @addresses =
+      map { Email::Address::XS->new($_->name, $_->email) } $account->users;
 
-    next unless @bad_servers;
+    print "Notifying of bad servers ", join(",", @addresses), " for ",
+      join(", ", map { $_->ip } @bad_servers), "\n";
+
+    next unless @bad_servers && @addresses;
+
+    $param->{greeting} = greeting($account, @addresses);
 
     my $msg = $tpl->process('tpl/bad_server_notification.txt',
         $param, {site => 'ntppool', config => $config});
 
-    my $email = Email::Stuffer
-      ->from(NP::Email::address("sender"))
-      ->to($admin->email)
+    my $email =
+      Email::Stuffer->from(NP::Email::address("sender"))->to(@addresses)
       ->reply_to(NP::Email::address("support"))
       ->subject("NTP Pool: Problems with your NTP server (" . $bad_servers[0]->ip . ")")
       ->text_body($msg);
 
-    NP::Email::sendmail($email->email);
+    NP::Email::sendmail($email);
 
     for my $server (@bad_servers) {
         my $alert = $server->alert;
         $alert->mark_sent;
     }
 
-    #last;
     if ($deployment_mode eq "devel") {
         last if ++$i == 1;
     }

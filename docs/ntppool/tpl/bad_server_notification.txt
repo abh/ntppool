@@ -1,12 +1,12 @@
-[% page.style = 'email.txt' -%]
+[% page.style = 'email.txt'; USE wrap; -%]
 
-Hi [% admin.email %],
+Hi [% greeting | wrap(63) %],
 
-This is an automated email.
+This is an automated email for [% account.name %].
 
 The NTP Pool system has marked your timeserver as either unreachable
 or keeping bad time.  Until the issue has been addressed, it will not
-be included in the pool.ntp.org DNS zones.
+be included in the DNS zones for discovery by the NTP users.
 
 If you have resolved the problem or if it has resolved itself, there's
 no need to reply to this email - the monitoring system will notice and
@@ -17,25 +17,26 @@ after a short time include the server in the system again.
 The NTP system is based on IPs rather than the DNS of your server. If
 the IP changes it is considered a new server. You can schedule the old
 IP for removal and add the new one on the management web site:
-   [% config.base_url('manage') %]
+   [% account.url %]
 
 [% FILTER repeat(70) %]-[% END %]
 [%- FOR server = bad_servers %]
-[% server.ip %] (current score: [% server.score %])  [% config.base_url('ntppool') %]/s/[% server.id %]
+[% server.ip %] (score: [% server.score %])  [% config.base_url('ntppool') %]/s/[% server.id %]
 [%- END %]
 [% FILTER repeat(70) %]-[% END %]
 
-You can see the stats for all your servers in the pool at 
-    [% config.base_url('manage') %]/manage
+You can see the stats for all your servers in the pool and add or
+remove users from the account at
+    [% account.url %]
 
 If you haven't logged in for a long time, you might need to
-recreate your account after our login system upgrade in 2016:
+reset your password after our login system upgrade in 2016:
     https://news.ntppool.org/2016/04/login-upgrade/
 
 If you need help troubleshooting, the NTP Pool community at
 https://community.ntppool.org/ is very helpful.
 
-If you have any questions, just reply to this email. Otherwise no
+If you have other questions, just reply to this email. Otherwise no
 response is necessary.
 
 Thank you for offering your NTP service to the pool!

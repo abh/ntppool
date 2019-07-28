@@ -12,6 +12,9 @@ use LWP::UserAgent qw();
 use Mozilla::CA qw();
 use Math::BaseCalc qw();
 use Math::Random::Secure qw(irand);
+use URI::URL ();
+use URI::QueryParam;
+
 
 my $ua = LWP::UserAgent->new(
     timeout  => 2,
@@ -80,6 +83,8 @@ sub current_url {
 sub render {
     my $self = shift;
 
+    # this method is shared between the Manage related controllers
+
     $self->cache_control('private');
 
     if ($self->request->uri =~ m!^/manage/logout!) {
@@ -87,6 +92,8 @@ sub render {
         $self->cookie("xs",                    0);
         $self->redirect('/manage');
     }
+
+    $self->tpl_param('xs', $self->cookie('xs'));
 
     if ($self->request->uri =~ m!^/manage/login!) {
 
@@ -292,13 +299,18 @@ sub login_url {
 sub manage_dispatch {
     my $self = shift;
 
-    $self->tpl_param('xs', $self->cookie('xs'));
+    # .../servers and .../account have their own handlers
 
-    return $self->redirect('/manage/servers')
-      unless $self->user->is_staff;
-
-    if ($self->request->uri =~ m{/manage/?$}) {
+    if ($self->user->is_staff and $self->request->uri =~ m{/manage/admin/?$}) {
         return $self->show_staff;
+    }
+
+    if ($self->request->uri =~ m{^/manage/?$}) {
+    my $redirect = URI->new('/manage/servers');
+    if (my $a_id = $self->req_param('a')) {
+        $redirect->query_param(a => $a_id);
+    }
+    return $self->redirect($redirect);
     }
 
     return 404;

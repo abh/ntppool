@@ -1,5 +1,6 @@
 package NP::Email;
 use strict;
+use 5.20.0;
 use Email::Simple ();
 use Email::Sender ();
 use Email::Sender::Simple ();
@@ -27,6 +28,8 @@ sub sendmail {
     my $email = shift;
     my $opts = shift || {};
 
+    if ($email->isa("Email::Stuffer")) { $email = $email->email }
+
     # for sparkpost
     my $msys = {options => {transactional => $JSON::true}};
     $email->header("X-MSYS-API", JSON->new->encode($msys));
@@ -42,13 +45,15 @@ sub sendmail {
 
     my $sender = address("sender");
 
-    warn "email to send\n", $email->as_string(), "\n";
     my $send_options = { from => $sender };
 
     if ($deployment_mode eq 'devel') {
         $send_options->{to} = 'ask+devel-site@ntppool.org';
-        print $email->as_string;
+        say "development mode - printing email: ", $email->as_string;
+        return;
     }
+
+    warn "email to send ($deployment_mode)\n", $email->as_string(), "\n";
 
     # kubernetes relay service must be running on 'smtp' port 25
     my $transport = Email::Sender::Transport::SMTP->new(
@@ -57,8 +62,6 @@ sub sendmail {
         }
     );
     $send_options->{transport} = $transport;
-
-    # if isa Email::Stuffer { email = email->email }
 
     Email::Sender::Simple->send($email, $send_options);
 

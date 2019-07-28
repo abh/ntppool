@@ -53,9 +53,13 @@ __PACKAGE__->meta->setup(
     organization_url  => { type => 'varchar', length => 150 },
     public_profile    => { type => 'integer', default => '0', not_null => 1 },
     url_slug          => { type => 'varchar', length => 150 },
+    created_on        => { type => 'datetime', default => 'now', not_null => 1 },
+    modified_on       => { type => 'timestamp', default => 'current_timestamp()', not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
+
+  allow_inline_column_values => 1,
 
   foreign_keys => [
     account_plan => {
@@ -209,12 +213,14 @@ __PACKAGE__->meta->setup(
     api_key     => { type => 'varchar', length => 255 },
     grants      => { type => 'text', length => 65535 },
     created_on  => { type => 'datetime', default => 'now', not_null => 1 },
-    modified_on => { type => 'timestamp', not_null => 1 },
+    modified_on => { type => 'timestamp', default => 'current_timestamp()', not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
 
   unique_key => [ 'api_key' ],
+
+  allow_inline_column_values => 1,
 );
 
 push @table_classes, __PACKAGE__;
@@ -566,7 +572,7 @@ __PACKAGE__->meta->setup(
     in_server_list => { type => 'integer', default => '0', not_null => 1 },
     netspeed       => { type => 'integer', default => 1000, not_null => 1 },
     created_on     => { type => 'datetime', default => 'now', not_null => 1 },
-    updated_on     => { type => 'timestamp', not_null => 1 },
+    updated_on     => { type => 'timestamp', default => 'current_timestamp()', not_null => 1 },
     score_ts       => { type => 'datetime' },
     score_raw      => { type => 'scalar', default => '0', length => 64, not_null => 1 },
     deletion_on    => { type => 'date' },
@@ -575,6 +581,8 @@ __PACKAGE__->meta->setup(
   primary_key_columns => [ 'id' ],
 
   unique_key => [ 'ip' ],
+
+  allow_inline_column_values => 1,
 
   foreign_keys => [
     account => {
@@ -720,12 +728,14 @@ __PACKAGE__->meta->setup(
     name        => { type => 'varchar', default => '', length => 255, not_null => 1 },
     note        => { type => 'text', length => 65535, not_null => 1 },
     created_on  => { type => 'datetime', default => 'now', not_null => 1 },
-    modified_on => { type => 'timestamp', not_null => 1 },
+    modified_on => { type => 'timestamp', default => 'current_timestamp()', not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
 
   unique_key => [ 'server_id', 'name' ],
+
+  allow_inline_column_values => 1,
 
   foreign_keys => [
     server => {
@@ -770,12 +780,14 @@ __PACKAGE__->meta->setup(
     score_raw   => { type => 'scalar', default => '0', length => 64, not_null => 1 },
     stratum     => { type => 'integer' },
     created_on  => { type => 'datetime', default => 'now', not_null => 1 },
-    modified_on => { type => 'timestamp', not_null => 1 },
+    modified_on => { type => 'timestamp', default => 'current_timestamp()', not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
 
   unique_key => [ 'server_id', 'monitor_id' ],
+
+  allow_inline_column_values => 1,
 
   foreign_keys => [
     monitor => {
@@ -912,12 +924,14 @@ __PACKAGE__->meta->setup(
     key         => { type => 'varchar', length => 255 },
     value       => { type => 'text', length => 65535 },
     created_on  => { type => 'datetime', default => 'now', not_null => 1 },
-    modified_on => { type => 'timestamp', not_null => 1 },
+    modified_on => { type => 'timestamp', default => 'current_timestamp()', not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
 
   unique_key => [ 'key' ],
+
+  allow_inline_column_values => 1,
 );
 
 __PACKAGE__->meta->setup_json_columns(qw< value >);
@@ -1203,7 +1217,7 @@ __PACKAGE__->meta->setup(
     rt_ticket           => { type => 'integer' },
     approved_on         => { type => 'datetime' },
     created_on          => { type => 'datetime', default => 'now', not_null => 1 },
-    modified_on         => { type => 'timestamp', not_null => 1 },
+    modified_on         => { type => 'timestamp', default => 'current_timestamp()', not_null => 1 },
     dns_root_id         => { type => 'integer', not_null => 1 },
     account_id          => { type => 'integer' },
   ],
@@ -1211,6 +1225,8 @@ __PACKAGE__->meta->setup(
   primary_key_columns => [ 'id' ],
 
   unique_key => [ 'zone_name', 'dns_root_id' ],
+
+  allow_inline_column_values => 1,
 
   foreign_keys => [
     account => {

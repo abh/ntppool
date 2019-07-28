@@ -23,6 +23,11 @@ sub id_token {
     return lc $cipher->encrypt_number_b32_crockford($self->id);
 }
 
+sub url {
+    my $self = shift;
+    return $config->base_url('manage') . '/manage?a=' . $self->id_token;
+}
+
 sub validate {
     my $account = shift;
     my $errors = {};
@@ -92,5 +97,39 @@ sub servers {
     wantarray ? @$s : $s;
 }
 
+package NP::Model::Account::Manager;
+use strict;
+
+sub accounts_to_notify {
+    my $class = shift;
+    my $ids   = NP::Model->dbh->selectcol_arrayref(
+        qq[SELECT distinct a.id as account_id
+           FROM
+             servers s
+             LEFT JOIN accounts a ON(s.account_id=a.id)
+             LEFT JOIN server_alerts sa ON(sa.server_id=s.id)
+           WHERE
+             s.score_raw <= ?
+              AND s.in_pool = 1
+              AND (s.deletion_on IS NULL
+                   OR s.deletion_on > DATE_ADD(NOW(), INTERVAL ? DAY)
+                  )
+              AND (sa.last_email_time IS NULL
+                   OR (DATE_SUB(NOW(), INTERVAL 14 DAY) > sa.last_email_time
+                       AND (sa.last_score+10) >= s.score_raw
+                      )
+                  )
+          ORDER BY a.id
+        ],
+        undef,
+        NP::Model::Account->BAD_SERVER_THRESHOLD,
+        NP::Model::Zone->deletion_grace_days + 2,
+    );
+    return unless $ids and @$ids;
+
+    warn "some server doesn't have an account" if grep { not defined $_ } @$ids;
+
+    return $class->get_accounts(query => [id => $ids]);
+}
 
 1;
