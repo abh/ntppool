@@ -964,22 +964,16 @@ __PACKAGE__->meta->setup(
   table   => 'users',
 
   columns => [
-    id                => { type => 'serial', not_null => 1 },
-    email             => { type => 'varchar', length => 255, not_null => 1 },
-    name              => { type => 'varchar', length => 255 },
-    pass              => { type => 'varchar', length => 255 },
-    nomail            => { type => 'enum', check_in => [ '0', 1 ], default => '0', not_null => 1 },
-    bitcard_id        => { type => 'varchar', length => 40 },
-    username          => { type => 'varchar', length => 40 },
-    public_profile    => { type => 'integer', default => '0', not_null => 1 },
-    organization_name => { type => 'varchar', length => 150 },
-    organization_url  => { type => 'varchar', length => 150 },
+    id             => { type => 'serial', not_null => 1 },
+    email          => { type => 'varchar', length => 255, not_null => 1 },
+    name           => { type => 'varchar', length => 255 },
+    username       => { type => 'varchar', length => 40 },
+    public_profile => { type => 'integer', default => '0', not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
 
   unique_keys => [
-    [ 'bitcard_id' ],
     [ 'email' ],
     [ 'username' ],
   ],

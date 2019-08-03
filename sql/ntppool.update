@@ -714,10 +714,12 @@ alter table servers
   add account_id int unsigned default null after user_id,
   add constraint `server_account_fk` foreign key (`account_id`) references accounts (`id`);
 
-#todo
+#80
 alter table users
    drop organization_url,
    drop organization_name,
    drop bitcard_id,
    drop nomail,
    drop pass;
+
+#todo
