@@ -6,9 +6,13 @@
 
 		<h3>Account information</h3>
 
-		<form action="/manage/account" method="post" accept-charset="utf-8">
+		[% PROCESS tpl/manage/profile_link.html %]<br>
+
+		account id: #[% account.id %]
+
+		<form action="/manage/account?a=[% account.id_token %]" method="post" accept-charset="utf-8">
 			<fieldset>
-				<input type="hidden" name="id" value="[% account.id || 'new' %]" />
+				<input type="hidden" name="a" value="[% account.id_token || 'new' %]" />
 
 				<b>Account name</b><br />
 				[% IF errors and errors.zone_name %]
@@ -33,6 +37,17 @@
 				[% IF errors.organization_url %]<div class="error">[% errors.organization_url | html %]</div>[% END %]
 				<input type="text" class="text" name="organization_url" value="[% account.organization_url | html %]"
 					id="organization_url" size="65">
+				<br>
+				<br>
+
+				<b>Account profile page</b><br>
+				<div class="form-check">
+					<input type="checkbox" class="form-check-input"
+						name="public_profile" value="1"
+						[% IF account.public_profile; "checked"; END %]
+						id="public_profile">
+					<label class="form-check-label" for="public_profile">Public profile page</label>
+				  </div>
 				<br>
 				<br>
 

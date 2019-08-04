@@ -3,15 +3,12 @@
 [% PROCESS tpl/manage/navigation.html %]
 
 <div id="admin" class="block">
-        <div>
-	<h3>Admin information</h3>
-	[% user = combust.user %]
-	[% PROCESS tpl/manage/profile_link.html %]<br>
-	Email: <b>[% user.email %]</b><br>
-        Account: [% account.name %], [% account.id_token %] (#[% account.id %])
-        </div>
+    <div>
+	<h3>Account information</h3>
+    [% account.name %] ([% account.id_token %])
+    </div>
 
-        [% IF account.servers %]
+    [% IF account.servers %]
 	<div class="servers" >
 		<h3>Your Servers
                    <img class="busy" src="[% combust.static_url("/images/progress.gif") %]">

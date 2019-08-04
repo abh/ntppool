@@ -48,7 +48,7 @@
 	<div class="row">
 		<div id="sidebar" class="col-md-2">
 			<h1><a href="[% combust.www_url("/") %]">NTP Pool Project</a></h1>
-            [% PROCESS tpl/navigation_sidebar.html %]
+			[% PROCESS tpl/navigation_sidebar.html %]
 		</div>
 		<div id="mainbar" class="col-md-10">
 			[% PROCESS tpl/navigation_topbar.html %]
@@ -61,10 +61,10 @@
 
 <div id="doc3" class="yui-t2">
 	<div id="ft">
-    <a href="http://status.ntppool.org/" target="_blank">
-      <span class="color-dot"></span>
-      <span class="color-description">Status</span>
-    </a> |
+	<a href="http://status.ntppool.org/" target="_blank">
+		<span class="color-dot"></span>
+		<span class="color-description">Status</span>
+	</a> |
 		Comments and questions to <a href="https://www.askask.com/">Ask Bj&oslash;rn Hansen</a> &#8212;
 		<a href="mailto:ask@develooper.com">ask@develooper.com</a>
 	</div>
@@ -72,18 +72,24 @@
 
 [% PROCESS tpl/common/js.html %]
 
-<script defer src="https://www.mapper.ntppool.org/mapper.js"></script>
-
-<script type="text/javascript" src="//cdn.statuspage.io/se-v2.js"></script>
+<script type="text/javascript" src="https://cdn.statuspage.io/se-v2.js"></script>
 <script>
-var sp = new StatusPage.page({ page: '8ll7xvh0qt1p'});
-sp.summary({
-  success: function(data) {
-    $('.color-description').text(data.status.description);
-    $('.color-dot').addClass(data.status.indicator);
-  }
-});
+(function(i){
+	if (i["StatusPage"] === undefined) {
+		console.log("StatusPage not loaded");
+		return
+	}
+	var sp = new StatusPage.page({ page: '8ll7xvh0qt1p'});
+	sp.summary({
+		success: function(data) {
+			$('.color-description').text(data.status.description);
+			$('.color-dot').addClass(data.status.indicator);
+		}
+	});
+}(window));
 </script>
+
+<script defer src="https://www.mapper.ntppool.org/mapper.js"></script>
 
 </body>
 </html>

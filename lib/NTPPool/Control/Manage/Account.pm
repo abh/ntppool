@@ -9,19 +9,16 @@ sub manage_dispatch {
     my $self = shift;
 
     if ($self->request->uri =~ m!^/manage/account$!) {
+        my $account = $self->current_account;
         return $self->render_edit if ($self->request->method eq 'post');
-
-        my $account_id = NP::Model::Account->token_id($self->req_param('a'));
-        return $self->render_account($account_id);
+        return $self->render_account($account);
     }
 
     return NOT_FOUND;
 }
 
-
 sub render_account {
-    my ($self, $id) = @_;
-    my $account = NP::Model->account->fetch(id => $id);
+    my ($self, $account) = @_;
     return 404 unless $account;
     return $self->redirect("/manage/") unless $account and $account->can_edit($self->user);
     return $self->_render_form($account);
@@ -37,16 +34,23 @@ sub _render_form {
 sub render_edit {
     my $self = shift;
 
-    my $id = $self->req_param('id');
-    $id = 0 if $id and $id eq 'new';
+    my $account_token = $self->req_param('a');
+    my $account_id = NP::Model::Account->token_id($account_token);
+    my $account = $account_id ? NP::Model->account->fetch(id => $account_id) : undef;
 
-    my $account = $id ? NP::Model->account->fetch(id => $id) : undef;
+    if ($account_token eq 'new') {
+        $account = NP::Model->account->create(users => [ $self->user ]);
+    }
+
     return 404 unless $account;
-    return 403 unless $account->can_edit($self->user);
+    return 403 unless $account->can_edit($self->user) or $account_token eq 'new';
 
     for my $f (qw(name organization_name organization_url)) {
         $account->$f($self->req_param($f) || '');
     }
+
+    warn "PP req: [", $self->req_param('public_profile'), "]";
+    $account->public_profile($self->req_param('public_profile') ? 1 : 0);
 
     unless ($account->validate) {
         my $errors = $account->validation_errors;
@@ -56,7 +60,7 @@ sub render_edit {
 
     $account->save;
 
-    return $self->render_account($account->id);
+    return $self->render_account($account);
 }
 
 

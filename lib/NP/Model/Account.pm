@@ -13,8 +13,8 @@ $account_id_key    = pack( 'H20', uc $account_id_key);
 my $cipher = Crypt::Skip32::Base32Crockford->new($account_id_key);
 
 sub token_id {
-    shift;
-    my $token = shift or die "no token specified";
+    my $self = shift;
+    my $token = shift or return 0;
     return $cipher->decrypt_number_b32_crockford($token);
 }
 
