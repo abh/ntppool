@@ -37,27 +37,11 @@ if (!NP) var NP = {};
     };
 
     $(document).ready(function () {
-
         $("#busy").ajaxStart(function(){
             $(this).show(70);
         })
         .ajaxStop(function(){
             $(this).hide(70);
         });
-
-        var profile_link = $("#profile_link a.profile_link_change");
-        if (profile_link !== undefined) {
-                profile_link.on('click',
-                function(event) {
-                    event.preventDefault();
-                    $.post(this.href, {},
-                        function(response) {
-                            $('#profile_link').html(response);
-                        }
-                    );
-                }
-            );
-
-        }
     });
 }());

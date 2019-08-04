@@ -23,9 +23,13 @@ sub render {
 
     return $self->login unless $self->user;
 
+    unless ($self->current_account) {
+        return $self->redirect("/manage/account");
+    }
+
     return $self->handle_add if $self->request->uri =~ m!^/manage/server/add!;
     return $self->handle_update
-      if $self->request->uri =~ m!^/manage/(server|profile)/update!;
+      if $self->request->uri =~ m!^/manage/server/update!;
     return $self->handle_delete
       if $self->request->uri =~ m!^/manage/server/delete!;
     return $self->show_manage if $self->request->uri =~ m!^/manage/servers!;
@@ -299,8 +303,6 @@ sub req_server {
 sub handle_update {
     my $self = shift;
 
-    return $self->handle_update_profile
-      if $self->request->uri =~ m!^/manage/profile/update!;
     return $self->handle_update_netspeed
       if $self->request->uri =~ m!^/manage/server/update/netspeed!;
     return $self->handle_mode7_check
@@ -363,19 +365,6 @@ sub handle_update_netspeed {
 
     return OK, encode_json($return);
 
-}
-
-sub handle_update_profile {
-    my $self = shift;
-
-    my $public = ($self->request->uri =~ m/public/) ? 1 : 0;
-    $self->user->public_profile($public);
-    $self->user->update;
-
-    $self->tpl_param('user' => $self->user);
-
-    return $self->redirect('/manage') if $self->request->method eq 'GET';
-    return OK, $self->evaluate_template('tpl/manage/profile_link.html', {style => 'bare.html'});
 }
 
 sub handle_delete {

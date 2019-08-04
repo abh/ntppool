@@ -6,8 +6,6 @@
 
 		<h3>Account information</h3>
 
-		[% PROCESS tpl/manage/profile_link.html %]<br>
-
 		account id: #[% account.id %]
 
 		<form action="/manage/account?a=[% account.id_token %]" method="post" accept-charset="utf-8">
@@ -26,14 +24,14 @@
 
 				<br />
 				<br>
-				<b>Organization name</b><br>(can be the same as the account name)<br>
+				<b>Organization name</b> (optional)<br>
 				[% IF errors.organization_name %]<div class="error">[% errors.organization_name | html %]</div>[% END %]
 				<input type="text" class="text" name="organization_name" value="[% account.organization_name | html %]"
 					id="organization_name" size="65">
 				<br>
 				<br>
 
-				<b>Organization website</b><br>
+				<b>Organization website</b> (optional)<br>
 				[% IF errors.organization_url %]<div class="error">[% errors.organization_url | html %]</div>[% END %]
 				<input type="text" class="text" name="organization_url" value="[% account.organization_url | html %]"
 					id="organization_url" size="65">

@@ -10,6 +10,12 @@ sub manage_dispatch {
 
     if ($self->request->uri =~ m!^/manage/account$!) {
         my $account = $self->current_account;
+        unless ($account) {
+            # TODO: check for invitations and show "accept invitations screen"...
+            $account = NP::Model->account->create(users => [ $self->user ]);
+            $account->name($self->user->name);
+            $account->save();
+        }
         return $self->render_edit if ($self->request->method eq 'post');
         return $self->render_account($account);
     }
