@@ -1,6 +1,8 @@
 package NP::Model::Account;
 use strict;
 use NP::Util qw();
+use Math::BaseCalc qw();
+use Math::Random::Secure qw(irand);
 use Crypt::Skip32::Base32Crockford ();
 use Combust::Config ();
 
@@ -28,11 +30,30 @@ sub url {
     return $config->base_url('manage') . '/manage?a=' . $self->id_token;
 }
 
+sub public_url {
+    my $self = shift;
+    return "" unless $self->url_slug;
+    return $config->base_url('www') . '/a/' . $self->url_slug;
+}
+
 sub validate {
     my $account = shift;
     my $errors = {};
     for my $f (qw(name)) {
         $errors->{$f} = 'Required field' unless $account->$f and $account->$f =~ m/\S/;
+    }
+
+    if ($account->public_profile and !$account->url_slug) {
+        my $base36 = Math::BaseCalc->new(digits => ['a' .. 'k', 'm' .. 'z', 2 .. 9]);
+        my $url = join "", map { $base36->to_base(irand) } (undef) x 2;
+        $account->url_slug($url);
+    }
+
+    if (my $url = $account->url_slug) {
+        if ($url =~ m{[^a-z0-9-_]}i) {
+            $errors->{url_slug} = "Page URL can only contain basic letters, numbers, hypens and underscores"
+        }
+        # check uniqueness
     }
 
     $account->{_validation_errors} = $errors;

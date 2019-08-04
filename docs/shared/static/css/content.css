@@ -280,3 +280,6 @@ img.atom-logo {
   vertical-align: middle;
   margin-right: 3px;
 }
+
+#account-form .form-group { margin-top: 14px; }
+#account-form .form-label { font-weight: bold; }

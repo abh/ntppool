@@ -1,53 +1,91 @@
 [% PROCESS tpl/manage/navigation.html %]
 
 <div class="row">
+	<div class="col-md-5">
 
-	<div class="span4">
+	<h3>Account information</h3>
 
-		<h3>Account information</h3>
-
-		account id: #[% account.id %]
-
-		<form action="/manage/account?a=[% account.id_token %]" method="post" accept-charset="utf-8">
-			<fieldset>
-				<input type="hidden" name="a" value="[% account.id_token || 'new' %]" />
-
-				<b>Account name</b><br />
-				[% IF errors and errors.zone_name %]
+	<form id="account-form" action="/manage/account?a=[% account.id_token %]" method="post" accept-charset="utf-8">
+		<input type="hidden" name="a" value="[% account.id_token || 'new' %]" />
+		<div class="form-group">
+			<label id="name-help" class="form-label" for="name">Account name</label>
+			<input type="input" class="form-control"
+				id="name" value="[% account.name | html%]"
+				name="name"
+				required
+				maxlength="60"
+				aria-describedby="name-help"
+				placeholder="Enter account name">
+			[% IF errors and errors.name %]
+			<div class="error">
+				<span class="badge badge-danger">Error</span>
+				[% errors.name | html %]<br />
+			</div>
+			[% END %]
+		</div>
+		<div class="form-group">
+			<label id="organization_name-help" class="form-label" for="organization_name">Organization name</label>
+			<input type="text" class="form-control" name="organization_name"
+				value="[% account.organization_name | html %]"
+				id="organization_name" maxlength="65">
+			[% IF errors.organization_name %]
 				<div class="error">
-					[% errors.name | html %]<br />
-					<small>Contact <a href="vendors@ntppool.org">vendors@ntppool.org</a> for help.</small>
+					<span class="badge badge-danger">Error</span>
+					[% errors.organization_name | html %]
 				</div>
+			[% END %]
+		</div>
+
+		<div class="form-group">
+			<label id="organization_url-help" class="form-label" for="organization_url">Organization website</label>
+			<input type="url" class="form-control" name="organization_url"
+				value="[% account.organization_url | html %]"
+				placeholder="https://example.com/"
+				id="organization_url" maxlength="65">
+			[% IF errors.organization_url %]
+				<div class="error">
+					<span class="badge badge-danger">Error</span>
+					[% errors.organization_name | html %]
+				</div>
+			[% END %]
+		</div>
+
+		<div class="form-group">
+			<label id="public_profile-help" class="form-label" for="public_profile">Account profile page</label>
+			<div class="form-check">
+				<input type="checkbox" class="form-check-input"
+					name="public_profile" value="1"
+					[% IF account.public_profile; "checked"; END %]
+					id="public_profile">
+				<label class="form-check-label" for="public_profile">
+					[% IF account.public_url %]
+					Enable <a href="[% account.public_url %]">profile page</a>
+					[% ELSE %]
+					Enable profile page
+					[% END%]
+				</label>
+			</div>
+
+			<div class="input-group mb-3">
+				<div class="input-group-prepend">
+					<span class="input-group-text">[% combust.www_url("/a/") %]</span>
+				</div>
+				<input type="text" class="form-control"
+					autocorrect="off" spellcheck="false"
+					name="url_slug"
+					value="[% account.url_slug | html %]"
+					id="url_slug" aria-label="Page URL">
+				[% IF errors.url_slug %]
+					<div class="error">
+						<span class="badge badge-danger">Error</span>
+						[% errors.url_slug | html %]
+					</div>
 				[% END %]
-				<input type="text" class="text" name="name" value="[% account.name | html %]" id="name" size="18"
-					maxsize="60">
 
-				<br />
-				<br>
-				<b>Organization name</b> (optional)<br>
-				[% IF errors.organization_name %]<div class="error">[% errors.organization_name | html %]</div>[% END %]
-				<input type="text" class="text" name="organization_name" value="[% account.organization_name | html %]"
-					id="organization_name" size="65">
-				<br>
-				<br>
+			</div>
 
-				<b>Organization website</b> (optional)<br>
-				[% IF errors.organization_url %]<div class="error">[% errors.organization_url | html %]</div>[% END %]
-				<input type="text" class="text" name="organization_url" value="[% account.organization_url | html %]"
-					id="organization_url" size="65">
-				<br>
-				<br>
+		</div>
 
-				<b>Account profile page</b><br>
-				<div class="form-check">
-					<input type="checkbox" class="form-check-input"
-						name="public_profile" value="1"
-						[% IF account.public_profile; "checked"; END %]
-						id="public_profile">
-					<label class="form-check-label" for="public_profile">Public profile page</label>
-				  </div>
-				<br>
-				<br>
 
 				<!--
 	<b>Contact information</b><br>
@@ -59,12 +97,11 @@
 	<br>
 -->
 
-				<p><input type="submit" class="button" value="Update"></p>
-			</fieldset>
+				<p><input type="submit" class="btn btn-primary" value="Update"></p>
 		</form>
 	</div>
 
-	<div class="span4">
+	<div class="col-md-4">
 		<h3>Account users</h3>
 
 		<ul>
