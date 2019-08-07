@@ -20,8 +20,8 @@ if (!NP) { var NP = {}; }
                     },
                     function(r) {
                         var reg = new RegExp(q, 'gi');
-                        _.each(r.users, function(user) {
-                            _.each(user.servers, function(server) {
+                        _.each(r.accounts, function(account) {
+                            _.each(account.servers, function(server) {
                                 server.ip_display = server.ip;
                                 server.ip_display = server.ip_display.replace(reg,
                                     function(str) {

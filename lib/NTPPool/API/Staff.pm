@@ -16,23 +16,25 @@ sub search {
         servers => [],
     };
 
-    my @users;
+    my @accounts;
 
     #local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
 
     my $servers = NP::Model->server->get_servers(
         query => [or => [($ip ? (ip => $ip->short) : ()), hostname => {like => $q . '%'},]],
-        require_objects => ['user']
+        require_objects => ['account']
     );
     if ($servers) {
         #warn "got servers!", Data::Dump::pp($servers);
-        push @users, $_->user for @$servers;
+        push @accounts, $_->account for @$servers;
     }
 
     my $user_query = [
         or => [
-            username => {like => $q . '%'},
-            email    => {like => '%' . $q . '%'},
+            'users.username' => {like => $q . '%'},
+            'users.email'    => {like => '%' . $q . '%'},
+            'users.name'     => {like => '%' . $q . '%'},
+            'name'           => {like => '%' . $q . '%'},
         ]
     ];
 
@@ -43,29 +45,41 @@ sub search {
         $include_identities = 1;
     }
 
-    my $users = NP::Model->user->get_users(
+    my $accounts = NP::Model->account->get_accounts(
         query         => $user_query,
         multi_many_ok => 1,
-        with_objects  => ['servers_all.zones']
+        with_objects  => ['servers_all.zones', 'users']
     );
-    push @users, @$users;
+    push @accounts, @$accounts;
 
     #warn "USERS: ", join ", ", map { $_->username } @users;
 
-    if (@users) {
-        $result->{users} = [];
-        for my $user (@users) {
-            my $data = $user->get_data_hash;
-            push @{$result->{users}}, {
-                id       => 0 + $data->{id},
+    if (@accounts) {
+        $result->{accounts} = [];
+        for my $account (@accounts) {
+            my $account_token = $account->id_token;
+            my $data = $account->get_data_hash;
+            push @{$result->{accounts}}, {
+                account_token => $account_token,
+                # id       => 0 + $data->{id},
                 name     => $data->{name},
-                username => $data->{username},
-                email    => $data->{email},
+                users => [
+                    map {
+                        my $u = $_;
+                        my $d = $u->get_data_hash;
+                        {
+                            name     => $d->{name},
+                            username => $d->{username},
+                            email    => $d->{email},
+                            id       => $d->{id} + 0,
+                        }
+                    } $account->users
+                ],
                 servers  => [
                     map {
                         my $s = $_;
                         my $d = $s->get_data_hash;
-                        {   id             => $d->{id},
+                        {   id             => $d->{id} + 0,
                             ip             => $d->{ip},
                             score          => $s->score,
                             netspeed       => $d->{netspeed},
@@ -85,7 +99,7 @@ sub search {
                             return $b->deletion_on <=> $a->deletion_on;
                         }
                         return $b->created_on <=> $a->created_on;
-                      } $user->servers_all
+                      } $account->servers_all
                 ]
             };
         }

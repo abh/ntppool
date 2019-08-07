@@ -69,7 +69,7 @@ __PACKAGE__->meta->setup(
   ],
 
   relationships => [
-    servers => {
+    servers_all => {
       class      => 'NP::Model::Server',
       column_map => { id => 'account_id' },
       type       => 'one to many',
@@ -998,7 +998,7 @@ __PACKAGE__->meta->setup(
       type       => 'one to many',
     },
 
-    servers_all => {
+    servers => {
       class      => 'NP::Model::Server',
       column_map => { id => 'user_id' },
       type       => 'one to many',

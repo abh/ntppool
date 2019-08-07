@@ -7,7 +7,7 @@ END;
 <ul class="manage-sidebar nav nav-pills flex-column">
     [% IF combust.user.is_staff %]
     <li class="nav-item">
-    <a class="nav-link [% page.is_admin ? " active" : "" %]" href="[% combust.manage_url('/manage') %]">Admin search</a>
+    <a class="nav-link [% page.is_admin ? " active" : "" %]" href="[% combust.manage_url('/manage/admin') %]">Admin search</a>
     </li>
     [% END %]
 

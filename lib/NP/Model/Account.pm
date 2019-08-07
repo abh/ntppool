@@ -1,6 +1,5 @@
 package NP::Model::Account;
 use strict;
-use NP::Util qw();
 use Math::BaseCalc qw();
 use Math::Random::Secure qw(irand);
 use Crypt::Skip32::Base32Crockford ();

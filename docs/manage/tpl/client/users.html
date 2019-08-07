@@ -1,6 +1,13 @@
 <ul>
-{{#users}}
-  <li>{{username}} {{email}} {{name}} ({{id}})<br>
+{{#accounts}}
+  <li>{{name}},
+        <a href="/manage/servers?a={{ account_token}}">Account {{ account_token }}</a>
+      <br>
+      <ol>
+          {{#users}}
+            <li>{{name}}, {{username}}, {{email}}, {{id}}</li>
+          {{/users}}
+      </ol>
       <ol>
           {{#servers}}
               <li><a href="/scores/{{ip}}">
@@ -15,4 +22,5 @@
           {{/servers}}
       </ol>
   </li>
-{{/users}}
+{{/accounts}}
+</ul>

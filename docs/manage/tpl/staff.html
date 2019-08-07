@@ -9,8 +9,11 @@
     <input type="hidden" name="xs" value="[% xs %]">
 
     <form id="search_form" class="well form-search">
-      <input class="input-large search-query" id="q" type="text" name="q">
-      <button type="submit" class="btn">Search</button>
+      <input class="form-group form-control form-control col-md-6 search-query"
+        id="q" type="text" name="q"
+        placeholder="email, ip or user name">
+
+      <button type="submit" class="btn btn-primary">Search</button>
       &nbsp;
       <small>Search by IP address, email address, user name or id:123</small>
     </form>
