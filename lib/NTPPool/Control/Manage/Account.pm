@@ -51,11 +51,13 @@ sub render_edit {
     return 404 unless $account;
     return 403 unless $account->can_edit($self->user) or $account_token eq 'new';
 
-    for my $f (qw(name organization_name organization_url)) {
-        $account->$f($self->req_param($f) || '');
+    for my $f (qw(name organization_name organization_url url_slug)) {
+        warn "stting $f to [", ($self->req_param($f) || ''), "]";
+        my $v = $self->req_param($f) || '';
+        $v =~ s/^\s+//;
+        $v =~ s/\s+$//;
+        $account->$f($v);
     }
-
-    warn "PP req: [", $self->req_param('public_profile'), "]";
     $account->public_profile($self->req_param('public_profile') ? 1 : 0);
 
     unless ($account->validate) {
