@@ -69,6 +69,12 @@ __PACKAGE__->meta->setup(
   ],
 
   relationships => [
+    logs => {
+      class      => 'NP::Model::Log',
+      column_map => { id => 'account_id' },
+      type       => 'one to many',
+    },
+
     servers_all => {
       class      => 'NP::Model::Server',
       column_map => { id => 'account_id' },
@@ -300,18 +306,24 @@ __PACKAGE__->meta->setup(
 
   columns => [
     id             => { type => 'serial', not_null => 1 },
+    account_id     => { type => 'integer' },
     server_id      => { type => 'integer' },
     user_id        => { type => 'integer' },
     vendor_zone_id => { type => 'integer' },
     type           => { type => 'varchar', length => 50 },
-    title          => { type => 'varchar', length => 255 },
     message        => { type => 'text', length => 65535 },
+    changes        => { type => 'text', length => 65535 },
     created_on     => { type => 'datetime', default => 'now', not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
 
   foreign_keys => [
+    account => {
+      class       => 'NP::Model::Account',
+      key_columns => { account_id => 'id' },
+    },
+
     server => {
       class       => 'NP::Model::Server',
       key_columns => { server_id => 'id' },

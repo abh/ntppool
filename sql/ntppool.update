@@ -722,4 +722,14 @@ alter table users
    drop nomail,
    drop pass;
 
+#81
+alter table logs
+   add account_id int unsigned default null after id,
+   add CONSTRAINT `account_id_idx` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`);
+
+#82
+alter table logs
+   drop title,
+   add changes text after message;
+
 #todo

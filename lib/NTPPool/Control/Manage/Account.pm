@@ -51,6 +51,8 @@ sub render_edit {
     return 404 unless $account;
     return 403 unless $account->can_edit($self->user) or $account_token eq 'new';
 
+    my $old = $account->get_data_hash;
+
     for my $f (qw(name organization_name organization_url url_slug)) {
         warn "stting $f to [", ($self->req_param($f) || ''), "]";
         my $v = $self->req_param($f) || '';
@@ -67,6 +69,8 @@ sub render_edit {
     }
 
     $account->save;
+
+    NP::Model::Log->log_changes($self->user, "account", "update account", $account, $old);
 
     return $self->render_account($account);
 }
