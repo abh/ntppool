@@ -246,7 +246,7 @@ sub manage_url {
     my $url = shift;
     my $args = shift || {};
     if ($self->user and !$args->{a}) {
-        my $account = $self->current_account;
+        my $account = $self->can('current_account') && $self->current_account;
         $args->{a} = $account->id_token() if $account;
     }
 
