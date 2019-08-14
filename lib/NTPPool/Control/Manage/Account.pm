@@ -14,6 +14,7 @@ sub manage_dispatch {
             # TODO: check for invitations and show "accept invitations screen"...
             $account = NP::Model->account->create(users => [ $self->user ]);
             $account->name($self->user->name);
+            NP::Model::Log->log_changes($self->user, "account", "account created", $account);
             $account->save();
         }
         return $self->render_edit if ($self->request->method eq 'post');

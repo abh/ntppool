@@ -168,7 +168,6 @@ sub _add_server {
     my $s;
 
     my $db = NP::Model->db;
-
     my $txn = $db->begin_scoped_work;
 
     if ($s = NP::Model->server->fetch(ip => $server->{ip})) {
@@ -197,11 +196,12 @@ sub _add_server {
             $explicit_zone = $explicit_zone && $explicit_zone->parent;
         }
     }
-    $s->add_logs(
-        {   user_id => $self->user->id,
-            type    => 'create',
-            message => "Server added." . ($comment =~ m/\S/ ? "\n\n$comment" : ""),
-        }
+
+    NP::Model::Log->log_changes(
+        $self->user,
+        "server-create",
+        "Server added." . ($comment =~ m/\S/ ? "\n\n$comment" : ""),
+        $s,
     );
 
     #local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
@@ -341,6 +341,11 @@ sub handle_update_netspeed {
     my $server = $self->req_server or return NOT_FOUND;
     if (my $netspeed = $self->req_param('netspeed')) {
         return 403 unless $self->check_auth_token;
+
+        my $db = NP::Model->db;
+        my $txn = $db->begin_scoped_work;
+
+        my $old = $server->get_data_hash;
         $server->netspeed($netspeed) if $netspeed =~ m/^\d+$/;
         if ($server->netspeed < 768) {
             $server->leave_zone('@');
@@ -348,7 +353,12 @@ sub handle_update_netspeed {
         else {
             $server->join_zone('@');
         }
+
+        NP::Model::Log->log_changes($self->user, "server-netspeed", "set netspeed to " . $server->netspeed, $server, $old);
+
         $server->save;
+
+        $db->commit;
     }
 
     return $self->redirect('/manage/servers') if $self->req_param('noscript');
@@ -372,10 +382,14 @@ sub handle_delete {
     my $server = $self->req_server or return NOT_FOUND;
     $self->tpl_param(server => $server);
 
+    my $db = NP::Model->db;
+    my $txn = $db->begin_scoped_work;
 
     if ($self->request->method eq 'post') {
         if (my $date = $self->req_param('deletion_date')) {
             return 403 unless $self->check_auth_token;
+
+            my $old = $server->get_data_hash();
 
             my @date = split /-/, $date;
             $date = $date[1] && DateTime->new(
@@ -386,13 +400,12 @@ sub handle_delete {
             );
             if ($date and $date > DateTime->now) {
                 $server->deletion_on($date);
-                $server->add_logs(
-                    {   user_id => $self->user->id,
-                        type    => 'delete',
-                        message => "Deletion scheduled for "
-                          . $date->ymd . " by "
-                          . $self->user->who,
-                    }
+                NP::Model::Log->log_changes(
+                    $self->user,
+                    "server-delete",
+                    "Deletion scheduled for " . $date->ymd,
+                    $server,
+                    $old
                 );
                 $server->save;
             }
@@ -400,16 +413,21 @@ sub handle_delete {
         if ($self->req_param('cancel_deletion')) {
             return 403 unless $self->check_auth_token;
 
+            my $old = $server->get_data_hash;
+
             $server->deletion_on(undef);
-            $server->add_logs(
-                {   user_id => $self->user->id,
-                    type    => 'delete',
-                    message => "Deletion cancelled by " . $self->user->who,
-                }
+            NP::Model::Log->log_changes(
+                $self->user,
+                "server-delete",
+                "Deletion cancelled by " . $self->user->who,
+                $server,
+                $old
             );
             $server->save;
         }
     }
+
+    $db->commit;
 
     if ($server->deletion_on) {
         return OK, $self->evaluate_template('tpl/manage/delete_set.html');

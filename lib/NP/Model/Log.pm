@@ -26,6 +26,7 @@ sub log_changes {
 
     if ($new->isa('NP::Model::Server')) {
         $log{server_id} = $new->id;
+        $log{account_id} = $new->account && $new->account->id;
     }
 
     if ($new->isa('NP::Model::Account')) {
@@ -42,7 +43,7 @@ sub log_changes {
     if ($old and $new) {
         my %update;
         for my $f ($new->meta->columns) {
-            next if $f->name =~ m/^(modified|created)_on$/;
+            next if $f->name =~ m/^(updated|modified|created)_on$/;
 
             # warn "F: $f", pp($f);
             local $^W;    # no uninit warnings
