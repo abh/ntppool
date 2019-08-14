@@ -1,8 +1,8 @@
 body {
-    color: #222;
-    font-size: 15px;
-    font-family: merriweather, "Georgia", serif;
-    font-weight: 400;
+		color: #222;
+		font-size: 15px;
+		font-family: merriweather, "Georgia", serif;
+		font-weight: 400;
 }
 
 a {color: #3885B4;}
@@ -13,40 +13,41 @@ h1, h2, h3, h4, h5 {color: #454545;}
 	#hd p.develwarning {
 		padding: 3px; margin-bottom: 10px; text-align: center;
 		font-size: 88%; border: 1px solid #f00; border-top: 0;
-		 background-color: #fafafa;}
+		background-color: #fafafa;
+	}
 
 #sidebar {
-         padding: 0 10px 0 10px;
+	padding: 0 10px 0 10px;
 }
 
 #sidebar h1 a {
 	display: block;
-        width: 140px;
-        height: 138px;
+	width: 140px;
+	height: 138px;
 	background: no-repeat url(../images/logo-2019@x2.v1.png);
-        background-size: 120px 150px;
-        background-position: center center;
-        background-repeat: no-repeat;
+	background-size: 120px 150px;
+	background-position: center center;
+	background-repeat: no-repeat;
 	text-indent: -9000px;
 	margin: auto;
 	margin-bottom: 15px;
 }
 
 #nav .feather {
-  width: 30px;
-  height: 30px;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  fill: none;
+	width: 30px;
+	height: 30px;
+	stroke: currentColor;
+	stroke-width: 2;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+	fill: none;
 }
 
 ul#nav li {
 	font-size: 30px;
 	font-family: 'Economica', sans-serif;
-    font-variant: small-caps;
-    font-weight: 700;
+	font-variant: small-caps;
+	font-weight: 700;
 	list-style: none;
 }
 	ul#nav li a {
@@ -55,16 +56,10 @@ ul#nav li {
 		height: 40px;
 		color: #5A595B;
 		padding: 10px 10 10px 40px;
-                margin-right: 20px;
+		margin-right: 20px;
 		text-decoration: none;
 	}
 	ul#nav li a:hover {color: #3885B4;}
-	ul#nav li.join a {
-	}
-	ul#nav li.use a {
-	}
-	ul#nav li.manage a {
-    }
 
 div#tagline {font-size: 122%; font-style: italic; text-align: right; margin: 0; padding: 0; float: right;}
 
@@ -77,25 +72,25 @@ em {font-style:italic;}
 }
 
 #ft .color-dot {
-  -moz-border-radius: 99px;
-  -webkit-border-radius: 99px;
-  border-radius: 99px;
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  margin-right: 5px;
+	-moz-border-radius: 99px;
+	-webkit-border-radius: 99px;
+	border-radius: 99px;
+	display: inline-block;
+	width: 10px;
+	height: 10px;
+	margin-right: 5px;
 }
 
 #ft .color-dot.critical {
-  background-color: #e74c3c;
+	background-color: #e74c3c;
 }
 #ft .color-dot.major {
-  background-color: #e67e22;
+	background-color: #e67e22;
 }
 #ft .color-dot.minor {
-  background-color: #f1c40f;
+	background-color: #f1c40f;
 }
 #ft .color-dot.none {
-  background-color: #2ecc71;
+	background-color: #2ecc71;
 }
 

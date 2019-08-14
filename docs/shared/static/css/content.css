@@ -104,8 +104,6 @@ a.up {display: block; text-align: right; font-variant: small-caps;}
 #activity h3 { margin: 0; }
 #activity ul { padding-inline-start: 0px; }
 
-#news {}
-
 	ul#news li {padding-top: 5px; padding-bottom: 10px; border-bottom: 1px solid #ccc; min-height: 29px;}
         ul#news h4 {padding-bottom: 5px; }
 		ul#news li.last {border: 0;}
@@ -119,21 +117,14 @@ a.up {display: block; text-align: right; font-variant: small-caps;}
 p.thanks {font-style: italic; font-weight: bold;}
 
 /* manage */
-	#admin .profile, #admin .adspace {
+	#admin .profile {
 		padding: 10px;
 		border-bottom: 1px solid #ccc;
 		margin-bottom: 5px;
 	}
-	#admin .servers {
-		float: left;
-		padding: 7px;
-		border-right: 1px solid #ccc;
-		margin: 0 10px 10px 0;
-	}
+
 	#admin .value span {font-size: 107%;}
 	#admin .server_desc {font-size: 88%;}
-
-        #admin .busy { display: none; float: right; }
 
 /* user profile */
 #userprofile .server {

@@ -1,18 +1,9 @@
 [% page.js.push("ntppool.js"); %]
 
-[% PROCESS tpl/manage/navigation.html %]
-
-<div id="admin" class="block">
-    <div>
-	<h3>Account information</h3>
-    [% account.name %] ([% account.id_token %])
-    </div>
-
+<div id="admin" class="row">
     [% IF account.servers %]
-	<div class="servers" >
-		<h3>Your Servers
-                   <img class="busy" src="[% combust.static_url("/images/progress.gif") %]">
-                </h3>
+	<div class="servers col-md-6">
+		<h3>NTP Servers</h3>
 		<div class="value">
 			[% servers = account.servers;
 			   FOR server = servers; %]
@@ -23,60 +14,29 @@
 			[% END %]
 		</div>
 	</div>
-        [% END %]
+    [% END %]
 
-        <div>
-	<a name="add"></a>
-	[% PROCESS tpl/manage/add_form.html %]
-        </div>
+	<div class="col-md-3">
+		<div>
+			<a name="add"></a>
+			[% PROCESS tpl/manage/add_form.html %]
+		</div>
 
-	[% IF servers %]
-	<div class="server_desc">
-		<p>
-		<a name="netspeed"></a>The <b>net speed</b> is used to balance the
-		load between the pool servers. If your server can handle more or you'd
-    like less NTP requests, you can adjust this value. The query load to
-    your IP should adjust within 10-30 minutes. 
-    This speed does not mean the wire speed of your server, it's just a relative
-    value to other servers.
-		</p>
+		[% IF servers %]
+			[% PROCESS tpl/manage/servers_help.html %]
+		[% END %]
 
-		<p>
-		The amount of queries your server will get is
-		generally directly proportional to the netspeed, so a
-		50Mbit setting will get about 5 times more traffic
-		than the 10Mbit setting. Be aware that the
-		amount of queries to your server will grow over time.
-		</p>
+		<div class="block server_desc">
+			<p>
+			The current NTP implementations (and the pool system) are very IP focused, so to "change" the IP address
+			of your server, please delete the old server and add the new IP.
+			</p>
 
-		<p>
-		The "availability <b>score</b>" goes up to 20.  It
-		must be higher than 10 for the server to be included in
-		the cluster.
-		</p>
-
-		<p>As noted on the <a href="[% combust.www_url("/join.html") %]">join information</a> page adding
-		your IP to the pool is a long term commitment.  If you need to remove
-		your server from the pool you can schedule the removal with the
-		<b>delete</b> button (up to 3 months in advance!).
-		</p>
-
+			<p>
+			To change other server information, email <a
+			href="mailto:[% "support" | email %]">[% "support" | email %]</a>.
+			</p>
+		</div>
 	</div>
-	[% END %]
-
-        <div class="block server_desc">
-
-        <p>
-        The current NTP implementations (and the pool system) are very IP focused, so to "change" the IP address
-        of your server, please delete the old server and add the new IP.
-        </p>
-
-
-	<p>
-	To change other server information, email <a
-	href="mailto:server-owner-help@ntppool.org">server-owner-help@ntppool.org</a>.
-	</p>
-
-        </div>
 
 </div>
