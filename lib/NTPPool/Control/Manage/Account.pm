@@ -9,7 +9,12 @@ sub manage_dispatch {
     my $self = shift;
 
     if ($self->request->uri =~ m!^/manage/account$!) {
-        my $account = $self->current_account;
+        my $account;
+        if (($self->req_param('a') || '') eq 'new') {
+            warn "set new";
+            $account = NP::Model->account->create(users => [ $self->user ]);
+        }
+        $account = $self->current_account unless $account;
         unless ($account) {
             # TODO: check for invitations and show "accept invitations screen"...
             $account = NP::Model->account->create(users => [ $self->user ]);

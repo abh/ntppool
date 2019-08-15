@@ -6,7 +6,7 @@
 	<h3>Account information</h3>
 
 	<form id="account-form" action="/manage/account?a=[% account.id_token %]" method="post" accept-charset="utf-8">
-		<input type="hidden" name="a" value="[% account.id_token || 'new' %]" />
+		<input type="hidden" name="a" value="[% account.id ? account.id_token : 'new' %]" />
 		<div class="form-group">
 			<label id="name-help" class="form-label" for="name">Account name</label>
 			<input type="input" class="form-control"
@@ -97,7 +97,7 @@
 	<br>
 -->
 
-				<p><input type="submit" class="btn btn-primary" value="Update"></p>
+                <p><input type="submit" class="btn btn-primary" value="[% account.id ? 'Update' : 'Create' %]"></p>
 		</form>
 	</div>
 
