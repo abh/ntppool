@@ -732,4 +732,10 @@ alter table logs
    drop title,
    add changes text after message;
 
+#83
+update accounts set url_slug = null where url_slug = '';
+alter table accounts add unique key `url_slug_idx` (url_slug);
+
 #todo
+alter table user_privileges
+  drop see_all_user_profiles;

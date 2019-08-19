@@ -32,7 +32,7 @@ sub url {
 sub public_url {
     my $self = shift;
     return "" unless $self->url_slug;
-    return $config->base_url('www') . '/a/' . $self->url_slug;
+    return $config->base_url('ntppool') . '/a/' . $self->url_slug;
 }
 
 sub validate {

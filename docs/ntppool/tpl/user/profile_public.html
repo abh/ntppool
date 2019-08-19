@@ -1,18 +1,20 @@
-[% page.title = (user.username || user.id) _ "'s pool servers" %]
+[% page.title = (account.organization_name || account.name || account.id_token) _ "'s pool servers" %]
 
 <div id="userprofile" class="block">
 
-<h3>[% user.username || user.id | html %]'s pool servers</h3>
+<h3>[% page.title %]</h3>
 
-[% IF combust.user.privileges.see_all_user_profiles %]
-<p>[% user.email | html %]</p>
-[% END %]
-
-[% UNLESS user.public_profile %]
+[% UNLESS account.public_profile %]
 <p><i>This profile is not public.</i></p>
 [% END %]
 
-[% FOR server = user.servers %]
+[% servers = account.servers %]
+
+[% IF !servers %]
+<p>No active servers</p>
+[% END %]
+
+[% FOR server = servers %]
 <div class="server">
 [% IF server.hostname %]Hostname: <b>[% server.hostname | html %]</b><br />[% END %]
 IP: <b><a href="[% server.url %]">[% server.ip | html %]</a></b><br />
@@ -26,10 +28,6 @@ Zones: [% FOR zone = server.zones_display %] <a href="[% zone.url %]">[% zone.na
    '</p>';
    END;
  %]
-[% IF combust.user.privileges.see_all_user_profiles %]
-[% IF server.stratum %]Stratum: <b>[% server.stratum %]</b><br/>[% END %]
-Netspeed: [% server.netspeed_human %]<br/>
-[% END %]
 
 <noscript>
 <a href="/scores/[% server.ip %]">
@@ -45,6 +43,5 @@ Netspeed: [% server.netspeed_human %]<br/>
 
 [% page.js.push(combust.static_group("d3.js")) %]
 [% page.js.push(combust.static_group("graphs.js")) %]
-
 
 </div>

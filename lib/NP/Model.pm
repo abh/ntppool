@@ -59,6 +59,8 @@ __PACKAGE__->meta->setup(
 
   primary_key_columns => [ 'id' ],
 
+  unique_key => [ 'url_slug' ],
+
   allow_inline_column_values => 1,
 
   foreign_keys => [

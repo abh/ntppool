@@ -7,7 +7,6 @@ sub is_staff {
     my $privileges = $self->privileges;
     return
          $privileges->see_all_servers
-      || $privileges->see_all_user_profiles
       || $privileges->support_staff;
 }
 

@@ -20,33 +20,73 @@ sub profile_user {
     $self->{_profile_user} = $user;
 }
 
-sub user_profile_access {
+sub profile_account {
     my $self = shift;
-    return $self->{_user_profile_access} if defined $self->{_user_profile_access};
-
-    return $self->{_user_profile_access} = 1
-      if $self->profile_user and $self->profile_user->public_profile;
-
-    return $self->{_user_profile_access} = 1
-      if $self->user and $self->user->id == $self->profile_user->id;
-
-    return $self->{_user_profile_access} = 1
-      if $self->user
-      and $self->user->privileges
-      and $self->user->privileges->see_all_user_profiles;
-
-    return $self->{_user_profile_access} = 0;
-
+    return $self->{_profile_account} if $self->{_profile_account};
+    my ($account_name, $extra) = ($self->request->uri =~ m!^/a/([^/]+)(?:/([^/]+))?!);
+    return unless $account_name;
+    my $account = NP::Model->account->fetch(url_slug => $account_name);
+    $self->{_profile_account} = $account;
+    return ($account, $extra);
 }
 
 sub render {
     my $self = shift;
+    if ($self->request->uri =~ m{^/user/}) {
+      return $self->render_user;
+    }
+    return $self->render_account;
+}
 
-    my $user = $self->profile_user or return 404;
-    $self->tpl_param('user' => $user);
+sub render_user {
+    my $self = shift;
 
-    return OK, $self->evaluate_template('tpl/user/profile_not_public.html')
-      unless $self->user_profile_access;
+    my $user = $self->profile_user;
+    return 404 unless $user and $user->public_profile;
+
+    my $accounts = $user->accounts;
+    my ($account) = sort { $a->id <=> $b->id } grep { $_->public_profile }
+      @$accounts;
+
+    return 404 unless $account;
+    return $self->redirect($account->public_url);
+}
+
+sub render_account {
+    my $self = shift;
+
+    my ($account, $extra) = $self->profile_account;
+
+    unless ($account) {
+        $self->cache_control('max-age=30');
+        return 404;
+    }
+
+    my $req_json = ($extra && $extra eq 'json');
+
+    if ($req_json) {
+        $self->cache_control('max-age=240');
+        my @servers = map { +{
+                              ip => $_->ip,
+                              hostname => $_->hostname,
+                              score => $_->score_raw,
+                              zones => [map { $_->name} $_->zones_display],
+                              history => $_->url + "/json",
+                             }
+                        } $account->servers;
+
+        return 200, JSON::XS->new->utf8->encode(
+            {   account => {
+                url => $account->public_url,
+                name => ($account->organization_name || $account->name || $account->id_token),
+            },
+                servers => \@servers},
+            ), "application/json; charset=utf-8";
+    }
+
+    $self->cache_control('max-age=300');
+
+    $self->tpl_param('account', $account);
     return OK, $self->evaluate_template('tpl/user/profile_public.html');
 }
 
