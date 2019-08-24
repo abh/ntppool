@@ -48,6 +48,7 @@ sub handle_add {
 
     return 403 unless $self->check_auth_token;
 
+    my $account = $self->current_account;
     my $host = $self->req_param('host');
     $host =~ s/^\s+|\s+$//g;
 
@@ -59,8 +60,10 @@ sub handle_add {
 
     for my $ip (@ips) {
         my $server = $self->get_server_info($ip);
+        next unless $server;
         unless (Net::IP->new($host)) {
-            $server->{hostname} = $host if $server;
+            $server->{hostname} = $host;
+            $server->{account} = $account;
         }
         push @servers, $server;
     }
@@ -115,7 +118,7 @@ sub handle_add {
         my $return = NP::Email::sendmail($email->email);
         warn Data::Dumper->Dump([\$msg, \$email, \$return], [qw(msg email return)]);
 
-        return $self->redirect('/manage/servers#s-' . ($s && $s->ip));
+        return $self->redirect($self->manage_url('/manage/servers') . '#s-' . ($s && $s->ip));
     }
 
     my @all_zones = NP::Model->zone->get_zones(
@@ -180,6 +183,7 @@ sub _add_server {
     $s->hostname($server->{hostname} || '');
     $s->ip_version($server->{ip_version});
     $s->admin($self->user);
+    $s->account($server->{account});
     $s->account($self->current_account);
     $s->in_pool(1);
     $s->deleted(0);
