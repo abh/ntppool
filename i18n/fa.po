@@ -1,0 +1,144 @@
+msgid ""
+msgstr ""
+"Last-Translator: Ask Bjørn Hansen <ask@develooper.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Language-Team: \n"
+"Language: fa\n"
+"X-Generator: Poedit 2.2\n"
+
+msgid "go up"
+msgstr "برو بالا"
+
+# zone name
+msgid "Africa"
+msgstr "آفریقا"
+
+msgid "Asia"
+msgstr "آسیا"
+
+msgid "North America"
+msgstr "آمریکای شمالی"
+
+msgid "South America"
+msgstr "آمریکای جنوبی"
+
+msgid "Europe"
+msgstr "اروپا"
+
+msgid "Oceania"
+msgstr "اقیانوسیه"
+
+msgid "Global"
+msgstr "جهانی"
+
+msgid "All Pool Servers"
+msgstr "استخر تمامی سرور ها"
+
+# navigation
+msgid "Translations"
+msgstr "ترجمه ها"
+
+# index.html
+msgid "Introduction"
+msgstr "معرفی"
+
+msgid "Active Servers"
+msgstr "سرور های فعال"
+
+msgid "Links"
+msgstr "پیوند ها"
+
+msgid "Terms of service"
+msgstr "شرایط استفاده از خدمات"
+
+msgid "Subscribe in a reader"
+msgstr "عضویت در خبرنامه"
+
+msgid "Older news"
+msgstr "خبر های قدیمی"
+
+# mailinglists.html
+msgid "subscribe"
+msgstr "عضویت"
+
+msgid "archive"
+msgstr "بایگانی"
+
+msgid "NTP Pool Forum"
+msgstr "انجمن NTP Pool"
+
+msgid "News site"
+msgstr "سایت اخبار"
+
+msgid "Discussion list"
+msgstr "لیست مباحثه ها"
+
+msgid "Development"
+msgstr "توسعه"
+
+msgid "forum_description"
+msgstr "سوال و جواب درباره سایت، پیشنهادات در جهت ارتقاء و موضوعات مربوط به زمان و مدیریت سرور های ان تی پی"
+
+msgid "news_description"
+msgstr "اطلاعیه ها و اخبار در سایت اخبار و یا سایت انجمن پست میشوند"
+
+msgid "discussion_list_description"
+msgstr "اپراتور های سرور و یا کاربرانی که قصد دارند در پروژه ها مداخله بیشتری داشته باشند، میتواند در بخش مباحثه عضو شوند.<br/> البته مباحثه های عمومی درباره ان تی پی میبایست در 1 درصد شبکه کاربران مربوط به گروه خبری انجام شود (همچنین در <a href=\"%2\">Google Groups</a>)"
+
+msgid "development_list_description"
+msgstr "بحث های فنی (و در حالت ایده آل عملی تر) درباره توسعه <a href=\"%1\">کدهای استخر ان تی پی</a>  و <a href=\"%2\"> ژئو دی ان اس ها</a>  در <a href=\"%3\">انجمن توسعه</a> اتفاق می افتد"
+
+# tpl/server.html
+msgid "Back to the front page"
+msgstr "بازگشت به صفحه نخست"
+
+msgid "Find"
+msgstr "یافتن"
+
+msgid "Stats for %1"
+msgstr "آمار 1 درصد"
+
+msgid "Not active in the pool, monitoring only"
+msgstr "غیر فعال در استخر، صرفا جهت مانیتورینگ"
+
+msgid "Zones:"
+msgstr "مناطق:"
+
+msgid "This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
+msgstr "این سرور برای <span class=\"deletion\">حذف یک درصد برنامه ریزی</span> شده است."
+
+msgid "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
+msgstr "امتیاز فعلی: 1% (فقط سرور هایی که امتیاز بالای 2 درصد را دارند، در استخر استفاده میشوند)"
+
+msgid "What do the graphs mean?"
+msgstr "این نمودار ها چه چیزی را نشان میدهند؟"
+
+msgid "CSV log"
+msgstr "لاگ CVS"
+
+# tpl/navigation_sidebar.html
+msgid "News"
+msgstr "اخبار"
+
+msgid "How do I <i>use</i> pool.ntp.org?"
+msgstr "چگونه از pool.ntp.org I <i>استفاده</i>  کنم؟"
+
+msgid "How do I <i>join</i> pool.ntp.org?"
+msgstr "چگونه به pool.ntp.org <i>بپیوندم</i>؟"
+
+msgid "Information for vendors"
+msgstr "اطلاعات برای تولید کنندگان"
+
+msgid "The mailing lists"
+msgstr "لیست پستی"
+
+msgid "Additional links"
+msgstr "پیوند های فرعی"
+
+msgid "Can you translate?"
+msgstr "میتوانید ترجمه کنید؟"
