@@ -1,26 +1,27 @@
 <ul>
-{{#accounts}}
-  <li>{{name}},
-        <a href="/manage/servers?a={{ account_token}}">Account {{ account_token }}</a>
-      <br>
-      <ol>
-          {{#users}}
-            <li>{{name}}, {{username}}, {{email}}, {{id}}</li>
-          {{/users}}
-      </ol>
-      <ol>
-          {{#servers}}
-              <li><a href="/scores/{{ip}}">
-                  {{{ip_display}}}
-              </a> ({{score}}, {{netspeed_human}})
-              {{#deletion_on}}<span class="badge badge-warning">{{deletion_on}}</span>{{/deletion_on}}
-              {{#zones}}
-                  {{.}}
-              {{/zones}}
-              </li>
+    {{#accounts}}
+    <li>{{name}}
+        (<a href="/manage/servers?a={{account_token}}">servers</a>,
+        <a href="/manage/account?a={{account_token}}">account</a>)
+        <br>
+        <ol>
+            {{#users}}
+            <li>{{name}}, {{username}}, {{email}}</li>
+            {{/users}}
+        </ol>
+        <ol>
+            {{#servers}}
+            <li><a href="/scores/{{ip}}">
+                    {{{ip_display}}}
+                </a> ({{score}}, {{netspeed_human}})
+                {{#deletion_on}}<span class="badge badge-warning">{{deletion_on}}</span>{{/deletion_on}}
+                {{#zones}}
+                {{.}}
+                {{/zones}}
+            </li>
 
-          {{/servers}}
-      </ol>
-  </li>
-{{/accounts}}
+            {{/servers}}
+        </ol>
+    </li>
+    {{/accounts}}
 </ul>
