@@ -7,6 +7,7 @@ local envParams = params {
     },
     ntppool+: {
       replicas: 2,
+      image: 'quay.io/ntppool/ntppool:cbbd18f',
     },
     config+: {
       data+: {

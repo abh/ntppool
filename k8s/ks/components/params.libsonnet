@@ -11,6 +11,10 @@
     ns: {
       name: 'ntppool',
     },
+    secrets: {
+      name: 'ntppool-secrets',
+      data: {},
+    },
     config: {
       data: {
         auth0_client: 'QP7HeAG2jRn9QCXxMTOeoIbFcKGmaVZ0',
@@ -33,17 +37,14 @@
       },
       name: 'config',
     },
-    secrets: {
-      name: 'ntppool-secrets',
-      data: {},
-    },
     quota: {
     },
     ntppool: {
       containerPort: 8299,
 
       #image: 'quay.io/ntppool/ntppool:0b5f8ac',
-      image: 'quay.io/ntppool/ntppool:6e92c54',
+      # production
+      image: 'quay.io/ntppool/ntppool:aac0645',
 
       name: 'ntppool',
       imagePullSecrets: [],
@@ -86,7 +87,7 @@
     },
     geoip: {
       containerPort: 8009,
-      image: 'quay.io/abh/geoipapi:0.6.1',
+      image: 'quay.io/abh/geoipapi:0.7.1',
       name: 'geoip',
       replicas: 2,
       servicePort: 80,

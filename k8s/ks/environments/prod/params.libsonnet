@@ -5,8 +5,11 @@ local envParams = params {
     ns+: {
       name: 'ntppool',
     },
+    secrets+: {
+      data+: import 'secrets.libsonnet',
+    },
     ntppool+: {
-      replicas: 2,
+      replicas: 3,
       #image: 'quay.io/ntppool/ntppool:c0d0d7d',
     },
     config+: {
@@ -45,9 +48,6 @@ local envParams = params {
         smarthost_port: '587',
         smarthost_user: 'SMTP_Injection',
       },
-    },
-    secrets+: {
-      data+: import 'secrets.libsonnet',
     },
   },
 };
