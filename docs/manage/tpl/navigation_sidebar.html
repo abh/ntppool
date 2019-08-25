@@ -1,10 +1,22 @@
-[%
-UNLESS combust.user;
-RETURN;
-END;
-%]
+[% UNLESS combust.user; RETURN; END; %]
 
-<ul class="manage-sidebar nav nav-pills flex-column">
+<ul id="manage-sidebar" class="manage-sidebar nav nav-pills flex-column">
+
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle account-name" data-toggle="dropdown" href="#" role="button" aria-haspopup="true"
+            aria-expanded="false">
+            [% account.id ? account.name : "New account" %]</a>
+        <div class="dropdown-menu">
+            [% FOR a = combust.user.accounts %]
+            <a class="dropdown-item [% account.id == a.id ? 'active' : '' %]"
+                href="[% combust.current_url(a => a.id_token) | html %]">[% a.name | html %]</a>
+            [% END %]
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="[% combust.manage_url('/manage/account') %]">Manage account</a>
+            <a class="dropdown-item" href="/manage/account?a=new">New account</a>
+        </div>
+    </li>
+
     [% IF combust.user.is_staff %]
     <li class="nav-item">
     <a class="nav-link [% page.is_admin ? " active" : "" %]" href="[% combust.manage_url('/manage/admin') %]">Admin search</a>
@@ -24,18 +36,6 @@ END;
     <a class="nav-link [% page.is_vendor_admin ? " active" : "" %]" href="[% combust.manage_url('/manage/vendor/admin') %]">Vendor admin</a>
     </li>
     [% END %]
-
-    <li class="nav-item dropdown">
-      <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Account</a>
-      <div class="dropdown-menu">
-        [% FOR a = combust.user.accounts %]
-        <a class="dropdown-item" href="[% combust.current_url(a => a.id_token) | html %]">[% a.name | html %]</a>
-        [% END %]
-        <div class="dropdown-divider"></div>
-        <a class="dropdown-item" href="[% combust.manage_url('/manage/account') %]">Manage account</a>
-        <a class="dropdown-item" href="/manage/account?a=new">New account</a>
-      </div>
-    </li>
 
     <li class="nav-item">
     <a class="nav-link" href="[% combust.manage_url('/manage/logout') %]">Logout</a>

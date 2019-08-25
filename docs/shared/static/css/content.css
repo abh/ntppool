@@ -274,3 +274,7 @@ img.atom-logo {
 
 #account-form .form-group { margin-top: 14px; }
 #account-form .form-label { font-weight: bold; }
+
+#manage-sidebar .account-name {
+    white-space: normal;
+}
