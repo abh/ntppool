@@ -308,11 +308,10 @@ sub manage_dispatch {
     }
 
     if ($self->request->uri =~ m{^/manage/?$}) {
-    my $redirect = URI->new('/manage/servers');
-    if (my $a_id = $self->req_param('a')) {
-        $redirect->query_param(a => $a_id);
-    }
-    return $self->redirect($redirect);
+        my $redirect = URI->new('/manage/servers');
+        my $account = $self->current_account;
+        $redirect->query_param(a => $account->id_token) if $account;
+        return $self->redirect($redirect);
     }
 
     return 404;
