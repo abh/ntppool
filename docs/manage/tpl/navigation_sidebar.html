@@ -12,8 +12,16 @@
                 href="[% combust.current_url(a => a.id_token) | html %]">[% a.name | html %]</a>
             [% END %]
             <div class="dropdown-divider"></div>
-            <a class="dropdown-item" href="[% combust.manage_url('/manage/account') %]">Manage account</a>
-            <a class="dropdown-item" href="/manage/account?a=new">New account</a>
+            <div class="d-flex justify-content-between">
+            <a class="dropdown-item dropdown-item-manage-account" href="[% combust.manage_url('/manage/account') %]">Manage account</a>
+            <form action="/manage/account" method="post" class="form-inline px-2 justify-content-end">
+                <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
+                <input type="hidden" name="a" value="new" />
+                <input type="hidden" name="new_form" value="1" />
+                <button class="btn btn-outline-secondary btn-sm" type="submit">New account</button>
+            </form>
+            </div>
+
         </div>
     </li>
 
