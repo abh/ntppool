@@ -14,8 +14,10 @@ cpan/
 rrd/
 docs/ntppool/_syndicate/
 docs/shared/static/js/admin-templates.js
+docs/shared/static/.static.versions.extra.json
 dns/
 db/
+.data
 
 *.gzip
 *.dump

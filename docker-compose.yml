@@ -1,4 +1,4 @@
-version: '2'
+version: '3'
 services:
   mysql:
     image: mariadb:10.4

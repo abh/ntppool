@@ -18,10 +18,10 @@
 
 # extras/overrides/deviations from PBP
 
---maximum-line-length=100               # be slightly more generous
---warning-output                        # Show warnings
---maximum-consecutive-blank-lines=2     # default is 1
---nohanging-side-comments               # troublesome for commented out code
+--maximum-line-length=88             # laptops are small
+--warning-output                      # Show warnings
+#--maximum-consecutive-blank-lines=2  # default is 1
+--nohanging-side-comments             # troublesome for commented out code
 
 -isbc   # block comments may only be indented if they have some space characters before the #
 -ci=2   # Continuation indent is 2 cols
@@ -33,4 +33,3 @@
 -pt=2   # High parenthesis tightness
 -bt=2   # High brace tightness
 -sbt=2  # High square bracket tightness
-
