@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -ex
+
 rm -f .nospin.start
 
 app="$@"
@@ -9,11 +11,17 @@ if [ "$app" == "" ]; then
   ports="-p 8299:8299"
 fi
 
-IMAGE=quay.io/ntppool/ntppool:master
+IMAGE=quay.io/ntppool/ntppool:beta
+
+tparm=""
+
+if [ -t 0 ]; then
+    tparm="-t -i"
+fi
 
 set -ex
 
-docker run -t -i \
+docker run $tparm \
  -v $(pwd):/ntppool \
  --env-file=ntppool.env \
  --network ntppool_default \
