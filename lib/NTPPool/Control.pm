@@ -22,6 +22,7 @@ our %valid_languages = (
     de => {name => "Deutsch"},
     en => {name => "English",},
     es => {name => "Español"},
+    fa => {name => "فارسی",     testing => 1},
     fi => {name => "Suomi"},
     fr => {name => "Français",},
     hi => {name => "हिन्दी"},
