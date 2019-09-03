@@ -1,0 +1,4 @@
+#!/bin/sh
+
+$CBROOT/bin/cmysql ntppool -e 'update account_invites set status = "expired" where status = "pending" and expires_on < NOW();'
+$CBROOT/bin/cmysql ntppool -e 'delete from account_invites where status = "expired" and expires_on < DATE_SUB(NOW(), interval 168 hour);'

@@ -40,6 +40,7 @@ sub auto_relationship_name_one_to_many {
     my ($self, $table, $class) = @_;
     if ($self->meta->table eq 'accounts') {
         return "servers_all" if $table eq 'servers';
+        return "invites" if $table eq 'account_invites';
     }
     $self->SUPER::auto_relationship_name_one_to_many($table, $class);
 }

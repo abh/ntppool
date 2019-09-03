@@ -137,6 +137,20 @@ std.prune([
     ],
   },
 
+  appBase.CronJob {
+    name: 'invite-cleanup',
+    schedule: '19,49 * * * *',
+    params: params,
+    containers: [
+      appBase.Container {
+        name: 'invite-cleanup',
+        params: params,
+        args: ['sh', '/ntppool/bin/cron/invite-cleanup'],
+        resources: resourcesLow,
+      },
+    ],
+  },
+
   + if params.cronStatuspage then
   appBase.CronJob {
     name: 'statuspage',

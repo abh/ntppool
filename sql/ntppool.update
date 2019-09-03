@@ -736,6 +736,26 @@ alter table logs
 update accounts set url_slug = null where url_slug = '';
 alter table accounts add unique key `url_slug_idx` (url_slug);
 
+#84
+CREATE TABLE account_invites (
+  id          int(10) unsigned NOT NULL primary key auto_increment,
+  account_id  int unsigned not null,
+  email       varchar(255) not null,
+  status      enum('pending', 'accepted', 'expired'),
+  user_id     int unsigned null,
+  sent_by_id  int unsigned not null,
+  code        varchar(25) not null,
+  expires_on  datetime not null,
+  created_on  datetime not null,
+  modified_on timestamp not null,
+  unique key (account_id, email),
+  unique key (code),
+  constraint `account_invites_account_fk` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`),
+  constraint `account_invites_user_fk` foreign key (`user_id`) references users (`id`),
+  constraint `account_invites_sent_by_fk` foreign key (`sent_by_id`) references users (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
 #todo
 alter table user_privileges
   drop see_all_user_profiles;

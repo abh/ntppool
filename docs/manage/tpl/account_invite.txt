@@ -1,0 +1,21 @@
+[% page.style = 'email.txt'; USE wrap; -%]
+
+Hi [% invite.email %],
+
+[% invite.sent_by.name %] ([% invite.sent_by.email %]) has invited you
+collaborate on the [% account.name %] in the NTP Pool system.
+
+To get started, please click on the link below.
+
+If you are new to the NTP Pool, the first step will be to create your
+own account, after which you’ll automatically be added to the project.
+
+  [% invite.url %]
+
+Need help? Send us a note by responding to this email.
+
+
+NTP Pool team
+
+-- 
+[% config.base_url('ntppool') %]/

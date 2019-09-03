@@ -71,6 +71,12 @@ __PACKAGE__->meta->setup(
   ],
 
   relationships => [
+    invites => {
+      class      => 'NP::Model::AccountInvite',
+      column_map => { id => 'account_id' },
+      type       => 'one to many',
+    },
+
     logs => {
       class      => 'NP::Model::Log',
       column_map => { id => 'account_id' },
@@ -115,6 +121,73 @@ __PACKAGE__->make_manager_methods('accounts');
 # Allow user defined methods to be added
 eval { require NP::Model::Account }
   or $@ !~ m:^Can't locate NP/Model/Account.pm: and die $@;
+
+{ package NP::Model::AccountInvite;
+
+use strict;
+
+use base qw(NP::Model::_Object);
+
+__PACKAGE__->meta->setup(
+  table   => 'account_invites',
+
+  columns => [
+    id          => { type => 'serial', not_null => 1 },
+    account_id  => { type => 'integer', not_null => 1 },
+    email       => { type => 'varchar', length => 255, not_null => 1 },
+    status      => { type => 'enum', check_in => [ 'pending', 'accepted', 'expired' ] },
+    user_id     => { type => 'integer' },
+    sent_by_id  => { type => 'integer', not_null => 1 },
+    code        => { type => 'varchar', length => 25, not_null => 1 },
+    expires_on  => { type => 'datetime', default => 'now', not_null => 1 },
+    created_on  => { type => 'datetime', default => 'now', not_null => 1 },
+    modified_on => { type => 'timestamp', default => 'current_timestamp()', not_null => 1 },
+  ],
+
+  primary_key_columns => [ 'id' ],
+
+  unique_keys => [
+    [ 'account_id', 'email' ],
+    [ 'code' ],
+  ],
+
+  allow_inline_column_values => 1,
+
+  foreign_keys => [
+    account => {
+      class       => 'NP::Model::Account',
+      key_columns => { account_id => 'id' },
+    },
+
+    sent_by => {
+      class       => 'NP::Model::User',
+      key_columns => { sent_by_id => 'id' },
+    },
+
+    user => {
+      class       => 'NP::Model::User',
+      key_columns => { user_id => 'id' },
+    },
+  ],
+);
+
+push @table_classes, __PACKAGE__;
+}
+
+{ package NP::Model::AccountInvite::Manager;
+
+use strict;
+
+our @ISA = qw(Combust::RoseDB::Manager);
+
+sub object_class { 'NP::Model::AccountInvite' }
+
+__PACKAGE__->make_manager_methods('account_invites');
+}
+
+# Allow user defined methods to be added
+eval { require NP::Model::AccountInvite }
+  or $@ !~ m:^Can't locate NP/Model/AccountInvite.pm: and die $@;
 
 { package NP::Model::AccountPlan;
 
@@ -993,6 +1066,18 @@ __PACKAGE__->meta->setup(
   ],
 
   relationships => [
+    account_invites => {
+      class      => 'NP::Model::AccountInvite',
+      column_map => { id => 'sent_by_id' },
+      type       => 'one to many',
+    },
+
+    account_invites_objs => {
+      class      => 'NP::Model::AccountInvite',
+      column_map => { id => 'user_id' },
+      type       => 'one to many',
+    },
+
     accounts => {
       map_class => 'NP::Model::AccountUser',
       map_from  => 'user',
@@ -1407,6 +1492,7 @@ eval { require NP::Model::ZoneServerCount }
   }
 
   sub account { our $account ||= bless [], 'NP::Model::Account::Manager' }
+  sub account_invite { our $account_invite ||= bless [], 'NP::Model::AccountInvite::Manager' }
   sub account_plan { our $account_plan ||= bless [], 'NP::Model::AccountPlan::Manager' }
   sub account_user { our $account_user ||= bless [], 'NP::Model::AccountUser::Manager' }
   sub api_key { our $api_key ||= bless [], 'NP::Model::ApiKey::Manager' }
