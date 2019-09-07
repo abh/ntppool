@@ -94,7 +94,7 @@ msgid  "announcement_list_description"
 msgstr "Veldig lite traffik med kunngjøringer av NTP Pulje-nyheter. Alle tjeneroperatører bør abonnere på kunngjøringslisten."
 
 msgid  "discussion_list_description"
-msgstr "Tjeneroperatører (og brukere) som ønsker å være mer involverte i prosjektet kan abbonere på diskusjonslisten.<br/> Generell diskusjon om ntp bør skje på Usenet-temagruppen (óg på <a href=\"%2\">Google Grupper</a>)."
+msgstr "Tjeneroperatører (og brukere) som ønsker å være mer involverte i prosjektet kan abonnere på diskusjonslisten.<br/> Generell diskusjon om ntp bør skje på Usenet-temagruppen (óg på <a href=\"%2\">Google Grupper</a>)."
 
 msgid  "development_list_description"
 msgstr "Mer tekniske (og ideelt sett løsningsorienterte) diskusjoner om aktuell utvikling innen <a href=\"%1\">NTP-puljens kode</a> og <a href=\"%2\">GeoDNS</a> skjer på «timekeepers-dev»- listen."
