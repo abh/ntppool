@@ -1,0 +1,81 @@
+<div class="block">
+
+<h3>Beállítási javaslatok a csatlakozni kívánó szervereknek</h3>
+
+<p>
+A <a href="http://support.ntp.org/">support.ntp.org</a> weboldal 
+<a href="http://support.ntp.org/bin/view/Support/WebHome">támogatás menüpontja</a>
+sok hasznos információt tartalmaz.
+</p>
+
+<p>
+Ha csak <i>használni</i> szeretnéd a pool szervereit, akkor a <a href="/use.html">pool használata</a> oldalon találsz információt.
+</p>
+
+<p>
+A <a href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a>
+levelezőlista a legjobb hely, ha az ntpd szoftverrel kapcsolatban van szükséged segítségre.
+</p>
+
+<p>
+Ha a szervereddel csatlakozni szeretnél a poolhoz, akkor az alábbiak különösen fontosak.
+</p>
+
+<h4 id="management-queries">Menedzsment kérések</h4>
+
+<p>A szervered alapértelmezés szerint ne fogadjon beállítás jellegű kéréseket. Ha ntpd-t használsz, akkor ezt az alapértelmezett "restrict" sorokba írt "noquery" paraméterrel tudod beállítani:</p>
+
+[% INCLUDE "join/configuration/restrict-default.html" %]
+
+<p>Ahhoz, hogy az "ntpq -c pe" és hasonló parancsok működjenek localhost-ról a következő sorok szükségesek:</p>
+
+[% INCLUDE "join/configuration/restrict-localhost.html" %]
+
+<h4>Használj kb. 5 másik szervert</h4>
+<p>
+Az ntpd megfelelő működéséhez minimum 3 másik szervert be kell állítani. ("Egy órával tudod, hogy mennyi az idő. Ha két órád van, sosem lehetsz biztos.")
+</p>
+
+<p>
+A pool-ban lévő szervereknek minimum 4, de maximum 7 másik szervert javasolt beállítani.
+</p>
+
+
+<h4>Ne használj *.pool.ntp.org szervereket</h4>
+
+<p>
+Ironikus módon a pool megfelelő működéséhez az a legjobb, ha a csatlakozni kívánó hoszt nem *.pool.ntp.org címeket használ a további szerverek felvételéhez.
+</p>
+
+<p>
+A pool megbízhatósága szempontjából az a legjobb, ha minden üzemeltető kézzel választja ki a szervere által használt további szervereket. 
+Ezek lehetőség szerint stabil, minél közelebbi szerverek legyenek.
+Az NTP.org wiki oldalán megtalálható a <a href="http://support.ntp.org/bin/view/Servers/WebHome">publikus szerverek listája</a>.
+</p>
+
+
+<h4>Használd az ntpd szervert</h4>
+
+<p>
+A "nem működik" problémák jelentős része az eltérő NTP szerver implementációkból fakad.
+</p>
+
+<p>
+A pool szervereit bármilyen NTP klienssel <i>használhatod</i>, de ha a szerveredet a poolban szeretnéd publikálni, akkor javasolt az 
+<a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a> használata.
+</p>
+
+
+<h4>Ne használd a LOCAL driver-t</h4>
+
+<p>Fontos, hogy a poolban szereplő szerverek konfigurációjában ne szerepeljen a LOCAL driver.</p>
+
+<h4>Kerüld el a PTR DNS lekérdezéseket</h4>
+
+<p>
+A szerverek üzemeltetőinek az a tapasztalata, hogy néhány felhasználó (vagy a tűzfaluk)
+lekérdezi az NTP szerver IP címéhez tartozó PTR rekordot. Ez a lekérdezések számának jelentős növekedését okozza. 
+Az érintett rekordok TTL értékének növelésével csökkenthető a felesleges DNS kérések száma.
+</p>
+
+</div>

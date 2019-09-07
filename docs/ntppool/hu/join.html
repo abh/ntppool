@@ -1,0 +1,75 @@
+[% page.title = 'Csatlakozz az NTP Pool-hoz!'  %]
+
+<div class="block">
+	<h3><a name="join">Hogyan csatlakozhatok a pool.ntp.org-hoz?</a></h3>
+	<p>
+	Elsőként: Köszönjük az érdeklődésedet. A szolgáltatást napról napra 
+	egyre többen használják. Ahhoz, hogy ezzel lépést tudjunk tartani, folyamatosan
+	új szervereket kell bevonjunk a projektbe.
+	</p>
+
+	<p>
+	A számítógépednek <b>állandó publikus IP címmel</b> és megbízható, állandó
+	internet kapcsolattal kell rendelkeznie. Nagyon fontos, hogy az IP címed ne, vagy csak nagyon ritkán változzon (egyszer egy évben vagy még ritkábban).
+	A szükséges sávszélesség relatív kicsi. Minden kliens pár percestől 20 percig terjedő időközönként csak pár UDP csomagot küld a kiszolgálónak.
+	</p>
+
+	<p>
+	Jelenleg a legtöbb szerverünk átlagosan kb. 5-15 NTP csomagot kap másodpercenként, napi néhány csúcstól eltekintve, amikor ez a szám felugrik egészen 60-120 másodpercenkénti csomagszámra.
+	Ez megközelítőleg 10-15Kbps sávszélességet igényel, napi néhány 50-120Kbps csúccsal.
+	A projekt folyamatosan egyre több szerverrel bővül, ezzel megakadályozva, hogy az egyes kiszolgálókra egyre nagyobb feladat háruljon.
+	Röviden tehát, minimum kb. 384-512Kbps ki és bemenő sávszélességre van szükség.
+	</p>
+	<p>
+	Néhány szerver forgalmi és terheltségi grafikonja:
+	[% i = 0; FOR server = combust.servers_with_urls; %]
+	   <a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
+	[% END %]
+	</p>
+
+	<p>
+	A csatlakozni kívánó szerveren időszinkronizálás céljából a <tt>pool.ntp.org</tt> 
+	helyett kézzel kell néhány <a href="http://support.ntp.org/bin/view/Servers/StratumTwoTimeServers">
+	megbízható és pontos</a> szervert kell beállítani. (Ezek a szerverek adott esetben választhatók 
+	<b>akár</b> a pool-ból is. A lényeg az, hogy statikusan legyenek beállítva és nem pedig véletlenszerűen
+	minden újraindításnál más-más. Ez nagyon fontos a szolgáltatás jó minőségének megőrzése szempontjából.)
+
+	Tekintve, hogy a projekt fő célja a terhelés elosztás főként, a kiszolgálónak nem kötelező startum 1 vagy stratum 2 szervernek lennie, lehet az stratum 3 vagy akár stratum 4 is.
+	</p>
+
+	<p>
+	A poolba csatlakozni kívánó szerverek <a href="/join/configuration.html">javasolt konfigurációjáról</a> itt olvashatsz bővebben.
+	</p>
+	<p>Végül, szeretném kihangsúlyozni, hogy a csatlakozás egy <b>hosszú távú elkötelezettség</b>. Persze kérésedre bármikor törlünk a pool-ból,
+	de tekintettel arra, ahogyan az NTP kliensek működnek, <b>hetekig, hónapokig vagy akár évekig is elhúzódhat</b>, mire az NTP forgalom teljesen megszűnik a szervered irányába.
+	</p>
+
+	<p>
+	Ha ezzel mind egyetértesz, akkoor lépj be a
+	<a href="/manage">szerver kezelés</a> oldalon és add hozzá a szerveredet a pool-hoz.
+	Ha bármi problémád adódna, írj e-mailt a <a	href="mailto:ask@develooper.com">ask@develooper.com</a> címre.
+	</p>
+	<p>
+	Szeretnélek megkérni, hogy iratkozz fel a <a href="https://news.ntppool.org/atom.xml">weblog feed</a>-re
+	és esetleg a <a href="https://lists.ntp.org/listinfo/pool">pool levelező listára</a>.
+	</p>
+	<p>
+	Amennyiben megoldható (nem kötelező!), kérlek hogy az időszinkron szervered címének 80-as portjára érkező HTTP forgalmat irányítsd át a <tt>http://www.pool.ntp.org</tt> címre. 
+	Ha Apache webszervert futtatsz, akkor ezt az alábbi módon tudod megtenni:
+	</p>
+
+        [% PROCESS tpl/join/virtual_host_example.html %]
+
+	<p>
+	Ezt csak akkor állítsd be, ha egyébként is fut webszervered, csak ezért ne telepítsd. A projekt 
+	hivatalos weboldalának címe 'www'-vel kezdődik, de néha csak <tt>pool.ntp.org</tt>-ot írnak az emberek a böngésző címsorába és 
+	meglepetésükre egy véletlenszerűen választott, számukra ismeretlen weblapon kötnek ki.
+	</p>
+	<p>
+	Ha egyszer hozzáadtad a szerveredet a pool-hoz, akkor folyamatosan monitorozzuk elérhetőség és pontosság szempontjából. 
+	A szervered adatait megtekintheted a <a href="scores">webes felületen</a> vagy a <a href="/manage">szerver kezelés</a> oldalon.
+	</p>
+</div>
+
+
+

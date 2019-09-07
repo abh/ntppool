@@ -1,0 +1,109 @@
+[% page.title = 'Hogyan állítsam be az NTP-t a pool használatához?' %]
+
+<div class="block">
+	<h3 id="use">Hogyan használhatom a pool.ntp.org-ot?</h3>
+
+	<p>
+	Ha szeretnéd az számítógépeid óráit a hálózatról szinkronizálni, akkor csak az alábbi egyszerű beállításokra van szükséged az <a href="http://www.ntp.org">ntp.org</a>-ról letölthető ntpd program konfigurációs állományában, bármely támogatott operációs rendszer esetén (Linux, *BSD, Windows vagy akár számos egzotikus operációs rendszer):
+	</p>
+
+	[% INCLUDE "ntppool/use/sample-config.html" %]
+
+	<p>
+	A 0, 1, 2 és 3.pool.ntp.org nevek óránként mindig más, véletlenszerűen választott NTP szerverek címeire oldódnak fel.
+	Győződj meg róla, hogy a géped órája megközelítőleg (maximum pár perces eltéréssel) a pontos időre legyen beállítva.
+	Ehhez használhatod a <code>ntpdate pool.ntp.org</code> parancsot, vagy kézi beállításhoz a <code>date</code> utasítást.
+	Ezek után indítsd el az ntpd-t és kis idő múltán (ez akár fél óra is lehet!), az <code>ntpq -pn</code> parancsnak az alábbihoz hasonló kimenettel kell visszatérnie:
+	</p>
+
+	[% INCLUDE "ntppool/use/sample-ntpq.html" %]
+
+	<p>
+	Az IP címek mások lesznek, hiszen véletlenszerűen választott NTP szerverekhez fogsz csatlakozni.
+	Számodra most a csillaggal kezdődő sorok lényegesek, mivel ez azt jelenti, hogy az időszinkron sikerült az adott szerverrel.
+	</p>
+	<p>
+	A <code>pool.ntp.org</code> (vagy <code>0.pool.ntp.org</code>,
+	<code>1.pool.ntp.org</code>, stb.) DNS nevek általában az országodban vagy ahhoz közel lévő NTP szerverek címeire fognak feloldódni.
+	A legtöbb esetben célszerű ezeket a neveket használni.
+	</p>
+
+	<p>Ugyanakkor használhatóak a <a href="/zone/@">kontinens szintű zónák</a> (Például
+	<a href="/zone/europe">Európa</a>,
+	<a href="/zone/north-america">Észak-Amerika</a>,
+	<a href="/zone/oceania">Óceánia</a>
+	vagy <a href="/zone/asia">Ázsia</a>),
+	és az országos zónák (mint például hu.pool.ntp.org Magyarországon) - ezekhez a zónákhoz ismét csak használhatók a 0,
+	1 vagy 2 prefixek, például 0.hu.pool.ntp.org. Elképzelhető, hogy egy adott országos zóna nem létezik vagy csak alig 1-2 szervert tartalmaz.
+	</p>
+	<p>
+	Ha <b>friss Windows verziót</b> futtatsz, akkor használhatod a beépített NTP klienst az időszinkronhoz.
+	Ennek beállításához rendszergazdaként üsd be parancssorba (cmd.exe) az alábbi utasítást:</p>
+<pre class="code">
+w32tm /config /syncfromflags:manual /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
+</pre>
+	<p>
+	Ez Windows 2003 és frissebb Windows verziók esetében működik. Ha ennél régebbi verziót használsz, akkor az alábbi parancsot add ki: 
+	</p>
+<pre class="code">
+net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
+</pre>
+	<p>
+	Az automatikus internetes időszinkronizálás beállítható a grafikus felületen is. Ehhez rendszergazdaként kattints jobb egérgombbal az órára a tálcán, az előugró menüben pedig válaszd a "Dátum és idő beállítása" menüpontot. Az előugró ablakban az "Internetes idő" fülön tudod megadni a kívánt NTP szerver címét.	
+	</p>
+
+	<p>
+	Meinberg portolta az <a href="http://www.meinberg.de/english/sw/ntp.htm">ntpd-t Windows-ra</a>.
+	</p>
+
+	<p>
+	Nem fogod tudni beállítani az NTP-t, ha a Windows-od tartományba van léptetve (például: céges számítógépek).
+
+	Erről bővebben a <a href="http://technet.microsoft.com/en-us/library/cc773013%28WS.10%29.aspx">How Windows Time Service Works</a> oldalon olvashatsz.
+	</p>
+</div>
+
+<div class="block">
+	<h3 id="notes">Kiegészítő megjegyzések</h3>
+
+        <p><span class="hook">Fontold meg, hogy az NTP Pool megfelelő-e számodra</span>.
+		Ha üzleti érdek vagy akár emberélet múlik a pontos időn, akkor ne az internetről szerezd be azt.
+		Az NTP Pool projekt szerverei általánosságban nagyon pontos időt szolgáltatnak, de ne felejtsd el, hogy ezek önkéntesek által a szabadidejükben üzemeltetett kiszolgálók.
+		Kérlek vedd fel a kapcsolatot az eszközeid gyártójával, hogy megtudd, mi lenne a megfelelő és megbízható módja az esetedben az időszinkronizálásnak. Itt megtekintheted az NTP Pool <a href="/tos.html">felhasználási feltételeit<> is.
+
+        Javasolt NTP szerverek: 
+        <a href="http://www.meinbergglobal.com/english/products/ntp-time-server.htm">Meinberg</a>,
+        <a href="http://www.endruntechnologies.com/NTP-Servers/gps-cdma-ntp.htm">End Run</a>,
+        <a href="http://spectracom.com/products-services/precision-timing#anchor-2172">Spectracom</a>
+        </p>
+
+	<p><span class="hook">Ha van állandó IP címed és egy megbízható internet kapcsolatod</span> (a sávszélesség nem olyan fontos, mint az, hogy legyen stabil és nem túl terhelt a kapcsolat), kérlek
+	fontold meg, hogy csatlakozz egy szerverrel a pool-ba. Részedre ez nem jelent jelentősen többlet forgalmat (pár Bps), de ennek a projektnek nagy segítség lenne.
+	További részletek a <a href="/join.html">csatlakozással kapcsolatos aloldalon</a> találhatók.
+	</p>
+
+	<p><span class="hook">Ha az internet szolgáltatód biztosít időszinkron szervert</span>, vagy ismersz a közeledben egy megbízható szervert, akkor javasolt inkább azt használnod ez a lista helyett.
+	Valószínűleg pontosabb lesz a szinkron és kevesebb hálózati erőforrásra lesz ehhez szükséged.
+	Ha csak egy szerver van a közeledben, akkor természetesen használd azt és még kettőt a pool.ntp.org-ból.
+	</p>
+
+	<p><span class="hook">Ritkán megtörténhet, hogy a véletlenszerűen választott NTP szerverek között kétszer is szerepel valamelyik</span>.
+	Ebben az esetben csak indítsd újra az ntpd-t, ez általában megoldja a problémát.
+	Ha országos zónát használsz, elképzelhető, hogy ennek oka az, hogy csak egy szerver érhető el az adott országban. Ebben az esetben javasolt inkább a kontinens szintű zóna használata.
+	Itt megnézheted, hogy hány szerver érhető el az egyes <a href="/zone">zónákban</a></p>
+
+	<p><span class="hook">Ne élj vissza a lehetőséggel</span>. Sok szerver az üzemeltetők önzetlen felajánlásaként működik és szolgálja a közösséget.
+	A legtöbb kiszolgáló elsődlegesen fájl vagy akár levelező szerver és csak másodsorban futtat időszinkron szervert.
+	Ezért kérlek ne használj több mint négy szervert az ntpd konfigurációs állományodban és ne próbálj trükközni a
+	<code>burst</code> és <code>minpoll</code> paraméterekkel. Ezzel maximum annyit nyernél, hogy a kiszolgálókon megnövekedne a load.</p>
+
+	<p><span class="hook">Győződj meg róla, hogy a számítógéped <i>időzóna beállítása</i> megfelelő-e</span>.
+	Az ntpd nem állít be időzónát, csak az UTC szerinti időhöz szinkronizál.</p>
+
+	<p><span class="hook">Ha egy hálózat több eszközét szeretnéd a pool.ntp.org-hoz szinkronizálni</span>, akkor kérlek
+	állíts be egy saját NTP szervert a hálózatodon és a többi gépet ahhoz szinkronizáld.
+	(ennek lehet, hogy egy kicsit utána kell majd nézned de egyáltalán nem bonyolult és ha mégis elakadnál, akkor még ott a
+	<a href="news:comp.protocols.time.ntp">comp.protocols.time.ntp hírcsoport</a>.)</p>
+
+	<p class="thanks">Szeretném megköszönni mindenkinek, aki az idejét és időszinkron szerverét adta ehhez a hálózathoz.</p>
+</div>
