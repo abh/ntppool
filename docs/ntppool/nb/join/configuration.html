@@ -22,7 +22,7 @@ Nedenfor er noen spesielt viktige ting hvis du vil bli med i NTP-puljen
 med tjeneren din.
 </p>
 
-<p>Internet Engineering Task Force har publisert er utkast om 
+<p>Internet Engineering Task Force har publisert et utkast om 
 <a href="https://tools.ietf.org/html/draft-ietf-ntp-bcp">
 skikk og bruk for Network Time Protocol</a> som vi anbefaler.</p>
 
@@ -76,19 +76,19 @@ ikke er ntpd.
 </p>
 
 <p>
-Du kan <i>bruke</i> puljen til ethvert program som forstår NTP, men dersom
+Du kan <i>bruke</i> puljen med ethvert program som forstår NTP, men dersom
 du vil bli med i puljen, anbefaler vi at du bruker
 <a href="https://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
 </p>
 
 
-<h4>Ikke bruke den LOKALE klokkedriveren</h4>
+<h4>Ikke bruk den LOKALE klokkedriveren</h4>
 
 <p>Tjenere i NTP-puljen burde ikke ha satt opp den LOKALE klokkedriveren.</p>
 
 <h4>Vær oppmerksom på PTR DNS-forespørsler</h4>
 
-<p>Noen tjeneroperatører har meldt ifra om at noen av NTP-brukeren (eller
+<p>Noen tjeneroperatører har meldt ifra om at noen av NTP-brukerne (eller
 brannmurprogrammene deres) utfører en "reversert DNS"-forespørsel (PTR)
 etter IP-adressen til NTP-tjeneren. Bemerk at dette kan få antallet
 forespørsler til å stige. Å øke "levetiden" til disse loggene er anbefalt dersom
