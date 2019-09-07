@@ -23,11 +23,37 @@ msgstr "Ameryka Północna"
 msgid "South America"
 msgstr "Ameryka Południowa"
 
+msgid "Europe"
+msgstr "Europa"
+
+msgid "Oceania"
+msgstr "Oceania"
+
 msgid "Global"
 msgstr "Świat"
 
 msgid "All Pool Servers"
 msgstr "Wszystkie serwery puli"
+
+# index.html
+
+msgid "Introduction"
+msgstr "Wstęp"
+
+msgid  "Active Servers"
+msgstr "Aktywne serwery"
+
+msgid  "Links"
+msgstr "Odnośniki"
+
+msgid  "Terms of service"
+msgstr "Warunki"
+
+msgid  "Subscribe in a reader"
+msgstr "Subskrybuj w czytniku"
+
+msgid  "Older news"
+msgstr "Starsze wiadomości"
 
 # mailinglists.html
 msgid  "NTP Pool mailing lists"
@@ -103,3 +129,6 @@ msgstr "Listy mailingowe"
 
 msgid  "Additional links"
 msgstr "Dodatkowe linki"
+
+msgid "Can you translate?"
+msgstr "Możesz tłumaczyć?"

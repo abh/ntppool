@@ -1,0 +1,123 @@
+[% page.title = 'Jak skonfigurować serwer NTP aby używał pulę?' %]
+
+<div class="block">
+	<h3 id="use">Jak używać pool.ntp.org?</h3>
+
+	<p>
+        Jeśli chcesz tylko zsynchronizować do sieci zegary na swoich komputerach, plik konfiguracyjny dla programu ntpd (z <a href="http://www.ntp.org">dystrybucji ntp.org</a>) jest bardzo prosty i taki sam dla wszystkich wspieranych systemów operacyjnych (<b>Linux, Windows i nawet bardziej egzotyczne systemy</b>):
+	</p>
+
+	[% INCLUDE "ntppool/use/sample-config.html" %]
+
+	<p>
+        Nazwy 0, 1, 2 i 3.pool.ntp.org odnoszą się do losoych serwerów, które się zmieniają
+        każdą godzinę. Upewnij się, że czas zegara na Twoim komputerze jest ustawiony
+        rozsądnie (co najwyżej kilka minut odchylenia od 'prawdziwego' czasu) - możesz użyć
+        komendy <code>ntpdate pool.ntp.org</code> lub ustawić czas komendą <code>date</code>
+        używając czasu z zegarka mechanicznego. Uruchom ntpd, i po jakimś czasu (to może trwać
+        długo, nawet do pół godziny) komenda <code>ntpq -pn</code> powinna zwrócić coś takiego:
+	</p>
+
+	[% INCLUDE "ntppool/use/sample-ntpq.html" %]
+
+	<p>
+        Adres IP będzie inny, ponieważ przydzielono Tobie losowe serwery czasu. Jedna z linijek
+        musi zaczynać się gwiazdką (<code>*</code>), ponieważ to oznacza że Twój komputer
+        otrzymuje czas z internety - już nigdy tym nie będziesz się przejmować!
+	</p>
+	<p>
+	Zapytanie do <code>pool.ntp.org</code> (lub <code>0.pool.ntp.org</code>, <code>1.pool.ntp.org</code>,
+        i tak dalej) zazwyczaj zwróci adresy IP serwerów w Twoim kraju lub z najbliższej okolicy. Dla
+        większości użytkowników to jest najlepszy wybór.
+	</p>
+
+	<p>Możesz także użyć <a href="/zone/@">strefę czasową</a> (Na przykład
+	<a href="/zone/europe">Europa</a>,
+	<a href="/zone/north-america">Ameryka Północna</a>,
+	<a href="/zone/oceania">Oceania</a>
+	lub <a href="/zone/asia">Azja</a>.pool.ntp.org)
+	albo strefę krajową (na przykład ch.pool.ntp.org dla Szwajcarii) - i w tych przypadkach też możesz
+        użyć prefiksów 0, 1 lub 2, przykładowo 0.ch.pool.ntp.org. Pamiętaj jednak, że strefa może nie istnieć
+        dla Twojego kraju, lub może zawierać jedynie jeden albo dwa serwery czasu.
+	</p>
+	<p>
+        Jeśli używasz <b>niedawną wersję Windows</b>, możesz użyć klienta ntp
+	wbudowanego w systemu. Wprowadź jako administrator</p>
+<pre class="code">
+w32tm /config /syncfromflags:manual /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
+</pre>
+	<p>
+	na linii komend. To powinno działać dla Windows 2003 oraz nowszych wersji. Jeśli używasz starszej wersji
+	windows możesz spróbować</p>
+<pre class="code">
+net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
+</pre>
+	<p>
+	To samo możesz osiągnąć klikając prawym przyciskiem myszy, jako administrator, na pasek zadań,
+	wybierając 'Ustaw datę/godzinę' i wprowadzając nazwę serwera w zakładce 'Czas internetowy' ('Internet time' po angielsku).
+	</p>
+
+	<p>
+	Firma Meinberg stworzyła wersję <a href="http://www.meinberg.de/english/sw/ntp.htm">demona ntp dla Windows</a>.
+	</p>
+
+	<p>
+	Jeśli Twój system Windows jest częścią domeny, być może nie będzie można niezaleźnie uaktualnić czasy komputera.
+
+	W celu uzyskania więcej informacji na temat ustawień czasu w systemie Windows, zobacz <a href="http://technet.microsoft.com/en-us/library/cc773013%28WS.10%29.aspx">How Windows Time Service Works</a> (po angielsku).
+	</p>
+</div>
+
+<div class="block">
+	<h3 id="notes">Dodatkowe uwagi</h3>
+
+        <p><span class="hook">Zastanów się, czy pula NTP jest odpowiednia
+        dla Twojej sytuacji</span>. Jeśli Twój biznes, organizacja lub życie
+        zależą od dostępu do poprawenego czasu lub mogą zostać poszkodowane
+        przez zły czas, uzyskiwanie czasu 'z internetu' nie jest dobrym rozwiązaniem.
+        Pula NTP jest zazwyczaj wyskoiej jakości, ale jest usługą dostarczaną przez
+        ochotników. Skontaktuj się ze swoim zapleczem technicznym
+        aby skonfigurować lokalną i bezawaryjną usługę odpowiednią dla Twoich potrzeb.
+        Zobacz także <a href="/tos.html">warunki naszej usługi</a>.</p>
+
+        Polecamy serwery czasu od firmy 
+        <a href="http://www.meinbergglobal.com/english/products/ntp-time-server.htm">Meinberg</a>,
+        ale można także kupić serwery czasu od firm
+        <a href="http://www.endruntechnologies.com/NTP-Servers/gps-cdma-ntp.htm">End Run</a>,
+        <a href="http://www.spectracomcorp.com/products-services/precision-timing#anchor-2172">Spectracom</a>
+        oraz wielu innych.
+        </p>
+
+	<p><span class="hook">Jeśli masz stały adres IP address i rozsądne połączenie internetowe</span>
+        (przepustowość nie jest taka ważna, ale powinna być stabilne i nie przeciążone), rozważ
+	udostępnienie swojego serwera na potrzeby puli serwerów. Koszt jest niewielki, poniżej
+        kilkaset bajtów ruchu sieciowego na sekundę, ale w ten sposób wspierasz projekt i pomagasz
+        puli serwerów przetrwać. Przejdź do <a href="/join.html">strony na temat dołączania do puli</a>.
+	</p>
+
+	<p><span class="hook">Jeśli Twój dostawca internetu posiada serwer czasy</span>, lub jeśli znasz
+        dobry serwer czasu blisko Ciebie, nie używaj tej puli - prawdopodobnie otrzymasz lepszy czas
+	i zużyjesz mniej zasobów sieciowych. Jeśli znasz tylko jeden serwer czasu niedaleko Ciebie,
+	możesz oczywiście go połączyć z dwoma z puli pool.ntp.org.</p>
+
+	<p><span class="hook">Czasami (choć rzadko) ten sam serwer czasu zostaje przydzielony dwukrotnie</span> -
+	uruchomienie serwera ntp zazwyczaj rozwiązuje ten problem.  Jeśli używasz strefy krajowej, przyczyną może
+        być mała liczba serwerów w danym kraju. W tym przypadku strefa kontynentalna będzie lepszym wyborem.
+        <a href="/zone">Przejrzyj strefy</a> aby ocenić ile serwerów jest dostępnych w każdej strefie.</p>
+
+	<p><span class="hook">Bądź przyjazny</span>. Wiele serwerów jest udostępnianych dobrowlnie
+        przez ochotników, i większość serwerów czasu są w pierwszej kolejności serwerami plików, poczty lub stron.
+        Więc nie używaj więcej niż czterech serwerów czasu w swoich ustawieniach, i nie wygłupiaj się
+        z ustawieniami <code>burst</code> i <code>minpoll</code> - spowoduje to jedynie dodatkowe obciążenie
+        serwerów.</p>
+
+	<p><span class="hook">Upewnij się, że <i>skonfigurowana strefa czasowa</i> na Twoim komputerze
+            jest poprawna</span>. Program ntpd nie zmienia strefy czasowej, i wewnętrznie używa UTC.</p>
+
+	<p><span class="hook">Jeśli synchronizujesz sięc do puli pool.ntp.org</span>, ustaw jedną ze swoich maszyn
+        jako serwer czasu i synchronizuj wszystkie pozostałe komputery do niego. Taka konfiguracja wymaga więcej
+        czytania i pracy, ale nie jest trudna (zawsze można zajrzeć do grupy
+        <a href="news:comp.protocols.time.ntp">comp.protocols.time.ntp</a>.)</p>
+
+        <p class="thanks">Na koniec, dziekuję wszystkim którzy podarowali swój czas i serwery dla puli.</p>
+</div>
