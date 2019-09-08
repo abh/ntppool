@@ -2,14 +2,28 @@
     <div class="col-md-10">
         <h3>Account team</h3>
 
-        <table class="table">
-            [% FOR user = users %]
-            <tr>
-                <td>[% user.email  | html %]</td>
-                <td>[% IF user.name != user.email; user.name | html; END %]</td>
-            </tr>
-            [% END %]
-        </table>
+        <form id="account-form" action="/manage/account/team?a=[% account.id_token %]" method="post" accept-charset="utf-8">
+            <input type="hidden" name="a" value="[% account.id ? account.id_token : 'new' %]" />
+            <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
+
+            <table class="table">
+                [% FOR user = users %]
+                <tr>
+                    <td>[% user.email  | html %]</td>
+                    <td>[% IF user.name != user.email; user.name | html; END %]</td>
+                    [% IF combust.user.is_staff %]
+                    <td>
+                        <button class="btn btn-outline-warning"
+                            name="user_id" value="[% user.id %]" type="submit">
+                            Remove
+                        </button>
+                    </td>
+                    [% END %]
+                </tr>
+                [% END %]
+            </table>
+
+        </form>
 
         [% IF invites && invites.size > 0 %]
         <h4>Account invitations</h4>

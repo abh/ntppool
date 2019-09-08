@@ -34,6 +34,10 @@ sub manage_dispatch {
       unless ($account->id == 0
         or $account->can_edit($self->user));
 
+    if ($self->request->method eq 'post') {
+        return 403 unless $self->check_auth_token;
+    }
+
     if ($self->request->uri =~ m!^/manage/account$!) {
         return $self->render_account_edit
           if ($self->request->method eq 'post' and !$self->req_param('new_form'));
@@ -45,11 +49,40 @@ sub manage_dispatch {
     elsif ($self->request->uri =~ m!^/manage/account/team$!) {
         return $self->render_users_invite($account, $self->req_param('invite_email'))
           if ($self->request->method eq 'post'
-            and (1 or $self->req_param('invite_email')));
+            and ($self->req_param('invite_email')));
+
+        if ($account->can_edit($self->user) and $self->user->is_staff) {
+            return $self->remove_user_from_account($account, $self->req_param('user_id'))
+                if ($self->request->method eq 'post'
+                    and ($self->req_param('user_id')));
+        }
+
         return $self->render_users($account);
     }
 
     return NOT_FOUND;
+}
+
+
+sub remove_user_from_account {
+    my ($self, $account, $user_id) = @_;
+    my $users = $account->users;
+    my ($user) = grep { $_->id == $user_id } @$users;
+    return $self->render_users($account)
+        unless $user;
+
+    NP::Model::Log->log_changes(
+        $self->user,
+        "account-user",
+        sprintf("Removed user %s (%d)", $user->email, $user->id),
+        $account,
+    );
+
+    @$users = grep { $_->id != $user_id } @$users;
+    $account->users($users);
+    $account->save();
+
+    $self->render_users($account);
 }
 
 sub handle_invitation {
@@ -103,7 +136,6 @@ sub render_invite_error {
 
 sub render_users_invite {
     my ($self, $account, $email) = @_;
-    return 403 unless $self->check_auth_token;
 
     my %errors = ();
 
@@ -180,8 +212,6 @@ sub render_account_form {
 
 sub render_account_edit {
     my $self = shift;
-
-    return 403 unless $self->check_auth_token;
 
     my $account_token = $self->req_param('a');
     my $account_id    = NP::Model::Account->token_id($account_token);
