@@ -45,27 +45,30 @@
         </table>
         [% END %]
 
-    <form id="account-form" action="/manage/account/team?a=[% account.id_token %]" method="post" accept-charset="utf-8">
-        <input type="hidden" name="a" value="[% account.id ? account.id_token : 'new' %]" />
-        <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
-        <div class="form-group">
-            <label id="name-invite_email" class="form-label" for="invite_email">Add user to account</label>
-            <input type="input" class="form-control"
-                id="invite_email" value="[% invite.email | html %]"
-                name="invite_email"
-                required
-                maxlength="60"
-                aria-describedby="invite_email-help"
-                placeholder="Email address to invite">
-            [% IF errors and errors.invite_email %]
-            <div class="error">
-                <span class="badge badge-danger">Error</span>
-                [% errors.invite_email | html %]<br />
+        <form id="account-form" action="/manage/account/team?a=[% account.id_token %]" method="post" accept-charset="utf-8">
+            <input type="hidden" name="a" value="[% account.id ? account.id_token : 'new' %]" />
+            <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
+            <div class="form-group">
+                <label id="name-invite_email" class="form-label" for="invite_email">Add user to account</label>
+                <input type="input" class="form-control"
+                    id="invite_email" value="[% invite.email | html %]"
+                    name="invite_email"
+                    required
+                    maxlength="60"
+                    aria-describedby="invite_email-help"
+                    placeholder="Email address to invite">
+                [% IF errors and errors.invite_email %]
+                <div class="error">
+                    <span class="badge badge-danger">Error</span>
+                    [% errors.invite_email | html %]<br />
+                </div>
+                [% END %]
             </div>
-            [% END %]
-        </div>
-                <p><input type="submit" class="btn btn-primary" value="Send invite"></p>
-          </form>
+            <p>
+                <input type="submit" class="btn btn-primary" value="Send invite"><br>
+                (All users have full access to the account)
+            </p>
+        </form>
     </div>
 </div>
 
