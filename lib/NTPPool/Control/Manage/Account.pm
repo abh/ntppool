@@ -117,7 +117,7 @@ sub render_users_invite {
 
     if (%errors) {
         $self->tpl_param(errors => \%errors);
-        return $self->render_users();
+        return $self->render_users($account);
     }
 
     my $base36 = Math::BaseCalc->new(digits => ['a' .. 'k', 'm' .. 'z', 2 .. 9]);
@@ -152,7 +152,7 @@ sub render_users_invite {
 
     NP::Email::sendmail($email);
 
-    return $self->render_users();
+    return $self->render_users($account);
 
 }
 

@@ -203,6 +203,14 @@ sub render {
 
     return $self->login unless $self->user;
 
+    if ($self->request->method eq 'get') {
+        my $account = $self->current_account;
+        my $account_param = $self->req_param('a');
+        if ($account_param and $account_param ne $account->id_token) {
+            return $self->redirect($self->current_url({a => $account->id_token}));
+        }
+    }
+
     return $self->manage_dispatch;
 }
 
@@ -308,8 +316,8 @@ sub manage_dispatch {
     }
 
     if ($self->request->uri =~ m{^/manage/?$}) {
-        my $redirect = URI->new('/manage/servers');
         my $account = $self->current_account;
+        my $redirect = URI->new('/manage/servers');
         $redirect->query_param(a => $account->id_token) if $account;
         return $self->redirect($redirect);
     }
