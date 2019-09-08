@@ -158,11 +158,35 @@ sub populate_country_zones {
         if (my $entries = $zone->active_servers('v6')) {
             @$entries = shuffle(@$entries);
 
-            # for now just put all IPv6 servers in the '2' zone
+            # add all servers to the non-numbered "NTP" zone
+            (my $pgeodns_group = "${name}") =~ s/\.$//;
+            push @{$data->{$name}->{aaaa}}, $_ for @$entries;
+
+            # Historically, only '2' has had ipv6 records, so we ALSO put all
+            # of the records there, for anyone who is relying on 2 having a
+            # large number of entries (Who would do such a crazy thing?)
             (my $pgeodns_group = "2.${name}") =~ s/\.$//;
             push @{$data->{$pgeodns_group}->{aaaa}}, $_ for @$entries;
-        }
 
+            # Smear the rest of the IPv6 records over the remaining zones,
+            # up to 4 records per zone.
+            my $maxrecords  = 4;
+            my $recordcount = 0;
+            my $currentzone = 0;
+            my @zones       = ("0.", "1.", "3.");
+            while ($recordcount < $maxrecords) {
+                (my $pgeodns_group = @zones[$currentzone++].$name) =~ s/\.$//;
+                # If we've run out of zones, reset back to zero, and increase
+                # the count of records in the zone.
+                if (!@zones[$currentzone]) {
+                    $currentzone = 0;
+                    $recordcount++;
+                }
+                # Add the next entry to this zone.
+                my $e = shift @$entries;
+                push @{$data->{$pgeodns_group}->{aaaa}}, $e;
+            }
+        }
     }
 }
 
