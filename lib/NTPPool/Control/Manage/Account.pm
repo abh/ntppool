@@ -167,6 +167,7 @@ sub render_users {
     );
 
     $self->tpl_param('invites', $invites);
+    $self->tpl_param('users', scalar $account->users);
 
     return OK, $self->evaluate_template('tpl/account/team.html');
 }
