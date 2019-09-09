@@ -174,7 +174,7 @@ sub populate_country_zones {
             my $recordcount = 0;
             my $currentzone = 0;
             my @zones       = ("0.", "1.", "3.");
-            while ($recordcount < $maxrecords) {
+            while (@entries && $recordcount < $maxrecords) {
                 (my $pgeodns_group = @zones[$currentzone++].$name) =~ s/\.$//;
                 # If we've run out of zones, reset back to zero, and increase
                 # the count of records in the zone.
