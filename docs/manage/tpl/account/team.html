@@ -50,7 +50,9 @@
             <input type="hidden" name="a" value="[% account.id ? account.id_token : 'new' %]" />
             <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
             <div class="form-group">
-                <label id="name-invite_email" class="form-label" for="invite_email">Add user to account</label>
+                <label id="name-invite_email" class="form-label" for="invite_email">Add user to account team</label>
+                (Note that all users have full access to the account)
+                <p>
                 <input type="input" class="form-control"
                     id="invite_email" value="[% invite.email | html %]"
                     name="invite_email"
@@ -67,7 +69,6 @@
             </div>
             <p>
                 <input type="submit" class="btn btn-primary" value="Send invite"><br>
-                (All users have full access to the account)
             </p>
         </form>
     </div>
