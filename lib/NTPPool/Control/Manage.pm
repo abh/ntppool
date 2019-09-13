@@ -61,7 +61,6 @@ sub current_account {
     );
 
     if ($accounts && @$accounts) {
-        warn "got fallback account id ", $accounts->[0]->id;
         return $self->{_current_account} = $accounts->[0];
     }
     return $self->{_current_account} = undef;
@@ -158,7 +157,6 @@ sub render {
                   } ({profileData => $userdata}, @{$userdata->{identities}});
 
                 for my $email (@emails) {
-                    warn "Testing email: $email";
                     my ($email_user) = NP::Model->user->fetch(email => $email);
                     if ($email_user) {
                         warn "Found email user in the database";

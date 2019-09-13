@@ -73,7 +73,7 @@ sub remove_user_from_account {
 
     NP::Model::Log->log_changes(
         $self->user,
-        "account-user",
+        "account-users",
         sprintf("Removed user %s (%d)", $user->email, $user->id),
         $account,
     );
@@ -121,6 +121,12 @@ sub handle_invitation {
     $invite->account->save
       or return $self->render_invite_error("Error saving database update");
 
+    NP::Model::Log->log_changes(
+        $user,
+        "account-users",
+        "Accepted invitation to account",
+        $invite->account,
+    );
     $db->commit or return $self->render_invite_error("database commit error");
 
     return $self->redirect(
@@ -135,12 +141,12 @@ sub render_invite_error {
 }
 
 sub render_users_invite {
-    my ($self, $account, $email) = @_;
+    my ($self, $account, $email_address) = @_;
 
     my %errors = ();
 
-    if (grep { lc $_->email eq lc $email } $account->users) {
-        $errors{invite_email} = "User is already added to this account";
+    if (grep { lc $_->email eq lc $email_address } $account->users) {
+        $errors{invite_email} = "User is already on this account";
     }
 
     if (scalar(grep { $_->status eq 'pending' } $account->invites) >= 5) {
@@ -157,18 +163,25 @@ sub render_users_invite {
 
     my $invite = NP::Model->account_invite->fetch_or_create(
         account => $account,
-        email   => $email,
+        email   => $email_address,
         status  => 'pending',
         sent_by => $self->user->id,
         code    => $code,
     );
     $invite->expires_on(DateTime->now()->add(hours => 49));
-    if ($invite->status eq 'expired') {
+    if ($invite->status ne 'pending') {
         $invite->status('pending');
     }
     $invite->save;
 
-    my $param = {invite => $invite,};
+    NP::Model::Log->log_changes(
+        $self->user,
+        "invitation",
+        "Sending invitation to ${email_address}",
+        $account,
+    );
+
+    my $param = {invite => $invite};
 
     my $tpl = Combust::Template->new;
     my $msg = $tpl->process('tpl/account_invite.txt',
@@ -178,7 +191,7 @@ sub render_users_invite {
     # for the sender?
 
     my $email =
-      Email::Stuffer->from(NP::Email::address("sender"))->to($email)
+      Email::Stuffer->from(NP::Email::address("sender"))->to($email_address)
       ->reply_to(NP::Email::address("support"))->subject("NTP Pool account invitation")
       ->text_body($msg);
 
@@ -201,12 +214,34 @@ sub render_users {
     $self->tpl_param('invites', $invites);
     $self->tpl_param('users', scalar $account->users);
 
+    if ($self->user->is_staff) {
+        my $logs = NP::Model->log->get_objects(
+            query => [
+                account_id => [$self->current_account->id],
+                type => ['invitation', 'account-users']
+            ],
+            sort_by => "created_on desc",
+        );
+        $self->tpl_param('logs', $logs);
+    }
+
     return OK, $self->evaluate_template('tpl/account/team.html');
 }
 
 sub render_account_form {
     my ($self, $account) = @_;
     $self->tpl_param('account', $account);
+
+    if ($self->user->is_staff) {
+        my $logs = NP::Model->log->get_objects(
+            query => [
+                account_id => [$self->current_account->id],
+            ],
+            sort_by => "created_on desc",
+        );
+        $self->tpl_param('logs', $logs);
+    }
+
     return OK, $self->evaluate_template('tpl/account/form.html');
 }
 
@@ -226,15 +261,23 @@ sub render_account_edit {
 
     my $old = $account->get_data_hash;
 
-    for my $f (qw(name organization_name organization_url url_slug)) {
-        warn "stting $f to [", ($self->req_param($f) || ''), "]";
-        my $v = $self->req_param($f) || '';
+    my %args = (
+        public_profile => $self->req_param('public_profile') ? 1 : 0,
+    );
+
+    my $changed = 0;
+
+    for my $f (qw(name organization_name organization_url url_slug public_profile)) {
+        my $v = defined $args{$f} ? $args{$f} : $self->req_param($f);
+        $v //= '';
         $v =~ s/^\s+//;
         $v =~ s/\s+$//;
         $v = undef if ($f eq 'url_slug' and $v eq '');
-        $account->$f($v);
+        if ($v ne $account->$f()) {
+            $changed = 1;
+            $account->$f($v);
+        }
     }
-    $account->public_profile($self->req_param('public_profile') ? 1 : 0);
 
     unless ($account->validate) {
         my $errors = $account->validation_errors;
@@ -242,10 +285,14 @@ sub render_account_edit {
         return $self->render_account_form($account);
     }
 
-    $account->save;
+    if ($changed) {
+        $account->save(changes_only => 1);
 
-    NP::Model::Log->log_changes($self->user, "account", "update account",
-        $account, $old);
+        NP::Model::Log->log_changes(
+            $self->user, "account", "update account",
+            $account, $old
+        );
+    }
 
     return $self->render_account_form($account);
 }

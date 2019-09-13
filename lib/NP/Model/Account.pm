@@ -68,7 +68,7 @@ sub validation_errors {
 sub can_edit {
     my ($self, $user) = @_;
     return 0 unless $user;
-    return 1 if $user->privileges->vendor_admin;
+    return 1 if $user->privileges->support_staff;
     return 1 if grep { $_->id == $user->id } $self->users;
     return 0;
 }
