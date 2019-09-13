@@ -171,6 +171,7 @@ sub render_users_invite {
     $invite->expires_on(DateTime->now()->add(hours => 49));
     if ($invite->status ne 'pending') {
         $invite->status('pending');
+        $invite->code($code);
     }
     $invite->save;
 
