@@ -138,6 +138,7 @@
 			<li>Do implement handling of the "KoD" response</li>
 			<li>Don't send excessively frequent queries.  Reasonable query intervals are typically from once or twice a day to a 4-5 times an hour depending on the application.  Really consider how often the device will need "fresh time".  A standard ntpd or openntpd server works, too.</li>
 	                <li>Do have your devices query the NTP servers at random times of the day.  For example every 43200 seconds since boot is good, at midnight every day is bad.</li>
+			<li>Do re-query DNS for a new NTP server IP address if one of the current NTP servers stops responding, though not more often than once per hour.</li>
 	                <li>Read the <a href="http://www.faqs.org/rfc/rfc4330.txt">new SNTP RFC</a> if you are implementing an SNTP client.</li>
 		</ul>
 
