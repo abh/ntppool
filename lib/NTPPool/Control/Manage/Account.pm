@@ -13,6 +13,9 @@ sub manage_dispatch {
     my $self = shift;
 
     my $account;
+
+    # support for creating a new account; we deliberately
+    # don't want to look for a default account
     if (($self->req_param('a') || '') eq 'new') {
         return 403 unless $self->check_auth_token;
         $account = NP::Model->account->create(users => [$self->user]);
@@ -21,6 +24,7 @@ sub manage_dispatch {
     $account = $self->current_account unless $account;
 
     unless ($account) {
+
         # TODO: check for invitations and show "accept invitations screen"...
         $account = NP::Model->account->create(users => [$self->user]);
         $account->name($self->user->name);
@@ -172,6 +176,7 @@ sub render_users_invite {
     if ($invite->status ne 'pending') {
         $invite->status('pending');
         $invite->code($code);
+        $invite->created_on('now');
     }
     $invite->save;
 
@@ -233,7 +238,8 @@ sub render_account_form {
     my ($self, $account) = @_;
     $self->tpl_param('account', $account);
 
-    if ($self->user->is_staff) {
+    # todo: how do you end up here without an account?
+    if ($self->user->is_staff && $self->current_account) {
         my $logs = NP::Model->log->get_objects(
             query => [
                 account_id => [$self->current_account->id],
