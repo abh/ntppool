@@ -56,9 +56,10 @@ sub manage_dispatch {
             and ($self->req_param('invite_email')));
 
         if ($account->can_edit($self->user) and $self->user->is_staff) {
-            return $self->remove_user_from_account($account, $self->req_param('user_id'))
-                if ($self->request->method eq 'post'
-                    and ($self->req_param('user_id')));
+            return $self->remove_user_from_account($account,
+                $self->req_param('user_id'))
+              if ($self->request->method eq 'post'
+                and ($self->req_param('user_id')));
         }
 
         return $self->render_users($account);
@@ -67,20 +68,15 @@ sub manage_dispatch {
     return NOT_FOUND;
 }
 
-
 sub remove_user_from_account {
     my ($self, $account, $user_id) = @_;
     my $users = $account->users;
     my ($user) = grep { $_->id == $user_id } @$users;
     return $self->render_users($account)
-        unless $user;
+      unless $user;
 
-    NP::Model::Log->log_changes(
-        $self->user,
-        "account-users",
-        sprintf("Removed user %s (%d)", $user->email, $user->id),
-        $account,
-    );
+    NP::Model::Log->log_changes($self->user, "account-users",
+        sprintf("Removed user %s (%d)", $user->email, $user->id), $account,);
 
     @$users = grep { $_->id != $user_id } @$users;
     $account->users($users);
@@ -96,7 +92,7 @@ sub handle_invitation {
     warn "CODE: $code";
     return 404 unless $code;
 
-    my $db = NP::Model->db;
+    my $db  = NP::Model->db;
     my $txn = $db->begin_scoped_work;
 
     my $invite = NP::Model->account_invite->fetch(code => $code);
@@ -125,20 +121,20 @@ sub handle_invitation {
     $invite->account->save
       or return $self->render_invite_error("Error saving database update");
 
-    NP::Model::Log->log_changes(
-        $user,
-        "account-users",
+    NP::Model::Log->log_changes($user, "account-users",
         "Accepted invitation to account",
-        $invite->account,
-    );
+        $invite->account,);
     $db->commit or return $self->render_invite_error("database commit error");
 
     return $self->redirect(
-        $self->manage_url("/manage/account/team", {a => $self->current_account->id_token}));
+        $self->manage_url(
+            "/manage/account/team", {a => $self->current_account->id_token}
+        )
+    );
 }
 
 sub render_invite_error {
-    my $self = shift;
+    my $self  = shift;
     my $error = shift;
     $self->tpl_param('invite_error', $error);
     return OK, $self->evaluate_template('tpl/account/invite_error.html');
@@ -180,18 +176,15 @@ sub render_users_invite {
     }
     $invite->save;
 
-    NP::Model::Log->log_changes(
-        $self->user,
-        "invitation",
-        "Sending invitation to ${email_address}",
-        $account,
-    );
+    NP::Model::Log->log_changes($self->user, "invitation",
+        "Sending invitation to ${email_address}", $account,);
 
     my $param = {invite => $invite};
 
     my $tpl = Combust::Template->new;
-    my $msg = $tpl->process('tpl/account_invite.txt',
-        $param, {site => 'manage', config => $self->config});
+    my $msg =
+      $tpl->process('tpl/account_invite.txt', $param,
+        {site => 'manage', config => $self->config});
 
     # todo: if there's a vendor zone, use the vendor address
     # for the sender?
@@ -211,20 +204,21 @@ sub render_users {
     my ($self, $account) = @_;
 
     my $invites = NP::Model->account_invite->get_account_invites(
-        query   => [status => {ne => 'accepted'},
-                    account_id => $account->id,
-                   ],
+        query => [
+            status     => {ne => 'accepted'},
+            account_id => $account->id,
+        ],
         sort_by => 'created_on desc'
     );
 
     $self->tpl_param('invites', $invites);
-    $self->tpl_param('users', scalar $account->users);
+    $self->tpl_param('users',   scalar $account->users);
 
     if ($self->user->is_staff) {
         my $logs = NP::Model->log->get_objects(
             query => [
                 account_id => [$self->current_account->id],
-                type => ['invitation', 'account-users']
+                type       => ['invitation', 'account-users']
             ],
             sort_by => "created_on desc",
         );
@@ -241,9 +235,7 @@ sub render_account_form {
     # todo: how do you end up here without an account?
     if ($self->user->is_staff && $self->current_account) {
         my $logs = NP::Model->log->get_objects(
-            query => [
-                account_id => [$self->current_account->id],
-            ],
+            query   => [account_id => [$self->current_account->id],],
             sort_by => "created_on desc",
         );
         $self->tpl_param('logs', $logs);
@@ -268,9 +260,7 @@ sub render_account_edit {
 
     my $old = $account->get_data_hash;
 
-    my %args = (
-        public_profile => $self->req_param('public_profile') ? 1 : 0,
-    );
+    my %args = (public_profile => $self->req_param('public_profile') ? 1 : 0,);
 
     my $changed = 0;
 
@@ -295,10 +285,8 @@ sub render_account_edit {
     if ($changed) {
         $account->save(changes_only => 1);
 
-        NP::Model::Log->log_changes(
-            $self->user, "account", "update account",
-            $account, $old
-        );
+        NP::Model::Log->log_changes($self->user, "account", "update account",
+            $account, $old);
     }
 
     return $self->render_account_form($account);
