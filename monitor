@@ -169,15 +169,13 @@ while (1) {
 	    $Net::NTP::CLIENT_TIME_SEND = $time_then;
 
 	    my %pkt = eval { get_ntp_response($server); };
-            if ($pkt{"Leap Indicator"}) {
-                $status->{leap} = $pkt{"Leap Indicator"};
-            }
 
 	    my $time_now = Time::HiRes::time;
+	    my $root_dist = $pkt{'Root Delay'} / 2 + $pkt{'Root Dispersion'};
 
 	    $status->{ts} = $time_now;
         
-	    if (!$pkt{Stratum} or $!) {
+	    if (!$pkt{Stratum} or $pkt{'Leap Indicator'} == 3 or $root_dist > 1.4) {
 		$status->{no_response} = 1;
 	    }
 	    else {
@@ -188,6 +186,7 @@ while (1) {
 		
 		$status->{offset}  = ($recv_org + $trans_dest) / 2;
 		$status->{stratum} = $pkt{Stratum};
+		$status->{leap} = $pkt{"Leap Indicator"};
 	    }
 	}
 
