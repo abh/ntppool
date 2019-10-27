@@ -14,6 +14,12 @@ sub manage_dispatch {
 
     my $account;
 
+    if ($self->request->uri =~ m!^/manage/account/invite/!) {
+        return $self->handle_invitation;
+    } elsif ($self->request->uri =~ m!^/manage/account/invites/!) {
+        return $self->render_user_invitations;
+    }
+
     # support for creating a new account; we deliberately
     # don't want to look for a default account
     if (($self->req_param('a') || '') eq 'new') {
@@ -25,7 +31,12 @@ sub manage_dispatch {
 
     unless ($account) {
 
-        # TODO: check for invitations and show "accept invitations screen"...
+        my $invites = $self->user->pending_invites;
+        if ($invites && @$invites) {
+            warn "has no account and pending invites...";
+            return $self->redirect("/manage/account/invites/");
+        }
+
         $account = NP::Model->account->create(users => [$self->user]);
         $account->name($self->user->name);
         NP::Model::Log->log_changes($self->user, "account", "account created",
@@ -46,9 +57,6 @@ sub manage_dispatch {
         return $self->render_account_edit
           if ($self->request->method eq 'post' and !$self->req_param('new_form'));
         return $self->render_account_form($account);
-    }
-    elsif ($self->request->uri =~ m!^/manage/account/invite/!) {
-        return $self->handle_invitation;
     }
     elsif ($self->request->uri =~ m!^/manage/account/team$!) {
         return $self->render_users_invite($account, $self->req_param('invite_email'))
@@ -126,6 +134,12 @@ sub handle_invitation {
         $invite->account,);
     $db->commit or return $self->render_invite_error("database commit error");
 
+    # we accepted an invite for a new account that didn't have a team yet, so
+    # just 'start over' ...
+    unless ($self->current_account) {
+        return $self->redirect($self->manage_url("/manage"));
+    }
+
     return $self->redirect(
         $self->manage_url(
             "/manage/account/team", {a => $self->current_account->id_token}
@@ -197,8 +211,20 @@ sub render_users_invite {
     NP::Email::sendmail($email);
 
     return $self->render_users($account);
-
 }
+
+sub render_user_invitations {
+    my $self = shift;
+
+    my $user = $self->user;
+    my $invites = $user->pending_invites;
+
+    $self->tpl_param('user', $user);
+    $self->tpl_param('invites', $invites);
+
+    return OK, $self->evaluate_template('tpl/user/invites.html');
+}
+
 
 sub render_users {
     my ($self, $account) = @_;

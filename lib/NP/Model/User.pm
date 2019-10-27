@@ -20,6 +20,20 @@ sub privileges {
     $self->user_privilege(@_) || $self->user_privilege({user_id => $self->id})->save;
 }
 
+sub pending_invites {
+    my $user = shift;
+    my $invites = NP::Model->account_invite->get_account_invites(
+        query => [
+            status => {eq => 'pending'},
+            or => [
+                user_id => $user->id,
+                email   => $user->email,
+            ],
+        ],
+        sort_by => 'created_on desc'
+    );
+    return $invites;
+}
 
 package NP::Model::User::Manager;
 use strict;
