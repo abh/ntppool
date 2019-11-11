@@ -26,11 +26,11 @@
 
 <h4 id="management-queries">Management queries</h4>
 
-<p>Make the default configuration be to not allow "management queries". For ntpd this will be adding the "noquery" option to the default "restrict" lines, for example:</p>
+<p>Verbiete in der Standart Konfiguration die "management queries". Für ntpd this muss man die "noquery" Einstellung in die Standart "restrict" Zeile hinzuf&uuml;gen. Zum Beispiel:</p>
 
 [% INCLUDE "join/configuration/restrict-default.html" %]
 
-<p>To allow commands like "ntpq -c pe" to work from localhost you can add:</p>
+<p>Um Befehle wie "ntpq -c pe" vom lokalen Ger&auml;t zu erlauben kann man folgenden Eintrag hinzufügen:</p>
 
 [% INCLUDE "join/configuration/restrict-localhost.html" %]
 

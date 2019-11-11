@@ -48,11 +48,21 @@ msgstr "abonnieren"
 msgid  "archive"
 msgstr "Archiv"
 
+msgid  "NTP Pool Forum"
+msgstr "NTP Pool Forum"
+
+msgid  "News site"
+msgstr "Neuigkeiten
+
+
 msgid  "Announcement list"
 msgstr "Verteiler &quot;Ankündigungen&quot;"
 
 msgid  "Discussion list"
 msgstr "Verteiler &quot;Diskussionen&quot;"
+
+msgid  "Development"
+msgstr "Entwicklung"
 
 msgid  "Development list"
 msgstr "Verteiler &quot;Entwicklung&quot;"
@@ -66,9 +76,15 @@ msgstr "Serveradministratoren (und Benutzer), die sich am NTP-Pool-Projekt betei
 msgid  "development_list_description"
 msgstr "Technische (und idealerweise immer pragmatische) Diskussionen über die aktuelle Entwicklung des <a href=\"%1\">NTP-Pool Quellcodes</a> und <a href=\"%2\">pgeodns</a> werden über den <i>timekeepers-dev</i>-Verteiler geführt."
 
+msgid  "forum_description"
+msgstr "Fragen (und Antworten) über den NTP Pool, Vorschläge zur Verbesserung und Themen über das behalten von Zeiten und betreiben eines eigenen NTP Servers"
+
+msgid  "news_description"
+msgstr "Neuigkeiten und Ankündigungen werden auf der Nachrichtenseite des Forums gepostet"
+
 # tpl/server.html
 msgid  "Back to the front page"
-msgstr "Zurück zur Hauptseite"
+msgstr "Zurück zur Startseite"
 
 msgid  "Find"
 msgstr "Suche"
