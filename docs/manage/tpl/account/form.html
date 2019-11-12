@@ -1,117 +1,119 @@
 <div class="row">
-	<div class="col-md-5">
+    <div class="col-md-5">
 
-	<h3>Account information</h3>
+    <h3>Account information</h3>
 
-	<form id="account-form" action="/manage/account?a=[% account.id_token %]" method="post" accept-charset="utf-8">
+    <form id="account-form" action="/manage/account?a=[% account.id_token %]" method="post" accept-charset="utf-8">
         <input type="hidden" name="a" value="[% account.id ? account.id_token : 'new' %]" />
         <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
-		<div class="form-group">
-			<label id="name-help" class="form-label" for="name">Account name</label>
-			<input type="input" class="form-control"
-				id="name" value="[% account.name | html%]"
-				name="name"
-				required
-				maxlength="60"
-				aria-describedby="name-help"
-				placeholder="Enter account name">
-			[% IF errors and errors.name %]
-			<div class="error">
-				<span class="badge badge-danger">Error</span>
-				[% errors.name | html %]<br />
-			</div>
-			[% END %]
-		</div>
-		<div class="form-group">
-			<label id="organization_name-help" class="form-label" for="organization_name">Organization name</label>
-			<input type="text" class="form-control" name="organization_name"
-				value="[% account.organization_name | html %]"
-				id="organization_name" maxlength="65">
-			[% IF errors.organization_name %]
-				<div class="error">
-					<span class="badge badge-danger">Error</span>
-					[% errors.organization_name | html %]
-				</div>
-			[% END %]
-		</div>
+        <div class="form-group">
+            <label id="name-help" class="form-label" for="name">Account name</label>
+            <input type="input" class="form-control"
+                id="name" value="[% account.name | html%]"
+                name="name"
+                required
+                maxlength="60"
+                aria-describedby="name-help"
+                placeholder="Enter account name">
+            [% IF errors and errors.name %]
+            <div class="error">
+                <span class="badge badge-danger">Error</span>
+                [% errors.name | html %]<br />
+            </div>
+            [% END %]
+        </div>
+        <div class="form-group">
+            <label id="organization_name-help" class="form-label" for="organization_name">Organization name</label>
+            <input type="text" class="form-control" name="organization_name"
+                value="[% account.organization_name | html %]"
+                id="organization_name" maxlength="65">
+            [% IF errors.organization_name %]
+                <div class="error">
+                    <span class="badge badge-danger">Error</span>
+                    [% errors.organization_name | html %]
+                </div>
+            [% END %]
+        </div>
 
-		<div class="form-group">
-			<label id="organization_url-help" class="form-label" for="organization_url">Organization website</label>
-			<input type="url" class="form-control" name="organization_url"
-				value="[% account.organization_url | html %]"
-				placeholder="https://example.com/"
-				id="organization_url" maxlength="65">
-			[% IF errors.organization_url %]
-				<div class="error">
-					<span class="badge badge-danger">Error</span>
-					[% errors.organization_name | html %]
-				</div>
-			[% END %]
-		</div>
+        <div class="form-group">
+            <label id="organization_url-help" class="form-label" for="organization_url">Organization website</label>
+            <input type="url" class="form-control" name="organization_url"
+                value="[% account.organization_url | html %]"
+                placeholder="https://example.com/"
+                id="organization_url" maxlength="65">
+            [% IF errors.organization_url %]
+                <div class="error">
+                    <span class="badge badge-danger">Error</span>
+                    [% errors.organization_name | html %]
+                </div>
+            [% END %]
+        </div>
 
-		<div class="form-group">
-			<label id="public_profile-help" class="form-label" for="public_profile">Account profile page</label>
-			<div class="form-check">
-				<input type="checkbox" class="form-check-input"
-					name="public_profile" value="1"
-					[% IF account.public_profile; "checked"; END %]
-					id="public_profile">
-				<label class="form-check-label" for="public_profile">
-					[% IF account.public_url %]
-					Enable <a href="[% account.public_url %]">profile page</a>
-					[% ELSE %]
-					Enable profile page
-					[% END%]
-				</label>
-			</div>
+        <div class="form-group">
+            <label id="public_profile-help" class="form-label" for="public_profile">Account profile page</label>
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input"
+                    name="public_profile" value="1"
+                    [% IF account.public_profile; "checked"; END %]
+                    id="public_profile">
+                <label class="form-check-label" for="public_profile">
+                    [% IF account.public_url %]
+                    Enable <a href="[% account.public_url %]">profile page</a>
+                    [% ELSE %]
+                    Enable profile page
+                    [% END%]
+                </label>
+            </div>
 
-			<div class="input-group mb-3">
-				<div class="input-group-prepend">
-					<span class="input-group-text">[% combust.www_url("/a/") %]</span>
-				</div>
-				<input type="text" class="form-control"
-					autocorrect="off" spellcheck="false"
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">[% combust.www_url("/a/") %]</span>
+                </div>
+                <input type="text" class="form-control"
+                    autocorrect="off" spellcheck="false"
                                         autocomplete="off"
-					name="url_slug"
-					value="[% account.url_slug | html %]"
-					id="url_slug" aria-label="Page URL">
-				[% IF errors.url_slug %]
-					<div class="error">
-						<span class="badge badge-danger">Error</span>
-						[% errors.url_slug | html %]
-					</div>
-				[% END %]
+                    name="url_slug"
+                    value="[% account.url_slug | html %]"
+                    id="url_slug" aria-label="Page URL">
+                [% IF errors.url_slug %]
+                    <div class="error">
+                        <span class="badge badge-danger">Error</span>
+                        [% errors.url_slug | html %]
+                    </div>
+                [% END %]
 
-			</div>
+            </div>
 
-		</div>
+        </div>
 
 
-				<!--
-	<b>Contact information</b><br>
-	Email addresses, direct phone numbers for your NOC or
-	network/engineering technical support (only visible to the NTP Pool
-	admins)<br>
-	[% IF errors.contact_information %]<div class="error">[% errors.contact_information | html %]</div>[% END %]
-	<textarea name="contact_information" rows="12" cols="65">[% account.contact_information | html %]</textarea>
-	<br>
+                <!--
+    <b>Contact information</b><br>
+    Email addresses, direct phone numbers for your NOC or
+    network/engineering technical support (only visible to the NTP Pool
+    admins)<br>
+    [% IF errors.contact_information %]<div class="error">[% errors.contact_information | html %]</div>[% END %]
+    <textarea name="contact_information" rows="12" cols="65">[% account.contact_information | html %]</textarea>
+    <br>
 -->
 
                 <p><input type="submit" class="btn btn-primary" value="[% account.id ? 'Update' : 'Create' %]"></p>
-		</form>
-	</div>
+        </form>
+    </div>
 
-	<div class="col-md-4">
-		<h3>Team</h3>
+    <div class="col-md-4">
+        <h3>Team</h3>
 
-		<ul>
-			[% FOR user = account.users %]
-			<li>[% user.email | html %]</li>
-			[% END %]
-		</ul>
+        <ul>
+            [% FOR user = account.users %]
+            <li>[% user.email | html %]</li>
+            [% END %]
+        </ul>
 
-		<a href="[% combust.manage_url('/manage/account/team') %]">Manage account team</a>
+        <a href="[% combust.manage_url('/manage/account/team') %]">Manage account team</a>
 
-	</div>
+    </div>
 
 </div>
+
+[% INCLUDE tpl/log_table.html %]

@@ -1,0 +1,42 @@
+<div class="row">
+    <div class="col-md-10">
+        [% IF invites && invites.size > 0 %]
+        <h3>Account invitations for [% user.email | html %]</h3>
+        <table class="table">
+            <tr>
+                <th>Account</th>
+                <th>Accept</th>
+                <th>Invited by</th>
+                <th>Sent On</th>
+            </tr>
+            [% FOR inv = invites %]
+            <tr>
+                <td>[% inv.account.name | html %]</td>
+                <td>
+                    <form action="[% inv.url %]">
+                        <input type="submit" class="btn btn-primary btn-sm" value="Accept">
+                    </form>
+                </td>
+                <td>[% inv.sent_by.email | html %]</td>
+                <td>[% inv.created_on | html %]</td>
+            </tr>
+            [% END %]
+        </table>
+        [% ELSE %]
+        <p>No pending account invitations.</p>
+        [% END %]
+
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-10">
+            <form action="/manage/account" method="post" class="form-inline">
+                <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
+                <input type="hidden" name="a" value="new" />
+                <input type="hidden" name="new_form" value="1" />
+                <button class="btn btn-secondary" type="submit">Create a new account</button>
+            </form>
+
+    </div>
+</div>

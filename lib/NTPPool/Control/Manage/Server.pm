@@ -40,6 +40,25 @@ sub render {
 sub show_manage {
     my $self = shift;
     $self->tpl_params->{page}->{is_servers} = 1;
+
+    my $servers = $self->current_account->servers;
+    $self->tpl_param('servers', $servers);
+
+    my @server_ids = map { $_->id } @$servers;
+
+    if ($self->user->is_staff) {
+        my $logs = NP::Model->log->get_objects(
+            query => [
+                or => [
+                    account_id => [$self->current_account->id],
+                    (@server_ids ? (server_id  => \@server_ids) : ()),
+                ],
+            ],
+            sort_by => "created_on desc",
+        );
+        $self->tpl_param('logs', $logs);
+    }
+
     return OK, $self->evaluate_template('tpl/manage.html');
 }
 

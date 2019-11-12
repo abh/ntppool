@@ -416,6 +416,8 @@ __PACKAGE__->meta->setup(
   ],
 );
 
+__PACKAGE__->meta->setup_json_columns(qw< changes >);
+
 push @table_classes, __PACKAGE__;
 }
 

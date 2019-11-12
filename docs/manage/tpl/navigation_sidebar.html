@@ -14,14 +14,24 @@
             <div class="dropdown-divider"></div>
             <div class="d-flex justify-content-between">
             <a class="dropdown-item dropdown-item-manage-account" href="[% combust.manage_url('/manage/account') %]">Manage account</a>
-            <form action="/manage/account" method="post" class="form-inline px-2 justify-content-end">
-                <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
-                <input type="hidden" name="a" value="new" />
-                <input type="hidden" name="new_form" value="1" />
-                <button class="btn btn-outline-secondary btn-sm" type="submit">New account</button>
-            </form>
+            <div class="dropdown-item">
+                <form action="/manage/account" method="post" class="form-inline px-2 justify-content-end">
+                    <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
+                    <input type="hidden" name="a" value="new" />
+                    <input type="hidden" name="new_form" value="1" />
+                    <button class="btn btn-light btn-sm" type="submit">New account</button>
+                </form>
+                </div>
             </div>
-
+            [% user_invites = combust.user.pending_invites %]
+            [% IF user_invites.size > 0 %]
+            <div class="dropdown-item">
+                <a type="button" class="btn btn-light btn-sm"
+                    href="/manage/account/invites/">
+                    Invitations <span class="badge badge-primary">[% user_invites.size %]</span>
+                </a>
+            </div>
+            [% END %]
         </div>
     </li>
 

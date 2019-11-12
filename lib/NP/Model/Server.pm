@@ -277,11 +277,11 @@ sub get_check_due {
     my $limit   = shift || 200;
     my $options = shift || {};
 
-    # these numbers make sense for 2 monitors, if there are more they
+    # these numbers make sense for 2-3 monitors, if there are more they
     # should be adjusted to spread out the checks somewhat evenly in
     # time and between the monitors.
-    my $interval     = $options->{interval} || 15;
-    my $interval_all = $options->{interval} || 8;
+    my $interval     = $options->{interval} || 12;
+    my $interval_all = $options->{interval} || 4;
 
     $class->get_objects_from_sql(
         sql => q[SELECT s.*

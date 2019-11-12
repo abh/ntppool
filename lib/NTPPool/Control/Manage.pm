@@ -61,7 +61,6 @@ sub current_account {
     );
 
     if ($accounts && @$accounts) {
-        warn "got fallback account id ", $accounts->[0]->id;
         return $self->{_current_account} = $accounts->[0];
     }
     return $self->{_current_account} = undef;
@@ -81,7 +80,6 @@ sub current_url {
     $here->as_string;
 }
 
-
 sub render {
     my $self = shift;
 
@@ -98,107 +96,11 @@ sub render {
     $self->tpl_param('xs', $self->cookie('xs'));
 
     if ($self->request->uri =~ m!^/manage/login!) {
-
-        if (my $code = $self->req_param('code')) {
-            my ($userdata, $error) = $self->_get_auth0_user($code);
-            if ($error) {
-                warn "auth0 user error: $error";
-                return $self->login($error);
-            }
-            warn "Error: ", Data::Dump::pp(\$error);
-
-            my ($identity, $user);
-
-            # check if profile exists for any of the identities
-            for my $identity_id ($userdata->{user_id},
-                map { join "|", $_->{provider}, $_->{user_id} } @{$userdata->{identities}})
-            {
-                warn "Identity id: '$identity_id'";
-                $identity = NP::Model->user_identity->fetch(profile_id => $identity_id);
-                last if $identity;
-            }
-
-            my $email = $userdata->{email_verified} && $userdata->{email};
-            my $provider =
-                 $userdata->{identities}
-              && $userdata->{identities}->[0]
-              && $userdata->{identities}->[0]->{provider};
-
-            if ($identity) {
-                $identity->provider($provider) if $provider;
-                $identity->data(encode_json($userdata));
-            }
-            else {
-                warn "Didn't find identity in the database";
-
-                if (!$email) {
-                    return $self->login("Email not verified");
-                }
-
-                $identity = NP::Model->user_identity->create(
-                    profile_id => $userdata->{user_id},
-                    email      => $email,
-                    data       => encode_json($userdata),
-                    provider   => $provider,
-                );
-
-                # look for an account with a verified email address we
-                # can recognize.
-                my %uniq;
-                my @emails =
-                  map { $_->{profileData}->{email} }
-                  grep {
-                    my $p = $_->{profileData};
-                    my $ok =
-                         $p
-                      && $p->{email}
-                      && $p->{email_verified}
-                      && !$uniq{$p->{email}}++;
-                    $ok;
-                  } ({profileData => $userdata}, @{$userdata->{identities}});
-
-                for my $email (@emails) {
-                    warn "Testing email: $email";
-                    my ($email_user) = NP::Model->user->fetch(email => $email);
-                    if ($email_user) {
-                        warn "Found email user in the database";
-                        $user = $email_user;
-                        last;
-                    }
-                }
-            }
-
-            # we do this outside the identity check just in case for
-            # some reason we have an identity without a user
-            # associated.
-
-            $user = $user || $identity->user;
-
-            my $base36 = Math::BaseCalc->new(digits => ['a' .. 'k', 'm' .. 'z', 2 .. 9]);
-            if (!$user) {
-                my $username = join "", map { $base36->to_base(irand) } (undef) x 3;
-                $user = NP::Model->user->create(
-                    email    => $identity->email,
-                    name     => $userdata->{name},
-                    username => $username,
-                );
-                $user->save;
-            }
-
-            if ($identity->user_id != $user->id) {
-                $identity->user_id($user->id);
-            }
-
-            $identity->save;
-
-            $self->cookie("xs", join "", map { $base36->to_base(irand) } (undef) x 6);
-            $self->cookie($self->user_cookie_name, $user->id);
-            $self->user($user);
-
+        $self->handle_login();
+        if ($self->user) {
             my $r = $self->req_param('r') || '/manage';
             return $self->redirect($r);
         }
-
     }
 
     return $self->login unless $self->user;
@@ -206,12 +108,105 @@ sub render {
     if ($self->request->method eq 'get') {
         my $account = $self->current_account;
         my $account_param = $self->req_param('a');
-        if ($account_param and $account_param ne $account->id_token) {
+        if ($account_param and $account and $account_param ne $account->id_token) {
             return $self->redirect($self->current_url({a => $account->id_token}));
         }
     }
 
     return $self->manage_dispatch;
+}
+
+sub handle_login {
+    my $self = shift;
+    my $code = $self->req_param('code');
+    return unless $code;
+
+    my ($userdata, $error) = $self->_get_auth0_user($code);
+    if ($error) {
+        warn "auth0 user error: $error";
+        return $self->login($error);
+    }
+    warn "Error: ", Data::Dump::pp(\$error);
+
+    my ($identity, $user);
+
+    # check if profile exists for any of the identities
+    for my $identity_id ($userdata->{user_id},
+        map { join "|", $_->{provider}, $_->{user_id} } @{$userdata->{identities}})
+    {
+        warn "Identity id: '$identity_id'";
+        $identity = NP::Model->user_identity->fetch(profile_id => $identity_id);
+        last if $identity;
+    }
+    my $email = $userdata->{email_verified} && $userdata->{email};
+    my $provider =
+         $userdata->{identities}
+      && $userdata->{identities}->[0]
+      && $userdata->{identities}->[0]->{provider};
+    if ($identity) {
+        $identity->provider($provider) if $provider;
+        $identity->data(encode_json($userdata));
+    }
+    else {
+        warn "Didn't find identity in the database";
+        if (!$email) {
+            return $self->login("Email not verified");
+        }
+        $identity = NP::Model->user_identity->create(
+            profile_id => $userdata->{user_id},
+            email      => $email,
+            data       => encode_json($userdata),
+            provider   => $provider,
+        );
+
+        # look for an account with a verified email address we
+        # can recognize.
+        my %uniq;
+        my @emails =
+          map { $_->{profileData}->{email} }
+          grep {
+            my $p = $_->{profileData};
+            my $ok =
+                 $p
+              && $p->{email}
+              && $p->{email_verified}
+              && !$uniq{$p->{email}}++;
+            $ok;
+          } ({profileData => $userdata}, @{$userdata->{identities}});
+        for my $email (@emails) {
+            my ($email_user) = NP::Model->user->fetch(email => $email);
+            if ($email_user) {
+                warn "Found email user in the database";
+                $user = $email_user;
+                last;
+            }
+        }
+    }
+
+    # we do this outside the identity check just in case for
+    # some reason we have an identity without a user
+    # associated.
+    $user = $user || $identity->user;
+    my $base36 = Math::BaseCalc->new(digits => ['a' .. 'k', 'm' .. 'z', 2 .. 9]);
+    if (!$user) {
+        my $username = join "", map { $base36->to_base(irand) } (undef) x 3;
+        $user = NP::Model->user->create(
+            email    => $identity->email,
+            name     => $userdata->{name},
+            username => $username,
+        );
+        $user->save;
+    }
+    if ($identity->user_id != $user->id) {
+        $identity->user_id($user->id);
+    }
+
+    $identity->save;
+
+    $self->cookie("xs", join "", map { $base36->to_base(irand) } (undef) x 6);
+    $self->cookie($self->user_cookie_name, $user->id);
+
+    $self->user($user);
 }
 
 sub _auth0_config {
