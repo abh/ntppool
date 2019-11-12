@@ -26,7 +26,7 @@
 
 <h4 id="management-queries">Management queries</h4>
 
-<p>Verbiete in der Standart Konfiguration die "management queries". Für ntpd this muss man die "noquery" Einstellung in die Standart "restrict" Zeile hinzuf&uuml;gen. Zum Beispiel:</p>
+<p>Verbiete in der Standard Konfiguration die "management queries". Für ntpd this muss man die "noquery" Einstellung in die Standard "restrict" Zeile hinzuf&uuml;gen. Zum Beispiel:</p>
 
 [% INCLUDE "join/configuration/restrict-default.html" %]
 
@@ -88,6 +88,15 @@
 
 <p>
  Server im NTP Pool sollten auf den Einsatz der lokalen Uhrzeit verzichten.
+</p>
+
+<h4>Beachten sie die PTR DNS Anfragen</h4>
+
+<p>Manche Server Betreiber haben festgestellt, dass NTP Nutzer (oder deren Firewall)
+eine "Reverse DNS" (PTR) Anfrage auf die Server IP ausf&uuml;hren.
+Dies kann zu einem Anstieg an Anfragen auf dem Server f&uuml;hren. 
+Deswegen wird empfohlen die "time to live" (TTL) dieser Einträge zu erhöhen.
+Dies reduziert die Anzahl der Anfragen deutlich.
 </p>
 
 </div>
