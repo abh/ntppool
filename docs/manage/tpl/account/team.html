@@ -1,6 +1,6 @@
 <div class="row">
     <div class="col-md-10">
-        <h3>Account team</h3>
+        <h3>[% account.name | html %] - Account team</h3>
 
         <form id="account-form" action="/manage/account/team?a=[% account.id_token %]" method="post" accept-charset="utf-8">
             <input type="hidden" name="a" value="[% account.id ? account.id_token : 'new' %]" />
