@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Last-Translator: Taro Yoshimoto <el_harrouch_skikda@yahoo.com>\n"
+"Last-Translator: Satoru Yoshida <ramat@ram.ne.jp>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -21,6 +21,12 @@ msgstr "北米"
 msgid "South America"
 msgstr "南米"
 
+msgid "Europe"
+msgstr "ヨーロッパ"
+
+msgid "Oceania"
+msgstr "オセアニア"
+
 msgid "Global"
 msgstr "全世界"
 
@@ -31,34 +37,55 @@ msgstr "全てのプールサーバ"
 msgid "Translations"
 msgstr "翻訳"
 
-# mailinglists.html
-msgid  "NTP Pool mailing lists"
-msgstr "NTPプール メーリングリスト"
+# index.html
+msgid "Introduction"
+msgstr "はじめに"
 
+msgid "Active Servers"
+msgstr "アクティブサーバ"
+
+msgid "Links"
+msgstr "リンク"
+
+msgid "Terms of service"
+msgstr "利用規約"
+
+msgid "Subscribe in a reader"
+msgstr "リーダで購読する"
+
+msgid "Older news"
+msgstr "古いニュース"
+
+# mailinglists.html
 msgid  "subscribe"
 msgstr "登録"
 
 msgid  "archive"
 msgstr "アーカイブ"
 
-msgid  "Announcement list"
-msgstr "お知らせリスト"
+msgid "NTP Pool Forum"
+msgstr "NTP プール フォーラム"
+
+msgid "News site"
+msgstr "ニュースサイト"
 
 msgid  "Discussion list"
 msgstr "ディスカッションリスト"
 
-msgid  "Development list"
-msgstr "開発リスト"
+msgid "Development"
+msgstr "開発"
 
-msgid  "announcement_list_description"
-msgstr "非常に低トラフィックなNTPプールニュースのお知らせ。すべてのサーバ管理者は、お知らせリストに登録してください。"
+msgid "forum_description"
+msgstr "NTPプールに関する質問（および回答）、改善の提案、およびNTPサーバの維持と運用に関する話題。"
+
+msgid "news_description"
+msgstr "お知らせおよびニュースは、ニュースサイトまたはフォーラムに投稿されます。"
 
 msgid  "discussion_list_description"
 msgstr "このプロジェクトにより深く関与したいサーバ管理者(とユーザ)はディスカッションリストに登録して下さい。<br/>当然ですが、ntpに関する一般的な議論は、Usenetニュースグループ%1で行って下さい。(<a href=\"%2\">Google Groups</a>にもあります)。"
 
 msgid  "development_list_description"
-msgstr "現在の<a href=\"%1\">ntpプールコード</a>と<a href=\"%2\">pgeodns</a>開発のためのより技術的な(そして理想を言えば実用的な)議論はtimekeepers-devリストで行われています。"
-
+msgstr "<a href=\"%3\">開発フォーラム</a>では、<a href=\"%1\">ntpプールコード</a>と<a href=\"%2\">geodns</a>の開発に関するより技術的な（そして理想を言えば実用的な）議論が行われます。"
 
 # tpl/server.html
 msgid  "Back to the front page"
@@ -80,10 +107,10 @@ msgid  "This server is <span class=\"deletion\">scheduled for deletion</span> on
 msgstr "このサーバは%1に<span class=\"deletion\">削除予定</span>です。"
 
 msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
-msgstr "現在のスコア: %1 (%2以上のサーバだけがプールに使用されます)"
+msgstr "現在のスコア: %1 (%2よりスコアの高いサーバだけがプールに使用されます)"
 
 msgid  "What do the graphs mean?"
-msgstr "グラフは意味することは?"
+msgstr "グラフが意味することは?"
 
 msgid  "CSV log"
 msgstr "CSVログ"
