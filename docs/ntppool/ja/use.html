@@ -1,7 +1,7 @@
 [% page.title = 'プールを利用するためにNTPを設定する方法は?' %]
 
 <div class="block">
-	<h3><a name="use"></a>どうやったらpool.ntp.orgを利用出来るのでしょうか?</h3>
+	<h3 id="use">どうやったらpool.ntp.orgを利用出来るのでしょうか?</h3>
 
 	<p>
 	単にあなたのコンピュータをネットワークに同期させたい場合は、設定ファイルは非常に簡単です。
@@ -12,37 +12,45 @@
 
 	<p>
 	0, 1,2 及び 3.pool.ntp.orgの名称はランダムに設定されたサーバを指し、1時間毎に変更されます。
-	お使いのコンピュータの時刻がある程度きちんと(正確な時刻と数分以内の誤差で)設定されていることを確認してから、<tt>ntpdate pool.ntp.org</tt>コマンドを実行するか、腕時計を見て単に<tt>date</tt>コマンドを使用して時刻を合わせます。
-	ntpdを実行してしばらくしてから(大体30分～1時間)、<tt>ntpq -pn</tt>コマンドを実行すると下記のような感じで出力される筈です。
+	お使いのコンピュータの時刻がある程度きちんと(正確な時刻と数分以内の誤差で)設定されていることを確認してから、<code>ntpdate pool.ntp.org</code>コマンドを実行するか、腕時計を見て単に<code>date</code>コマンドを使用して時刻を合わせます。
+	ntpdを実行してしばらくしてから(大体30分～1時間)、<code>ntpq -pn</code>コマンドを実行すると下記のような感じで出力される筈です。
 	</p>
 
 	[% INCLUDE "ntppool/use/sample-ntpq.html" %]
 
 	<p>
 	IPアドレスが上記とあなたのお手元の結果とで異なるのは、プール内のランダムなIPアドレスが設定されているからです。
-	ここで重要なことは、アスタリスク(<tt>*</tt>)で行が始まっていることであり、これはあなたのコンピュータがインターネットからタイムサーバから時刻を取得していることを意味します。このようになっていれば、時刻設定で心配することはもう何もありません!
+	ここで重要なことは、アスタリスク(<code>*</code>)で行が始まっていることであり、これはあなたのコンピュータがインターネットからタイムサーバから時刻を取得していることを意味します。このようになっていれば、時刻設定で心配することはもう何もありません!
 	</p>
 	<p>
-	<tt>pool.ntp.org</tt>は世界中全てのタイムサーバを指定しているので、時間の正確さは理想的ではありません。
-	もしもうちょっと良い時刻精度
-	<a href="/zone/@">大陸毎のゾーン名</a> (例えば、<a href="/zone/europe">europe</a>、<a href="/zone/north-america">north-america</a>、<a href="/zone/oceania">oceania</a>、<a href="/zone/asia">asia</a>.pool.ntp.org)や国のゾーン名(スイスだとch.pool.ntp.orgのように)を指定するとより正確な時刻が得られます。全てのゾーンでは0.ch.pool.ntp.orgのように0、1、2のプリフィックスを使用する事が可能です。
+	<code>pool.ntp.org</code>
+	（または <code>0.pool.ntp.org</code>、<code>1.pool.ntp.org</code> など）を検索すると、
+	通常、あなたの国またはその近くのサーバの IP アドレスが返されます。
+	ほとんどのユーザにとって、これは最良の結果をもたらします。
+	<a href="/zone/@">大陸毎のゾーン名</a>
+	(例えば、<a href="/zone/europe">europe</a>、
+	<a href="/zone/north-america">north-america</a>、
+	<a href="/zone/oceania">oceania</a>、
+	<a href="/zone/asia">asia</a>.pool.ntp.org)
+	および国のゾーン名(スイスだとch.pool.ntp.orgのように)も使用できます。
+	全てのゾーンでは0.ch.pool.ntp.orgのように0、1、2のプリフィックスを使用する事が可能です。
 	しかしながら、あなたの国のゾーン設定が存在しなかったり、1つか2つのタイムサーバしか存在しないかも知れないことを注記しておきます。
-	もし、あなたの所から近いタイムサーバが分かれば(ネットワーク上の距離を<tt>traceroute</tt>や<tt>ping</tt>コマンドで測定する)、多分時刻はさらに正確になります。
 	</p>
 	<p>
 	もし<b>最近のバージョンのWindows</b>を使用しているのであれば、システム内蔵のntpクライアントを使用可能です。
-	このようにコマンドプロンプトでコマンドを実行して下さい。</p>
+	管理者としてコマンドプロンプトで下記を入力します。</p>
 <pre class="code">
-net time /setsntp:pool.ntp.org
+w32tm /config /syncfromflags:manual /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 </pre>
 	<p>
-	幾つかのバージョンのWindowsでは、コマンドプロンプトにて次のように複数のNTPサーバを指定することが可能です。
+	この方法は Windows 2003 以降で動作することが知られています。
+	より古いバージョンの Windows を使用している場合は、下記を試してください。
+	</p>
 <pre class="code">
 net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 </pre>
-	</p>
 	<p>
-	この方法はWindows 2000/XP/2003で動作することが知られています。管理者権限を持ったユーザでタスクバー上の時計を右クリックして、『日付と時刻の調整』を選択し、『インターネット時刻』タブでサーバ名を指定することでも同様の設定を行うことが可能です。
+	管理者権限を持ったユーザでタスクバー上の時計を右クリックして、『日付と時刻の調整』を選択し、『インターネット時刻』タブでサーバ名を指定することでも同様の設定を行うことが可能です。
 	</p>
 
 	<p>
@@ -51,12 +59,30 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 
 	<p>
 	もしあなたのWindowsシステムがドメインの一部である場合、そのコンピュータの時刻を勝手に更新できないかもしれません。
+	Windows の時間設定の詳細については、
 	<a href="http://technet.microsoft.com/en-us/library/cc773013%28WS.10%29.aspx">タイムサーバがどのように動作するのか</a>を参照して下さい。
 	</p>
 </div>
 
 <div class="block">
-	<h3>追記</h3>
+	<h3 id="notes">追記</h3>
+
+	<p>
+	<span class="hook">NTP プールが使用に適しているかどうかを検討してください</span>。
+	ビジネス、組織、または人間の生活が正しい時間を持っていることに依存している場合、
+	またはそれが間違っていることによって害を受ける可能性がある場合、
+	あなたは「インターネットからそれを手に入れる」べきではありません。
+	NTP プールは一般的に非常に高品質ですが、ボランティアが空き時間に運営するサービスです。
+	ローカルで信頼できるサービスのセットアップについては、機器およびサービスのベンダにご相談ください。
+	<a href="/tos.html">利用規約</a>もご覧ください。
+
+	<a href="http://www.meinbergglobal.com/english/products/ntp-time-server.htm">Meinberg</a>
+	のタイムサーバをお勧めします。
+	ただし、<a href="http://www.endruntechnologies.com/NTP-Servers/gps-cdma-ntp.htm">End Run</a>、
+	<a href="http://spectracom.com/products-services/precision-timing#anchor-2172">Spectracom</a>、
+	および他の多くからタイムサーバを見つけることもできます。
+	</p>
+
 	<p><span class="hook">もしあなたが固定のグローバルIPアドレスとそれなりのインターネット接続環境をお持ちの場合</span>	(帯域幅はあまり重要ではなく、安定していて負荷が重すぎないこと)、サーバプールへの参加を検討して下さい。
 	毎秒数百バイト程しか通信はありませんが、このプロジェクトの存続の助けになります。
 	<a href="/join.html">参加のためのページ</a>を読んで詳しい情報を確認して下さい。
@@ -72,8 +98,8 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 	<a href="/zone">ゾーンを見る</a>ことで各ゾーンにいくつのサーバが登録されているかを知ることが出来ます。</p>
 
 	<p><span class="hook">友好的にしましょう</span>。多くのサーバはボランティアで提供されており、殆どがファイルサーバやメールサーバ、Webサーバを運用している傍らでntpを実行させているのです。
-	ですから3つを超えるタイムサーバをあなたの設定に記述しないで下さい。また、<tt>burst</tt>や<tt>minpoll</tt>などで悪質な悪戯をしないで下さい。
-	このようなことが行われれば、このプロジェクトは遅かれ早かれ停止することになります。</p>
+	ですから 4 つを超えるタイムサーバをあなたの設定に記述しないで下さい。また、<code>burst</code>や<code>minpoll</code>などでいたずらしないで下さい。
+	ボランティアのタイムサーバに余分な負荷がかかるだけです。</p>
 
 	<p><span class="hook">あなたのコンピュータの<i>タイムゾーン設定</i>が正しいか確認して下さい</span>。
 	ntpd自身はUTCを内部で使用しているため、自分自身がどのタイムゾーンに属しているのか知ることが出来ません。</p>
