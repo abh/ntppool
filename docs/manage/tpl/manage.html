@@ -25,7 +25,11 @@
 			[% PROCESS tpl/manage/add_form.html %]
 		</div>
 
-		[% IF servers %]
+        [% IF servers  %]
+        <div class="">
+            <a href="[% combust.manage_url('/manage/servers/move') %]">Move servers to another account</a>
+        </div>
+
 			[% PROCESS tpl/manage/servers_help.html %]
 		[% END %]
 

@@ -32,6 +32,10 @@ sub render {
       if $self->request->uri =~ m!^/manage/server/update!;
     return $self->handle_delete
       if $self->request->uri =~ m!^/manage/server/delete!;
+    return $self->handle_move
+      if $self->request->uri =~ m!^/manage/servers/move!;
+
+
     return $self->show_manage if $self->request->uri =~ m!^/manage/servers!;
 
     return NOT_FOUND;
@@ -467,6 +471,92 @@ sub handle_delete {
 
         return OK, $self->evaluate_template('tpl/manage/delete_instructions.html');
     }
+}
+
+
+sub handle_move {
+    my $self = shift;
+
+    my $servers = $self->current_account->servers;
+    $self->tpl_param('servers', $servers);
+
+    my $errors = {};
+    $self->tpl_param('errors', $errors);
+
+    my $accounts;
+    if ($self->user->is_staff) {
+        # get all accounts available to any user in this account
+        my ($account_users) = NP::Model->user->get_users(
+            require_objects => ['accounts'],
+            query => ['accounts.id' => $self->current_account->id]
+        );
+        ($accounts) = NP::Model->account->get_accounts(
+            require_objects => ['users'],
+            query           => ['users.id' => [ map { $_->id } @$account_users ]],
+        );
+    }
+    else {
+        ($accounts) = NP::Model->account->get_accounts(
+            require_objects => ['users'],
+            query           => ['users.id' => $self->user->id]
+        );
+    }
+    $self->tpl_param('move_accounts', $accounts);
+
+    if ($self->request->method eq 'post') {
+        return 403 unless $self->check_auth_token;
+
+        my %selected = ();
+        for my $select ($self->request->req_params->get_all('selected_servers')) {
+            warn "selected: $select";
+            $selected{$select} = 1;
+        }
+        $self->tpl_param('selected', \%selected);
+
+        my $new_account_code = $self->req_param('new_account');
+        my ($new_account) = grep { $new_account_code eq $_->id_token } @$accounts;
+        unless ($new_account) {
+            $errors->{new_account} = 'Please select the account you are transferring the servers to';
+            return OK, $self->evaluate_template('tpl/manage/move.html');
+        }
+
+        warn "current account: ", $self->current_account->id_token;
+        warn "new     account: ", $new_account->id_token;
+
+        my $db  = NP::Model->db;
+        my $txn = $db->begin_scoped_work;
+
+        my @servers_to_move;
+        for my $server (@$servers) {
+            warn "was server selected? ", $server->id;
+            next unless $selected{$server->id};
+            warn "moving ", $server->id;
+            push @servers_to_move, $server;
+        }
+
+        if ($new_account_code && @servers_to_move) {
+
+            warn "really moving ...";
+
+            for my $server (@servers_to_move) {
+                my $old = $server->get_data_hash();
+
+                warn "changing account to token / id ", $new_account->token_id,
+                  $new_account->id;
+                $server->account_id($new_account->id);
+
+                NP::Model::Log->log_changes($self->user, "server-move",
+                    "Server account change",
+                    $server, $old);
+                $server->save;
+            }
+            $db->commit;
+            return OK, $self->evaluate_template('tpl/manage/move_done.html');
+        }
+    }
+
+    return OK, $self->evaluate_template('tpl/manage/move.html');
+
 }
 
 sub netspeed_human {

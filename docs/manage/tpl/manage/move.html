@@ -1,0 +1,54 @@
+<div class="block">
+
+<h3>Move servers to another account</h3>
+
+<p>
+
+</p>
+
+<form method="post" action="/manage/servers/move">
+
+<input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
+<input type="hidden" name="a" value="[% account.id_token %]">
+
+<div class="form-row">
+
+<div class="col-md-5">
+<select class="form-control" name="new_account">
+<option value="">Select an account ...</option>
+[% FOR acct = move_accounts %]
+<option value="[% acct.id_token %]">[% acct.name | html %] (#[% acct.id_token %])</option>
+[% END %]
+</select>
+<label for="new_account">
+    [% IF errors.new_account %][% errors.new_account | html %][% END %]
+</label>
+
+</div>
+</div>
+
+[% FOR server = servers %]
+<div class="form-check">
+    <input class="form-check-input" type="checkbox" name="selected_servers"
+        value="[% server.id %]"
+        [% server_id = server.id;
+           IF selected.$server_id;
+             'checked';
+           END
+        %]
+        id="selected_server_[% server.id %]">
+    <label class="form-check-label" for="selected_server_[% server.id %]">
+        [% server.ip %] (#[% server.id %])
+    </label>
+</div>
+[% END %]
+
+<div class="form-row"><div class="col">
+<input type="submit" class="btn btn-primary" name="submitbtn" value="Move servers" />
+</div></div>
+
+</form>
+
+<p><br><a href="[% combust.manage_url('/manage/servers') %]">Cancel</a> and return to servers page</p>
+
+</div>
