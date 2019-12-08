@@ -2,6 +2,12 @@
 
 <ul id="manage-sidebar" class="manage-sidebar nav nav-pills flex-column">
 
+    [% IF combust.user.is_staff %]
+    <li class="nav-item">
+    <a class="nav-link [% page.is_admin ? " active" : "" %]" href="[% combust.manage_url('/manage/admin') %]">Admin search</a>
+    </li>
+    [% END %]
+
     <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle account-name" data-toggle="dropdown" href="#" role="button" aria-haspopup="true"
             aria-expanded="false">
@@ -34,12 +40,6 @@
             [% END %]
         </div>
     </li>
-
-    [% IF combust.user.is_staff %]
-    <li class="nav-item">
-    <a class="nav-link [% page.is_admin ? " active" : "" %]" href="[% combust.manage_url('/manage/admin') %]">Admin search</a>
-    </li>
-    [% END %]
 
     <li class="nav-item">
     <a class="nav-link [% page.is_servers ? " active" : "" %]" href="[% combust.manage_url('/manage/servers') %]">My Servers</a>

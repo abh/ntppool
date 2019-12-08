@@ -99,6 +99,7 @@ sub handle_invitation {
     my ($code) = ($self->request->path =~ m{^/manage/account/invite/([^/]+)});
     warn "CODE: $code";
     return 404 unless $code;
+    return 403 unless $self->check_auth_token;
 
     my $db  = NP::Model->db;
     my $txn = $db->begin_scoped_work;
@@ -131,18 +132,19 @@ sub handle_invitation {
 
     NP::Model::Log->log_changes($user, "account-users",
         "Accepted invitation to account",
-        $invite->account,);
+        $invite->account);
     $db->commit or return $self->render_invite_error("database commit error");
 
-    # we accepted an invite for a new account that didn't have a team yet, so
+    # we accepted an invite for a new user that didn't have a account yet, so
     # just 'start over' ...
     unless ($self->current_account) {
         return $self->redirect($self->manage_url("/manage"));
     }
 
+    # go to the team page for the "new" account
     return $self->redirect(
         $self->manage_url(
-            "/manage/account/team", {a => $self->current_account->id_token}
+            "/manage/account/team", {a => $invite->account->id_token}
         )
     );
 }
