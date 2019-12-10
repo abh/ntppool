@@ -2,11 +2,11 @@
 
 [% IF allow_submit %]
 <p>
-Thank you for offering your server to the pool!<br>
-Please verify the following information.
+    Thank you for offering your server to the pool!<br>
+    Please verify the following information.
 </p>
 [% ELSE %]
-   [% PROCESS tpl/manage/add_form.html %]
+[% PROCESS tpl/manage/add_form.html %]
 [% END %]
 
 
@@ -15,83 +15,82 @@ Please verify the following information.
 [% END %]
 
 <form method="post" action="/manage/server/add" id="add_server_form">
-<input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
-<input type="hidden" name="a" value="[% account.id_token %]">
+    <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
+    <input type="hidden" name="a" value="[% account.id_token %]">
 
-[% FOR server = servers %]
+    [% FOR server = servers %]
 
-<div class="server_info" id="server[% loop.count %]">
+    <div class="server_info" id="server[% loop.count %]">
 
-<tt><b>[% server.ip %]</b></tt><br />
-
-
-[% IF server.listed %]
-<div class="alert alert-info">
-[% server.ip %] is already listed in your account.
-</div>
-[% NEXT; END %]
+        <tt><b>[% server.ip %]</b></tt><br />
 
 
-[% IF server.error %]
+        [% IF server.listed %]
+        <div class="alert alert-info">
+            [% server.ip %] is already registered in the system.
+        </div>
+        [% NEXT; END %]
 
-<div class="alert alert-error">
-[% server.error | html %]
-</div>
 
-</div>  [% # server info div %]
-[% NEXT; END %]
+        [% IF server.error %]
 
-[% IF server.data_missing %]
-<div class="alert alert-warning">
-[% server.data_missing | html %]
-</div>
-[% END %]
+        <div class="alert alert-error">
+            [% server.error | html %]
+        </div>
 
-[% IF server.zones AND server.zones.size > 1 %]
-   [% FOR zone = server.zones;
-        IF zone.name == "."; NEXT; END;
-   %]
-     <a href="[% combust.www_url(zone.url) %]">[% zone.description %]</a>[% UNLESS loop.last %], [% END %]
-     <input type="hidden" name="explicit_zone_[% server.ip %]" value="[% zone.name %]">
-   [% END %]
-[% ELSE %]
+    </div> [% # server info div %]
+    [% NEXT; END %]
 
-  <p>
+    [% IF server.data_missing %]
     <div class="alert alert-warning">
-       We couldn't determine which country this IP address is in, please specify:
-    <select name="explicit_zone_[% server.ip %]">
-        <option>Select country:</option>
-        [% FOR zone = all_zones %]
-            <option value="[% zone.name %]">[% zone.description %]</option>
-        [% END %]
-    </select><br>
-        If the country of your server isn't listed, please email
-        <a href="mailto:[% "support" | email %]">[% "support" | email %]</a>.
+        [% server.data_missing | html %]
+    </div>
+    [% END %]
+
+    [% IF server.zones AND server.zones.size > 1 %]
+    [% FOR zone = server.zones;
+    IF zone.name == "."; NEXT; END;
+    %]
+    <a href="[% combust.www_url(zone.url) %]">[% zone.description %]</a>[% UNLESS loop.last %], [% END %]
+    <input type="hidden" name="explicit_zone_[% server.ip %]" value="[% zone.name %]">
+    [% END %]
+    [% ELSE %]
+
+    <p>
+        <div class="alert alert-warning">
+            We couldn't determine which country this IP address is in, please specify:
+            <select name="explicit_zone_[% server.ip %]">
+                <option>Select country:</option>
+                [% FOR zone = all_zones %]
+                <option value="[% zone.name %]">[% zone.description %]</option>
+                [% END %]
+            </select><br>
+            If the country of your server isn't listed, please email
+            <a href="mailto:[% " support" | email %]">[% "support" | email %]</a>.
+
+        </div>
+    </p>
+
+    [% END %]
 
     </div>
-  </p>
 
-[% END %]
+    [% END # servers loop %]
 
-</div>
+    [% IF allow_submit %]
 
-[% END # servers loop %]
-
-[% IF allow_submit %]
-
-<input type="hidden" name="host" value="[% host | html %]">
-<h4>Comment</h4>
-<textarea name="comment" rows="6" cols="80">
+    <input type="hidden" name="host" value="[% host | html %]">
+    <h4>Comment</h4>
+    <textarea name="comment" rows="6" cols="80">
 </textarea><br />
-<span style="font-size:0.8em">(Tell us if we auto-configured your zones wrong)</span>
+    <span style="font-size:0.8em">(Tell us if we auto-configured your zones wrong)</span>
 
-<br><br>
-<input type="submit" name="yes" value="Yes, this is my server, add it!">
+    <br><br>
+    <input type="submit" name="yes" value="Yes, this is my server, add it!">
 </form>
 
 <p>
-No, please <a href="/manage/server">cancel</a>.
+    No, please <a href="/manage/server">cancel</a>.
 </p>
 
 [% END %]
-
