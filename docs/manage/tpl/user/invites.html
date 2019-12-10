@@ -13,7 +13,7 @@
             <tr>
                 <td>[% inv.account.name | html %]</td>
                 <td>
-                    <form action="[% inv.url %]">
+                    <form method="post" action="[% inv.url %]">
                         <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
                         <input type="submit" class="btn btn-primary btn-sm" value="Accept">
                     </form>

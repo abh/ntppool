@@ -261,12 +261,12 @@ sub get_server_info {
 
     if (my $s = NP::Model->server->fetch(ip => $server{ip})) {
         my $other =
-          $s->admin->id eq $self->user->id
+          $s->account_id eq $self->current_account->id
           ? ""
-          : "Email us your username to have it moved to this account";
+          : "Please email us for help.";
         unless ($s->deleted or $s->deletion_on) {
             $server{listed} = 1 unless $other;
-            $server{error} = "$server{ip} is already listed in the pool. $other\n";
+            $server{error}  = "$server{ip} is already registered in the pool. $other\n";
             return \%server;
         }
     }

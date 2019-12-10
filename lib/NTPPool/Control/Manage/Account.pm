@@ -16,7 +16,8 @@ sub manage_dispatch {
 
     if ($self->request->uri =~ m!^/manage/account/invite/!) {
         return $self->handle_invitation;
-    } elsif ($self->request->uri =~ m!^/manage/account/invites/!) {
+    }
+    elsif ($self->request->uri =~ m!^/manage/account/invites/!) {
         return $self->render_user_invitations;
     }
 
@@ -97,12 +98,8 @@ sub handle_invitation {
     my $self = shift;
 
     my ($code) = ($self->request->path =~ m{^/manage/account/invite/([^/]+)});
-    warn "CODE: $code";
+    warn "CODE: $code -- method: ", $self->request->method;
     return 404 unless $code;
-    return 403 unless $self->check_auth_token;
-
-    my $db  = NP::Model->db;
-    my $txn = $db->begin_scoped_work;
 
     my $invite = NP::Model->account_invite->fetch(code => $code);
     return 404 unless $invite;
@@ -114,6 +111,15 @@ sub handle_invitation {
     if ($invite->status ne "pending") {
         return $self->render_invite_error("Invitation code has been used or expired");
     }
+
+    # on post requests the auth token has already been checked, so if it's
+    # something else we show a confirmation page.
+    if ($self->request->method ne 'post') {
+        return $self->render_user_invitations($invite);
+    }
+
+    my $db  = NP::Model->db;
+    my $txn = $db->begin_scoped_work;
 
     warn "ADDING ", $self->user->id, " to account ", $invite->account->id;
 
@@ -143,10 +149,7 @@ sub handle_invitation {
 
     # go to the team page for the "new" account
     return $self->redirect(
-        $self->manage_url(
-            "/manage/account/team", {a => $invite->account->id_token}
-        )
-    );
+        $self->manage_url("/manage/account/team", {a => $invite->account->id_token}));
 }
 
 sub render_invite_error {
@@ -216,17 +219,20 @@ sub render_users_invite {
 }
 
 sub render_user_invitations {
-    my $self = shift;
+    my $self   = shift;
+    my $invite = shift;
 
-    my $user = $self->user;
+    my $user    = $self->user;
     my $invites = $user->pending_invites;
+    if ($invite and !grep { $_->id == $invite->id } @$invites) {
+        push @$invites, $invite;
+    }
 
-    $self->tpl_param('user', $user);
+    $self->tpl_param('user',    $user);
     $self->tpl_param('invites', $invites);
 
     return OK, $self->evaluate_template('tpl/user/invites.html');
 }
-
 
 sub render_users {
     my ($self, $account) = @_;
