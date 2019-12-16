@@ -310,7 +310,7 @@ sub manage_dispatch {
         return $self->show_staff;
     }
 
-    if ($self->request->uri =~ m{^/manage/?$}) {
+    if ($self->request->uri eq "/" or $self->request->uri =~ m{^/manage/?$}) {
         my $account = $self->current_account;
         my $redirect = URI->new('/manage/servers');
         $redirect->query_param(a => $account->id_token) if $account;
