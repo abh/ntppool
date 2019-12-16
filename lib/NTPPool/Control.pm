@@ -287,6 +287,8 @@ sub cache_control {
 sub post_process {
     my $self = shift;
 
+    my $cspdomains = "st.ntppool.org st.pimg.net";
+
     my @headers = (
 
         # report-uri.com headers
@@ -295,7 +297,15 @@ sub post_process {
         ],
         ['NEL' => '{"report_to":"default","max_age":31536000,"include_subdomains":true}'],
         [   'Content-Security-Policy' =>
-              q[default-src 'none'; form-action 'self'; frame-ancestors 'none'; connect-src 'self' 8ll7xvh0qt1p.statuspage.io; font-src fonts.gstatic.com; img-src 'self' st.pimg.net *.mapper.ntppool.org; script-src 'self' 'unsafe-inline' cdn.statuspage.io st.pimg.net www.mapper.ntppool.org; style-src 'self' fonts.googleapis.com st.pimg.net; report-uri https://ntp.report-uri.com/r/d/csp/wizard]
+              join(" ",
+              qq[default-src 'none'; form-action 'self'; frame-ancestors 'none';],
+              qq[connect-src 'self' 8ll7xvh0qt1p.statuspage.io;],
+              qq[font-src fonts.gstatic.com;],
+              qq[img-src 'self' $cspdomains *.mapper.ntppool.org;],
+              qq[script-src 'self' 'unsafe-inline' cdn.statuspage.io $cspdomains www.mapper.ntppool.org;],
+              qq[style-src 'self' fonts.googleapis.com $cspdomains;],
+              qq[report-uri https://ntp.report-uri.com/r/d/csp/wizard],
+              ),
         ],
 
         # security features
