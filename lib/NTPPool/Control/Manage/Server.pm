@@ -501,6 +501,7 @@ sub handle_move {
             query           => ['users.id' => $self->user->id]
         );
     }
+    $accounts = [ grep { $_->id != $self->current_account->id } @$accounts ];
     $self->tpl_param('move_accounts', $accounts);
 
     if ($self->request->method eq 'post') {
@@ -551,6 +552,9 @@ sub handle_move {
                 $server->save;
             }
             $db->commit;
+            $self->tpl_param('old_account', $self->current_account);
+            $self->tpl_param('new_account', $new_account);
+            $self->tpl_param('servers_moved', \@servers_to_move);
             return OK, $self->evaluate_template('tpl/manage/move_done.html');
         }
     }

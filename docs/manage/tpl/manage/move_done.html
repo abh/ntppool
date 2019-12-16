@@ -2,12 +2,15 @@
 
     <h3>Server move completed</h3>
 
-    <b>todo ...</b>
+    Moved from
+    <a href="[% combust.manage_url('/manage/servers', a => old_account.id_token) %]">[% old_account.name | html %]</a>
+    to
+    <a href="[% combust.manage_url('/manage/servers', a => new_account.id_token) %]">[% new_account.name | html %]</a>
 
     <ul>
-        <li>list servers moved</li>
-        <li>link to new account</li>
-        <li>link to old account</li>
+        [% FOR s = servers_moved %]
+        <li>[% s.ip %]</li>
+        [% END %]
     </ul>
 
     <p><br><a href="[% combust.manage_url('/manage/servers') %]">Return to servers page</p>
