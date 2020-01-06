@@ -110,9 +110,7 @@ CREATE TABLE `zone_server_counts` (
 CREATE TABLE `user_privileges` (
   `user` int(10) unsigned NOT NULL default '0',
   `see_all_servers` tinyint(1) not null default 0,
-  `see_all_user_profiles` tinyint(1) NOT NULL default '0',
-  UNIQUE KEY `user` (`user`),
-  CONSTRAINT `user_privileges` FOREIGN KEY (`user`) REFERENCES `users` (`id`) ON DELETE CASCADE
+  `see_all_user_profiles` tinyint(1) NOT NULL default '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE server_urls (
@@ -190,11 +188,7 @@ alter table zone_server_counts
 
 #9
 alter table user_privileges
-   drop foreign key user_privileges;
-
-alter table user_privileges
-   change user   user_id   int unsigned not null,
-   add constraint `user_privileges_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+   change user   user_id   int unsigned not null;
 
 #10
 alter table server_urls
@@ -240,8 +234,6 @@ alter table zones
    add constraint `zones_parent` foreign key (parent_id) references zones (id);
 
 #17
-alter table user_privileges drop constraint user_privileges_user;
-alter table user_privileges drop key `user`;
 alter table user_privileges add primary key `user_id_idx` (user_id);
 alter table user_privileges add
    CONSTRAINT `user_privileges_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
