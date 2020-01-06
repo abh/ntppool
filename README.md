@@ -6,9 +6,15 @@ See the LICENSE file for detailed copyright and licensing information.
 
 For installation instructions, see https://dev.ntppool.org/install/
 
+Other relevant repositories are at
+
+- https://github.com/abh/geodns/
+- https://github.com/ntppool/monitor/
+- https://github.com/ntppool/archiver/
+
 ## License
 
-* Copyright 2005-2012 Ask Bjoern Hansen, Develooper LLC
+* Copyright 2005-2020 Ask Bjørn Hansen, Develooper LLC
 * Copyright 2003-2005 Adrian von Bidder
 
    Licensed under the Apache License, Version 2.0 (the "License");
