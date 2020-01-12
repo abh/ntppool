@@ -71,8 +71,9 @@ sub get_graph {
         }
     );
 
+    my $splash = $ENV{splash_service} || 'splash';
     my $resp =
-      $ua->post("http://splash:8050/render.png",
+      $ua->post("http://${splash}/render.png",
        "Content-Type" => "application/json",
        Content => $data,
        );
