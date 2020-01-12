@@ -1,38 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-[% title = page.title || 'the internet cluster of ntp servers' %]
-<title>pool.ntp.org: [% title | html %]</title>
-
-                [%- IF page.canonical %]
-                <link rel="canonical" href="[% page.canonical | html %]">
-                [% END -%]
-
-                <script type="text/javascript">
-                  if (!NP) var NP = {};
-                </script>
-
-                [% IF 0;
-                    # Couldn't get typekit to work with phantomjs
-                %]
-                <script type="text/javascript" src="//use.typekit.com/giv8ugp.js"></script>
-                <script type="text/javascript">try{Typekit.load();}catch(e){}</script>
-                [% END %]
-
-		<link rel="stylesheet" type="text/css" href="[% combust.static_url("/css/reset-fonts-grids.css") %]">
-
-		<link rel="stylesheet" href="[% combust.static_url("/css/master.css") %]" type="text/css" media="screen" />
-		<link rel="stylesheet" href="[% combust.static_url("/css/content.css") %]" type="text/css" media="screen" />
-		<link rel="shortcut icon" href="[% combust.static_url("/images/favicon.ico") %]" type="image/x-icon" />
-
+  [% PROCESS tpl/common/html_head.html %]
 </head>
 <body>
-
-<div id="doc3"><div id="yui-main"><div class="yui-b">
+<div class="container-fluid">
+<div class="col-md-10">
 
 [% content %]
 
-</div></div></div>
+</div></div>
 
 [% PROCESS tpl/common/js.html %]
 

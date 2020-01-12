@@ -1,33 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-[% title = page.title || 'the internet cluster of ntp servers' %]
-<title>pool.ntp.org: [% title | html %]</title>
-
-[%- IF page.canonical %]
-<link rel="canonical" href="[% page.canonical | html %]">
-[% END -%]
-
-<script type="text/javascript">
-  if (!NP) var NP = {};
-</script>
-
-[% page.css.unshift( combust.static_group("common.css") );
-   FOR css_elem = page.css;
-       FOR css = css_elem.list;
-           IF css.match('^/');
-               t_css = css;
-           ELSE;
-               t_css = '/css/' _ css;
-           END;
- %]<link rel="stylesheet" href="[% combust.static_url(t_css) %]" type="text/css">
- [% END; # FOR css
-   END;  # FOR css_elem
- %]
-
-<link rel="shortcut icon" href="[% combust.static_url("/images/favicon.ico") %]" type="image/x-icon" />
-
-</head>
+  <head>
+    [% PROCESS tpl/common/html_head.html %]
+  </head>
 
 <body>
 [% PROCESS "tpl/google-analytics.html" %]

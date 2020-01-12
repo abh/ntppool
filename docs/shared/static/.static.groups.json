@@ -11,11 +11,16 @@
   "graphs.js": {
       "files": [
           "cdn/libs/modernizr/2/modernizr.ntppool.js",
-          "cdn/libs/spin.js/1/spin.min.js",
+          "cdn/libs/spin.js/4/spin.min.js",
           "js/jquery.spin.js",
           "js/graphs.server.js",
           "js/graphs.zone.js",
           "js/graphs.js"
+      ]
+  },
+  "graphs.css": {
+      "files": [
+          "cdn/libs/spin.js/4/spin.min.css"
       ]
   },
   "admin.js": {
