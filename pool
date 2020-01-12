@@ -100,7 +100,8 @@ sub server_information {
     push @r, sprintf "score: %.1f, in pool: %i, in server list: %i\n",
       $server->score, $server->in_pool, $server->in_server_list;
     push @r, "Hostname: " . $server->hostname . "\n";
-    my $country = get("http://geoip/api/country?ip=" . $server->ip);
+    my $geoip = $ENV{geoip_service} || 'geoip';
+    my $country = get("http://${geoip}/api/country?ip=" . $server->ip);
     push @r, "Country: $country, " if $country;
     push @r, "Netspeed: " . $server->netspeed . "\n";
     push @r, "Zones: ", join(", ", map { $_->name } @zones), "\n";

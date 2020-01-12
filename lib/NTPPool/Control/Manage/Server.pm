@@ -307,10 +307,12 @@ sub get_server_info {
         return \%server;
     }
 
-    my $res = $self->ua->get("http://geoip/api/country?ip=$server{ip}");
+    my $geoip = $ENV{geoip_service} || 'geoip';
+    my $res = $self->ua->get("http://${geoip}/api/country?ip=$server{ip}");
     $server{geoip_country} = $res->decoded_content if $res->is_success;
 
-    my $country = $self->req_param('explicit_zone_' . $server{ip}) || $server{geoip_country};
+    my $country =
+      $self->req_param('explicit_zone_' . $server{ip}) || $server{geoip_country};
 
     $country = 'UK' if $country eq 'GB';
     warn "Country: $country\n";
