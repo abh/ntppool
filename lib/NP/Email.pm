@@ -56,8 +56,9 @@ sub sendmail {
     warn "email to send ($deployment_mode)\n", $email->as_string(), "\n";
 
     # kubernetes relay service must be running on 'smtp' port 25
+    my $smtp_service = $ENV{smtp_service} || 'smtp';
     my $transport = Email::Sender::Transport::SMTP->new(
-        {   host => 'smtp',
+        {   host => $smtp_service,
             port => 25,
         }
     );
