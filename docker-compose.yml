@@ -10,6 +10,8 @@ services:
       MYSQL_DATABASE: ntppool
       MYSQL_USER: ntppool
       MYSQL_PASSWORD: pooldev
+    #ports:
+    #  - "3312:3306"
   update-db:
     image: quay.io/ntppool/ntppool:beta
     volumes:
@@ -20,7 +22,7 @@ services:
     links:
       - mysql
   web:
-    image: quay.io/ntppool/ntppool:beta
+    image: quay.io/ntppool/ntppool:latest
     command: ./docker-run
     volumes:
       - .:/ntppool
