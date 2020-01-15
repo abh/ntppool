@@ -287,7 +287,7 @@ sub cache_control {
 sub post_process {
     my $self = shift;
 
-    my $cspdomains = "st.ntppool.org st.pimg.net";
+    my $cspdomains = "st.ntppool.org st.pimg.net news.ntppool.org";
 
     my @headers = (
 
