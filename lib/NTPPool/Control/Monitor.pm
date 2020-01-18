@@ -165,7 +165,8 @@ sub upload {
             }
             $obj->score_raw($new_score);
             $obj->score_ts($ts);
-            $obj->stratum($status->{stratum});
+            $obj->stratum($status->{stratum})
+              if $status->{stratum} > 0;
         }
 
         my %log_score = (
