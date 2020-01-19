@@ -18,6 +18,9 @@
 <div class="server">
 [% IF server.hostname %]Hostname: <b>[% server.hostname | html %]</b><br />[% END %]
 IP: <b><a href="[% server.url %]">[% server.ip | html %]</a></b><br />
+[% UNLESS server.in_pool %]
+<i>[% |l %]Not active in the pool, monitoring only[% END %]</i><br/>
+[% END %]
 Current score: <b>[% server.score %]</b><br />
 Zones: [% FOR zone = server.zones_display %] <a href="[% zone.url %]">[% zone.name %]</a>[% END  %]<br/>
 [% IF server.urls;

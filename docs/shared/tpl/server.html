@@ -30,18 +30,13 @@ IP <input type="text" name="ip">
 
 
 <p>
-[% UNLESS server.in_pool%]
+[% UNLESS server.in_pool %]
 <i>[% |l %]Not active in the pool, monitoring only[% END %]</i><br/>
 [% END %]
 
-[% IF server.admin.public_profile
-       OR combust.user.id == server.admin.id
-       OR combust.user.is_staff %]
-Server admin: <a href="/user/[% (server.admin.username || server.admin.id) | html | uri %]"
->[% server.admin.username || server.admin.email %]</a>
-[% IF combust.user.id == server.admin.id OR combust.user.is_staff %]
-(<a href="mailto:[% server.admin.email |uri%]">[% server.admin.email |html %]</a>)
-[% END %]
+[% IF server.account.public_profile OR combust.user.is_staff %]
+Account: <a href="[% server.account.public_url | html %]"
+>[% server.account.display_name | html %]</a> (#[% server.account.id_token | html %])
 <br/>
 [% END %]
 <span id="zones">

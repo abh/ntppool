@@ -35,6 +35,11 @@ sub public_url {
     return $config->base_url('ntppool') . '/a/' . $self->url_slug;
 }
 
+sub display_name {
+    my $self = shift;
+    return $self->name || $self->organization_name || $self->url_slug;
+}
+
 sub validate {
     my $account = shift;
     my $errors = {};
