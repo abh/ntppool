@@ -747,6 +747,8 @@ CREATE TABLE account_invites (
   constraint `account_invites_sent_by_fk` foreign key (`sent_by_id`) references users (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+#85
+update accounts set name = url_slug where name = '' and url_slug > '';
 
 #todo
 alter table user_privileges
