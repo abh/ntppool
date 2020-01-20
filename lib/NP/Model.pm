@@ -453,6 +453,7 @@ __PACKAGE__->meta->setup(
     score      => { type => 'scalar', default => '0', length => 64, not_null => 1 },
     step       => { type => 'scalar', default => '0', length => 64, not_null => 1 },
     offset     => { type => 'scalar', length => 64 },
+    rtt        => { type => 'integer' },
     attributes => { type => 'text', length => 65535 },
   ],
 

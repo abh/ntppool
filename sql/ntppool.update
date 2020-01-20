@@ -750,6 +750,10 @@ CREATE TABLE account_invites (
 #85
 update accounts set name = url_slug where name = '' and url_slug > '';
 
+#86
+alter table log_scores
+  add rtt mediumint default null after offset;
+
 #todo
 alter table user_privileges
   drop see_all_user_profiles;

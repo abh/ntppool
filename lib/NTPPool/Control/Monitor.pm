@@ -170,13 +170,14 @@ sub upload {
         }
 
         my %log_score = (
+            ts         => int($status->{ts}),
             step       => $step,
             offset     => $status->{offset},
-            ts         => int($status->{ts}),
+            rtt        => int($status->{rtt}),
             attributes => {},
         );
 
-        for my $a (qw(leap error)) {
+        for my $a (qw(leap error warning)) {
             $log_score{attributes}->{$a} = $status->{$a}
               if $status->{$a};
         }
