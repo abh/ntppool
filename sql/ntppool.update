@@ -754,6 +754,10 @@ update accounts set name = url_slug where name = '' and url_slug > '';
 alter table log_scores
   add rtt mediumint default null after offset;
 
+#87
+# fix modified_on being updated by the change to add accounts
+update vendor_zones set modified_on = greatest(approved_on, created_on);
+
 #todo
 alter table user_privileges
   drop see_all_user_profiles;
