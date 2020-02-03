@@ -189,10 +189,11 @@ sub render_admin {
 
                 my $email =
                   Email::Stuffer->from(NP::Email::address("vendors"))
-                  ->to(NP::Email::address($vz->user->email))
+                  ->to($vz->user->email)
                   ->cc(NP::Email::address("notifications"))
                   ->reply_to(NP::Email::address("vendors"))
-                  ->subject("Vendor zone activated: " . $vz->zone_name)->text_body($msg);
+                  ->subject("Vendor zone activated: " . $vz->zone_name)
+                  ->text_body($msg);
 
                 my $return = NP::Email::sendmail($email->email);
                 warn Data::Dumper->Dump([\$msg, \$email, \$return], [qw(msg email return)]);
