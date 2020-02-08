@@ -164,9 +164,20 @@ sub log_scores_csv {
     my ($self, $options) = @_;
     my $history = $self->history($options);
     my $csv     = Text::CSV_XS->new();
+
+    if (defined $options->{monitor_id}) {
+        # set monitor_id to 'undef' (to look for NULL records)
+        # if '0' is requested
+        $options->{monitor_id} = undef
+          if ($options->{monitor_id} == 0);
+    }
+    else {
+        delete $options->{monitor_id};
+    }
+
     $csv->combine(
         qw(ts_epoch ts offset step score),
-        defined $options->{monitor_id} ? qw(monitor_id monitor_name) : (),
+        exists $options->{monitor_id} ? qw(monitor_id monitor_name) : (),
         qw(leap error)
     );
 
@@ -179,7 +190,7 @@ sub log_scores_csv {
         my $monitor_id;
         my $monitor_name;
 
-        if ($options->{monitor_id}) {
+        if (exists $options->{monitor_id}) {
             $monitor_id = $l->monitor_id;
             if ($monitor_id) {
                 $monitor_name =
@@ -187,13 +198,17 @@ sub log_scores_csv {
                   ? $monitors{$monitor_id}
                   : ($monitors{$monitor_id} = $l->monitor->name || "");
             }
+            else {
+                $monitor_name = 'Overall';
+                $monitor_id = 0;
+            }
         }
 
         $csv->combine(
             $l->ts->epoch,
             $l->ts->strftime("%F %T"),
             map ({ $l->$_ } qw(offset step score)),
-            ($options->{monitor_id} ? ($monitor_id, $monitor_name) : ()),
+            (exists $options->{monitor_id} ? ($monitor_id, $monitor_name) : ()),
             ($l->attributes ? $l->attributes->{leap}  : 0),
             ($l->attributes ? $l->attributes->{error} : ""),
         );
