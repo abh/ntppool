@@ -1,0 +1,5 @@
+Contact: ask@ntppool.org
+Contact: help@ntppool.org
+Encryption: https://keybase.io/ask/pgp_keys.asc
+Preferred-Languages: en,da
+Canonical: https://www.ntppool.org/.well-known/security.txt
