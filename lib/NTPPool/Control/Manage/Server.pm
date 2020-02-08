@@ -5,8 +5,8 @@ use base qw(NTPPool::Control::Manage);
 use NP::Model;
 use Combust::Constant qw(OK NOT_FOUND);
 use Combust::Config ();
-use NP::Email      ();
-use Email::Stuffer ();
+use NP::Email       ();
+use Email::Stuffer  ();
 use Sys::Hostname qw(hostname);
 use Socket qw(inet_ntoa);
 use Socket6;
@@ -35,7 +35,6 @@ sub render {
     return $self->handle_move
       if $self->request->uri =~ m!^/manage/servers/move!;
 
-
     return $self->show_manage if $self->request->uri =~ m!^/manage/servers!;
 
     return NOT_FOUND;
@@ -55,7 +54,7 @@ sub show_manage {
             query => [
                 or => [
                     account_id => [$self->current_account->id],
-                    (@server_ids ? (server_id  => \@server_ids) : ()),
+                    (@server_ids ? (server_id => \@server_ids) : ()),
                 ],
             ],
             sort_by => "created_on desc",
@@ -72,7 +71,7 @@ sub handle_add {
     return 403 unless $self->check_auth_token;
 
     my $account = $self->current_account;
-    my $host = $self->req_param('host');
+    my $host    = $self->req_param('host');
     $host =~ s/^\s+|\s+$//g;
 
     $self->tpl_param('host', $host);
@@ -86,7 +85,7 @@ sub handle_add {
         next unless $server;
         unless (Net::IP->new($host)) {
             $server->{hostname} = $host;
-            $server->{account} = $account;
+            $server->{account}  = $account;
         }
         push @servers, $server;
     }
@@ -126,13 +125,16 @@ sub handle_add {
             }
         }
         $self->tpl_param(servers => \@added);
-        my $msg   = $self->evaluate_template('tpl/manage/add_email.txt');
-        my $email = Email::Stuffer->from(NP::Email::address("sender"))
-          ->to(NP::Email::address("notifications"))->reply_to($self->user->email)->text_body($msg);
+        my $msg = $self->evaluate_template('tpl/manage/add_email.txt');
+        my $email =
+          Email::Stuffer->from(NP::Email::address("sender"))
+          ->to(NP::Email::address("notifications"))->reply_to($self->user->email)
+          ->text_body($msg);
 
         warn "added: ", Data::Dump::pp(\@added);
 
-        my $subject = "New addition to the NTP Pool: " . join(", ", map { $_->{ip} } @added);
+        my $subject =
+          "New addition to the NTP Pool: " . join(", ", map { $_->{ip} } @added);
         if (grep { $_->{hostname} } @added) {
             $subject .= " (" . join(", ", map { $_->{hostname} } @added) . ")";
         }
@@ -141,7 +143,8 @@ sub handle_add {
         my $return = NP::Email::sendmail($email->email);
         warn Data::Dumper->Dump([\$msg, \$email, \$return], [qw(msg email return)]);
 
-        return $self->redirect($self->manage_url('/manage/servers') . '#s-' . ($s && $s->ip));
+        return $self->redirect(
+            $self->manage_url('/manage/servers') . '#s-' . ($s && $s->ip));
     }
 
     my @all_zones = NP::Model->zone->get_zones(
@@ -188,12 +191,13 @@ sub _add_server {
     my ($self, $server) = @_;
 
     my $comment = $self->req_param('comment');
-    $self->tpl_param('comment',    $comment);
-    $self->tpl_param('scores_url', $self->config->base_url('ntppool') . '/scores/' . $server->{ip});
+    $self->tpl_param('comment', $comment);
+    $self->tpl_param('scores_url',
+        $self->config->base_url('ntppool') . '/scores/' . $server->{ip});
 
     my $s;
 
-    my $db = NP::Model->db;
+    my $db  = NP::Model->db;
     my $txn = $db->begin_scoped_work;
 
     if ($s = NP::Model->server->fetch(ip => $server->{ip})) {
@@ -224,12 +228,8 @@ sub _add_server {
         }
     }
 
-    NP::Model::Log->log_changes(
-        $self->user,
-        "server-create",
-        "Server added." . ($comment =~ m/\S/ ? "\n\n$comment" : ""),
-        $s,
-    );
+    NP::Model::Log->log_changes($self->user, "server-create",
+        "Server added." . ($comment =~ m/\S/ ? "\n\n$comment" : ""), $s,);
 
     #local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
     $s->save(cascade => 1);
@@ -281,7 +281,7 @@ sub get_server_info {
     warn "JS: ", $res->decoded_content();
 
     my $json = JSON::XS->new->utf8;
-    my %ntp = eval { +%{$json->decode($res->decoded_content)} };
+    my %ntp  = eval { +%{$json->decode($res->decoded_content)} };
     if ($@) {
         $server{error} = "Could not decode NTP response from trace server";
         return \%server;
@@ -308,7 +308,7 @@ sub get_server_info {
     }
 
     my $geoip = $ENV{geoip_service} || 'geoip';
-    my $res = $self->ua->get("http://${geoip}/api/country?ip=$server{ip}");
+    my $res   = $self->ua->get("http://${geoip}/api/country?ip=$server{ip}");
     $server{geoip_country} = $res->decoded_content if $res->is_success;
 
     my $country =
@@ -324,7 +324,8 @@ sub get_server_info {
 sub req_server {
     my $self      = shift;
     my $server_id = $self->req_param('server') or return;
-    my $server    = NP::Model->server->fetch(($server_id =~ m/[.:]/ ? 'ip' : 'id') => $server_id);
+    my $server =
+      NP::Model->server->fetch(($server_id =~ m/[.:]/ ? 'ip' : 'id') => $server_id);
     return unless $server and $server->admin->id == $self->user->id;
     $server;
 }
@@ -366,12 +367,12 @@ sub handle_mode7_check {
 }
 
 sub handle_update_netspeed {
-    my $self = shift;
+    my $self   = shift;
     my $server = $self->req_server or return NOT_FOUND;
     if (my $netspeed = $self->req_param('netspeed')) {
         return 403 unless $self->check_auth_token;
 
-        my $db = NP::Model->db;
+        my $db  = NP::Model->db;
         my $txn = $db->begin_scoped_work;
 
         my $old = $server->get_data_hash;
@@ -383,7 +384,9 @@ sub handle_update_netspeed {
             $server->join_zone('@');
         }
 
-        NP::Model::Log->log_changes($self->user, "server-netspeed", "set netspeed to " . $server->netspeed, $server, $old);
+        NP::Model::Log->log_changes($self->user, "server-netspeed",
+            "set netspeed to " . $server->netspeed,
+            $server, $old);
 
         $server->save;
 
@@ -407,11 +410,11 @@ sub handle_update_netspeed {
 }
 
 sub handle_delete {
-    my $self = shift;
+    my $self   = shift;
     my $server = $self->req_server or return NOT_FOUND;
     $self->tpl_param(server => $server);
 
-    my $db = NP::Model->db;
+    my $db  = NP::Model->db;
     my $txn = $db->begin_scoped_work;
 
     if ($self->request->method eq 'post') {
@@ -429,13 +432,9 @@ sub handle_delete {
             );
             if ($date and $date > DateTime->now) {
                 $server->deletion_on($date);
-                NP::Model::Log->log_changes(
-                    $self->user,
-                    "server-delete",
+                NP::Model::Log->log_changes($self->user, "server-delete",
                     "Deletion scheduled for " . $date->ymd,
-                    $server,
-                    $old
-                );
+                    $server, $old);
                 $server->save;
             }
         }
@@ -445,13 +444,9 @@ sub handle_delete {
             my $old = $server->get_data_hash;
 
             $server->deletion_on(undef);
-            NP::Model::Log->log_changes(
-                $self->user,
-                "server-delete",
+            NP::Model::Log->log_changes($self->user, "server-delete",
                 "Deletion cancelled by " . $self->user->who,
-                $server,
-                $old
-            );
+                $server, $old);
             $server->save;
         }
     }
@@ -475,7 +470,6 @@ sub handle_delete {
     }
 }
 
-
 sub handle_move {
     my $self = shift;
 
@@ -487,14 +481,15 @@ sub handle_move {
 
     my $accounts;
     if ($self->user->is_staff) {
+
         # get all accounts available to any user in this account
         my ($account_users) = NP::Model->user->get_users(
             require_objects => ['accounts'],
-            query => ['accounts.id' => $self->current_account->id]
+            query           => ['accounts.id' => $self->current_account->id]
         );
         ($accounts) = NP::Model->account->get_accounts(
             require_objects => ['users'],
-            query           => ['users.id' => [ map { $_->id } @$account_users ]],
+            query           => ['users.id' => [map { $_->id } @$account_users]],
         );
     }
     else {
@@ -503,7 +498,7 @@ sub handle_move {
             query           => ['users.id' => $self->user->id]
         );
     }
-    $accounts = [ grep { $_->id != $self->current_account->id } @$accounts ];
+    $accounts = [grep { $_->id != $self->current_account->id } @$accounts];
     $self->tpl_param('move_accounts', $accounts);
 
     if ($self->request->method eq 'post') {
@@ -519,7 +514,8 @@ sub handle_move {
         my $new_account_code = $self->req_param('new_account');
         my ($new_account) = grep { $new_account_code eq $_->id_token } @$accounts;
         unless ($new_account) {
-            $errors->{new_account} = 'Please select the account you are transferring the servers to';
+            $errors->{new_account} =
+              'Please select the account you are transferring the servers to';
             return OK, $self->evaluate_template('tpl/manage/move.html');
         }
 
@@ -554,8 +550,8 @@ sub handle_move {
                 $server->save;
             }
             $db->commit;
-            $self->tpl_param('old_account', $self->current_account);
-            $self->tpl_param('new_account', $new_account);
+            $self->tpl_param('old_account',   $self->current_account);
+            $self->tpl_param('new_account',   $new_account);
             $self->tpl_param('servers_moved', \@servers_to_move);
             return OK, $self->evaluate_template('tpl/manage/move_done.html');
         }

@@ -44,18 +44,24 @@ sub data {
           "v=DMARC1; p=reject; pct=100; rua=mailto:re+h6dgrfy2ghh\@dmarc.postmarkapp.com; sp=reject; aspf=r;";
 
         $data->{""}->{txt} = [
+
             # Fastly TLS verification
-            {txt => "_globalsign-domain-verification=mVYWxIl-2ab_B1yPPFxEmDCLrBcl6ucouXJOU_P0_C"},
+            {   txt =>
+                  "_globalsign-domain-verification=mVYWxIl-2ab_B1yPPFxEmDCLrBcl6ucouXJOU_P0_C"
+            },
         ];
 
         if ($self->origin eq "pool.ntp.org") {
+
             # google domain verification
             $data->{"v4zgfk4oagsu"}->{cname} = "gv-35off4weczdcxg.dv.googlehosted.com.";
-            push @{$data->{""}->{txt}}, {txt => "facebook-domain-verification=sfjgxys7hmryn50lszk658gi7amidt"};
+            push @{$data->{""}->{txt}},
+              {txt => "facebook-domain-verification=sfjgxys7hmryn50lszk658gi7amidt"};
         }
         elsif ($self->origin eq "beta.grundclock.com") {
             $data->{"fchof3xzaiyl"}->{cname} = "gv-fveibxaoathoje.dv.googlehosted.com.";
-            push @{$data->{""}->{txt}}, {txt => "facebook-domain-verification=9gahpfmem9gwjmxypka1o3v3fgnb4k"};
+            push @{$data->{""}->{txt}},
+              {txt => "facebook-domain-verification=9gahpfmem9gwjmxypka1o3v3fgnb4k"};
         }
 
         $data;
@@ -69,7 +75,7 @@ sub TO_JSON {
         ttl       => $self->ttl,
         data      => $self->data,
         max_hosts => 4,
-        logging => {stathat_api => $self->stathat_api},
+        logging   => {stathat_api => $self->stathat_api},
     };
 }
 
@@ -83,7 +89,7 @@ sub populate_country_zones {
     my $self = shift;
 
     my $zones = NP::Model->zone->get_zones_iterator(query => [dns => 1]);
-    my $data = $self->data;
+    my $data  = $self->data;
 
     while (my $zone = $zones->next) {
         my $name = $zone->name;
@@ -114,7 +120,7 @@ sub populate_country_zones {
             $min_non_duplicate_size = int(@$entries / $zone_count)
               if (@$entries / $zone_count > $min_non_duplicate_size);
 
-            # print $fh "# " . scalar @$entries . " active servers in ", $zone->name, "\n";
+         # print $fh "# " . scalar @$entries . " active servers in ", $zone->name, "\n";
 
             if ($#$entries < ($min_non_duplicate_size * $zone_count - 1)) {
 
@@ -203,7 +209,7 @@ sub populate_vendor_zones {
         next unless $name;    # vendor_name="" on separate dns root
         my $client_type = $vendors{$name}->{type};
         my $sntp        = ($client_type eq 'sntp' or $client_type eq 'all');
-        my $ntp         = ($client_type eq 'ntp'  or $client_type eq 'all');
+        my $ntp         = ($client_type eq 'ntp' or $client_type eq 'all');
         unless ($sntp or $ntp) {
             $sntp = 1;
             $ntp  = 1;

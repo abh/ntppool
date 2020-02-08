@@ -33,12 +33,12 @@ sub render {
     }
 
     if (  !$monitor->last_seen
-        or $monitor->last_seen > DateTime->now()->add(DateTime::Duration->new(minutes => 2)))
+        or $monitor->last_seen
+        > DateTime->now()->add(DateTime::Duration->new(minutes => 2)))
     {
         $monitor->last_seen(DateTime->now);
         $monitor->save;
     }
-
 
     my $config = $monitor->config;
     $config->{ip} = $monitor->ip;
@@ -58,7 +58,8 @@ sub render {
     # go through server array and fetch offset for all servers
     my $servers = NP::Model->server->get_check_due($monitor, 50);
 
-    return OK, $json->encode({servers => [map { $_->ip } @$servers], config => $config}),
+    return OK,
+      $json->encode({servers => [map { $_->ip } @$servers], config => $config}),
       "application/json";
 }
 
@@ -76,7 +77,7 @@ sub render_server_map {
                     c       => $_->created_on->epoch,
                     ($deleted ? (d => $_->deletion_on->epoch) : ()),
                 }
-              )
+            )
         } @$servers
     };
     $self->cache_control('max-age=900');
@@ -101,7 +102,8 @@ sub upload {
 
     #warn "got data: ", pp($data);
 
-    return $self->error('Unknown version') unless $data->{version} and $data->{version} == 1;
+    return $self->error('Unknown version')
+      unless $data->{version} and $data->{version} == 1;
     return $self->error('Invalid format') unless ref $data->{servers} eq 'ARRAY';
 
     my $db = NP::Model->db;
@@ -122,6 +124,8 @@ sub upload {
             ],
             require_objects => ['server'],
         );
+
+        # todo: rate limit how often each monitor can upload results for a server
 
         $server_score = $server_score && $server_score->[0];
         my $server = $server_score->server;
@@ -154,7 +158,6 @@ sub upload {
                 $step = 1;
             }
         }
-
 
         my $ts = DateTime->from_epoch(epoch => $status->{ts});
 
@@ -208,7 +211,7 @@ __END__
     my $dbh = NP::Model->dbh;
 
     # Delete old records from this monitor for the same protocol
-    $dbh->do(q[delete m.* from monitor_report m, servers s 
+    $dbh->do(q[delete m.* from monitor_report m, servers s
                where m.monitor_id=? and s.id=m.server_id and s.ip_version=?],
 	     undef,
 	     $monitor->id, $proto);
