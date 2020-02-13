@@ -59,41 +59,40 @@ you are going to add your server to the pool.
 </p>
 
 <p>
-For the robustness of the pool it's healthier if all pool operators "hand pick" good local (network wise) time servers.
-The NTP.org wiki has  a <a
-href="http://support.ntp.org/bin/view/Servers/WebHome">list of public
-servers</a>.
+對於池的健壯性，如果所有池操作員都“手動”選擇良好的本地（網絡方式）時間服務器，則會更加健康。
+NTP.org Wiki有一個 <a
+href="http://support.ntp.org/bin/view/Servers/WebHome">公共伺服器列表
+</a>.
 </p>
 
 
-<h4>Use the standard ntpd</h4>
+<h4>使用標準的ntpd</h4>
 
 <p>
-We are all for software diversity, but a significant percentage of the
-"it's not working" questions that come in are for software other than
+我們全都致力於軟件的多樣性，但是其中很大一部分
+除軟件外出現的“它不起作用”問題
 ntpd.
 </p>
 
 <p>
-You can <i>use</i> the pool with any program speaking NTP, but if you
-are going to join the pool we recommend you
-use <a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
+您可以將池與任何使用NTP的程序一起 <i>使用</i>, 但是如果您使用
+要加入游泳池，我們建議您
+採用 <a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
 </p>
 
+<h4>不要使用本地時鐘驅動程序</h4>
 
-<h4>Don't use the LOCAL clock driver</h4>
+<p>NTP池中的服務器不應具有本地時鐘驅動程序
+配置。</p>
 
-<p>Servers in the NTP Pool should not have the LOCAL clock driver
-configured.</p>
+<h4>提防PTR DNS查詢</h4>
 
-<h4>Beware of PTR DNS queries</h4>
-
-<p>Some server operators have reported that some of the NTP users (or
-their firewall software) does a "reverse DNS" (PTR) query for the IP address
-of the NTP server. Beware that this might cause the number of queries to
-go up. Increasing the "time to live" on those records is recommended if
-the number of DNS queries is a concern, and will generally make the number
-of queries negligible.
+<p>一些服務器運營商報告說，某些NTP用戶（或
+他們的防火牆軟件）對IP地址執行“反向DNS”（PTR）查詢
+NTP服務器。 請注意，這可能會導致查詢數量增加
+上。 如果以下情況，建議增加這些記錄的“生存時間”
+DNS查詢的數量是一個問題，通常會使數量增加
+的查詢可以忽略不計.
 </p>
 
 </div>
