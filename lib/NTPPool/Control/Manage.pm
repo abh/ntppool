@@ -101,6 +101,12 @@ sub render {
             my $r = $self->req_param('r') || '/manage';
             return $self->redirect($r);
         }
+
+        # if something goes terribly wrong this would just pointlessly
+        # and frustratingly loop. It's added so the Auth0 config can have
+        # a "default login url" that redirects to the login server /authorize
+        # url and we can only have so many .../login urls, right?
+        return $self->redirect($self->login_url);
     }
 
     return $self->login unless $self->user;
