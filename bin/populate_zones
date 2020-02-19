@@ -24,10 +24,12 @@ my %country_to_continent = ();
 my $continent_map_done = 0;
 
 while (my $line = <DATA>) {
-    next if m/^\s*\#/;
+    next if $line =~ m/^\s*\#/;
     if ($line =~ m/^---/) {
         $continent_map_done = 1;
+        next;
     }
+
     next unless $csv->parse($line);
     my $row = [$csv->fields];
 
@@ -38,6 +40,7 @@ while (my $line = <DATA>) {
 
     my $name = $row->[0];
     next unless $name =~ m/\S/;
+
     my $description = $row->[1];
     my $zone = NP::Model->zone->fetch_or_create(name => lc($name));
     if (length($zone->description) == 0) {
