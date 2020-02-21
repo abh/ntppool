@@ -375,8 +375,11 @@ sub handle_update_netspeed {
         my $db  = NP::Model->db;
         my $txn = $db->begin_scoped_work;
 
+        return unless $netspeed =~ m/^\d+$/;
+        $netspeed = 10000 if $netspeed > 1000000;
+
         my $old = $server->get_data_hash;
-        $server->netspeed($netspeed) if $netspeed =~ m/^\d+$/;
+        $server->netspeed($netspeed);
         if ($server->netspeed < 768) {
             $server->leave_zone('@');
         }
