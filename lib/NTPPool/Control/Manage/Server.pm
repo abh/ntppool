@@ -326,8 +326,8 @@ sub req_server {
     my $server_id = $self->req_param('server') or return;
     my $server =
       NP::Model->server->fetch(($server_id =~ m/[.:]/ ? 'ip' : 'id') => $server_id);
-    return unless $server and $server->admin->id == $self->user->id;
-    $server;
+    return unless $server and $server->account->can_edit($self->user);
+    return $server;
 }
 
 sub handle_update {
