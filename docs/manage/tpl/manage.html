@@ -2,49 +2,48 @@
 
 <div id="admin" class="row">
     [% add_col_md = 8 %]
-    [% IF account.servers %]
-        [% add_col_md = 4 %]
-	<div class="servers col-md-6">
+    [% IF servers %]
+    [% add_col_md = 4 %]
+    <div class="servers col-md-6">
         <h3>NTP Servers</h3>
 
-		<div class="value">
-			[% servers = account.servers;
-			   FOR server = servers; %]
-			[% PROCESS tpl/manage/server.html, server => server %]
-			[% END %]
-			[% IF servers.list.size > 1 %]
-			<p></p>
-			[% END %]
-		</div>
-	</div>
+        <div class="value">
+            [% FOR server = servers; %]
+            [% PROCESS tpl/manage/server.html, server => server %]
+            [% END %]
+            [% IF servers.list.size > 1 %]
+            <p></p>
+            [% END %]
+        </div>
+    </div>
     [% END %]
 
-	<div class="col-md-[% add_col_md %]">
-		<div>
-			<a name="add"></a>
-			[% PROCESS tpl/manage/add_form.html %]
-		</div>
+    <div class="col-md-[% add_col_md %]">
+        <div>
+            <a name="add"></a>
+            [% PROCESS tpl/manage/add_form.html %]
+        </div>
 
-        [% IF servers  %]
+        [% IF servers %]
         <div class="">
             <a href="[% combust.manage_url('/manage/servers/move') %]">Move servers to another account</a>
         </div>
 
-			[% PROCESS tpl/manage/servers_help.html %]
-		[% END %]
+        [% PROCESS tpl/manage/servers_help.html %]
+        [% END %]
 
-		<div class="block server_desc">
-			<p>
-			The current NTP implementations (and the pool system) are very IP focused, so to "change" the IP address
-			of your server, please delete the old server and add the new IP.
-			</p>
+        <div class="block server_desc">
+            <p>
+                The current NTP implementations (and the pool system) are very IP focused, so to "change" the IP address
+                of your server, please delete the old server and add the new IP.
+            </p>
 
-			<p>
-			To change other server information, email <a
-			href="mailto:[% "support" | email %]">[% "support" | email %]</a>.
-			</p>
-		</div>
-	</div>
+            <p>
+                To change other server information, email <a href="mailto:[% " support" | email %]">[% "support" | email
+                    %]</a>.
+            </p>
+        </div>
+    </div>
 
 </div>
 [% INCLUDE tpl/log_table.html %]
