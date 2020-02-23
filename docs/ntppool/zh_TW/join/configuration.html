@@ -1,56 +1,54 @@
 <div class="block">
 
-<h3>Configuration recommendations for servers joining the pool</h3>
+<h3>服務器加入池的配置建議</h3>
 
 <p>
-The <a href="http://support.ntp.org/bin/view/Support/WebHome">Support
-section</a> on <a href="http://support.ntp.org/">support.ntp.org</a> has a lot
-of useful information.
+<a href="http://support.ntp.org/bin/view/Support/WebHome">支持部分</a> 上 <a href="http://support.ntp.org/">support.ntp.org</a> 有很多有用的信息。
 </p>
 
 <p>
-If you just want to <i>use</i> the pool, see the <a href="/use.html">pool usage</a> page.
+如果您只想<i>使用</i>池，請參見<a href="/use.html">池使用量</a>頁。
 </p>
 
 <p>
-The <a
+<a
 href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a>
-newsgroup is the best place to get help with the ntpd software.
+新聞組是獲得ntpd軟件幫助的最佳場所。
 </p>
 
 <p>
-Below are some things of particular importance if you are going to
-join the NTP Pool with your server.
+以下是一些特別重要的事情，如果您要
+將NTP池與您的服務器一起加入。
 </p>
 
-<p>The Internet Engineering Task Force have published a draft on 
+<p>互聯網工程任務組已經發布了我們建議的有關
 <a href="https://tools.ietf.org/html/draft-ietf-ntp-bcp">
-Network Time Protocol Best Current Practices</a> that we recommend.</p>
+網絡時間協議最佳當前實踐的草案。</a> that we recommend.</p>
 
-<h4 id="management-queries">Management queries</h4>
+<h4 id="management-queries">管理查詢</h4>
 
-<p>Make the default configuration be to not allow "management queries". For ntpd this will be adding the "noquery" option to the default "restrict" lines, for example:</p>
+<p>將默認配置設為不允許“管理查詢”。 對於ntpd，這將在默認的“ restrict”行中添加“ noquery”選項，例如：</p>
 
 [% INCLUDE "join/configuration/restrict-default.html" %]
 
-<p>To allow commands like "ntpq -c pe" to work from localhost you can add:</p>
+<p>要允許“ ntpq -c pe”之類的命令從本地主機運行，您可以添加</p>
 
 [% INCLUDE "join/configuration/restrict-localhost.html" %]
 
-<h4>Setup about 5 servers</h4>
+<h4>設置約5台服務器</h4>
 
 <p>
-To work properly ntpd needs to talk to at least 3 servers ("A man with
-a watch knows what time it is. A man with two watches is never sure").
+為了正常工作，ntpd需要與至少3台服務器（“
+手錶知道現在幾點了。 有兩塊手錶的男人永遠不確定”）
 </p>
 
 <p>
-For servers in the pool we recommend configuring no less than 4 and no
-more than 7 servers.
+對於池中的服務器，我們建議配置不少於4個且不
+超過7台服務器。
 </p>
 
 
-<h4>Don't use *.pool.ntp.org servers</h4>
+<h4>不要使用* .pool.ntp.org服務器</h4>
 
 <p>
 Ironically to make sure the pool service is the best it can be you
