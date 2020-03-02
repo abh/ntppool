@@ -73,11 +73,4 @@
     </div>
 </div>
 
-[% IF users.size > 1 %]
-<div>
-    To remove a user from the account, please email
-    <a href="mailto:[% "support" | email %]?subject=[% "Remove user from account " _ account.id_token | html | uri %]">[% "support" | email %].
-</div>
-[% END %]
-
 [% INCLUDE tpl/log_table.html %]
