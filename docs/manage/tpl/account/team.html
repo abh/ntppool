@@ -11,7 +11,8 @@
                 <tr>
                     <td>[% user.email  | html %]</td>
                     <td>[% IF user.name != user.email; user.name | html; END %]</td>
-                    [% IF combust.user.is_staff %]
+                    [% IF account.can_edit(combust.user) AND
+                         (combust.user.is_staff OR combust.user.id != user.id) %]
                     <td>
                         <button class="btn btn-outline-warning"
                             name="user_id" value="[% user.id %]" type="submit">

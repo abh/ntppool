@@ -7,8 +7,8 @@ collaborate on the [% account.name %] in the NTP Pool system.
 
 To get started, please click on the link below.
 
-If you are new to the NTP Pool, the first step will be to create your
-own account, after which you’ll automatically be added to the project.
+If you are new to the NTP Pool, the first step will be to register
+yourself, after which you’ll automatically be added to the account.
 
   [% invite.url %]
 

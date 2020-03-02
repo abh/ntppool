@@ -60,17 +60,15 @@ sub manage_dispatch {
         return $self->render_account_form($account);
     }
     elsif ($self->request->uri =~ m!^/manage/account/team$!) {
-        return $self->render_users_invite($account, $self->req_param('invite_email'))
-          if ($self->request->method eq 'post'
-            and ($self->req_param('invite_email')));
+        if ($self->request->method eq 'post' and $account->can_edit($self->user)) {
+            return $self->render_users_invite($account, $self->req_param('invite_email'))
+              if $self->req_param('invite_email');
 
-        if ($account->can_edit($self->user) and $self->user->is_staff) {
-            return $self->remove_user_from_account($account,
-                $self->req_param('user_id'))
-              if ($self->request->method eq 'post'
-                and ($self->req_param('user_id')));
+            my $delete_user_id = $self->req_param('user_id');
+            if ($delete_user_id and ($self->user->is_staff or $self->user->id != $delete_user_id)) {
+                return $self->remove_user_from_account($account, $delete_user_id);
+            }
         }
-
         return $self->render_users($account);
     }
 
@@ -90,6 +88,26 @@ sub remove_user_from_account {
     @$users = grep { $_->id != $user_id } @$users;
     $account->users($users);
     $account->save();
+
+    my $param = {
+        account      => $account,
+        user_removed => $user,
+    };
+
+    my $msg = Combust::Template->new->process('tpl/account/account_user_removed.txt',
+        $param, {site => 'manage', config => $self->config});
+
+    my $email =
+      Email::Stuffer->from(NP::Email::address("sender"))->reply_to(NP::Email::address("support"))
+      ->subject("NTP Pool account change")->text_body($msg);
+
+    $email->to($user->email);
+    my @cc = grep { $_->id != $user_id } @$users;
+    if (@cc) {
+        $email->cc(map { $_->email } @cc);
+    }
+
+    NP::Email::sendmail($email);
 
     $self->render_users($account);
 }
