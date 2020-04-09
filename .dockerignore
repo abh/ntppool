@@ -5,3 +5,6 @@ influxdb/*
 backup/
 .data/
 *.dump
+node_modules/
+manage2/
+logo/

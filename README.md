@@ -5,6 +5,7 @@ This is the code for the NTP Pool project, http://www.pool.ntp.org/
 See the LICENSE file for detailed copyright and licensing information.
 
 For installation instructions, see https://dev.ntppool.org/install/
+or https://hub.helm.sh/charts/ntppool/ntppool
 
 Other relevant repositories are at
 
