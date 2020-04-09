@@ -7,66 +7,72 @@ use Text::CSV_XS;
 
 use NP::Model;
 
-my $total = NP::Model->zone->fetch_or_create(name => '.');
-$total->description('All Pool Servers');
-$total->dns(0);
-$total->save;
+populate_country_zones();
+exit 0;
 
-my $global = NP::Model->zone->fetch_or_create(name => '@');
-$global->description('Global');
-$global->parent($total);
-$global->save;
+sub populate_country_zones {
+    my $total = NP::Model->zone->fetch_or_create(name => '.');
+    $total->description('All Pool Servers');
+    $total->dns(0);
+    $total->save;
 
-my $csv = Text::CSV_XS->new();
+    my $global = NP::Model->zone->fetch_or_create(name => '@');
+    $global->description('Global');
+    $global->parent($total);
+    $global->save;
 
-my %continents = ();
-my %country_to_continent = ();
-my $continent_map_done = 0;
+    my $csv = Text::CSV_XS->new();
 
-while (my $line = <DATA>) {
-    next if $line =~ m/^\s*\#/;
-    if ($line =~ m/^---/) {
-        $continent_map_done = 1;
-        next;
-    }
+    my %continents           = ();
+    my %country_to_continent = ();
+    my $continent_map_done   = 0;
 
-    next unless $csv->parse($line);
-    my $row = [$csv->fields];
-
-    unless ($continent_map_done) {
-        $country_to_continent{$row->[0]} = $row->[1];
-        next;
-    }
-
-    my $name = $row->[0];
-    next unless $name =~ m/\S/;
-
-    my $description = $row->[1];
-    my $zone = NP::Model->zone->fetch_or_create(name => lc($name));
-    if (length($zone->description) == 0) {
-        $zone->description($description);
-    }
-    if (length($name) > 2) {
-        # It's a continent
-        $zone->parent($global);
-        $continents{$row->[2]} = $zone;
-
-    }
-    else {
-        my $cc = $zone->name;
-        $cc = 'gb' if $cc eq 'uk';
-        my $continent_code = $country_to_continent{uc($cc)} or die "no continent for country '$cc'";
-        my $continent = $continents{$continent_code};
-        if (!$continent) {
-            warn "Could not find continent for $cc (continent code: $continent_code)";
+    while (my $line = <DATA>) {
+        next if $line =~ m/^\s*\#/;
+        if ($line =~ m/^---/) {
+            $continent_map_done = 1;
             next;
         }
-        $zone->parent($continent) if $continent;
+
+        next unless $csv->parse($line);
+        my $row = [$csv->fields];
+
+        unless ($continent_map_done) {
+            $country_to_continent{$row->[0]} = $row->[1];
+            next;
+        }
+
+        my $name = $row->[0];
+        next unless $name =~ m/\S/;
+
+        my $description = $row->[1];
+        my $zone        = NP::Model->zone->fetch_or_create(name => lc($name));
+        if (length($zone->description) == 0) {
+            $zone->description($description);
+        }
+        if (length($name) > 2) {
+
+            # It's a continent
+            $zone->parent($global);
+            $continents{$row->[2]} = $zone;
+
+        }
+        else {
+            my $cc = $zone->name;
+            $cc = 'gb' if $cc eq 'uk';
+            my $continent_code = $country_to_continent{uc($cc)}
+              or die "no continent for country '$cc'";
+            my $continent = $continents{$continent_code};
+            if (!$continent) {
+                warn
+                  "Could not find continent for $cc (continent code: $continent_code)";
+                next;
+            }
+            $zone->parent($continent) if $continent;
+        }
+        $zone->save;
     }
-    $zone->save;
 }
-
-
 
 __DATA__
 A1,--
