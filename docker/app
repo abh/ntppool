@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -ex
+set -e
 
 rm -f .nospin.start
 
@@ -11,15 +11,13 @@ if [ "$app" == "" ]; then
   ports="-p 8299:8299"
 fi
 
-IMAGE=quay.io/ntppool/ntppool:beta
+IMAGE=quay.io/ntppool/ntppool:latest
 
 tparm=""
 
 if [ -t 0 ]; then
     tparm="-t -i"
 fi
-
-set -ex
 
 docker run $tparm \
  -v $(pwd):/ntppool \
