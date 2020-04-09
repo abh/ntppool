@@ -4,11 +4,37 @@ eval 'exec $CBROOT/bin/perl $0 ${1+"$@"}'
 use strict;
 use Data::Dumper;
 use Text::CSV_XS;
-
 use NP::Model;
+use Combust::Config;
+
+my $config = Combust::Config->new;
 
 populate_country_zones();
+setup_dns_root();
 exit 0;
+
+sub setup_dns_root {
+    my $count = NP::Model->dns_root->get_objects_count();
+    warn(
+        (   $count == 1
+            ? "have a zone"
+            : "have $count zones"
+        )
+        . " in dns_roots\n"
+    );
+    return if $count > 0;
+
+    my $default = $config->site->{ntppool}->{pool_domain};
+    warn "creating default dns root zone -- $default";
+
+    my $z = NP::Model->dns_root->create(
+        origin           => $default,
+        vendor_available => 1,
+        general_use      => 1,
+        ns_list          => '',
+    );
+    $z->save;
+}
 
 sub populate_country_zones {
     my $total = NP::Model->zone->fetch_or_create(name => '.');
