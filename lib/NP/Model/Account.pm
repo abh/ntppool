@@ -2,26 +2,16 @@ package NP::Model::Account;
 use strict;
 use Math::BaseCalc qw();
 use Math::Random::Secure qw(irand);
-use Crypt::Skip32::Base32Crockford ();
+use NP::Model::TokenID;
+use base qw(NP::Model::TokenID);
 use Combust::Config ();
 
 sub BAD_SERVER_THRESHOLD {-15}
 
 my $config  = Combust::Config->new;
 
-my $account_id_key = $config->site->{ntppool}->{account_id_key} or die "'account_id_key' not set";
-$account_id_key    = pack( 'H20', uc $account_id_key);
-my $cipher = Crypt::Skip32::Base32Crockford->new($account_id_key);
-
-sub token_id {
-    my $self = shift;
-    my $token = shift or return 0;
-    return $cipher->decrypt_number_b32_crockford($token);
-}
-
-sub id_token {
-    my $self = shift;
-    return lc $cipher->encrypt_number_b32_crockford($self->id);
+sub token_key_config {
+    return 'account_id_key';
 }
 
 sub url {
