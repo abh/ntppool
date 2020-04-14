@@ -6,6 +6,11 @@ if [ -z $CBROOT ]; then
   export CBROOT=$CBROOTLOCAL/combust
 fi
 
+while [ ! -e confd ]; do
+    echo "waiting for code to be synced (confd dir)"
+    sleep 2
+done
+
 confd -onetime -confdir=confd -backend env -log-level warning
 export CBCONFIG=/var/ntppool/combust.conf
 

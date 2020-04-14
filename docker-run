@@ -7,6 +7,12 @@
 # Before the command is run, "./docker/entrypoint" is run to setup the
 # configuration (and maybe other things in the future).
 
-set -ex
+set -e
+
+while [ ! -e ./combust/bin/httpd ]; do
+    echo waiting for code to be synced
+    sleep 2
+done
+
 
 exec ./combust/bin/httpd
