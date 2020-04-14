@@ -1,0 +1,35 @@
+#FROM quay.io/ntppool/ntppool:master
+# FROM harbor.ntppool.org/ask/ntppool:dev-2020-04-08
+FROM harbor.ntppool.org/ntppool/base-os:v3.11.5
+
+ENV BUILD 20200410
+
+USER root
+
+ENV CBCONFIG=
+ENV HULK /usr/bin/hulk
+
+WORKDIR /ntppool
+
+EXPOSE 8299
+ENTRYPOINT ["./docker/entrypoint"]
+CMD ["./docker-run"]
+
+RUN mkdir /var/ntppool data && chown ntppool:ntppool data /var/ntppool
+RUN rm -fr docs/ntppool/_syndicate && \
+    mkdir -p data/syndicate docs/ntppool && \
+    ln -s /ntppool/data/syndicate docs/ntppool/_syndicate && \
+    chown -R ntppool:ntppool data docs/ntppool/_syndicate
+
+RUN ls -la data 
+
+ADD --chown=ntppool . /ntppool
+#RUN chown -R 1000:1000 /ntppool
+
+RUN ls -la data 
+
+USER ntppool
+
+RUN date > .timestamp
+
+

@@ -1,0 +1,49 @@
+apiVersion: skaffold/v2beta1
+kind: Config
+build:
+  tagPolicy:
+    sha256: {}
+    #gitCommit:
+    #  variant: AbbrevCommitSha
+  artifacts:
+    - image: ntppool-dev
+      kaniko:
+        cache: {}
+        dockerfile: Dockerfile.dev
+      sync:
+        infer:
+          - "lib/**"
+          - "docs/**"
+          - "bin/**"
+
+  #local:
+  #  useDockerCLI: true
+  #  push: true
+  cluster:
+    pullSecretName: "harbor-registry"
+    dockerConfig:
+      secretName: skaffold-cfg
+    #pullSecret: abh-auth.json
+    namespace: kntp
+
+deploy:
+  helm:
+    releases:
+      - name: ntppool
+        remote: true
+        chartPath: ntppool/ntppool
+        wait: true
+        valuesFiles:
+          - /Users/ask/src/ntppool-k8s/dev-values-kind.yaml
+        values:
+          image.image: harbor.ntppool.org/ask/ntppool-dev
+        #overrides:
+        #  image:
+        #    repository: harbor.ntppool.org/ask/ntppool-dev-ovr
+        #recreatePods will pass --recreate-pods to helm upgrade
+        #recreatePods: true
+
+        #setValues get appended to the helm deploy with --set.
+        #setValues:
+        #some.key: someValue
+
