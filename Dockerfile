@@ -1,4 +1,4 @@
-FROM quay.io/ntppool/base-os:v3.11.1
+FROM quay.io/ntppool/base-os:v3.11.5
 
 USER root
 
@@ -17,8 +17,6 @@ RUN rm -fr docs/ntppool/_syndicate && \
     mkdir -p data/syndicate && \
     ln -s /ntppool/data/syndicate docs/ntppool/_syndicate && \
     chown ntppool data/syndicate
-
-#RUN ls -al docs/ntppool; mkdir docs/ntppool/_syndicate; chown ntppool docs/ntppool/_syndicate
 
 # because quay.io sets timestamps to 1980 for some reason ...
 RUN find ./docs -type f -print0 | xargs -0 touch
