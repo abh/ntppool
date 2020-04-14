@@ -89,6 +89,7 @@ email_vendors       = {{ getenv "email_vendors" }}
 email_notifications = {{ getenv "email_notifications" }}
 
 account_id_key      = {{ getenv "account_id_key" }}
+vendor_zone_id_key  = {{ getenv "vendor_zone_id_key" }}
 
 {{ if eq (getenv "web_tls") "yes" }}
 ssl_only = 1

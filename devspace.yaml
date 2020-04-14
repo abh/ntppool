@@ -1,0 +1,51 @@
+version: v1beta9
+images:
+  ntppool:
+    dockerfile: Dockerfile.dev
+    image: harbor.ntppool.org/ask/ntppool-dev
+    injectRestartHelper: true
+    build:
+      kaniko:
+        snapshotMode: full
+        image: gcr.io/kaniko-project/executor:v0.19.0
+
+deployments:
+  - name: ntppool
+    helm:
+      chart:
+        name: ../ntppool-charts/charts/ntppool
+      valuesFiles:
+        #- /Users/ask/src/ntppool-k8s/dev-values-do.yaml
+        - /Users/ask/src/ntppool-k8s/dev-values-kind.yaml
+      values:
+        image:
+          image: harbor.ntppool.org/ask/ntppool-dev
+      wait: true
+
+dev:
+  autoReload:
+    paths:
+    - ./.redeploy
+    #deployments:
+    #- ntppool
+  sync:
+    - labelSelector:
+        app: ntppool
+        tier: frontend
+      containerName: httpd
+      waitInitialSync: false
+      localSubPath: ./
+      containerPath: /ntppool
+      excludePaths:
+        - backup/
+        - logs/
+        - manage2/
+        - ".data/"
+        - ".git"
+        - node_modules/
+        #- docs/shared/static/cdn/libs/
+      downloadExcludePaths:
+        - "*"
+      disableDownload: true
+      onUpload:
+        restartContainer: true
