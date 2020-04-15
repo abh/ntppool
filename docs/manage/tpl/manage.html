@@ -2,7 +2,8 @@
 
 <div id="admin" class="row">
     [% add_col_md = 8 %]
-    [% IF servers %]
+    [% IF servers.size > 0 %]
+
     [% add_col_md = 4 %]
     <div class="servers col-md-6">
         <h3>NTP Servers</h3>
@@ -24,7 +25,7 @@
             [% PROCESS tpl/manage/add_form.html %]
         </div>
 
-        [% IF servers %]
+        [% IF servers.size > 0 %]
         <div class="">
             <a href="[% combust.manage_url('/manage/servers/move') %]">Move servers to another account</a>
         </div>
