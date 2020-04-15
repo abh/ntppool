@@ -298,3 +298,7 @@ img.atom-logo {
     padding: 0;
     margin: 0;
 }
+
+.btn-inline {
+    display: inline-block;
+}

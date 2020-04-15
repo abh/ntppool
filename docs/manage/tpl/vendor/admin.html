@@ -5,5 +5,5 @@
 [% END %]
 
 [% FOR vz = pending_zones %]
-<a href="admin?show=1;id=[% vz.id %]">[% vz.zone_name | html %]</a> (modified: [% vz.modified_on %])<br/>
+<a href="admin?show=1;id=[% vz.id_token %]">[% vz.zone_name | html %]</a> (modified: [% vz.modified_on %])<br/>
 [% END %]

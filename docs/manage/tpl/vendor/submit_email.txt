@@ -3,7 +3,7 @@
 [% combust.user.name %] ([% combust.user.email %]) requested the "[%
 vz.zone_name %]" zone for [% vz.organization_name %].
 
-[% combust.manage_url('/manage/vendor/zone', id = vz.id) %]
+[% combust.manage_url('/manage/vendor/zone', id = vz.id_token) %]
 
 Clients: [% vz.device_count %]
 
@@ -15,5 +15,3 @@ Notes:
 Contact information:
 
 [% vz.contact_information %]
-
-

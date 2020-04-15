@@ -6,15 +6,23 @@ use Combust::Constant qw(OK NOT_FOUND);
 use NP::Email      ();
 use Email::Stuffer ();
 use Sys::Hostname qw(hostname);
+use JSON ();
+
+my $json = JSON::XS->new->pretty->utf8->convert_blessed;
 
 sub manage_dispatch {
     my $self = shift;
 
     return $self->render_form if $self->request->uri =~ m!^/manage/vendor/new$!;
 
-    if ($self->request->uri =~ m!^/manage/vendor/zone$!) {
+    if ($self->request->uri eq '/manage/vendor/zone') {
+
+        #return $self->render_edit_json
+        #  if ($self->request->method eq 'post' and 1);
+
         return $self->render_edit if ($self->request->method eq 'post');
-        return $self->render_zone($self->req_param('id'));
+
+        return $self->render_zone($self->_get_id);
     }
 
     return $self->render_submit
@@ -32,11 +40,21 @@ sub manage_dispatch {
     return NOT_FOUND;
 }
 
+sub _get_id {
+    my $self  = shift;
+    my $token = $self->req_param('id');
+    my $id    = $token =~ m/^vz-/ ? NP::Model::VendorZone->token_id($token) : $token;
+    return $id;
+}
+
 sub render_form {
     my $self = shift;
     my $vz   = shift;
-    $self->tpl_param('vz', $vz) if $vz;
+
     if ($vz) {
+        $self->tpl_param('vz',      $vz);
+        $self->tpl_param('vz_json', $vz);
+
         $self->tpl_param('dns_roots', [$vz->dns_root]);
     }
     else {
@@ -59,7 +77,7 @@ sub render_zones {
 sub render_zone {
     my ($self, $id, $mode) = @_;
 
-    $mode ||= '';
+    $mode ||= $self->req_param('mode') || '';
 
     my $vz = NP::Model->vendor_zone->fetch(id => $id);
 
@@ -67,17 +85,19 @@ sub render_zone {
 
     $self->tpl_param('vz', $vz);
 
-    return OK, $self->evaluate_template('tpl/vendor/show.html')
-      if $mode eq 'show'
-      or !$vz->can_edit($self->user);
+    return OK, $self->evaluate_template('tpl/vendor/form.html')
+      if ($mode eq 'edit'
+          and $vz->can_edit($self->user));
 
-    return OK, $self->evaluate_template('tpl/vendor/form.html');
+    return OK, $self->evaluate_template('tpl/vendor/show.html');
+
 
 }
 
 sub render_submit {
     my $self = shift;
-    my $id   = $self->req_param('id');
+
+    my $id = $self->_get_id;
 
     my $vz = $id && NP::Model->vendor_zone->fetch(id => $id);
 
@@ -111,14 +131,38 @@ sub render_submit {
 
 sub render_edit {
     my $self = shift;
+    my ($vz, $errors) = $self->_edit_zone;
 
-    my $id = $self->req_param('id');
+    if ($errors) {
+        $self->tpl_param('errors', $errors);
+        return $self->render_form($vz);
+    }
+
+    my $redirect = URI->new('/manage/vendor/zone');
+    $redirect->query_param(id => $vz->id_token);
+    $redirect->query_param(mode => 'show');
+    return $self->redirect($redirect);
+
+    #return $self->render_zone($vz->id, 'show');
+}
+
+sub render_edit_json {
+    my $self = shift;
+    my ($vz, $errors) = $self->_edit_zone;
+
+    return OK, $json->encode({zone => $vz->json_model, errors => $errors});
+}
+
+sub _edit_zone {
+    my $self = shift;
+
+    my $id = $self->_get_id;
     $id = 0 if $id and $id eq 'new';
 
     my $vz = $id ? NP::Model->vendor_zone->fetch(id => $id) : undef;
 
-    if ($vz) {
-        return $self->render_zone($vz->id) unless $vz->can_edit($self->user);
+    if ($vz and !$vz->can_edit($self->user)) {
+        return undef, ["Permission denied"];
     }
 
     my $zone_name = lc($self->req_param('zone_name') || '');
@@ -137,9 +181,10 @@ sub render_edit {
           (NP::Model->dns_root->get_objects(query => [vendor_available => 1], limit => 1))->[0];
 
         $vz = NP::Model->vendor_zone->create(
-            zone_name => $zone_name,
-            user_id   => $self->user->id,
-            dns_root  => $dns_root->id,
+            zone_name  => $zone_name,
+            user_id    => $self->user->id,
+            account_id => $self->current_account->id,
+            dns_root   => $dns_root->id,
             (   map { $_ => ($self->req_param($_) || '') }
                   qw(organization_name request_information contact_information device_count)
             )
@@ -148,13 +193,12 @@ sub render_edit {
 
     unless ($vz->validate) {
         my $errors = $vz->validation_errors;
-        $self->tpl_param('errors', $errors);
-        return $self->render_form($vz);
+        return $vz, $errors;
     }
 
     $vz->save;
 
-    return $self->render_zone($vz->id, 'show');
+    return $vz;
 }
 
 sub render_admin {
@@ -164,7 +208,7 @@ sub render_admin {
 
     $self->tpl_params->{page}->{is_vendor_admin} = 1;
 
-    if (my $id = $self->req_param('id')) {
+    if (my $id = $self->_get_id) {
         my $vz = $id ? NP::Model->vendor_zone->fetch(id => $id) : undef;
         return 404 unless $vz;
 
@@ -188,12 +232,10 @@ sub render_admin {
                 my $msg = $self->evaluate_template('tpl/vendor/approved_email.txt');
 
                 my $email =
-                  Email::Stuffer->from(NP::Email::address("vendors"))
-                  ->to($vz->user->email)
+                  Email::Stuffer->from(NP::Email::address("vendors"))->to($vz->user->email)
                   ->cc(NP::Email::address("notifications"))
                   ->reply_to(NP::Email::address("vendors"))
-                  ->subject("Vendor zone activated: " . $vz->zone_name)
-                  ->text_body($msg);
+                  ->subject("Vendor zone activated: " . $vz->zone_name)->text_body($msg);
 
                 my $return = NP::Email::sendmail($email->email);
                 warn Data::Dumper->Dump([\$msg, \$email, \$return], [qw(msg email return)]);

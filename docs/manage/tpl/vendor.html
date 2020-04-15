@@ -1,39 +1,33 @@
 [% page.js.push("ntppool.js"); %]
 
 <div class="block">
-	<p>
-	Anyone distributing an appliance, operating system or some other kind
-	of software using NTP needs a
-        "<a href="[% combust.www_url("/vendors.html") %]">vendor zone</a>"
-        if the default configuration is to use the pool system.
-	</p>
 
-        <p>
-        For internal use on systems you manage you do not need a vendor zone.
-        For initial development or small-scale testing of an appliance or software
-        you don't either, though remember to come back and get a vendor zone setup
-        before production deployments or distribution start.
-        </p>
+    [% IF 0 AND combust.current_account.vendor_zones_count > 0 %]
+    <b>plan?</b> <!-- show "plan" for account  -->
+    [% END %]
 
-        <p>
-        If you have any questions about this, please send questions before applying.
-        </p>
+    [% FOR vz = combust.current_account.vendor_zones %]
+    <h3>[% vz.zone_name | html %]</h3>
+    <p>
+        ID: [% vz.id %] / [% vz.id_token %]<br>
+        Organization: [% vz.organization_name | html %]<br />
+        Status: <i>[% vz.status %]</i><br />
+        <a href="[% combust.manage_url('/manage/vendor/zone', id=vz.id_token) %]">
+            [% IF vz.status == 'New' %]
+                Edit and submit
+            [% ELSE %]
+                View details
+            [% END %]
+        </a>
+    </p>
 
-	[% FOR vz = combust.user.vendor_zones %]
-	<h3>[% vz.zone_name | html %]</h3>
-	<p>
-	Organization: [% vz.organization_name | html %]<br/>
-	Status: <i>[% vz.status %]</i><br/>
-	[% IF vz.status == 'New' %]
-	<a href="/manage/vendor/zone?id=[% vz.id %]">Edit and submit</a>
-	[% ELSE %]
-	<a href="/manage/vendor/zone?id=[% vz.id %]">View details</a>
-	[% END %]
-	</p>
-	[% END %]
+    [% END # vendor_zone %]
 
-	<p>
-	<a href="/manage/vendor/new">Apply for a new vendor zone</a>
-	</p>
+    <p>
+        <a href="[% combust.manage_url('/manage/vendor/new') %]">Setup a new vendor zone</a>
+    </p>
+
+    [% PROCESS tpl/vendor/help.html %]
+
 
 </div>

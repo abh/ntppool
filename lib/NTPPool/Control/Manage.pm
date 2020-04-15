@@ -48,10 +48,10 @@ sub current_account {
 
     if (my $account_token = $self->req_param('a')) {
         my $account_id = NP::Model::Account->token_id($account_token);
-        my $account = $account_id ? NP::Model->account->fetch(id => $account_id) : undef;
+        my $account    = $account_id ? NP::Model->account->fetch(id => $account_id) : undef;
         if ($account) {
             return $self->{_current_account} = $account
-                if $account->can_edit($self->user);
+              if $account->can_edit($self->user);
         }
     }
 
@@ -63,6 +63,9 @@ sub current_account {
     if ($accounts && @$accounts) {
         return $self->{_current_account} = $accounts->[0];
     }
+
+    warn "did not find an account for the user?!! -- user id ", $self->user->id;
+
     return $self->{_current_account} = undef;
 }
 
@@ -70,11 +73,9 @@ sub current_url {
     my $self = shift;
     my $args = shift;
 
-    $args = { $self->request->args, $args ? %$args : {} };
+    $args = {$self->request->args, $args ? %$args : {}};
 
-    my $here = URI->new($self->config->base_url($self->site)
-                      . $self->request->uri
-                      );
+    my $here = URI->new($self->config->base_url($self->site) . $self->request->uri);
     $here->query_form($args);
 
     $here->as_string;
@@ -112,7 +113,7 @@ sub render {
     return $self->login unless $self->user;
 
     if ($self->request->method eq 'get') {
-        my $account = $self->current_account;
+        my $account       = $self->current_account;
         my $account_param = $self->req_param('a');
         if ($account_param and $account and $account_param ne $account->id_token) {
             return $self->redirect($self->current_url({a => $account->id_token}));
@@ -261,7 +262,8 @@ sub _get_auth0_user {
     my $data = decode_json($resp->decoded_content())
       or return undef, "Could not decode token data";
 
-    $resp = $self->ua->get("https://${auth0_domain}/userinfo/?access_token=" . $data->{access_token});
+    $resp =
+      $self->ua->get("https://${auth0_domain}/userinfo/?access_token=" . $data->{access_token});
     $resp->is_success or return undef, "Could not fetch user data";
 
     my $user = decode_json($resp->decoded_content())
@@ -317,7 +319,7 @@ sub manage_dispatch {
     }
 
     if ($self->request->uri eq "/" or $self->request->uri =~ m{^/manage/?$}) {
-        my $account = $self->current_account;
+        my $account  = $self->current_account;
         my $redirect = URI->new('/manage/servers');
         $redirect->query_param(a => $account->id_token) if $account;
         return $self->redirect($redirect);

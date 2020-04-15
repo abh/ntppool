@@ -1,6 +1,8 @@
 package NP::Model::VendorZone;
 use strict;
 use NP::Util qw();
+use NP::Model::TokenID;
+use base qw(NP::Model::TokenID);
 
 my %reserved_zone_names = map { $_ => 1 } qw(
   europe
@@ -14,6 +16,29 @@ my %reserved_zone_names = map { $_ => 1 } qw(
   ntppool
   vendor
 );
+
+sub token_key_config {
+    return 'vendor_zone_id_key';
+}
+
+sub token_prefix {
+    return 'vz-';
+}
+
+sub json_model {
+    my $vz = shift;
+
+    my $j = {zone_id => $vz->id_token};
+
+    for my $f (
+        qw(zone_name contact_information device_count organization_name request_information)
+      )
+    {
+        $j->{$f} = $vz->$f();
+    }
+
+    return $j;
+}
 
 sub validate {
     my $vz     = shift;
@@ -30,7 +55,8 @@ sub validate {
     }
 
     {
-        my $vz2 = NP::Model->vendor_zone->get_objects(query => [zone_name => $vz->zone_name]);
+        my $vz2 =
+          NP::Model->vendor_zone->get_objects(query => [zone_name => $vz->zone_name]);
         if (@$vz2) {
             unless ($vz and grep { $vz->id == $_->id } @$vz2) {
                 $errors->{zone_name} = 'That zone name is already used.';
