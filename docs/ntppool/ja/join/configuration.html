@@ -7,7 +7,7 @@
 </p>
 
 <p>
-単にプールを<i>利用する</i>だけであれば、<a href="/jp/use.html">プールの利用方法</a>のページをご覧下さい。
+単にプールを<i>利用する</i>だけであれば、<a href="/ja/use.html">プールの利用方法</a>のページをご覧下さい。
 </p>
 
 <p>
@@ -18,13 +18,24 @@
 あなたのサーバをNTPプールに参加させる場合にのみ、以下の情報は重要です。
 </p>
 
-<h4 id="management-queries">Management queries</h4>
+<p>
+インターネット・エンジニアリング・タスクフォースは、我々が推奨する
+<a href="https://tools.ietf.org/html/draft-ietf-ntp-bcp">ネットワーク・タイム・プロトコルの現在のベストプラクティス</a>
+に関するドラフトを公開しています。
+</p>
 
-<p>Make the default configuration be to not allow "management queries". For ntpd this will be adding the "noquery" option to the default "restrict" lines, for example:</p>
+<h4 id="management-queries">管理クエリ</h4>
+
+<p>
+管理クエリを許可しないようにデフォルト構成を作成します。
+ntpd の場合、これは "noquery" オプションをデフォルトの "restrict" 行に追加します。次に例を示します。
+</p>
 
 [% INCLUDE "join/configuration/restrict-default.html" %]
 
-<p>To allow commands like "ntpq -c pe" to work from localhost you can add:</p>
+<p>
+"ntpq -c pe" などのコマンドを localhost から機能させるには、次を追加します。
+</p>
 
 [% INCLUDE "join/configuration/restrict-localhost.html" %]
 
@@ -67,5 +78,13 @@ NTPに対応したどんなプログラムもプールを<i>利用</i>出来ま�
 
 <p>NTPプールに参加するサーバは現地時間の設定を控えるべきです。</p>
 
+<h4>PTR DNS クエリに注意</h4>
+
+<p>
+一部の NTP ユーザ（またはそのファイアウォール・ソフトウェア）は、NTP サーバの IP アドレスに対して "逆引き DNS" (PTR) クエリを実行することが
+一部のサーバ・オペレータから報告されています。
+これにより、クエリ数が増える可能性があることに注意してください。
+DNS クエリ数が懸念される場合は、これらのレコードの "time to live" (存続可能時間) を長くすることをお勧めします。通常、クエリ数は無視できます。
+</p>
 
 </div>
