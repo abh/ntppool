@@ -33,7 +33,7 @@ our %valid_languages = (
     ja => {name => "日本語"},
     ko => {name => "한국어",},
     kz => {name => "Қазақша",   testing => 1},
-    nb => {name => "Norsk Bokmål", testing => 1},
+    nb => {name => "Norsk Bokmål"},
     nl => {name => "Nederlands",},
     no => {name => "Norsk"},
     pl => {name => "Język",     testing => 1},
