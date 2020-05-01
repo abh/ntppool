@@ -13,7 +13,7 @@
 	internettilkobling. Det er veldig viktig at IP-adressen din ikke blir
   endret på, eller at den kun veldig sjeldent blir det (La oss si én gang
   i året eller sjeldnere). Den påkrevde båndbredden er relativt lav. Hver
-  klient vil kun sende et par UDP-pakker hver 2.-20. minutt
+  klient vil kun sende et par UDP-pakker hver 2.-20. minutt.
 	</p>
 
 	<p>
@@ -36,7 +36,7 @@
   men de burde sette opp noen <a href="https://support.ntp.org/bin/view/Servers/StratumTwoTimeServers">gode tjenere</a> manuelt (disse tjenerene
 	<b>kan</b> bli valgt fra puljen. Poenget er at de blir valgt statisk i stedet
   for å bli tilfeldig tilegnet ved hver tjeneromstart. Dette vil hjelpe til
-  med å levere en akseptable tjenestekvalitet.)
+  med å levere en akseptabel tjenestekvalitet.)
 
 	Bemerk at det ikke er påkrevd at tjeneren din er en Stratum 1- eller 2-tjener -
   ettersom dette prosjektet stort sett handler om belastningsfordeling,
@@ -46,14 +46,14 @@
 	<p>
 	Vi har en side med <a href="/join/configuration.html">oppsettsanbefalinger for tjenere som skal bli med i puljen</a>.
 	</p>
-	<p>Til slutt, vil jeg få frem at å bli med i puljen er en <b>langtidsforpliktelse</b>.
+	<p>Til slutt, vil jeg fremheve at å bli med i puljen er en <b>langtidsforpliktelse</b>.
   Vi vil gladelig ta deg ut av puljen igjen dersom du skulle ønske det, men på
   grunn av måten NTP-tjenere opererer, <b>kan det ta uker,
   måneder, eller til og med ÅR før trafikken opphører helt.</b>.
 	</p>
 
 	<p>
-	Dersom alt dette er i orden for deg, logg på
+	Dersom alt dette er i orden for deg, logg deg inn på
 	<a href="/manage">tjenerbehandlingssiden</a> og be om å få tjeneren din lagt til.
 	Dersom du har noen problemer med systemet, send meg en E-post på <a
 	href="mailto:ask@develooper.com">ask@develooper.com</a>.
@@ -67,7 +67,7 @@
 	<p>
 	Det hadde vært hyggelig (men ikke påkrevd) om du kunne omdirigert nettforespørsler
   til port 80 på tidstjeneren din til prosjektets offisielle nettside hos
-	<tt>http://www.pool.ntp.org</tt>. Dersom du kjører Apache, kan du gjøre dette med::
+	<tt>http://www.pool.ntp.org</tt>. Dersom du kjører Apache, kan du gjøre dette med:
 	</p>
 
         [% PROCESS tpl/join/virtual_host_example.html %]
@@ -79,8 +79,8 @@
 	</p>
 	<p>
 	Når tjeneren har blitt lagt til i puljen, blir den konstant holdt øye med for
-  tilgjengelighet og presisjon. Du kan se ytelsen til tjeneren din gjennom
-  <a href="scores">nettgrensesnittet</a> eller
+  tilgjengelighet og presisjon. Du kan se ytelsen til tjeneren din på
+  <a href="scores">nettgrensesnittet</a> eller på
   <a href="/manage">behandlingssiden</a>.
 	</p>
 </div>
