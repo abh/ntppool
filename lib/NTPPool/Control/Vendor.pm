@@ -31,7 +31,8 @@ sub manage_dispatch {
 
     return $self->render_admin if $self->request->uri =~ m!^/manage/vendor/admin$!;
 
-    return $self->redirect('/manage/vendor/new') unless @{$self->user->vendor_zones};
+    return $self->redirect($self->manage_url('/manage/vendor/new'))
+      unless @{$self->user->vendor_zones};
 
     $self->tpl_params->{page}->{is_vendor} = 1;
 
@@ -77,21 +78,22 @@ sub render_zones {
 sub render_zone {
     my ($self, $id, $mode) = @_;
 
+    return $self->redirect($self->manage_url('/manage/vendor')) unless $id;
+
     $mode ||= $self->req_param('mode') || '';
 
     my $vz = NP::Model->vendor_zone->fetch(id => $id);
 
-    return $self->redirect("/manage/vendor") unless $vz and $vz->can_view($self->user);
+    return $self->redirect($self->manage_url('/manage/vendor'))
+      unless $vz and $vz->can_view($self->user);
 
     $self->tpl_param('vz', $vz);
 
     return OK, $self->evaluate_template('tpl/vendor/form.html')
-      if ($mode eq 'edit'
-          and $vz->can_edit($self->user));
+      if (  $mode eq 'edit'
+        and $vz->can_edit($self->user));
 
     return OK, $self->evaluate_template('tpl/vendor/show.html');
-
-
 }
 
 sub render_submit {
@@ -139,7 +141,7 @@ sub render_edit {
     }
 
     my $redirect = URI->new('/manage/vendor/zone');
-    $redirect->query_param(id => $vz->id_token);
+    $redirect->query_param(id   => $vz->id_token);
     $redirect->query_param(mode => 'show');
     return $self->redirect($redirect);
 
