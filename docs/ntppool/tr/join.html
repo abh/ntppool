@@ -5,13 +5,13 @@
 	<p>
 	Öncelikle: İlginiz için teşekkürler. Havuz kullanımı gün geçtikçe
 	çok hızlı bir şekilde artıyor ve bu hizmeti herkese kesintisiz
-	sunabilmenin tek yolu ortak sunucu sayısınında artmasıdır.
+	sunabilmenin tek yolu ortak sunucu sayısının da artmasıdır.
 	</p>
 
 	<p>
 	Bilgisayarınızın <b>IP adresi sabit olmalı</b> ve sabit internet
-	bağlantınız olmalı. IP adresinizin değişmemesi çok önemli yada
-	nadiren değişebilir (yılda bir kez yada daha az). Gereken bant
+	bağlantınız olmalı. IP adresinizin değişmemesi veya oldukça 
+	seyrek(yılda bir kez veya daha az) değişmesi çok önemli. Gereken bant
 	genişliği çok çok azdır. Bağlanan bilgisayarlar her 20 dakikada
 	bir iki UDP paketi gönderir.
 	</p>
@@ -19,7 +19,7 @@
 	<p>
 	Şu anda bir çok sunucu gün içinde en fazla saniyede 5-15 NTP paketi,
 	günde iki kere olmak üzere de saniyede 60-120 paket alıyor. Bu kabaca
-	saniyede 10-15Kbit, en fazlada saniyede 50-120Kbit ediyor. Proje
+	saniyede 10-15Kbit, en fazla da saniyede 50-120Kbit ediyor. Proje
 	sürekli zaman sunucusu kabul etmektedir, yani sunucu başına düşen yük
 	aşırı derecede yükselmemektedir. Açık bir ifade ile en azından
 	384-512Kbit bant genişliğine ihtiyaç duyacaksınız (giden ve gelen).
@@ -63,17 +63,17 @@
 	abone olabilirsiniz.
 	</p>
 	<p>
-	Gerekli değil fakat sunucunuzun 80 portunu <tt>https://www.ntppool.org</tt> adresindeki
-	projenin resmi sitesine yönlendirebilirseniz seviniriz. Eğer Apache kullanıyorsanız
-	bunu aşağıdaki gibi yapabilirsiniz:
+	Şart olmamakla birlikte sunucunuzun 80 portuna gelen istekleri <tt>https://www.ntppool.org</tt> 
+	adresindeki projenin resmi web sitesine yönlendirebilirseniz güzel olur. Eğer Apache kullanıyorsanız
+	bunu şu şekilde yapabilirsiniz:
 	</p>
 
         [% PROCESS tpl/join/virtual_host_example.html %]
 
 	<p>
-	Resmi proje sitemizin adresinin başında her zaman 'www' olmalı bazen
-	insanlar üşeniyorlar ve direk <tt>pool.ntp.org</tt> yazıyorlar daha sonra karşılarına
-	farklı bir sayfa çıkabiliyor.
+	Tekrar ediyorum, sadece bir web sunucunuz varsa bunu yapın. Resmi proje web sayfası başında her zaman 'www' ile birlikte verilecek. Bazen
+	insanlar direkt <tt>pool.ntp.org</tt> yazıyorlar, sonra da karşılarına
+	rastgele bir web sayfası çıkınca şaşırıyorlar.
 	</p>
 	<p>
 	Sunucunuz havuza eklendiğinde belirli aralıklarla ölçülerek izlenecektir. Sunucunuzun
