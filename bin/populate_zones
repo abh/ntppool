@@ -9,13 +9,27 @@ use Combust::Config;
 
 my $config = Combust::Config->new;
 
-populate_country_zones();
+=pod
+
+Generate the data in the __DATA__ section from the maxmind CSV database.
+
+  TF=`mktemp`
+  perl -ne 'next if m/geoname_id/; @f=split /,/; $f[5] = qq["$f[5]"] unless $f[5]=~m/"/;
+            print "CO: $f[4],$f[2]\nCC: $f[4],$f[5]\n" if $f[4]' \
+     < GeoLite2-Country-Locations-en.csv > $TF
+  perl -ne 'print if s/^CO: //' < $TF | sort > continents.txt
+  perl -ne 'print if s/^CC: //' < $TF | sort > countries.txt
+
+=cut
+
 setup_dns_root();
+populate_country_zones();
 exit 0;
 
 sub setup_dns_root {
+    warn "Checking if dns_roots are configured\n";
     my $count = NP::Model->dns_root->get_objects_count();
-    warn(
+    warn("- ",
         (   $count == 1
             ? "have a zone"
             : "have $count zones"
@@ -25,7 +39,7 @@ sub setup_dns_root {
     return if $count > 0;
 
     my $default = $config->site->{ntppool}->{pool_domain};
-    warn "creating default dns root zone -- $default";
+    warn "- creating default dns root zone -- $default";
 
     my $z = NP::Model->dns_root->create(
         origin           => $default,
@@ -37,6 +51,7 @@ sub setup_dns_root {
 }
 
 sub populate_country_zones {
+    warn "Creating country zones\n";
     my $total = NP::Model->zone->fetch_or_create(name => '.');
     $total->description('All Pool Servers');
     $total->dns(0);
@@ -101,8 +116,6 @@ sub populate_country_zones {
 }
 
 __DATA__
-A1,--
-A2,--
 AD,EU
 AE,AS
 AF,AS
@@ -110,9 +123,7 @@ AG,NA
 AI,NA
 AL,EU
 AM,AS
-AN,NA
 AO,AF
-AP,AS
 AQ,AN
 AR,SA
 AS,OC
@@ -158,8 +169,8 @@ CR,NA
 CU,NA
 CV,AF
 CW,NA
-CX,AS
-CY,AS
+CX,OC
+CY,EU
 CZ,EU
 DE,EU
 DJ,AF
@@ -174,14 +185,12 @@ EH,AF
 ER,AF
 ES,EU
 ET,AF
-EU,EU
 FI,EU
 FJ,OC
 FK,SA
 FM,OC
 FO,EU
 FR,EU
-FX,EU
 GA,AF
 GB,EU
 GD,NA
@@ -278,7 +287,6 @@ NP,AS
 NR,OC
 NU,OC
 NZ,OC
-O1,--
 OM,AS
 PA,NA
 PE,SA
@@ -328,7 +336,7 @@ TG,AF
 TH,AS
 TJ,AS
 TK,OC
-TL,AS
+TL,OC
 TM,AS
 TN,AF
 TO,OC
@@ -352,6 +360,7 @@ VN,AS
 VU,OC
 WF,OC
 WS,OC
+XK,EU
 YE,AS
 YT,AF
 ZA,AF
@@ -373,14 +382,13 @@ AI,"Anguilla"
 AL,"Albania"
 AM,"Armenia"
 AO,"Angola"
-#AP,"Asia/Pacific Region"
 AQ,"Antarctica"
 AR,"Argentina"
 AS,"American Samoa"
 AT,"Austria"
 AU,"Australia"
 AW,"Aruba"
-AX,"Aland Islands"
+AX,"Åland"
 AZ,"Azerbaijan"
 BA,"Bosnia and Herzegovina"
 BB,"Barbados"
@@ -391,11 +399,11 @@ BG,"Bulgaria"
 BH,"Bahrain"
 BI,"Burundi"
 BJ,"Benin"
-BL,"Saint Bartelemey"
+BL,"Saint Barthélemy"
 BM,"Bermuda"
-BN,"Brunei Darussalam"
+BN,"Brunei"
 BO,"Bolivia"
-BQ,"Bonaire, Saint Eustatius and Saba"
+BQ,"Bonaire
 BR,"Brazil"
 BS,"Bahamas"
 BT,"Bhutan"
@@ -404,12 +412,12 @@ BW,"Botswana"
 BY,"Belarus"
 BZ,"Belize"
 CA,"Canada"
-CC,"Cocos (Keeling) Islands"
-CD,"Congo, The Democratic Republic of the"
+CC,"Cocos [Keeling] Islands"
+CD,"DR Congo"
 CF,"Central African Republic"
-CG,"Congo"
+CG,"Congo Republic"
 CH,"Switzerland"
-CI,"Cote d'Ivoire"
+CI,"Ivory Coast"
 CK,"Cook Islands"
 CL,"Chile"
 CM,"Cameroon"
@@ -417,11 +425,11 @@ CN,"China"
 CO,"Colombia"
 CR,"Costa Rica"
 CU,"Cuba"
-CV,"Cape Verde"
-CW,"Curacao"
+CV,"Cabo Verde"
+CW,"Curaçao"
 CX,"Christmas Island"
 CY,"Cyprus"
-CZ,"Czech Republic"
+CZ,"Czechia"
 DE,"Germany"
 DJ,"Djibouti"
 DK,"Denmark"
@@ -437,8 +445,8 @@ ES,"Spain"
 ET,"Ethiopia"
 FI,"Finland"
 FJ,"Fiji"
-FK,"Falkland Islands (Malvinas)"
-FM,"Micronesia, Federated States of"
+FK,"Falkland Islands"
+FM,"Federated States of Micronesia"
 FO,"Faroe Islands"
 FR,"France"
 GA,"Gabon"
@@ -473,43 +481,43 @@ IM,"Isle of Man"
 IN,"India"
 IO,"British Indian Ocean Territory"
 IQ,"Iraq"
-IR,"Iran, Islamic Republic of"
+IR,"Iran"
 IS,"Iceland"
 IT,"Italy"
 JE,"Jersey"
 JM,"Jamaica"
-JO,"Jordan"
+JO,"Hashemite Kingdom of Jordan"
 JP,"Japan"
 KE,"Kenya"
 KG,"Kyrgyzstan"
 KH,"Cambodia"
 KI,"Kiribati"
 KM,"Comoros"
-KN,"Saint Kitts and Nevis"
-KP,"Korea, Democratic People's Republic of"
-KR,"Korea, Republic of"
+KN,"St Kitts and Nevis"
+KP,"North Korea"
+KR,"South Korea"
 KW,"Kuwait"
 KY,"Cayman Islands"
 KZ,"Kazakhstan"
-LA,"Lao People's Democratic Republic"
+LA,"Laos"
 LB,"Lebanon"
 LC,"Saint Lucia"
 LI,"Liechtenstein"
 LK,"Sri Lanka"
 LR,"Liberia"
 LS,"Lesotho"
-LT,"Lithuania"
+LT,"Republic of Lithuania"
 LU,"Luxembourg"
 LV,"Latvia"
-LY,"Libyan Arab Jamahiriya"
+LY,"Libya"
 MA,"Morocco"
 MC,"Monaco"
-MD,"Moldova, Republic of"
+MD,"Republic of Moldova"
 ME,"Montenegro"
 MF,"Saint Martin"
 MG,"Madagascar"
 MH,"Marshall Islands"
-MK,"Macedonia"
+MK,"North Macedonia"
 ML,"Mali"
 MM,"Myanmar"
 MN,"Mongolia"
@@ -546,17 +554,17 @@ PH,"Philippines"
 PK,"Pakistan"
 PL,"Poland"
 PM,"Saint Pierre and Miquelon"
-PN,"Pitcairn"
+PN,"Pitcairn Islands"
 PR,"Puerto Rico"
-PS,"Palestinian Territory"
+PS,"Palestine"
 PT,"Portugal"
 PW,"Palau"
 PY,"Paraguay"
 QA,"Qatar"
-RE,"Reunion"
+RE,"Réunion"
 RO,"Romania"
 RS,"Serbia"
-RU,"Russian Federation"
+RU,"Russia"
 RW,"Rwanda"
 SA,"Saudi Arabia"
 SB,"Solomon Islands"
@@ -574,11 +582,11 @@ SN,"Senegal"
 SO,"Somalia"
 SR,"Suriname"
 SS,"South Sudan"
-ST,"Sao Tome and Principe"
+ST,"São Tomé and Príncipe"
 SV,"El Salvador"
 SX,"Sint Maarten"
-SY,"Syrian Arab Republic"
-SZ,"Swaziland"
+SY,"Syria"
+SZ,"Eswatini"
 TC,"Turks and Caicos Islands"
 TD,"Chad"
 TF,"French Southern Territories"
@@ -586,7 +594,7 @@ TG,"Togo"
 TH,"Thailand"
 TJ,"Tajikistan"
 TK,"Tokelau"
-TL,"Timor-Leste"
+TL,"East Timor"
 TM,"Turkmenistan"
 TN,"Tunisia"
 TO,"Tonga"
@@ -594,22 +602,23 @@ TR,"Turkey"
 TT,"Trinidad and Tobago"
 TV,"Tuvalu"
 TW,"Taiwan"
-TZ,"Tanzania, United Republic of"
+TZ,"Tanzania"
 UA,"Ukraine"
 UG,"Uganda"
-UM,"United States Minor Outlying Islands"
+UM,"U.S. Minor Outlying Islands"
 US,"United States"
 UY,"Uruguay"
 UZ,"Uzbekistan"
-VA,"Holy See (Vatican City State)"
+VA,"Vatican City"
 VC,"Saint Vincent and the Grenadines"
 VE,"Venezuela"
-VG,"Virgin Islands, British"
-VI,"Virgin Islands, U.S."
+VG,"British Virgin Islands"
+VI,"U.S. Virgin Islands"
 VN,"Vietnam"
 VU,"Vanuatu"
 WF,"Wallis and Futuna"
 WS,"Samoa"
+XK,"Kosovo"
 YE,"Yemen"
 YT,"Mayotte"
 ZA,"South Africa"
