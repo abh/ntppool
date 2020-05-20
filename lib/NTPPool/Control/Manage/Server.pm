@@ -369,7 +369,7 @@ sub handle_mode7_check {
 sub handle_update_netspeed {
     my $self   = shift;
     my $server = $self->req_server or return NOT_FOUND;
-    if (my $netspeed = $self->req_param('netspeed')) {
+    if (defined(my $netspeed = $self->req_param('netspeed'))) {
         return 403 unless $self->check_auth_token;
 
         my $db  = NP::Model->db;

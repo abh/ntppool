@@ -30,7 +30,7 @@ IP <input type="text" name="ip">
 
 
 <p>
-[% UNLESS server.in_pool %]
+[% UNLESS server.in_pool AND server.netspeed > 0 %]
 <i>[% |l %]Not active in the pool, monitoring only[% END %]</i><br/>
 [% END %]
 

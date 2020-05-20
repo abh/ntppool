@@ -212,6 +212,8 @@ sub netspeed_human {
 sub _netspeed_human {
     my $netspeed = shift;
 
+    return ("disabled, monitoring only") if $netspeed == 0;
+
     return ($netspeed / 1_000_000) . ' Gbit' if ($netspeed / 1_000_000 > 1);
     return ($netspeed / 1_000) . ' Mbit' if ($netspeed / 1_000 >= 1);
     return "$netspeed Kbit";

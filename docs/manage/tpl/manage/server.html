@@ -24,14 +24,14 @@
         <a href="#netspeed">Net speed</a>:
         <span id="netspeed_[% server.id %]">[% server.netspeed_human %]
         </span>
-        |
+                |
         <select name="netspeed"
             onchange="NP.update_netspeed('[% server.id %]', this.value, '[% combust.auth_token %]'); return false;">
             <option value="">Set connection speed</option>
-            [% speeds = [384, 512, 768, 1000, 1500, 3000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000];
-            IF (server.netspeed < 384); speeds.unshift(server.netspeed); END; FOR speed=speeds; %] <option
+            [% speeds = [server.netspeed, 0, 512, 768, 1000, 1500, 3000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000]; %]
+            [% FOR speed = speeds.nsort.unique; %] <option
                 value="[% speed %]">[% combust.netspeed_human(speed) %]</option>
-                [%- END %]
+            [%- END %]
         </select>
         <noscript>
             <input type="submit" name="Update" value="Update">
