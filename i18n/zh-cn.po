@@ -1,0 +1,111 @@
+msgid ""
+msgstr ""
+"Last-Translator: Guo Hui <guohui.huiguo@gmail.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "go up"
+msgstr "向上"
+
+# zone names
+msgid "Africa"
+msgstr "非洲"
+
+msgid "Asia"
+msgstr "亚洲"
+
+msgid "North America"
+msgstr "北美洲"
+
+msgid "South America"
+msgstr "南美洲"
+
+msgid "Global"
+msgstr "全球"
+
+msgid "All Pool Servers"
+msgstr "全部Pool服务器"
+
+# navigation
+msgid "Translations"
+msgstr "翻译者"
+
+# mailinglists.html
+msgid  "NTP Pool mailing lists"
+msgstr "NTP Pool 邮件列表"
+
+msgid  "subscribe"
+msgstr "订阅"
+
+msgid  "archive"
+msgstr "归档"
+
+msgid  "Announcement list"
+msgstr "公告列表"
+
+msgid  "Discussion list"
+msgstr "讨论组列表"
+
+msgid  "Development list"
+msgstr "开发人员列表"
+
+msgid  "announcement_list_description"
+msgstr "非常少的 NTP Pool 新闻. 所有管理员都应该订阅公告列表."
+
+msgid  "discussion_list_description"
+msgstr "服务器管理员 (或者用户) 凡是参与项目的人员都建议订阅讨论组列表.<br/> 当然, 最佳讨论ntp项目的地方是在 %1 网络用户新闻组 (或者在 <a href=\"%2\">Google Groups</a>)."
+
+msgid  "development_list_description"
+msgstr "更多最新技术 (或始终务实的创意) 进展的讨论都可以在  <a href=\"%1\">ntp pool code</a>  或者位于 <a href=\"%2\">pgeodns</a>  查看最新项目变化的 timekeepers-dev 邮件列表."
+
+
+# tpl/server.html
+msgid  "Back to the front page"
+msgstr "返回首页"
+
+msgid  "Find"
+msgstr "查找"
+
+msgid  "Stats for %1"
+msgstr "统计 %1"
+
+msgid  "Not active in the pool, monitoring only"
+msgstr "不存在于pool, 仅是检测"
+
+msgid  "Zones:"
+msgstr "时区:"
+
+msgid  "This server is <span class="deletion">scheduled for deletion</span> on %1."
+msgstr "服务器 <span class="deletion">计划删除</span> 于 %1."
+
+msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
+msgstr "当前得分: %1 (这台服务器的得分比使用在pool中的 %2 要高)"
+
+msgid  "What do the graphs mean?"
+msgstr "这张图的意思是?"
+
+msgid  "CSV log"
+msgstr "CSV格式日志"
+
+# tpl/navigation_sidebar.html
+msgid  "News"
+msgstr "新闻"
+
+msgid  "How do I <i>use</i> pool.ntp.org?"
+msgstr "如何 <i>使用</i> pool.ntp.org?"
+
+msgid  "How do I <i>join</i> pool.ntp.org?"
+msgstr "如何 <i>加入</i> pool.ntp.org?"
+
+msgid  "Information for vendors"
+msgstr "供应商资讯"
+
+msgid  "The mailing lists"
+msgstr "邮件列表"
+
+msgid  "Additional links"
+msgstr "更多信息"
+
+msgid  "Can you translate?"
+msgstr "您能帮助翻译吗?"
