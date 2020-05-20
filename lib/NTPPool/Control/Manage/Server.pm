@@ -377,6 +377,7 @@ sub handle_update_netspeed {
 
         return unless $netspeed =~ m/^\d+$/;
         $netspeed = 10000 if $netspeed > 1000000;
+        $netspeed = 1000  if $netspeed < 0;
 
         my $old = $server->get_data_hash;
         $server->netspeed($netspeed);
