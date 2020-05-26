@@ -25,6 +25,9 @@ msgstr "南美"
 msgid "Europe"
 msgstr "欧洲"
 
+msgid "Oceania"
+msgstr "Oceania"
+
 msgid "Global"
 msgstr "全球"
 
@@ -35,27 +38,49 @@ msgstr "所有库服务器"
 msgid "Translations"
 msgstr "语言"
 
-# mailinglists.html
-msgid  "NTP Pool mailing lists"
-msgstr "NTP池-邮件清单"
+# index.html
+msgid  "Introduction"
+msgstr "Introduction"
 
+msgid  "Active Servers"
+msgstr "Active Servers"
+
+msgid  "Links"
+msgstr "Links"
+
+msgid  "Terms of service"
+msgstr "Terms of service"
+
+msgid  "Subscribe in a reader"
+msgstr "Subscribe in a reader"
+
+msgid  "Older news"
+msgstr "Older news"
+
+# mailinglists.html
 msgid  "subscribe"
 msgstr "订阅"
 
 msgid  "archive"
 msgstr "文章归档"
 
-msgid  "Announcement list"
-msgstr "公告列表"
+msgid  "NTP Pool Forum"
+msgstr "NTP Pool Forum"
+
+msgid  "News site"
+msgstr "News site"
 
 msgid  "Discussion list"
 msgstr "讨论列表"
 
-msgid  "Development list"
+msgid  "Development"
 msgstr "开发列表"
 
-msgid  "announcement_list_description"
-msgstr "公告列表简介"
+msgid  "forum_description"
+msgstr "Questions (and answers) about the NTP Pool, suggestions for improvements and topics related to time keeping and operating NTP servers."
+
+msgid  "news_description"
+msgstr "Announcements and news are posted on the news site or the forum."
 
 msgid  "discussion_list_description"
 msgstr "讨论列表简介"
