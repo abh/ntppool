@@ -26,7 +26,7 @@ msgid "Europe"
 msgstr "欧洲"
 
 msgid "Oceania"
-msgstr "Oceania"
+msgstr "大洋洲"
 
 msgid "Global"
 msgstr "全球"
@@ -40,22 +40,22 @@ msgstr "语言"
 
 # index.html
 msgid  "Introduction"
-msgstr "Introduction"
+msgstr "介绍"
 
 msgid  "Active Servers"
-msgstr "Active Servers"
+msgstr "活动的服务器"
 
 msgid  "Links"
-msgstr "Links"
+msgstr "链接"
 
 msgid  "Terms of service"
-msgstr "Terms of service"
+msgstr "服务条款"
 
 msgid  "Subscribe in a reader"
-msgstr "Subscribe in a reader"
+msgstr "订阅读者"
 
 msgid  "Older news"
-msgstr "Older news"
+msgstr "旧消息"
 
 # mailinglists.html
 msgid  "subscribe"
@@ -65,10 +65,10 @@ msgid  "archive"
 msgstr "文章归档"
 
 msgid  "NTP Pool Forum"
-msgstr "NTP Pool Forum"
+msgstr "NTP Pool 论坛"
 
 msgid  "News site"
-msgstr "News site"
+msgstr "新闻站点"
 
 msgid  "Discussion list"
 msgstr "讨论列表"
@@ -77,10 +77,10 @@ msgid  "Development"
 msgstr "开发列表"
 
 msgid  "forum_description"
-msgstr "Questions (and answers) about the NTP Pool, suggestions for improvements and topics related to time keeping and operating NTP servers."
+msgstr "关于 NTP Pool 的问答、改善的建议与维持时间与操作 NTP 服务器相关的话题。"
 
 msgid  "news_description"
-msgstr "Announcements and news are posted on the news site or the forum."
+msgstr "公告与新闻会在站点或论坛中发布"
 
 msgid  "discussion_list_description"
 msgstr "讨论列表简介"
@@ -96,7 +96,7 @@ msgid  "Find"
 msgstr "搜索"
 
 msgid  "Stats for %1"
-msgstr "%1的统计信息"
+msgstr "%1 的统计信息"
 
 msgid  "Not active in the pool, monitoring only"
 msgstr "在池中不可用，只能进行查看"
