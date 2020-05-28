@@ -1,0 +1,111 @@
+msgid ""
+msgstr ""
+"Last-Translator: LJ Kung <lingk12345@hotmail.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "go up"
+msgstr "回上"
+
+# zone names
+msgid "Africa"
+msgstr "非洲"
+
+msgid "Asia"
+msgstr "亞洲"
+
+msgid "North America"
+msgstr "北美洲"
+
+msgid "South America"
+msgstr "南美洲"
+
+msgid "Global"
+msgstr "國際"
+
+msgid "All Pool Servers"
+msgstr "全部服務器"
+
+# navigation
+msgid "Translations"
+msgstr "翻譯"
+
+# mailinglists.html
+msgid  "NTP Pool mailing lists"
+msgstr "NTP Pool 郵件列表"
+
+msgid  "subscribe"
+msgstr "訂閱"
+
+msgid  "archive"
+msgstr "存檔"
+
+msgid  "Announcement list"
+msgstr "通告目錄"
+
+msgid  "Discussion list"
+msgstr "討論目錄"
+
+msgid  "Development list"
+msgstr "發展目錄"
+
+msgid  "announcement_list_description"
+msgstr "NTP Pool 的新聞通告很少, 所有的服務器操作員應訂閱通告目錄."
+
+msgid  "discussion_list_description"
+msgstr "服務器操作員（和用戶）希望等多參與這計劃可訂閱討論清單. <br/> 當然，有關 NTP 的一般性討論，應在 %1 的 Usenet 新聞組的地方(<a href=\"%2\">Google Groups</a>)."
+
+msgid  "development_list_description"
+msgstr "《a href=\"%1\">ntp pool code</a> 的比較專業性問題和 <a href=\"%2\">pgeodns</a> 在 timekeepers-dev 目錄裏面."
+
+
+# tpl/server.html
+msgid  "Back to the front page"
+msgstr "回到首頁"
+
+msgid  "Find"
+msgstr "搜索"
+
+msgid  "Stats for %1"
+msgstr "%1 統計表"
+
+msgid  "Not active in the pool, monitoring only"
+msgstr "不在 pool 裏面活耀, 只監探"
+
+msgid  "Zones:"
+msgstr "地區:"
+
+msgid  "This server is <span class="deletion">scheduled for deletion</span> on %1."
+msgstr "這個 %1 服務器 <span class="deletion">預定要刪除</span>. "
+
+msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
+msgstr "目前分數: %1 (Pool 裏面只有得分 %2 以上才會被用到)"
+
+msgid  "What do the graphs mean?"
+msgstr "這個圖表代表什麼?"
+
+msgid  "CSV log"
+msgstr "CSV 日誌"
+
+# tpl/navigation_sidebar.html
+msgid  "News"
+msgstr "新聞"
+
+msgid  "How do I <i>use</i> pool.ntp.org?"
+msgstr "我怎麼<i>使用</i> pool.ntp.org?"
+
+msgid  "How do I <i>join</i> pool.ntp.org?"
+msgstr "我怎麼<i>參加</i> pool.ntp.org?"
+
+msgid  "Information for vendors"
+msgstr "給供應商的信息"
+
+msgid  "The mailing lists"
+msgstr "郵件列表"
+
+msgid  "Additional links"
+msgstr "額外鏈接"
+
+msgid  "Can you translate?"
+msgstr "您會翻譯嗎?"
