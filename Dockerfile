@@ -1,5 +1,4 @@
-FROM quay.io/ntppool/base-os:v3.11.6
-
+FROM harbor.ntppool.org/ntppool/base-os:v3.11.6
 USER root
 
 RUN apk --no-cache upgrade

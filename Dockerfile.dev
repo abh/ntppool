@@ -1,8 +1,6 @@
-#FROM quay.io/ntppool/ntppool:master
-# FROM harbor.ntppool.org/ask/ntppool:dev-2020-04-08
-FROM harbor.ntppool.org/ntppool/base-os:v3.11.5
+FROM harbor.ntppool.org/ntppool/base-os:latest
 
-ENV BUILD 20200410
+ENV BUILD 20200610
 
 USER root
 
