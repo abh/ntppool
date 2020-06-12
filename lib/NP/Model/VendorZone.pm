@@ -64,7 +64,9 @@ sub validate {
         }
     }
 
-    for my $f (qw(contact_information device_count organization_name request_information)) {
+    for
+      my $f (qw(contact_information device_count organization_name request_information))
+    {
         $errors->{$f} = 'Required field!' unless $vz->$f and $vz->$f =~ m/\S/;
     }
 

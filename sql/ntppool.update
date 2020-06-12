@@ -758,6 +758,26 @@ alter table log_scores
 # fix modified_on being updated by the change to add accounts
 update vendor_zones set modified_on = greatest(approved_on, created_on);
 
+#88
+update vendor_zones set status='New', modified_on=modified_on where status='Pending';
+
+#89
+create table account_subscriptions (
+  id          int(10) unsigned NOT NULL primary key auto_increment,
+  account_id  int(10) unsigned NOT NULL,
+  stripe_subscription_id varchar(255) null,
+  status      enum('incomplete', 'incomplete_expired', 'trialing', 'active', 'past_due', 'canceled', 'unpaid') null,
+  constraint  `account_subscriptions_account_fk` foreign key (`account_id`) references accounts (`id`),
+  unique key (stripe_subscription_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+#90
+alter table accounts
+  drop account_plan_id,
+  drop foreign key vendor_plan_fk;
+
+drop table account_plans;
+
 #todo
 alter table user_privileges
   drop see_all_user_profiles;

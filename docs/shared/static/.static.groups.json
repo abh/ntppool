@@ -23,6 +23,11 @@
           "cdn/libs/spin.js/4/spin.min.css"
       ]
   },
+  "manage.js": {
+      "files": [
+          "js/ntppool.js"
+      ],
+  },
   "admin.js": {
       "files": [
           "cdn/libs/hogan/3/hogan.min.js",

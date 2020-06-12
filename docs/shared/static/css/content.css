@@ -159,6 +159,12 @@ a.up {
   font-size: 60%;
 }
 
+        .product-card {
+            width: 20em;
+        }
+        .product-card .card-header {
+            background-color: white;
+        }
 
 #activity {
   float: right;

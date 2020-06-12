@@ -48,7 +48,6 @@ __PACKAGE__->meta->setup(
   columns => [
     id                => { type => 'serial', not_null => 1 },
     name              => { type => 'varchar', length => 255 },
-    account_plan_id   => { type => 'integer' },
     organization_name => { type => 'varchar', length => 150 },
     organization_url  => { type => 'varchar', length => 150 },
     public_profile    => { type => 'integer', default => '0', not_null => 1 },
@@ -63,14 +62,13 @@ __PACKAGE__->meta->setup(
 
   allow_inline_column_values => 1,
 
-  foreign_keys => [
-    account_plan => {
-      class       => 'NP::Model::AccountPlan',
-      key_columns => { account_plan_id => 'id' },
-    },
-  ],
-
   relationships => [
+    account_subscriptions => {
+      class      => 'NP::Model::AccountSubscription',
+      column_map => { id => 'account_id' },
+      type       => 'one to many',
+    },
+
     invites => {
       class      => 'NP::Model::AccountInvite',
       column_map => { id => 'account_id' },
@@ -189,28 +187,30 @@ __PACKAGE__->make_manager_methods('account_invites');
 eval { require NP::Model::AccountInvite }
   or $@ !~ m:^Can't locate NP/Model/AccountInvite.pm: and die $@;
 
-{ package NP::Model::AccountPlan;
+{ package NP::Model::AccountSubscription;
 
 use strict;
 
 use base qw(NP::Model::_Object);
 
 __PACKAGE__->meta->setup(
-  table   => 'account_plans',
+  table   => 'account_subscriptions',
 
   columns => [
-    id        => { type => 'serial', not_null => 1 },
-    plan_type => { type => 'varchar', length => 255 },
-    plan_key  => { type => 'varchar', length => 255 },
+    id                     => { type => 'serial', not_null => 1 },
+    account_id             => { type => 'integer', not_null => 1 },
+    stripe_subscription_id => { type => 'varchar', length => 255 },
+    status                 => { type => 'enum', check_in => [ 'incomplete', 'incomplete_expired', 'trialing', 'active', 'past_due', 'canceled', 'unpaid' ] },
   ],
 
   primary_key_columns => [ 'id' ],
 
-  relationships => [
-    accounts => {
-      class      => 'NP::Model::Account',
-      column_map => { id => 'account_plan_id' },
-      type       => 'one to many',
+  unique_key => [ 'stripe_subscription_id' ],
+
+  foreign_keys => [
+    account => {
+      class       => 'NP::Model::Account',
+      key_columns => { account_id => 'id' },
     },
   ],
 );
@@ -218,20 +218,20 @@ __PACKAGE__->meta->setup(
 push @table_classes, __PACKAGE__;
 }
 
-{ package NP::Model::AccountPlan::Manager;
+{ package NP::Model::AccountSubscription::Manager;
 
 use strict;
 
 our @ISA = qw(Combust::RoseDB::Manager);
 
-sub object_class { 'NP::Model::AccountPlan' }
+sub object_class { 'NP::Model::AccountSubscription' }
 
-__PACKAGE__->make_manager_methods('account_plans');
+__PACKAGE__->make_manager_methods('account_subscriptions');
 }
 
 # Allow user defined methods to be added
-eval { require NP::Model::AccountPlan }
-  or $@ !~ m:^Can't locate NP/Model/AccountPlan.pm: and die $@;
+eval { require NP::Model::AccountSubscription }
+  or $@ !~ m:^Can't locate NP/Model/AccountSubscription.pm: and die $@;
 
 { package NP::Model::AccountUser;
 
@@ -1496,7 +1496,7 @@ eval { require NP::Model::ZoneServerCount }
 
   sub account { our $account ||= bless [], 'NP::Model::Account::Manager' }
   sub account_invite { our $account_invite ||= bless [], 'NP::Model::AccountInvite::Manager' }
-  sub account_plan { our $account_plan ||= bless [], 'NP::Model::AccountPlan::Manager' }
+  sub account_subscription { our $account_subscription ||= bless [], 'NP::Model::AccountSubscription::Manager' }
   sub account_user { our $account_user ||= bless [], 'NP::Model::AccountUser::Manager' }
   sub api_key { our $api_key ||= bless [], 'NP::Model::ApiKey::Manager' }
   sub dns_root { our $dns_root ||= bless [], 'NP::Model::DnsRoot::Manager' }

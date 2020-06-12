@@ -61,11 +61,14 @@ sub manage_dispatch {
     }
     elsif ($self->request->uri =~ m!^/manage/account/team$!) {
         if ($self->request->method eq 'post' and $account->can_edit($self->user)) {
-            return $self->render_users_invite($account, $self->req_param('invite_email'))
+            return $self->render_users_invite($account,
+                $self->req_param('invite_email'))
               if $self->req_param('invite_email');
 
             my $delete_user_id = $self->req_param('user_id');
-            if ($delete_user_id and ($self->user->is_staff or $self->user->id != $delete_user_id)) {
+            if ($delete_user_id
+                and ($self->user->is_staff or $self->user->id != $delete_user_id))
+            {
                 return $self->remove_user_from_account($account, $delete_user_id);
             }
         }
@@ -98,8 +101,9 @@ sub remove_user_from_account {
         $param, {site => 'manage', config => $self->config});
 
     my $email =
-      Email::Stuffer->from(NP::Email::address("sender"))->reply_to(NP::Email::address("support"))
-      ->subject("NTP Pool account change")->text_body($msg);
+      Email::Stuffer->from(NP::Email::address("sender"))
+      ->reply_to(NP::Email::address("support"))->subject("NTP Pool account change")
+      ->text_body($msg);
 
     $email->to($user->email);
     my @cc = grep { $_->id != $user_id } @$users;

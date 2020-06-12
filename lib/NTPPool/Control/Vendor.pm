@@ -7,6 +7,7 @@ use NP::Email      ();
 use Email::Stuffer ();
 use Sys::Hostname qw(hostname);
 use JSON ();
+use NP::Stripe;
 
 my $json = JSON::XS->new->pretty->utf8->convert_blessed;
 
@@ -28,6 +29,8 @@ sub manage_dispatch {
     return $self->render_submit
       if (  $self->request->uri =~ m!^/manage/vendor/submit$!
         and $self->request->method eq 'post');
+
+    return $self->render_subscription if $self->request->uri =~ m!^/manage/vendor/plan/!;
 
     return $self->render_admin if $self->request->uri =~ m!^/manage/vendor/admin$!;
 
@@ -93,6 +96,23 @@ sub render_zone {
       if (  $mode eq 'edit'
         and $vz->can_edit($self->user));
 
+    my @subs = $self->current_account->account_subscriptions;
+    if (@subs) {
+        warn "have subscriptions ...";
+        $self->tpl_param('subscriptions', \@subs);
+    } else {
+        warn "getting products!";
+        my $stripe = NP::Stripe::get_products();
+        warn "STRIPE: ", Data::Dump::pp($stripe);
+        if ($stripe->{error}) {
+            warn "stripe gw error: ", $stripe->{error};
+        } else {
+            #warn "GOT PRODUCTS: ", scalar @{$stripe->{Products}};
+            $self->tpl_param('products', $stripe->{Products});
+        }
+    }
+    # TODO: add template variable if there's no subscription
+
     return OK, $self->evaluate_template('tpl/vendor/show.html');
 }
 
@@ -140,12 +160,12 @@ sub render_edit {
         return $self->render_form($vz);
     }
 
+    # if no subscription, go to subscription page
+
     my $redirect = URI->new('/manage/vendor/zone');
     $redirect->query_param(id   => $vz->id_token);
     $redirect->query_param(mode => 'show');
     return $self->redirect($redirect);
-
-    #return $self->render_zone($vz->id, 'show');
 }
 
 sub render_edit_json {
@@ -201,6 +221,39 @@ sub _edit_zone {
     $vz->save;
 
     return $vz;
+}
+
+sub render_subscription {
+    my $self = shift;
+
+    # TODO: access control;
+    #   account member or vendor admin
+
+    if ($self->request->uri eq '/manage/vendor/plan/create_session') {
+
+        # TODO:
+        #  - take parameters to create session for the right price
+        #  - set the right urls for cancel, etc
+        #  - set the right customer ID if one exists
+
+        my $return_url = $self->manage_url('/manage/vendor/zone',);
+
+        my %args = (
+            priceID       => "price_1GsPik2ZWuSKvxWMUAw3FJDQ",
+            customerEmail => $self->user->email,
+            accountID     => $self->current_account->id_token,
+            returnURL     => $return_url,
+        );
+
+        my $session = NP::Stripe::create_session(%args);
+        if ($session->{error}) {
+            warn "create session error: ", $session->{error};
+            return OK, $json->encode({error => $session->{error}});
+        }
+        return OK, $json->encode({checkoutSessionId => $session->{id}});
+    }
+
+    return 404;
 }
 
 sub render_admin {

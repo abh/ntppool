@@ -310,15 +310,17 @@ sub post_process {
               '{"group":"default","max_age":31536000,"endpoints":[{"url":"https://ntp.report-uri.com/a/d/g"}],"include_subdomains":true}'
         ],
         ['NEL' => '{"report_to":"default","max_age":31536000,"include_subdomains":true}'],
-        [   'Content-Security-Policy' => join(" ",
-                qq[default-src 'none'; form-action 'self' mailform.ntppool.org; frame-ancestors 'none';],
-                qq[connect-src 'self' 8ll7xvh0qt1p.statuspage.io;],
-                qq[font-src fonts.gstatic.com;],
-                qq[img-src 'self' $cspdomains *.mapper.ntppool.org;],
-                qq[script-src 'self' 'unsafe-inline' cdn.statuspage.io $cspdomains www.mapper.ntppool.org;],
-                qq[style-src 'self' fonts.googleapis.com $cspdomains;],
-                qq[report-uri https://ntp.report-uri.com/r/d/csp/wizard],
-            ),
+        [   'Content-Security-Policy' =>
+              join(" ",
+              qq[default-src 'none'; form-action 'self' mailform.ntppool.org; frame-ancestors 'none';],
+              qq[connect-src 'self' 8ll7xvh0qt1p.statuspage.io;],
+              qq[font-src fonts.gstatic.com;],
+              qq[img-src 'self' $cspdomains *.mapper.ntppool.org;],
+              qq[script-src 'self' 'unsafe-eval' 'unsafe-inline' cdn.statuspage.io $cspdomains www.mapper.ntppool.org js.stripe.com;],
+                   qq[style-src 'self' fonts.googleapis.com $cspdomains;],
+                   qq[child-src 'self' js.stripe.com;],
+              qq[report-uri https://ntp.report-uri.com/r/d/csp/wizard],
+              ),
         ],
 
         # security features

@@ -24,21 +24,24 @@ deployments:
   - name: ntppool
     helm:
       chart:
-        name: ../ntppool-charts/charts/ntppool
+        name: ntppool
+        #name: ../ntppool-charts/charts/ntppool
+        repo: https://charts.ntppool.org
       valuesFiles:
-        #- /Users/ask/src/ntppool-k8s/dev-values-do.yaml
-        - /Users/ask/src/ntppool-k8s/dev-values-kind.yaml
+        - /Users/ask/src/ntppool-k8s/dev-values-do.yaml
       values:
         image:
           image: harbor.ntppool.org/ntpdev/ntppool-dev
+        config:
+          manage_hostname: manage.devlon3.grundclock.com
+          web_hostname: web.devlon3.grundclock.com
+          pool_domain: ntp.devlon3.grundclock.com
+          db_dsn: dbi:mysql:database=ntpdev3;host=mysql.ntpdev.svc
+          db_user: ntpdev3
+          stripe_gw_service: http://stripe-gw.stripe
       wait: true
 
 dev:
-  autoReload:
-    paths:
-    - ./.redeploy
-    #deployments:
-    #- ntppool
   sync:
     - labelSelector:
         app: ntppool
@@ -54,9 +57,12 @@ dev:
         - ".data/"
         - ".git"
         - node_modules/
-        #- docs/shared/static/cdn/libs/
       downloadExcludePaths:
         - "*"
       disableDownload: true
       onUpload:
         restartContainer: true
+
+#profiles:
+#- name: ewrdev
+#  replace:
