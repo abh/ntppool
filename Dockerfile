@@ -1,7 +1,7 @@
-FROM harbor.ntppool.org/ntppool/base-os:v3.11.6
+FROM harbor.ntppool.org/ntppool/base-os:3.12.0-1
 USER root
 
-RUN apk --no-cache upgrade
+RUN apk -U --no-cache upgrade --ignore alpine-baselayout
 
 ENV CBCONFIG=
 ENV HULK /usr/bin/hulk

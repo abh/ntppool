@@ -1,4 +1,4 @@
-FROM harbor.ntppool.org/ntppool/base-os:latest
+FROM harbor.ntppool.org/ntppool/base-os:master
 
 ENV BUILD 20200610
 
