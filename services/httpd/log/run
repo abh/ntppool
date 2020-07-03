@@ -1,2 +1,0 @@
-#!/bin/sh
-exec multilog t n10 s5000000 ./main
