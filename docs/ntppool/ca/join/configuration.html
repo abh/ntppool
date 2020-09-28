@@ -1,23 +1,23 @@
 <div class="block">
 
-<h3>Configuració recomanada per a servidors que voleu unir al pool</h3>
+<h3>Configuració recomanada per a servidors que s'uneixin al pool</h3>
 
 <p>
-La <a href="http://support.ntp.org/bin/view/Support/WebHome">secció &quot;suport&quot;</a> a
+La secció de <a href="http://support.ntp.org/bin/view/Support/WebHome">&quot;suport&quot;</a> a
 <a href="http://support.ntp.org/">support.ntp.org</a> conté molta informació útil.
 </p>
 
 <p>
-Si només voleu <i>fer servir</i> el pool, vegeu la <a href="/use.html">pàgina sobre l'ús</a>.
+Si només voleu <i>fer servir</i> el pool, mireu la <a href="/use.html">pàgina sobre l'ús</a>.
 </p>
 
 <p>
 El grup de discussió <a href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a>
-is el millor lloc per obtenir ajuda amb el programari ntpd.
+és el millor lloc per obtenir ajuda amb el programari ntpd.
 </p>
 
 <p>
-Més abaix trobareu algunes coses d'interès particular, si voleu unir el vostre servidor al pool.
+Més a baix trobareu algunes coses d'interès particular, si voleu unir el vostre servidor al pool.
 </p>
 
 <h4 id="management-queries">Management queries</h4>
@@ -80,5 +80,13 @@ però si voleu unir el vostre servidor al pool us recomanem que feu servir
 
 <p>Servidors del pool no haurien de tenir configurat el controlador de rellotge &quot;LOCAL&quot;.</p>
 
+<h4>Pareu atenció a les consultes DNS PTR</h4>
+
+<p>Alguns administradors dels servidors han manifestat que alguns usuaris del ntp 
+    (o el tallafocs que facin servir) fa una consulta "reverse DNS" (PTR) a l'adreça IP
+    del servidor NTP. Teniu en compte que això provocarà un augment de les consultes.
+    Es recomana augmentar el "temps de vida" de les consultes si això suposa un problema,
+    ja que farà baixar el nombre de consultes a un nivell més baix.
+</p>
 
 </div>
