@@ -14,21 +14,21 @@
 	permanent. És molt important que la teva adreça IP no canviï o que almenys
 	ho faci amb una freqüència extremadament baixa (diguem un cop a l'any o menys).
 	L'amplada de banda necessària és relativament baixa. Cada client només enviarà alguns
-	paquets UDP cada 5 a 20 minuts.
+	paquets UDP cada 5 o 20 minuts.
 	</p>
 
 	<p>
-	Actualment la majoria de servidors rep aproximadament 5 a 15
+	Actualment la majoria de servidors rep aproximadament de 5 a 15
 	paquets NTP per segon amb puntes (algunes vegades al dia) de
 	60 a 120 paquets per segon. Això és més o menys equivalent a
 	10 a 15Kbit/s amb puntes de 50 a 120Kbit/s. El projecte constantment
 	adquireix nous servidors. Per tant, la càrrega per servidor no
-	hauria de pujar molt. Dit en paraules clares, probablement
+	hauria de pujar molt. Clar i català: probablement
 	necessitaràs com a mínim una amplada de banda de 384 a 512KBit/s
 	(tant d'entrada com de sortida).
 	</p>
 	<p>
-	A continuació tens gràfics de càrrega d'alguns servidors:
+	A continuació tens gràfiques de càrrega d'alguns servidors:
 	[% i = 0; FOR server = combust.servers_with_urls; %]
 	   <a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
 	[% END %]
@@ -36,7 +36,7 @@
 
 	<p>
 	Els servidors que s'hi uneixen no poden tenir configurat <tt>pool.ntp.org</tt>,
-	com a servidor de font, sinò haurien de tenir configurats manualment alguns
+	com a servidor de font, sinò que han de tenir configurats manualment alguns
 	<a href="http://support.ntp.org/bin/view/Servers/StratumTwoTimeServers">servidors
 	bons</a>. Aquests servidors <b>poden</b> provenir del pool. El tema és que
 	es triïn de manera estàtica en comptes de ser triats automàticament al
@@ -50,10 +50,10 @@
 	</p>
 
 	<p>
-	Tenim una pàgina amb <a href="join/configuration.html">configuracions recomenades per a servidors que s'hi volen unir</a>.
+	Tenim una pàgina amb <a href="join/configuration.html">configuracions recomenades per a servidors que s'hi vulguin unir</a>.
 	</p>
 	<p>
-	Finalment he de subratllar que unir-se al pool és un <b>compromís a llarg
+	Finalment, he de subratllar que unir-se al pool és un <b>compromís a llarg
 	termini</b>. Si vols, podem tornar a treure el vostre servidor del pool
 	en qualsevol moment, si les circumstàncies ja no t'ho permeten, però tingueu
 	en compte que degut a la manera	com funcionen el clients de ntp, trigarà
@@ -92,6 +92,3 @@
 	<a href="scores">la pàgina web</a> o la <a href="/manage">zona d'administració</a>.
 	</p>
 </div>
-
-
-

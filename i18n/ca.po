@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Last-Translator: Martin Steghöfer <martin@steghoefer.de>\n"
+"Last-Translator: Xavier Rodriguez <javirg@protonmail.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -24,6 +24,9 @@ msgstr "Amèrica del Sud"
 msgid "Europe"
 msgstr "Europa"
 
+msgid "Oceania"
+msgstr "Oceania"
+
 msgid "Global"
 msgstr "Global"
 
@@ -34,33 +37,55 @@ msgstr "Tots els servidors del Pool"
 msgid "Translations"
 msgstr "Traduccions"
 
-# mailinglists.html
-msgid  "NTP Pool mailing lists"
-msgstr "Llista de correu del NTP Pool"
+# index.html
+msgid  "Introduction"
+msgstr "Introducció"
 
+msgid  "Active Servers"
+msgstr "Servidors actius"
+
+msgid  "Links"
+msgstr "Enllaços"
+
+msgid  "Terms of service"
+msgstr "Termes del"
+
+msgid  "Subscribe in a reader"
+msgstr "Subscriure's"
+
+msgid  "Older news"
+msgstr "Notícies més antigues"
+
+# mailinglists.html
 msgid  "subscribe"
 msgstr "apuntar-s'hi"
 
 msgid  "archive"
 msgstr "arxiu"
 
-msgid  "Announcement list"
-msgstr "Llista d'avisos"
+msgid  "NTP Pool Forum"
+msgstr "Fòrum del NTP Pool"
+
+msgid  "News site"
+msgstr "Notícies"
 
 msgid  "Discussion list"
 msgstr "Llista de discussions"
 
-msgid  "Development list"
-msgstr "Llista de desenvolupament"
+msgid  "Development"
+msgstr "Desenvolupament"
 
-msgid  "announcement_list_description"
-msgstr "Llista d'avisos de notícies del NTP Pool amb una freqüència molt, molt baixa. Tots els administradors de servidors hi haurien d'estar apuntats."
+msgid  "forum_description"
+msgstr "Preguntes (i respostes) sobre el NTP Pool, sugerències sobre millores i fils relacionats amb el manteniment i l'operació dels servidors NTP."
+
+msgid  "news_description"
+msgstr "Els anuncis i les notícies es mostren a l'apartat de notícies o bé al fòrum."
 
 msgid  "discussion_list_description"
-msgstr "Administradors de servidors (i usuaris) que volen estar més involucrat es poden apuntar a la llista de discussions. Naturalment, discussions sobre el servei ntp en general s'haurien de fer en el grup de Usenet %1 (també disponible a través de <a href=\"%2\">Google Groups</a>)."
+msgstr "Administradors de servidors (i usuaris) que vulguin estar més involucrats es poden apuntar a la llista de discussions. Naturalment, discussions sobre el servei ntp en general s'haurien de fer en el grup de Usenet %1 (també disponible a través de <a href=\"%2\">Google Groups</a>)."
 
 msgid  "development_list_description"
-msgstr "Discussions més tècniques (i pragmàtiques) sobre el desenvolupament en curs del <a href=\"%1\">ntp pool code</a> i <a href=\"%2\">pgeodns</a> es fan en la llista <i>timekeepers-dev</i>."
+msgstr "Discussions més tècniques (i pragmàtiques) sobre el desenvolupament en curs del <a href=\"%1\">codi del ntp pool</a> i <a href=\"%2\">pgeodns</a> es fan a la llista <i>timekeepers-dev</i>."
 
 # tpl/server.html
 msgid  "Back to the front page"
@@ -82,7 +107,7 @@ msgid  "This server is <span class=\"deletion\">scheduled for deletion</span> on
 msgstr "Aquest servidor està <span class=\"deletion\">marcat per esborrar-se</span> el %1."
 
 msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
-msgstr "Puntuació actual: %1 (només servidors amb una puntuació de %2 o més s'utilitzen en el pool)"
+msgstr "Puntuació actual: %1 (només servidors amb una puntuació de %2 o més s'utilitzen al pool)"
 
 msgid  "What do the graphs mean?"
 msgstr "Què volen dir els gràfics?"
