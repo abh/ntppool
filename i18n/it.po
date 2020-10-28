@@ -21,6 +21,12 @@ msgstr "Nord America"
 msgid "South America"
 msgstr "Sud America"
 
+msgid "Europe"
+msgstr "Europe"
+
+msgid "Oceania"
+msgstr "Oceania"		
+
 msgid "Global"
 msgstr "Globale"
 
@@ -31,27 +37,48 @@ msgstr "Tutti i Pool Server"
 msgid "Translations"
 msgstr "Traduzioni"
 
-# mailinglists.html
-msgid  "NTP Pool mailing lists"
-msgstr "mailing list NTP Pool"
+# index.html
+msgid  "Introduction"
+msgstr "Introduction"
 
+msgid  "Active Servers"
+msgstr "Active Servers"
+
+msgid  "Links"
+msgstr "Links"
+
+msgid  "Terms of service"
+msgstr "Terms of service"
+
+msgid  "Subscribe in a reader"
+msgstr "Subscribe in a reader"
+
+msgid  "Older news"
+msgstr "Older news"
+
+# mailinglists.html
 msgid  "subscribe"
 msgstr "sottoscrivi"
 
 msgid  "archive"
 msgstr "archivio"
 
-msgid  "Announcement list"
-msgstr "Lista annunci"
+msgid  "NTP Pool Forum"
+msgstr "Forum di NTP Pool"
+
+msgid  "News site"
+msgstr "Notizie"
 
 msgid  "Discussion list"
-msgstr "Lista discussioni"
+msgstr "Gruppo di discussione"
 
-msgid  "Development list"
-msgstr "Lista sviluppo"
+msgid  "Development"
+msgstr "Sviluppo"
 
-msgid  "announcement_list_description"
+msgid  "forum_description"
 msgstr "Annunci di notizie su NTP Pool a traffico molto basso.  Tutti gli operatori server dovrebbero essere sottoscritti alla lista annunci."
+msgid  "news_description"
+msgstr "Announcements and news are posted on the news site or the forum."				 
 
 msgid  "discussion_list_description"
 msgstr "Operatori server (e utenti) che desiderano essere maggiormente coinvolti nel progetto possono sottoscrivere la lista discussioni.<br/> Certamente, discussioni generali su ntp dovrebbero aver luogo sul newsgroup Usenet %1 (anche su <a href=\"%2\">Google Gruppi</a>)."
@@ -98,13 +125,13 @@ msgid  "How do I <i>join</i> pool.ntp.org?"
 msgstr "Come mi <i>unisco</i> a pool.ntp.org?"
 
 msgid  "Information for vendors"
-msgstr "Informazioni per venditori"
+msgstr "Informazioni per i fornitori di sistemi"
 
 msgid  "The mailing lists"
-msgstr "Le mailing list"
+msgstr "Mailing list"
 
 msgid  "Additional links"
-msgstr "Ulteriori link"
+msgstr "Altri link"
 
 msgid  "Can you translate?"
-msgstr "Puoi tradurre?"
+msgstr "Puoi aiutarci a tradurre?"
