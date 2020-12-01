@@ -304,8 +304,6 @@ sub login_url {
         redirect_uri      => $self->callback_url,
     );
 
-    warn "AUTH RESP TEST: ", $auth->authorize_response->as_string();
-
     return "https://" . $auth0_domain . $auth->authorize;
 }
 
