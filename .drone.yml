@@ -10,7 +10,7 @@ steps:
   - git submodule update --recursive --remote
 
 - name: docker
-  image: harbor.ntppool.org/ntppool/drone-kaniko:latest
+  image: harbor.ntppool.org/ntppool/drone-kaniko:main
   settings:
     repo: ntppool/ntppool
     registry: harbor.ntppool.org
