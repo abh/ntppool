@@ -54,7 +54,7 @@ default=1
 [database-combust]
 alias = ntppool
 
-# Apache specific configuration
+# "Apache" configuration, also supported with the Plack setup
 [apache]
 {{ $httpd_maxclients := getenv "httpd_maxclients" }}
 {{ if $httpd_maxclients }}
@@ -63,7 +63,7 @@ maxclients = {{ $httpd_maxclients }}
 {{ if eq $mode "prod" }}
 maxclients          = 15
 {{ else }}
-maxclients          = 5
+maxclients          = 4
 {{ end }}
 {{ end }}
 keepalive           = On

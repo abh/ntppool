@@ -40,6 +40,7 @@ deployments:
           db_dsn: dbi:mysql:database=askntp;host=ntp-db-mysql-master.ntpdb.svc.cluster.local
           db_user: askntp
           stripe_gw_service: http://stripe-gw
+          httpd_maxclients: "6"
       wait: true
 
 dev:
