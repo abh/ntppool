@@ -1,14 +1,24 @@
-version: v1beta9
+version: v1beta10
 images:
   ntppool:
     dockerfile: Dockerfile.dev
-    image: harbor.ntppool.org/ask/ntppool-dev
+    image: harbor.ntppool.org/ntpdev/ntppool-dev
+    tags:
+      - dev-${DEVSPACE_GIT_COMMIT}-${DEVSPACE_TIMESTAMP}
+      - latest
     injectRestartHelper: true
     build:
       kaniko:
         cache: true
         snapshotMode: full
         image: gcr.io/kaniko-project/executor:v1.6.0
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 256Mi
 
 deployments:
   - name: ntppool
