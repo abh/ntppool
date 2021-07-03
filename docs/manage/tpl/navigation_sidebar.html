@@ -12,7 +12,7 @@
     <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle account-name" data-toggle="dropdown" href="#" role="button"
             aria-haspopup="true" aria-expanded="false">
-            <b>[% account.id ? account.name : "New account" | html %]</a></b>
+            <b>[% account.id ? account.name : "New account" | html %]</b></a>
         <div class="dropdown-menu">
             [% FOR a = combust.user.accounts %]
             <a class="dropdown-item [% account.id == a.id ? 'active' : '' %]"
