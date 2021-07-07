@@ -22,36 +22,32 @@
 	</p>
 
 	<p dir="rtl" lang="ar">
-	The servers joining should not have <tt>pool.ntp.org</tt> as their upstream
-	server(s), but should configure some <a href="http://support.ntp.org/bin/view/Servers/StratumTwoTimeServers">good servers</a> manually
-	(those servers <b>may</b> be chosen from the pool. The point is that they are chosen
-	statically instead of assigned randomly at each server restart.  This will help providing an acceptable quality of service.)
+	يجب على الخوادم التي ترغب بالإنضمام أن لا يكون <tt>pool.ntp.org</tt> هو المصدر الأساسي بها،
+	قي حين أنه من الممكن استخدام <a href="http://support.ntp.org/bin/view/Servers/StratumTwoTimeServers">خوادم جيدة</a> بشكل يدوي
+	(يمكن اختيار تلك الخوادم من القائمة. المقصد هنا أن يتم اختيار الخوادم هذه بشكل يدوي
+	عوضا عن الاختيار العشوائي الذي يحصل عند كل إعادة تشغيل للخدمة. سيساعد هذا في تقديم مستوى مقبول لجودة الخدمة.)
 
-	Note that it is not required that your server is a stratum 1 or 2 server - as this project is about load distribution mostly, there is
-	no reason why a stratum 3 or even stratum 4 server shouldn't join.</p>
+	يرجى ملاحظة أنه لا يجب على الخادم يكون من مستوى stratum الأول  أو الثاني - كون هذا المشروع يعنى بتوزيع الحمل في الغالب، لا يوجد أي سبب يمنع
+	أي خادم بمستوى stratum الثالث أو حتى الرابع من الانضمام.</p>
 
 	<p dir="rtl" lang="ar">
-	We have a page with <a href="/join/configuration.html">configuration recommendations for servers joining the pool</a>.</p>
-	<p dir="rtl" lang="ar">Finally, I must emphasize that joining the pool is a <b>long term
-	commitment</b>.  We are happy to take you out of the pool again if your circumstances change, but because of how the ntp clients
-	operate <b>it will take weeks, months or even YEARS before the traffic completely goes away</b>.</p>
+	توجد صفحة خاصة <a href="/join/configuration.html">للتضبيطات الموصى بها للخوادم الراغبة بالانضمام</a>.</p>
+	<p dir="rtl" lang="ar">أخيرا، أود التأكيد على أن الانضمام إلى هذه الخدمة هو <b>إلتزام طويل
+	الأمد</b>. في أي وقت تستطيع طلب الخروج من النظام، لكن بسبب طريقة عمل مستخدمي ntp
+	<b>ممكن أي يأخذ الخروج الكلي أسابيعا أو حتى شهورا قبل أن تختفي جميع الوصلات</b>.</p>
 
-	<p dir="rtl" lang="ar">	If this is all ok, login to the
-	<a href="/manage">server management</a> page and request your server to be added.
-	If you have any trouble with the system, email me at <a href="mailto:ask@develooper.com">ask@develooper.com</a>.</p>
-	<p dir="rtl" lang="ar">	I'd ask you to also subscribe to
-	the <a href="https://news.ntppool.org/atom.xml">weblog feed</a>
-	and maybe to the <a href="https://lists.ntp.org/listinfo/pool">pool mailing list</a>.</p>
-	<p dir="rtl" lang="ar">	It would be nice (but it's not necessary) if you could redirect web requests
-	on port 80 of your time server to the official web page of the project at
-	<tt>https://www.ntppool.org</tt>. If you run Apache, you could do this with:</p>
+	<p dir="rtl" lang="ar">في حال جميع ما ذكر مناسبا لك، تستطيع الدخول على <a href="/manage">صفحة إدارة الخادم</a> وتطلب إضافة الخادم الخاص بك.
+	في حال مواجهة أية مصاعب في النظام، يرجى التواصل معي على <a href="mailto:ask@develooper.com">ask@develooper.com</a>.</p>
+	<p dir="rtl" lang="ar">أقترح عليك الاشتراك في <a href="https://news.ntppool.org/atom.xml">مدونة سجل النظام</a>
+	إضافة إلى <a href="https://lists.ntp.org/listinfo/pool">قائمة النظام البريدية</a>.</p>
+	<p dir="rtl" lang="ar">سيكون من الرائع (ليس ضروريا) أن تقوم بإعادة توجيه
+	الصفحة الرئيسية (المنفذ 80) في الخادم التابع لك إلى الصفحة الرئيسية لهذا المشروع على
+	<tt>https://www.ntppool.org</tt>. إذا كنت تستخدم نظام Apache، تستطيع عمل ذلك بواسطة:</p>
 
         [% PROCESS tpl/join/virtual_host_example.html %]
 
-	<p dir="rtl" lang="ar">	Again, this is only if you run a webserver anyway. The official project web
-	page will always be given with the 'www' at the beginning - but sometimes
-	people type <tt>pool.ntp.org</tt> and are then surprised to get a random web page.</p>
-	<p dir="rtl" lang="ar">	Once added to the pool the server is constantly monitored for
-	availability and precision.  You can watch your server's performance using the <a href="scores">web frontend</a> or
-	the <a href="/manage">management page</a>.</p>
+	<p dir="rtl" lang="ar">هذا في حالة إذا كنت مشغلا لخادم انترنت على أية حال. صفحة المشروع الرسمية دوما تكون مع 'www' في البداية - لكن بعض
+	الأشخاص يكتبونها <tt>pool.ntp.org</tt> ويتفاجؤون بالحصول على صفحات عشوائية.</p>
+	<p dir="rtl" lang="ar">ستتم مراقبة الخادم من وقت إضافته إلى المجموعة لضمان توفر الخدمة وجودتها.
+	يمكن متابعة أداء خادمك باستخدام <a href="scores">هذه الصفحة</a> أو <a href="/manage">صفحة إدارة النظام</a>.</p>
 </div>
