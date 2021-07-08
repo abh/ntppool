@@ -25,7 +25,7 @@ msgid "Europe"
 msgstr "أوروبا"
 
 msgid "Oceania"
-msgstr "المحيط الهادئ"
+msgstr "أوقيانوسيا"
 
 msgid "Global"
 msgstr "العالم"
