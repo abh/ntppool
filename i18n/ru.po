@@ -60,7 +60,7 @@ msgstr "Здесь обсуждаются технические вопросы,
 
 # tpl/server.html
 msgid  "Back to the front page"
-msgstr "На главную старницу"
+msgstr "На главную страницу"
 
 msgid  "Find"
 msgstr "Поиск"
