@@ -27,29 +27,25 @@
 
 [% INCLUDE "join/configuration/restrict-default.html" %]
 
-<p dir="rtl" lang="ar">To allow commands like "ntpq -c pe" to work from localhost you can add:</p>
+<p dir="rtl" lang="ar">للسماح لأوامر مثل "ntpq -c pe" بالعمل من localhost يمكنك إضافة:</p>
 
 [% INCLUDE "join/configuration/restrict-localhost.html" %]
 
-<h4 dir="rtl" lang="ar">Setup about 5 servers</h4>
+<h4 dir="rtl" lang="ar">إعداد حوالي خمس خوادم</h4>
 
 <p dir="rtl" lang="ar">
-To work properly ntpd needs to talk to at least 3 servers ("A man with
-a watch knows what time it is. A man with two watches is never sure").
+يحتاج ntpd ليعمل كما ينبغي إلى التواصل مع ثلاثة خوادم على الأقل.
 </p>
 
 <p dir="rtl" lang="ar">
-For servers in the pool we recommend configuring no less than 4 and no
-more than 7 servers.
+نقترح ضبط ما بين أربعة إلى سبعة خوادم في إعدادات أي خادم مضاف إلى المجموعة.
 </p>
 
 
-<h4 dir="rtl" lang="ar">Don't use *.pool.ntp.org servers</h4>
+<h4 dir="rtl" lang="ar">لا تستخدم خوادم <span dir="ltr" lang="en">*.pool.ntp.org</span></h4>
 
 <p dir="rtl" lang="ar">
-Ironically to make sure the pool service is the best it can be you
-shouldn't use the *.pool.ntp.org aliases in your configuration when
-you are going to add your server to the pool.
+في حال رغبتك في إضافة خادمك في المجموعة، ولضمان خدمة أفضل على الدوام، لا ينبغي استخدام <span dir="ltr" lang="en">*.pool.ntp.org</span> في ملف الإعدادات الخاص بك.
 </p>
 
 <p dir="rtl" lang="ar">
