@@ -1,0 +1,152 @@
+msgid ""
+msgstr ""
+"Last-Translator: Sami Ait Ali Oulahcen <sami@marwan.ma>, 2020\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ar\n"
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
+
+msgid "go up"
+msgstr "اِلى الأعلى"
+
+# zone names
+msgid "Africa"
+msgstr "افريقيا"
+
+msgid "Asia"
+msgstr "آسيا"
+
+msgid "North America"
+msgstr "أمريكا الشمالية"
+
+msgid "South America"
+msgstr "أمريكا الجنوبية"
+
+msgid "Europe"
+msgstr "أوروبا"
+
+msgid "Oceania"
+msgstr "أوقيانوسيا"
+
+msgid "Global"
+msgstr "عالمي"
+
+msgid "All Pool Servers"
+msgstr "كل خوادم التجمع"
+
+# navigation
+msgid "Translations"
+msgstr "تراجم"
+
+# index.html
+msgid "Introduction"
+msgstr "مقدمة"
+
+msgid "Active Servers"
+msgstr "خوادم نشطة"
+
+msgid "Links"
+msgstr "روابط"
+
+msgid "Terms of service"
+msgstr "شروط الخدمة"
+
+msgid "Subscribe in a reader"
+msgstr "اشترك في قارئ"
+
+msgid "Older news"
+msgstr "أخبار أقدم"
+
+# mailinglists.html
+msgid "subscribe"
+msgstr "اشترك"
+
+msgid "archive"
+msgstr "أرشيف"
+
+msgid "NTP Pool Forum"
+msgstr "منتدى تجمع خوادم الوقت"
+
+msgid "News site"
+msgstr "موقع الأخبار"
+
+msgid "Discussion list"
+msgstr "قائمة المناقشة"
+
+msgid "Development"
+msgstr "تطوير"
+
+msgid "forum_description"
+msgstr ""
+"أسئلة (وأجوبة) حول تجمع خوادم الوقت، اقتراحات للتحسين و مواضيع ذات صلة بضبط "
+"الوقت و تسيير خوادم الوقت."
+
+msgid "news_description"
+msgstr "الإعلانات و الأخبار تنشر على موقع الأخبار أو المنتدى."
+
+msgid "discussion_list_description"
+msgstr ""
+"يمكن لمشغلي الخوادم (والمستخدمين) الذين يرغبون في المشاركة بشكل أكبر في "
+"المشروع الاشتراك في قائمة المناقشة.<br/> بالطبع ، يجب إجراء المناقشات العامة"
+" حول ميثاق التوقيت عبر الشبكة على %1 مجموعة أخبار Usenet (أيضًا على <a "
+"href=\"%2\"> Google Groups </a>)."
+
+msgid "development_list_description"
+msgstr ""
+"المناقشات الأكثر تقنية (وحبذا واقعية) حول تطوير <a href=\"%1\">برمجة تجمع "
+"خوادم الوقت</a> و <a href=\"%2\">تحديد الموقع الجغرافي من نظام أسماء "
+"النطاقات</a> تجري في منتدى التطوير<a href=\"%3\">."
+
+# tpl/server.html
+msgid "Back to the front page"
+msgstr "الرجوع إلى القائمة"
+
+msgid "Find"
+msgstr "أجد"
+
+msgid "Stats for %1"
+msgstr "احصائيات %1"
+
+msgid "Not active in the pool, monitoring only"
+msgstr "غير نشط في التجمع، مراقب فقط"
+
+msgid "Zones:"
+msgstr "نطاقات:"
+
+msgid ""
+"This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
+msgstr "تمت جدولة هذا الخادم <span class=\"deletion\"> للحذف </span> في %1."
+
+msgid ""
+"Current score: %1 (only servers with a score higher than %2 are used in the "
+"pool)"
+msgstr "النقطة الحالية: %1 (تستخدم فقط الخوادم ذات نقطة أعلى من %2 في التجمع)"
+
+msgid "What do the graphs mean?"
+msgstr "ماذا تعني المبيانات ؟"
+
+msgid "CSV log"
+msgstr "سجل البيانات"
+
+# tpl/navigation_sidebar.html
+msgid "News"
+msgstr "أخبار"
+
+msgid "How do I <i>use</i> pool.ntp.org?"
+msgstr "كيف <i>أستعمل</i> pool.ntp.org ؟"
+
+msgid "How do I <i>join</i> pool.ntp.org?"
+msgstr "كيف <i>أنضم إلى</i> pool.ntp.org ؟"
+
+msgid "Information for vendors"
+msgstr "معلومات للتجار"
+
+msgid "The mailing lists"
+msgstr "قوائم البريد"
+
+msgid "Additional links"
+msgstr "روابط إضافية"
+
+msgid "Can you translate?"
+msgstr "هل تستطيع الترجمة ؟"
