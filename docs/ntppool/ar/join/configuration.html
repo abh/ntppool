@@ -49,41 +49,32 @@
 </p>
 
 <p dir="rtl" lang="ar">
-For the robustness of the pool it's healthier if all pool operators "hand pick" good local (network wise) time servers.
-The NTP.org wiki has  a <a
-href="http://support.ntp.org/bin/view/Servers/WebHome">list of public
-servers</a>.
+يتعين على مشغلي الخوادم اختيار مصادر جيدة للوقت (من ناحية الشبكة) وذلك للحفاظ على قوة ونشاط المجموعة.
+صفحة NTP.org wiki بها <a href="http://support.ntp.org/bin/view/Servers/WebHome">قائمة الخوادم العامة المتاحة</a>.
 </p>
 
 
-<h4 dir="rtl" lang="ar">Use the standard ntpd</h4>
+<h4 dir="rtl" lang="ar">استخدم ntpd المعياري</h4>
 
 <p dir="rtl" lang="ar">
-We are all for software diversity, but a significant percentage of the
-"it's not working" questions that come in are for software other than
-ntpd.
+نحن نشجع دائما تنوع البرمجيات، وفي نفس الوقت العديد من أسئلة "إنها لا تعمل" لها علاقة ببرمجيات غير ntpd.
 </p>
 
 <p dir="rtl" lang="ar">
-You can <i>use</i> the pool with any program speaking NTP, but if you
-are going to join the pool we recommend you
-use <a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
+تستطيع <i>استخدام</i> المجموعة مع أي برمجيات تتكلم NTP، وفي نفس الوقت إن كنت تريد الانضمام للمجموعة نقترح عليك
+استخدام <a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
 </p>
 
 
-<h4 dir="rtl" lang="ar">Don't use the LOCAL clock driver</h4>
+<h4 dir="rtl" lang="ar">امتنع عن استخدام ساعة LOCAL</h4>
 
-<p dir="rtl" lang="ar">Servers in the NTP Pool should not have the LOCAL clock driver
-configured.</p>
+<p dir="rtl" lang="ar">على خوادم المجموعة الامتناع عن استخدام ساعة LOCAL بالجهاز.</p>
 
-<h4 dir="rtl" lang="ar">Beware of PTR DNS queries</h4>
+<h4 dir="rtl" lang="ar">انتبه من PTR DNS queries</h4>
 
-<p dir="rtl" lang="ar">Some server operators have reported that some of the NTP users (or
-their firewall software) does a "reverse DNS" (PTR) query for the IP address
-of the NTP server. Beware that this might cause the number of queries to
-go up. Increasing the "time to live" on those records is recommended if
-the number of DNS queries is a concern, and will generally make the number
-of queries negligible.
+<p dir="rtl" lang="ar">أبلغ بعض مشغلي الخوادم عن أن بعض مستخدمي NTP (أو نظم الجدر النارية المستخدمة لديهم) تستخدم
+طريقة "reverse DNS" (PTR) query للحصول على عنوان IP الخادم. الرجاء الانتباه أن هذه الطريقة قد تتسبب في ارتفاع
+عدد queries. نقترح زيادة رقم "time to live" لتلك السجلات إن كانت هذه الزيادة مصدرا للقلق، وهذه الزيادة ستساهم في انخفاض هذا العدد.
 </p>
 
 </div>
