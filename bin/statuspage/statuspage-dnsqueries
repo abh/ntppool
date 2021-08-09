@@ -32,8 +32,8 @@ my $metric_id = $settings->{metrics}->{dns_queries} or die "no statuspage metric
 
 warn "Getting data\n" if $verbose;
 
-my $url = URI::URL->new("http://trickster.ntpsystem:9090/");
-$url->path('/api/v1/query_range');
+my $url = URI::URL->new("http://trickster.ntpsystem:8480");
+$url->path('/geodns/api/v1/query_range');
 $url->query_param(query => 'sum (zone:dns_queries:irate{zone="pool.ntp.org"})');
 $url->query_param(timeout => 30);
 $url->query_param(start => (time - ($minutes * 60)));
