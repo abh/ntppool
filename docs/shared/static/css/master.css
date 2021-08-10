@@ -22,7 +22,7 @@ h1, h2, h3, h4, h5 {color: #454545;}
 
 #sidebar h1 a {
 	display: block;
-	width: 140px;
+	/* width: 140px; */
 	height: 138px;
 	background: no-repeat url(../images/logo-2019@x2.v1.png);
 	background-size: 120px 150px;

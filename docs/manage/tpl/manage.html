@@ -1,11 +1,11 @@
 [% page.js.push("ntppool.js"); %]
 
 <div id="admin" class="row">
-    [% add_col_md = 8 %]
+    [% add_col = 8 %]
     [% IF servers.size > 0 %]
 
-    [% add_col_md = 4 %]
-    <div class="servers col-md-6">
+    [% add_col = 3 %]
+    <div class="servers col-md-5">
         <h3>NTP Servers</h3>
 
         <div class="value">
@@ -19,7 +19,7 @@
     </div>
     [% END %]
 
-    <div class="col-md-[% add_col_md %]">
+    <div class="col-[% add_col %] col-md-[% add_col + 1 %]">
         <div>
             <a name="add"></a>
             [% PROCESS tpl/manage/add_form.html %]
