@@ -169,7 +169,7 @@ sub _get_server_ips {
         return ($ip->short);
     }
 
-    my $res = Net::DNS::Resolver->new(domain => undef, defnames => 0);
+    my $res = Net::DNS::Resolver->new(domain => "", defnames => 0);
     my @ips;
     for my $type (qw(A AAAA)) {
         my $query = $res->query($host, $type);
