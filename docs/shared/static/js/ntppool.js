@@ -44,4 +44,28 @@ if (!NP) var NP = {};
             $(this).hide(70);
         });
     });
+
+    // check that it compiles?
+    createCheckoutSession(false);
+
+    checkoutButtons.forEach(function(b) {
+
+        b.addEventListener('click', function () {
+
+            var parameters = {};
+
+            console.log("got checkout button!");
+
+            createCheckoutSession(parameters).then(function (response) {
+
+                stripe.redirectToCheckout({
+                    sessionId: response.checkoutSessionId
+                }).then(function (result) {
+                    // If `redirectToCheckout` fails due to a browser or network
+                    // error, display the localized error message to your customer
+                    // using `result.error.message`.
+                });
+            });
+        })
+    })
 }());

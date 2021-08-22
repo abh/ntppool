@@ -144,7 +144,7 @@ and enable javascript to see the new graphs.<br><br>
 [% # this is so d3 can load in ancient browsers even if we end up not using it,
    # and so we can use modern javascript stuff without too dramatic failures.
  %]
-<script type="text/javascript" src="[% combust.static_url("/cdn/libs/es5-shim/1/es5-shim.min.js") %]"></script>
+<script src="[% combust.static_url("/cdn/libs/es5-shim/1/es5-shim.min.js") %]"></script>
 <![endif]-->
 
 [% page.js.push(combust.static_group("d3.js")) %]
@@ -153,5 +153,5 @@ and enable javascript to see the new graphs.<br><br>
 
 [% IF manage_site %]
 [% page.js.push(combust.static_group("admin.js")) %]
-<script type="text/javascript">NP.token='[% combust.auth_token %]';</script>
+<script>NP.token='[% combust.auth_token %]';</script>
 [% END %]
