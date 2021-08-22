@@ -7,12 +7,15 @@ use NP::Email      ();
 use Email::Stuffer ();
 use Sys::Hostname qw(hostname);
 use JSON ();
+use List::Util qw(uniq);
 use NP::Stripe;
 
 my $json = JSON::XS->new->pretty->utf8->convert_blessed;
 
 sub manage_dispatch {
     my $self = shift;
+
+    warn "Vendor dispatch";
 
     return $self->render_form if $self->request->uri =~ m!^/manage/vendor/new$!;
 
@@ -81,6 +84,8 @@ sub render_zones {
 sub render_zone {
     my ($self, $id, $mode) = @_;
 
+    warn "rendering zone";
+
     return $self->redirect($self->manage_url('/manage/vendor')) unless $id;
 
     $mode ||= $self->req_param('mode') || '';
@@ -96,19 +101,69 @@ sub render_zone {
       if (  $mode eq 'edit'
         and $vz->can_edit($self->user));
 
+    warn "looking for subscriptions";
+
     my @subs = $self->current_account->account_subscriptions;
     if (@subs) {
         warn "have subscriptions ...";
         $self->tpl_param('subscriptions', \@subs);
     } else {
-        warn "getting products!";
+
+        my $zone_device_count = $vz->device_count || 0;
+
         my $stripe = NP::Stripe::get_products();
         warn "STRIPE: ", Data::Dump::pp($stripe);
         if ($stripe->{error}) {
             warn "stripe gw error: ", $stripe->{error};
         } else {
             #warn "GOT PRODUCTS: ", scalar @{$stripe->{Products}};
-            $self->tpl_param('products', $stripe->{Products});
+
+            my %groups =
+              ( personal   => [],
+                business   => [],
+                enterprise => [],
+                other      => [],
+              );
+
+            for my $p (@{$stripe->{Products}}) {
+                $p->{available} = 1;
+
+                warn "product: $p->{Name}";
+                warn "zone: $zone_device_count -- max $p->{MaxClients}; min $p->{MinClients}";
+
+                if ($zone_device_count) {
+                    if ($p->{MaxClients} && $p->{MaxClients} < $zone_device_count) {
+                        warn "too few";
+                        $p->{available} = 0;
+                        $p->{availability_reason} = "Only for zones with less than $p->{MaxClients} devices";
+                    }
+
+                    if ($p->{MinClients} > $zone_device_count) {
+                        warn "Too many";
+                        $p->{available} = 0;
+                        $p->{availability_reason} = "Plan starting at $p->{MaxClients} devices";
+                    }
+                }
+
+                my $category = $p->{Metadata} && $p->{Metadata}->{category} || '';
+                if (my $g = $groups{$category}) {
+                    push @{$groups{$category}}, $p;
+                }
+                else {
+                    push @{$groups{other}}, $p;
+                }
+            }
+
+            # just in case the code above changes and something else gets added
+            my @group_list =
+              grep { $groups{$_} && @{$groups{$_}}>0 }
+              uniq('personal', 'business', 'enterprise', keys %groups);
+
+            use Data::Dump qw(pp);
+            #pp(\%groups, \@group_list);
+
+            $self->tpl_param('products_by_group', \%groups);
+            $self->tpl_param('product_group_list', \@group_list);
         }
     }
     # TODO: add template variable if there's no subscription
@@ -236,13 +291,16 @@ sub render_subscription {
         #  - set the right urls for cancel, etc
         #  - set the right customer ID if one exists
 
-        my $return_url = $self->manage_url('/manage/vendor/zone',);
+        my $return_url = $self->manage_url('/manage/vendor/zone');
+
+        # hmac with secret for returnURL ...
 
         my %args = (
             priceID       => "price_1GsPik2ZWuSKvxWMUAw3FJDQ",
             customerEmail => $self->user->email,
             accountID     => $self->current_account->id_token,
             returnURL     => $return_url,
+
         );
 
         my $session = NP::Stripe::create_session(%args);

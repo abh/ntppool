@@ -1,55 +1,68 @@
 [%
-  page.js.push("ntppool.js"); %]
+  page.js.push("ntppool.js");
   USE Number.Format;
 %]
 
-<div class="row">
-  <div class="col-md-12">
+[% FOR product_group = product_group_list %]
 
-    <div class="card-deck">
+  <div class="row">
+     <h2>[% product_group %]</h2>
+  </div>
 
-[% FOR pr = products %]
+  <div class="row row-cols-1 row-cols-md-2">
+
+[% FOR pr = products_by_group.$product_group; %]
+
 
 <!--
   todo:
     encode the product ID somewhere that the javascript in ntppool.js can
     read it...
--->
+  -->
+      <div class="col mb-4">
+        <div class="card border-secondary mb-3 h-100">
+          <div class="card-header">
+            <h3 class="my-0 font-weight-normal">
+              [% pr.Name %]
+            </h3>
+          </div>
+          <div class="card-body">
+            <h4 class="card-title pricing-card-title">
+              Starting at $[% pr.AnnualCostLow / 100 %]
+              <small class="text-muted">per year</small>
+            </h4>
+            <p class="card-text">
+              this is the card text.
+            </p>
+            <ul class="list-unstyled mt-3 mb-4">
+              [%- IF pr.MinClients %]
+              <li>Price for up to [% pr.MinClients | format_number %] clients.</li>
+              [% END %]
 
-<div class="card product-card p-3">
-  <h5 class="card-header product-name text-center h-25 pb-0">
-      [% pr.Name %]
-  </h5>
-  <div class="card-body p-3">
+              [% IF pr.MaxClients  %]
+                  <li> <!-- (up to $[% pr.AnnualCostHigh / 100 %] per year) -->
+                    Plans with support for up to [% pr.MaxClients | format_number %] clients.
+                  </li>
+                  [% END %]
 
-    <p class="card-text">DNS zone for locating nearby NTP Pool time servers</p>.
-    
-    <ul class="list-group list-group-flush">
-      <li class="list-group-item">Starting at $[% pr.AnnualCostLow / 100 %] per year
-        [%- IF pr.MinClients %]
-        for up to [% pr.MinClients | format_number %] clients.
-        [%- ELSE %].[% END %]
-      </li>
+              [% IF pr.MaxZones AND pr.MaxZones > 1 %]
+              <li>Configure DNS for up to [% pr.MaxZones %] products</li>
+              [% END %]
 
-      <!--
-      [% IF pr.MaxClients  %]
-      <li class="list-group-item">(up to $[% pr.AnnualCostHigh / 100 %] per year)
-        Support up to [% pr.MaxClients | format_number %] clients.
-      </li>
-      [% END %]
-      -->
-      
-      [% IF pr.MaxZones AND pr.MaxZones > 1 %]
-      <li class="list-group-item">Configure up to [% pr.MaxZones %] zones</li>
-      [% END %]
-    </ul>
-  </div>  
-  <div class="card-footer">
-    <a href="#" class="btn btn-primary checkout-button">Select this</a>
-  </div>
-</div>
-
+              <!-- <li>Email support</li> -->
+            </ul>
+          </div>
+          <div class="card-footer">
+          [% IF pr.available %]
+              <button type="button" class="btn btn-sm btn-block btn-primary">Continue</button>
+          [% ELSE %]
+              <small class="text-muted">[% pr.availability_reason %]</small>
+          [% END %]
+          </div>
+        </div>
+     </div>
 [% END %]
 
 </div>
-</div></div>
+
+[% END %]

@@ -29,5 +29,16 @@
 
     [% PROCESS tpl/vendor/help.html %]
 
+    <!--
+            todo: if zone is setup, but no "plan" exists, link to
+            "setup a plan" workflow.
+
+            status:
+                new      = not submitted, show [ pay | open source ] form
+                pending  = waiting for admin to approve open source plan
+                approved = active
+                rejected = new + message? Just send it back to new and add to the log?
+
+    -->
 
 </div>

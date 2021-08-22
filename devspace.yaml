@@ -11,7 +11,7 @@ images:
       kaniko:
         cache: true
         snapshotMode: full
-        image: gcr.io/kaniko-project/executor:v1.6.0
+        image: gcr.io/kaniko-project/executor:v1.7.0
         resources:
           limits:
             cpu: 1000m
@@ -24,11 +24,12 @@ deployments:
   - name: ntppool
     helm:
       chart:
-        name: ntppool
-        #name: ../ntppool-charts/charts/ntppool
+        #name: ntppool
+        name: ../ntppool-charts/charts/ntppool
         repo: https://charts.ntppool.org
       valuesFiles:
-        - /Users/ask/src/ntppool-k8s/dev-values-do.yaml
+        #- /Users/ask/src/ntppool-k8s/dev-values-kind.yaml
+        - /Users/ask/src/ntppool-k8s/dev-values-ewr1.yaml
       values:
         image:
           image: harbor.ntppool.org/ntpdev/ntppool-dev
@@ -57,12 +58,12 @@ dev:
         - ".data/"
         - ".git"
         - node_modules/
+        - perl-languageserver.log
       downloadExcludePaths:
         - "*"
       disableDownload: true
       onUpload:
         restartContainer: true
-
 #profiles:
 #- name: ewrdev
 #  replace:

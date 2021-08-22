@@ -1,4 +1,5 @@
-[% USE Number.Format; %]
+
+[% USE Number.Format %]
 
 [% IF vz.status == 'New' %]
 
@@ -16,9 +17,14 @@
     </div>
 </div>
 
-[% PROCESS tpl/vendor/products.html %]
+<div class="row">
+    <div class="col-md-12">
+      [% PROCESS tpl/vendor/products.html %]
+    </div>
+</div>
 
 [% END %]
+
 
 <div class="row">
   
@@ -36,7 +42,6 @@
 
     <h4>Number of devices</h4>
     <blockquote>
-        [% USE Number.Format;
         vz.device_count | format_number %]
     </blockquote>
 
