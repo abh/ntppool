@@ -50,6 +50,9 @@ sub render {
 
         my ($server) = NP::Model->server->find_server($p);
         return 404 unless $server;
+
+        return 404 if ($public and $server->deletion_on < DateTime->now->subtract(years => 3));
+
         return $self->redirect('/scores/' . $server->ip, 301) unless $p eq $server->ip;
 
         if ($mode eq '') {
