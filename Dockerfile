@@ -26,7 +26,7 @@ RUN perl Makefile.PL && \
   mkdir -p tmp logs && \
   chown -R ntppool tmp logs
 
-RUN bash -c "ls -la docs/shared/static{,/.g,/css}"
+#RUN bash -c "ls -la docs/shared/static{,/.g,/css}"
 
 EXPOSE 8299
 ENTRYPOINT ["./docker/entrypoint"]
