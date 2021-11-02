@@ -35,7 +35,7 @@ our %valid_languages = (
     kz => {name => "Қазақша",   testing => 1},
     nb => {name => "Norsk Bokmål"},
     nl => {name => "Nederlands",},
-    no => {name => "Norsk"},
+    nn => {name => "Norsk"},
     pl => {name => "Język",     testing => 1},
     pt => {name => "Português"},
     ro => {name => "Română",    testing => 1},
