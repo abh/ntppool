@@ -9,6 +9,8 @@ use Storable qw(retrieve);
 use I18N::LangTags qw(implicate_supers);
 use I18N::LangTags::Detect ();
 use List::Util qw(first);
+use Unicode::Collate;
+
 use NP::I18N;
 use NP::Version;
 
@@ -48,6 +50,13 @@ our %valid_languages = (
 );
 
 NP::I18N::loc_lang('en');
+
+my $uc = Unicode::Collate->new();
+
+my $valid_languages_sorted = [
+    sort { $uc->cmp($valid_languages{$a}->{name}, $valid_languages{$b}->{name}) }
+      keys %valid_languages
+];
 
 my $ctemplate;
 
@@ -165,6 +174,10 @@ sub valid_language {
 
 sub valid_languages {
     \%NTPPool::Control::valid_languages;
+}
+
+sub valid_languages_sorted {
+    return $valid_languages_sorted;
 }
 
 sub path_language {
