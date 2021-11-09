@@ -25,7 +25,7 @@ our %valid_languages = (
     en => {name => "English",},
     es => {name => "Español"},
     eu => {name => "Euskara", testing => 1},
-    fa => {name => "فارسی",     testing => 1},
+    fa => {name => "فارسی",   testing => 1},
     fi => {name => "Suomi"},
     fr => {name => "Français",},
     he => {name => "עברית", testing => 1},
@@ -34,13 +34,13 @@ our %valid_languages = (
     it => {name => "Italiano"},
     ja => {name => "日本語"},
     ko => {name => "한국어",},
-    kz => {name => "Қазақша",   testing => 1},
+    kz => {name => "Қазақша", testing => 1},
     nb => {name => "Norsk (bokmål)"},
     nl => {name => "Nederlands",},
     nn => {name => "Norsk (nynorsk)"},
-    pl => {name => "Język",     testing => 1},
+    pl => {name => "Język", testing => 1},
     pt => {name => "Português"},
-    ro => {name => "Română",    testing => 1},
+    ro => {name => "Română", testing => 1},
     rs => {name => "српски srpski"},
     ru => {name => "Русский"},
     sv => {name => "Svenska"},
@@ -63,8 +63,8 @@ my $ctemplate;
 sub tt {
     $ctemplate ||= Combust::Template->new(
         filters => {
-            l   => [\&loc_filter, 1],
-            loc => [\&loc_filter, 1],
+            l     => [\&loc_filter,           1],
+            loc   => [\&loc_filter,           1],
             email => [\&email_address_filter, 0],
         }
     ) or die "Could not initialize Combust::Template object: $Template::ERROR";
@@ -88,8 +88,8 @@ sub init {
             return $self->redirect($self->_url($self->site, $self->request->path));
         }
         else {
-           # we're setting Strict-Transport-Security with haproxy
-           # $self->request->header_out('Strict-Transport-Security', 'max-age=' . (86400 * 7 * 20));
+# we're setting Strict-Transport-Security with haproxy
+# $self->request->header_out('Strict-Transport-Security', 'max-age=' . (86400 * 7 * 20));
         }
     }
 
@@ -110,7 +110,8 @@ sub init {
         return $self->redirect($path, 301);
     }
 
-    $self->tpl_param('pool_domain' => Combust::Config->new->site->{ntppool}->{pool_domain}
+    $self->tpl_param(
+             'pool_domain' => Combust::Config->new->site->{ntppool}->{pool_domain}
           || 'pool.ntp.org');
 
     return OK;
@@ -123,6 +124,7 @@ sub loc_filter {
 }
 
 sub email_address_filter {
+
     # static filter
     my $label = shift;
     return NP::Email::address($label);
@@ -198,7 +200,7 @@ sub detect_language {
     my $language_choice = $self->request->header_in('X-Varnish-Accept-Language');
     return $language_choice if $self->valid_language($language_choice);
 
-    $ENV{REQUEST_METHOD} = $self->request->method;
+    $ENV{REQUEST_METHOD}       = $self->request->method;
     $ENV{HTTP_ACCEPT_LANGUAGE} = $self->request->header_in('Accept-Language') || '';
     my @lang = implicate_supers(I18N::LangTags::Detect::detect());
     my $lang = $self->valid_language(@lang);
@@ -218,7 +220,7 @@ sub localize_url {
     if ($self->request->path eq '/'    # this short-circuits some of the rest
         and !$self->path_language
         and $self->request->method =~ m/^(head|get)$/
-        and $self->request->uri !~ m{^/(manage|static)}
+        and $self->request->uri    !~ m{^/(manage|static)}
       )
     {
         my $lang = $self->language;
@@ -231,7 +233,8 @@ sub localize_url {
         $uri->path("/$lang" . $uri->path);
         $self->request->header_out('Vary', 'Accept-Language');
         $self->cache_control(
-            's-maxage=900, max-age=3600, stale-while-revalidate=90, stale-if-error=43200');
+            's-maxage=900, max-age=3600, stale-while-revalidate=90, stale-if-error=43200'
+        );
         return $self->redirect($uri->as_string);
     }
     return;
@@ -261,7 +264,7 @@ sub www_url {
 
 sub manage_url {
     my $self = shift;
-    my $url = shift;
+    my $url  = shift;
     my $args = shift || {};
     if ($self->user and !$args->{a}) {
         my $account = $self->can('current_account') && $self->current_account;
@@ -272,7 +275,7 @@ sub manage_url {
 }
 
 sub count_by_continent {
-    my $self = shift;
+    my $self   = shift;
     my $global = NP::Model->zone->fetch(name => '@');
     unless ($global) {
         warn "zones appear not to be setup, run ./bin/populate_zones!";
@@ -308,17 +311,18 @@ sub post_process {
         [   'Report-To' =>
               '{"group":"default","max_age":31536000,"endpoints":[{"url":"https://ntp.report-uri.com/a/d/g"}],"include_subdomains":true}'
         ],
-        ['NEL' => '{"report_to":"default","max_age":31536000,"include_subdomains":true}'],
-        [   'Content-Security-Policy' =>
-              join(" ",
-              qq[default-src 'none'; form-action 'self' mailform.ntppool.org; frame-ancestors 'none';],
-              qq[connect-src 'self' 8ll7xvh0qt1p.statuspage.io;],
-              qq[font-src fonts.gstatic.com;],
-              qq[img-src 'self' $cspdomains *.mapper.ntppool.org;],
-              qq[script-src 'self' 'unsafe-inline' cdn.statuspage.io $cspdomains www.mapper.ntppool.org;],
-              qq[style-src 'self' fonts.googleapis.com $cspdomains;],
-              qq[report-uri https://ntp.report-uri.com/r/d/csp/wizard],
-              ),
+        [   'NEL' =>
+              '{"report_to":"default","max_age":31536000,"include_subdomains":true}'
+        ],
+        [   'Content-Security-Policy' => join(" ",
+                qq[default-src 'none'; form-action 'self' mailform.ntppool.org; frame-ancestors 'none';],
+                qq[connect-src 'self' 8ll7xvh0qt1p.statuspage.io;],
+                qq[font-src fonts.gstatic.com;],
+                qq[img-src 'self' $cspdomains *.mapper.ntppool.org;],
+                qq[script-src 'self' 'unsafe-inline' cdn.statuspage.io $cspdomains www.mapper.ntppool.org;],
+                qq[style-src 'self' fonts.googleapis.com $cspdomains;],
+                qq[report-uri https://ntp.report-uri.com/r/d/csp/wizard],
+            ),
         ],
 
         # security features
@@ -370,6 +374,5 @@ sub plain_cookie {
 
     return $self->request->response->cookies->{$cookie} = $args;
 }
-
 
 1;
