@@ -1,3 +1,4 @@
+# HTML removed
 msgid ""
 msgstr ""
 "Last-Translator: Patrik Kernstock <hello@patschi.net>\n"
@@ -56,16 +57,16 @@ msgstr "Neuigkeiten
 
 
 msgid  "Announcement list"
-msgstr "Verteiler &quot;Ankündigungen&quot;"
+msgstr "Verteiler \"Ankündigungen\""
 
 msgid  "Discussion list"
-msgstr "Verteiler &quot;Diskussionen&quot;"
+msgstr "Verteiler \"Diskussionen\""
 
 msgid  "Development"
 msgstr "Entwicklung"
 
 msgid  "Development list"
-msgstr "Verteiler &quot;Entwicklung&quot;"
+msgstr "Verteiler \"Entwicklung\""
 
 msgid  "announcement_list_description"
 msgstr "Wenig frequentierter Verteiler für die wichtigsten Ankündigungen des NTP-Pool-Projekts. Alle Serveradministratoren sollten diese Liste abonniert haben."
@@ -121,13 +122,13 @@ msgid  "How do I <i>join</i> pool.ntp.org?"
 msgstr "Wie kann man sich an pool.ntp.org <i>beteiligen</i>?"
 
 msgid  "Information for vendors"
-msgstr "Informationen f&uuml;r Hersteller"
+msgstr "Informationen für Hersteller"
 
 msgid  "The mailing lists"
 msgstr "E-Mail-Verteiler"
 
 msgid  "Additional links"
-msgstr "Zus&auml;tzliche Links"
+msgstr "Zusätzliche Links"
 
 msgid  "Can you translate?"
 msgstr "Können Sie übersetzen?"
