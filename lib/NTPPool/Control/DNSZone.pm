@@ -9,13 +9,14 @@ sub render {
 
     $self->cache_control('private, no-cache');
 
-    my $token = $1 if ($self->request->header_in("Authorization") || '') =~ /^\s*Bearer\s+(.+)/i;
-    return 403 unless $token; 
+    my $token = $1
+      if ($self->request->header_in("Authorization") || '') =~ /^\s*Bearer\s+(.+)/i;
+    return 403 unless $token;
 
     my $api_key = NP::Model->api_key->fetch("api_key" => $token);
     return 403 unless $api_key;
 
-    # return 403 unless $api_key->grants->zonefiles 
+    # return 403 unless $api_key->grants->zonefiles
 
     # if url =~ /index or some such:
     #  my $roots = NP::Model->dns_root->get_objects;

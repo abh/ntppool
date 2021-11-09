@@ -88,8 +88,8 @@ sub init {
             return $self->redirect($self->_url($self->site, $self->request->path));
         }
         else {
-# we're setting Strict-Transport-Security with haproxy
-# $self->request->header_out('Strict-Transport-Security', 'max-age=' . (86400 * 7 * 20));
+           # we're setting Strict-Transport-Security with haproxy
+           # $self->request->header_out('Strict-Transport-Security', 'max-age=' . (86400 * 7 * 20));
         }
     }
 
@@ -110,8 +110,7 @@ sub init {
         return $self->redirect($path, 301);
     }
 
-    $self->tpl_param(
-             'pool_domain' => Combust::Config->new->site->{ntppool}->{pool_domain}
+    $self->tpl_param('pool_domain' => Combust::Config->new->site->{ntppool}->{pool_domain}
           || 'pool.ntp.org');
 
     return OK;
@@ -233,8 +232,7 @@ sub localize_url {
         $uri->path("/$lang" . $uri->path);
         $self->request->header_out('Vary', 'Accept-Language');
         $self->cache_control(
-            's-maxage=900, max-age=3600, stale-while-revalidate=90, stale-if-error=43200'
-        );
+            's-maxage=900, max-age=3600, stale-while-revalidate=90, stale-if-error=43200');
         return $self->redirect($uri->as_string);
     }
     return;
@@ -311,9 +309,7 @@ sub post_process {
         [   'Report-To' =>
               '{"group":"default","max_age":31536000,"endpoints":[{"url":"https://ntp.report-uri.com/a/d/g"}],"include_subdomains":true}'
         ],
-        [   'NEL' =>
-              '{"report_to":"default","max_age":31536000,"include_subdomains":true}'
-        ],
+        ['NEL' => '{"report_to":"default","max_age":31536000,"include_subdomains":true}'],
         [   'Content-Security-Policy' => join(" ",
                 qq[default-src 'none'; form-action 'self' mailform.ntppool.org; frame-ancestors 'none';],
                 qq[connect-src 'self' 8ll7xvh0qt1p.statuspage.io;],

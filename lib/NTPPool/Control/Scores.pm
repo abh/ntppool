@@ -51,12 +51,14 @@ sub render {
         my ($server) = NP::Model->server->find_server($p);
         return 404 unless $server;
 
-        return 404 if ($public and $server->deletion_on < DateTime->now->subtract(years => 3));
+        return 404
+          if ($public and $server->deletion_on < DateTime->now->subtract(years => 3));
 
         return $self->redirect('/scores/' . $server->ip, 301) unless $p eq $server->ip;
 
         if ($mode eq '') {
-            $self->tpl_param('graph_explanation' => 1) if $self->req_param('graph_explanation');
+            $self->tpl_param('graph_explanation' => 1)
+              if $self->req_param('graph_explanation');
             $self->tpl_param('server' => $server);
 
             if ($self->req_param('graph_only')) {
@@ -109,7 +111,8 @@ sub render {
                     my $h      = $_;
                     my %h      = ();
                     my @fields = qw(offset step score monitor_id);
-                    @h{@fields} = map { my $v = $h->$_; defined $v ? $v + 0 : $v } @fields;
+                    @h{@fields} =
+                      map { my $v = $h->$_; defined $v ? $v + 0 : $v } @fields;
                     $h{ts} = $h->ts->epoch;
                     $relevant_monitors{$h{monitor_id}} = 1;
                     \%h;
@@ -125,7 +128,8 @@ sub render {
                 $self->cache_control('maxage=28800');
             }
 
-            my $monitors = [grep { $relevant_monitors{$_->{id}} } @{$self->_monitors($server)}];
+            my $monitors =
+              [grep { $relevant_monitors{$_->{id}} } @{$self->_monitors($server)}];
 
             return OK,
               encode_json(
@@ -170,6 +174,5 @@ sub _monitors {
 
 sub bc_user_class    { NP::Model->user }
 sub bc_info_required {'username,email'}
-
 
 1;
