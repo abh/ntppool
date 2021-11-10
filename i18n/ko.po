@@ -60,7 +60,7 @@ msgid  "discussion_list_description"
 msgstr "이 프로젝트에 더 깊이 관여하고 싶은 서버 운영자들과 사용자들은 가입하십시오.<br/> 물론 NTP에 대한 일반적인 토론은 유즈넷 뉴스그룹 %1 에서 하십시오. (<a href=\"%2\">구글 그룹</a>에도 있습니다.)"
 
 msgid  "development_list_description"
-msgstr "<a href=\"%1\">NTP 풀 코드</a>와 <a href=\"%2\">pgeodns</a>의 현재 개발에 대한 더 기술적인 토론은 timekeepers-dev 목록에 있습니다."
+msgstr "<a href=\"%1\">NTP 풀 코드</a>와 <a href=\"%2\">GeoDNS</a>의 현재 개발에 대한 더 기술적인 토론은 timekeepers-dev 목록에 있습니다."
 
 
 # tpl/server.html

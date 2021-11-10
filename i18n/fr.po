@@ -58,7 +58,7 @@ msgid "discussion_list_description"
 msgstr "Les administrateurs de serveurs (et les utilisateurs) qui veulent s'impliquer plus dans le projet peuvent souscrire à la liste de discussion.<br/>Bien sûr, les discussions générales à propos de ntp devraient avoir lieu dans le newsgroup Usenet %1 (voir aussi les <a href=\"%2\">Google Groups</a>)"
 
 msgid "development_list_description"
-msgstr "Les discussions plus techniques (et idéalement plus pragmatiques) sur le développement actuel du <a href=\"%1\">code du réservoir ntp</a> et de <a href=\"%2\">pgeodns</a> ont lieu sur la liste timekeepers-dev."
+msgstr "Les discussions plus techniques (et idéalement plus pragmatiques) sur le développement actuel du <a href=\"%1\">code du réservoir ntp</a> et de <a href=\"%2\">GeoDNS</a> ont lieu sur la liste timekeepers-dev."
 
 # tpl/server.html
 msgid "Back to the front page"

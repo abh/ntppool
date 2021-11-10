@@ -82,7 +82,7 @@ msgid  "discussion_list_description"
 msgstr "Minden szerver üzemeltetőnek és végfelhasználónak javasolt feliratkozni a listára, aki szeretne a projektbe jobban belelátni.<br/> Az általános NTP-vel kapcsolatos beszélgetések és viták helye a %1 Usenet hírcsoport és a <a href=\"%2\">Google Csoportok</a>."
 
 msgid  "development_list_description"
-msgstr "Az aktuális <a href=\"%1\">ntp pool forráskód</a>dal és <a href=\"%2\">pgeodns</a>sel kapcsolatos beszélgetések levelezőlistája."
+msgstr "Az aktuális <a href=\"%1\">ntp pool forráskód</a>dal és <a href=\"%2\">GeoDNS</a>sel kapcsolatos beszélgetések levelezőlistája."
 
 msgid  "irc_channel_description"
 msgstr "Az %1 szerveren elérhető az %2 csatorna."

@@ -82,7 +82,7 @@ msgid  "discussion_list_description"
 msgstr "වැඩිදුර සාකච්චා කිරීමට කැමති සියලුම සර්වර් ක්රියාකරවන්නන් (සහ පරිශීලකයින්) ට සංවාද ලැයිස්තුව සඳහා අනුසන් විය හැක.<br/> ntp පිළිබඳව සාමාන්‍ය සංවාද සඳහා %1 ද. (එලෙසම <a href=\"%2\">Google සංවාද මන්ඩපයද</a>)."
 
 msgid  "development_list_description"
-msgstr "<a href=\"%1\">ntp සංසදයේ කේත</a> සහ <a href=\"%2\">pgeodns</a> පිලිබඳ වර්තමාන සැකසුම් සහ වැඩිදුර තාක්ෂණික  (සහ සාමාන්‍ය උපයෝගික) සංවාද සිදුවන්නේ timekeepers-dev ලයිස්තුවේය."
+msgstr "<a href=\"%1\">ntp සංසදයේ කේත</a> සහ <a href=\"%2\">GeoDNS</a> පිලිබඳ වර්තමාන සැකසුම් සහ වැඩිදුර තාක්ෂණික  (සහ සාමාන්‍ය උපයෝගික) සංවාද සිදුවන්නේ timekeepers-dev ලයිස්තුවේය."
 
 # tpl/server.html
 msgid  "Back to the front page"

@@ -82,7 +82,7 @@ msgid  "discussion_list_description"
 msgstr "Sunucu operatörleri ve kullanıcılardan projede daha aktif olmak isteyen varsa tartışma listesine abone olabilir.<br/> NTP hakkında genel tartışmalar tabii ki %1 Usenet haber grubunda (aynı zamanda <a href=\"%2\">Google Gruplarında</a>) olmalıdır."
 
 msgid  "development_list_description"
-msgstr "<a href=\"%1\">NTP havuz kodu</a> ve <a href=\"%2\">pgeodns</a> geliştirmeleri hakkındaki daha teknik (ve öyle de olmalı) tartışmalar timekeepers-dev listesinde olmalı."
+msgstr "<a href=\"%1\">NTP havuz kodu</a> ve <a href=\"%2\">GeoDNS</a> geliştirmeleri hakkındaki daha teknik (ve öyle de olmalı) tartışmalar timekeepers-dev listesinde olmalı."
 
 # tpl/server.html
 msgid  "Back to the front page"

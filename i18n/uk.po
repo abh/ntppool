@@ -59,7 +59,7 @@ msgid  "discussion_list_description"
 msgstr "Адміністратори та користувачі серверів, які бажають приймати більшу участь у проекті, можуть мати підписку на список обговорення.<br/> Зрозуміло, що обговорення ntp має відбуватися в %1 Usenet конференції (також на <a href=\"%2\">Google Groups</a>)."
 
 msgid  "development_list_description"
-msgstr "Технічна дискусія розробки <a href=\"%1\">коду пулу ntp</a> та <a href=\"%2\">pgeodns</a>."
+msgstr "Технічна дискусія розробки <a href=\"%1\">коду пулу ntp</a> та <a href=\"%2\">GeoDNS</a>."
 
 
 # tpl/server.html

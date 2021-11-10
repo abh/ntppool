@@ -85,7 +85,7 @@ msgid  "discussion_list_description"
 msgstr "このプロジェクトにより深く関与したいサーバ管理者(とユーザ)はディスカッションリストに登録して下さい。<br/>当然ですが、ntpに関する一般的な議論は、Usenetニュースグループ%1で行って下さい。(<a href=\"%2\">Google Groups</a>にもあります)。"
 
 msgid  "development_list_description"
-msgstr "<a href=\"%3\">開発フォーラム</a>では、<a href=\"%1\">ntpプールコード</a>と<a href=\"%2\">geodns</a>の開発に関するより技術的な（そして理想を言えば実用的な）議論が行われます。"
+msgstr "<a href=\"%3\">開発フォーラム</a>では、<a href=\"%1\">ntpプールコード</a>と<a href=\"%2\">GeoDNS</a>の開発に関するより技術的な（そして理想を言えば実用的な）議論が行われます。"
 
 # tpl/server.html
 msgid  "Back to the front page"

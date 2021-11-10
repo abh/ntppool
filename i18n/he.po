@@ -82,7 +82,7 @@ msgid  "discussion_list_description"
 msgstr "מפעילי שרתים (ומשתמשים) אשר מעוניינים להיות מעורבים יותר בפרוייקט יכולים להרשם אל רשימת הדיונים.<br/> כמובן, שדיונים כלליים אודות ntp מקומם בקבוצת היוזנט %1 (וגם ב<a href=\"%2\">קבוצות גוגל</a>)."
 
 msgid  "development_list_description"
-msgstr "דיונים יותר טכניים (ובאופן אידאלי תמיד פרגמטיים) אודות הפיתוח הנוכחי של <a href=\"%1\">קוד ה-ntp pool</a> ושל <a href=\"%2\">pgeodns</a> מתרחשים ברשימת התפוצה timekeepers-dev."
+msgstr "דיונים יותר טכניים (ובאופן אידאלי תמיד פרגמטיים) אודות הפיתוח הנוכחי של <a href=\"%1\">קוד ה-ntp pool</a> ושל <a href=\"%2\">GeoDNS</a> מתרחשים ברשימת התפוצה timekeepers-dev."
 
 msgid  "irc_channel_description"
 msgstr "ישנו ערוץ IRC בשם %2 עבור מפעילי שרתים ומשתמשים ברשת %1."
