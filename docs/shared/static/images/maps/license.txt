@@ -1,2 +1,2 @@
-The map svg files are licensed from http://www.mapglyphs.com for the
+The map svg files are licensed from https://www.mapglyphs.com/ for the
 NTP Pool only.

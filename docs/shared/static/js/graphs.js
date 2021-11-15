@@ -23,7 +23,7 @@ if (!Pool.Graphs) { Pool.Graphs = {}; }
                          + 'to see the new graphs. '
                          + '(For example <a href="http://www.apple.com/safari/">Safari</a>, '
                          + '<a href="https://www.google.com/chrome/">Chrome</a>, '
-                         + '<a href="http://www.mozilla.org/firefox">Firefox</a> or '
+                         + '<a href="https://www.mozilla.org/firefox">Firefox</a> or '
                          + '<a href="http://ie.microsoft.com/">IE9+</a>)<br>'
                         );
 

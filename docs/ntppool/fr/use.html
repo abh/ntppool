@@ -4,7 +4,7 @@
 <h3 id="use">Comment puis-je utiliser pool.ntp.org ?</h3>
 
 <p>
-Si vous voulez simplement synchroniser les horloges de vos ordinateurs au réseau, le fichier de configuration (pour le programme ntpd de la <a href="http://www.ntp.org/">distribution ntp.org</a>, sur n'importe lequel des systèmes d'exploitation supportés : <b>Linux, *BSD, Windows et même quelques systèmes plus exotiques</b>) est très simple :
+Si vous voulez simplement synchroniser les horloges de vos ordinateurs au réseau, le fichier de configuration (pour le programme ntpd de la <a href="https://www.ntp.org/">distribution ntp.org</a>, sur n'importe lequel des systèmes d'exploitation supportés : <b>Linux, *BSD, Windows et même quelques systèmes plus exotiques</b>) est très simple :
 </p>
 
 [% INCLUDE "ntppool/use/sample-config.html" %]
@@ -40,18 +40,18 @@ Vous pouvez parvenir au même résultat, en tant qu'administrateur, en cliquant 
 </p>
 
 <p>
-Meinberg a conçu une version du <a href="http://www.meinberg.de/english/sw/ntp.htm">démon ntp</a> pour la plateforme Windows.
+Meinberg a conçu une version du <a href="https://www.meinberg.de/english/sw/ntp.htm">démon ntp</a> pour la plateforme Windows.
 </p>
 
 <p>
-Si votre système Windows fait partie d'un domaine Active Directory, il se peut que vous ne puissiez pas ajuster l'horloge de l'ordinateur de manière indépendante. Voir <a href="http://technet.microsoft.com/en-us/library/cc773013%28WS.10%29.aspx">How Windows Time Service Works</a>.
+Si votre système Windows fait partie d'un domaine Active Directory, il se peut que vous ne puissiez pas ajuster l'horloge de l'ordinateur de manière indépendante. Voir <a href="https://technet.microsoft.com/en-us/library/cc773013%28WS.10%29.aspx">How Windows Time Service Works</a>.
 </p>
 </div>
 
 <div class="block">
 <h3 id="notes">Remarques supplémentaires</h3>
 
-<p><span class="hook">Évaluez si pool.ntp.org est appoprié pour votre utilisation.</span>. Si votre entreprise, votre organisation ou votre mode mode de vie dépend du fait d'avoir l'heure la plus précise possible ou s'il peut être dangereux pour quiconque de ne pas l'avoir, vous ne devriez pas dépendre de l'heure Internet. La grappe NTP de pool.ntp.org est généralement de très bonne qualité, mais ça demeure un service supporté en partie par des volontaires lors de temps libres. Si c'est votre cas, merci de parler à votre vendeur ou fournisseur de services afin d'obtenir une installation locale et fiable pour votre besoin. Voir également les <a href="/tos.html">terms of service</a>. Nous recommandons des serveurs de temps de <a href="http://www.meinbergglobal.com/english/products/ntp-time-server.htm">Meinberg</a>, mais vous pouvez également trouver des serveurs de temps chez <a href="http://www.endruntechnologies.com/NTP-Servers/gps-cdma-ntp.htm">End Run</a>, <a href="http://spectracom.com/products-services/precision-timing#anchor-2172">Spectracom</a> et chez plusieurs autres commerçants.
+<p><span class="hook">Évaluez si pool.ntp.org est appoprié pour votre utilisation.</span>. Si votre entreprise, votre organisation ou votre mode mode de vie dépend du fait d'avoir l'heure la plus précise possible ou s'il peut être dangereux pour quiconque de ne pas l'avoir, vous ne devriez pas dépendre de l'heure Internet. La grappe NTP de pool.ntp.org est généralement de très bonne qualité, mais ça demeure un service supporté en partie par des volontaires lors de temps libres. Si c'est votre cas, merci de parler à votre vendeur ou fournisseur de services afin d'obtenir une installation locale et fiable pour votre besoin. Voir également les <a href="/tos.html">terms of service</a>. Nous recommandons des serveurs de temps de <a href="https://www.meinbergglobal.com/english/products/ntp-time-server.htm">Meinberg</a>, mais vous pouvez également trouver des serveurs de temps chez <a href="https://www.endruntechnologies.com/NTP-Servers/gps-cdma-ntp.htm">End Run</a>, <a href="https://spectracom.com/products-services/precision-timing#anchor-2172">Spectracom</a> et chez plusieurs autres commerçants.
 </p>
 
 <p><span class="hook">Si vous avez une adresse IP statique et une connexion à Internet de bonne qualité</span> (la bande passante n'est pas importante, mais elle doit être stable et ne pas être surchargée), merci de considérer l'ajout de votre serveur au pool.ntp.org. Cela ne vous coûtera pas plus qu'un trafic de quelques centaines d'octets par seconde et vous contribuerez à la survie de ce projet. Plus d'informations sur la page <a href="/join.html">Rejoindre le projet</a>.
