@@ -65,7 +65,7 @@ msgid "discussion_list_description"
 msgstr "Server-innehavare (och användare) som vill vare djupare involverade i projektet, kan prenumerera på diskussionslistan.<br/>Allmänna diskussioner om ntp hör givetvis hemma på nyhetsgruppen %1 på Usenet (och på <a href=\"%2\">Google Groups</a>)."
 
 msgid "development_list_description"
-msgstr "Mer tekniskt inriktade (och förhoppningsvis alltid pragmatiska) diskussioner kring den löpande utvecklingen av <a href=\"%1\">koden för ntp pool</a> och <a href=\"%2\">pgeodns</a> sker på listan timekeepers-dev."
+msgstr "Mer tekniskt inriktade (och förhoppningsvis alltid pragmatiska) diskussioner kring den löpande utvecklingen av <a href=\"%1\">koden för ntp pool</a> och <a href=\"%2\">GeoDNS</a> sker på listan timekeepers-dev."
 
 # tpl/server.html
 msgid "Back to the front page"

@@ -82,7 +82,7 @@ msgid  "discussion_list_description"
 msgstr "Palvelinylläpitäjien (ja käyttäjien) jotka haluavat osallistua projektiin enemmän kannattaa liittyä keskustelulistalle.<br/>Yleisen ntp-aiheisen keskustelun tulisi tapahtua %1 Usenet-uutisryhmässä (myös <a href=\"%2\">Google Groupsissa</a>)."
 
 msgid  "development_list_description"
-msgstr "Teknisemmät (ja toivottavasti myös käytännöllisemmät) <a href=\"%1\">poolin koodiin</a> ja <a href=\"%2\">pgeodns:n</a> kehittämiseen liittyvät keskustelut käydään timekeepers-dev-listalla."
+msgstr "Teknisemmät (ja toivottavasti myös käytännöllisemmät) <a href=\"%1\">poolin koodiin</a> ja <a href=\"%2\">GeoDNS:n</a> kehittämiseen liittyvät keskustelut käydään timekeepers-dev-listalla."
 
 # tpl/server.html
 msgid  "Back to the front page"

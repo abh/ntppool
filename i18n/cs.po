@@ -60,7 +60,7 @@ msgid  "discussion_list_description"
 msgstr "Operátoři serverů (a uživatelé), kteří chtějí být více zapojeni do projektu se mohou přihlásit do této konference.<br/> Samozřejmě, obecná diskuse o ntp by měla probíhat v Usenet skupině %1 (také na <a href=\"%2\">Google Groups</a>)."
 
 msgid  "development_list_description"
-msgstr "Více technické (a ideálně vždy pragmatické) diskuse o současném vývoji <a href=\"%1\">ntp pool kódu</a> a <a href=\"%2\">pgeodns</a> probíhají v konferenci timekeepers-dev."
+msgstr "Více technické (a ideálně vždy pragmatické) diskuse o současném vývoji <a href=\"%1\">ntp pool kódu</a> a <a href=\"%2\">GeoDNS</a> probíhají v konferenci timekeepers-dev."
 
 # tpl/server.html
 msgid  "Back to the front page"

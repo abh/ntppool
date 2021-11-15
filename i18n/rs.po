@@ -91,7 +91,7 @@ msgstr ""
 msgid "development_list_description"
 msgstr ""
 "Tehničke (u idealnom slučaju, praktične) diskusije  o trenutnom razvoju <a "
-"href=\"%1\">ntp pool koda</a> i <a href=\"%2\">pgeodns</a> odvijaju se na "
+"href=\"%1\">ntp pool koda</a> i <a href=\"%2\">GeoDNS</a> odvijaju se na "
 "timekeepers-dev listi."
 
 # tpl/server.html

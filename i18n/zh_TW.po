@@ -61,7 +61,7 @@ msgid  "discussion_list_description"
 msgstr "不管你是伺服器管理員還是使用者，如果你想更多的參預這個專案，請訂閱我們的討論清單。<br/> 一般有關NTP的討論則應該在 %1 Usenet 新聞群組上 (或是在 <a href=\"%2\">Google Groups</a>)"
 
 msgid  "development_list_description"
-msgstr "更多有關目前開發<a href=\"%1\">ntp pool 程式碼</a> 以及 <a href=\"%2\">pgeodns</a> 相關技術的討論會在timekeepers-dev清單上."
+msgstr "更多有關目前開發<a href=\"%1\">ntp pool 程式碼</a> 以及 <a href=\"%2\">GeoDNS</a> 相關技術的討論會在timekeepers-dev清單上."
 
 # tpl/server.html
 msgid  "Back to the front page"

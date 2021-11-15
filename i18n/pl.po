@@ -81,7 +81,7 @@ msgid  "discussion_list_description"
 msgstr "Operatorzy (i użytkownicy) serwerów, którzy chcieliby być bardziej zaangażowani w projekcie mogą się zapisać na listę dyskusujną.<br/> Oczywiście ogólne tematy dotyczące NTP powinny być poruszane na grupie dyskusyjnej Usenetu %1 (także na <a href=\"%2\">Grupach Google</a>)."
 
 msgid  "development_list_description"
-msgstr "Bardziej techniczne (i najlepiej zawsze praktyczne) dyskusje o bieżącym rozwoju <a href=\"%1\">kodu puli NTP</a> i <a href=\"%2\">pgeodns</a> mają miejsce na liście timekeepers-dev."
+msgstr "Bardziej techniczne (i najlepiej zawsze praktyczne) dyskusje o bieżącym rozwoju <a href=\"%1\">kodu puli NTP</a> i <a href=\"%2\">GeoDNS</a> mają miejsce na liście timekeepers-dev."
 
 # tpl/server.html
 msgid  "Back to the front page"

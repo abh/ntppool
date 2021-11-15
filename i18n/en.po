@@ -85,7 +85,7 @@ msgid  "discussion_list_description"
 msgstr "Server operators (and users) who wish to be more involved in the project can subscribe to the discussion list.<br/> Of course, general discussions about ntp should take place on the %1 Usenet newsgroup (also on <a href=\"%2\">Google Groups</a>)."
 
 msgid  "development_list_description"
-msgstr "More technical (and ideally pragmatic) discussions about development of the <a href=\"%1\">ntp pool code</a> and <a href=\"%2\">geodns</a> happens in the  <a href=\"%3\">development forum</a>."
+msgstr "More technical (and ideally pragmatic) discussions about development of the <a href=\"%1\">ntp pool code</a> and <a href=\"%2\">GeoDNS</a> happens in the  <a href=\"%3\">development forum</a>."
 
 # tpl/server.html
 msgid  "Back to the front page"

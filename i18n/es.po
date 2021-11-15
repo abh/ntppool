@@ -58,7 +58,7 @@ msgid  "discussion_list_description"
 msgstr "Los operadores de servidor (y los usuarios) que deseen involucrase más en el proyecto pueden suscribirse a la lista de debates.<br/>Por supuesto, los debates generales sobre ntp deben estar en el grupo de noticias %1 de Usenet (incluso en <a href=\"%2\">Google Groups</a>)."
 
 msgid  "development_list_description"
-msgstr "Los debates más técnicos (e idealmente siempre útiles) sobre el actual desarrollo del <a href=\"%1\">código de grupo ntp</a> y <a href=\"%2\">pgeodns</a> ocurre en la lista timekeepers-dev (desarrollo de cronómetros)."
+msgstr "Los debates más técnicos (e idealmente siempre útiles) sobre el actual desarrollo del <a href=\"%1\">código de grupo ntp</a> y <a href=\"%2\">GeoDNS</a> ocurre en la lista timekeepers-dev (desarrollo de cronómetros)."
 
 
 # tpl/server.html

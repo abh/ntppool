@@ -57,7 +57,7 @@ msgid  "discussion_list_description"
 msgstr "Operatori servera (i korisnici) koji žele biti više uključeni u ovaj projekt mogu se pretplatiti na listu rasprava.<br/> Naravno, generalne rasprave o ntp-u bi trebale biti raspravljane na %1 Usenet news grupi (dostupno i na <a href=\"%2\">Google Grupe</a>)."
 
 msgid  "development_list_description"
-msgstr "Više tehničke (i idealno uvijek pragmatičane) diskusije o trenutačnom razvoju <a href=\"%1\">ntp pool koda</a> i <a href=\"%2\">pgeodns</a> se dešavaju na timekeepers-dev listi."
+msgstr "Više tehničke (i idealno uvijek pragmatičane) diskusije o trenutačnom razvoju <a href=\"%1\">ntp pool koda</a> i <a href=\"%2\">GeoDNS</a> se dešavaju na timekeepers-dev listi."
 
 
 # tpl/server.html
