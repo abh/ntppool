@@ -3,20 +3,8 @@ use strict;
 use NP::Model;
 use NP::LWP;
 use JSON::XS;
-use Net::Stripe;
 
 my $json = JSON::XS->new->utf8;
-
-my $TOKEN = 'rk_test_5103Pmy2ZWuSKvxWMq5V3TIuI3gdGxbtaUPbISdzbxRIDEmxXIJfYTMo78JvGJOhi6zJgA02cKuh8RKcVD5pfANzt00pBBUHsfL';
-
-my $stripe;
-
-sub _api {
-    return $stripe if $stripe;
-    warn "Setting up stripe ...";
-    $stripe = Net::Stripe->new(api_key => $TOKEN, debug => 1);
-    return $stripe;
-}
 
 sub _gw_api {
     my ($method, $function, $data) = @_;
