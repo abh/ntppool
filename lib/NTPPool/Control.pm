@@ -309,20 +309,21 @@ sub post_process {
 
         # report-uri.com headers
         [   'Report-To' =>
-              '{"group":"default","max_age":31536000,"endpoints":[{"url":"https://ntp.report-uri.com/a/d/g"}],"include_subdomains":true}'
+              '{"group":"default","max_age":31536000,"endpoints":[{"url":"https://ntppool.report-uri.com/a/d/g"}],"include_subdomains":true}'
         ],
-        [   'NEL' =>
-              '{"report_to":"default","max_age":31536000,"include_subdomains":true}'
-        ],
-        [   'Content-Security-Policy' => join(" ",
-                qq[default-src 'none'; form-action 'self' mailform.ntppool.org; frame-ancestors 'none';],
+        ['NEL' => '{"report_to":"default","max_age":31536000,"include_subdomains":true}'],
+        [   'Content-Security-Policy-Report-Only' => join(
+                " ",
+                qq[default-src 'none'; frame-ancestors 'none';],
                 qq[connect-src 'self' 8ll7xvh0qt1p.statuspage.io;],
                 qq[font-src fonts.gstatic.com;],
+                qq[form-action 'self' mailform.ntppool.org checkout.stripe.com;],
                 qq[img-src 'self' $cspdomains *.mapper.ntppool.org;],
                 qq[script-src 'self' 'unsafe-eval' 'unsafe-inline' cdn.statuspage.io $cspdomains www.mapper.ntppool.org js.stripe.com;],
                 qq[style-src 'self' fonts.googleapis.com $cspdomains;],
-                qq[child-src 'self' js.stripe.com;],
-                qq[report-uri https://ntp.report-uri.com/r/d/csp/wizard],
+
+                # qq[child-src 'self' js.stripe.com;],
+                qq[report-uri https://ntppool.report-uri.com/r/d/csp/wizard],
             ),
         ],
 

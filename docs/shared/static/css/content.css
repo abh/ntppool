@@ -475,3 +475,17 @@ img.atom-logo {
 .btn-inline {
   display: inline-block;
 }
+
+ul.product-details {
+  /* height: 100%; */
+  margin-bottom: 1em;
+}
+
+ul.product-details li.continue {
+  list-style-type: none;
+}
+
+div.product-header {
+  margin-bottom: 0.5em;
+  margin-top: 1em;
+}

@@ -778,6 +778,25 @@ alter table accounts
 
 drop table account_plans;
 
+#91
+alter table accounts
+  add stripe_customer_id varchar(255) null,
+  add unique key (stripe_customer_id);
+
+#92
+alter table account_subscriptions
+  modify status enum('incomplete', 'incomplete_expired', 'trialing', 'active', 'past_due', 'canceled', 'unpaid', 'ended') null,
+  add    name        varchar(255) not null,
+  add    max_zones   int unsigned not null,
+  add    max_clients int unsigned not null;
+
+#93
+alter table account_subscriptions
+  change max_clients max_devices int unsigned not null,
+  add    created_on  datetime not null,
+  add    ended_on    datetime null,
+  add    modified_on timestamp not null;
+
 #todo
 alter table user_privileges
   drop see_all_user_profiles;

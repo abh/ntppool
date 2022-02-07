@@ -27,6 +27,15 @@
         <a href="[% combust.manage_url('/manage/vendor/new') %]">Setup a new vendor zone</a>
     </p>
 
+    [% IF subscriptions %]
+    <h3>Subscriptions</h3>
+    [% FOR sub = subscriptions %]
+    <p>
+      Subscription: [% sub.stripe_subscription_id | html %]<br>
+      Status: [% sub.status | html %]
+    [% END %]
+    [% END %]
+
     [% PROCESS tpl/vendor/help.html %]
 
     <!--

@@ -1,6 +1,12 @@
 
 [% USE Number.Format %]
 
+<div class="row">
+    <div class="col-md-12">
+        For help or questions, email <a href="mailto:vendors@ntppool.org?subject=Vendor%20DNS%20Zone%20(account%20[% account.id_token %])">vendors@ntppool.org</a>.
+    </div>
+</div>
+
 [% IF vz.status == 'New' %]
 
 <div class="row">
@@ -27,9 +33,9 @@
 
 
 <div class="row">
-  
+
     <div class="col-md-12">
- 
+
     <h3>"[% vz.zone_name | html %]" zone</h3>
 
     <h4>Organization</h4>
@@ -42,7 +48,7 @@
 
     <h4>Number of devices</h4>
     <blockquote>
-        vz.device_count | format_number %]
+        [% vz.device_count | format_number %]
     </blockquote>
 
     <h4>Contact information</h4>
@@ -72,7 +78,7 @@
             <input type="hidden" name="id" value="[% vz.id_token %]" />
             <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
             <input type="hidden" name="a" value="[% combust.current_account.id_token %]">
-            <input type="submit" class="btn btn-primary" value="Submit application &rarr;" />
+            <input type="submit" class="btn btn-primary" value="Activate &rarr;" />
     </form>
     [% END %]
 

@@ -50,9 +50,9 @@
                 <br>
                 <br>
 
-                <b>Vendor zone information</b><br>
+                <b>Device implementation information</b><br>
                 What devices will use the pool? How often will they poll?
-                Please read the <a href="[% combust.www_url(" /vendors.html") %]">vendor zone information faq</a>.
+                Please read the <a href="[% combust.www_url("/vendors.html") %]">DNS zone information faq</a>.
                 (Only visible to NTP Pool admins)<br>
                 [% IF errors.request_information %]<div class="error">[% errors.request_information | html %]</div>
                 [%
@@ -66,9 +66,7 @@
                 <select name="device_count" id="device_count">
                     <option value=""> Number of devices </option>
                     [% USE Number.Format;
-                    FOR count = ["1000", "10000", "50000", "100000", "250000", "1000000", "5000000", "10000000",
-                    "25000000",
-                    "100000000" ]; %]
+                    FOR count = device_count_options %]
                     <option [% IF vz.device_count AND vz.device_count==count; "selected" ; END; %] value="[% count %]">
                         &lt;
                         [% count | format_number %] </option>

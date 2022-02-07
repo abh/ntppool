@@ -34,12 +34,12 @@ deployments:
         image:
           image: harbor.ntppool.org/ntpdev/ntppool-dev
         config:
-          manage_hostname: manage.devlon3.grundclock.com
-          web_hostname: web.devlon3.grundclock.com
-          pool_domain: ntp.devlon3.grundclock.com
-          db_dsn: dbi:mysql:database=ntpdev3;host=mysql.ntpdev.svc
-          db_user: ntpdev3
-          stripe_gw_service: http://stripe-gw.stripe
+          manage_hostname: manage.askdev.grundclock.com
+          web_hostname: web.askdev.grundclock.com
+          pool_domain: ntp.askdev.grundclock.com
+          db_dsn: dbi:mysql:database=askntp;host=ntp-db-mysql-master.ntpdb.svc.cluster.local
+          db_user: askntp
+          stripe_gw_service: http://stripe-gw
       wait: true
 
 dev:

@@ -1,68 +1,108 @@
-[%
-  page.js.push("ntppool.js");
-  USE Number.Format;
-%]
+[% page.js.push("ntppool.js"); USE Number.Format; %]
 
 [% FOR product_group = product_group_list %]
 
+<div class="row product-header">
+  <h4>[% product_group | ucfirst %]</h4>
+</div>
+
   <div class="row">
-     <h2>[% product_group %]</h2>
-  </div>
+  [% FOR pr = products_by_group.$product_group; %]
+  <div class="col">
 
-  <div class="row row-cols-1 row-cols-md-2">
+      <b>
+        [% pr.Name %]
+      </b>
 
-[% FOR pr = products_by_group.$product_group; %]
-
-
-<!--
+  <ul class="product-details">
+    <!--
   todo:
     encode the product ID somewhere that the javascript in ntppool.js can
     read it...
   -->
-      <div class="col mb-4">
-        <div class="card border-secondary mb-3 h-100">
-          <div class="card-header">
-            <h3 class="my-0 font-weight-normal">
-              [% pr.Name %]
-            </h3>
-          </div>
-          <div class="card-body">
-            <h4 class="card-title pricing-card-title">
-              Starting at $[% pr.AnnualCostLow / 100 %]
-              <small class="text-muted">per year</small>
-            </h4>
-            <p class="card-text">
-              this is the card text.
-            </p>
-            <ul class="list-unstyled mt-3 mb-4">
+        [% IF pr.Description %]
+        <li>
+          [% pr.Description | html %]
+        </li>
+        [% END %]
+
+        <li>
+            [% IF pr.Available %]
+            $[% pr.AnnualCost / 100 | format_number %] per year for up to [% pr.CostDevices | format_number %] devices<br>
+
+            [% ELSE # not available ... %]
+            [% IF pr.single_price %]
+              $[% pr.AnnualCostLow / 100 | format_number %] [% tier.period_text %]
               [%- IF pr.MinClients %]
-              <li>Price for up to [% pr.MinClients | format_number %] clients.</li>
+                for up to [% pr.MinClients | format_number %] devices
               [% END %]
-
-              [% IF pr.MaxClients  %]
-                  <li> <!-- (up to $[% pr.AnnualCostHigh / 100 %] per year) -->
-                    Plans with support for up to [% pr.MaxClients | format_number %] clients.
-                  </li>
-                  [% END %]
-
-              [% IF pr.MaxZones AND pr.MaxZones > 1 %]
-              <li>Configure DNS for up to [% pr.MaxZones %] products</li>
+            [% ELSIF pr.price %]
+              (price) $[% pr.price / 100 | format_number %] [% tier.period_text %]
+              <br>
+              Starting at $[% pr.AnnualCostLow / 100 | format_number %] per year
+              [%- IF pr.MinClients %]
+                for up to [% pr.MinClients | format_number %] devices
               [% END %]
+            [% END %]
 
-              <!-- <li>Email support</li> -->
-            </ul>
-          </div>
-          <div class="card-footer">
-          [% IF pr.available %]
-              <button type="button" class="btn btn-sm btn-block btn-primary">Continue</button>
+            [% END %]
+
+        </li>
+
+        [% IF pr.tiered %]
+        <li>
+          <!-- (up to $[% pr.AnnualCostHigh / 100 %] per year) -->
+          [% IF pr.MaxClients != pr.MinClients %]
+          Plans with support for
           [% ELSE %]
-              <small class="text-muted">[% pr.availability_reason %]</small>
+          For
           [% END %]
-          </div>
-        </div>
-     </div>
-[% END %]
+          up to [% pr.MaxClients | format_number %] devices
+        </li>
+        [% END %]
 
+        [% IF pr.MaxZones AND pr.MaxZones > 1 %]
+        <li>Configure DNS for up to [% pr.MaxZones %] products</li>
+        [% END %]
+
+      </li>
+
+      [% IF pr.Available %]
+          <li class="continue">
+          <br>
+        [% FOR plan = pr.Plans %]
+
+          [% IF plan.Available %]
+
+          <form method="post" class="form-inline btn-inline" action="[% combust.manage_url('/manage/vendor/plan/create_session', id => vz.id_token ) %]">
+          <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
+          <input type="hidden" name="a" value="[% combust.current_account.id_token %]">
+          <input type="hidden" name="product_id" value="[% pr.ID %]">
+          <input type="hidden" name="price_id" value="[% plan.ID %]">
+          <input type="submit" class="btn btn-primary"
+            value="$[% plan.Cost / 100 | format_number | html %] [% plan.period_text | html %] &rarr;" />
+          </form>
+
+          [% END %]
+        [% END %]
+                  </li>
+
+      [% END %]
+
+      [% UNLESS pr.Available %]
+      <li>
+        <small class="text-muted">
+          Only for zones with less than [% pr.MaxClients | format_number %] devices.
+        </small>
+
+      </li>
+      [% END %]
+
+
+  </ul>
+
+    </div>
+      [% END # for products %]
 </div>
 
-[% END %]
+[% END # for product_groups %]

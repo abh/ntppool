@@ -30,9 +30,7 @@ sub json_model {
 
     my $j = {zone_id => $vz->id_token};
 
-    for my $f (
-        qw(zone_name contact_information device_count organization_name request_information)
-      )
+    for my $f (qw(zone_name contact_information device_count organization_name request_information))
     {
         $j->{$f} = $vz->$f();
     }
@@ -55,8 +53,7 @@ sub validate {
     }
 
     {
-        my $vz2 =
-          NP::Model->vendor_zone->get_objects(query => [zone_name => $vz->zone_name]);
+        my $vz2 = NP::Model->vendor_zone->get_objects(query => [zone_name => $vz->zone_name]);
         if (@$vz2) {
             unless ($vz and grep { $vz->id == $_->id } @$vz2) {
                 $errors->{zone_name} = 'That zone name is already used.';
@@ -64,10 +61,8 @@ sub validate {
         }
     }
 
-    for
-      my $f (qw(contact_information device_count organization_name request_information))
-    {
-        $errors->{$f} = 'Required field!' unless $vz->$f and $vz->$f =~ m/\S/;
+    for my $f (qw(contact_information device_count organization_name request_information)) {
+        $errors->{$f} = 'Required field' unless $vz->$f and $vz->$f =~ m/\S/;
     }
 
     $vz->{_validation_errors} = $errors;

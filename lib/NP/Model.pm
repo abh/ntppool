@@ -46,19 +46,23 @@ __PACKAGE__->meta->setup(
   table   => 'accounts',
 
   columns => [
-    id                => { type => 'serial', not_null => 1 },
-    name              => { type => 'varchar', length => 255 },
-    organization_name => { type => 'varchar', length => 150 },
-    organization_url  => { type => 'varchar', length => 150 },
-    public_profile    => { type => 'integer', default => '0', not_null => 1 },
-    url_slug          => { type => 'varchar', length => 150 },
-    created_on        => { type => 'datetime', default => 'now', not_null => 1 },
-    modified_on       => { type => 'timestamp', default => 'current_timestamp()', not_null => 1 },
+    id                 => { type => 'serial', not_null => 1 },
+    name               => { type => 'varchar', length => 255 },
+    organization_name  => { type => 'varchar', length => 150 },
+    organization_url   => { type => 'varchar', length => 150 },
+    public_profile     => { type => 'integer', default => '0', not_null => 1 },
+    url_slug           => { type => 'varchar', length => 150 },
+    created_on         => { type => 'datetime', default => 'now', not_null => 1 },
+    modified_on        => { type => 'timestamp', not_null => 1 },
+    stripe_customer_id => { type => 'varchar', length => 255 },
   ],
 
   primary_key_columns => [ 'id' ],
 
-  unique_key => [ 'url_slug' ],
+  unique_keys => [
+    [ 'stripe_customer_id' ],
+    [ 'url_slug' ],
+  ],
 
   allow_inline_column_values => 1,
 
@@ -139,7 +143,7 @@ __PACKAGE__->meta->setup(
     code        => { type => 'varchar', length => 25, not_null => 1 },
     expires_on  => { type => 'datetime', default => 'now', not_null => 1 },
     created_on  => { type => 'datetime', default => 'now', not_null => 1 },
-    modified_on => { type => 'timestamp', default => 'current_timestamp()', not_null => 1 },
+    modified_on => { type => 'timestamp', not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
@@ -200,7 +204,13 @@ __PACKAGE__->meta->setup(
     id                     => { type => 'serial', not_null => 1 },
     account_id             => { type => 'integer', not_null => 1 },
     stripe_subscription_id => { type => 'varchar', length => 255 },
-    status                 => { type => 'enum', check_in => [ 'incomplete', 'incomplete_expired', 'trialing', 'active', 'past_due', 'canceled', 'unpaid' ] },
+    status                 => { type => 'enum', check_in => [ 'incomplete', 'incomplete_expired', 'trialing', 'active', 'past_due', 'canceled', 'unpaid', 'ended' ] },
+    name                   => { type => 'varchar', length => 255, not_null => 1 },
+    max_zones              => { type => 'integer', not_null => 1 },
+    max_devices            => { type => 'integer', not_null => 1 },
+    created_on             => { type => 'datetime', default => 'now', not_null => 1 },
+    ended_on               => { type => 'datetime' },
+    modified_on            => { type => 'timestamp', not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
