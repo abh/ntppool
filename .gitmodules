@@ -1,6 +1,6 @@
 [submodule "combust"]
 	path = combust
-	url = git://git.develooper.com/combust.git
+	url = git://github.com/abh/combust.git
 [submodule "docs/shared/static/cdn"]
 	path = docs/shared/static/cdn
-	url = git://git.develooper.com/devcdn.git
+	url = git://github.com/devel/cdn.git
