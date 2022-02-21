@@ -12,7 +12,6 @@ our @EXPORT_OK = qw(
   run
   utf8_safe
   utf8_safe_tree
-  uniq
 );
 
 sub convert_to_html {
@@ -27,7 +26,7 @@ sub convert_to_html {
 }
 
 sub run {
-    my @ar = @_;
+    my @ar    = @_;
     my $parms = ref $ar[-1] eq "HASH" ? pop @ar : {};
 
     print "Running: ", join(" ", @ar), "\n" unless $parms->{silent};
@@ -63,10 +62,4 @@ sub utf8_safe_tree {
     $data;
 }
 
-sub uniq (@) {
-    my %seen = ();
-    grep { not $seen{$_}++ } @_;
-}
-
 1;
-

@@ -6,7 +6,6 @@ use List::Util qw(max first);
 use DateTime::Duration;
 use DateTime::Format::Duration;
 use JSON qw(decode_json);
-use NP::Util qw(uniq);
 use Combust::Config;
 
 sub find_dns_servers {
@@ -124,7 +123,7 @@ sub get_dns_info {
     }
 
     my $max_serial = max map { $servers{$_}->{serial} || 0 } keys %servers;
-    my $now = time;
+    my $now        = time;
 
     for my $ns (sort keys %servers) {
         my $d = $servers{$ns};
@@ -159,7 +158,7 @@ sub get_dns_info {
     alarm(0);
 
     my @servers = sort { $a->{names}->[0] cmp $b->{names}->[0] } values %servers;
-    my $master = first { $_->{serial} && $_->{serial} == $max_serial } values %servers;
+    my $master  = first { $_->{serial} && $_->{serial} == $max_serial } values %servers;
 
     return ($master, \@servers);
 }
@@ -186,7 +185,7 @@ sub host_to_ips {
 sub hour_min_sec {
     my $sec = shift;
 
-    my $dur = DateTime::Duration->new(seconds => $sec);
+    my $dur  = DateTime::Duration->new(seconds => $sec);
     my $durf = DateTime::Format::Duration->new(
         pattern   => '%e days, %k hours, %M minutes',    # , %S seconds',
         normalize => 1,

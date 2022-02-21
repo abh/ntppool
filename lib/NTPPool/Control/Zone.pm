@@ -4,7 +4,7 @@ use base qw(NTPPool::Control);
 use NP::Model;
 use Combust::Constant qw(OK);
 use JSON qw(encode_json);
-use NP::Util qw(uniq);
+use List::Util qw(uniq);
 
 sub zone_name {
     my $self = shift;
@@ -70,7 +70,7 @@ sub render {
             limit   => 20000,
         );
 
-        my @dates = NP::Util::uniq(map { $_->date->epoch } @$data);
+        my @dates = uniq(map { $_->date->epoch } @$data);
         my %data;
         for (@$data) {
             $data{$_->date->epoch}->{$_->ip_version} = $_;
@@ -101,7 +101,7 @@ sub render {
                 rc => $_->count_registered + 0,
                 w  => $_->netspeed_active + 0,
                 iv => $_->ip_version,
-              }
+            }
         } @out ? @out : @$data;
 
         $self->cache_control('s-maxage=43200, max-age=7200');
