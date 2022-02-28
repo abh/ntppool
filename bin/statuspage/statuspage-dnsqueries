@@ -15,7 +15,12 @@ my $batch_size = 2000;
 
 my $verbose = (-t STDIN or -d "/run/secrets/kubernetes.io");
 
-my $minutes = shift || 10;
+my $minutes = shift || 60;
+
+my $interval = 5 * 60;
+
+my $now = time;
+my $start = (($now - ($now % $interval)) - ($minutes * 60));
 
 my $ua = LWP::UserAgent->new(timeout => 15);
 
@@ -28,41 +33,48 @@ $settings = $settings->value;
 
 my $api_key   = $settings->{api_key} or die "no statuspage api_key";
 my $page_id   = $settings->{page_id} or die "no statuspage page_id";
-my $metric_id = $settings->{metrics}->{dns_queries} or die "no statuspage metrics->dns_queries key";
+my $avg_metric_id  = $settings->{metrics}->{dns_queries} or die "no statuspage metrics->dns_queries key";
+my $peak_metric_id = $settings->{metrics}->{dns_queries_peak} or die "no statuspage metrics->dns_queries key";
 
 warn "Getting data\n" if $verbose;
 
-my $url = URI::URL->new("http://trickster.ntpsystem:8480");
-$url->path('/geodns/api/v1/query_range');
-$url->query_param(query => 'sum (zone:dns_queries:irate{zone="pool.ntp.org"})');
-$url->query_param(timeout => 30);
-$url->query_param(start => (time - ($minutes * 60)));
-$url->query_param(end   => time);
-$url->query_param(step  => 60);
+# my $data = get_prometheus();
+my $data = get_clickhouse();
 
-print "fetching ", $url->as_string, "\n";
-
-my $data = decode_json($ua->get($url->as_string)->decoded_content);
+#use Data::Dump;
+#print Data::Dump::pp(\$data);
 
 $ua->default_header("Authorization" => "OAuth " . $api_key);
 
-$data = $data->{data}->{result}->[0]->{values};
-
-if (scalar(@$data) > (2 * $batch_size)) {
-    print "too much data returned, entries: ", scalar(@$data);
-    exit 2;
+if (scalar(@$data) > (10 * $batch_size)) {
+#    print "too much data returned, entries: ", scalar(@$data);
+#    exit 2;
 }
 
 while (@$data) {
     my @batch = splice @$data, 0, (scalar(@$data) > $batch_size ? $batch_size : scalar(@$data));
 
-    my @form = map {
-        my @d = @$_;
-        ("data[${metric_id}][][timestamp]", $d[0], "data[${metric_id}][][value]", $d[1])
+    # prometheus data
+    #my @form = map {
+    #    my @d = @$_;
+    #    ("data[${avg_metric_id}][][timestamp]", $d[0], "data[${avg_metric_id}][][value]", $d[1])
+    #} @batch;
+
+    my @avg_form = map {
+        my $d = $_;
+        ("data[${avg_metric_id}][][timestamp]", $d->{t},
+         "data[${avg_metric_id}][][value]", $d->{avg})
+    } @batch;
+
+    my @max_form = map {
+        my $d = $_;
+        ("data[${peak_metric_id}][][timestamp]", $d->{t},
+         "data[${peak_metric_id}][][value]", $d->{max})
     } @batch;
 
     warn "Posting ", scalar @batch, "\n" if $verbose;
-    post(\@form);
+    post(\@avg_form);
+    post(\@max_form);
 }
 
 sub post {
@@ -76,4 +88,49 @@ sub post {
         print $resp->decoded_content, "\n";
         exit 2;
     }
+}
+
+sub get_prometheus {
+    my $url = URI::URL->new("http://trickster.ntpsystem:8480");
+    $url->path('/geodns/api/v1/query_range');
+    $url->query_param(query => 'sum (zone:dns_queries:irate{zone="pool.ntp.org"})');
+    $url->query_param(timeout => 30);
+    $url->query_param(start => $start);
+    $url->query_param(end   => time);
+    $url->query_param(step  => 60);
+
+    print "fetching ", $url->as_string, "\n";
+
+    my $data = decode_json($ua->get($url->as_string)->decoded_content);
+    $data = $data->{data}->{result}->[0]->{values};
+
+    return $data;
+}
+
+sub get_clickhouse {
+    my $url = URI::URL->new("http://clickhouse-ntp-logs.ntpch:8123/?default_format=JSON&query=");
+
+    my $query = <<EOQ;
+select toUnixTimestamp(toStartOfFiveMinute(t)) as t,
+  sum(q)/$interval as avg, max(q) as max
+from (
+ select window as t, sumSimpleState(queries) as q
+ from geodns.by_origin_1s
+ where
+   window > FROM_UNIXTIME($start)
+   and Origin IN ('pool.ntp.org', 'g.ntpns.org')
+ group by t order by t
+)
+group by t order by t
+EOQ
+
+    my $resp = $ua->post($url->as_string,  Content => $query);
+
+    warn "could not query clickhouse: ", $resp->status_line
+      unless $resp->is_success;
+
+    my $content = $resp->decoded_content;
+
+    my $data = decode_json($content);
+    return $data->{data};
 }
