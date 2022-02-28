@@ -56,10 +56,15 @@ alias = ntppool
 
 # Apache specific configuration
 [apache]
+{{ $httpd_maxclients := getenv "httpd_maxclients" }}
+{{ if $httpd_maxclients }}
+maxclients = {{ $httpd_maxclients }}
+{{ else }}
 {{ if eq $mode "prod" }}
 maxclients          = 15
 {{ else }}
 maxclients          = 5
+{{ end }}
 {{ end }}
 keepalive           = On
 keepalivetimeout    = 5

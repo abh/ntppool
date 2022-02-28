@@ -30,7 +30,7 @@ deployments:
         - /Users/ask/src/ntppool-k8s/dev-values-kind.yaml
       values:
         image:
-          image: harbor.ntppool.org/ask/ntppool-dev
+          image: harbor.ntppool.org/ntpdev/ntppool-dev
       wait: true
 
 dev:
