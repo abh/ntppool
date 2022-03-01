@@ -11,13 +11,15 @@ if [ "$app" == "" ]; then
   ports="-p 8299:8299"
 fi
 
-IMAGE=quay.io/ntppool/ntppool:latest
+IMAGE=harbor.ntppool.org/ntppool/ntppool:main
 
 tparm=""
 
 if [ -t 0 ]; then
     tparm="-t -i"
 fi
+
+docker pull $IMAGE
 
 docker run $tparm \
  -v $(pwd):/ntppool \
