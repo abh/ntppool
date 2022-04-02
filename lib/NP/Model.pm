@@ -85,6 +85,12 @@ __PACKAGE__->meta->setup(
       type       => 'one to many',
     },
 
+    monitors => {
+      class      => 'NP::Model::Monitor',
+      column_map => { id => 'account_id' },
+      type       => 'one to many',
+    },
+
     servers_all => {
       class      => 'NP::Model::Server',
       column_map => { id => 'account_id' },
@@ -558,6 +564,7 @@ __PACKAGE__->meta->setup(
   columns => [
     id         => { type => 'serial', not_null => 1 },
     user_id    => { type => 'integer' },
+    account_id => { type => 'integer' },
     name       => { type => 'varchar', length => 30, not_null => 1 },
     ip         => { type => 'varchar', length => 40, not_null => 1 },
     ip_version => { type => 'enum', check_in => [ 'v4', 'v6' ], not_null => 1 },
@@ -575,6 +582,11 @@ __PACKAGE__->meta->setup(
   ],
 
   foreign_keys => [
+    account => {
+      class       => 'NP::Model::Account',
+      key_columns => { account_id => 'id' },
+    },
+
     user => {
       class       => 'NP::Model::User',
       key_columns => { user_id => 'id' },
