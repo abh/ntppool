@@ -1,0 +1,28 @@
+<div class="row">
+    <div class="col-md-5">
+
+    <h3>Monitor [% mon.ip | html %]</h3>
+
+    <p>
+        ID: [% mon.id_token %]<br>
+        Status: [% mon.status %]<br>
+        [% IF mon.name %]
+        Name: <i>[% mon.name | html %]</i><br />
+        [% END %]
+        [% IF mon.location %]
+        Location: <i>[% mon.location | html %]</i><br />
+        [% END %]
+        [% IF mon.tls_name %]
+        TLS: <i>[% mon.tls_name | html %]</i><br />
+        [% END %]
+
+        <p>
+        [% IF mon.can_generate_api_key %]
+          <a href="[% combust.manage_url('/manage/monitors/api', { id => mon.id_token }) %]">API keys</a><br>
+        [% ELSE %]
+          Email <a href="mailto:[% "support" | email %]?subject=Monitor [% mon.id_token | html %] setup">[% "support" | email %]</a> to continue the setup.
+        [% END %]
+        </p>
+
+    </div>
+</div>

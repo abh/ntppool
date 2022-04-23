@@ -58,6 +58,7 @@ dev:
         - manage2/
         - ".data/"
         - ".git"
+        - ".vscode"
         - node_modules/
         - perl-languageserver.log
       downloadExcludePaths:

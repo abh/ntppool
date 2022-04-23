@@ -1,0 +1,59 @@
+<div class="row">
+    <div class="col-md-9">
+
+    <p><a href="[% combust.manage_url('/manage/monitors') %]">Monitor list</a></p>
+
+    <h3>Monitor [% mon.ip | html %] API keys</h3>
+
+    [% IF error%]
+    <p>
+        <span class="badge badge-danger">Error</span>
+        [% error | html %]
+    </p>
+    [% END %]
+
+    <p>
+        ID: [% mon.id_token %]<br>
+        Status: [% mon.status %]<br>
+        [% IF mon.name %]
+        Name: <i>[% mon.name | html %]</i><br>
+        [% END %]
+        [% IF mon.location %]
+        Location: <i>[% mon.location | html %]</i><br>
+        [% END %]
+        [% IF mon.tls_name %]
+        TLS Name: <code>[% mon.tls_name | html %]</code><br>
+        [% END %]
+
+        [% IF mon.api_key %]
+        API Key: <code class="copy-clipboard">[% mon.api_key | html %]</code><br>
+        [% END %]
+
+        [% IF secret_key %]
+        Secret Key: <code class="copy-clipboard">[% secret_key | html %]</code> (only shown once)<br>
+        <a download="[% mon.tls_name %].json" href="data:application/json;base64,[% config_file_content | html %]">Download config</a>
+        <br>
+        [% END %]
+
+        [% IF mon.can_generate_api_key %]
+            [% IF !mon.tls_name %]
+            <form method="post" class="form-inline btn-inline btn-sm" action="[% combust.manage_url('/manage/monitors/api', id => mon.id_token ) %]">
+              <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
+              <input type="hidden" name="a" value="[% combust.current_account.id_token %]">
+              <input type="submit" class="btn btn-primary" value="Setup API &rarr;" />
+            </form>
+
+            [% ELSE %]
+            <form method="post" class="form-inline btn-inline btn-sm" action="[% combust.manage_url('/manage/monitors/api', id => mon.id_token ) %]">
+              <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
+              <input type="hidden" name="a" value="[% combust.current_account.id_token %]">
+              <input type="hidden" name="rotate" value="1">
+              <input type="submit" class="btn btn-primary" value="Rotate API secret &rarr;" />
+            </form>
+            [% END %]
+
+        [% ELSE %]
+          Email <a href="mailto:[% "support" | email %]?subject=Monitor [% mon.id_token | html %] setup">[% "support" | email %]</a> to continue the setup.
+        [% END %]
+    </div>
+</div>

@@ -79,9 +79,10 @@ sub can_edit {
     my ($self, $user) = @_;
     return 0 unless $user;
     return 1 if $user->privileges->vendor_admin;
+    warn "Model::Vendor::can_edit needs updating for account support";
     return 1
       if $self->status eq 'New'
-      and $user->id == $self->user_id;    # TODO: many<->many
+      and $user->id == $self->user_id;
     return 0;
 }
 
@@ -89,7 +90,8 @@ sub can_view {
     my ($self, $user) = @_;
     return 0 unless $user;
     return 1 if $user->privileges->vendor_admin;
-    return 1 if $user->id == $self->user_id;       # TODO: many<->many
+    warn "Model::Vendor::can_view needs updating for account support";
+    return 1 if $user->id == $self->user_id;
     return 0;
 }
 

@@ -566,9 +566,12 @@ __PACKAGE__->meta->setup(
     user_id    => { type => 'integer' },
     account_id => { type => 'integer' },
     name       => { type => 'varchar', length => 30, not_null => 1 },
-    ip         => { type => 'varchar', length => 40, not_null => 1 },
+    location   => { type => 'varchar', default => '', length => 255, not_null => 1 },
+    ip         => { type => 'varchar', alias => '_ip', length => 40, not_null => 1 },
     ip_version => { type => 'enum', check_in => [ 'v4', 'v6' ], not_null => 1 },
-    api_key    => { type => 'varchar', length => 40, not_null => 1 },
+    tls_name   => { type => 'varchar', length => 255 },
+    api_key    => { type => 'varchar', length => 64 },
+    status     => { type => 'enum', check_in => [ 'pending', 'testing', 'live', 'paused', 'deleted' ], not_null => 1 },
     config     => { type => 'text', length => 65535, not_null => 1 },
     last_seen  => { type => 'datetime' },
     created_on => { type => 'datetime', default => 'now', not_null => 1 },
@@ -579,6 +582,7 @@ __PACKAGE__->meta->setup(
   unique_keys => [
     [ 'api_key' ],
     [ 'ip', 'ip_version' ],
+    [ 'tls_name' ],
   ],
 
   foreign_keys => [

@@ -334,5 +334,14 @@ sub show_staff {
     return OK, $self->evaluate_template('tpl/staff.html');
 }
 
+sub account_monitor_count {
+    my $self = shift;
+    return $self->{_account_monitor_count} if defined $self->{_account_monitor_count};
+
+    my $monitor_count =
+      NP::Model->monitor->get_objects_count(query => [account_id => $self->current_account->id]);
+
+    return $self->{_account_monitor_count} = $monitor_count;
+}
 
 1;

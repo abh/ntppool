@@ -16,6 +16,10 @@ my $json = JSON::XS->new->pretty->utf8->convert_blessed;
 sub manage_dispatch {
     my $self = shift;
 
+    if ($self->request->method eq 'post') {
+        return 403 unless $self->check_auth_token;
+    }
+
     return $self->render_form if $self->request->uri =~ m!^/manage/vendor/new$!;
 
     if ($self->request->uri eq '/manage/vendor/zone') {
@@ -62,8 +66,7 @@ sub render_form {
     );
 
     if ($vz) {
-        $self->tpl_param('vz',      $vz);
-        $self->tpl_param('vz_json', $vz);
+        $self->tpl_param('vz', $vz);
 
         push(@device_count_options, $vz->device_count)
           if $vz->device_count;

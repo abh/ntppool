@@ -16,7 +16,7 @@ my %not_a_map_table;
       server_scores
       vendor_zones
       dns_roots
-      )
+    )
 } = ();
 
 sub looks_like_map_table {
@@ -36,11 +36,22 @@ sub plural_to_singular {
     }
 }
 
+sub auto_column_method_name {
+    my $self = shift;
+    my ($type, $column, $name, $object_class) = @_;
+
+    if ($object_class =~ m/::Monitor/ and $name eq 'ip') {
+        return '_ip';
+    }
+
+    return $self->SUPER::auto_column_method_name(@_);
+}
+
 sub auto_relationship_name_one_to_many {
     my ($self, $table, $class) = @_;
     if ($self->meta->table eq 'accounts') {
         return "servers_all" if $table eq 'servers';
-        return "invites" if $table eq 'account_invites';
+        return "invites"     if $table eq 'account_invites';
     }
     $self->SUPER::auto_relationship_name_one_to_many($table, $class);
 }

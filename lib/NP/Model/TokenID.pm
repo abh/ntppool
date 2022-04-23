@@ -8,7 +8,7 @@ use NP::Vault;
 
 my $config = Combust::Config->new;
 
-our $tk = _get_vault_kv();
+our $tk;
 
 sub token_cipher {
     my $self = shift;
