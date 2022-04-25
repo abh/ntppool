@@ -49,12 +49,14 @@
             Servers</a>
     </li>
 
+    [% IF combust.system_setting('vendors') %]
     <li class="nav-item">
         <a class="nav-link [% page.is_vendor ? " active" : "" %]" href="[% combust.manage_url('/manage/vendor') %]">NTP
             DNS Zones</a>
     </li>
+    [% END %]
 
-    [% IF combust.account_monitor_count > 0 %]
+    [% IF combust.system_setting('monitors') AND combust.account_monitor_count > 0 %]
     <li class="nav-item">
         <a class="nav-link [% page.is_monitors ? " active" : "" %]" href="[% combust.manage_url('/manage/monitors') %]">Monitors</a>
     </li>

@@ -29,7 +29,7 @@ deployments:
         repo: https://charts.ntppool.org
       valuesFiles:
         #- /Users/ask/src/ntppool-k8s/dev-values-kind.yaml
-        - /Users/ask/src/ntppool-k8s/dev-values-ewr1.yaml
+        - /Users/ask/src/ntppool-k8s/devel/dev-values-ewr1.yaml
       values:
         image:
           image: harbor.ntppool.org/ntpdev/ntppool-dev

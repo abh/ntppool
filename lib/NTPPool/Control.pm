@@ -272,6 +272,23 @@ sub manage_url {
     return $self->_url('manage', $url, $args);
 }
 
+sub system_setting {
+    my $self = shift;
+    my $name = shift;
+
+    my $k = "_system_setting_$name";
+
+    return $self->{$k} if $self->{$k};
+
+    my $settings = NP::Model->system_setting->fetch(key => $name);
+    if (!$settings) {
+        return undef;
+    }
+    $settings = $settings->value;
+
+    return $self->{$k} = $settings;
+}
+
 sub count_by_continent {
     my $self   = shift;
     my $global = NP::Model->zone->fetch(name => '@');
