@@ -72,7 +72,7 @@ sub setup_vault_secret {
 
 sub can_generate_api_key {
     my $self = shift;
-    return 1 if $self->status eq "testing" or $self->status eq "live";
+    return 1 if $self->status eq "testing" or $self->status eq "active";
 
     # =~ m/^(testing|live)$/);
     return 0;
@@ -119,6 +119,26 @@ sub validate {
 sub validation_errors {
     my $self = shift;
     $self->{_validation_errors} || {};
+}
+
+sub status_options {
+    return qw(pending testing active paused deleted);
+}
+
+sub activate_monitor {
+    my $self = shift;
+
+    return unless $self->status eq 'active' or $self->status eq 'testing';
+
+    my $dbh = NP::Model->dbh;
+
+    $dbh->do(
+        q[ insert ignore into server_scores (monitor_id, server_id, status, score_raw, created_on)
+             select ?, id, ?, score_raw, NOW() from servers
+             where ip_version = ? and deletion_on is null
+         ], {}, $self->id, $self->status, $self->ip_version
+    );
+
 }
 
 1;

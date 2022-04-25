@@ -807,6 +807,15 @@ alter table monitors
   add constraint `monitors_account_fk` foreign key (`account_id`) references accounts (`id`),
   add unique key monitors_tls_name (tls_name);
 
+#95
+alter table monitors
+  modify status  enum('pending', 'testing', 'active', 'paused', 'deleted') not null;
+
+alter table server_scores
+  add    status  enum('inactive', 'testing', 'active') not null default 'testing' after stratum;
+
+update server_scores set status = 'active' where score_ts > date_sub(now(), interval 7 day);
+
 #todo
 alter table user_privileges
   drop see_all_user_profiles;

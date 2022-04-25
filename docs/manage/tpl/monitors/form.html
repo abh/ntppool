@@ -6,25 +6,6 @@
     <form id="monitor-form" action="/manage/monitors/monitor?a=[% account.id_token %]" method="post" accept-charset="utf-8">
         <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
 
-        <!--
-        <div class="form-group">
-            <label id="name-help" class="form-label" for="name">Monitor location</label>
-            <input type="input" class="form-control"
-                id="name" value="[% monitor.name | html%]"
-                name="name"
-                required
-                maxlength="60"
-                aria-describedby="name-help"
-                placeholder="Enter monitor location">
-            [% IF errors and errors.name %]
-            <div class="error">
-                <span class="badge badge-danger">Error</span>
-                [% errors.name | html %]<br />
-            </div>
-            [% END %]
-        </div>
-        -->
-
         <div class="form-group">
             <label id="ip-help" class="form-label" for="ip">IP address (v4 or v6)</label>
             <input type="text" class="form-control" name="ip"

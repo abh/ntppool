@@ -41,9 +41,19 @@ sub manage_dispatch {
 
     if ($self->request->uri =~ m!^/manage/monitors/monitor$!) {
         return $self->render_save if $self->request->method eq 'post';
+
+        # we might save a new monitor, but need one to show it
         return 404 unless $mon;
         return OK, $self->evaluate_template('tpl/monitors/show.html');
     }
+
+    if ($self->request->uri =~ m!^/manage/monitors/monitor/status$!) {
+        return 403 unless $self->user->is_staff;
+        return 404 unless $mon;
+        return $self->render_admin_status($mon) if $self->request->method eq 'post';
+        return 404;
+    }
+
 
     return 404 unless $mon;
     return 403, "Permission denied"
@@ -82,6 +92,27 @@ sub render_monitors {
     $self->tpl_param('monitors' => $monitors);
 
     return OK, $self->evaluate_template('tpl/monitors/list.html');
+}
+
+sub render_admin_status {
+    my $self = shift;
+    my $mon  = shift;
+
+    # 'pending','testing','live','paused','deleted'
+    my $status = $self->req_param('status') || '';
+    return 400 unless grep { $status eq $_ } $mon->status_options;
+
+    $mon->status($status);
+
+    if (grep { $status eq $_ } qw(testing active)) {
+        $mon->activate_monitor;
+    }
+
+    $mon->save;
+
+    my $redirect = $self->manage_url('/manage/monitors/monitor', {id => $mon->id_token});
+    return $self->redirect($redirect);
+
 }
 
 sub render_api_save {
