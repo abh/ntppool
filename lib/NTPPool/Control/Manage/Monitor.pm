@@ -102,6 +102,8 @@ sub render_api_save {
 
     warn "Checking Roles";
 
+    my $setup_secret = $self->req_param('rotate') || 0;
+
     my $role_id = $mon->vault_role_id();
     warn "ROLE ID:", pp($role_id) if $role_id;
 
@@ -109,6 +111,7 @@ sub render_api_save {
         warn "Doesn't have API role id";
         $role_id = $mon->setup_vault_role();
         warn "NEW ROLE ID:", pp($role_id);
+        $setup_secret = 1;
     }
 
     unless ($mon->api_key) {
@@ -116,7 +119,7 @@ sub render_api_save {
         $mon->save();
     }
 
-    if ($self->req_param('rotate')) {
+    if ($setup_secret) {
         my ($secret_id, $secret_id_accessor) = $mon->setup_vault_secret();
         $self->tpl_param('secret_key', $secret_id);
 
