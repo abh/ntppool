@@ -110,12 +110,12 @@ sub setup_monitoring_role {
         "secret_id_num_uses" => 100,
 
         # "token_bound_cidrs" =>       ipString,
-        "token_num_uses" => 40,
+        "token_num_uses" => 200,
         "token_ttl"      => "96h",      # this makes the cert also expire (in vault)
         "token_max_ttl"  => "168h",     # renewed at this interval by vault-agent ?
         "token_type"     => "default",
         "period"         => "96h",      # vault-agent has to check-in this often to keep the token valid
-        "policies"       => "monitor-devel",
+        "policies"       => "monitor-${deployment_mode}",
     );
 
     my $resp = ua()->post(
