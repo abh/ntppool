@@ -156,7 +156,7 @@ sub render_save {
         return $self->render_form($mon);
     }
 
-    my $redirect = $self->manage_url('/manage/monitor/monitor', {id => $mon->id_token});
+    my $redirect = $self->manage_url('/manage/monitors/monitor', {id => $mon->id_token});
     return $self->redirect($redirect);
 }
 
@@ -186,7 +186,7 @@ sub _edit_monitor {
         my $codes = suggested_locationcodes($ip);
         $self->tpl_param('location_codes', $codes);
 
-        my $location_code = $self->req_param('location_code');
+        my $location_code = $self->req_param('location_code') || '';
         warn "Got location code: $location_code";
         ($location_code) = map { $_->{Code} } grep { $_->{Code} eq $location_code } @$codes
           if $location_code;
