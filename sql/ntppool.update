@@ -816,6 +816,13 @@ alter table server_scores
 
 update server_scores set status = 'active' where score_ts > date_sub(now(), interval 7 day);
 
+#96
+alter table monitors modify last_seen datetime(6);
+
+#97
+alter table monitors
+  add last_submit datetime(6) after last_seen;
+
 #todo
 alter table user_privileges
   drop see_all_user_profiles;

@@ -1,4 +1,4 @@
-/* Copyright 2012-2013 Ask Bjørn Hansen, Develooper LLC */
+/* Copyright 2012-2013 Ask Bjørn Hansen, Develooper LLC & NTP Pool Project */
 /*jshint jquery:true browser:true */
 /*globals d3:true */
 
@@ -191,9 +191,7 @@ function server_chart(div, data, options) {
               .y(function(d) { return y_score(d.score); })
              );
 
-   // -----------------------------
    // Add Title then Legend
-   // -----------------------------
    svg.append("svg:text")
        .attr("x", 0)
        .attr("y", -5)

@@ -1,0 +1,25 @@
+
+
+
+<p class="monitor-info">
+
+<span class="badge badge-pill badge-[% mon.last_seen_html.class %]">[% mon.last_seen_html.text | html %]</span>
+<br>
+
+ID: [% mon.id_token %]<br>
+
+Status: [% mon.status %]<br>
+
+[% IF mon.name %]
+Name: <i>[% mon.name | html %]</i><br />
+[% END %]
+
+[% IF mon.location %]
+Location: <i>[% mon.location | html %]</i><br />
+[% END %]
+
+[% IF mon.tls_name %]
+TLS: <i>[% mon.tls_name | html %]</i><br />
+[% END %]
+
+</p>

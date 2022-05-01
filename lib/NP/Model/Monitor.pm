@@ -14,6 +14,57 @@ sub token_prefix {
     return 'mon-';
 }
 
+sub display_name {
+    my $self = shift;
+
+    if (my $name = $self->name) {
+        return $name;
+    }
+
+    if (my $tls_name = $self->tls_name) {
+        $tls_name =~ m/^([^.]+)/ and return "$1";
+    }
+
+    if (my $loc = $self->location) {
+        return "$loc (" . $self->id_token . ")";
+    }
+
+    return $self->id_token;
+}
+
+sub last_seen_html {
+    my $self = shift;
+
+    my $last = $self->last_seen;
+
+
+    return {
+        text  => "Never connected",
+        class => "secondary",
+      }
+      unless $last;
+
+    my $now = DateTime->now();
+
+    return {
+        text  => "Active",
+        class => "success",
+      }
+      if $last > $now->subtract(minutes => 4);
+
+    return {
+        text  => "Last seen " . $last->iso8601,
+        class => "warning",
+      }
+      if $last > $now->subtract(minutes => 60);
+
+    return {
+        text  => "Gone since " . $last->iso8601,
+        class => "danger",
+    };
+
+}
+
 sub generate_tls_name {
     my $mon = shift;
     return $mon->tls_name if $mon->tls_name;
