@@ -823,6 +823,10 @@ alter table monitors modify last_seen datetime(6);
 alter table monitors
   add last_submit datetime(6) after last_seen;
 
+#98
+alter table monitors
+  add client_version varchar(255) not null after config;
+
 #todo
 alter table user_privileges
   drop see_all_user_profiles;

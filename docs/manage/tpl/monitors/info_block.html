@@ -11,15 +11,19 @@ ID: [% mon.id_token %]<br>
 Status: [% mon.status %]<br>
 
 [% IF mon.name %]
-Name: <i>[% mon.name | html %]</i><br />
+Name: [% mon.name | html %]<br>
 [% END %]
 
 [% IF mon.location %]
-Location: <i>[% mon.location | html %]</i><br />
+Location: [% mon.location | html %]<br>
 [% END %]
 
 [% IF mon.tls_name %]
-TLS: <i>[% mon.tls_name | html %]</i><br />
+TLS: [% mon.tls_name | html %]<br>
+[% END %]
+
+[% IF mon.client_version %]
+Agent version: [% mon.client_version | html %]<br>
 [% END %]
 
 </p>
