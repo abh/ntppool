@@ -54,6 +54,10 @@ sub manage_dispatch {
         return 404;
     }
 
+    if ($self->request->uri =~ m!^/manage/monitors/admin$!) {
+        return 403 unless $self->user->is_staff;
+        return $self->render_admin_list();
+    }
 
     return 404 unless $mon;
     return 403, "Permission denied"
@@ -92,6 +96,18 @@ sub render_monitors {
     $self->tpl_param('monitors' => $monitors);
 
     return OK, $self->evaluate_template('tpl/monitors/list.html');
+}
+
+sub render_admin_list {
+    my $self = shift;
+
+    my $monitors = NP::Model::monitor->get_objects(
+        require_objects => 'account',
+        sort_by         => "account_id",
+    );
+    $self->tpl_param('monitors', $monitors);
+
+    return OK, $self->evaluate_template('tpl/monitors/admin_list.html');
 }
 
 sub render_admin_status {
@@ -217,11 +233,8 @@ sub _edit_monitor {
         $self->tpl_param('location_codes', $codes);
 
         my $location_code = $self->req_param('location_code') || '';
-        warn "Got location code: $location_code";
         ($location_code) = map { $_->{Code} } grep { $_->{Code} eq $location_code } @$codes
           if $location_code;
-
-        warn "Filtered location code: $location_code";
 
         $mon = NP::Model->monitor->create(
             (map { $_ => ($self->req_param($_) || '') } @setup_fields),
