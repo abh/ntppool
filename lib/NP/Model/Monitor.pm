@@ -141,7 +141,7 @@ sub ip {
     my $self = shift;
     if (@_) {
         my $ip         = Net::IP->new($_[0]);
-        my $ip_version = $ip->ip_is_ipv4 ? 'v4' : 'v6';
+        my $ip_version = 'v' . $ip->version;
         $self->ip_version($ip_version);
         $_[0] = $ip->short;
     }

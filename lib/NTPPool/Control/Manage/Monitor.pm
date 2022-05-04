@@ -211,7 +211,6 @@ sub _edit_monitor {
         }
     }
     else {
-
         my $ip = $self->req_param('ip');
 
         my $codes = suggested_locationcodes($ip);
@@ -229,14 +228,13 @@ sub _edit_monitor {
 
             user_id    => $self->user->id,
             account_id => $self->current_account->id,
-            ip         => $ip,
             config     => '{"samples": 4}',
             location   => ($location_code || ''),
 
             # tls_name is set when the vault role is setup
             tls_name => undef,
         );
-
+        $mon->ip($ip);    # so the ip_version gets set
     }
 
     unless ($mon->validate) {
