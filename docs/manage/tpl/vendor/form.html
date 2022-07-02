@@ -79,11 +79,11 @@
                 <b>Device implementation information</b><br>
                 What devices will use the pool? How often will they poll?
                 Please read the <a href="[% combust.www_url("/vendors.html") %]">DNS zone information faq</a>.
-                (Only visible to NTP Pool admins)<br>
-                [% IF errors.request_information %]<div class="error">[% errors.request_information | html %]</div>
+                (Optional, only visible to NTP Pool admins)<br>
+                [% IF errors.device_information %]<div class="error">[% errors.device_information | html %]</div>
                 [%
                 END %]
-                <textarea class="form-control" name="request_information" rows="6" cols="65">[% vz.request_information | html %]</textarea>
+                <textarea class="form-control" name="device_information" rows="6" cols="65">[% vz.device_information | html %]</textarea>
 
                 <br><br>
 

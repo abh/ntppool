@@ -1444,6 +1444,7 @@ __PACKAGE__->meta->setup(
     client_type         => { type => 'enum', check_in => [ 'ntp', 'sntp', 'legacy' ], default => 'sntp', not_null => 1 },
     contact_information => { type => 'text', length => 65535 },
     request_information => { type => 'text', length => 65535 },
+    device_information  => { type => 'text', length => 65535 },
     device_count        => { type => 'integer' },
     opensource          => { type => 'integer', default => '0', not_null => 1 },
     opensource_info     => { type => 'text', length => 65535 },

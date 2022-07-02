@@ -914,5 +914,9 @@ update vendor_zones set client_type = 'legacy' where client_type = 'ntp';
 alter table zone_server_counts
   add index `date_idx` (date, zone_id);
 
+#109
+alter table vendor_zones
+   add device_information text null after request_information;
+
 #todo
 - ...

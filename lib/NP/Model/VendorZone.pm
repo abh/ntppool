@@ -15,6 +15,10 @@ my %reserved_zone_names = map { $_ => 1 } qw(
     root
     ntppool
     vendor
+    pool
+    time
+    ntp
+    sntp
 );
 
 sub token_key_config {
@@ -31,7 +35,7 @@ sub json_model {
     my $j = {zone_id => $vz->id_token};
 
     for my $f (
-        qw(zone_name contact_information device_count organization_name request_information opensource opensource_info)
+        qw(zone_name contact_information device_count organization_name request_information device_information opensource opensource_info)
       )
     {
         $j->{$f} = $vz->$f();
@@ -97,5 +101,6 @@ sub can_view {
 
 sub contact_information_html { NP::Util::convert_to_html(shift->contact_information) }
 sub request_information_html { NP::Util::convert_to_html(shift->request_information) }
+sub device_information_html  { NP::Util::convert_to_html(shift->device_information) }
 
 1;

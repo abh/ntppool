@@ -310,7 +310,7 @@ sub _edit_zone {
 
     # validation is in NP::Model::VendorZone
     my @fields =
-      qw(organization_name request_information contact_information device_count opensource_info);
+      qw(organization_name request_information device_information contact_information device_count opensource_info);
 
     if ($vz) {
         $vz->zone_name($zone_name);
