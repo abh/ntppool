@@ -9,6 +9,8 @@ use JSON qw(decode_json);
 use Combust::Config;
 
 sub find_dns_servers {
+    my $pool_domain = shift || Combust::Config->new->site->{ntppool}->{pool_domain}
+      or die "pool_domain configuration not setup";
 
     my $res = _res();
 
@@ -25,10 +27,8 @@ sub find_dns_servers {
         }
     };
 
-    my $pool_domain = Combust::Config->new->site->{ntppool}->{pool_domain}
-      or die "pool_domain configuration not setup";
-
-    my $dns_domains = Combust::Config->new->site->{ntppool}->{dns_domains} || $pool_domain;
+    # todo: get the additional domains from the database
+    my $dns_domains = $pool_domain;
 
     my @domains = split /\s+/, $dns_domains;
     for my $domain (@domains) {
@@ -40,9 +40,9 @@ sub find_dns_servers {
         }
     }
 
-    if (my $query = $res->query('all-dns.ntppool.net', "TXT")) {
-        for my $rr (grep { $_->type eq 'TXT' } $query->answer) {
-            my $names = $rr->txtdata;
+    if (my $query = $res->query('_geodns-servers.ntppool.net', "SRV")) {
+        for my $rr (grep { $_->type eq 'SRV' } $query->answer) {
+            my $names = $rr->target;
             for my $name (split /\s+/, $names) {
                 $name =~ m/\./ or $name = "$name.ntppool.net";
                 $add_servers->($name);
@@ -139,19 +139,19 @@ sub get_dns_info {
             $d->{"${type}_text"} = $d->{serial} ? hour_min_sec($s) : 'No response';
 
             my $alert;
-            if ($s < 1200) {
-                $alert = '#00FF00';
+            if ($s < 600) {
+                $alert = 'bg-success';
             }
-            elsif ($s < 3600) {
-                $alert = 'yellow';
+            elsif ($s < 1200) {
+                $alert = 'bg-warning';
             }
             else {
-                $alert = 'red';
+                $alert = 'bg-danger';
             }
 
-            $alert = 'red' unless $d->{serial};
+            $alert = 'bg-danger' unless $d->{serial};
 
-            $d->{"${type}_css_color"} = $alert;
+            $d->{"${type}_css_class"} = $alert;
         }
     }
 

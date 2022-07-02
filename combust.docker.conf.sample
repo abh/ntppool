@@ -65,7 +65,6 @@ siteadmin  = ask@develooper.com
 
 googleanalytics = UA-52057-3
 pool_domain = pool.internal
-dns_domains = pool.internal
 
 ntpcheck = http://localhost:8087/
 
