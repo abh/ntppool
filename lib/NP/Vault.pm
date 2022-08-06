@@ -106,8 +106,8 @@ sub setup_monitoring_role {
     my %data = (
 
         # secret_id_bound_cidrs => ipString,
-        "secret_id_ttl"      => "8760h",  # a year
-        "secret_id_num_uses" => 100,
+        "secret_id_ttl"      => "26280h",  # 3 years
+        "secret_id_num_uses" => 1000,
 
         # "token_bound_cidrs" =>       ipString,
         "token_num_uses" => 200,
