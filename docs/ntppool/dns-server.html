@@ -19,30 +19,20 @@ you are interested in providing a (virtual) server to be used for DNS
 services.
 </p>
 
-<h3>Experimental appliance</h3>
-<p>
-The production servers run on setups as described below, though we've
-also started testing an "appliance" that can run in a virtual machine
-or from a USB stick or compact flash with minimal setup. If you are
-able and interested in helping us test this,
-please <a href="https://github.com/abh/pgeodns/wiki/Appliance">see the
-pgeodns wiki</a>.
-</p>
-
 <h2>Requirements for hosting a server</h2>
 
 <p>
 The NTP Pool DNS server usually runs on CentOS or Ubuntu LTS; either
-will work though CentOS is preferred.  We also have one instance
-running on FreeBSD (in a jail I believe) which is performing very very well.
+will work though Ubuntu LTS is preferred.  We also have one instance
+running on FreeBSD (in a jail I believe) which is performing very very well,
+but our automation setup isn't as robust for configuring it.
 </p>
 
 <p>
-If it's a virtual machine, it needs to be a Xen or KVM based one if
-the server is going to be part of
-the <a href="http://en.wikipedia.org/wiki/Anycast">anycast</a> setup.
-The "container" systems (OpenVZ) don't have the required network
-interfaces to work. VMware will probably work, too.
+
+If it's a virtual machine it needs to be something like KVM or BHyve
+based, not a "kernel container based" system (basically our setup
+process needs full root access to a kernel).
 </p>
 
 <p>
@@ -55,65 +45,68 @@ interfaces to work. VMware will probably work, too.
         prefer not maintaining the base system on other operating
         systems than Ubunutu and CentOS, so if the system runs FreeBSD
         we prefer just getting a jail on a well maintained system.
-        We can also run on Mac OS X 10.6+, but again someone else
-        should apply system updates etc in that case.
     </dd>
 
     <dt>CPU</dt>
 
-    <dd>Faster is better. About 2 CPU cores, in the ballpark of 2GHz
-    or faster is best. Almost any CPU from the last 4-5
-    years will do a nice job, though it has to be a 64-bit system.
+    <dd>Almost any two core 64-bit CPU from the last 4-5 years will do a nice job
     </dd>
 
     <dt>RAM</dt>
-    <dd>1GB is comfortable, less is okay but not less than 512MB.
+    <dd>Minimum 1GB, ideally 2-4GB to ease system maintenance tasks.
     </dd>
 
     <dt>Disk space</dt>
     <dd>
-        4-5GB is plenty. It can be just about as slow as you can imagine and it'll be fine.
+        6-8GB or more, again mostly to allow for system updates etc. It
+        can be just about as slow as you can imagine and it'll be
+        fine.
     </dd>
 
     <dt>IP addresses</dt>
     <dd>
-        One routable IPv4 address. IPv6 is also nice, but not required. If your
+        One routable IPv4 address, ideally also IPv6. If your
         network supports us announcing our anycast network then we like doing that,
         see below for BGP information.
     </dd>
 
     <dt>Bandwidth</dt>
     <dd>
-        It used to be less, currently it's about 1-5Mbit/second per server (anywhere
-        from 100-500GB data per month).
+        It used to be less, currently it's about 5-10Mbit/second per server (anywhere
+        from 1-2TB data per month).
         <br><br>
         During certain times of the hour and the day the rate goes up significantly
-        for a few seconds (basically to however many the CPU and the software
-        can keep up with). If you are in a country with poor DNS server coverage
+        for a few seconds. If you are in a country with poor DNS server coverage
         but can't serve that many requests, we have tools to give you less traffic.
     </dd>
 
     <dt>Software</dt>
     <dd>
         Regular DNS servers can't smartly respond with a "nearby" server out of
-        several thousand and do so weighted, so we run a bit of <a href="http://geo.bitnames.com/">
+        several thousand and do so weighted, so we run a bit of <a href="https://geo.bitnames.com/">
         quirky DNS software</a> that can.
     </dd>
 
+    <!--
     <dt>BGP access</dt>
     <dd>(only for anycast nodes) The NTP Pool DNS anycast AS number is
         6647. It will be announced with the 'bird' daemon or with
         exabgp.  The IPv4 prefix is 207.171.17.0/24. If you have IPv6,
         then we'll also announce 2620:101:d007::/48.
     </dd>
+    -->
 
     <dt>Firewall/security</dt>
     <dd>
-        The system needs incoming port 53 (duh), port 22
-        (or another port for ssh if you so require) and obviously port 179 to
-        your routers for BGP.  (No external firewall is needed, just in case
-        you have one and it needs holes opened up.  Be sure to disable session
-        tracking for port 53/udp if you do have a firewall).
+      No external firewall is needed, but in case you operate one:
+
+        <ol>
+        <li>port 53 (UDP and TCP)</li>
+        <li>port 22 (ssh)</li>
+        <li>port 8052 and 8053 (mTLS authenticated monitoring)</li>
+        <li>port 179 (for optional bgp setups)</li>
+        </ol>
+        Be sure to disable session tracking for port 53/udp if you do have a firewall.
     </dd>
 
     <dt>Management</dt>
