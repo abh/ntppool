@@ -626,7 +626,6 @@ update monitors set config='{"samples": 1}' where config='';
 delete from zones where name = 'ap';
 
 #73
--- unused for now
 create table `log_scores_archive_status` (
   id int unsigned not null primary key auto_increment,
   archiver varchar(255) not null,
@@ -826,6 +825,22 @@ alter table monitors
 #98
 alter table monitors
   add client_version varchar(255) not null default '' after config;
+
+#99
+alter table monitors
+  add type enum('monitor', 'score') not null default 'monitor' after id,
+  modify ip varchar(40) null,
+  modify ip_version enum ('v4', 'v6') null;
+
+create table `log_scores_scorer_status` (
+  id int unsigned not null primary key auto_increment,
+  scorer varchar(255) not null,
+  unique key (scorer),
+  log_score_id bigint unsigned,
+  modified_on  timestamp not null,
+  CONSTRAINT `scorer_log_score_id` FOREIGN KEY (`log_score_id`)
+      REFERENCES `log_scores` (`id`)
+) engine=InnoDB default charset=utf8;
 
 #todo
 alter table user_privileges

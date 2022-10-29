@@ -64,8 +64,6 @@ __PACKAGE__->meta->setup(
     [ 'url_slug' ],
   ],
 
-  allow_inline_column_values => 1,
-
   relationships => [
     account_subscriptions => {
       class      => 'NP::Model::AccountSubscription',
@@ -158,8 +156,6 @@ __PACKAGE__->meta->setup(
     [ 'account_id', 'email' ],
     [ 'code' ],
   ],
-
-  allow_inline_column_values => 1,
 
   foreign_keys => [
     account => {
@@ -310,14 +306,12 @@ __PACKAGE__->meta->setup(
     api_key     => { type => 'varchar', length => 255 },
     grants      => { type => 'text', length => 65535 },
     created_on  => { type => 'datetime', default => 'now', not_null => 1 },
-    modified_on => { type => 'timestamp', default => 'current_timestamp()', not_null => 1 },
+    modified_on => { type => 'timestamp', not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
 
   unique_key => [ 'api_key' ],
-
-  allow_inline_column_values => 1,
 );
 
 push @table_classes, __PACKAGE__;
@@ -486,6 +480,14 @@ __PACKAGE__->meta->setup(
       key_columns => { server_id => 'id' },
     },
   ],
+
+  relationships => [
+    log_scores_scorer_status => {
+      class      => 'NP::Model::LogScoresScorerStatu',
+      column_map => { id => 'log_score_id' },
+      type       => 'one to many',
+    },
+  ],
 );
 
 __PACKAGE__->meta->setup_json_columns(qw< attributes >);
@@ -507,6 +509,52 @@ __PACKAGE__->make_manager_methods('log_scores');
 # Allow user defined methods to be added
 eval { require NP::Model::LogScore }
   or $@ !~ m:^Can't locate NP/Model/LogScore.pm: and die $@;
+
+{ package NP::Model::LogScoresScorerStatu;
+
+use strict;
+
+use base qw(NP::Model::_Object);
+
+__PACKAGE__->meta->setup(
+  table   => 'log_scores_scorer_status',
+
+  columns => [
+    id           => { type => 'serial', not_null => 1 },
+    scorer       => { type => 'varchar', length => 255, not_null => 1 },
+    log_score_id => { type => 'bigint' },
+    modified_on  => { type => 'timestamp', not_null => 1 },
+  ],
+
+  primary_key_columns => [ 'id' ],
+
+  unique_key => [ 'scorer' ],
+
+  foreign_keys => [
+    log_score => {
+      class       => 'NP::Model::LogScore',
+      key_columns => { log_score_id => 'id' },
+    },
+  ],
+);
+
+push @table_classes, __PACKAGE__;
+}
+
+{ package NP::Model::LogScoresScorerStatu::Manager;
+
+use strict;
+
+our @ISA = qw(Combust::RoseDB::Manager);
+
+sub object_class { 'NP::Model::LogScoresScorerStatu' }
+
+__PACKAGE__->make_manager_methods('log_scores_scorer_status');
+}
+
+# Allow user defined methods to be added
+eval { require NP::Model::LogScoresScorerStatu }
+  or $@ !~ m:^Can't locate NP/Model/LogScoresScorerStatu.pm: and die $@;
 
 { package NP::Model::LogStatus;
 
@@ -563,17 +611,18 @@ __PACKAGE__->meta->setup(
 
   columns => [
     id             => { type => 'serial', not_null => 1 },
+    type           => { type => 'enum', check_in => [ 'monitor', 'score' ], default => 'monitor', not_null => 1 },
     user_id        => { type => 'integer' },
     account_id     => { type => 'integer' },
     name           => { type => 'varchar', length => 30, not_null => 1 },
     location       => { type => 'varchar', default => '', length => 255, not_null => 1 },
-    ip             => { type => 'varchar', alias => '_ip', length => 40, not_null => 1 },
-    ip_version     => { type => 'enum', check_in => [ 'v4', 'v6' ], not_null => 1 },
+    ip             => { type => 'varchar', alias => '_ip', length => 40 },
+    ip_version     => { type => 'enum', check_in => [ 'v4', 'v6' ] },
     tls_name       => { type => 'varchar', length => 255 },
     api_key        => { type => 'varchar', length => 64 },
     status         => { type => 'enum', check_in => [ 'pending', 'testing', 'active', 'paused', 'deleted' ], not_null => 1 },
     config         => { type => 'text', length => 65535, not_null => 1 },
-    client_version => { type => 'varchar', length => 255, not_null => 1 },
+    client_version => { type => 'varchar', default => '', length => 255, not_null => 1 },
     last_seen      => { type => 'datetime' },
     last_submit    => { type => 'datetime' },
     created_on     => { type => 'datetime', default => 'now', not_null => 1 },
@@ -690,7 +739,7 @@ __PACKAGE__->meta->setup(
     in_server_list => { type => 'integer', default => '0', not_null => 1 },
     netspeed       => { type => 'integer', default => 1000, not_null => 1 },
     created_on     => { type => 'datetime', default => 'now', not_null => 1 },
-    updated_on     => { type => 'timestamp', default => 'current_timestamp()', not_null => 1 },
+    updated_on     => { type => 'timestamp', not_null => 1 },
     score_ts       => { type => 'datetime' },
     score_raw      => { type => 'scalar', default => '0', length => 64, not_null => 1 },
     deletion_on    => { type => 'date' },
@@ -699,8 +748,6 @@ __PACKAGE__->meta->setup(
   primary_key_columns => [ 'id' ],
 
   unique_key => [ 'ip' ],
-
-  allow_inline_column_values => 1,
 
   foreign_keys => [
     account => {
@@ -846,14 +893,12 @@ __PACKAGE__->meta->setup(
     name        => { type => 'varchar', default => '', length => 255, not_null => 1 },
     note        => { type => 'text', length => 65535, not_null => 1 },
     created_on  => { type => 'datetime', default => 'now', not_null => 1 },
-    modified_on => { type => 'timestamp', default => 'current_timestamp()', not_null => 1 },
+    modified_on => { type => 'timestamp', not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
 
   unique_key => [ 'server_id', 'name' ],
-
-  allow_inline_column_values => 1,
 
   foreign_keys => [
     server => {
@@ -899,14 +944,12 @@ __PACKAGE__->meta->setup(
     stratum     => { type => 'integer' },
     status      => { type => 'enum', check_in => [ 'inactive', 'testing', 'active' ], default => 'testing', not_null => 1 },
     created_on  => { type => 'datetime', default => 'now', not_null => 1 },
-    modified_on => { type => 'timestamp', default => 'current_timestamp()', not_null => 1 },
+    modified_on => { type => 'timestamp', not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
 
   unique_key => [ 'server_id', 'monitor_id' ],
-
-  allow_inline_column_values => 1,
 
   foreign_keys => [
     monitor => {
@@ -1043,14 +1086,12 @@ __PACKAGE__->meta->setup(
     key         => { type => 'varchar', length => 255 },
     value       => { type => 'text', length => 65535 },
     created_on  => { type => 'datetime', default => 'now', not_null => 1 },
-    modified_on => { type => 'timestamp', default => 'current_timestamp()', not_null => 1 },
+    modified_on => { type => 'timestamp', not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
 
   unique_key => [ 'key' ],
-
-  allow_inline_column_values => 1,
 );
 
 __PACKAGE__->meta->setup_json_columns(qw< value >);
@@ -1342,7 +1383,7 @@ __PACKAGE__->meta->setup(
     rt_ticket           => { type => 'integer' },
     approved_on         => { type => 'datetime' },
     created_on          => { type => 'datetime', default => 'now', not_null => 1 },
-    modified_on         => { type => 'timestamp', default => 'current_timestamp()', not_null => 1 },
+    modified_on         => { type => 'timestamp', not_null => 1 },
     dns_root_id         => { type => 'integer', not_null => 1 },
     account_id          => { type => 'integer' },
   ],
@@ -1350,8 +1391,6 @@ __PACKAGE__->meta->setup(
   primary_key_columns => [ 'id' ],
 
   unique_key => [ 'zone_name', 'dns_root_id' ],
-
-  allow_inline_column_values => 1,
 
   foreign_keys => [
     account => {
@@ -1531,6 +1570,7 @@ eval { require NP::Model::ZoneServerCount }
   sub dns_root { our $dns_root ||= bless [], 'NP::Model::DnsRoot::Manager' }
   sub log { our $log ||= bless [], 'NP::Model::Log::Manager' }
   sub log_score { our $log_score ||= bless [], 'NP::Model::LogScore::Manager' }
+  sub log_scores_scorer_statu { our $log_scores_scorer_statu ||= bless [], 'NP::Model::LogScoresScorerStatu::Manager' }
   sub log_status { our $log_status ||= bless [], 'NP::Model::LogStatus::Manager' }
   sub monitor { our $monitor ||= bless [], 'NP::Model::Monitor::Manager' }
   sub schema_revision { our $schema_revision ||= bless [], 'NP::Model::SchemaRevision::Manager' }

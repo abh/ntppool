@@ -41,6 +41,7 @@ deployments:
           db_user: askntp
           stripe_gw_service: http://stripe-gw
           httpd_maxclients: "6"
+          static_base: https://st.ntppool.org/askntp/
       wait: true
 
 dev:
