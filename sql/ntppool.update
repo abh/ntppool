@@ -844,6 +844,9 @@ create table `scorer_status` (
       REFERENCES `monitors` (`id`);
 ) engine=InnoDB default charset=utf8;
 
-#todo
+#100
 alter table user_privileges
   drop see_all_user_profiles;
+
+#todo
+- ...

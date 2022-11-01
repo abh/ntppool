@@ -1335,12 +1335,11 @@ __PACKAGE__->meta->setup(
   table   => 'user_privileges',
 
   columns => [
-    user_id               => { type => 'integer', not_null => 1 },
-    see_all_servers       => { type => 'integer', default => '0', not_null => 1 },
-    see_all_user_profiles => { type => 'integer', default => '0', not_null => 1 },
-    vendor_admin          => { type => 'integer', default => '0', not_null => 1 },
-    equipment_admin       => { type => 'integer', default => '0', not_null => 1 },
-    support_staff         => { type => 'integer', default => '0', not_null => 1 },
+    user_id         => { type => 'integer', not_null => 1 },
+    see_all_servers => { type => 'integer', default => '0', not_null => 1 },
+    vendor_admin    => { type => 'integer', default => '0', not_null => 1 },
+    equipment_admin => { type => 'integer', default => '0', not_null => 1 },
+    support_staff   => { type => 'integer', default => '0', not_null => 1 },
   ],
 
   primary_key_columns => [ 'user_id' ],
