@@ -832,14 +832,16 @@ alter table monitors
   modify ip varchar(40) null,
   modify ip_version enum ('v4', 'v6') null;
 
-create table `log_scores_scorer_status` (
+create table `scorer_status` (
   id int unsigned not null primary key auto_increment,
-  scorer varchar(255) not null,
-  unique key (scorer),
+  scorer_id int unsigned not null after id,
+  unique key (scorer_id),
   log_score_id bigint unsigned,
   modified_on  timestamp not null,
   CONSTRAINT `scorer_log_score_id` FOREIGN KEY (`log_score_id`)
-      REFERENCES `log_scores` (`id`)
+      REFERENCES `log_scores` (`id`),
+  CONSTRAINT `scores_status_monitor_id_fk` FOREIGN KEY (`scorer_id`)
+      REFERENCES `monitors` (`id`);
 ) engine=InnoDB default charset=utf8;
 
 #todo

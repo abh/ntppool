@@ -482,10 +482,11 @@ __PACKAGE__->meta->setup(
   ],
 
   relationships => [
-    log_scores_scorer_status => {
-      class      => 'NP::Model::LogScoresScorerStatu',
-      column_map => { id => 'log_score_id' },
-      type       => 'one to many',
+    scorers => {
+      map_class => 'NP::Model::ScorerStatu',
+      map_from  => 'log_score',
+      map_to    => 'scorer',
+      type      => 'many to many',
     },
   ],
 );
@@ -509,52 +510,6 @@ __PACKAGE__->make_manager_methods('log_scores');
 # Allow user defined methods to be added
 eval { require NP::Model::LogScore }
   or $@ !~ m:^Can't locate NP/Model/LogScore.pm: and die $@;
-
-{ package NP::Model::LogScoresScorerStatu;
-
-use strict;
-
-use base qw(NP::Model::_Object);
-
-__PACKAGE__->meta->setup(
-  table   => 'log_scores_scorer_status',
-
-  columns => [
-    id           => { type => 'serial', not_null => 1 },
-    scorer       => { type => 'varchar', length => 255, not_null => 1 },
-    log_score_id => { type => 'bigint' },
-    modified_on  => { type => 'timestamp', not_null => 1 },
-  ],
-
-  primary_key_columns => [ 'id' ],
-
-  unique_key => [ 'scorer' ],
-
-  foreign_keys => [
-    log_score => {
-      class       => 'NP::Model::LogScore',
-      key_columns => { log_score_id => 'id' },
-    },
-  ],
-);
-
-push @table_classes, __PACKAGE__;
-}
-
-{ package NP::Model::LogScoresScorerStatu::Manager;
-
-use strict;
-
-our @ISA = qw(Combust::RoseDB::Manager);
-
-sub object_class { 'NP::Model::LogScoresScorerStatu' }
-
-__PACKAGE__->make_manager_methods('log_scores_scorer_status');
-}
-
-# Allow user defined methods to be added
-eval { require NP::Model::LogScoresScorerStatu }
-  or $@ !~ m:^Can't locate NP/Model/LogScoresScorerStatu.pm: and die $@;
 
 { package NP::Model::LogStatus;
 
@@ -650,6 +605,13 @@ __PACKAGE__->meta->setup(
 
   relationships => [
     log_scores => {
+      map_class => 'NP::Model::ScorerStatu',
+      map_from  => 'scorer',
+      map_to    => 'log_score',
+      type      => 'many to many',
+    },
+
+    log_scores_objs => {
       class      => 'NP::Model::LogScore',
       column_map => { id => 'monitor_id' },
       type       => 'one to many',
@@ -717,6 +679,55 @@ __PACKAGE__->make_manager_methods('schema_revisions');
 # Allow user defined methods to be added
 eval { require NP::Model::SchemaRevision }
   or $@ !~ m:^Can't locate NP/Model/SchemaRevision.pm: and die $@;
+
+{ package NP::Model::ScorerStatu;
+
+use strict;
+
+use base qw(NP::Model::_Object);
+
+__PACKAGE__->meta->setup(
+  table   => 'scorer_status',
+
+  columns => [
+    id           => { type => 'serial', not_null => 1 },
+    scorer_id    => { type => 'integer', not_null => 1 },
+    log_score_id => { type => 'bigint' },
+    modified_on  => { type => 'timestamp', not_null => 1 },
+  ],
+
+  primary_key_columns => [ 'id' ],
+
+  foreign_keys => [
+    log_score => {
+      class       => 'NP::Model::LogScore',
+      key_columns => { log_score_id => 'id' },
+    },
+
+    scorer => {
+      class       => 'NP::Model::Monitor',
+      key_columns => { scorer_id => 'id' },
+    },
+  ],
+);
+
+push @table_classes, __PACKAGE__;
+}
+
+{ package NP::Model::ScorerStatu::Manager;
+
+use strict;
+
+our @ISA = qw(Combust::RoseDB::Manager);
+
+sub object_class { 'NP::Model::ScorerStatu' }
+
+__PACKAGE__->make_manager_methods('scorer_status');
+}
+
+# Allow user defined methods to be added
+eval { require NP::Model::ScorerStatu }
+  or $@ !~ m:^Can't locate NP/Model/ScorerStatu.pm: and die $@;
 
 { package NP::Model::Server;
 
@@ -1570,10 +1581,10 @@ eval { require NP::Model::ZoneServerCount }
   sub dns_root { our $dns_root ||= bless [], 'NP::Model::DnsRoot::Manager' }
   sub log { our $log ||= bless [], 'NP::Model::Log::Manager' }
   sub log_score { our $log_score ||= bless [], 'NP::Model::LogScore::Manager' }
-  sub log_scores_scorer_statu { our $log_scores_scorer_statu ||= bless [], 'NP::Model::LogScoresScorerStatu::Manager' }
   sub log_status { our $log_status ||= bless [], 'NP::Model::LogStatus::Manager' }
   sub monitor { our $monitor ||= bless [], 'NP::Model::Monitor::Manager' }
   sub schema_revision { our $schema_revision ||= bless [], 'NP::Model::SchemaRevision::Manager' }
+  sub scorer_statu { our $scorer_statu ||= bless [], 'NP::Model::ScorerStatu::Manager' }
   sub server { our $server ||= bless [], 'NP::Model::Server::Manager' }
   sub server_alert { our $server_alert ||= bless [], 'NP::Model::ServerAlert::Manager' }
   sub server_note { our $server_note ||= bless [], 'NP::Model::ServerNote::Manager' }
