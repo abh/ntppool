@@ -834,14 +834,14 @@ alter table monitors
 
 create table `scorer_status` (
   id int unsigned not null primary key auto_increment,
-  scorer_id int unsigned not null after id,
+  scorer_id int unsigned not null,
   unique key (scorer_id),
   log_score_id bigint unsigned,
   modified_on  timestamp not null,
   CONSTRAINT `scorer_log_score_id` FOREIGN KEY (`log_score_id`)
       REFERENCES `log_scores` (`id`),
   CONSTRAINT `scores_status_monitor_id_fk` FOREIGN KEY (`scorer_id`)
-      REFERENCES `monitors` (`id`);
+      REFERENCES `monitors` (`id`)
 ) engine=InnoDB default charset=utf8;
 
 #100
