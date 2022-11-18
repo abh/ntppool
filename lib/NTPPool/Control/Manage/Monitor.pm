@@ -281,7 +281,7 @@ sub suggested_locationcodes {
 
     my $loccode = $ENV{locationcode_service} || 'locationcode';
 
-    my $locationcode_url = URI->new("http://$loccode:8000/v1/code");
+    my $locationcode_url = URI->new("http://$loccode/v1/code");
     $locationcode_url->query_form(
         {   cc     => $cc,
             lat    => $loc->{Latitude},
