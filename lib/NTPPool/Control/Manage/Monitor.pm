@@ -228,6 +228,7 @@ sub _edit_monitor {
     }
     else {
         my $ip = $self->req_param('ip');
+        $ip =~ s/\s+//g;
 
         my $codes = suggested_locationcodes($ip);
         $self->tpl_param('location_codes', $codes);

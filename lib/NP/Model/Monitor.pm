@@ -140,7 +140,9 @@ sub can_edit {
 sub ip {
     my $self = shift;
     if (@_) {
-        my $ip         = Net::IP->new($_[0]);
+        my $s = $_[0];
+        $s =~ s/\s+//g;
+        my $ip         = Net::IP->new($s);
         my $ip_version = 'v' . $ip->version;
         $self->ip_version($ip_version);
         $_[0] = $ip->short;
