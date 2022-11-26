@@ -65,6 +65,58 @@ sub get_monitoring_role_id {
     return undef;
 }
 
+sub get_monitoring_secret_accessors {
+    my $name = shift;
+    my $url  = "${role_base}/role/${name}/secret-id?list=true";
+
+    my $resp = ua()->get($url);
+    unless ($resp->is_success) {
+        warn "could not get secret id accessor list: "
+          . $resp->status_line . " -- "
+          . $resp->decoded_content;
+        return [];
+    }
+    return @{$json->decode($resp->decoded_content)->{data}->{keys}};
+}
+
+sub get_monitoring_secret_properties {
+    my $name = shift;
+    my $url  = "${role_base}/role/${name}/secret-id-accessor/lookup";
+
+    my @keys;
+
+    for my $key (get_monitoring_secret_accessors($name)) {
+        my $resp =
+          ua()->post("$url", Content => $json->encode({secret_id_accessor => $key}));
+        unless ($resp->is_success) {
+            warn "could not get secret id data for $key: "
+              . $resp->status_line . " -- "
+              . $resp->decoded_content;
+            next;
+        }
+        push @keys, $json->decode($resp->decoded_content)->{data};
+    }
+
+    return \@keys;
+}
+
+sub delete_monitoring_secret_accessor {
+    my $name     = shift;
+    my $accessor = shift;
+    my $url      = "${role_base}/role/${name}/secret-id-accessor/destroy";
+
+    my $resp = ua()->post("$url", Content => $json->encode({secret_id_accessor => $accessor}));
+    if ($resp->is_success) {
+        return 1;
+    }
+
+    warn $resp->status_line,     "\n";
+    warn $resp->decoded_content, "\n";
+
+    return 0;
+}
+
+
 sub setup_monitoring_secret {
     my $name     = shift;
     my $metadata = shift;
@@ -78,11 +130,7 @@ sub setup_monitoring_secret {
     my $content = $json->encode(\%data);
     warn "CONTNT: $content";
 
-    my $resp = ua()->post(
-        "$url",
-        Content => $content,
-
-    );
+    my $resp = ua()->post("$url", Content => $content);
     if ($resp->is_success) {
 
         # warn "MONITORING ROLE: ", $resp->decoded_content;
@@ -107,22 +155,18 @@ sub setup_monitoring_role {
 
         # secret_id_bound_cidrs => ipString,
         "secret_id_ttl"      => "26280h",  # 3 years
-        "secret_id_num_uses" => 1000,
+        "secret_id_num_uses" => 500,
 
         # "token_bound_cidrs" =>       ipString,
         "token_num_uses" => 200,
-        "token_ttl"      => "96h",      # this makes the cert also expire (in vault)
-        "token_max_ttl"  => "168h",     # renewed at this interval by vault-agent ?
+        "token_ttl"      => "96h",           # this makes the cert also expire (in vault)
+        "token_max_ttl"  => "168h",          # renewed at this interval by vault-agent ?
         "token_type"     => "default",
-        "period"         => "96h",      # vault-agent has to check-in this often to keep the token valid
+        "period"         => "96h",  # vault-agent has to check-in this often to keep the token valid
         "policies"       => "monitor-${deployment_mode}",
     );
 
-    my $resp = ua()->post(
-        "$url",
-        Content => $json->encode(\%data),
-
-    );
+    my $resp = ua()->post("$url", Content => $json->encode(\%data),);
     if ($resp->is_success) {
         return 1;
     }

@@ -118,7 +118,17 @@ sub setup_vault_role {
 
 sub setup_vault_secret {
     my $self = shift;
-    return NP::Vault::setup_monitoring_secret($self->tls_name);
+    my ($secret, $accessor) = NP::Vault::setup_monitoring_secret($self->tls_name);
+
+    if ($accessor) {
+        my @old =
+          grep { $_ ne $accessor } NP::Vault::get_monitoring_secret_accessors($self->tls_name);
+        for my $old (@old) {
+            NP::Vault::delete_monitoring_secret_accessor($self->tls_name, $old);
+        }
+    }
+
+    return ($secret, $accessor);
 }
 
 sub can_generate_api_key {
@@ -127,6 +137,13 @@ sub can_generate_api_key {
 
     # =~ m/^(testing|live)$/);
     return 0;
+}
+
+sub vault_api_secrets {
+    my $self = shift;
+    return [] unless $self->has_api_role;
+    my $keys = NP::Vault::get_monitoring_secret_properties($self->tls_name);
+    return $keys;
 }
 
 sub can_edit {

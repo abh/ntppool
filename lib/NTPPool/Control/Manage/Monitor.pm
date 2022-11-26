@@ -180,8 +180,6 @@ sub render_api_save {
 
         my $config_base64 = encode_base64($json->encode($config));
         $self->tpl_param('config_file_content', $config_base64);
-
-        # todo: delete other secrets
     }
 
     return OK, $self->evaluate_template('tpl/monitors/api.html');

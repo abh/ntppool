@@ -27,33 +27,45 @@
 
         [% IF mon.api_key %]
         API Key: <code class="copy-clipboard">[% mon.api_key | html %]</code><br>
+
+        [% FOR k = mon.vault_api_secrets %]
+           [% have_key = 1; %]
+           Remaining uses: [% k.secret_id_num_uses %]<br>
+           Expiration time: [% k.expiration_time %]<br>
+        [% END %]
+
         [% END %]
 
         [% IF secret_key %]
-        Secret Key: <code class="copy-clipboard">[% secret_key | html %]</code> (only shown once)<br>
-        <a download="[% mon.tls_name %].json" href="data:application/json;base64,[% config_file_content | html %]">Download config</a>
+        <br>
+        Secret Key: <code class="copy-clipboard">[% secret_key | html %]</code> (only shown once)<br><br>
+        <b><a download="[% mon.tls_name %].json" href="data:application/json;base64,[% config_file_content | html %]">Download config</a></b>
         <br>
         [% END %]
 
         [% IF mon.can_generate_api_key %]
             [% IF !mon.tls_name %]
-            <form method="post" class="form-inline btn-inline btn-sm" action="[% combust.manage_url('/manage/monitors/api', id => mon.id_token ) %]">
-              <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
-              <input type="hidden" name="a" value="[% combust.current_account.id_token %]">
-              <input type="submit" class="btn btn-primary" value="Setup API &rarr;" />
-            </form>
-
+              [% PROCESS form_api, button => "Setup API &rarr;" %]
             [% ELSE %]
-            <form method="post" class="form-inline btn-inline btn-sm" action="[% combust.manage_url('/manage/monitors/api', id => mon.id_token ) %]">
-              <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
-              <input type="hidden" name="a" value="[% combust.current_account.id_token %]">
-              <input type="hidden" name="rotate" value="1">
-              <input type="submit" class="btn btn-primary" value="Rotate API secret &rarr;" />
-            </form>
+              [% PROCESS form_api,
+                   button => "Rotate API secret &rarr;",
+                   hidden_fields  => { rotate => 1 },
+              %]
             [% END %]
-
         [% ELSE %]
           Email <a href="mailto:[% "support" | email %]?subject=Monitor [% mon.id_token | html %] setup">[% "support" | email %]</a> to continue the setup.
         [% END %]
     </div>
 </div>
+
+[% BLOCK form_api %]
+    <form method="post" class="form-inline btn-inline btn-sm" action="[% combust.manage_url('/manage/monitors/api', id => mon.id_token ) %]">
+      <input type="hidden" name="auth_token" value="[% combust.auth_token %]">
+      <input type="hidden" name="a" value="[% combust.current_account.id_token %]">
+      [% FOREACH f IN hidden_fields.pairs %]
+          <input type="hidden" name="[% f.key | html %]" value="[% f.value | html %]" />
+      [% END %]
+      <input type="submit" class="btn btn-primary" value="[% button %]">
+
+    </form>
+[% END %]
