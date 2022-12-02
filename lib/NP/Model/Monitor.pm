@@ -215,7 +215,7 @@ sub delete_monitor {
 
     NP::Model->server_score->delete_server_scores(where => [monitor_id => $self->id]);
 
-    $self->api_key('');
+    $self->api_key(undef);
 
     if ($self->tls_name) {
         NP::Vault::delete_monitoring_role($self->tls_name);
