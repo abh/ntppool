@@ -147,17 +147,12 @@ sub render_api_save {
         $mon->save() or die "Could not save monitor with new tls_name";
     }
 
-    warn "Checking Roles";
-
     my $setup_secret = $self->req_param('rotate') || 0;
 
     my $role_id = $mon->vault_role_id();
-    warn "ROLE ID:", pp($role_id) if $role_id;
 
     unless ($role_id) {
-        warn "Doesn't have API role id";
-        $role_id = $mon->setup_vault_role();
-        warn "NEW ROLE ID:", pp($role_id);
+        $role_id      = $mon->setup_vault_role();
         $setup_secret = 1;
     }
 
@@ -197,7 +192,7 @@ sub render_save {
 
     if ($errors) {
         $self->tpl_param('errors', $errors);
-        warn "vendor form errors: ", pp($errors);
+        warn "monitor form errors: ", pp($errors);
         return $self->render_form($mon);
     }
 

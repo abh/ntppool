@@ -68,11 +68,9 @@ sub last_seen_html {
 sub generate_tls_name {
     my $mon = shift;
     return $mon->tls_name if $mon->tls_name;
-    warn "Setting up new tls name";
     my $domain   = NP::Vault->monitoring_tls_domain();
     my $tls_name = _choose_tls_name($mon->location, $mon->account->id_token, $domain);
     if ($tls_name) {
-        warn "generated tls_name $tls_name";
         return $mon->tls_name($tls_name);
     }
     return undef;
@@ -175,9 +173,7 @@ sub validate {
         $errors->{$f} = 'Required field' unless $mon->$f and $mon->$f =~ m/\S/;
     }
 
-    warn "MON LOCATION: ", $mon->location;
     unless ($mon->location) {
-        warn "missing location?!";
         $errors->{location_code} = "Choose a location code";
     }
 
