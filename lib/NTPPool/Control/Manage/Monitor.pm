@@ -235,7 +235,7 @@ sub _edit_monitor {
 
             user_id    => $self->user->id,
             account_id => $self->current_account->id,
-            config     => '{"samples": 4}',
+            config     => '{}',
             location   => ($location_code || ''),
 
             # tls_name is set when the vault role is setup
