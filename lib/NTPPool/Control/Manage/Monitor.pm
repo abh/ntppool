@@ -92,7 +92,16 @@ sub render_form {
 sub render_monitors {
     my $self = shift;
 
-    my $monitors = $self->current_account->monitors;
+    # todo: deleted parameter?
+
+    my $monitors = NP::Model->monitor->get_objects(
+        query => [
+            account_id => $self->current_account->id,
+            status     => {"ne" => "deleted"},
+        ],
+        sort_by => "created_on desc",
+    );
+
     $self->tpl_param('monitors' => $monitors);
 
     return OK, $self->evaluate_template('tpl/monitors/list.html');
@@ -101,9 +110,12 @@ sub render_monitors {
 sub render_admin_list {
     my $self = shift;
 
+    # todo: deleted parameter?
+
     my $monitors = NP::Model::monitor->get_objects(
+        query           => [status => {"ne" => "deleted"},],
         require_objects => 'account',
-        sort_by         => "account_id",
+        sort_by         => "account_id, monitors.created_on desc",
     );
     $self->tpl_param('monitors', $monitors);
 
@@ -122,6 +134,9 @@ sub render_admin_status {
 
     if (grep { $status eq $_ } qw(testing active)) {
         $mon->activate_monitor;
+    }
+    elsif ($status eq 'deleted') {
+        $mon->delete_monitor;
     }
 
     $mon->save;

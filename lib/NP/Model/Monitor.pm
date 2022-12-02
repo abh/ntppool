@@ -97,7 +97,8 @@ sub has_api_role {
 }
 
 sub vault_role_id {
-    my $self    = shift;
+    my $self = shift;
+    return unless $self->tls_name;
     my $role_id = NP::Vault::get_monitoring_role_id($self->tls_name);
     return $role_id || undef;
 }
@@ -204,6 +205,21 @@ sub activate_monitor {
              where ip_version = ? and deletion_on is null
          ], {}, $self->id, $self->status, $self->ip_version
     );
+
+}
+
+sub delete_monitor {
+    my $self = shift;
+
+    return unless $self->status eq 'deleted';
+
+    NP::Model->server_score->delete_server_scores(where => [monitor_id => $self->id]);
+
+    $self->api_key('');
+
+    if ($self->tls_name) {
+        NP::Vault::delete_monitoring_role($self->tls_name);
+    }
 
 }
 

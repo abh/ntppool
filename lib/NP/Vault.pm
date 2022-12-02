@@ -116,6 +116,20 @@ sub delete_monitoring_secret_accessor {
     return 0;
 }
 
+sub delete_monitoring_role {
+    my $name = shift;
+    my $url  = "${role_base}/role/${name}";
+    my $resp = ua()->delete($url);
+    if ($resp->is_success) {
+        return 1;
+    }
+
+    warn "delete role $url";
+    warn $resp->status_line,     "\n";
+    warn $resp->decoded_content, "\n";
+
+    return 0;
+}
 
 sub setup_monitoring_secret {
     my $name     = shift;
@@ -154,7 +168,7 @@ sub setup_monitoring_role {
     my %data = (
 
         # secret_id_bound_cidrs => ipString,
-        "secret_id_ttl"      => "26280h",  # 3 years
+        "secret_id_ttl"      => "26280h",    # 3 years
         "secret_id_num_uses" => 500,
 
         # "token_bound_cidrs" =>       ipString,

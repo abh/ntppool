@@ -2,14 +2,16 @@
 
 <div class="block">
 
+    [% IF combust.user.is_staff %]
+        <p><a href="/manage/monitors/admin">All monitors (admin)</a></p>
+    [% END %]
 
-    [% FOR mon = combust.current_account.monitors %]
-
-    <h3>[% mon.ip | html %]</h3>
+    [% FOR mon = monitors %]
+        <h3>[% mon.ip | html %]</h3>
         [% PROCESS tpl/monitors/info_block.html %]
-
-        <a href="[% combust.manage_url('/manage/monitors/monitor', { id => mon.id_token }) %]">See details</a>
-
+        <a href="[% combust.manage_url('/manage/monitors/monitor', { id => mon.id_token }) %]">
+            See details
+        </a>
     [% END # monitor %]
 
     <p>
