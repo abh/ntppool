@@ -71,12 +71,17 @@ sub get_monitoring_secret_accessors {
 
     my $resp = ua()->get($url);
     unless ($resp->is_success) {
+        if ($resp->code == 404) {
+            return ();    # no available secrets
+        }
         warn "could not get secret id accessor list: "
           . $resp->status_line . " -- "
           . $resp->decoded_content;
-        return [];
+        return ();
     }
-    return @{$json->decode($resp->decoded_content)->{data}->{keys}};
+
+    my @keys = @{$json->decode($resp->decoded_content)->{data}->{keys}};
+    return @keys;
 }
 
 sub get_monitoring_secret_properties {
@@ -142,7 +147,6 @@ sub setup_monitoring_secret {
     $data{metadata} = $metadata if $metadata;
 
     my $content = $json->encode(\%data);
-    warn "CONTNT: $content";
 
     my $resp = ua()->post("$url", Content => $content);
     if ($resp->is_success) {

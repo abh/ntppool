@@ -25,23 +25,32 @@
         TLS Name: <code>[% mon.tls_name | html %]</code><br>
         [% END %]
 
-        [% IF mon.api_key %]
+        [% api_secrets = mon.vault_api_secrets %]
+
+        [% IF mon.api_key && (secret_key || api_secrets.size > 0) %]
         API Key: <code class="copy-clipboard">[% mon.api_key | html %]</code><br>
 
-        [% FOR k = mon.vault_api_secrets %]
-           [% have_key = 1; %]
-           Remaining uses: [% k.secret_id_num_uses %]<br>
-           Expiration time: [% k.expiration_time %]<br>
-        [% END %]
+          [% IF secret_key %]
+          Secret Key: <code class="copy-clipboard">[% secret_key | html %]</code> (only shown once)<br><br>
+          [% END %]
+
+          [% FOR k = api_secrets %]
+            Remaining uses: [% k.secret_id_num_uses %]<br>
+            Expiration time: [% k.expiration_time %]<br>
+          [% END %]
+
+        [% ELSE %]
+
+        <i>No active API keys</i>
 
         [% END %]
 
         [% IF secret_key %]
-        <br>
-        Secret Key: <code class="copy-clipboard">[% secret_key | html %]</code> (only shown once)<br><br>
-        <b><a download="[% mon.tls_name %].json" href="data:application/json;base64,[% config_file_content | html %]">Download config</a></b>
-        <br>
+          <br>
+          <b><a download="[% mon.tls_name %].json" href="data:application/json;base64,[% config_file_content | html %]">Download config</a></b>
+          <br>
         [% END %]
+
 
         [% IF mon.can_generate_api_key %]
             [% IF !mon.tls_name %]

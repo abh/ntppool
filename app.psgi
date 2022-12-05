@@ -6,5 +6,3 @@ use NP::App;
 
 my $app = NP::App->new;
 return $app->reference;
-
-
