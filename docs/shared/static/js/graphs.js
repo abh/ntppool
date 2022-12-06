@@ -86,4 +86,3 @@ $(document).ready(function(){
     Pool.Graphs.SetupGraphs();
 
 });
-

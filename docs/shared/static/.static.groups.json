@@ -1,9 +1,14 @@
 { "common.css": {
       "files": [ "css/fonts.css",
-                 "cdn/libs/bootstrap/4/css/bootstrap.min.css",
+                 "cdn/libs/bootstrap/4.6.2/css/bootstrap.min.css",
                  "css/master.css",
                  "css/content.css"
       ]
+  },
+  "common.js": {
+      "files": [ "cdn/libs/jquery/3.6.1/jquery.min.js",
+                 "cdn/libs/bootstrap/4.6.2/js/bootstrap.min.js"
+               ]
   },
   "d3.js": {
       "files": [ "d3/d3.min.js", "d3/d3.time.js" ]
