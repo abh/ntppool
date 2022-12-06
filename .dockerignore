@@ -1,4 +1,3 @@
-influxdb/*
 *.dump.xz
 *.dump.gz
 *~
@@ -6,6 +5,4 @@ backup/
 .data/
 *.dump
 node_modules/
-manage2/
 logo/
-.git/modules/docs
