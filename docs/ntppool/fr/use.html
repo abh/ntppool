@@ -27,12 +27,12 @@ Vous obtiendrez un meilleur résultat si vous utilisez les <a href="https://www.
 
 <p>
 Si vous utilisez <b>une version récente de Windows</b>, vous pouvez aussi utiliser le client ntp qui est intégré au système. En tant qu'administrateur, exécuter :</p>
-<pre style="background-color:#e0e0e0;">
+<pre>
    w32tm /config /syncfromflags:manual /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 </pre>
 à l'invite de commande. Le tout devrait fonctionner sur une version de Windows 2003 et plus récente. Si vous utilisez une version antérieure, vous pouvez essayer :
 
-<pre style="background-color:#e0e0e0;">
+<pre>
   net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 </pre>
 
