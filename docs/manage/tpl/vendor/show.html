@@ -84,7 +84,7 @@
 
     [% IF combust.user.privileges.vendor_admin %]
     <br /><br />
-    <form method="post" action="/manage/vendor/admin" style="display:inline">
+    <form method="post" action="/manage/vendor/admin">
         <input type="hidden" name="id" value="[% vz.id_token %]" />
         <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
         <input type="hidden" name="a" value="[% combust.current_account.id_token %]">
