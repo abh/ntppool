@@ -38,8 +38,13 @@ sub setup_server {
     $self->deletion_on(undef);
     $self->score_raw($start_score);
 
-    my $monitors = NP::Model->monitor->get_objects(query => [ip_version => $self->ip_version]);
+    NP::Model->servers_monitor_review->create(
+        server_id   => $self->id,
+        next_review => DateTime->now()->add(DateTime::Duration->new(minutes => 5)),
+        config      => '{}',
+    )->save();
 
+    my $monitors = NP::Model->monitor->get_objects(query => [ip_version => $self->ip_version]);
     for my $monitor (@$monitors) {
         $self->add_server_scores(
             {   server_id  => $self->id,

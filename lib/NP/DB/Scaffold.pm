@@ -13,10 +13,11 @@ sub convention_manager {
 }
 
 my %json_fields = (
-    log_scores => 'attributes',
-    monitors => 'config',
-    system_settings => 'value',
-    logs => 'changes',
+    log_scores             => 'attributes',
+    monitors               => 'config',
+    servers_monitor_review => 'config',
+    system_settings        => 'value',
+    logs                   => 'changes',
 );
 
 sub json_columns {

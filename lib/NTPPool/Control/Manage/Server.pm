@@ -204,6 +204,7 @@ sub _add_server {
         $s->setup_server;
     }
     else {
+        # the model calls setup_server
         $s = NP::Model->server->create(ip => $server->{ip});
     }
 

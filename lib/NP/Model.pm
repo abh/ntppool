@@ -817,6 +817,13 @@ __PACKAGE__->meta->setup(
       type       => 'one to many',
     },
 
+    servers_monitor_review => {
+      class                => 'NP::Model::ServersMonitorReview',
+      column_map           => { id => 'server_id' },
+      type                 => 'one to one',
+      with_column_triggers => '0',
+    },
+
     zones => {
       map_class => 'NP::Model::ServerZone',
       map_from  => 'server',
@@ -953,7 +960,7 @@ __PACKAGE__->meta->setup(
     score_ts    => { type => 'datetime' },
     score_raw   => { type => 'scalar', default => '0', length => 64, not_null => 1 },
     stratum     => { type => 'integer' },
-    status      => { type => 'enum', check_in => [ 'inactive', 'testing', 'active' ], default => 'testing', not_null => 1 },
+    status      => { type => 'enum', check_in => [ 'new', 'testing', 'active' ], default => 'new', not_null => 1 },
     created_on  => { type => 'datetime', default => 'now', not_null => 1 },
     modified_on => { type => 'timestamp', not_null => 1 },
   ],
@@ -1082,6 +1089,54 @@ __PACKAGE__->make_manager_methods('server_zones');
 # Allow user defined methods to be added
 eval { require NP::Model::ServerZone }
   or $@ !~ m:^Can't locate NP/Model/ServerZone.pm: and die $@;
+
+{ package NP::Model::ServersMonitorReview;
+
+use strict;
+
+use base qw(NP::Model::_Object);
+
+__PACKAGE__->meta->setup(
+  table   => 'servers_monitor_review',
+
+  columns => [
+    server_id   => { type => 'integer', not_null => 1 },
+    last_review => { type => 'datetime' },
+    next_review => { type => 'datetime' },
+    last_change => { type => 'datetime' },
+    config      => { type => 'text', length => 65535, not_null => 1 },
+  ],
+
+  primary_key_columns => [ 'server_id' ],
+
+  foreign_keys => [
+    server => {
+      class       => 'NP::Model::Server',
+      key_columns => { server_id => 'id' },
+      rel_type    => 'one to one',
+    },
+  ],
+);
+
+__PACKAGE__->meta->setup_json_columns(qw< config >);
+
+push @table_classes, __PACKAGE__;
+}
+
+{ package NP::Model::ServersMonitorReview::Manager;
+
+use strict;
+
+our @ISA = qw(Combust::RoseDB::Manager);
+
+sub object_class { 'NP::Model::ServersMonitorReview' }
+
+__PACKAGE__->make_manager_methods('servers_monitor_reviews');
+}
+
+# Allow user defined methods to be added
+eval { require NP::Model::ServersMonitorReview }
+  or $@ !~ m:^Can't locate NP/Model/ServersMonitorReview.pm: and die $@;
 
 { package NP::Model::SystemSetting;
 
@@ -1590,6 +1645,7 @@ eval { require NP::Model::ZoneServerCount }
   sub server_score { our $server_score ||= bless [], 'NP::Model::ServerScore::Manager' }
   sub server_url { our $server_url ||= bless [], 'NP::Model::ServerUrl::Manager' }
   sub server_zone { our $server_zone ||= bless [], 'NP::Model::ServerZone::Manager' }
+  sub servers_monitor_review { our $servers_monitor_review ||= bless [], 'NP::Model::ServersMonitorReview::Manager' }
   sub system_setting { our $system_setting ||= bless [], 'NP::Model::SystemSetting::Manager' }
   sub user { our $user ||= bless [], 'NP::Model::User::Manager' }
   sub user_equipment_application { our $user_equipment_application ||= bless [], 'NP::Model::UserEquipmentApplication::Manager' }

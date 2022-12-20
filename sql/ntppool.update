@@ -848,5 +848,41 @@ create table `scorer_status` (
 alter table user_privileges
   drop see_all_user_profiles;
 
+#101
+-- for a clickhouse dictionary to lookup the monitor name
+drop view if exists monitors_data;
+create view monitors_data as
+select id, account_id, type,
+   IF(type="score", name, SUBSTRING_INDEX(tls_name,'.',1)) as name,
+   ip,  ip_version, status, client_version, last_seen, last_submit
+from monitors
+where tls_name not like '%.system';
+
+#102
+create table servers_monitor_review (
+  server_id INTEGER unsigned NOT NULL primary key,
+  --  monitor_id int unsigned not null,
+
+  last_review datetime,
+  next_review datetime,
+  last_change datetime,
+
+  config text not null default '',
+
+  key (next_review),
+
+  -- CONSTRAINT `server_monitor_review_monitor_id_fk` FOREIGN KEY (`monitor_id`)
+  --    REFERENCES `monitors` (`id`) on delete cascade,
+  CONSTRAINT `server_monitor_review_server_id_fk` FOREIGN KEY (`server_id`)
+      REFERENCES `servers` (`id`) on delete cascade
+) engine=InnoDB default charset=utf8;
+
+insert ignore into servers_monitor_review (server_id, config)
+    select id, '{}' from servers where deletion_on is null;
+
+#103
+alter table server_scores
+  modify status enum('new', 'testing', 'active') not null default 'new';
+
 #todo
 - ...
