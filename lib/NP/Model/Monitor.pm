@@ -203,7 +203,7 @@ sub activate_monitor {
         q[ insert ignore into server_scores (monitor_id, server_id, status, score_raw, created_on)
              select ?, id, ?, score_raw, NOW() from servers
              where ip_version = ? and deletion_on is null
-         ], {}, $self->id, $self->status, $self->ip_version
+         ], {}, $self->id, 'testing', $self->ip_version
     );
 
 }

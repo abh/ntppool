@@ -50,6 +50,7 @@ sub setup_server {
             {   server_id  => $self->id,
                 monitor_id => $monitor->id,
                 score_raw  => $self->score_raw,
+                status     => 'testing',
             }
         );
     }
