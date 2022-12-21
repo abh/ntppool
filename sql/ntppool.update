@@ -881,6 +881,9 @@ insert ignore into servers_monitor_review (server_id, config)
     select id, '{}' from servers where deletion_on is null;
 
 #103
+update server_scores set created_on  = score_ts where created_on  < '1970-01-01';
+update server_scores set modified_on = score_ts where modified_on < '1970-01-01';
+
 alter table server_scores
   modify status enum('new', 'testing', 'active') not null default 'new';
 
