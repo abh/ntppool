@@ -867,7 +867,7 @@ create table servers_monitor_review (
   next_review datetime,
   last_change datetime,
 
-  config text not null default '',
+  config varchar(4096) not null default '',
 
   key (next_review),
 
@@ -883,6 +883,10 @@ insert ignore into servers_monitor_review (server_id, config)
 #103
 alter table server_scores
   modify status enum('new', 'testing', 'active') not null default 'new';
+
+#104
+alter table servers_monitor_review
+  modify config varchar(4096) not null default '';
 
 #todo
 - ...
