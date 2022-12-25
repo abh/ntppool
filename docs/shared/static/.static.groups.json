@@ -7,6 +7,7 @@
   },
   "common.js": {
       "files": [ "cdn/libs/jquery/3.6.1/jquery.min.js",
+                 "cdn/libs/popper/1/popper.min.js", # for admin navigation menu
                  "cdn/libs/bootstrap/4.6.2/js/bootstrap.min.js"
                ]
   },
