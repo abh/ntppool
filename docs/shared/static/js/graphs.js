@@ -35,16 +35,13 @@ if (!Pool.Graphs) { Pool.Graphs = {}; }
         var load_graphs = function() {
 
             graph_div.each(function(i) {
+
                 var div = $(this);
+
                 var ip = div.data('server-ip');
                 if (ip) {
                     var graph_legend = div.next('.graph-legend');
-                    var spinner = div.append('<div/>');
-                    spinner.spin({ lines: 12, length: 12, width: 4, radius: 15, left: "250px", top: "20px", color: "#555" });
-
-                    d3.json("/scores/"+ ip +"/json?monitor=*&limit=400", function(json) {
-                        spinner.spin(false);
-
+                    d3.json("/scores/"+ ip +"/json?monitor=*&limit=3000").then((json) => {
                         if (json) {
                             data[ip] = json;
                             server_chart(div, json, { legend: graph_legend });
@@ -59,7 +56,7 @@ if (!Pool.Graphs) { Pool.Graphs = {}; }
 
                 var zone = div.data('zone');
                 if (zone) {
-                    d3.json("/zone/" + zone + ".json?limit=240", function(json) {
+                    d3.json("/zone/" + zone + ".json?limit=240").then((json) => {
                         if (json) {
                             data[zone] = json;
                             zone_chart(div, json, { name: zone });
@@ -69,10 +66,8 @@ if (!Pool.Graphs) { Pool.Graphs = {}; }
                             div.html('<p>Error downloading graph data</p>');
                         }
                     });
-
                 }
             });
-
         };
 
         load_graphs();

@@ -28,11 +28,10 @@ function server_chart(div, data, options) {
         pad_w = 35,
         pad_h = 19,
 
-        y_offset = d3.scale.pow().exponent(0.5).domain([y_offset_max, y_offset_min]).range([0, h]).clamp(true),
+        y_offset = d3.scalePow().exponent(0.5).domain([y_offset_max, y_offset_min]).range([0, h]).clamp(true),
+        y_score = d3.scaleSqrt().domain([25,-105]).range([0,h]),
 
-        y_score = d3.scale.sqrt().domain([25,-105]).range([0,h]),
-
-        x = d3.time.scale.utc().domain([d3.min(history.map(function(e){ return e.date; })),
+        x = d3.scaleUtc().domain([d3.min(history.map(function(e){ return e.date; })),
                                         d3.max(history.map(function(e){ return e.date; }))
             ])
             .range([0, w]);
@@ -186,7 +185,7 @@ function server_chart(div, data, options) {
         .style("fill", "none")
         .style("stoke", "red")
         .style("stroke-width", 2)
-        .attr("d", d3.svg.line()
+        .attr("d", d3.line()
               .x(function(d) { return x(d.date); })
               .y(function(d) { return y_score(d.score); })
              );
