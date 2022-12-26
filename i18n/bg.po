@@ -38,9 +38,6 @@ msgstr "Преводи"
 msgid  "NTP Pool mailing lists"
 msgstr "пощенски списък на NTP Pool"
 
-msgid  "subscribe"
-msgstr "абонирай се"
-
 msgid  "archive"
 msgstr "архив"
 
@@ -55,9 +52,6 @@ msgstr "Списък за разработчици"
 
 msgid  "announcement_list_description"
 msgstr "Новини от NTP Pool - нисък трафик.  Всички оператори на сървъри трябва за се абонират за списъка за анонси."
-
-msgid  "discussion_list_description"
-msgstr "Операторите на сървъри (и потребителите) които искат да допринесат повече за проекта могат да се абонират за списъка за дискусии.<br/> Разбира се общи дискусии относно ntp трябва да бъдат на %1 Usenet newsgroup (също на <a href=\"%2\">Google Groups</a>)."
 
 msgid  "development_list_description"
 msgstr "More technical (and ideally always pragmatic) discussions about the current development of the <a href=\"%1\">ntp pool code</a> and <a href=\"%2\">GeoDNS</a> happens on the timekeepers-dev list."

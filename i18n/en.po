@@ -57,9 +57,6 @@ msgid  "Older news"
 msgstr "Older news"
 
 # mailinglists.html
-msgid  "subscribe"
-msgstr "subscribe"
-
 msgid  "archive"
 msgstr "archive"
 
@@ -80,9 +77,6 @@ msgstr "Questions (and answers) about the NTP Pool, suggestions for improvements
 
 msgid  "news_description"
 msgstr "Announcements and news are posted on the news site or the forum."
-
-msgid  "discussion_list_description"
-msgstr "Server operators (and users) who wish to be more involved in the project can subscribe to the discussion list.<br/> Of course, general discussions about ntp should take place on the %1 Usenet newsgroup (also on <a href=\"%2\">Google Groups</a>)."
 
 msgid  "development_list_description"
 msgstr "More technical (and ideally pragmatic) discussions about development of the <a href=\"%1\">ntp pool code</a> and <a href=\"%2\">GeoDNS</a> happens in the  <a href=\"%3\">development forum</a>."
@@ -129,7 +123,7 @@ msgid  "Information for vendors"
 msgstr "Information for vendors"
 
 msgid  "The mailing lists"
-msgstr "The mailing lists"
+msgstr "Community"
 
 msgid  "Additional links"
 msgstr "Additional links"
