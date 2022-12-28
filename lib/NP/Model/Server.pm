@@ -188,10 +188,12 @@ sub monitors {
     $monitors = [
         map {
             my %m = (
-                id    => $_->monitor->id + 0,
-                score => $_->score + 0,
-                name  => $_->monitor->display_name,
-                ts    => $_->score_ts,
+                id     => $_->monitor->id + 0,
+                score  => $_->score + 0,
+                name   => $_->monitor->display_name,
+                ts     => $_->score_ts,
+                status => $_->status,
+                type   => $_->monitor->type,
             );
             \%m;
         } @$monitors

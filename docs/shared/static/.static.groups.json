@@ -24,9 +24,7 @@
       ]
   },
   "graphs.css": {
-      "files": [
-          "cdn/libs/spin.js/4/spin.min.css"
-      ]
+      "files": []
   },
   "manage.js": {
       "files": [
