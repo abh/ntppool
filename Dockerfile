@@ -33,3 +33,5 @@ ENTRYPOINT ["./docker/entrypoint"]
 CMD ["./docker-run"]
 
 USER ntppool
+
+RUN git config --global --add safe.directory /ntppool
