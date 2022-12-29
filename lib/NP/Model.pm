@@ -1104,7 +1104,7 @@ __PACKAGE__->meta->setup(
     last_review => { type => 'datetime' },
     next_review => { type => 'datetime' },
     last_change => { type => 'datetime' },
-    config      => { type => 'text', length => 65535, not_null => 1 },
+    config      => { type => 'varchar', default => '', length => 4096, not_null => 1 },
   ],
 
   primary_key_columns => [ 'server_id' ],
