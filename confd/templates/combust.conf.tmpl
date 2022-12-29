@@ -22,7 +22,7 @@ docs_name = docs
 # add Apache::Reload to the httpd configuration; good for development! (default 0)
 # 0 = disabled, 1 = enabled, 2 = enabled with debugging on
 {{ if eq $mode "devel" }}
-apache_reload = 1
+apache_reload = 0
 {{ else }}
 apache_reload = 0
 {{ end }}
