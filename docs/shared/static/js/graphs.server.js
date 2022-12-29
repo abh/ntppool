@@ -201,17 +201,19 @@ function server_chart(div, data, options) {
 
     if (legend) {
         legend.css("margin-left", pad_w);
+        legend.css("width", "70%");
         // legend.append('<span class="legend_header">Monitoring Station:</span>');
         var table = $('<table>').addClass('table table-striped table-hover table-sm')
-        table.append('<thead class="thead-light"> \
+        if (false) { table.append('<thead class="thead-light"> \
         <tr> \
             <th scope="col">Monitor</th> \
             <th scope="col">Score</th> \
-            <th scope="col">Status</th> \
+            <!-- <th scope="col">Status</th> --> \
             <!-- <th scope="col">Type</th> --> \
         </tr> \
         </thead> <tbody>\
         ');
+        }
 
         var monitors = data.monitors.sort(function compareFn(a, b) {
             if (a.type == b.type) {
@@ -237,8 +239,32 @@ function server_chart(div, data, options) {
         });
 
 
+        var currentStatus = "";
+
         for (var i = 0; i < monitors.length; i++) {
             var mon = data.monitors[i];
+
+            if (mon.type == "score") {
+                mon.status = "";
+            }
+
+            if (currentStatus != mon.status) {
+
+                var rclass = "";
+                if (mon.status == "active") {
+                    rclass = "table-success";
+                }
+                else if (mon.status == "testing") {
+                    rclass = "table-info";
+                }
+
+                var row = $('<tr>').addClass(rclass);
+                row.append($('<th>').text(mon.status));
+                row.append($('<td>').text("Score").addClass(""));
+                table.append(row);
+                currentStatus = mon.status;
+            }
+
             var row = $('<tr>').addClass('legend').data('monitor_id', mon.id);
 
             var name = mon.name;
@@ -250,24 +276,18 @@ function server_chart(div, data, options) {
                 } else {
                     rclass = "table-secondary";
                 }
-                mon.status = "";
                 if (mon.name == "every") {
                     name = "legacy";
                 }
                 name += " score";
             }
             else {
-                if (mon.status == "active") {
-                    rclass = "table-success";
-                }
-                else if (mon.status == "testing") {
-                    rclass = "table-info";
-                }
+
             }
 
             row.append($('<td>').text(name).addClass(rclass));
             row.append($('<td>').text(mon.score));
-            row.append($('<td>').text(mon.status));
+            // row.append($('<td>').text(mon.status));
             // row.append($('<td>').text(mon.type).addClass('legend').data('monitor_id', mon.id));
 
             table.append(row);
