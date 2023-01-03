@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title></title>
+</head>
+<body>
+[% page.title = 'Gabung Gugusan NTP!'  %]
+
+<div class="block">
+	<h3><a name="join">Bagaimana saya bergabung dengan pool.ntp.org?</a></h3>
+<p>Pertama-tama, terima kasih atas minat Anda. Penggunaan gugusan telah berkembang secara masif dan satu-satunya cara kami bisa membuatnya mudah untuk semuanya menjalankan peladen gugusan adalah dengan menambah peladen yang berpartisipasi.</p>
+<p>Komputer Anda <b>harus mempunyai alamat IP statis </b>dan koneksi internet permanen. Sangat penting untuk alamat IP Anda tidak berubah atau hanya berubah sangat jarang (misal sekali per tahun atau kurang). Data internet yang diperlukan sangatlah rendah. Setiap klien hanya akan mengirimkan beberapa paket UDP setiap beberapa hingga 20 menit.</p>
+<p>Saat ini, kebanyakan peladen mendapatkan sekitar 5-15 paket NTP per detik dengan beberapa kali lonjakan hingga 60-120 paket per detik. Ini setara dengan 10-15 Kbit/dtk dengan lonjakan hingga 50-120 Kbit/dtk. Proyek ini secara teratur mendapatkan lebih banyak peladen pewaktu, jadi bebannya seharusnya tidak melonjak secara besar untuk setiap peladen. Dengan kata lain, Anda mungkin memerlukan <i>bandwidth </i>sekitar 384-512 Kbit/dtk (masuk dan keluar).</p>
+	<p>Berikut adalah beberapa peladen dengan grafik lintas/bebannya:
+	[% i = 0; FOR server = combust.servers_with_urls; %]
+	   <a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
+	[% END %]
+	</p>
+
+	<p>Peladen yang bergabung tidak boleh menggunakan pool.ntp.org sebagai peladen hulu, tapi harus mengatur beberapa peladen yang layak secara manual (peladen tersebut bisa dipilih dari gugusan, yang penting adalah mereka dipilih secara statis alih-alih diberikan secara acak setiap peladen dimulai ulang, ini akan membantu memberikan kualitas layanan yang sehat). Perlu dicatat bahwa tidak diperlukan untuk peladen Anda adalah peladen stratum 1 atau 2, karena proyek ini umumnya tentang pendistribusian beban.</p>
+<p>Kami memiliki halaman dengan <a href="/join/configuration.html">rekomendasi konfigurasi untuk peladen yang bergabung ke gugusan</a>.</p>
+	<p>Terakhir, saya harus menekankan bahwa bergabung ke gugusan adalah komitmen jangka panjang. Kami akan terima untuk mengeluarkan Anda dari gugusan jika keadaan Anda berubah, tetapi karena bagaimana klien ntp bekerja, mungkin lintas akan memakan hingga beberapa pekan, bulan, bahkan TAHUN untuk berhenti.</p>
+<p>Jika setuju kepada semua tersebut, masuk ke halaman <a href="/manage">pengelolaan peladen</a> dan minta agar peladen Anda untuk ditambahkan. Jika Anda memiliki masalah dengan sistemnya, kirimkan saya surel ke <a href="mailto:ask@develooper.com">ask@develooper.com</a>.</p>
+<p>Saya juga memohon Anda untuk berlangganan ke <a href="https://news.ntppool.org/atom.xml">umpan blog</a> dan mungkin <a href="https://lists.ntp.org/listinfo/pool">milis gugusan</a>.</p>
+<p>Akan lebih baik (tapi tidak wajib) jika Anda bisa mengalihkan permintaan di porta 80 dari peladen pewaktu Anda ke halaman web resmi proyek di <span style="font-family: monospace;">https://www.ntppool.org</span>. Jika Anda menjalankan Apache, Anda bisa menggunakan:</p>
+<p>[% PROCESS tpl/join/virtual_host_example.html %]</p>
+<p>Sekali lagi, ini hanya jika Anda menjalankan peladen web. Halaman resmi proyek akan selalu mencantumkan 'www' di awalan, tetapi kadangkala orang-orang akan mengetik <span style="font-family: monospace;">pool.ntp.org</span> dan mereka akan terkejut karena mendapatkan halaman web acak.</p>
+<p>Setelah ditambahkan ke gugusan, peladennya akan selalu dipantau untuk ketersedian dan kepresisian. Anda bisa melihat performa peladen Anda menggunakan <a href="https://www.ntppool.org/en/scores">antarmuka web</a> atau <a href="https://www.ntppool.org/manage">halaman pengelolaan</a>.</p>
+
+	<p></p>
+</div>
+</body>
+</html>
