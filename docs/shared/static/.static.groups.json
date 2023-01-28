@@ -23,9 +23,6 @@
           "js/graphs.js"
       ]
   },
-  "graphs.css": {
-      "files": []
-  },
   "manage.js": {
       "files": [
           "js/ntppool.js"

@@ -5,6 +5,8 @@
 function server_chart(div, data, options) {
     "use strict";
 
+    // console.log("server chart");
+
     if (!options) { options = {}; }
     var legend = options.legend;
 
@@ -35,6 +37,9 @@ function server_chart(div, data, options) {
                                         d3.max(history.map(function(e){ return e.date; }))
             ])
             .range([0, w]);
+
+    // console.log("w", w);
+    // console.log("h", h);
 
     var svg = d3.select(div.get(0))
         .append("svg")
@@ -85,7 +90,7 @@ function server_chart(div, data, options) {
         .text(function(ms) {
             ms = ms * 1000;
             var s = yformat(ms);
-            return this.parentNode.nextSibling ? `\xa0${s}` : `${s} ms`;
+            return this.parentNode.previousSibling ? `${s} ms` : `\xa0${s}`;
         });
 
     /* score y lines */
@@ -201,19 +206,9 @@ function server_chart(div, data, options) {
 
     if (legend) {
         legend.css("margin-left", pad_w);
-        legend.css("width", "70%");
+        legend.css("width", "50%");
         // legend.append('<span class="legend_header">Monitoring Station:</span>');
-        var table = $('<table>').addClass('table table-striped table-hover table-sm')
-        if (false) { table.append('<thead class="thead-light"> \
-        <tr> \
-            <th scope="col">Monitor</th> \
-            <th scope="col">Score</th> \
-            <!-- <th scope="col">Status</th> --> \
-            <!-- <th scope="col">Type</th> --> \
-        </tr> \
-        </thead> <tbody>\
-        ');
-        }
+        var table = $('<table>').addClass('legend table table-striped table-hover table-sm')
 
         var monitors = data.monitors.sort(function compareFn(a, b) {
             if (a.type == b.type) {
