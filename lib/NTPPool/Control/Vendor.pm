@@ -36,6 +36,9 @@ sub manage_dispatch {
     return $self->render_subscription
       if $self->request->uri =~ m!^/manage/vendor/plan!;
 
+    return $self->render_billing
+      if $self->request->uri =~ m!^/manage/vendor/billing!;
+
     return $self->render_admin if $self->request->uri =~ m!^/manage/vendor/admin$!;
 
     return $self->redirect($self->manage_url('/manage/vendor/new'))
@@ -91,7 +94,6 @@ sub render_zones {
     $self->tpl_param('accounts' => $accounts);
 
     if (my @subs = $self->current_account->account_subscriptions) {
-        warn "have subscriptions ...";
         $self->tpl_param('subscriptions', \@subs);
     }
 
@@ -164,15 +166,15 @@ sub render_zone {
         @subs = sort {
                  $sort{$a->{status}}   <=> $sort{$b->{status}}
               || $b->created_on->epoch <=> $a->created_on->epoch
-          } @subs;
+        } @subs;
 
-          # If subscription on file, and more zones can be added:
-          # - Add to current subscription
+        # If subscription on file, and more zones can be added:
+        # - Add to current subscription
 
-          # If subscription on file, but plan has "max zones":
-          # - ... Contact vendors@ to upgrade or change plan?
+        # If subscription on file, but plan has "max zones":
+        # - ... Contact vendors@ to upgrade or change plan?
 
-          warn "have subscriptions ...";
+        warn "have subscriptions ...";
         $self->tpl_param('subscriptions', \@subs);
 
         return OK, $self->evaluate_template('tpl/vendor/show.html');
@@ -294,50 +296,65 @@ sub _edit_zone {
     return $vz;
 }
 
+sub _update_subscription {
+    my ($self, $session_id, $account) = @_;
+
+    warn "looking up session $session_id";
+    my $session = NP::Stripe::get_session($session_id);
+    warn "SESSION: ", Data::Dump::pp(\$session);
+
+    my $customer_id     = $session->{customer_id};
+    my $subscription_id = $session->{subscription} && $session->{subscription}->{id};
+
+    warn "customer_id:     $customer_id";
+    warn "subscription_id: $subscription_id";
+
+    if ($subscription_id) {
+        my $account_subscription = NP::Model->account_subscription->fetch_or_create(
+            account_id             => $account->id,
+            stripe_subscription_id => $subscription_id
+        );
+
+        unless ($session->{subscription}->{max_devices}) {
+            $session->{subscription}->{max_devices} = $session->{subscription}->{max_clients}
+              if $session->{subscription}->{max_clients};
+        }
+
+        for my $f (qw(status name max_zones max_devices)) {
+            $account_subscription->$f($session->{subscription}->{$f});
+        }
+        $account_subscription->save();
+
+        $account->stripe_customer_id($customer_id);
+        $account->save();
+    }
+
+    # update subscription_id in database ...
+
+    # show appropriate status page for the subscription status.
+
+    return 200, "finished processing session";
+}
+
 sub render_subscription {
     my $self = shift;
 
+    my $account = $self->current_account;
+    return FORBIDDEN unless $account && $account->can_edit($self->user);
+
     my $id = $self->_get_id;
-
-    warn "render_subscription, id: $id";
-
     my $vz = $id && NP::Model->vendor_zone->fetch(id => $id);
 
-    return FORBIDDEN unless $vz && $vz->can_edit($self->user);
-
-    $self->tpl_param('vz' => $vz);
+    $self->tpl_param('account' => $account);
 
     if (my $session_id = $self->req_param('session_id')) {
-        warn "looking up session $session_id";
-        my $session = NP::Stripe::get_session($session_id);
-        warn "SESSION: ", Data::Dump::pp(\$session);
 
-        my $customer_id     = $session->{customer_id};
-        my $subscription_id = $session->{subscription} && $session->{subscription}->{id};
-
-        warn "customer_id:     $customer_id";
-        warn "subscription_id: $subscription_id";
-
-        if ($subscription_id) {
-            my $account_subscription = NP::Model->account_subscription->fetch_or_create(
-                account_id             => $vz->account->id,
-                stripe_subscription_id => $subscription_id
-            );
-            for my $f (qw(status name max_zones max_clients)) {
-                $account_subscription->$f($session->{subscription}->{$f});
-            }
-            $account_subscription->save();
-
-            $vz->account->stripe_customer_id($customer_id);
-            $vz->account->save();
-        }
-
-        # update customer_id and subscription_id in database ...
-
-        # show appropriate status page for the subscription status.
-
+        # todo: don't return here but process whatever is the appropriate template
+        return $self->_update_subscription($account, $session_id);
     }
 
+    my $return_url = $self->manage_url('/manage/vendor/plan',
+        {($vz ? (id => $vz->id_token) : ()), a => $self->current_account->id_token});
 
     my $product_id = $self->req_param('product_id') || '';
     my $price_id   = $self->req_param('price_id')   || '';
@@ -345,6 +362,7 @@ sub render_subscription {
     warn "product_id: $product_id";
     warn "price_id:   $price_id";
 
+    # choosing a product
     if ($product_id) {
 
         my $zone_device_count = $vz->device_count || 0;
@@ -360,16 +378,12 @@ sub render_subscription {
         $self->tpl_param('pr', $product);
 
         if ($price_id && $self->request->uri eq '/manage/vendor/plan/create_session') {
-
             my ($plan) = grep { $_->{ID} eq $price_id } @{$product->{Plans}};
 
             # TODO:
             #  - take parameters to create session for the right price
             #  - set the right urls for cancel, etc
             #  - set the right customer ID if one exists
-
-            my $return_url = $self->manage_url('/manage/vendor/plan',
-                {id => $vz->id_token, a => $self->current_account->id_token});
 
             my $quantity = $vz->device_count;
             if ($plan->{TiersMode} eq "") {
@@ -402,9 +416,29 @@ sub render_subscription {
         return OK, $self->evaluate_template('tpl/vendor/subscription.html');
     }
 
+    warn "customer id: ", $account->stripe_customer_id;
 
-    return 404;
+    if (my @subs = $self->current_account->account_subscriptions) {
+        warn "have subscriptions ...";
+        $self->tpl_param('subscriptions', \@subs);
+    }
+
+    return OK, $self->evaluate_template('tpl/vendor/subscription.html');
+
 }
+
+sub render_billing {
+    my $self = shift;
+
+    my $account = $self->current_account;
+    return FORBIDDEN unless $account && $account->can_edit($self->user);
+
+    my $return_url = $self->manage_url('/manage/vendor', {a => $account->id_token});
+
+    return $self->redirect(
+        NP::Stripe::billing_portal_url($account->stripe_customer_id, $return_url));
+}
+
 
 sub render_admin {
     my $self = shift;

@@ -891,5 +891,12 @@ alter table server_scores
 alter table servers_monitor_review
   modify config varchar(4096) not null default '';
 
+#105
+alter table account_subscriptions
+  modify stripe_subscription_id varchar(255) COLLATE utf8_bin null;
+
+alter table accounts
+  modify stripe_customer_id varchar(255) COLLATE utf8_bin null;
+
 #todo
 - ...

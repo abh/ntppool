@@ -1,5 +1,7 @@
 [% page.js.push("ntppool.js"); USE Number.Format; %]
 
+[% IF pr %]
+
 <div class="row">
     <div class="col-12">
         [% USE Dumper;
@@ -53,3 +55,5 @@
     </div>
 
 </div>
+
+[% END %]

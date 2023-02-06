@@ -81,6 +81,19 @@ sub get_session {
     return $r;
 }
 
+sub billing_portal_url {
+    my $customer_id = shift;
+    my $return_url  = shift;
+
+    my $r = _gw_post_api(
+        'customer/portal',
+        {   customer_id => $customer_id,
+            return_url  => $return_url,
+        }
+    );
+    return $r ? $r->{url} : "";
+}
+
 sub get_products {
     my $device_count = shift || 0;
     my $r            = _gw_get_api('products', {quantity => $device_count});
