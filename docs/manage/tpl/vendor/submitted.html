@@ -1,17 +1,21 @@
 <div class="block">
 
+[% have_subscription = vz.account.subscription_limits_not_exceeded(vz.device_count) %]
+
 <h3>Vendor Zone Application Submitted</h3>
 
 <p>
-Your application for <tt>[% vz.zone_name | html %]</tt> has been
-submitted.
+The DNS zone <tt>[% vz.zone_name | html %]</tt> has been
+submitted for production.
 </p>
 
+[% UNLESS have_subscription %]
 <p>
 You'll get an email shortly with a ticket number. If you don't hear
 back within a week, please follow-up on that ticket or contact [%
 "vendors" | email %].
 </p>
+[% END %]
 
 <p>
 <a href="[% combust.manage_url('/manage/vendor') %]">Back to your zones</a>

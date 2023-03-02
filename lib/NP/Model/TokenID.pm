@@ -65,6 +65,7 @@ sub token_id {
         # todo: make required if we get rid of non-prefixed account ids?
         $token =~ s/^$prefix//;
     }
+
     return $self->token_cipher->decrypt_number_b32_crockford($token);
 }
 

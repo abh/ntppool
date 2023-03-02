@@ -81,6 +81,12 @@ sub get_session {
     return $r;
 }
 
+sub create_customer {
+    my %args = @_;
+    my $r    = _gw_post_api('customer/create', \%args);
+    return $r;
+}
+
 sub billing_portal_url {
     my $customer_id = shift;
     my $return_url  = shift;

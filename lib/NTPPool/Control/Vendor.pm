@@ -39,10 +39,11 @@ sub manage_dispatch {
     return $self->render_billing
       if $self->request->uri =~ m!^/manage/vendor/billing!;
 
-    return $self->render_admin if $self->request->uri =~ m!^/manage/vendor/admin$!;
+    return $self->render_admin
+      if $self->request->uri =~ m!^/manage/vendor/admin$!;
 
     return $self->redirect($self->manage_url('/manage/vendor/new'))
-      unless @{$self->user->vendor_zones};
+      unless @{$self->current_account->vendor_zones};
 
     $self->tpl_params->{page}->{is_vendor} = 1;
 
@@ -94,7 +95,7 @@ sub render_zones {
     $self->tpl_param('accounts' => $accounts);
 
     if (my @subs = $self->current_account->account_subscriptions) {
-        $self->tpl_param('subscriptions', \@subs);
+        $self->tpl_param('subscriptions', [grep { $_->live_subscription } @subs]);
     }
 
     return OK, $self->evaluate_template('tpl/vendor.html');
@@ -102,8 +103,6 @@ sub render_zones {
 
 sub render_zone {
     my ($self, $id, $mode) = @_;
-
-    warn "rendering zone";
 
     return $self->redirect($self->manage_url('/manage/vendor')) unless $id;
 
@@ -119,8 +118,6 @@ sub render_zone {
     return $self->render_form($vz)
       if (  $mode eq 'edit'
         and $vz->can_edit($self->user));
-
-    warn "looking for subscriptions";
 
     my $zone_device_count = $vz->device_count || 0;
 
@@ -174,15 +171,13 @@ sub render_zone {
         # If subscription on file, but plan has "max zones":
         # - ... Contact vendors@ to upgrade or change plan?
 
-        warn "have subscriptions ...";
         $self->tpl_param('subscriptions', \@subs);
 
         return OK, $self->evaluate_template('tpl/vendor/show.html');
 
     }
 
-
-    # TODO: add template variable if there's no subscription
+    $self->tpl_param('need_subscription' => 1);
 
     return OK, $self->evaluate_template('tpl/vendor/show.html');
 }
@@ -234,8 +229,13 @@ sub render_edit {
 
     # if no subscription, go to subscription page
 
-    my $redirect = $self->manage_url('/manage/vendor/zone',
-        {id => $vz->id_token, a => $self->current_account->id_token, mode => 'show'});
+    my $redirect = $self->manage_url(
+        '/manage/vendor/zone',
+        {   id   => $vz->id_token,
+            a    => $self->current_account->id_token,
+            mode => 'show'
+        }
+    );
 
     return $self->redirect($redirect);
 }
@@ -274,8 +274,12 @@ sub _edit_zone {
     else {
 
         # TODO: If we ever have more than one public dns_root, be smarter here.
-        my $dns_root =
-          (NP::Model->dns_root->get_objects(query => [vendor_available => 1], limit => 1))->[0];
+        my $dns_root = (
+            NP::Model->dns_root->get_objects(
+                query => [vendor_available => 1],
+                limit => 1
+            )
+        )->[0];
 
         $vz = NP::Model->vendor_zone->create(
             zone_name  => $zone_name,
@@ -297,14 +301,15 @@ sub _edit_zone {
 }
 
 sub _update_subscription {
-    my ($self, $session_id, $account) = @_;
+    my ($self, $account, $session_id) = @_;
 
     warn "looking up session $session_id";
     my $session = NP::Stripe::get_session($session_id);
     warn "SESSION: ", Data::Dump::pp(\$session);
 
-    my $customer_id     = $session->{customer_id};
-    my $subscription_id = $session->{subscription} && $session->{subscription}->{id};
+    my $customer_id = $session->{customer_id};
+    my $subscription_id =
+      $session->{subscription} && $session->{subscription}->{id};
 
     warn "customer_id:     $customer_id";
     warn "subscription_id: $subscription_id";
@@ -327,9 +332,15 @@ sub _update_subscription {
 
         $account->stripe_customer_id($customer_id);
         $account->save();
-    }
 
-    # update subscription_id in database ...
+        if ($account_subscription->live_subscription) {
+            warn "got live subscription";
+            return $self->render_submit();
+        }
+        else {
+            warn "sub status: ", $account_subscription->status;
+        }
+    }
 
     # show appropriate status page for the subscription status.
 
@@ -349,7 +360,7 @@ sub render_subscription {
 
     if (my $session_id = $self->req_param('session_id')) {
 
-        # todo: don't return here but process whatever is the appropriate template
+        # we are returning from the checkout session
         return $self->_update_subscription($account, $session_id);
     }
 
@@ -374,11 +385,16 @@ sub render_subscription {
             return 500;
         }
 
-        my ($product) = grep { $_->{ID} eq $product_id } @{$products->{Products}};
+        my ($product) =
+          grep { $_->{ID} eq $product_id } @{$products->{Products}};
         $self->tpl_param('pr', $product);
 
-        if ($price_id && $self->request->uri eq '/manage/vendor/plan/create_session') {
+        if (   $price_id
+            && $self->request->uri eq '/manage/vendor/plan/create_session')
+        {
             my ($plan) = grep { $_->{ID} eq $price_id } @{$product->{Plans}};
+
+            my $account = $vz->account;
 
             # TODO:
             #  - take parameters to create session for the right price
@@ -390,12 +406,29 @@ sub render_subscription {
                 $quantity = 1;
             }
 
+            unless ($vz->account->stripe_customer_id) {
+                my $customer = NP::Stripe::create_customer(
+                    email       => $self->user->email,
+                    name        => $account->name,
+                    description => $account->organization_name,
+
+                    account_id  => $account->id_token,
+                    account_url => $self->manage_url('/manage/vendor', {a => $account->id_token}),
+                );
+                if ($customer && $customer->{id}) {
+                    $account->stripe_customer_id($customer->{id});
+                    $account->save();
+                }
+            }
+
             my %args = (
                 price_id => $price_id,
                 quantity => $quantity,
 
-                account_id  => $self->current_account->id_token,
-                customer_id => $vz->account->stripe_customer_id,
+                environment => "devel",
+                account_id  => $account->id_token,
+
+                customer_id => $account->stripe_customer_id,
                 email       => $self->user->email,
 
                 return_url => $return_url,
@@ -439,7 +472,6 @@ sub render_billing {
         NP::Stripe::billing_portal_url($account->stripe_customer_id, $return_url));
 }
 
-
 sub render_admin {
     my $self = shift;
 
@@ -462,7 +494,9 @@ sub render_admin {
                 $vz->save;
                 $self->tpl_param("msg" => $vz->zone_name . ' rejected');
             }
-            elsif ($vz->status =~ m/(Pending|Rejected)/ and $status =~ m/^Approve/) {
+            elsif ( $vz->status =~ m/(Pending|Rejected)/
+                and $status =~ m/^Approve/)
+            {
                 $vz->status('Approved');
                 $vz->save;
 

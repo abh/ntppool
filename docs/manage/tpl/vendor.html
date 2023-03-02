@@ -1,66 +1,60 @@
 [% page.js.push("ntppool.js"); USE Number.Format; %]
 
-<div class="block">
+[% have_subscription = combust.current_account.live_subscriptions.size %]
 
-    [% IF 0 AND combust.current_account.vendor_zones_count > 0 %]
-    <b>plan?</b> <!-- show "plan" for account  -->
+<div class="row">
+
+    [% vendor_zones = combust.current_account.vendor_zones %]
+
+    [% add_col = 8 %]
+
+    [% IF vendor_zones.size > 0 %]
+        [% add_col = 3 %]
+    [% ELSE %]
+        [% PROCESS tpl/vendor/help.html %]
     [% END %]
 
-    [% FOR vz = combust.current_account.vendor_zones %]
+    <div class="col-md-5">
+
+    [% FOR vz = vendor_zones %]
     <h3>[% vz.zone_name | html %]</h3>
     <p>
-        ID: [% vz.id %] / [% vz.id_token %]<br>
+        <!-- ID: [% vz.id %] / [% vz.id_token %]<br> -->
         Organization: [% vz.organization_name | html %]<br />
-        Status: <i>[% vz.status %]</i><br />
+        Status: <i>
+        [% (have_subscription && vz.status == "Pending")
+          ? "Processing" : vz.status %]
+        </i><br />
         <a href="[% combust.manage_url('/manage/vendor/zone', id=vz.id_token) %]">
             [% IF vz.status == 'New' %]
-                Finish setup
+                Complete setup
             [% ELSE %]
                 View details
             [% END %]
         </a>
     </p>
-
     [% END # vendor_zone %]
 
     <p>
-        <a href="[% combust.manage_url('/manage/vendor/new') %]">Setup a new vendor zone</a>
+      <a class="btn btn-primary" href="[% combust.manage_url('/manage/vendor/new') %]">Setup a new vendor zone</a>
     </p>
 
-[% IF subscriptions %]
+</div>
 
-  <div class="row">
-    <h3>Current plan</h3>
-    <p></p>
-  </div>
 
-  <div class="row">
 
-    [% FOR plan IN subscriptions %]
+<div class="col-[% add_col %] col-md-[% add_col + 1 %]">
+  [% IF subscriptions.size > 0 %]
+    [% PROCESS tpl/vendor/billing.html %]
+  [% END %]
 
-      <div class="col">
-
-      <b>
-        [% plan.name %]
-      </b>
-
-      <ul class="product-details">
-        <li>Up to [% plan.max_zones %] DNS zones</li>
-        <li>Up to [% plan.max_devices | format_number %] client devices</li>
-      </ul>
-    </div>
-    [% END %]
-  </div>
-
-    <form method="post" class="form-inline btn-inline" action="/manage/vendor/billing">
-        <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
-        <input type="hidden" name="a" value="[% combust.current_account.id_token %]">
-        <input type="submit" class="btn btn-primary" value="Update billing information &rarr;" />
-    </form>
-
-[% END %]
-
+  [% IF vendor_zones.size > 0 %]
+  <hr>
     [% PROCESS tpl/vendor/help.html %]
+  [% END %]
+</div>
+
+
 
     <!--
             todo: if zone is setup, but no "plan" exists, link to

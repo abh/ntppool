@@ -1,5 +1,6 @@
 
 [% USE Number.Format %]
+[% have_subscription = vz.account.subscription_limits_not_exceeded(vz.device_count) %]
 
 <div class="row">
     <div class="col-md-12">
@@ -7,41 +8,19 @@
     </div>
 </div>
 
-[% IF vz.status == 'New' %]
-
-<div class="row">
-    <div class="col-md-12">
-      <code>
-        If subscription on file, and more zones can be added:
-        - Add to current subscription
-
-        If subscription on file, but plan has "max zones":
-        - ... Contact vendors@ to upgrade or change plan?
-
-        If no subscription, offer subscription options
-      </code>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-md-12">
-      [% PROCESS tpl/vendor/products.html %]
-    </div>
-</div>
-
-[% END %]
-
-
 <div class="row">
 
-    <div class="col-md-12">
+    <div class="col-md-4 float-right">
 
     <h3>"[% vz.zone_name | html %]" zone</h3>
 
+    [% UNLESS need_subscription %]
     <h4>Organization</h4>
     <blockquote>[% vz.organization_name | html %]</blockquote>
 
     <h4>Application information</h4>
+    [% END %]
+
     <blockquote>
         [% vz.request_information_html %]
     </blockquote>
@@ -51,36 +30,48 @@
         [% vz.device_count | format_number %]
     </blockquote>
 
+    [% UNLESS need_subscription %]
+
     <h4>Contact information</h4>
     <blockquote>
         [% vz.contact_information_html %]
     </blockquote>
 
     <h4>Status</h4>
-    <blockquote>[% vz.status %]</blockquote>
     [% IF vz.status == "Pending" %]
-    <p>
+       [% IF have_subscription %]
+       <p>
+         The DNS zone is being processed and will be setup soon.
+         <a href="mailto:[% " vendors" | email %]?subject=Vendor zone [% vz.zone_name |
+            html %] processing">Email if you have any questions</a>.
+       </p>
+       [% ELSE %]
+       <p>
         If your application hasn't been processed or responded to
         within a week, please email the <a href="mailto:[% " vendors" | email %]?subject=Vendor zone [% vz.zone_name |
             html %] application">vendor support</a> address.
-    </p>
+       </p>
+       [% END %]
+    [% ELSE # not pending %]
+        <blockquote>[% vz.status %]</blockquote>
     [% END %]
 
+    [% END # need_subscription %]
+
     [% IF vz.can_edit(combust.user) %]
-    <a class="btn btn-secondary" href="[% combust.manage_url('/manage/vendor/zone', id=vz.id_token, mode='edit') %]">
+    <a class="btn btn-secondary btn-sm" href="[% combust.manage_url('/manage/vendor/zone', id=vz.id_token, mode='edit') %]">
         &larr; Edit
     </a>
     [% END %]
+    <a class="btn btn-secondary btn-sm" href="[% combust.manage_url('/manage/vendor') %]">Back to list</a>
 
-    [% IF vz.status == 'New' %]
-    [%# 
+    [% IF vz.status == 'New' && !need_subscription %]
       <form method="post" class="form-inline btn-inline" action="/manage/vendor/submit">
-          <input type="hidden" name="id" value="{% vz.id_token %}" />
-          <input type="hidden" name="auth_token" value="{% combust.auth_token %}" />
-          <input type="hidden" name="a" value="{% combust.current_account.id_token %}">
-          <input type="submit" class="btn btn-primary" value="Activate &rarr;" />
+          <input type="hidden" name="id" value="[% vz.id_token %]" />
+          <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
+          <input type="hidden" name="a" value="[% combust.current_account.id_token %]">
+          <input type="submit" class="btn btn-primary" value="Submit for production &rarr;" />
       </form>
-    %]
     [% END %]
 
     [% IF combust.user.privileges.vendor_admin %]
@@ -98,11 +89,21 @@
     </form>
     [% END %]
 
-    <p>
-        <a href="[% combust.manage_url('/manage/vendor') %]">Back to list</a>
-    </p>
-
-
-    <small>(zone #[% vz.id_token %])</small>
+    </div>
 </div>
+
+[% IF vz.status == 'New' && need_subscription %]
+
+<div class="row">
+    <div class="col-md-12">
+      [% PROCESS tpl/vendor/products.html %]
+    </div>
+</div>
+
+[% END %]
+
+<div class="row">
+    <div class="col-md-12">
+        <small>(zone #[% vz.id_token %])</small>
+    </div>
 </div>

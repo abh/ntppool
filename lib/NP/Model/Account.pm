@@ -72,6 +72,20 @@ sub can_view {
     return shift->can_edit(shift);
 }
 
+sub live_subscriptions {
+    my $self = shift;
+    return [ grep { $_->live_subscription } $self->account_subscriptions ];
+}
+
+sub subscription_limits_not_exceeded {
+    my $self = shift;
+    my @args = @_;
+    for my $sub (@{ $self->live_subscriptions }) {
+        return 1 if not $sub->limits_exceeded(@args);
+    }
+    return 0;
+}
+
 sub bad_servers {
     my $s = [grep { $_->score < BAD_SERVER_THRESHOLD } shift->servers];
     wantarray ? @$s : $s;

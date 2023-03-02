@@ -1,5 +1,10 @@
 [% page.js.push("ntppool.js"); USE Number.Format; %]
 
+<div class="row product-header">
+  <h3>Available subscriptions</h3>
+</div>
+
+
 [% FOR product_group = product_group_list %]
 
 <div class="row product-header">
@@ -85,6 +90,12 @@
 
           [% END %]
         [% END %]
+
+        [% IF product_group == "enterprise" %]
+         <a class="btn btn-primary" href="mailto:[% " vendors" | email %]?subject=Enterprise vendor zone [% vz.zone_name |
+            html %]">Email for custom plan &rarr;</a>
+        [% END %]
+
                   </li>
 
       [% END %]
