@@ -334,7 +334,7 @@ sub post_process {
 
         # report-uri.com headers
         [   'Report-To' =>
-              '{"group":"default","max_age":31536000,"endpoints":[{"url":"https://ntppool.report-uri.com/a/d/g"}],"include_subdomains":true}'
+              '{"group":"default","max_age":31536000,"endpoints":[{"url":"https://ntppool.report-uri.com/a/t/g"}],"include_subdomains":true}'
         ],
         ['NEL' => '{"report_to":"default","max_age":31536000,"include_subdomains":true}'],
         [   'Content-Security-Policy-Report-Only' => join(
@@ -348,7 +348,7 @@ sub post_process {
                 qq[style-src 'self' fonts.googleapis.com $cspdomains;],
 
                 # qq[child-src 'self' js.stripe.com;],
-                qq[report-uri https://ntppool.report-uri.com/r/d/csp/wizard],
+                qq[report-uri https://ntppool.report-uri.com/r/t/csp/wizard],
             ),
         ],
 
