@@ -11,7 +11,7 @@ images:
       kaniko:
         cache: true
         snapshotMode: full
-        image: gcr.io/kaniko-project/executor:v1.7.0
+        image: gcr.io/kaniko-project/executor:v1.9.1
         resources:
           limits:
             cpu: 1000m

@@ -10,6 +10,7 @@ use I18N::LangTags qw(implicate_supers);
 use I18N::LangTags::Detect ();
 use List::Util qw(first);
 use Unicode::Collate;
+use Data::ULID;
 
 use NP::I18N;
 use NP::Version;
@@ -70,10 +71,19 @@ sub tt {
     ) or die "Could not initialize Combust::Template object: $Template::ERROR";
 }
 
+sub request_id {
+    my ($self, $id) = @_;
+    $self->{_request_id} = $id if $id;
+    return $self->{_request_id};
+}
+
 sub init {
     my $self = shift;
 
     NP::Model->db->ping;
+
+    my $request_id = $self->request_id(Data::ULID::ulid());
+    $self->request->header_out('Request-ID', $request_id);
 
     if ($self->site ne 'manage') {
 
