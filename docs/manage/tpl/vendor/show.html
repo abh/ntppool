@@ -81,10 +81,10 @@
         <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
         <input type="hidden" name="a" value="[% combust.current_account.id_token %]">
         [% IF vz.status == 'Pending' or vz.status == 'Rejected' %]
-        <input type="submit" name="status_change" value="Approve" />
+        <input class="btn btn-success" type="submit" name="status_change" value="Approve" />
         [% END %]
         [% IF vz.status == 'Pending' %]
-        <input type="submit" name="status_change" value="Reject" />
+        <br><br><input class="btn btn-info btn-sm" type="submit" name="status_change" value="Reject" />
         [% END %]
     </form>
     [% END %]

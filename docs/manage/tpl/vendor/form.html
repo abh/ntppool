@@ -1,5 +1,8 @@
 [% page.js.push("ntppool.js"); %]
 
+<div class="row">
+    <div class="col-md-8">
+
 <div class="block">
 
     [% PROCESS tpl/vendor/help.html %]
@@ -28,13 +31,13 @@
                 </div>
                 <div class="row">
                     <div class="col">
-                        <input type="text" id="zone_name" class="form-control text" name="zone_name"
+                        <input type="text" id="zone_name" class="form-control" name="zone_name"
                             value="[% vz.zone_name | html %]" id="name" size="18" maxsize="50">
 
                     </div>
 
                     <div class="col">
-                        .[% vz.dns_root.origin || dns_roots.0.origin %]
+                       ([name].[% vz.dns_root.origin || dns_roots.0.origin %])
                     </div>
 
                 </div>
@@ -44,26 +47,15 @@
                 <b>Organization name</b><br> (who is the organization using this zone?)<br>
                 [% IF errors.organization_name %]<div class="error">[% errors.organization_name | html %]</div>[%
                 END %]
-                <input type="text" class="text" name="organization_name"
+                <input type="text" class="form-control" name="organization_name"
                     value="[% account.organization_name || vz.organization_name | html %]" id="organization_name"
                     size="65">
-                <br>
-                <br>
-
-                <b>Device implementation information</b><br>
-                What devices will use the pool? How often will they poll?
-                Please read the <a href="[% combust.www_url("/vendors.html") %]">DNS zone information faq</a>.
-                (Only visible to NTP Pool admins)<br>
-                [% IF errors.request_information %]<div class="error">[% errors.request_information | html %]</div>
-                [%
-                END %]
-                <textarea name="request_information" rows="6" cols="65">[% vz.request_information | html %]</textarea>
-
                 <br><br>
+
 
                 <b>Device count</b> (estimated)<br>
                 [% IF errors.device_count %]<div class="error">[% errors.device_count | html %]</div>[% END %]
-                <select name="device_count" id="device_count">
+                <select class="custom-select" name="device_count" id="device_count">
                     <option value=""> Number of devices </option>
                     [% USE Number.Format;
                     FOR count = device_count_options %]
@@ -72,9 +64,21 @@
                         [% count | format_number %] </option>
                     [% END %]
                 </select>
+                <br><br>
+
+
+                <b>Device implementation information</b><br>
+                What devices will use the pool? How often will they poll?
+                Please read the <a href="[% combust.www_url("/vendors.html") %]">DNS zone information faq</a>.
+                (Only visible to NTP Pool admins)<br>
+                [% IF errors.request_information %]<div class="error">[% errors.request_information | html %]</div>
+                [%
+                END %]
+                <textarea class="form-control" name="request_information" rows="6" cols="65">[% vz.request_information | html %]</textarea>
 
                 <br><br>
 
+                [% IF vz.contact_information %]
                 <b>Contact information</b><br>
                 Email addresses, direct phone numbers for your NOC or
                 network/engineering technical support. (Only visible to the NTP Pool
@@ -82,13 +86,15 @@
                 [% IF errors.contact_information %]<div class="error">[% errors.contact_information | html %]</div>
                 [%
                 END %]
-                <textarea name="contact_information" rows="5" cols="65">[% vz.contact_information | html %]</textarea>
-
+                <textarea class="form-control" name="contact_information" rows="5" cols="65">[% vz.contact_information | html %]</textarea>
                 <br>
+                [% END %]
 
                 <p><input type="submit" class="btn btn-primary" value="Continue &rarr;"></p>
             </fieldset>
         </div>
     </form>
 
+</div>
+</div>
 </div>

@@ -1445,6 +1445,8 @@ __PACKAGE__->meta->setup(
     contact_information => { type => 'text', length => 65535 },
     request_information => { type => 'text', length => 65535 },
     device_count        => { type => 'integer' },
+    opensource          => { type => 'integer', default => '0', not_null => 1 },
+    opensource_info     => { type => 'text', length => 65535 },
     rt_ticket           => { type => 'integer' },
     approved_on         => { type => 'datetime' },
     created_on          => { type => 'datetime', default => 'now', not_null => 1 },

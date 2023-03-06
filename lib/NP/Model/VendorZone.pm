@@ -30,7 +30,7 @@ sub json_model {
 
     my $j = {zone_id => $vz->id_token};
 
-    for my $f (qw(zone_name contact_information device_count organization_name request_information))
+    for my $f (qw(zone_name contact_information device_count organization_name request_information opensource opensource_info))
     {
         $j->{$f} = $vz->$f();
     }
@@ -61,7 +61,7 @@ sub validate {
         }
     }
 
-    for my $f (qw(contact_information device_count organization_name request_information)) {
+    for my $f (qw(device_count organization_name request_information)) {
         $errors->{$f} = 'Required field' unless $vz->$f and $vz->$f =~ m/\S/;
     }
 

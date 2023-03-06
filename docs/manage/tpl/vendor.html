@@ -41,10 +41,8 @@
 
 </div>
 
-
-
 <div class="col-[% add_col %] col-md-[% add_col + 1 %]">
-  [% IF subscriptions.size > 0 %]
+  [% IF subscriptions && subscriptions.size > 0 %]
     [% PROCESS tpl/vendor/billing.html %]
   [% END %]
 

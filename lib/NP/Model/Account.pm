@@ -8,7 +8,7 @@ use Combust::Config ();
 
 sub BAD_SERVER_THRESHOLD {-15}
 
-my $config  = Combust::Config->new;
+my $config = Combust::Config->new;
 
 sub token_key_config {
     return 'account_id_key';
@@ -32,21 +32,23 @@ sub display_name {
 
 sub validate {
     my $account = shift;
-    my $errors = {};
+    my $errors  = {};
     for my $f (qw(name)) {
         $errors->{$f} = 'Required field' unless $account->$f and $account->$f =~ m/\S/;
     }
 
     if ($account->public_profile and !$account->url_slug) {
         my $base36 = Math::BaseCalc->new(digits => ['a' .. 'k', 'm' .. 'z', 2 .. 9]);
-        my $url = join "", map { $base36->to_base(irand) } (undef) x 2;
+        my $url    = join "", map { $base36->to_base(irand) } (undef) x 2;
         $account->url_slug($url);
     }
 
     if (my $url = $account->url_slug) {
         if ($url =~ m{[^a-z0-9-_]}i) {
-            $errors->{url_slug} = "Page URL can only contain basic letters, numbers, hypens and underscores"
+            $errors->{url_slug} =
+              "Page URL can only contain basic letters, numbers, hypens and underscores";
         }
+
         # check uniqueness
     }
 
@@ -74,13 +76,15 @@ sub can_view {
 
 sub live_subscriptions {
     my $self = shift;
-    return [ grep { $_->live_subscription } $self->account_subscriptions ];
+
+    # todo: this should return a list instead to be more like ->account_subscriptions
+    return [grep { $_->live_subscription } $self->account_subscriptions];
 }
 
 sub subscription_limits_not_exceeded {
     my $self = shift;
     my @args = @_;
-    for my $sub (@{ $self->live_subscriptions }) {
+    for my $sub (@{$self->live_subscriptions}) {
         return 1 if not $sub->limits_exceeded(@args);
     }
     return 0;
@@ -98,7 +102,7 @@ sub servers {
     my $s = NP::Model->server->get_servers(
         query => [
             account_id => $self->id,
-            or      => [
+            or         => [
                 deletion_on => undef,                       # not deleted
                 deletion_on => {'gt' => DateTime->today}    # deleted in the future
             ],
@@ -106,7 +110,7 @@ sub servers {
     );
     $s = [
         sort {
-            my $r = 0;
+            my $r  = 0;
             my $ia = Net::IP->new($a->ip);
             my $ib = Net::IP->new($b->ip);
 

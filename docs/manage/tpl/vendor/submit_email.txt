@@ -12,6 +12,14 @@ Notes:
 [% vz.request_information %]
 
 
+[% IF vz.contact_information %]
 Contact information:
 
 [% vz.contact_information %]
+[% END %]
+
+[% IF vz.opensource_info %]
+Open Source information:
+
+[% vz.opensource_info %]
+[% END %]

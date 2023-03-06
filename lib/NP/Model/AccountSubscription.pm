@@ -45,7 +45,7 @@ sub limits_exceeded {
 }
 
 sub stripe_dashboard_link {
-    my $self = shift;
+    my $self   = shift;
     my $sub_id = $self->stripe_subscription_id or return "";
     my $prefix = "https://dashboard.stripe.com/";
     if ($deployment_mode ne "prod") {

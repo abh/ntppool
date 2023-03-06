@@ -11,6 +11,12 @@
 [% IF last_account_id != vz.account.id;
    last_account_id = vz.account.id
 %]
+
+
+[% IF ! loop.first %]
+</ul>
+[% END %]
+
 <h4>[% vz.account.name | html %]</h4>
 
 <ul>
@@ -18,9 +24,17 @@
 [% FOR sub = vz.account.live_subscriptions %]
 <li>Plan: [% sub.name %] (<a href="[% sub.stripe_dashboard_link %]">billing</a>)</li>
 [% END %]
+<br>
+[% END # new account.id %]
+
+<li>
+    <a href="admin?show=1;id=[% vz.id_token %]">
+        [% vz.zone_name | html %]
+    </a>
+    ([% vz.status %])<br>
+    [% vz.modified_on %]
+</li>
+
+[% END %]
+
 </ul>
-
-[% END %]
-
-<a href="admin?show=1;id=[% vz.id_token %]">[% vz.zone_name | html %]</a> [% vz.status %], [% vz.modified_on %]<br/>
-[% END %]

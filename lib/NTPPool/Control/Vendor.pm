@@ -133,8 +133,8 @@ sub render_zone {
         $self->tpl_param('product_group_list', $group_list);
     }
 
-    my @subs = $self->current_account->account_subscriptions;
-    if (@subs) {
+    my $subs = $self->current_account->live_subscriptions;
+    if ($subs && @$subs) {
 
         # https://stripe.com/docs/billing/subscriptions/overview#subscription-statuses
 
@@ -145,6 +145,9 @@ sub render_zone {
         # past_due: don't allow new zones
         # canceled: don't allow new zones,
         # unpaid: don't allow new zones, link to payment
+
+        # todo:
+        #  - help incomplete subscriptions along?
 
         # invoice.status
         #   open: show payment link?
@@ -160,18 +163,15 @@ sub render_zone {
             'unpaid'             => 3,
         );
 
-        @subs = sort {
+        @$subs = sort {
                  $sort{$a->{status}}   <=> $sort{$b->{status}}
               || $b->created_on->epoch <=> $a->created_on->epoch
-        } @subs;
-
-        # If subscription on file, and more zones can be added:
-        # - Add to current subscription
+        } @$subs;
 
         # If subscription on file, but plan has "max zones":
         # - ... Contact vendors@ to upgrade or change plan?
 
-        $self->tpl_param('subscriptions', \@subs);
+        $self->tpl_param('subscriptions', $subs);
 
         return OK, $self->evaluate_template('tpl/vendor/show.html');
 
@@ -197,6 +197,33 @@ sub render_submit {
         my $errors = $vz->validation_errors;
         $self->tpl_param('errors', $errors);
         return $self->render_form($vz);
+    }
+
+   # the basic information validated, so we're in the "subscription / open source" context past this
+
+    my $ok = $vz->account->subscription_limits_not_exceeded($vz->device_count);
+    my $errors;
+
+    if ($self->req_param('opensource_request')) {
+        if (my $osinfo = $self->req_param('opensource_info')) {
+
+            # todo: sanity check the data?
+            $ok = 1;
+            $vz->opensource(1);
+            $vz->opensource_info($osinfo);
+        }
+        else {
+            $errors = {opensource_info => 'Please provide open source information'};
+        }
+    }
+
+    unless ($ok) {
+        if (!$errors) {
+            $errors->{missing_plan} =
+              'Please choose a subscription plan or choose open source below';
+        }
+        $self->tpl_param('errors', $errors);
+        return $self->render_zone($vz->id);
     }
 
     $vz->status('Pending');
@@ -263,7 +290,8 @@ sub _edit_zone {
     $zone_name =~ s/[^a-z0-9-]+//g;
 
     # validation is in NP::Model::VendorZone
-    my @fields = qw(organization_name request_information contact_information device_count);
+    my @fields =
+      qw(organization_name request_information contact_information device_count opensource_info);
 
     if ($vz) {
         $vz->zone_name($zone_name);
@@ -452,7 +480,6 @@ sub render_subscription {
     warn "customer id: ", $account->stripe_customer_id;
 
     if (my @subs = $self->current_account->account_subscriptions) {
-        warn "have subscriptions ...";
         $self->tpl_param('subscriptions', \@subs);
     }
 
@@ -498,6 +525,7 @@ sub render_admin {
                 and $status =~ m/^Approve/)
             {
                 $vz->status('Approved');
+                $vz->approved_on(DateTime->now);
                 $vz->save;
 
                 $self->tpl_param('vz' => $vz);
@@ -521,8 +549,8 @@ sub render_admin {
     }
 
     my $pending = NP::Model->vendor_zone->get_vendor_zones(
-        query        => [status => ['Pending', 'New']],
-        sort_by      => 'id desc',
+        query        => [status => ['Pending']],
+        sort_by      => 'account_subscriptions.created_on desc, account.id desc',
         with_objects => ['account', 'account.account_subscriptions'],
 
     );

@@ -898,5 +898,10 @@ alter table account_subscriptions
 alter table accounts
   modify stripe_customer_id varchar(255) COLLATE utf8_bin null;
 
+#106
+alter table vendor_zones
+   add opensource tinyint(1) not null default 0 after device_count,
+   add opensource_info text null after opensource;
+
 #todo
 - ...

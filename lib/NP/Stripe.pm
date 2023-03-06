@@ -19,7 +19,7 @@ sub _gw_api {
 
     my $url = "${stripe_gw}/api/v1/$function";
 
-    warn "calling stripe gw API: $url";
+    #warn "calling stripe gw API: $url";
 
     my $res;
 

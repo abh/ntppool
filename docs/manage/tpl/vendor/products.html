@@ -1,17 +1,37 @@
 [% page.js.push("ntppool.js"); USE Number.Format; %]
 
 <div class="row product-header">
-  <h3>Available subscriptions</h3>
+  <div class="col-sm">
+    <h3>Commercial companies / revenue products</h3>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-sm">
+
+    [% IF errors.missing_plan %]
+      <div class="error">[% errors.missing_plan | html %]</div>
+    [% END %]
+
+    Looking for something else?
+    <a
+      href="mailto:[% "vendors" | email %]?subject=NTP Pool DNS zone [% vz.zone_name | html %]">
+      Email for questions</a> or to request a custom plan.
+
+    See <a href="#opensource">below for open source</a>.
+  </div>
 </div>
 
 
 [% FOR product_group = product_group_list %]
 
 <div class="row product-header">
-  <h4>[% product_group | ucfirst %]</h4>
+  <div class="col-sm-4">
+    <h4>[% product_group | ucfirst %]</h4>
+  </div>
 </div>
 
-  <div class="row">
+  <div class="product-group row">
   [% FOR pr = products_by_group.$product_group; %]
   <div class="col">
 
@@ -73,8 +93,8 @@
       </li>
 
       [% IF pr.Available %]
-          <li class="continue">
-          <br>
+        <li class="continue">
+        <br>
         [% FOR plan = pr.Plans %]
 
           [% IF plan.Available %]
@@ -92,11 +112,10 @@
         [% END %]
 
         [% IF product_group == "enterprise" %]
-         <a class="btn btn-primary" href="mailto:[% " vendors" | email %]?subject=Enterprise vendor zone [% vz.zone_name |
+         <a class="btn btn-primary" href="mailto:[% "vendors" | email %]?subject=Enterprise NTP Pool zone [% vz.zone_name |
             html %]">Email for custom plan &rarr;</a>
         [% END %]
-
-                  </li>
+        </li>
 
       [% END %]
 
@@ -105,15 +124,50 @@
         <small class="text-muted">
           Only for zones with less than [% pr.MaxClients | format_number %] devices.
         </small>
-
       </li>
       [% END %]
-
-
   </ul>
 
-    </div>
-      [% END # for products %]
+  </div>
+  [% END # for products %]
+
+</div>
+[% END # for product_groups %]
+
+
+<div id="opensource" class="row product-header">
+  <div class="col-sm">
+    <h3>Open Source (non-revenue)</h3>
+  </div>
 </div>
 
-[% END # for product_groups %]
+<div class="row">
+  <div class="col-md">
+  <p>The NTP Pool Project is an open source project built and operated by contributors from across the world for almost 2 decades. Supporting open source is crucial to the project.</p>
+  <p>If your project is open source, we will setup the DNS zone and the service without a paid subscription.</p>
+  <p>Many resources for the NTP Pool itself are provided gratis or at discounts (which we appreciate greatly!). All the same, the project has operating expenses for providing time service for the world.</p>
+  <p>Companies or projects that generate revenue we encourage to use a paid subscription. For example, the NTP Pool itself by this standard would not use the open source plan. If your staff is largely volunteers and most of your work is not revenue related, the open source plan might be appropriate. By this standard, the NTP Pool would use the open source plan.</p>
+  <p>If you have questions about this,
+    please <a href="mailto:[% "vendors" | email %]?subject=NTP Pool DNS zone [% vz.zone_name | html %] (open source)">
+    get in touch</a>.
+  </p>
+
+
+  <form method="post" class="form-inline btn-inline" action="[% combust.manage_url('/manage/vendor/submit', id => vz.id_token ) %]#opensource">
+    <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
+    <input type="hidden" name="a" value="[% combust.current_account.id_token %]">
+    <input type="hidden" name="opensource_request" value="1">
+
+    <i>
+      Briefly describe the open source, link to source code, license name
+      and (lack of 😉) business model:
+    </i><br>
+    [% IF errors.opensource_info %]
+      <div class="error">[% errors.opensource_info | html %]</div>
+    [% END %]
+    <textarea name="opensource_info" class="form-control" rows="5" cols="65"></textarea><br>
+
+    <input type="submit" class="btn btn-primary" value="Continue &rarr;" />
+  </form>
+  </div>
+</div>
