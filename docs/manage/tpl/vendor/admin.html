@@ -4,6 +4,23 @@
 </div>
 [% END %]
 
+<h3>Pending zones</h3>
+
+[% last_account_id = 0 %]
 [% FOR vz = pending_zones %]
-<a href="admin?show=1;id=[% vz.id_token %]">[% vz.zone_name | html %]</a> (modified: [% vz.modified_on %])<br/>
+[% IF last_account_id != vz.account.id;
+   last_account_id = vz.account.id
+%]
+<h4>[% vz.account.name | html %]</h4>
+
+<ul>
+<li><a href="[% vz.account.url %]">Account</a></li>
+[% FOR sub = vz.account.live_subscriptions %]
+<li>Plan: [% sub.name %] (<a href="[% sub.stripe_dashboard_link %]">billing</a>)</li>
+[% END %]
+</ul>
+
+[% END %]
+
+<a href="admin?show=1;id=[% vz.id_token %]">[% vz.zone_name | html %]</a> [% vz.status %], [% vz.modified_on %]<br/>
 [% END %]

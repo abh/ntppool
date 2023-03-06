@@ -521,8 +521,10 @@ sub render_admin {
     }
 
     my $pending = NP::Model->vendor_zone->get_vendor_zones(
-        query   => [status => 'Pending'],
-        sort_by => 'id desc',
+        query        => [status => ['Pending', 'New']],
+        sort_by      => 'id desc',
+        with_objects => ['account', 'account.account_subscriptions'],
+
     );
 
     $self->tpl_param(pending_zones => $pending);

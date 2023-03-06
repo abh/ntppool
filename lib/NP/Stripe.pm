@@ -52,11 +52,11 @@ sub _gw_api {
         return \%r;
     }
 
-    warn " JS : ", $res->decoded_content();
+    #warn "JSON: ", $res->decoded_content();
 
     %r = %{$json->decode($res->decoded_content) || {}};
 
-    # warn " STRIPE R : ", Data::Dump::pp(\%r);
+    #warn "Data: ", Data::Dump::pp(\%r);
 
     return \%r;
 }
