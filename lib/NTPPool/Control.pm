@@ -23,6 +23,7 @@ our %valid_languages = (
     ca => {name => "Català",    testing => 1},
     da => {name => "Dansk"},
     de => {name => "Deutsch"},
+	el => {name => "Ελληνικά"},
     en => {name => "English",},
     es => {name => "Español"},
     eu => {name => "Euskara", testing => 1},
