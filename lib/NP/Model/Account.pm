@@ -74,17 +74,21 @@ sub can_view {
     return shift->can_edit(shift);
 }
 
+sub have_live_subscription {
+    my $self = shift;
+    return 1 if $self->live_subscriptions;
+    return 0;
+}
+
 sub live_subscriptions {
     my $self = shift;
-
-    # todo: this should return a list instead to be more like ->account_subscriptions
-    return [grep { $_->live_subscription } $self->account_subscriptions];
+    return grep { $_->live_subscription } $self->account_subscriptions;
 }
 
 sub subscription_limits_not_exceeded {
     my $self = shift;
     my @args = @_;
-    for my $sub (@{$self->live_subscriptions}) {
+    for my $sub ($self->live_subscriptions) {
         return 1 if not $sub->limits_exceeded(@args);
     }
     return 0;

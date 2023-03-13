@@ -101,9 +101,13 @@ sub billing_portal_url {
 }
 
 sub get_products {
+    my $zone_count   = shift || 1;
     my $device_count = shift || 0;
-    my $r            = _gw_get_api('products', {quantity => $device_count});
+    my $r            = _gw_get_api('products', {quantity => $device_count, zones => $zone_count});
     return $r unless $r and $r->{Products};
+
+    # warn "PRODUCTS: ", Data::Dump::pp($r);
+
     $r->{Products} = [map { $_->{Name} =~ s/NTP Pool//; $_ } @{$r->{Products}}];
     return $r;
 }
@@ -111,8 +115,7 @@ sub get_products {
 sub _plan_process_data {
 
     # plan or product
-    my $p                 = shift;
-    my $zone_device_count = shift || 0;
+    my $p = shift;
 
     # if we're processing a plan, set single_price / price / tiered
     if ($p->{ID} !~ m/^prod_/) {
@@ -159,8 +162,9 @@ sub _plan_process_data {
 }
 
 sub product_groups {
-    my $zone_device_count = shift || 0;
-    my $products          = get_products($zone_device_count);
+    my $zone_count   = shift || 1;
+    my $device_count = shift || 0;
+    my $products     = get_products($zone_count, $device_count);
 
     if ($products->{error}) {
         warn "stripe gw error: ", $products->{error};
@@ -179,13 +183,13 @@ sub product_groups {
     for my $p (@{$products->{Products}}) {
 
         # is the product available?
-        _plan_process_data($p, $zone_device_count);
+        _plan_process_data($p);
 
         # warn "product: $p->{Name}";
-        # warn "zone: $zone_device_count -- max $p->{MaxClients}; min $p->{MinClients}";
+        # warn "zone: $device_count -- max $p->{MaxClients}; min $p->{MinClients}";
 
         for my $plan (@{$p->{Plans}}) {
-            _plan_process_data($plan, $zone_device_count);
+            _plan_process_data($plan);
 
             # copy "up" some plan data to the product summary
             for my $f (qw(tiered single_price)) {

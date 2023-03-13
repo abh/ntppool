@@ -96,7 +96,22 @@
 
 <div class="row">
     <div class="col-md-12">
-      [% PROCESS tpl/vendor/products.html %]
+      [% IF need_upgrade %]
+        <div>
+        <p>
+            <br>
+            The current subscription plan doesn't support adding the new DNS zone.
+        </p>
+        <p>
+            <a href="mailto:[% "vendors" | email %]?subject=NTP Pool DNS zone [% vz.zone_name | html %] - subscription change"
+                >Email to change the plan or with other questions</a>.
+        </p>
+            <!-- waiting for subscription_update_confirm to be available
+                https://stripe.com/docs/customer-management/portal-deep-links -->
+        </div>
+      [% ELSE %]
+        [% PROCESS tpl/vendor/products.html %]
+      [% END %]
     </div>
 </div>
 

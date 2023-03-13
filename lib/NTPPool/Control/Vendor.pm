@@ -119,22 +119,34 @@ sub render_zone {
       if (  $mode eq 'edit'
         and $vz->can_edit($self->user));
 
-    my $zone_device_count = $vz->device_count || 0;
+    my $device_count = $vz->device_count || 0;
 
-    # todo: only load if we need to show this
-    my ($products, $groups, $group_list) = NP::Stripe::product_groups($zone_device_count);
-    if ($products->{error}) {
-        warn "stripe gw error: ", $products->{error};
+    my @subs = $self->current_account->live_subscriptions;
 
-        # todo: show error?
+    if ($vz->status eq 'New') {
+
+        # todo: only load if we need to show this
+        my ($products, $groups, $group_list) = NP::Stripe::product_groups(1, $device_count);
+        if ($products->{error}) {
+            warn "stripe gw error: ", $products->{error};
+
+            # todo: show error?
+        }
+        else {
+            $self->tpl_param('products_by_group',  $groups);
+            $self->tpl_param('product_group_list', $group_list);
+        }
+
+        unless ($vz->account->subscription_limits_not_exceeded($vz->device_count)) {
+            $self->tpl_param('need_subscription' => 1);
+            if (@subs) {    # already have subscriptions, but it wasn't enough...
+                warn "need upgrade";
+                $self->tpl_param('need_upgrade' => 1);
+            }
+        }
     }
-    else {
-        $self->tpl_param('products_by_group',  $groups);
-        $self->tpl_param('product_group_list', $group_list);
-    }
 
-    my $subs = $self->current_account->live_subscriptions;
-    if ($subs && @$subs) {
+    if (@subs) {
 
         # https://stripe.com/docs/billing/subscriptions/overview#subscription-statuses
 
@@ -163,21 +175,19 @@ sub render_zone {
             'unpaid'             => 3,
         );
 
-        @$subs = sort {
+        @subs = sort {
                  $sort{$a->{status}}   <=> $sort{$b->{status}}
               || $b->created_on->epoch <=> $a->created_on->epoch
-        } @$subs;
+        } @subs;
 
         # If subscription on file, but plan has "max zones":
         # - ... Contact vendors@ to upgrade or change plan?
 
-        $self->tpl_param('subscriptions', $subs);
+        $self->tpl_param('subscriptions', \@subs);
 
         return OK, $self->evaluate_template('tpl/vendor/show.html');
 
     }
-
-    $self->tpl_param('need_subscription' => 1);
 
     return OK, $self->evaluate_template('tpl/vendor/show.html');
 }
@@ -219,9 +229,18 @@ sub render_submit {
 
     unless ($ok) {
         if (!$errors) {
+
+            # for products page if no accounts exist
+
+            $self->tpl_param('need_subscription', 1);
+
             $errors->{missing_plan} =
-              'Please choose a subscription plan or choose open source below';
+              'Please choose a subscription plan or choose open source below'
+              unless ($vz->account->have_live_subscription);
+
         }
+
+        # warn "errors ", Data::Dump::pp($errors);
         $self->tpl_param('errors', $errors);
         return $self->render_zone($vz->id);
     }
@@ -404,8 +423,8 @@ sub render_subscription {
     # choosing a product
     if ($product_id) {
 
-        my $zone_device_count = $vz->device_count || 0;
-        my ($products, $groups, $group_list) = NP::Stripe::product_groups($zone_device_count);
+        my $device_count = $vz->device_count || 0;
+        my ($products, $groups, $group_list) = NP::Stripe::product_groups(1, $device_count);
 
         warn "STRIPE: ", Data::Dump::pp($products);
         if ($products->{error}) {
