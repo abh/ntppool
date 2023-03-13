@@ -48,7 +48,7 @@ msgid  "Links"
 msgstr "Σύνδεσμοι"
 
 msgid  "Terms of service"
-msgstr "Οροι χρήσης"
+msgstr "Όροι χρήσης"
 
 msgid  "Subscribe in a reader"
 msgstr "Κάντε εγγραφή"
@@ -83,7 +83,7 @@ msgstr "Περισσότερες τεχνικές (και ιδανικά ρεα�
 
 # tpl/server.html
 msgid  "Back to the front page"
-msgstr "Επιστρογή στην αρχική σελίδα"
+msgstr "Επιστροφή στην κεντρική σελίδα"
 
 msgid  "Find"
 msgstr "Εύρεση"
