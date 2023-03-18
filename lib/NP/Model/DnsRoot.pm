@@ -209,8 +209,8 @@ sub populate_vendor_zones {
     for my $name (sort keys %vendors) {
         next unless $name;    # vendor_name="" on separate dns root
         my $client_type = $vendors{$name}->{type};
-        my $sntp        = ($client_type eq 'sntp' or $client_type eq 'all');
-        my $ntp         = ($client_type eq 'ntp' or $client_type eq 'all');
+        my $sntp        = ($client_type eq 'sntp' or $client_type eq 'legacy');
+        my $ntp         = ($client_type eq 'ntp' or $client_type eq 'legacy');
         unless ($sntp or $ntp) {
             $sntp = 1;
             $ntp  = 1;

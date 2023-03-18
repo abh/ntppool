@@ -1441,7 +1441,7 @@ __PACKAGE__->meta->setup(
     status              => { type => 'enum', check_in => [ 'New', 'Pending', 'Approved', 'Rejected' ], default => 'New', not_null => 1 },
     user_id             => { type => 'integer' },
     organization_name   => { type => 'varchar', length => 255 },
-    client_type         => { type => 'enum', check_in => [ 'ntp', 'sntp', 'all' ], default => 'ntp', not_null => 1 },
+    client_type         => { type => 'enum', check_in => [ 'ntp', 'sntp', 'legacy' ], default => 'sntp', not_null => 1 },
     contact_information => { type => 'text', length => 65535 },
     request_information => { type => 'text', length => 65535 },
     device_count        => { type => 'integer' },

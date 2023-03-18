@@ -903,5 +903,11 @@ alter table vendor_zones
    add opensource tinyint(1) not null default 0 after device_count,
    add opensource_info text null after opensource;
 
+#107
+alter table vendor_zones
+  modify client_type enum ('ntp', 'sntp', 'legacy') not null default 'sntp';
+
+update vendor_zones set client_type = 'legacy' where client_type = 'ntp';
+
 #todo
 - ...
