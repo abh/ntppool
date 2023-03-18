@@ -50,8 +50,17 @@
                 <input type="text" class="form-control" name="organization_name"
                     value="[% account.organization_name || vz.organization_name | html %]" id="organization_name"
                     size="65">
-                <br><br>
+                <br>
+                <br>
 
+                <b>Vendor zone information</b><br>
+                What devices will use the pool? How often will they poll? (Optional)
+                Please read the <a href="[% combust.www_url("/vendors.html") %]">vendor zone information faq</a>.
+                [% IF errors.request_information %]<div class="error">[% errors.request_information | html %]</div>
+                [% END %]
+                <textarea name="request_information" rows="12" cols="65">[% vz.request_information | html %]</textarea>
+
+                <br><br>
 
                 <b>Device count</b> (estimated)<br>
                 [% IF errors.device_count %]<div class="error">[% errors.device_count | html %]</div>[% END %]
