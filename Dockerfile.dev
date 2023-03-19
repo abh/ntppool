@@ -1,6 +1,6 @@
 FROM harbor.ntppool.org/ntppool/base-os:main
 
-ENV BUILD 20200610
+ENV BUILD 20220403
 
 USER root
 

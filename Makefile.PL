@@ -30,7 +30,6 @@ WriteMakefile(
 
                   'Locale::Maketext::Lexicon' => 0.84,
 
-                  'Gearman::Client' => 0,
                   'Text::CSV_XS' => 0,
                   'Time::Duration' => 0,
                   'Template::Plugin::Time::Duration' => 0,

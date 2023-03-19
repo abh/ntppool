@@ -1,25 +1,15 @@
 [%- page.style = 'email.txt' -%]
 Hello,
 
-Your vendor pool zone "[% vz.zone_name %]" has been setup. The
-hostnames below will be active within the next 20 minutes.
+Your vendor DNS NTP Pool zone "[% vz.zone_name %]" has been activated.
+The hostnames below will be active within the next 20 minutes.
 
 [%- FOR i = [0..3] -%]
    [% i %].[% vz.zone_name %].[% vz.dns_root.origin %]
 [% END %]
 
-Please subscribe to the (announce-only, very low traffic - typically a
-few mails a year or less) vendor information mailing list. We
-recommend everyone in your organization involved with project are
-subscribed: https://www.ntppool.org/vendors/list
-
-If you are a commercial organization please consider contributing
-back to the pool so we can keep the service sustainable
-even with the commercial usage:
-    https://www.ntppool.org/vendors/contribute.html
-
-The contributions makes it possible for our team of volunteers
-to run a global high quality service.
+If you have any questions, please reply to this email and we'll
+help the best we can.
 
 
 Kind regards,

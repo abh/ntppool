@@ -133,7 +133,7 @@ sub handle_login {
         warn "auth0 user error: $error";
         return $self->login($error);
     }
-    warn "Error: ", Data::Dump::pp(\$error);
+    warn "Error: ", Data::Dump::pp(\$error) if $error;
 
     my ($identity, $user);
 
@@ -255,7 +255,7 @@ sub _get_auth0_user {
     );
     my $resp = $self->ua->post($url, \%form);
     use Data::Dump qw(pp);
-    pp($resp);
+    warn "token data: ", pp($resp);
 
     $resp->is_success or return undef, "Could not fetch oauth token";
 
@@ -268,6 +268,8 @@ sub _get_auth0_user {
 
     my $user = decode_json($resp->decoded_content())
       or return undef, "Could not decode user data";
+
+    warn "user data: ", pp($user);
 
     return $user, undef;
 
@@ -332,5 +334,14 @@ sub show_staff {
     return OK, $self->evaluate_template('tpl/staff.html');
 }
 
+sub account_monitor_count {
+    my $self = shift;
+    return $self->{_account_monitor_count} if defined $self->{_account_monitor_count};
+
+    my $monitor_count =
+      NP::Model->monitor->get_objects_count(query => [account_id => $self->current_account->id]);
+
+    return $self->{_account_monitor_count} = $monitor_count;
+}
 
 1;

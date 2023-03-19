@@ -38,13 +38,19 @@ sub setup_server {
     $self->deletion_on(undef);
     $self->score_raw($start_score);
 
-    my $monitors = NP::Model->monitor->get_objects(query => [ip_version => $self->ip_version]);
+    NP::Model->servers_monitor_review->create(
+        server_id   => $self->id,
+        next_review => DateTime->now()->add(DateTime::Duration->new(minutes => 5)),
+        config      => '{}',
+    )->save();
 
+    my $monitors = NP::Model->monitor->get_objects(query => [ip_version => $self->ip_version]);
     for my $monitor (@$monitors) {
         $self->add_server_scores(
             {   server_id  => $self->id,
                 monitor_id => $monitor->id,
                 score_raw  => $self->score_raw,
+                status     => 'testing',
             }
         );
     }
@@ -68,7 +74,7 @@ sub _resolve_zone {
 
 sub join_zone {
     my ($self, $zone_name) = @_;
-    my $zone = _resolve_zone($zone_name) or return;
+    my $zone  = _resolve_zone($zone_name) or return;
     my $zones = $self->zones;
     return if grep { $zone->id == $_->id } @$zones;
     push @$zones, $zone;
@@ -88,7 +94,7 @@ sub leave_zone {
 #  local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
 
 sub zones_display {
-    my $self = shift;
+    my $self  = shift;
     my $zones = [grep { $_->name ne '.' } sort { $a->name cmp $b->name } @{$self->zones}];
     wantarray ? @$zones : $zones;
 }
@@ -125,20 +131,33 @@ sub history {
     my $since      = $options->{since};
     my $monitor_id = $options->{monitor_id};
 
-    $count ||= 50;
+    $count ||= 100;
 
     if ($since) {
         $since = DateTime->from_epoch(epoch => $since);
     }
 
+    my @monitor_where = (monitor_id => undef);
+    if (defined $monitor_id) {
+        if ($monitor_id eq '*') {
+            @monitor_where = ();
+        }
+        elsif ($monitor_id == 0) {
+            @monitor_where = (monitor_id => undef);
+        }
+        else {
+            @monitor_where = (monitor_id => $monitor_id);
+        }
+    }
+
     my $history = NP::Model->log_score->get_log_scores(
         query => [
             server_id => $self->id,
-            ($monitor_id && $monitor_id eq '*' ? () : (monitor_id => $monitor_id)),
+            @monitor_where,
             ($since ? (ts => {'>' => $since}) : ())
         ],
         sort_by => 'ts ' . (defined $since ? "" : "desc"),
-        limit => $count,
+        limit   => $count,
     );
 }
 
@@ -158,6 +177,40 @@ sub mode7check {
     my $mode7 = $self->note('mode7check');
     return unless $mode7->id;
     return $mode7;
+}
+
+sub monitors {
+    my $self   = shift;
+    my $cutoff = shift;
+
+    my $monitors = $self->server_scores;
+
+    $monitors = [
+        map {
+            my %m = (
+                id     => $_->monitor->id + 0,
+                score  => $_->score + 0,
+                name   => $_->monitor->display_name,
+                ts     => $_->score_ts,
+                status => $_->status,
+                type   => $_->monitor->type,
+            );
+            \%m;
+        } @$monitors
+    ];
+
+    if ($cutoff) {
+        $monitors = [grep { $_->{ts} && $_->{ts} > $cutoff } @{$monitors}];
+    }
+
+    $monitors = [
+        map {
+            if ($_->{ts}) { $_->{ts} = $_->{ts}->iso8601; }
+            $_
+        } @{$monitors}
+    ];
+
+    return $monitors;
 }
 
 sub log_scores_csv {
@@ -185,7 +238,7 @@ sub log_scores_csv {
                 $monitor_name =
                   defined $monitors{$monitor_id}
                   ? $monitors{$monitor_id}
-                  : ($monitors{$monitor_id} = $l->monitor->name || "");
+                  : ($monitors{$monitor_id} = $l->monitor->display_name || "");
             }
         }
 
@@ -194,8 +247,8 @@ sub log_scores_csv {
             $l->ts->strftime("%F %T"),
             map ({ $l->$_ } qw(offset step score)),
             ($options->{monitor_id} ? ($monitor_id, $monitor_name) : ()),
-            ($l->attributes ? $l->attributes->{leap}  : 0),
-            ($l->attributes ? $l->attributes->{error} : ""),
+            ($l->attributes         ? $l->attributes->{leap}       : 0),
+            ($l->attributes         ? $l->attributes->{error}      : ""),
         );
         $out .= $csv->string . "\n";
     }
@@ -215,7 +268,7 @@ sub _netspeed_human {
     return ("disabled, monitoring only") if $netspeed == 0;
 
     return ($netspeed / 1_000_000) . ' Gbit' if ($netspeed / 1_000_000 > 1);
-    return ($netspeed / 1_000) . ' Mbit' if ($netspeed / 1_000 >= 1);
+    return ($netspeed / 1_000) . ' Mbit'     if ($netspeed / 1_000 >= 1);
     return "$netspeed Kbit";
 }
 
@@ -241,7 +294,7 @@ sub find_server {
     my ($class, $arg) = @_;
     my $server;
     $server = $class->fetch(id => $arg) if ($arg =~ m/^\d+$/);
-    return $server if $server;
+    return $server                      if $server;
 
     my $ip = Net::IP->new($arg);
     if ($ip) {

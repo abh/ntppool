@@ -65,7 +65,7 @@
         </p>
 
         <table id="zone_counts">
-        <tr> 
+        <tr>
 
         [% FOR ip_version = [ "v4", "v6" ];
             server_count = zone.server_count(ip_version);
@@ -84,10 +84,10 @@
 	   st = zone.stats_days_ago(days, ip_version);
 	   NEXT UNLESS st;
 	   diff = server_count - st.count_active;
-	   color = diff > 0 ? 'green' : 'red';
+	   color = diff > 0 ? 'text-success' : 'text-warning';
 	 %]
 
-	[% st.count_active; IF diff; %] (<span style="color: [% color %]">[% diff > 0 ? '+' : ''; diff %]</span>)[% END %]
+	[% st.count_active; IF diff; %] (<span class="[% color %]">[% diff > 0 ? '+' : ''; diff %]</span>)[% END %]
 	 active [% st.ago %]<br />
 
 	[% END %]

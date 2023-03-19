@@ -159,6 +159,9 @@ a.up {
   font-size: 60%;
 }
 
+.server-id {
+  font-size: 60%;
+}
 
 #activity {
   float: right;
@@ -339,20 +342,15 @@ span.deletion {
   color: red;
 }
 
-/* graph legends */
-span.legend_header,
-span.legend {
-  margin-right: 20px;
-}
-
 .total_score {
   fill: none;
   stroke: blue;
   stroke-width: 2px
 }
 
-span.legend {
+table.legend {
   border-bottom: 1px dotted black;
+  font-size: small;
 }
 
 /* long explanation */
@@ -471,4 +469,22 @@ img.atom-logo {
 
 .btn-inline {
   display: inline-block;
+}
+
+
+ul.product-details {
+  margin-bottom: 1em;
+}
+
+ul.product-details li.continue {
+  list-style-type: none;
+}
+
+div.product-header {
+  margin-bottom: 0.5em;
+  margin-top: 1em;
+}
+
+div.product-group .btn {
+  margin: 3px;
 }

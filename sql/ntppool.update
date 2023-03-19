@@ -626,7 +626,6 @@ update monitors set config='{"samples": 1}' where config='';
 delete from zones where name = 'ap';
 
 #73
--- unused for now
 create table `log_scores_archive_status` (
   id int unsigned not null primary key auto_increment,
   archiver varchar(255) not null,
@@ -758,6 +757,157 @@ alter table log_scores
 # fix modified_on being updated by the change to add accounts
 update vendor_zones set modified_on = greatest(approved_on, created_on);
 
-#todo
+#88
+update vendor_zones set status='New', modified_on=modified_on where status='Pending';
+
+#89
+create table account_subscriptions (
+  id          int(10) unsigned NOT NULL primary key auto_increment,
+  account_id  int(10) unsigned NOT NULL,
+  stripe_subscription_id varchar(255) null,
+  status      enum('incomplete', 'incomplete_expired', 'trialing', 'active', 'past_due', 'canceled', 'unpaid') null,
+  constraint  `account_subscriptions_account_fk` foreign key (`account_id`) references accounts (`id`),
+  unique key (stripe_subscription_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+#90
+alter table accounts
+  drop account_plan_id,
+  drop foreign key vendor_plan_fk;
+
+drop table account_plans;
+
+#91
+alter table accounts
+  add stripe_customer_id varchar(255) null,
+  add unique key (stripe_customer_id);
+
+#92
+alter table account_subscriptions
+  modify status enum('incomplete', 'incomplete_expired', 'trialing', 'active', 'past_due', 'canceled', 'unpaid', 'ended') null,
+  add    name        varchar(255) not null,
+  add    max_zones   int unsigned not null,
+  add    max_clients int unsigned not null;
+
+#93
+alter table account_subscriptions
+  change max_clients max_devices int unsigned not null,
+  add    created_on  datetime not null,
+  add    ended_on    datetime null,
+  add    modified_on timestamp not null;
+
+#94
+alter table monitors
+  modify api_key varchar(64)  null,
+  add location   varchar(255) not null default '' after name,
+  add tls_name   varchar(255) null after ip_version,
+  add account_id int unsigned default null after user_id,
+  add status     enum('pending', 'testing', 'live', 'paused', 'deleted') not null after api_key,
+  add constraint `monitors_account_fk` foreign key (`account_id`) references accounts (`id`),
+  add unique key monitors_tls_name (tls_name);
+
+#95
+alter table monitors
+  modify status  enum('pending', 'testing', 'active', 'paused', 'deleted') not null;
+
+alter table server_scores
+  add    status  enum('inactive', 'testing', 'active') not null default 'testing' after stratum;
+
+update server_scores set status = 'active' where score_ts > date_sub(now(), interval 7 day);
+
+#96
+alter table monitors modify last_seen datetime(6);
+
+#97
+alter table monitors
+  add last_submit datetime(6) after last_seen;
+
+#98
+alter table monitors
+  add client_version varchar(255) not null default '' after config;
+
+#99
+alter table monitors
+  add type enum('monitor', 'score') not null default 'monitor' after id,
+  modify ip varchar(40) null,
+  modify ip_version enum ('v4', 'v6') null;
+
+create table `scorer_status` (
+  id int unsigned not null primary key auto_increment,
+  scorer_id int unsigned not null,
+  unique key (scorer_id),
+  log_score_id bigint unsigned,
+  modified_on  timestamp not null,
+  CONSTRAINT `scorer_log_score_id` FOREIGN KEY (`log_score_id`)
+      REFERENCES `log_scores` (`id`),
+  CONSTRAINT `scores_status_monitor_id_fk` FOREIGN KEY (`scorer_id`)
+      REFERENCES `monitors` (`id`)
+) engine=InnoDB default charset=utf8;
+
+#100
 alter table user_privileges
   drop see_all_user_profiles;
+
+#101
+-- for a clickhouse dictionary to lookup the monitor name
+drop view if exists monitors_data;
+create view monitors_data as
+select id, account_id, type,
+   IF(type="score", name, SUBSTRING_INDEX(tls_name,'.',1)) as name,
+   ip,  ip_version, status, client_version, last_seen, last_submit
+from monitors
+where tls_name not like '%.system';
+
+#102
+create table servers_monitor_review (
+  server_id INTEGER unsigned NOT NULL primary key,
+  --  monitor_id int unsigned not null,
+
+  last_review datetime,
+  next_review datetime,
+  last_change datetime,
+
+  config varchar(4096) not null default '',
+
+  key (next_review),
+
+  -- CONSTRAINT `server_monitor_review_monitor_id_fk` FOREIGN KEY (`monitor_id`)
+  --    REFERENCES `monitors` (`id`) on delete cascade,
+  CONSTRAINT `server_monitor_review_server_id_fk` FOREIGN KEY (`server_id`)
+      REFERENCES `servers` (`id`) on delete cascade
+) engine=InnoDB default charset=utf8;
+
+insert ignore into servers_monitor_review (server_id, config)
+    select id, '{}' from servers where deletion_on is null;
+
+#103
+update server_scores set created_on  = score_ts where created_on  < '1970-01-01';
+update server_scores set modified_on = score_ts where modified_on < '1970-01-01';
+
+alter table server_scores
+  modify status enum('new', 'testing', 'active') not null default 'new';
+
+#104
+alter table servers_monitor_review
+  modify config varchar(4096) not null default '';
+
+#105
+alter table account_subscriptions
+  modify stripe_subscription_id varchar(255) COLLATE utf8_bin null;
+
+alter table accounts
+  modify stripe_customer_id varchar(255) COLLATE utf8_bin null;
+
+#106
+alter table vendor_zones
+   add opensource tinyint(1) not null default 0 after device_count,
+   add opensource_info text null after opensource;
+
+#107
+alter table vendor_zones
+  modify client_type enum ('ntp', 'sntp', 'legacy') not null default 'sntp';
+
+update vendor_zones set client_type = 'legacy' where client_type = 'ntp';
+
+#todo
+- ...

@@ -1,0 +1,80 @@
+<div class="block" dir="rtl" lang="ar">
+
+<h3>الإعدادات الموصى بها للخوادم الراغبة بالانضمام</h3>
+
+<p dir="rtl" lang="ar">
+قسم <a href="http://support.ntp.org/bin/view/Support/WebHome">الدعم</a> على <a href="http://support.ntp.org/">support.ntp.org</a> يحتوي على العديد من المعلومات المفيدة.
+</p>
+
+<p dir="rtl" lang="ar">
+إذا كنت تريد <i>استخدام</i> النظام فقط، تفضل بالدخول على صفحة <a href="/use.html">استخدام النظام</a>.
+</p>
+
+<p dir="rtl" lang="ar">
+مجموعة (newsgroup) <a href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a>
+هي المكان الأمثل للحصول على الدعم والمساعدة حول نظام ntpd.
+</p>
+
+<p dir="rtl" lang="ar">
+تجد أدناه نقاطا مهمة إذا كنت تود إشراك خادمك بمجموعة الخوادم.
+</p>
+
+<p dir="rtl" lang="ar">قامت مجموعة مهندسي الانترنت IETF بنشر مسودة حول <a href="https://tools.ietf.org/html/draft-ietf-ntp-bcp">أفضل الممارسات الحالية لبروتوكول NTP</a> الذي ننصح به.</p>
+
+<h4 id="management-queries" dir="rtl" lang="ar">Management queries</h4>
+
+<p dir="rtl" lang="ar">يرجى ضبط الإعدادات الافتراضية لمنع "management queries". في نظام ntpd على سبيل المثال، إضافة "noquery" إلى سطور "restrict", كمثال:</p>
+
+[% INCLUDE "join/configuration/restrict-default.html" %]
+
+<p dir="rtl" lang="ar">للسماح لأوامر مثل "ntpq -c pe" بالعمل من localhost يمكنك إضافة:</p>
+
+[% INCLUDE "join/configuration/restrict-localhost.html" %]
+
+<h4 dir="rtl" lang="ar">إعداد حوالي خمس خوادم</h4>
+
+<p dir="rtl" lang="ar">
+يحتاج ntpd ليعمل كما ينبغي إلى التواصل مع ثلاثة خوادم على الأقل.
+</p>
+
+<p dir="rtl" lang="ar">
+نقترح ضبط ما بين أربعة إلى سبعة خوادم في إعدادات أي خادم مضاف إلى المجموعة.
+</p>
+
+
+<h4 dir="rtl" lang="ar">لا تستخدم خوادم <span dir="ltr" lang="en">*.pool.ntp.org</span></h4>
+
+<p dir="rtl" lang="ar">
+في حال رغبتك في إضافة خادمك في المجموعة، ولضمان خدمة أفضل على الدوام، لا ينبغي استخدام <span dir="ltr" lang="en">*.pool.ntp.org</span> في ملف الإعدادات الخاص بك.
+</p>
+
+<p dir="rtl" lang="ar">
+يتعين على مشغلي الخوادم اختيار مصادر جيدة للوقت (من ناحية الشبكة) وذلك للحفاظ على قوة ونشاط المجموعة.
+صفحة NTP.org wiki بها <a href="http://support.ntp.org/bin/view/Servers/WebHome">قائمة الخوادم العامة المتاحة</a>.
+</p>
+
+
+<h4 dir="rtl" lang="ar">استخدم ntpd المعياري</h4>
+
+<p dir="rtl" lang="ar">
+نحن نشجع دائما تنوع البرمجيات، وفي نفس الوقت العديد من أسئلة "إنها لا تعمل" لها علاقة ببرمجيات غير ntpd.
+</p>
+
+<p dir="rtl" lang="ar">
+تستطيع <i>استخدام</i> المجموعة مع أي برمجيات تتكلم NTP، وفي نفس الوقت إن كنت تريد الانضمام للمجموعة نقترح عليك
+استخدام <a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
+</p>
+
+
+<h4 dir="rtl" lang="ar">امتنع عن استخدام ساعة LOCAL</h4>
+
+<p dir="rtl" lang="ar">على خوادم المجموعة الامتناع عن استخدام ساعة LOCAL بالجهاز.</p>
+
+<h4 dir="rtl" lang="ar">انتبه من PTR DNS queries</h4>
+
+<p dir="rtl" lang="ar">أبلغ بعض مشغلي الخوادم عن أن بعض مستخدمي NTP (أو نظم الجدر النارية المستخدمة لديهم) تستخدم
+طريقة "reverse DNS" (PTR) query للحصول على عنوان IP الخادم. الرجاء الانتباه أن هذه الطريقة قد تتسبب في ارتفاع
+عدد queries. نقترح زيادة رقم "time to live" لتلك السجلات إن كانت هذه الزيادة مصدرا للقلق، وهذه الزيادة ستساهم في انخفاض هذا العدد.
+</p>
+
+</div>

@@ -19,6 +19,10 @@ function zone_chart(div, data, options) {
     var y_max = d3.max(history.map(function(e){ return e.rc })),
         y_min = 0;
 
+    if (y_max < 10) {
+        y_max++;
+    }
+
     if (y_max < 5) {
         y_max = y_max + 1;
     }
@@ -28,9 +32,9 @@ function zone_chart(div, data, options) {
         pad_w = 40,
         pad_h = 19,
 
-        y = d3.scale.linear().domain([y_max, y_min ]).range([0, h]),
+        y = d3.scaleLinear().domain([y_max, y_min]).range([0, h]),
 
-        x = d3.time.scale.utc().domain([d3.min(history.map(function(e){ return e.date; })),
+        x = d3.scaleUtc().domain([d3.min(history.map(function(e){ return e.date; })),
                                         d3.max(history.map(function(e){ return e.date; }))
             ])
             .range([0, w]);
@@ -77,8 +81,13 @@ function zone_chart(div, data, options) {
         .attr("x", -3)
         .attr("y", y)
         .attr("dy", ".35em")
+        // .attr("dy", -4)
         .attr("text-anchor", "end")
-        .text(function(ms) { return y.tickFormat(0)(ms); });
+        .text(function(ms) {
+            return ms;
+            // console.log("ms", ms);
+            // return y.tickFormat(0)(ms);
+        });
 
 
     svg.append("rect")
@@ -97,30 +106,27 @@ function zone_chart(div, data, options) {
         .data([dh])
         .enter().append("path")
         .attr("class", _class("line", "registered_count"))
-        .attr("d", d3.svg.line()
+        .attr("d", d3.line()
               .x(function(d) { return x(d.date); })
               .y(function(d) { return y(d.rc); })
-              .interpolate("monotone")
              );
 
         svg.selectAll(".active_count" + ip_version)
         .data([dh])
         .enter().append("path")
         .attr("class", _class("line", "active_count"))
-        .attr("d", d3.svg.line()
+        .attr("d", d3.line()
               .x(function(d) { return x(d.date); })
               .y(function(d) { return y(d.ac); })
-              .interpolate("monotone")
         );
 
         svg.selectAll(".inactive_count" + ip_version)
         .data([dh])
         .enter().append("path")
         .attr("class", _class("line", "inactive_count"))
-        .attr("d", d3.svg.line()
+        .attr("d", d3.line()
               .x(function(d) { return x(d.date); })
               .y(function(d) { return y(d.rc-d.ac); })
-              .interpolate("monotone")
         );
 
     });

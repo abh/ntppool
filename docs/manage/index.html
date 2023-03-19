@@ -10,6 +10,7 @@ about <a href="[% config.www_url('/join.html') %]">joining the
 NTP Pool as a server operator</a> (or <a href="/manage">continue to login</a>).
 </p>
 
+[% IF combust.system_setting('vendors') %]
 <h4>Use the NTP Pool time service as a software or hardware vendor</h4>
 <p>
 If you distribute devices or software using the NTP Pool, you must
@@ -17,6 +18,7 @@ If you distribute devices or software using the NTP Pool, you must
 for "<a href="[% combust.www_url('/vendors.html') %]">Vendor
 DNS Zone</a>" (a set of unique hostnames for your organization).
 </p>
+[% END %]
 
 <h4>Using the NTP Pool time service as an end-user</h4>
 <p>
@@ -24,5 +26,3 @@ If you are an end-user not distributing software or devices to other
 users or organizations, you don't need an account to <a href="[%
 combust.www_url('/use.html') %]">setup NTP</a>.
 </p>
-
-

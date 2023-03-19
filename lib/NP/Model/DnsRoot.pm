@@ -56,7 +56,8 @@ sub data {
             # google domain verification
             $data->{"v4zgfk4oagsu"}->{cname} = "gv-35off4weczdcxg.dv.googlehosted.com.";
             push @{$data->{""}->{txt}},
-              {txt => "facebook-domain-verification=sfjgxys7hmryn50lszk658gi7amidt"};
+              {txt => "facebook-domain-verification=sfjgxys7hmryn50lszk658gi7amidt"},
+              {txt => "google-site-verification=PRDJb3cjUxA4K-Abx2wItCnGwTkkNTRqJVjCkmAk54Q"};
         }
         elsif ($self->origin eq "beta.grundclock.com") {
             $data->{"fchof3xzaiyl"}->{cname} = "gv-fveibxaoathoje.dv.googlehosted.com.";
@@ -208,8 +209,8 @@ sub populate_vendor_zones {
     for my $name (sort keys %vendors) {
         next unless $name;    # vendor_name="" on separate dns root
         my $client_type = $vendors{$name}->{type};
-        my $sntp        = ($client_type eq 'sntp' or $client_type eq 'all');
-        my $ntp         = ($client_type eq 'ntp' or $client_type eq 'all');
+        my $sntp        = ($client_type eq 'sntp' or $client_type eq 'legacy');
+        my $ntp         = ($client_type eq 'ntp' or $client_type eq 'legacy');
         unless ($sntp or $ntp) {
             $sntp = 1;
             $ntp  = 1;

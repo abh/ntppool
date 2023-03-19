@@ -1,0 +1,36 @@
+<div class="row">
+    <div class="col-md-5">
+
+    <h3>Monitor [% mon.ip | html %]</h3>
+
+        [% PROCESS tpl/monitors/info_block.html %]
+
+        <p>
+        [% IF mon.can_generate_api_key %]
+          <a href="[% combust.manage_url('/manage/monitors/api', { id => mon.id_token }) %]">API keys</a><br>
+        [% ELSE %]
+          Email <a href="mailto:[% "support" | email %]?subject=Monitor [% mon.id_token | html %] setup">[% "support" | email %]</a> to continue the setup.
+        [% END %]
+        </p>
+
+        [% IF combust.user.is_staff %]
+        <p>
+          <form id="monitor-form" action="/manage/monitors/monitor/status?a=[% account.id_token %]" method="post" accept-charset="utf-8">
+          <input type="hidden" name="auth_token" value="[% combust.auth_token %]">
+          <input type="hidden" name="id" value="[% mon.id_token %]">
+
+          <select name="status" class="form-select form-control" aria-label="Update monitor status">
+            [% FOR status = mon.status_options %]
+                <option [% IF status == mon.status; "selected"; END %] value="[% status | html %]">[% status | ucfirst | html %]</option>
+            [% END %]
+          </select>
+          <input type="submit" class="btn btn-primary" value="Update"></p>
+          </form>
+        </p>
+        [% END %]
+
+        <a href="[% combust.manage_url('/manage/monitors/') %]">Back to list</a>
+
+
+    </div>
+</div>

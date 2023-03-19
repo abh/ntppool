@@ -46,31 +46,31 @@ __PACKAGE__->meta->setup(
   table   => 'accounts',
 
   columns => [
-    id                => { type => 'serial', not_null => 1 },
-    name              => { type => 'varchar', length => 255 },
-    account_plan_id   => { type => 'integer' },
-    organization_name => { type => 'varchar', length => 150 },
-    organization_url  => { type => 'varchar', length => 150 },
-    public_profile    => { type => 'integer', default => '0', not_null => 1 },
-    url_slug          => { type => 'varchar', length => 150 },
-    created_on        => { type => 'datetime', default => 'now', not_null => 1 },
-    modified_on       => { type => 'timestamp', default => 'current_timestamp()', not_null => 1 },
+    id                 => { type => 'serial', not_null => 1 },
+    name               => { type => 'varchar', length => 255 },
+    organization_name  => { type => 'varchar', length => 150 },
+    organization_url   => { type => 'varchar', length => 150 },
+    public_profile     => { type => 'integer', default => '0', not_null => 1 },
+    url_slug           => { type => 'varchar', length => 150 },
+    created_on         => { type => 'datetime', default => 'now', not_null => 1 },
+    modified_on        => { type => 'timestamp', not_null => 1 },
+    stripe_customer_id => { type => 'varchar', length => 255 },
   ],
 
   primary_key_columns => [ 'id' ],
 
-  unique_key => [ 'url_slug' ],
-
-  allow_inline_column_values => 1,
-
-  foreign_keys => [
-    account_plan => {
-      class       => 'NP::Model::AccountPlan',
-      key_columns => { account_plan_id => 'id' },
-    },
+  unique_keys => [
+    [ 'stripe_customer_id' ],
+    [ 'url_slug' ],
   ],
 
   relationships => [
+    account_subscriptions => {
+      class      => 'NP::Model::AccountSubscription',
+      column_map => { id => 'account_id' },
+      type       => 'one to many',
+    },
+
     invites => {
       class      => 'NP::Model::AccountInvite',
       column_map => { id => 'account_id' },
@@ -79,6 +79,12 @@ __PACKAGE__->meta->setup(
 
     logs => {
       class      => 'NP::Model::Log',
+      column_map => { id => 'account_id' },
+      type       => 'one to many',
+    },
+
+    monitors => {
+      class      => 'NP::Model::Monitor',
       column_map => { id => 'account_id' },
       type       => 'one to many',
     },
@@ -141,7 +147,7 @@ __PACKAGE__->meta->setup(
     code        => { type => 'varchar', length => 25, not_null => 1 },
     expires_on  => { type => 'datetime', default => 'now', not_null => 1 },
     created_on  => { type => 'datetime', default => 'now', not_null => 1 },
-    modified_on => { type => 'timestamp', default => 'current_timestamp()', not_null => 1 },
+    modified_on => { type => 'timestamp', not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
@@ -150,8 +156,6 @@ __PACKAGE__->meta->setup(
     [ 'account_id', 'email' ],
     [ 'code' ],
   ],
-
-  allow_inline_column_values => 1,
 
   foreign_keys => [
     account => {
@@ -189,28 +193,36 @@ __PACKAGE__->make_manager_methods('account_invites');
 eval { require NP::Model::AccountInvite }
   or $@ !~ m:^Can't locate NP/Model/AccountInvite.pm: and die $@;
 
-{ package NP::Model::AccountPlan;
+{ package NP::Model::AccountSubscription;
 
 use strict;
 
 use base qw(NP::Model::_Object);
 
 __PACKAGE__->meta->setup(
-  table   => 'account_plans',
+  table   => 'account_subscriptions',
 
   columns => [
-    id        => { type => 'serial', not_null => 1 },
-    plan_type => { type => 'varchar', length => 255 },
-    plan_key  => { type => 'varchar', length => 255 },
+    id                     => { type => 'serial', not_null => 1 },
+    account_id             => { type => 'integer', not_null => 1 },
+    stripe_subscription_id => { type => 'varchar', length => 255 },
+    status                 => { type => 'enum', check_in => [ 'incomplete', 'incomplete_expired', 'trialing', 'active', 'past_due', 'canceled', 'unpaid', 'ended' ] },
+    name                   => { type => 'varchar', length => 255, not_null => 1 },
+    max_zones              => { type => 'integer', not_null => 1 },
+    max_devices            => { type => 'integer', not_null => 1 },
+    created_on             => { type => 'datetime', default => 'now', not_null => 1 },
+    ended_on               => { type => 'datetime' },
+    modified_on            => { type => 'timestamp', not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
 
-  relationships => [
-    accounts => {
-      class      => 'NP::Model::Account',
-      column_map => { id => 'account_plan_id' },
-      type       => 'one to many',
+  unique_key => [ 'stripe_subscription_id' ],
+
+  foreign_keys => [
+    account => {
+      class       => 'NP::Model::Account',
+      key_columns => { account_id => 'id' },
     },
   ],
 );
@@ -218,20 +230,20 @@ __PACKAGE__->meta->setup(
 push @table_classes, __PACKAGE__;
 }
 
-{ package NP::Model::AccountPlan::Manager;
+{ package NP::Model::AccountSubscription::Manager;
 
 use strict;
 
 our @ISA = qw(Combust::RoseDB::Manager);
 
-sub object_class { 'NP::Model::AccountPlan' }
+sub object_class { 'NP::Model::AccountSubscription' }
 
-__PACKAGE__->make_manager_methods('account_plans');
+__PACKAGE__->make_manager_methods('account_subscriptions');
 }
 
 # Allow user defined methods to be added
-eval { require NP::Model::AccountPlan }
-  or $@ !~ m:^Can't locate NP/Model/AccountPlan.pm: and die $@;
+eval { require NP::Model::AccountSubscription }
+  or $@ !~ m:^Can't locate NP/Model/AccountSubscription.pm: and die $@;
 
 { package NP::Model::AccountUser;
 
@@ -294,14 +306,12 @@ __PACKAGE__->meta->setup(
     api_key     => { type => 'varchar', length => 255 },
     grants      => { type => 'text', length => 65535 },
     created_on  => { type => 'datetime', default => 'now', not_null => 1 },
-    modified_on => { type => 'timestamp', default => 'current_timestamp()', not_null => 1 },
+    modified_on => { type => 'timestamp', not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
 
   unique_key => [ 'api_key' ],
-
-  allow_inline_column_values => 1,
 );
 
 push @table_classes, __PACKAGE__;
@@ -470,6 +480,15 @@ __PACKAGE__->meta->setup(
       key_columns => { server_id => 'id' },
     },
   ],
+
+  relationships => [
+    scorers => {
+      map_class => 'NP::Model::ScorerStatu',
+      map_from  => 'log_score',
+      map_to    => 'scorer',
+      type      => 'many to many',
+    },
+  ],
 );
 
 __PACKAGE__->meta->setup_json_columns(qw< attributes >);
@@ -546,15 +565,22 @@ __PACKAGE__->meta->setup(
   table   => 'monitors',
 
   columns => [
-    id         => { type => 'serial', not_null => 1 },
-    user_id    => { type => 'integer' },
-    name       => { type => 'varchar', length => 30, not_null => 1 },
-    ip         => { type => 'varchar', length => 40, not_null => 1 },
-    ip_version => { type => 'enum', check_in => [ 'v4', 'v6' ], not_null => 1 },
-    api_key    => { type => 'varchar', length => 40, not_null => 1 },
-    config     => { type => 'text', length => 65535, not_null => 1 },
-    last_seen  => { type => 'datetime' },
-    created_on => { type => 'datetime', default => 'now', not_null => 1 },
+    id             => { type => 'serial', not_null => 1 },
+    type           => { type => 'enum', check_in => [ 'monitor', 'score' ], default => 'monitor', not_null => 1 },
+    user_id        => { type => 'integer' },
+    account_id     => { type => 'integer' },
+    name           => { type => 'varchar', length => 30, not_null => 1 },
+    location       => { type => 'varchar', default => '', length => 255, not_null => 1 },
+    ip             => { type => 'varchar', alias => '_ip', length => 40 },
+    ip_version     => { type => 'enum', check_in => [ 'v4', 'v6' ] },
+    tls_name       => { type => 'varchar', length => 255 },
+    api_key        => { type => 'varchar', length => 64 },
+    status         => { type => 'enum', check_in => [ 'pending', 'testing', 'active', 'paused', 'deleted' ], not_null => 1 },
+    config         => { type => 'text', length => 65535, not_null => 1 },
+    client_version => { type => 'varchar', default => '', length => 255, not_null => 1 },
+    last_seen      => { type => 'datetime' },
+    last_submit    => { type => 'datetime' },
+    created_on     => { type => 'datetime', default => 'now', not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
@@ -562,9 +588,15 @@ __PACKAGE__->meta->setup(
   unique_keys => [
     [ 'api_key' ],
     [ 'ip', 'ip_version' ],
+    [ 'tls_name' ],
   ],
 
   foreign_keys => [
+    account => {
+      class       => 'NP::Model::Account',
+      key_columns => { account_id => 'id' },
+    },
+
     user => {
       class       => 'NP::Model::User',
       key_columns => { user_id => 'id' },
@@ -573,6 +605,13 @@ __PACKAGE__->meta->setup(
 
   relationships => [
     log_scores => {
+      map_class => 'NP::Model::ScorerStatu',
+      map_from  => 'scorer',
+      map_to    => 'log_score',
+      type      => 'many to many',
+    },
+
+    log_scores_objs => {
       class      => 'NP::Model::LogScore',
       column_map => { id => 'monitor_id' },
       type       => 'one to many',
@@ -641,6 +680,55 @@ __PACKAGE__->make_manager_methods('schema_revisions');
 eval { require NP::Model::SchemaRevision }
   or $@ !~ m:^Can't locate NP/Model/SchemaRevision.pm: and die $@;
 
+{ package NP::Model::ScorerStatu;
+
+use strict;
+
+use base qw(NP::Model::_Object);
+
+__PACKAGE__->meta->setup(
+  table   => 'scorer_status',
+
+  columns => [
+    id           => { type => 'serial', not_null => 1 },
+    scorer_id    => { type => 'integer', not_null => 1 },
+    log_score_id => { type => 'bigint' },
+    modified_on  => { type => 'timestamp', not_null => 1 },
+  ],
+
+  primary_key_columns => [ 'id' ],
+
+  foreign_keys => [
+    log_score => {
+      class       => 'NP::Model::LogScore',
+      key_columns => { log_score_id => 'id' },
+    },
+
+    scorer => {
+      class       => 'NP::Model::Monitor',
+      key_columns => { scorer_id => 'id' },
+    },
+  ],
+);
+
+push @table_classes, __PACKAGE__;
+}
+
+{ package NP::Model::ScorerStatu::Manager;
+
+use strict;
+
+our @ISA = qw(Combust::RoseDB::Manager);
+
+sub object_class { 'NP::Model::ScorerStatu' }
+
+__PACKAGE__->make_manager_methods('scorer_status');
+}
+
+# Allow user defined methods to be added
+eval { require NP::Model::ScorerStatu }
+  or $@ !~ m:^Can't locate NP/Model/ScorerStatu.pm: and die $@;
+
 { package NP::Model::Server;
 
 use strict;
@@ -662,7 +750,7 @@ __PACKAGE__->meta->setup(
     in_server_list => { type => 'integer', default => '0', not_null => 1 },
     netspeed       => { type => 'integer', default => 1000, not_null => 1 },
     created_on     => { type => 'datetime', default => 'now', not_null => 1 },
-    updated_on     => { type => 'timestamp', default => 'current_timestamp()', not_null => 1 },
+    updated_on     => { type => 'timestamp', not_null => 1 },
     score_ts       => { type => 'datetime' },
     score_raw      => { type => 'scalar', default => '0', length => 64, not_null => 1 },
     deletion_on    => { type => 'date' },
@@ -671,8 +759,6 @@ __PACKAGE__->meta->setup(
   primary_key_columns => [ 'id' ],
 
   unique_key => [ 'ip' ],
-
-  allow_inline_column_values => 1,
 
   foreign_keys => [
     account => {
@@ -729,6 +815,13 @@ __PACKAGE__->meta->setup(
       class      => 'NP::Model::ServerUrl',
       column_map => { id => 'server_id' },
       type       => 'one to many',
+    },
+
+    servers_monitor_review => {
+      class                => 'NP::Model::ServersMonitorReview',
+      column_map           => { id => 'server_id' },
+      type                 => 'one to one',
+      with_column_triggers => '0',
     },
 
     zones => {
@@ -818,14 +911,12 @@ __PACKAGE__->meta->setup(
     name        => { type => 'varchar', default => '', length => 255, not_null => 1 },
     note        => { type => 'text', length => 65535, not_null => 1 },
     created_on  => { type => 'datetime', default => 'now', not_null => 1 },
-    modified_on => { type => 'timestamp', default => 'current_timestamp()', not_null => 1 },
+    modified_on => { type => 'timestamp', not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
 
   unique_key => [ 'server_id', 'name' ],
-
-  allow_inline_column_values => 1,
 
   foreign_keys => [
     server => {
@@ -869,15 +960,14 @@ __PACKAGE__->meta->setup(
     score_ts    => { type => 'datetime' },
     score_raw   => { type => 'scalar', default => '0', length => 64, not_null => 1 },
     stratum     => { type => 'integer' },
+    status      => { type => 'enum', check_in => [ 'new', 'testing', 'active' ], default => 'new', not_null => 1 },
     created_on  => { type => 'datetime', default => 'now', not_null => 1 },
-    modified_on => { type => 'timestamp', default => 'current_timestamp()', not_null => 1 },
+    modified_on => { type => 'timestamp', not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
 
   unique_key => [ 'server_id', 'monitor_id' ],
-
-  allow_inline_column_values => 1,
 
   foreign_keys => [
     monitor => {
@@ -1000,6 +1090,54 @@ __PACKAGE__->make_manager_methods('server_zones');
 eval { require NP::Model::ServerZone }
   or $@ !~ m:^Can't locate NP/Model/ServerZone.pm: and die $@;
 
+{ package NP::Model::ServersMonitorReview;
+
+use strict;
+
+use base qw(NP::Model::_Object);
+
+__PACKAGE__->meta->setup(
+  table   => 'servers_monitor_review',
+
+  columns => [
+    server_id   => { type => 'integer', not_null => 1 },
+    last_review => { type => 'datetime' },
+    next_review => { type => 'datetime' },
+    last_change => { type => 'datetime' },
+    config      => { type => 'varchar', default => '', length => 4096, not_null => 1 },
+  ],
+
+  primary_key_columns => [ 'server_id' ],
+
+  foreign_keys => [
+    server => {
+      class       => 'NP::Model::Server',
+      key_columns => { server_id => 'id' },
+      rel_type    => 'one to one',
+    },
+  ],
+);
+
+__PACKAGE__->meta->setup_json_columns(qw< config >);
+
+push @table_classes, __PACKAGE__;
+}
+
+{ package NP::Model::ServersMonitorReview::Manager;
+
+use strict;
+
+our @ISA = qw(Combust::RoseDB::Manager);
+
+sub object_class { 'NP::Model::ServersMonitorReview' }
+
+__PACKAGE__->make_manager_methods('servers_monitor_reviews');
+}
+
+# Allow user defined methods to be added
+eval { require NP::Model::ServersMonitorReview }
+  or $@ !~ m:^Can't locate NP/Model/ServersMonitorReview.pm: and die $@;
+
 { package NP::Model::SystemSetting;
 
 use strict;
@@ -1014,14 +1152,12 @@ __PACKAGE__->meta->setup(
     key         => { type => 'varchar', length => 255 },
     value       => { type => 'text', length => 65535 },
     created_on  => { type => 'datetime', default => 'now', not_null => 1 },
-    modified_on => { type => 'timestamp', default => 'current_timestamp()', not_null => 1 },
+    modified_on => { type => 'timestamp', not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
 
   unique_key => [ 'key' ],
-
-  allow_inline_column_values => 1,
 );
 
 __PACKAGE__->meta->setup_json_columns(qw< value >);
@@ -1254,12 +1390,11 @@ __PACKAGE__->meta->setup(
   table   => 'user_privileges',
 
   columns => [
-    user_id               => { type => 'integer', not_null => 1 },
-    see_all_servers       => { type => 'integer', default => '0', not_null => 1 },
-    see_all_user_profiles => { type => 'integer', default => '0', not_null => 1 },
-    vendor_admin          => { type => 'integer', default => '0', not_null => 1 },
-    equipment_admin       => { type => 'integer', default => '0', not_null => 1 },
-    support_staff         => { type => 'integer', default => '0', not_null => 1 },
+    user_id         => { type => 'integer', not_null => 1 },
+    see_all_servers => { type => 'integer', default => '0', not_null => 1 },
+    vendor_admin    => { type => 'integer', default => '0', not_null => 1 },
+    equipment_admin => { type => 'integer', default => '0', not_null => 1 },
+    support_staff   => { type => 'integer', default => '0', not_null => 1 },
   ],
 
   primary_key_columns => [ 'user_id' ],
@@ -1306,14 +1441,16 @@ __PACKAGE__->meta->setup(
     status              => { type => 'enum', check_in => [ 'New', 'Pending', 'Approved', 'Rejected' ], default => 'New', not_null => 1 },
     user_id             => { type => 'integer' },
     organization_name   => { type => 'varchar', length => 255 },
-    client_type         => { type => 'enum', check_in => [ 'ntp', 'sntp', 'all' ], default => 'ntp', not_null => 1 },
+    client_type         => { type => 'enum', check_in => [ 'ntp', 'sntp', 'legacy' ], default => 'sntp', not_null => 1 },
     contact_information => { type => 'text', length => 65535 },
     request_information => { type => 'text', length => 65535 },
     device_count        => { type => 'integer' },
+    opensource          => { type => 'integer', default => '0', not_null => 1 },
+    opensource_info     => { type => 'text', length => 65535 },
     rt_ticket           => { type => 'integer' },
     approved_on         => { type => 'datetime' },
     created_on          => { type => 'datetime', default => 'now', not_null => 1 },
-    modified_on         => { type => 'timestamp', default => 'current_timestamp()', not_null => 1 },
+    modified_on         => { type => 'timestamp', not_null => 1 },
     dns_root_id         => { type => 'integer', not_null => 1 },
     account_id          => { type => 'integer' },
   ],
@@ -1321,8 +1458,6 @@ __PACKAGE__->meta->setup(
   primary_key_columns => [ 'id' ],
 
   unique_key => [ 'zone_name', 'dns_root_id' ],
-
-  allow_inline_column_values => 1,
 
   foreign_keys => [
     account => {
@@ -1496,7 +1631,7 @@ eval { require NP::Model::ZoneServerCount }
 
   sub account { our $account ||= bless [], 'NP::Model::Account::Manager' }
   sub account_invite { our $account_invite ||= bless [], 'NP::Model::AccountInvite::Manager' }
-  sub account_plan { our $account_plan ||= bless [], 'NP::Model::AccountPlan::Manager' }
+  sub account_subscription { our $account_subscription ||= bless [], 'NP::Model::AccountSubscription::Manager' }
   sub account_user { our $account_user ||= bless [], 'NP::Model::AccountUser::Manager' }
   sub api_key { our $api_key ||= bless [], 'NP::Model::ApiKey::Manager' }
   sub dns_root { our $dns_root ||= bless [], 'NP::Model::DnsRoot::Manager' }
@@ -1505,12 +1640,14 @@ eval { require NP::Model::ZoneServerCount }
   sub log_status { our $log_status ||= bless [], 'NP::Model::LogStatus::Manager' }
   sub monitor { our $monitor ||= bless [], 'NP::Model::Monitor::Manager' }
   sub schema_revision { our $schema_revision ||= bless [], 'NP::Model::SchemaRevision::Manager' }
+  sub scorer_statu { our $scorer_statu ||= bless [], 'NP::Model::ScorerStatu::Manager' }
   sub server { our $server ||= bless [], 'NP::Model::Server::Manager' }
   sub server_alert { our $server_alert ||= bless [], 'NP::Model::ServerAlert::Manager' }
   sub server_note { our $server_note ||= bless [], 'NP::Model::ServerNote::Manager' }
   sub server_score { our $server_score ||= bless [], 'NP::Model::ServerScore::Manager' }
   sub server_url { our $server_url ||= bless [], 'NP::Model::ServerUrl::Manager' }
   sub server_zone { our $server_zone ||= bless [], 'NP::Model::ServerZone::Manager' }
+  sub servers_monitor_review { our $servers_monitor_review ||= bless [], 'NP::Model::ServersMonitorReview::Manager' }
   sub system_setting { our $system_setting ||= bless [], 'NP::Model::SystemSetting::Manager' }
   sub user { our $user ||= bless [], 'NP::Model::User::Manager' }
   sub user_equipment_application { our $user_equipment_application ||= bless [], 'NP::Model::UserEquipmentApplication::Manager' }

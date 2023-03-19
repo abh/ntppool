@@ -1,0 +1,59 @@
+[% page.js.push("ntppool.js"); USE Number.Format; %]
+
+[% IF pr %]
+
+<div class="row">
+    <div class="col-12">
+        [% USE Dumper;
+           #Dumper.dump_html(pr) %]
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+
+    <h3>[% pr.Name %] plan</h3>
+
+    <p>
+        Allow editing the number of clients
+    </p>
+
+    <p>Choose a tier</p>
+
+    <ul>
+
+    [% FOR plan = pr.Plans %]
+        <li>[% plan.Name %]</li>
+        <li>[% plan.ID %]:</li>
+        <ul>
+        [% FOR tier = plan.Tiers %]
+            [% IF vz.device_count <= tier.MaxClients %]
+            <li>up to [% tier.MaxClients%] clients ($[% tier.TotalPrice / 100 %] [% tier.period_text%])</li>
+            [% ELSE %]
+            <li><s>up to [% tier.MaxClients%] clients</s></li>
+            [% END %]
+        [% END %]
+        </ul>
+
+        <form method="post" class="form-inline btn-inline" action="/manage/vendor/plan/create_session">
+          <input type="hidden" name="id" value="[% vz.id_token %]" />
+          <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
+          <input type="hidden" name="a" value="[% combust.current_account.id_token %]">
+          <input type="hidden" name="product_id" value="[% pr.ID %]">
+          <input type="hidden" name="price_id" value="[% plan.ID %]">
+          <input type="submit" class="btn btn-primary" value="Continue &rarr;" />
+        </form>
+
+    [% END %]
+
+    </ul>
+
+    <p>
+        foo
+    </p>
+
+    </div>
+
+</div>
+
+[% END %]

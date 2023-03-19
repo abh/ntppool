@@ -1,33 +1,69 @@
-[% page.js.push("ntppool.js"); %]
+[% page.js.push("ntppool.js"); USE Number.Format; %]
 
-<div class="block">
+[% have_subscription = combust.current_account.have_live_subscription %]
 
-    [% IF 0 AND combust.current_account.vendor_zones_count > 0 %]
-    <b>plan?</b> <!-- show "plan" for account  -->
+<div class="row">
+
+    [% vendor_zones = combust.current_account.vendor_zones %]
+
+    [% add_col = 8 %]
+
+    [% IF vendor_zones.size > 0 %]
+        [% add_col = 3 %]
+    [% ELSE %]
+        [% PROCESS tpl/vendor/help.html %]
     [% END %]
 
-    [% FOR vz = combust.current_account.vendor_zones %]
+    <div class="col-md-5">
+
+    [% FOR vz = vendor_zones %]
     <h3>[% vz.zone_name | html %]</h3>
     <p>
-        ID: [% vz.id %] / [% vz.id_token %]<br>
+        <!-- ID: [% vz.id %] / [% vz.id_token %]<br> -->
         Organization: [% vz.organization_name | html %]<br />
-        Status: <i>[% vz.status %]</i><br />
+        Status: <i>
+        [% (have_subscription && vz.status == "Pending")
+          ? "Processing" : vz.status %]
+        </i><br />
         <a href="[% combust.manage_url('/manage/vendor/zone', id=vz.id_token) %]">
             [% IF vz.status == 'New' %]
-                Edit and submit
+                Complete setup
             [% ELSE %]
                 View details
             [% END %]
         </a>
     </p>
-
     [% END # vendor_zone %]
 
     <p>
-        <a href="[% combust.manage_url('/manage/vendor/new') %]">Setup a new vendor zone</a>
+      <a class="btn btn-primary" href="[% combust.manage_url('/manage/vendor/new') %]">Setup a new vendor zone</a>
     </p>
 
-    [% PROCESS tpl/vendor/help.html %]
+</div>
 
+<div class="col-[% add_col %] col-md-[% add_col + 1 %]">
+  [% IF subscriptions && subscriptions.size > 0 %]
+    [% PROCESS tpl/vendor/billing.html %]
+  [% END %]
+
+  [% IF vendor_zones.size > 0 %]
+  <hr>
+    [% PROCESS tpl/vendor/help.html %]
+  [% END %]
+</div>
+
+
+
+    <!--
+            todo: if zone is setup, but no "plan" exists, link to
+            "setup a plan" workflow.
+
+            status:
+                new      = not submitted, show [ pay | open source ] form
+                pending  = waiting for admin to approve open source plan
+                approved = active
+                rejected = new + message? Just send it back to new and add to the log?
+
+    -->
 
 </div>

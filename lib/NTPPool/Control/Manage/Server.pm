@@ -128,10 +128,7 @@ sub handle_add {
         my $msg = $self->evaluate_template('tpl/manage/add_email.txt');
         my $email =
           Email::Stuffer->from(NP::Email::address("sender"))
-          ->to(NP::Email::address("notifications"))->reply_to($self->user->email)
-          ->text_body($msg);
-
-        warn "added: ", Data::Dump::pp(\@added);
+          ->to(NP::Email::address("notifications"))->reply_to($self->user->email)->text_body($msg);
 
         my $subject =
           "New addition to the NTP Pool: " . join(", ", map { $_->{ip} } @added);
@@ -143,8 +140,7 @@ sub handle_add {
         my $return = NP::Email::sendmail($email->email);
         warn Data::Dumper->Dump([\$msg, \$email, \$return], [qw(msg email return)]);
 
-        return $self->redirect(
-            $self->manage_url('/manage/servers') . '#s-' . ($s && $s->ip));
+        return $self->redirect($self->manage_url('/manage/servers') . '#s-' . ($s && $s->ip));
     }
 
     my @all_zones = NP::Model->zone->get_zones(
@@ -191,9 +187,8 @@ sub _add_server {
     my ($self, $server) = @_;
 
     my $comment = $self->req_param('comment');
-    $self->tpl_param('comment', $comment);
-    $self->tpl_param('scores_url',
-        $self->config->base_url('ntppool') . '/scores/' . $server->{ip});
+    $self->tpl_param('comment',    $comment);
+    $self->tpl_param('scores_url', $self->config->base_url('ntppool') . '/scores/' . $server->{ip});
 
     my $s;
 
@@ -204,6 +199,7 @@ sub _add_server {
         $s->setup_server;
     }
     else {
+        # the model calls setup_server
         $s = NP::Model->server->create(ip => $server->{ip});
     }
 
@@ -271,36 +267,40 @@ sub get_server_info {
         }
     }
 
-    my $res = $self->ua->get("https://trace2.ntppool.org/ntp/$server{ip}");
-    if ($res->code != 200) {
-        warn "trace2 response code for $server{ip}: ", $res->code;
-        $server{error} = "Could not check NTP status";
-        return \%server;
+    my @ntp = $self->_get_ntp_info_monitor_api($ip->short);
+
+    unless (@ntp) {
+        warn "didn't get NTP info from monitor-api, trying trace";
+        @ntp = $self->_get_ntp_info_trace($ip->short);
     }
 
-    warn "JS: ", $res->decoded_content();
+    my $ntp_ok = 0;
 
-    my $json = JSON::XS->new->utf8;
-    my %ntp  = eval { +%{$json->decode($res->decoded_content)} };
-    if ($@) {
-        $server{error} = "Could not decode NTP response from trace server";
-        return \%server;
+    for my $check (@ntp) {
+        $check->{error} = $check->{Error} if $check->{Error};
+        next                              if $check->{error};
+
+        my $ntp = $check->{NTP} or next;
+
+        unless (defined $ntp->{Stratum}) {
+            $ntp->{error} = "Didn't get an NTP response from $server{ip}\n";
+        }
+
+        unless ($ntp->{Stratum} > 0 and $ntp->{Stratum} < 6) {
+            $ntp->{error} =
+              "Invalid stratum response from ${ip} (Your server is in stratum $ntp->{Stratum}).  Is your server configured properly? Is public access allowed?  If you just restarted your ntpd, then it might still be stabilizing the timesources - try again in 10-20 minutes.\n";
+        }
+
+        unless ($ntp->{error}) {
+            $ntp_ok = 1;
+            $server{ntp} = $ntp;
+        }
     }
 
-    warn "NTP response: ", Data::Dumper->Dump([\%ntp]);
-
-    my @error;
-
-    unless (defined $ntp{Stratum}) {
-        $server{error} = "Didn't get an NTP response from $server{ip}\n";
+    unless ($ntp_ok) {
+        ($server{error}) = map { $_->{error} } grep { $_->{error} } @ntp;
     }
 
-    unless ($ntp{Stratum} > 0 and $ntp{Stratum} < 6) {
-        $server{error} =
-          "Invalid stratum response from $server{ip} (Your server is in stratum $ntp{Stratum}).  Is your server configured properly? Is public access allowed?  If you just restarted your ntpd, then it might still be stabilizing the timesources - try again in 10-20 minutes.\n";
-    }
-
-    $server{ntp} = \%ntp;
 
     if ($server{error}) {
         warn "Error: $server{error}";
@@ -321,11 +321,57 @@ sub get_server_info {
     return \%server;
 }
 
+sub _get_ntp_info_monitor_api {
+    my $self = shift;
+    my $ip   = shift;
+
+    my $res = $self->ua->post("http://monitor-api/check/ntp/$ip");
+    if ($res->code != 200) {
+        warn "trace2 response code for $ip: ", $res->code;
+        return ();    # will fallback to the legacy trace check
+    }
+
+    warn "JS: ", $res->decoded_content();
+
+    my $json = JSON::XS->new->utf8;
+    my @ntp  = eval { @{$json->decode($res->decoded_content)} };
+    if ($@) {
+        warn "json error: $@";
+        return ({error => "Could not decode NTP response from trace server"});
+    }
+
+    warn "NTP response from monitor-api: ", Data::Dumper->Dump([@ntp]);
+
+    return @ntp;
+}
+
+sub _get_ntp_info_trace {
+    my $self = shift;
+    my $ip   = shift;
+
+    my $res = $self->ua->get("https://trace2.ntppool.org/ntp/$ip");
+    if ($res->code != 200) {
+        warn "trace2 response code for $ip: ", $res->code;
+        return ({error => "Could not check NTP status"});
+    }
+
+    warn "JS: ", $res->decoded_content();
+
+    my $json = JSON::XS->new->utf8;
+    my %ntp  = eval { +%{$json->decode($res->decoded_content)} };
+    if ($@) {
+        return ({error => "Could not decode NTP response from trace server"});
+    }
+
+    warn "NTP response: ", Data::Dumper->Dump([\%ntp]);
+
+    return ({Server => 'trace', NTP => \%ntp});
+}
+
 sub req_server {
     my $self      = shift;
     my $server_id = $self->req_param('server') or return;
-    my $server =
-      NP::Model->server->fetch(($server_id =~ m/[.:]/ ? 'ip' : 'id') => $server_id);
+    my $server    = NP::Model->server->fetch(($server_id =~ m/[.:]/ ? 'ip' : 'id') => $server_id);
     return unless $server and $server->account->can_edit($self->user);
     return $server;
 }
@@ -544,12 +590,10 @@ sub handle_move {
             for my $server (@servers_to_move) {
                 my $old = $server->get_data_hash();
 
-                warn "changing account to token / id ", $new_account->token_id,
-                  $new_account->id;
+                warn "changing account to token / id ", $new_account->token_id, $new_account->id;
                 $server->account_id($new_account->id);
 
-                NP::Model::Log->log_changes($self->user, "server-move",
-                    "Server account change",
+                NP::Model::Log->log_changes($self->user, "server-move", "Server account change",
                     $server, $old);
                 $server->save;
             }

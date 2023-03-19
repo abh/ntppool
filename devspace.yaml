@@ -11,7 +11,7 @@ images:
       kaniko:
         cache: true
         snapshotMode: full
-        image: gcr.io/kaniko-project/executor:v1.6.0
+        image: gcr.io/kaniko-project/executor:v1.9.1
         resources:
           limits:
             cpu: 1000m
@@ -24,27 +24,34 @@ deployments:
   - name: ntppool
     helm:
       chart:
+        #name: ntppool
         name: ../ntppool-charts/charts/ntppool
+        repo: https://charts.ntppool.org
       valuesFiles:
-        #- /Users/ask/src/ntppool-k8s/dev-values-do.yaml
-        - /Users/ask/src/ntppool-k8s/dev-values-kind.yaml
+        #- /Users/ask/src/ntppool-k8s/dev-values-kind.yaml
+        - /Users/ask/src/ntppool-k8s/devel/dev-values-ewr1.yaml
       values:
         image:
           image: harbor.ntppool.org/ntpdev/ntppool-dev
+        config:
+          manage_hostname: manage.askdev.grundclock.com
+          web_hostname: web.askdev.grundclock.com
+          pool_domain: ntp.askdev.grundclock.com
+          # db_dsn: dbi:mysql:database=askntp_prod;host=ntp-db-mysql-master.ntpdb.svc.cluster.local
+          db_dsn: dbi:mysql:database=askntp;host=ntp-db-mysql-master.ntpdb.svc.cluster.local
+          db_user: askntp
+          stripe_gw_service: http://stripe-gw
+          httpd_maxclients: "6"
+          static_base: https://st.ntppool.org/askntp/
       wait: true
 
 dev:
-  autoReload:
-    paths:
-    - ./.redeploy
-    #deployments:
-    #- ntppool
   sync:
     - labelSelector:
         app: ntppool
         tier: frontend
       containerName: httpd
-      waitInitialSync: false
+      waitInitialSync: true
       localSubPath: ./
       containerPath: /ntppool
       excludePaths:
@@ -52,11 +59,15 @@ dev:
         - logs/
         - manage2/
         - ".data/"
-        - ".git"
+        #- ".git"
+        - ".vscode"
         - node_modules/
-        #- docs/shared/static/cdn/libs/
+        - perl-languageserver.log
       downloadExcludePaths:
         - "*"
       disableDownload: true
       onUpload:
-        restartContainer: true
+        restartContainer: false
+#profiles:
+#- name: ewrdev
+#  replace:

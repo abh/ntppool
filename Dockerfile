@@ -1,4 +1,4 @@
-FROM harbor.ntppool.org/ntppool/base-os:3.15.0-2
+FROM harbor.ntppool.org/ntppool/base-os:3.17.2-1
 USER root
 
 RUN apk -U --no-cache upgrade --ignore alpine-baselayout
@@ -33,3 +33,5 @@ ENTRYPOINT ["./docker/entrypoint"]
 CMD ["./docker-run"]
 
 USER ntppool
+
+RUN git config --global --add safe.directory /ntppool

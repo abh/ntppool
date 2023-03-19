@@ -1,0 +1,80 @@
+<div class="row">
+    <div class="col-md-9">
+
+    <p><a href="[% combust.manage_url('/manage/monitors') %]">Monitor list</a></p>
+
+    <h3>Monitor [% mon.ip | html %] API keys</h3>
+
+    [% IF error%]
+    <p>
+        <span class="badge badge-danger">Error</span>
+        [% error | html %]
+    </p>
+    [% END %]
+
+    <p>
+        ID: [% mon.id_token %]<br>
+        Status: [% mon.status %]<br>
+        [% IF mon.name %]
+        Name: <i>[% mon.name | html %]</i><br>
+        [% END %]
+        [% IF mon.location %]
+        Location: <i>[% mon.location | html %]</i><br>
+        [% END %]
+        [% IF mon.tls_name %]
+        TLS Name: <code>[% mon.tls_name | html %]</code><br>
+        [% END %]
+
+        [% api_secrets = mon.vault_api_secrets %]
+
+        [% IF mon.api_key && (secret_key || api_secrets.size > 0) %]
+        API Key: <code class="copy-clipboard">[% mon.api_key | html %]</code><br>
+
+          [% IF secret_key %]
+          Secret Key: <code class="copy-clipboard">[% secret_key | html %]</code> (only shown once)<br><br>
+          [% END %]
+
+          [% FOR k = api_secrets %]
+            Remaining uses: [% k.secret_id_num_uses %]<br>
+            Expiration time: [% k.expiration_time %]<br>
+          [% END %]
+
+        [% ELSE %]
+
+        <i>No active API keys</i>
+
+        [% END %]
+
+        [% IF secret_key %]
+          <br>
+          <b><a download="[% mon.tls_name %].json" href="data:application/json;base64,[% config_file_content | html %]">Download config</a></b>
+          <br>
+        [% END %]
+
+
+        [% IF mon.can_generate_api_key %]
+            [% IF !mon.tls_name %]
+              [% PROCESS form_api, button => "Setup API &rarr;" %]
+            [% ELSE %]
+              [% PROCESS form_api,
+                   button => "Rotate API secret &rarr;",
+                   hidden_fields  => { rotate => 1 },
+              %]
+            [% END %]
+        [% ELSE %]
+          Email <a href="mailto:[% "support" | email %]?subject=Monitor [% mon.id_token | html %] setup">[% "support" | email %]</a> to continue the setup.
+        [% END %]
+    </div>
+</div>
+
+[% BLOCK form_api %]
+    <form method="post" class="form-inline btn-inline btn-sm" action="[% combust.manage_url('/manage/monitors/api', id => mon.id_token ) %]">
+      <input type="hidden" name="auth_token" value="[% combust.auth_token %]">
+      <input type="hidden" name="a" value="[% combust.current_account.id_token %]">
+      [% FOREACH f IN hidden_fields.pairs %]
+          <input type="hidden" name="[% f.key | html %]" value="[% f.value | html %]" />
+      [% END %]
+      <input type="submit" class="btn btn-primary" value="[% button %]">
+
+    </form>
+[% END %]

@@ -1,70 +1,124 @@
-<div class="block">
 
-    <h2>"[% vz.zone_name | html %]" zone</h2>
+[% USE Number.Format %]
+[% have_subscription = vz.account.subscription_limits_not_exceeded(vz.device_count) %]
 
-    <h3>Organization</h3>
+<div class="row">
+    <div class="col-md-12">
+        For help or questions, email <a href="mailto:vendors@ntppool.org?subject=Vendor%20DNS%20Zone%20(account%20[% account.id_token %])">vendors@ntppool.org</a>.
+    </div>
+</div>
+
+<div class="row">
+
+    <div class="col-md-4 float-right">
+
+    <h3>"[% vz.zone_name | html %]" zone</h3>
+
+    [% UNLESS need_subscription %]
+    <h4>Organization</h4>
     <blockquote>[% vz.organization_name | html %]</blockquote>
 
-    <h3>Application information</h3>
+    <h4>Application information</h4>
+    [% END %]
+
     <blockquote>
         [% vz.request_information_html %]
     </blockquote>
 
-    <h3>Number of devices</h3>
+    <h4>Number of devices</h4>
     <blockquote>
-        [% USE Number.Format;
-        vz.device_count | format_number %]
+        [% vz.device_count | format_number %]
     </blockquote>
 
-    <h3>Contact information</h3>
+    [% UNLESS need_subscription %]
+
+    <h4>Contact information</h4>
     <blockquote>
         [% vz.contact_information_html %]
     </blockquote>
 
-    <h3>Status</h3>
-    <blockquote>[% vz.status %]</blockquote>
+    <h4>Status</h4>
     [% IF vz.status == "Pending" %]
-    <p>
+       [% IF have_subscription %]
+       <p>
+         The DNS zone is being processed and will be setup soon.
+         <a href="mailto:[% " vendors" | email %]?subject=Vendor zone [% vz.zone_name |
+            html %] processing">Email if you have any questions</a>.
+       </p>
+       [% ELSE %]
+       <p>
         If your application hasn't been processed or responded to
         within a week, please email the <a href="mailto:[% " vendors" | email %]?subject=Vendor zone [% vz.zone_name |
             html %] application">vendor support</a> address.
-    </p>
+       </p>
+       [% END %]
+    [% ELSE # not pending %]
+        <blockquote>[% vz.status %]</blockquote>
     [% END %]
 
+    [% END # need_subscription %]
+
     [% IF vz.can_edit(combust.user) %]
-    <a class="btn btn-secondary" href="[% combust.manage_url('/manage/vendor/zone', id=vz.id_token, mode='edit') %]">
+    <a class="btn btn-secondary btn-sm" href="[% combust.manage_url('/manage/vendor/zone', id=vz.id_token, mode='edit') %]">
         &larr; Edit
     </a>
     [% END %]
+    <a class="btn btn-secondary btn-sm" href="[% combust.manage_url('/manage/vendor') %]">Back to list</a>
 
-    [% IF vz.status == 'New' %]
-    <form method="post" class="form-inline btn-inline" action="/manage/vendor/submit">
-            <input type="hidden" name="id" value="[% vz.id_token %]" />
-            <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
-            <input type="hidden" name="a" value="[% combust.current_account.id_token %]">
-            <input type="submit" class="btn btn-primary" value="Submit application &rarr;" />
-    </form>
+    [% IF vz.status == 'New' && !need_subscription %]
+      <form method="post" class="form-inline btn-inline" action="/manage/vendor/submit">
+          <input type="hidden" name="id" value="[% vz.id_token %]" />
+          <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
+          <input type="hidden" name="a" value="[% combust.current_account.id_token %]">
+          <input type="submit" class="btn btn-primary" value="Submit for production &rarr;" />
+      </form>
     [% END %]
 
     [% IF combust.user.privileges.vendor_admin %]
     <br /><br />
-    <form method="post" action="/manage/vendor/admin" style="display:inline">
+    <form method="post" action="/manage/vendor/admin">
         <input type="hidden" name="id" value="[% vz.id_token %]" />
         <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
         <input type="hidden" name="a" value="[% combust.current_account.id_token %]">
         [% IF vz.status == 'Pending' or vz.status == 'Rejected' %]
-        <input type="submit" name="status_change" value="Approve" />
+        <input class="btn btn-success" type="submit" name="status_change" value="Approve" />
         [% END %]
         [% IF vz.status == 'Pending' %]
-        <input type="submit" name="status_change" value="Reject" />
+        <br><br><input class="btn btn-info btn-sm" type="submit" name="status_change" value="Reject" />
         [% END %]
     </form>
     [% END %]
 
-    <p>
-        <a href="[% combust.manage_url('/manage/vendor') %]">Back to list</a>
-    </p>
+    </div>
+</div>
 
+[% IF vz.status == 'New' && need_subscription %]
 
-    <small>(zone #[% vz.id_token %])</small>
+<div class="row">
+    <div class="col-md-12">
+      [% IF need_upgrade %]
+        <div>
+        <p>
+            <br>
+            The current subscription plan doesn't support adding the new DNS zone.
+        </p>
+        <p>
+            <a href="mailto:[% "vendors" | email %]?subject=NTP Pool DNS zone [% vz.zone_name | html %] - subscription change"
+                >Email to change the plan or with other questions</a>.
+        </p>
+            <!-- waiting for subscription_update_confirm to be available
+                https://stripe.com/docs/customer-management/portal-deep-links -->
+        </div>
+      [% ELSE %]
+        [% PROCESS tpl/vendor/products.html %]
+      [% END %]
+    </div>
+</div>
+
+[% END %]
+
+<div class="row">
+    <div class="col-md-12">
+        <small>(zone #[% vz.id_token %])</small>
+    </div>
 </div>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title></title>
+</head>
+<body>
+[% page.title = 'Bagaimana saya mengatur NTP untuk menggunakan gugusan ini?' %]
+
+<div class="block">
+	<h3 id="use">Bagaimana saya menggunakan pool.ntp.org?</h3>
+
+	<p>Jika Anda hanya ingin menyinkronisasi jam komputer Anda ke jaringan, berkas konfigurasinya (untuk program ntpd dari <a href="https://www.ntp.org">distribusi ntp.org</a> di sistem operasi yang didukung, seperti Linux, *BSD, Windows, dan sistem operasi aneh lainnya) sangatlah sederhana:</p>
+<p>[% INCLUDE "ntppool/use/sample-config.html" %]</p>
+<p>Domain 0, 1, 2, dan 3.pool.ntp.org merujuk ke kelompok peladen acak yang akan berubah setiap jam. Pastikan jam komputer Anda diatur ke sesuatu yang masuk akal (dalam beberapa menit dari waktu 'sebenarnya'!). Anda bisa menggunakan ntpdate pool.ntp.org atau Anda bisa saja menggunakan perintah date dan mengaturnya dengan jam rumah Anda. Mulai ntpd, dan dalam beberapa waktu (ini bisa memakan waktu paling lama setengah jam!), ntpq -pn seharusnya menampilkan sesuatu seperti:</p>
+
+	[% INCLUDE "ntppool/use/sample-ntpq.html" %]
+
+	<p>Alamat IP-nya akan berbeda, karena Anda akan ditujukan ke peladen pewaktu yang acak. Satu hal yang penting adalah salah satu baris dimulai dengan tanda bintang (*), ini berarti komputer Anda akan mendapatkan waktunya dari internet, Anda tidak perlu khawatir tentang hal ini lagi!</p>
+	<p>Pencarian pool.ntp.org (atau <code>0.pool.ntp.org</code>, <code>1.pool.ntp.org</code>, dll.) biasanya akan mengembalikan alamat IP untuk peladen yang berada atau di dekat negara Anda. Untuk kebanyakan pengguna, ini akan memberikan hasil yang terbaik.</p>
+
+	<p>Anda bisa juga menggunakan <a href="/zone/@">zona benua</a> (Contohnya <a href="/zone/europe">eropa</a>, <a href="/zone/north-america">amerika utara</a>, <a href="/zone/oceania">oseania</a>, atau <a href="/zone/asia">asia</a>.pool.ntp.org) atau zona negara (seperti id.pool.ntp.org untuk Indonesia). Untuk semua zona tersebut, Anda bisa juga menggunakan awalan 0, 1, atau 2, seperti 0.id.pool.ntp.org. Meskipun begitu, perlu dicatat bahwa zona negara mungkin tidak ada untuk negara Anda atau mungkin hanya ada satu atau dua peladen pewaktu.</p>
+<p>Jika Anda menggunakan <b>versi Windows yang terbaru</b>, Anda bisa juga menggunakan klien ntp yang terpasang ke sistem. Sebagai administrator, ketik</p>
+<pre class="code">w32tm /config /syncfromflags:manual /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"</pre>
+<p>di <i>command prompt </i>(cmd). Ini akan bekerja pada Windows 2003 atau yang lebih baru. Jika Anda menggunakan versi Windows yang lebih lama, Anda bisa mencoba</p>
+<pre class="code">net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"</pre>
+<p>Hal yang sama bisa juga dilakukan dengan, sebagai administrator, klik kanan jam di bilah tugas, pilih 'Atur Tanggal/Waktu' dan ketik nama peladen di bilah 'Waktu Internet'.</p>
+
+	<p>Meinberg membuat <i>port</i> <a href="https://www.meinberg.de/english/sw/ntp.htm">ntp daemon untuk Windows</a>.</p>
+<p>Jika sistem Windows Anda termasuk dalam bagian dari sebuah domain, Anda mungkin tidak bisa untuk memperbarui waktu komputer Anda secara mandiri. Untuk informasi lebih lanjut tentang pengaturan waktu di Windows, lihat <a href="https://technet.microsoft.com/en-us/library/cc773013%28WS.10%29.aspx">How Windows Time Service Works</a>.</p>
+</div>
+
+<div class="block">
+	<h3 id="notes">Catatan Tambahan</h3>
+<p>Pertimbangkan apakah Gugusan NTP sesuai dengan penggunaan Anda. Jika bisnis, organisasi, atau nyawa manusia bergantung kepada pewaktuan yang benar dan bisa celaka jika salah, Anda jangan langsung memutuskan "luring dari internet". Gugusan NTP secara umum kualitasnya sangat tinggi, tetapi ini adalah layanan yang dijalankan oleh sukarelawan. Mohon bicarakan ke penyedia barang dan layanan Anda untuk mendapatkan layanan lokal dan dapat diandalkan untuk Anda. Lihat juga <a href="/tos.html">syarat dan ketentuan</a> kami. Kami merekomendasikan peladen pewaktu dari <a href="http://www.meinbergglobal.com/english/products/ntp-time-server.htm">Meinberg</a>, tapi Anda juga bisa mendapatkan peladen pewaktu dari <a href="http://www.endruntechnologies.com/NTP-Servers/gps-cdma-ntp.htm">End Run</a>, <a href="http://spectracom.com/products-services/precision-timing#anchor-2172">Spectracom</a>, dan lain-lain.</p>
+<p>Jika Anda memiliki alamat IP statis dan koneksi internet yang baik (<i>bandwidth </i>tidak terlalu penting, tapi harus stabil dan tidak terlalu pampat), harap pertimbangkan untuk menyumbangkan peladen Anda ke gugusan peladen. Ini tidak menghabiskan Anda lebih dari beberapa ratus bit per detik lintas, tapi Anda bisa membantu proyek ini bertahan. Mohon baca <a href="/join.html">halaman untuk bergabung</a> untuk informasi lebih lanjut.</p>
+<p>Jika penyedia internet Anda memiliki peladen pewaktu atau jika Anda mengetahui peladen pewaktu yang bagus di dekat Anda, Anda sebaiknya menggunakan itu dan bukan daftar ini. Anda mungkin akan mendapatkan waktu yang lebih baik dan menggunakan lebih sedikit data. Jika Anda hanya mengetahui hanya satu peladen pewaktu di dekat Anda, Anda bisa juga menggunakan itu dan dua dari pool.ntp.org atau sejenisnya.</p>
+<p>Ini sangat jarang, tetapi Anda bisa terhubung ke peladen pewaktu yang sama dua kali, biasanya tinggal mulai ulang peladen ntp-nya akan menyelesaikan masalah tersebut. Jika Anda menggunakan zona negara, perlu dicatat bahwa itu bisa terjadi karena hanya ada satu peladen di zona tersebut, lebih baik untuk menggunakan zona benua. Anda bisa <a href="/zone">menjelajah zona-zona</a> untuk melihat seberapa banyak peladen di setiap zona.</p>
+
+	<p>Bersikap ramahlah. Kebanyakan peladen disediakan oleh sukarelawan dan hampir semua peladen pewaktu adalah peladen web, berkas, atau surel yang kebetulan juga menjalankan ntp. Jadi jangan gunakan lebih dari empat (4) peladen pewaktu di konfigurasi Anda, dan jangan bermain-main dengan sesuatu seperti <code>burst</code> atau <code>minpoll</code>,  yang akan Anda hasilkan adalah beban tambahan ke peladen pewaktu sukarelawan.<br/></p>
+<p>Pastikan bahwa konfigurasi zona waktu di komputer Anda benar. ntpd sendiri tidak akan melakukan apa pun tentang zona waktu, itu akan menggunakan UTC secara internal.</p>
+<p>Jika Anda menyinkronisasi sebuah jaringan ke pool.ntp.org, mohon atur salah satu dari komputer Anda sebagai peladen pewaktu dan sinkronisasi komputer lainnya ke komputer tersebut (Anda harus mempelajari sesuatu, tidak akan terlalu sulit, dan akan ada selalu <a href="news:comp.protocols.time.ntp">grup berita comp.protocols.time.ntp</a>).</p>
+<p class="thanks">Terakhir, saya ingin berterima kasih kepada mereka yang menyumbangkan waktu dan peladen pewaktu ke jaringan ini.</p>
+</div>
+</body>
+</html>

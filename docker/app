@@ -22,9 +22,9 @@ fi
 docker pull $IMAGE
 
 docker run $tparm \
+ --platform linux/amd64 \
  -v $(pwd):/ntppool \
  --env-file=ntppool.env \
- --network ntppool_default \
  $ports \
  --rm \
  $IMAGE ./docker/entrypoint $app

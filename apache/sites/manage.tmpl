@@ -43,9 +43,19 @@
        [% PH %] NTPPool::Control::Manage::Account->super
     </Location>
 
+    <Location /manage/monitors>
+       SetHandler perl-script
+       [% PH %] NTPPool::Control::Manage::Monitor->super
+    </Location>
+
     <Location /manage/equipment>
        SetHandler perl-script
        [% PH %] NTPPool::Control::Manage::Equipment->super
+    </Location>
+
+    <Location /webhook>
+       SetHandler perl-script
+       [% PH %] NTPPool::Control::Manage::Webhook->super
     </Location>
 
     <Location /api>

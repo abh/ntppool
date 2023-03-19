@@ -4,7 +4,9 @@ use base qw(NTPPool::Control);
 use Combust::Constant qw(OK DECLINED);
 use NP::Model;
 use List::Util qw(min);
-use JSON qw(encode_json);
+use JSON ();
+
+my $json = JSON::XS->new->utf8;
 
 sub render {
     my $self = shift;
@@ -72,7 +74,9 @@ sub render {
 
         if ($mode eq 'monitors') {
             $self->cache_control('s-maxage=480,max-age=240') if $public;
-            return OK, encode_json({monitors => $self->_monitors($server)}), 'application/json';
+            my $cutoff   = DateTime->now->subtract(days => 120);
+            my $monitors = $server->monitors($cutoff);
+            return OK, $json->convert_blessed->encode({monitors => $monitors}), 'application/json';
         }
         elsif ($mode eq 'log' or $self->req_param('log') or $mode eq 'json') {
             $mode = $mode eq 'json' ? $mode : 'log';
@@ -128,11 +132,13 @@ sub render {
                 $self->cache_control('maxage=28800');
             }
 
+            my $m = $server->monitors;
+
             my $monitors =
-              [grep { $relevant_monitors{$_->{id}} } @{$self->_monitors($server)}];
+              [grep { $relevant_monitors{$_->{id}} } @$m];
 
             return OK,
-              encode_json(
+              $json->encode(
                 {   history  => $history,
                     monitors => $monitors,
                     server   => {ip => $server->ip}
@@ -156,21 +162,6 @@ sub render {
     return 404;
 }
 
-sub _monitors {
-    my ($self, $server) = @_;
-    my $monitors = $server->server_scores;
-    $monitors = [
-        map {
-            my %m = (
-                id    => $_->monitor->id + 0,
-                score => $_->score + 0,
-                name  => $_->monitor->name,
-            );
-            \%m;
-        } @$monitors
-    ];
-    return $monitors;
-}
 
 sub bc_user_class    { NP::Model->user }
 sub bc_info_required {'username,email'}

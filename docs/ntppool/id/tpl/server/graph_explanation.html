@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title></title>
+</head>
+<body>
+<div id="graph_explanation_box" class="graph_explanation [% graph_explanation ? 'visible' : '' %]">
+
+<h3>Grafik Skor</h3>
+<p>Setiap beberapa kali per jam, sistem gugusan akan memeriksa waktu dari peladen Anda dan membandingkannya dengan waktu lokal. Poin akan dikurangi jika peladen tidak dapat dicapai atau jika perbedaan waktu lebih dari 100 mili detik (dari apa yang ada di sistem pemantauan). Jika perbedaan lebih banyak, maka lebih banyak juga poin yang dikurangi.</p>
+<p>Grafik ini hanya dimaksudkan sebagai alat untuk memvisualisasikan tren. Untuk detail lebih lanjut tentang apa yang sistem pemantauan temukan, Anda bisa klik pada tautan CSV.</p>
+
+<h3>Grafik Perbedaan</h3>
+<p>Sistem pemantauan bekerja layaknya klien <a href="http://www.ntp.org/ntpfaq/NTP-s-def.htm#AEN1242">SNTP</a> (<a href="http://tools.ietf.org/html/rfc2030">RFC 2030</a>), sehingga lebih rentan kepada latensi jaringan acak antara peladen dengan sistem pemantauan daripada peladen ntpd biasa.</p>
+<p>Sistem pemantauan bisa misakurasi paling tidak hingga 10 mili detik atau lebih.</p>
+
+</div>
+</body>
+</html>

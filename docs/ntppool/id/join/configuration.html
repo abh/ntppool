@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title></title>
+</head>
+<body>
+<div class="block">
+
+<h3>Rekomendasi konfigurasi untuk peladen yang bergabung ke gugusan</h3>
+<p><a href="http://support.ntp.org/bin/view/Support/WebHome">Bagian dukungan</a> di <a href="http://support.ntp.org">support.ntp.org</a> memiliki banyak informasi yang berguna.</p>
+<p>Jika Anda hanya ingin menggunakan gugusan, lihat halaman <a href="/use.html">penggunaan gugusan</a>.</p>
+<p>Grup berita <a href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a> merupakan tempat terbaik untuk mendapatkan bantuan tentang program ntpd.</p>
+<p>Berikut adalah beberapa hal yang yang cukup penting jika Anda ingin bergabung ke gugusan NTP:</p>
+
+<p>Kami merekomendasikan <a href="https://tools.ietf.org/html/draft-ietf-ntp-bcp">Network Time Protocol Best Current Practices</a> yang diterbitkan oleh Internet Engineering Task Force.</p>
+
+<h4 id="management-queries">Kueri pengelolaan</h4>
+<p>Atur agar konfigurasi baku tidak memperbolehkan "kueri pengelolaan". Untuk ntpd, ini adalah dengan menambah "noquery" ke baris "restrict" baku, untuk contohnya:</p>
+
+[% INCLUDE "join/configuration/restrict-default.html" %]<p>Untuk memperbolehkan perintah seperti "ntpq -c pe" untuk bekerja dari localhost, Anda bisa menambahkan:</p>
+
+[% INCLUDE "join/configuration/restrict-localhost.html" %]
+
+<h4>Atur sekitar lima peladen</h4>
+<p>Untuk bekerja dengan benar, ntpd perlu terhubung ke paling tidak tiga peladen ("Sesorang dengan jam mengetahui pukul berapa saat itu. Seseorang dengan dua jam akan ragu").</p>
+<p>Untuk peladen di gugusan, kami merekomendasikan mengatur tidak kurang dari empat dan tidak lebih dari tujuh peladen.</p>
+
+
+<h4>Jangan gunakan peladen *.pool.ntp.org</h4>
+
+<p>Untuk lebih bagus layanan gugusannya, Anda sebaiknya tidak menggunakan alias *.pool.ntp.org di konfigurasi Anda ketika Anda akan menambahkan peladen Anda ke gugusan.</p>
+<p>Untuk kesehatan gugusan, lebih baik jika semua operator gugusan "memilih manual" peladen pewaktu lokal yang bagus. Wiki ntp.org memiliki <a href="http://support.ntp.org/bin/view/Servers/WebHome">daftar peladen publik</a>.</p>
+
+
+<h4>Gunakan perangkat lunak standar ntpd</h4>
+<p>Kami suka dengan keberagaman perangkat lunak, tapi kebanyakan dari pertanyaan "tidak bekerja" datang dari perangkat lunak selain ntpd.</p>
+<p>Anda bisa menggunakan gugusan dengan perangkat lunak yang kompatibel dengan NTP, tetapi jika Anda ingin bergabung ke gugusan, kami merekomendasikan <a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.</p>
+
+
+<h4>Jangan gunakan perangkat tegar jam LOKAL</h4>
+<p>Peladen di gugusan NTP tidak diperbolehkan untuk mengatur perangkat tegar jam LOKAL.</p>
+
+<h4>Hati-hati pada kueri PTR DNS</h4>
+<p>Beberapa operator peladen telah melaporkan bahwa beberapa pengguna NTP (atau program tembok api mereka) melakukan kueri "DNS balik" (PTR) untuk alamat IP peladen NTP. Berhati-hatilah karena ini mungkin akan menyebabkan jumlah kueri naik. Meningkatkan "waktu untuk hidup" (TTL) di rekaman domain tersebut sangat direkomendasikan jika jumlah kueri DNS menjadi permasalahan, ini umumnya dapat membuat jumlah kueri DNS tersebut dapat diabaikan.</p>
+
+</div>
+</body>
+</html>

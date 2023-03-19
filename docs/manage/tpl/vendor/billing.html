@@ -1,0 +1,38 @@
+  <div class="row">
+    <h3>Current plan</h3>
+    <p></p>
+  </div>
+
+  <div class="row">
+
+    [% FOR plan IN subscriptions %]
+
+      <div class="col">
+
+      <b>
+        [% plan.name %]
+      </b>
+
+      <ul class="product-details">
+        <li>Up to [% plan.max_zones %] DNS zones</li>
+        <li>Up to [% plan.max_devices | format_number %] client devices</li>
+        [% IF plan.ended_on %]
+        <li>Cancels [% plan.ended_on.strftime("%B %d, %Y") %]</li>
+        [% END %]
+      </ul>
+    </div>
+    [% END %]
+  </div>
+
+    <form method="post" class="form-inline" action="/manage/vendor/billing">
+        <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
+        <input type="hidden" name="a" value="[% combust.current_account.id_token %]">
+        <input type="submit" class="btn btn-primary btn-sm" value="Update billing information &rarr;" />
+
+    [% IF combust.user.privileges.vendor_admin && plan.stripe_dashboard_link%]
+        <a class="btn btn-sm btn-outline-dark" href="[% plan.stripe_dashboard_link | html %]">
+                Stripe dashboard &rarr;
+        </a>
+    [% END %]
+
+    </form>

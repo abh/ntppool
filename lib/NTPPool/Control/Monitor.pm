@@ -205,39 +205,3 @@ sub upload {
 }
 
 1;
-
-__END__
-
-    my $dbh = NP::Model->dbh;
-
-    # Delete old records from this monitor for the same protocol
-    $dbh->do(q[delete m.* from monitor_report m, servers s
-               where m.monitor_id=? and s.id=m.server_id and s.ip_version=?],
-	     undef,
-	     $monitor->id, $proto);
-
-    warn $stats;
-    my @stats = split(/\n/, $stats);
-    my $sth = $dbh->prepare(q[INSERT INTO monitor_report(monitor_id, server_id, ts, offset, stratum)
-                              SELECT ?, s.id, now(), ?, ? FROM servers s WHERE s.ip=?]);
-    for my $line (@stats) {
-	my @line = split(/ +/,$line);
-	my $res;
-	my ($ip, $offset, $stratum);
-	if (@line == 3) {
-	    ($ip, $offset, $stratum) = @line;
-	    $res = $sth->execute($monitor->id, $offset, $stratum, $ip);
-	} else {
-	    ($ip, $offset) = @line;
-	    if ($offset ne "unreachable") {
-		return 400, "Invalid line:" . $line;
-	    }
-	    $res = $sth->execute($monitor->id, undef, undef, $ip);
-	}
-	if ($res != 1) {
-	    return 400, "Failed to update " . $ip;
-	}
-    }
-    $monitor->last_seen(time);
-    $monitor->save;
-    return OK, "Saved " . ($#stats+1) . " records", "text/plain";

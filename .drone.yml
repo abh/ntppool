@@ -15,7 +15,7 @@ steps:
   settings:
     repo: ntppool/ntppool
     registry: harbor.ntppool.org
-    tags: SHA7,${DRONE_BRANCH}
+    tags: SHAABBREV,SHA7,${DRONE_BRANCH}
     auto_tag: true
     cache: true
     username:

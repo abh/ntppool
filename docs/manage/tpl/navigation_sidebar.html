@@ -1,5 +1,7 @@
 [% UNLESS combust.user; RETURN; END; %]
 
+[% #page.js.unshift("https://js.stripe.com/v3/"); %]
+
 <ul id="manage-sidebar" class="manage-sidebar nav nav-pills flex-column">
 
     [% IF combust.user.is_staff %]
@@ -47,10 +49,19 @@
             Servers</a>
     </li>
 
+    [% IF combust.system_setting('vendors') %]
     <li class="nav-item">
         <a class="nav-link [% page.is_vendor ? " active" : "" %]" href="[% combust.manage_url('/manage/vendor') %]">NTP
             DNS Zones</a>
     </li>
+    [% END %]
+
+    [% IF combust.system_setting('monitors') AND combust.account_monitor_count > 0 %]
+    <li class="nav-item">
+        <a class="nav-link [% page.is_monitors ? " active" : "" %]" href="[% combust.manage_url('/manage/monitors') %]">Monitors</a>
+    </li>
+    [% END %]
+
 
     [% IF combust.user.privileges.vendor_admin %]
     <li class="nav-item">
