@@ -10,7 +10,7 @@ my $deployment_mode = $config->site->{ntppool}->{deployment_mode};
 
 my $json = JSON::XS->new->utf8;
 
-my $api = 'https://vault.ntpvault.svc:8200/v1';
+my $api = 'https://vault-active.ntpvault.svc:8200/v1';
 
 my $ua;
 
