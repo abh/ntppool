@@ -283,6 +283,17 @@ sub manage_url {
     return $self->_url('manage', $url, $args);
 }
 
+sub analytics_hostname {
+    my $self = shift;
+    my $sitename = $self->site;
+    my $servername = $config->site->{$sitename}->{servername};
+    unless ($servername) {
+        cluck "servername not defined for site [$sitename]";
+        return;
+    }
+    return $servername;
+}
+
 sub system_setting {
     my $self = shift;
     my $name = shift;
@@ -341,7 +352,7 @@ sub post_process {
         [   'Content-Security-Policy-Report-Only' => join(
                 " ",
                 qq[default-src 'none'; frame-ancestors 'none';],
-                qq[connect-src 'self' 8ll7xvh0qt1p.statuspage.io;],
+                qq[connect-src 'self' st.ntppool.org 8ll7xvh0qt1p.statuspage.io;],
                 qq[font-src fonts.gstatic.com;],
                 qq[form-action 'self' mailform.ntppool.org checkout.stripe.com;],
                 qq[img-src 'self' $cspdomains *.mapper.ntppool.org;],
