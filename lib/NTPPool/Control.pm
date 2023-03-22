@@ -19,11 +19,12 @@ my $version = NP::Version->new;
 my $config  = Combust::Config->new;
 
 our %valid_languages = (
-    bg => {name => "Български", testing => 1},
-    ca => {name => "Català",    testing => 1},
+    ar => {name => "اَلْعَرَبِيَّةُ", testing => 1},
+    bg => {name => "Български",       testing => 1},
+    ca => {name => "Català",          testing => 1},
     da => {name => "Dansk"},
     de => {name => "Deutsch"},
-	el => {name => "Ελληνικά"},
+    el => {name => "Ελληνικά"},
     en => {name => "English",},
     es => {name => "Español"},
     eu => {name => "Euskara", testing => 1},
@@ -32,7 +33,8 @@ our %valid_languages = (
     fr => {name => "Français",},
     he => {name => "עברית", testing => 1},
     hi => {name => "हिन्दी"},
-    hu => {name => "Magyar", testing => 1},
+    hu => {name => "Magyar",           testing => 1},
+    id => {name => "Bahasa Indonesia", testing => 1},
     it => {name => "Italiano"},
     ja => {name => "日本語"},
     ko => {name => "한국어",},
@@ -284,8 +286,8 @@ sub manage_url {
 }
 
 sub analytics_hostname {
-    my $self = shift;
-    my $sitename = $self->site;
+    my $self       = shift;
+    my $sitename   = $self->site;
     my $servername = $config->site->{$sitename}->{servername};
     unless ($servername) {
         cluck "servername not defined for site [$sitename]";
