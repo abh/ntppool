@@ -46,6 +46,11 @@ if (!Pool.Graphs) { Pool.Graphs = {}; }
                             data[ip] = json;
                             server_chart(div, json, { legend: graph_legend });
                             // console.log("width/height", div.width(), div.height());
+
+                            setTimeout(function(){
+                                $("body").append('<div id="loaded"></div>');
+                            }, 50);
+
                         }
                         else {
                             div.html('<p>Error downloading graph data</p>');
@@ -77,7 +82,5 @@ if (!Pool.Graphs) { Pool.Graphs = {}; }
 
 $(document).ready(function(){
     "use strict";
-
     Pool.Graphs.SetupGraphs();
-
 });

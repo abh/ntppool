@@ -34,9 +34,9 @@ sub render {
     return $self->redirect('/graph/' . $server->ip . "/$type", 301) unless $p eq $server->ip;
 
     my $graph = eval { get_graph($server) };
-    my $err = $@ || !$graph;
+    my $err   = $@ || !$graph;
     warn "update_graphs error: $err" if $err;
-    my $ttl = $err || length($graph) == 0 ? 10 : 7200;
+    my $ttl = $err || length($graph) == 0 ? 15 : 1800;
 
     my $mtime = time;
     $self->request->update_mtime($mtime);
@@ -52,7 +52,8 @@ sub render {
 
 sub get_graph {
     my $server = shift;
-    my $url = URI->new(Combust::Config->new->base_url('ntppool'));
+    my $url    = URI->new(Combust::Config->new->base_url('ntppool'));
+
     # if the site doesn't require TLS and can't be reached
     # from inside kubernetes on the external hostname, this might
     # work.
@@ -60,23 +61,24 @@ sub get_graph {
     $url->path($server->url);
     $url->query_form(graph_only => 1);
 
-    my $data = JSON::encode_json(
-        {   url              => $url->as_string(),
-            timeout          => 10,
-            viewport         => "501x233",
-            height           => 233,
-            resource_timeout => 5,
-            wait             => 0.5,
-            scale_method     => "vector",
-        }
-    );
+    # my $data = JSON::encode_json(
+    #     {   url              => $url->as_string(),
+    #         timeout          => 10,
+    #         viewport         => "501x233",
+    #         height           => 233,
+    #         resource_timeout => 5,
+    #         wait             => 0.5,
+    #         scale_method     => "vector",
+    #     }
+    # );
 
-    my $splash = $ENV{splash_service} || 'splash';
-    my $resp =
-      $ua->post("http://${splash}/render.png",
-       "Content-Type" => "application/json",
-       Content => $data,
-       );
+    my $screensnap = $ENV{screensnap_service} || 'screensnap';
+    my $resp       = $ua->get(
+        "http://${screensnap}/image/offset/" . $server->ip,
+
+        # "Content-Type" => "application/json",
+        # Content        => $data,
+    );
 
     unless ($resp->is_success) {
         warn "could not get splash render: ", $resp->code;
