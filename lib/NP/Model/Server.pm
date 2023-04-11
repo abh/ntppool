@@ -144,6 +144,9 @@ sub history {
             @monitor_where = ();
         }
         elsif ($monitor_id == 0) {
+
+            # this doesn't make sense with monitoring v2 since the
+            # scores have a monitor_id, too
             @monitor_where = (monitor_id => undef);
         }
         else {

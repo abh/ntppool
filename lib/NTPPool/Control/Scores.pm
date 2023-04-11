@@ -87,10 +87,20 @@ sub render {
             my $since = $self->req_param('since');
             $since = 0 if defined $since and $since =~ m/\D/;
 
+            my $monitor_id = $self->req_param('monitor');
+
+            # return data for the primary scorer if no monitor (or *) is specified
+            unless ($monitor_id) {
+                my $mon = NP::Model->monitor->fetch(tls_name => "recentmedian.scores.ntp.dev");
+                if ($mon) {
+                    $monitor_id = $mon->id;
+                }
+            }
+
             my $options = {
                 count      => $limit,
                 since      => $since,
-                monitor_id => $self->req_param('monitor'),
+                monitor_id => $monitor_id,
             };
 
             if ($since) {
