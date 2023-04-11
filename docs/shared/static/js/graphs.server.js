@@ -80,6 +80,7 @@ function server_chart(div, data, options) {
         .attr("y1", y_offset)
         .attr("y2", y_offset);
 
+    // legend in fractional milliseconds if offets are less than 3ms
     var yformat = d3.format((y_offset_max*1000 < 3 && y_offset_min*1000 > -3) ? "0.1f" : "0.0f");
 
     yrule.append("text")
@@ -90,7 +91,21 @@ function server_chart(div, data, options) {
         .text(function(ms) {
             ms = ms * 1000;
             var s = yformat(ms);
-            return this.parentNode.previousSibling ? `${s} ms` : `\xa0${s}`;
+            var previous = this.parentNode.previousSibling;
+            if (previous.className && previous.className.baseVal === "y") {
+                // \xa0 is non breaking space
+                return `\xa0${s}`;
+            } else {
+                // return `${s} ms`;
+                return "ms";
+            }
+        })
+        .attr("font-weight", function(ms) {
+            console.log("weight", ms);
+            if (this.textContent === "ms") {
+                return "bold";
+            }
+            return "";
         });
 
     /* score y lines */
