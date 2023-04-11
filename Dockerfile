@@ -1,4 +1,4 @@
-FROM harbor.ntppool.org/ntppool/base-os:3.17.2-1
+FROM harbor.ntppool.org/ntppool/base-os:3.17.3
 USER root
 
 RUN apk -U --no-cache upgrade --ignore alpine-baselayout
