@@ -909,5 +909,10 @@ alter table vendor_zones
 
 update vendor_zones set client_type = 'legacy' where client_type = 'ntp';
 
+#108
+-- for data-api queries (todo: move this to clickhouse)
+alter table zone_server_counts
+  add index `date_idx` (date, zone_id);
+
 #todo
 - ...
