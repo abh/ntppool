@@ -338,6 +338,8 @@ sub account_monitor_count {
     my $self = shift;
     return $self->{_account_monitor_count} if defined $self->{_account_monitor_count};
 
+    return $self->{_account_monitor_count} = 0 unless $self->current_account; # if we are being invited to a new account
+
     my $monitor_count =
       NP::Model->monitor->get_objects_count(query => [account_id => $self->current_account->id]);
 
