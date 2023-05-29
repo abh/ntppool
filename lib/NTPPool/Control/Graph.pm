@@ -24,9 +24,12 @@ sub render {
         return $self->redirect($self->request->uri, 301);
     }
 
+    return 404 unless $type and $type =~ m!^(offset|score)$!;
+
+
     my ($server) = $p && NP::Model->server->find_server($p);
     return 404 unless $server;
-    return 404 unless $type and $type =~ m!^(offset|score)$!;
+    return 404 if $server->deleted;
 
     # we only have one graph type now
     $type = 'offset';
