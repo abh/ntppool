@@ -37,6 +37,13 @@
         [% vz.contact_information_html %]
     </blockquote>
 
+    [% IF vz.opensource_info %]
+    <h4>Open Source information</h4>
+    <blockquote>
+        [% vz.opensource_info | html %]
+    </blockquote>
+    [% END %]
+
     <h4>Status</h4>
     [% IF vz.status == "Pending" %]
        [% IF have_subscription %]
