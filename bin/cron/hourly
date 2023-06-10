@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 targetpath=$CBROOTLOCAL/docs/ntppool/_syndicate/
 mkdir -p $targetpath
