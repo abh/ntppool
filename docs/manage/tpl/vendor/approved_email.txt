@@ -2,11 +2,18 @@
 Hello,
 
 Your vendor DNS NTP Pool zone "[% vz.zone_name %]" has been activated.
-The hostnames below will be active within the next 20 minutes.
+The DNS name below will be active within the next 20 minutes.
 
-[%- FOR i = [0..3] -%]
-   [% i %].[% vz.zone_name %].[% vz.dns_root.origin %]
-[% END %]
+[% IF vz.client_type == "legacy" %]
+   [%- FOR i = [0..3] -%]
+      [% i %].[% vz.zone_name %].[% vz.dns_root.origin %]
+   [% END %]
+[% ELSE %]
+   [% vz.zone_name %].[% vz.dns_root.origin %]
+[% END%]
+
+For NTP clients that support the "pool" configuration, we
+suggest using that.
 
 If you have any questions, please reply to this email and we'll
 help the best we can.
