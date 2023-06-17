@@ -1,0 +1,30 @@
+<div class="row">
+    <div class="col-md-8">
+
+    <h3>Ad-hoc NTP Server Check</h3>
+
+    [% INCLUDE tpl/check/_form.html %]
+
+    <h4>Results</h4>
+
+    <ol>
+    [% FOR r = results %]
+    <li>
+        [% IF r.Server %][% r.Server | html %]<br>[% END %]
+        [% IF r.error %]
+            [% r.error | html %]
+        [% ELSE %]
+            [% IF r.NTP.RTT %]
+                Offset: [% r.NTP.ClockOffset / 100000 | html %]ms<br>
+                RTT: [% r.NTP.RTT / 1000000 | html %]ms<br>
+            [% END %]
+            [% IF r.NTP.Leap %]Leap flag: [% r.NTP.Leap %]<br>[% END %]
+            [% IF r.NTP.KissCode %]Kiss Code: [% r.NTP.KissCode %]<br>[% END %]
+
+        [% END %]
+    </li>
+    [% END %]
+    </ol>
+    </div>
+
+</div>

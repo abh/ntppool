@@ -1,0 +1,18 @@
+    <form id="monitor-form" action="/manage/check?a=[% account.id_token %]" method="post" accept-charset="utf-8">
+        <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
+
+        <div class="form-group">
+            <label id="ip-help" class="form-label" for="ip">IP address (v4 or v6)</label>
+            <input type="text" class="form-control" name="ip"
+                value="[% ip | html %]"
+                id="ip" maxlength="65">
+            [% IF errors.ip %]
+                <div class="error">
+                    <span class="badge badge-danger">Error</span>
+                    [% errors.ip | html %]
+                </div>
+            [% END %]
+        </div>
+
+        <p><input type="submit" class="btn btn-primary" value="Check"></p>
+    </form>

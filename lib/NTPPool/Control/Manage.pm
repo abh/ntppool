@@ -14,16 +14,9 @@ use Math::BaseCalc qw();
 use Math::Random::Secure qw(irand);
 use URI::URL ();
 use URI::QueryParam;
+use NP::UA;
 
-
-my $ua = LWP::UserAgent->new(
-    timeout  => 2,
-    ssl_opts => {
-        SSL_verify_mode => 0x02,
-        SSL_ca_file     => Mozilla::CA::SSL_ca_file()
-    }
-);
-sub ua { return $ua }
+sub ua { return $NP::UA::ua }
 
 sub init {
     my $self = shift;
@@ -31,9 +24,9 @@ sub init {
 
     $self->tpl_params->{page} ||= {};
 
-    if ($self->is_logged_in) {
+    if ( $self->is_logged_in ) {
         $self->request->env->{REMOTE_USER} = $self->user->username;
-        $self->tpl_param('account' => $self->current_account);
+        $self->tpl_param( 'account' => $self->current_account );
     }
 
     return OK;

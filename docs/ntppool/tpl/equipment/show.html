@@ -34,7 +34,7 @@
 	  <input type="hidden" name="id" value="[% ea.id %]" />
 	  <input type="submit" class="button" value="&larr; Edit" />
 	 </fieldset>
-	</form> 
+	</form>
 	[% END %]
 
 	[% IF ea.status == 'New' %]
@@ -44,7 +44,7 @@
 	  <input type="hidden" name="status_change" value="Pending" />
 	  <input type="submit" class="button" value="Submit application &rarr;" />
 	 </fieldset>
-	</form> 
+	</form>
 	[% END %]
 
 	[% IF combust.user.privileges.equipment_admin %]
@@ -64,5 +64,5 @@
 	<a href="/manage/">My servers</a>
 	</p>
 
-	
+
 </div>

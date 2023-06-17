@@ -14,6 +14,7 @@ use JSON::XS qw(encode_json decode_json);
 use Net::DNS;
 use Math::BaseCalc qw();
 use Math::Random::Secure qw(irand);
+use NP::NTP;
 
 my $config     = Combust::Config->new;
 my $config_ntp = $config->site->{ntppool};
@@ -267,18 +268,12 @@ sub get_server_info {
         }
     }
 
-    my @ntp = $self->_get_ntp_info_monitor_api($ip->short);
-
-    unless (@ntp) {
-        warn "didn't get NTP info from monitor-api, trying trace";
-        @ntp = $self->_get_ntp_info_trace($ip->short);
-    }
+    my @ntp = NP::NTP::info( $ip->short );
 
     my $ntp_ok = 0;
 
     for my $check (@ntp) {
-        $check->{error} = $check->{Error} if $check->{Error};
-        next                              if $check->{error};
+        next if $check->{error};
 
         my $ntp = $check->{NTP} or next;
 
@@ -319,53 +314,6 @@ sub get_server_info {
     $server{country_zone} = $country && NP::Model->zone->fetch(name => $country);
 
     return \%server;
-}
-
-sub _get_ntp_info_monitor_api {
-    my $self = shift;
-    my $ip   = shift;
-
-    my $res = $self->ua->post("http://monitor-api/check/ntp/$ip");
-    if ($res->code != 200) {
-        warn "trace2 response code for $ip: ", $res->code;
-        return ();    # will fallback to the legacy trace check
-    }
-
-    warn "JS: ", $res->decoded_content();
-
-    my $json = JSON::XS->new->utf8;
-    my @ntp  = eval { @{$json->decode($res->decoded_content)} };
-    if ($@) {
-        warn "json error: $@";
-        return ({error => "Could not decode NTP response from trace server"});
-    }
-
-    warn "NTP response from monitor-api: ", Data::Dumper->Dump([@ntp]);
-
-    return @ntp;
-}
-
-sub _get_ntp_info_trace {
-    my $self = shift;
-    my $ip   = shift;
-
-    my $res = $self->ua->get("https://trace2.ntppool.org/ntp/$ip");
-    if ($res->code != 200) {
-        warn "trace2 response code for $ip: ", $res->code;
-        return ({error => "Could not check NTP status"});
-    }
-
-    warn "JS: ", $res->decoded_content();
-
-    my $json = JSON::XS->new->utf8;
-    my %ntp  = eval { +%{$json->decode($res->decoded_content)} };
-    if ($@) {
-        return ({error => "Could not decode NTP response from trace server"});
-    }
-
-    warn "NTP response: ", Data::Dumper->Dump([\%ntp]);
-
-    return ({Server => 'trace', NTP => \%ntp});
 }
 
 sub req_server {

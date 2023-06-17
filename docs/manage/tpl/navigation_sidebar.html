@@ -45,8 +45,8 @@
     </li>
 
     <li class="nav-item">
-        <a class="nav-link [% page.is_servers ? " active" : "" %]" href="[% combust.manage_url('/manage/servers') %]">My
-            Servers</a>
+        <a class="nav-link [% page.is_servers ? " active" : "" %]" href="[% combust.manage_url('/manage/servers') %]">
+        My Servers</a>
     </li>
 
     [% IF combust.system_setting('vendors') %]
@@ -69,6 +69,12 @@
             href="[% combust.manage_url('/manage/vendor/admin') %]">Vendor admin</a>
     </li>
     [% END %]
+
+    <li class="nav-item">
+        <a class="nav-link [% page.is_check ? " active" : "" %]" href="[% combust.manage_url('/manage/check') %]">
+        NTP Check</a>
+    </li>
+
 
     <li class="nav-item logout-item">
         <a class="nav-link" href="[% combust.manage_url('/manage/logout') %]">Logout ([% combust.user.email | html
