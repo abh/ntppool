@@ -30,8 +30,8 @@ sub manage_dispatch {
     }
 
     return $self->render_submit
-      if (  $self->request->uri =~ m!^/manage/vendor/submit$!
-        and $self->request->method eq 'post');
+      if (    $self->request->uri =~ m!^/manage/vendor/submit$!
+          and $self->request->method eq 'post');
 
     return $self->render_subscription
       if $self->request->uri =~ m!^/manage/vendor/plan!;
@@ -116,8 +116,8 @@ sub render_zone {
     $self->tpl_param('vz', $vz);
 
     return $self->render_form($vz)
-      if (  $mode eq 'edit'
-        and $vz->can_edit($self->user));
+      if (    $mode eq 'edit'
+          and $vz->can_edit($self->user));
 
     my $device_count = $vz->device_count || 0;
 

@@ -1,10 +1,10 @@
 package NP::Email;
 use strict;
 use 5.20.0;
-use Email::Simple ();
-use Email::Sender ();
-use Email::Sender::Simple ();
-use Email::Date ();
+use Email::Simple                  ();
+use Email::Sender                  ();
+use Email::Sender::Simple          ();
+use Email::Date                    ();
 use Email::Sender::Transport::SMTP ();
 use Data::Dump qw(pp);
 use Combust::Config;
@@ -26,7 +26,7 @@ sub address {
 
 sub sendmail {
     my $email = shift;
-    my $opts = shift || {};
+    my $opts  = shift || {};
 
     if ($email->isa("Email::Stuffer")) { $email = $email->email }
 
@@ -45,7 +45,7 @@ sub sendmail {
 
     my $sender = address("sender");
 
-    my $send_options = { from => $sender };
+    my $send_options = {from => $sender};
 
     if ($deployment_mode eq 'devel') {
         $send_options->{to} = 'ask+devel-site@ntppool.org';
@@ -57,7 +57,7 @@ sub sendmail {
 
     # kubernetes relay service must be running on 'smtp' port 25
     my $smtp_service = $ENV{smtp_service} || 'smtp';
-    my $transport = Email::Sender::Transport::SMTP->new(
+    my $transport    = Email::Sender::Transport::SMTP->new(
         {   host => $smtp_service,
             port => 25,
         }

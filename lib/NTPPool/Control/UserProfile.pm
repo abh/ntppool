@@ -14,9 +14,9 @@ sub profile_user {
     my $self = shift;
     return $self->{_profile_user} if $self->{_profile_user};
     my $username = $self->uri_username;
-    my $user = NP::Model->user->get_users(query => [username => $username]);
-    $user = $user && $user->[0];
-    $user = NP::Model->user->fetch(id => $username) unless $user;
+    my $user     = NP::Model->user->get_users(query => [username => $username]);
+    $user                  = $user && $user->[0];
+    $user                  = NP::Model->user->fetch(id => $username) unless $user;
     $self->{_profile_user} = $user;
 }
 
@@ -33,7 +33,7 @@ sub profile_account {
 sub render {
     my $self = shift;
     if ($self->request->uri =~ m{^/user/}) {
-      return $self->render_user;
+        return $self->render_user;
     }
     return $self->render_account;
 }
@@ -45,8 +45,7 @@ sub render_user {
     return 404 unless $user and $user->public_profile;
 
     my $accounts = $user->accounts;
-    my ($account) = sort { $a->id <=> $b->id } grep { $_->public_profile }
-      @$accounts;
+    my ($account) = sort { $a->id <=> $b->id } grep { $_->public_profile } @$accounts;
 
     return 404 unless $account;
     return $self->redirect($account->public_url);
@@ -66,22 +65,25 @@ sub render_account {
 
     if ($req_json) {
         $self->cache_control('max-age=240');
-        my @servers = map { +{
-                              ip => $_->ip,
-                              hostname => $_->hostname,
-                              score => $_->score_raw,
-                              zones => [map { $_->name} $_->zones_display],
-                              history => $_->url + "/json",
-                             }
-                        } $account->servers;
+        my @servers = map {
+            +{  ip       => $_->ip,
+                hostname => $_->hostname,
+                score    => $_->score_raw,
+                zones    => [map { $_->name } $_->zones_display],
+                history  => $_->url + "/json",
+            }
+        } $account->servers;
 
-        return 200, JSON::XS->new->utf8->encode(
-            {   account => {
-                url => $account->public_url,
-                name => ($account->organization_name || $account->name || $account->id_token),
-            },
-                servers => \@servers},
-            ), "application/json; charset=utf-8";
+        return 200,
+          JSON::XS->new->utf8->encode(
+              {   account => {
+                      url  => $account->public_url,
+                      name => ($account->organization_name || $account->name || $account->id_token),
+                  },
+                  servers => \@servers
+              },
+          ),
+          "application/json; charset=utf-8";
     }
 
     $self->cache_control('max-age=300');
@@ -89,6 +91,5 @@ sub render_account {
     $self->tpl_param('account', $account);
     return OK, $self->evaluate_template('tpl/user/profile_public.html');
 }
-
 
 1;

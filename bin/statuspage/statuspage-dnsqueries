@@ -10,7 +10,7 @@ use URI::URL;
 use URI::QueryParam;
 use JSON qw(decode_json);
 
-my $api_base  = 'api.statuspage.io';
+my $api_base   = 'api.statuspage.io';
 my $batch_size = 2000;
 
 my $verbose = (-t STDIN or -d "/run/secrets/kubernetes.io");
@@ -19,7 +19,7 @@ my $minutes = shift || 60;
 
 my $interval = 5 * 60;
 
-my $now = time;
+my $now   = time;
 my $start = (($now - ($now % $interval)) - ($minutes * 60));
 
 my $ua = LWP::UserAgent->new(timeout => 15);
@@ -31,10 +31,12 @@ if (!$settings) {
 }
 $settings = $settings->value;
 
-my $api_key   = $settings->{api_key} or die "no statuspage api_key";
-my $page_id   = $settings->{page_id} or die "no statuspage page_id";
-my $avg_metric_id  = $settings->{metrics}->{dns_queries} or die "no statuspage metrics->dns_queries key";
-my $peak_metric_id = $settings->{metrics}->{dns_queries_peak} or die "no statuspage metrics->dns_queries key";
+my $api_key       = $settings->{api_key} or die "no statuspage api_key";
+my $page_id       = $settings->{page_id} or die "no statuspage page_id";
+my $avg_metric_id = $settings->{metrics}->{dns_queries}
+  or die "no statuspage metrics->dns_queries key";
+my $peak_metric_id = $settings->{metrics}->{dns_queries_peak}
+  or die "no statuspage metrics->dns_queries key";
 
 warn "Getting data\n" if $verbose;
 
@@ -47,6 +49,7 @@ my $data = get_clickhouse();
 $ua->default_header("Authorization" => "OAuth " . $api_key);
 
 if (scalar(@$data) > (10 * $batch_size)) {
+
 #    print "too much data returned, entries: ", scalar(@$data);
 #    exit 2;
 }
@@ -62,14 +65,16 @@ while (@$data) {
 
     my @avg_form = map {
         my $d = $_;
-        ("data[${avg_metric_id}][][timestamp]", $d->{t},
-         "data[${avg_metric_id}][][value]", $d->{avg})
+        (   "data[${avg_metric_id}][][timestamp]", $d->{t},
+            "data[${avg_metric_id}][][value]",     $d->{avg}
+        )
     } @batch;
 
     my @max_form = map {
         my $d = $_;
-        ("data[${peak_metric_id}][][timestamp]", $d->{t},
-         "data[${peak_metric_id}][][value]", $d->{max})
+        (   "data[${peak_metric_id}][][timestamp]", $d->{t},
+            "data[${peak_metric_id}][][value]",     $d->{max}
+        )
     } @batch;
 
     warn "Posting ", scalar @batch, "\n" if $verbose;
@@ -85,7 +90,7 @@ sub post {
     }
     else {
         print STDERR $resp->status_line, "\n";
-        print $resp->decoded_content, "\n";
+        print $resp->decoded_content,    "\n";
         exit 2;
     }
 }
@@ -93,11 +98,11 @@ sub post {
 sub get_prometheus {
     my $url = URI::URL->new("http://trickster.ntpsystem:8480");
     $url->path('/geodns/api/v1/query_range');
-    $url->query_param(query => 'sum (zone:dns_queries:irate{zone="pool.ntp.org"})');
+    $url->query_param(query   => 'sum (zone:dns_queries:irate{zone="pool.ntp.org"})');
     $url->query_param(timeout => 30);
-    $url->query_param(start => $start);
-    $url->query_param(end   => time);
-    $url->query_param(step  => 60);
+    $url->query_param(start   => $start);
+    $url->query_param(end     => time);
+    $url->query_param(step    => 60);
 
     print "fetching ", $url->as_string, "\n";
 
@@ -124,7 +129,7 @@ from (
 group by t order by t
 EOQ
 
-    my $resp = $ua->post($url->as_string,  Content => $query);
+    my $resp = $ua->post($url->as_string, Content => $query);
 
     warn "could not query clickhouse: ", $resp->status_line
       unless $resp->is_success;

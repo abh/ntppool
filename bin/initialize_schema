@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 set -exufo pipefail
 ./combust/bin/database_update combust
 ./combust/bin/database_update ntppool

@@ -5,8 +5,7 @@ use Net::IP ();
 sub is_staff {
     my $self       = shift;
     my $privileges = $self->privileges;
-    return
-         $privileges->see_all_servers
+    return $privileges->see_all_servers
       || $privileges->support_staff;
 }
 
@@ -21,11 +20,11 @@ sub privileges {
 }
 
 sub pending_invites {
-    my $user = shift;
+    my $user    = shift;
     my $invites = NP::Model->account_invite->get_account_invites(
         query => [
             status => {eq => 'pending'},
-            or => [
+            or     => [
                 user_id => $user->id,
                 email   => $user->email,
             ],

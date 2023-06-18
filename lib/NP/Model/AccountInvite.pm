@@ -2,7 +2,7 @@ package NP::Model::AccountInvite;
 use strict;
 use Combust::Config;
 
-my $config  = Combust::Config->new;
+my $config = Combust::Config->new;
 
 sub url {
     my $self = shift;

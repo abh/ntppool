@@ -57,7 +57,6 @@ sub render_application {
     return OK, $self->evaluate_template('tpl/equipment/form.html');
 }
 
-
 sub render_edit {
     my $self = shift;
 
@@ -111,7 +110,7 @@ sub user_has_active_applications {
 
     my $count =
       NP::Model->user_equipment_application->get_user_equipment_applications_count(
-        query => [user_id => $self->user->id]);
+          query => [user_id => $self->user->id]);
     $count;
 }
 

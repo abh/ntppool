@@ -13,7 +13,7 @@ use NP::Model;
 use NP::Email;
 use Email::Stuffer;
 
-my $config = Combust::Config->new;
+my $config          = Combust::Config->new;
 my $deployment_mode = $config->site->{ntppool}->{deployment_mode};
 
 NP::Model->dbh->selectrow_array(q[SELECT GET_LOCK("notifications", 0)]) or exit;
@@ -46,9 +46,8 @@ for my $server (@$servers) {
     my $msg =
       $tpl->process('tpl/bad_server_removal.txt', $param, {site => 'ntppool', config => $config});
 
-    my $email = Email::Stuffer
-      ->from(NP::Email::address("sender"))
-      ->to($server->admin->email)
+    my $email =
+      Email::Stuffer->from(NP::Email::address("sender"))->to($server->admin->email)
       ->reply_to(NP::Email::address("support"))
       ->subject("NTP Pool: " . $server->ip . " has been removed from the NTP Pool")
       ->text_body($msg);

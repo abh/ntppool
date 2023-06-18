@@ -37,7 +37,6 @@ sub last_seen_html {
 
     my $last = $self->last_seen;
 
-
     return {
         text  => "Never connected",
         class => "secondary",

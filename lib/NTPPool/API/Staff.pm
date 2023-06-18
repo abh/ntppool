@@ -25,6 +25,7 @@ sub search {
         require_objects => ['account']
     );
     if ($servers) {
+
         #warn "got servers!", Data::Dump::pp($servers);
         push @accounts, $_->account for @$servers;
     }
@@ -41,7 +42,7 @@ sub search {
     my $include_identities = 0;
 
     if ($q =~ m/^id:(\d+)/i) {
-        $user_query = [id => $1];
+        $user_query         = [id => $1];
         $include_identities = 1;
     }
 
@@ -58,24 +59,24 @@ sub search {
         $result->{accounts} = [];
         for my $account (@accounts) {
             my $account_token = $account->id_token;
-            my $data = $account->get_data_hash;
+            my $data          = $account->get_data_hash;
             push @{$result->{accounts}}, {
                 account_token => $account_token,
+
                 # id       => 0 + $data->{id},
-                name     => $data->{name},
+                name  => $data->{name},
                 users => [
                     map {
                         my $u = $_;
                         my $d = $u->get_data_hash;
-                        {
-                            name     => $d->{name},
+                        {   name     => $d->{name},
                             username => $d->{username},
                             email    => $d->{email},
                             id       => $d->{id} + 0,
                         }
                     } $account->users
                 ],
-                servers  => [
+                servers => [
                     map {
                         my $s = $_;
                         my $d = $s->get_data_hash;
@@ -90,7 +91,7 @@ sub search {
                             in_pool        => $d->{in_pool},
                             zones          => [map { $_->name } $s->zones]
                         }
-                      } sort {
+                    } sort {
                         if ($a->deletion_on or $b->deletion_on) {
                             unless ($a->deletion_on and $b->deletion_on) {
                                 return 1 if $a->deletion_on;
@@ -99,7 +100,7 @@ sub search {
                             return $b->deletion_on <=> $a->deletion_on;
                         }
                         return $b->created_on <=> $a->created_on;
-                      } $account->servers_all
+                    } $account->servers_all
                 ]
             };
         }
@@ -125,7 +126,7 @@ sub edit_server {
       or die "Could not find server";
 
     if ($field eq 'zone_list') {
-        my %zones = map { $_->name => $_ } $server->zones_display;
+        my %zones     = map { $_->name => $_ } $server->zones_display;
         my %new_zones = map { $_ => 1 } split /[,\s]+/, $value;
         %new_zones = %zones unless %new_zones;    # don't allow removing all zones
         for my $zone (keys %new_zones) {
@@ -148,7 +149,7 @@ sub edit_server {
         my $hostname  = $value;
         my $server_ip = Net::IP->new($server->ip);
 
-        my $res = Net::DNS::Resolver->new(defnames => 0);
+        my $res   = Net::DNS::Resolver->new(defnames => 0);
         my $reply = $res->query($hostname, $server->ip_version eq 'v4' ? 'A' : 'AAAA');
 
         my $error = "";

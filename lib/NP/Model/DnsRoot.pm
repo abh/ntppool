@@ -28,7 +28,7 @@ sub data {
 
         my $www_record = {
             cname => $config_ntp->{www_cname} || 'www-lb.ntppool.org.',
-            ttl => 7200,
+            ttl   => 7200,
         };
 
         my $data = {};
@@ -46,9 +46,7 @@ sub data {
         $data->{""}->{txt} = [
 
             # Fastly TLS verification
-            {   txt =>
-                  "_globalsign-domain-verification=mVYWxIl-2ab_B1yPPFxEmDCLrBcl6ucouXJOU_P0_C"
-            },
+            {txt => "_globalsign-domain-verification=mVYWxIl-2ab_B1yPPFxEmDCLrBcl6ucouXJOU_P0_C"},
         ];
 
         if ($self->origin eq "pool.ntp.org") {
@@ -121,7 +119,7 @@ sub populate_country_zones {
             $min_non_duplicate_size = int(@$entries / $zone_count)
               if (@$entries / $zone_count > $min_non_duplicate_size);
 
-         # print $fh "# " . scalar @$entries . " active servers in ", $zone->name, "\n";
+            # print $fh "# " . scalar @$entries . " active servers in ", $zone->name, "\n";
 
             if ($#$entries < ($min_non_duplicate_size * $zone_count - 1)) {
 
@@ -210,7 +208,7 @@ sub populate_vendor_zones {
         next unless $name;    # vendor_name="" on separate dns root
         my $client_type = $vendors{$name}->{type};
         my $sntp        = ($client_type eq 'sntp' or $client_type eq 'legacy');
-        my $ntp         = ($client_type eq 'ntp' or $client_type eq 'legacy');
+        my $ntp         = ($client_type eq 'ntp'  or $client_type eq 'legacy');
         unless ($sntp or $ntp) {
             $sntp = 1;
             $ntp  = 1;

@@ -12,10 +12,10 @@ Rose::DB::Object::Metadata->convention_manager_classes(
 my %not_a_map_table;
 @not_a_map_table{
     qw(
-      log_scores
-      server_scores
-      vendor_zones
-      dns_roots
+        log_scores
+        server_scores
+        vendor_zones
+        dns_roots
     )
 } = ();
 

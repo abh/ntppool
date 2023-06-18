@@ -30,13 +30,13 @@ sub json_columns {
     return grep { $meta->column($_) } @cols;
 }
 
-sub filter_tables { # Return 0 to exclude a table
-  my $self  = shift;
-  my $db    = shift;
-  my $table = shift;
+sub filter_tables {    # Return 0 to exclude a table
+    my $self  = shift;
+    my $db    = shift;
+    my $table = shift;
 
-  return 0 if $table =~ m/ log_scores_archive_status /ix;
-  return $self->SUPER::filter_tables($db, $table);
+    return 0 if $table =~ m/ log_scores_archive_status /ix;
+    return $self->SUPER::filter_tables($db, $table);
 }
 
 1;

@@ -37,9 +37,9 @@ sub render {
     if ($self->request->uri =~ m!^/s/([^/]+)!) {
         my $server = NP::Model->server->find_server($1) or return 404;
         $self->cache_control('max-age=14400, s-maxage=7200');
-	if ($server->deletion_on && $server->deletion_on < DateTime->now->subtract(years => 3)) {
-	    return 404;
-	}
+        if ($server->deletion_on && $server->deletion_on < DateTime->now->subtract(years => 3)) {
+            return 404;
+        }
         return $self->redirect('/scores/' . $server->ip, 301);
     }
 
@@ -152,10 +152,10 @@ sub render {
 
             return OK,
               $json->encode(
-                {   history  => $history,
-                    monitors => $monitors,
-                    server   => {ip => $server->ip}
-                }
+                  {   history  => $history,
+                      monitors => $monitors,
+                      server   => {ip => $server->ip}
+                  }
               ),
               'application/json';
         }
@@ -174,7 +174,6 @@ sub render {
     # if we didn't match on any URL, return 404
     return 404;
 }
-
 
 sub bc_user_class    { NP::Model->user }
 sub bc_info_required {'username,email'}

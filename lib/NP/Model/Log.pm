@@ -25,7 +25,7 @@ sub log_changes {
     }
 
     if ($new->isa('NP::Model::Server')) {
-        $log{server_id} = $new->id;
+        $log{server_id}  = $new->id;
         $log{account_id} = $new->account && $new->account->id;
     }
 

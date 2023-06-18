@@ -131,8 +131,7 @@ sub handle_add {
           Email::Stuffer->from(NP::Email::address("sender"))
           ->to(NP::Email::address("notifications"))->reply_to($self->user->email)->text_body($msg);
 
-        my $subject =
-          "New addition to the NTP Pool: " . join(", ", map { $_->{ip} } @added);
+        my $subject = "New addition to the NTP Pool: " . join(", ", map { $_->{ip} } @added);
         if (grep { $_->{hostname} } @added) {
             $subject .= " (" . join(", ", map { $_->{hostname} } @added) . ")";
         }
@@ -268,7 +267,7 @@ sub get_server_info {
         }
     }
 
-    my @ntp = NP::NTP::info( $ip->short );
+    my @ntp = NP::NTP::info($ip->short);
 
     my $ntp_ok = 0;
 
@@ -296,7 +295,6 @@ sub get_server_info {
         ($server{error}) = map { $_->{error} } grep { $_->{error} } @ntp;
     }
 
-
     if ($server{error}) {
         warn "Error: $server{error}";
         return \%server;
@@ -306,8 +304,8 @@ sub get_server_info {
     my $res   = $self->ua->get("http://${geoip}/api/country?ip=$server{ip}");
     $server{geoip_country} = $res->decoded_content if $res->is_success;
 
-    my $country =
-      $self->req_param('explicit_zone_' . $server{ip}) || $server{geoip_country};
+    my $country = $self->req_param('explicit_zone_' . $server{ip})
+      || $server{geoip_country};
 
     $country = 'UK' if $country eq 'GB';
     warn "Country: $country\n";
@@ -510,7 +508,8 @@ sub handle_move {
         $self->tpl_param('selected', \%selected);
 
         my $new_account_code = $self->req_param('new_account');
-        my ($new_account) = grep { $new_account_code eq $_->id_token } @$accounts;
+        my ($new_account) =
+          grep { $new_account_code eq $_->id_token } @$accounts;
         unless ($new_account) {
             $errors->{new_account} =
               'Please select the account you are transferring the servers to';

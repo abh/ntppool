@@ -5,7 +5,6 @@ use strict;
 use NP::Model;
 use Net::IP;
 
-
 my $servers = NP::Model->server->get_servers_iterator(query => [ip_version => 'v6']);
 
 while (my $server = $servers->next) {

@@ -8,7 +8,7 @@ use NP::Model;
 use DateTime;
 use DateTime::Format::MySQL;
 
-my $api_base  = 'api.statuspage.io';
+my $api_base   = 'api.statuspage.io';
 my $batch_size = 2000;
 
 my $verbose = (-t STDIN or -d "/run/secrets/kubernetes.io");
@@ -22,8 +22,8 @@ if (!$settings) {
 }
 $settings = $settings->value;
 
-my $api_key   = $settings->{api_key} or die "no statuspage api_key";
-my $page_id   = $settings->{page_id} or die "no statuspage page_id";
+my $api_key   = $settings->{api_key}           or die "no statuspage api_key";
+my $page_id   = $settings->{page_id}           or die "no statuspage page_id";
 my $metric_id = $settings->{metrics}->{checks} or die "no statuspage metrics->check key";
 
 my $ua = LWP::UserAgent->new();
@@ -61,7 +61,7 @@ sub post {
     }
     else {
         print STDERR $resp->status_line, "\n";
-        print $resp->decoded_content, "\n";
+        print $resp->decoded_content,    "\n";
         exit 2;
     }
 }

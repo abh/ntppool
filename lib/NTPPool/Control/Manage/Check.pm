@@ -11,15 +11,15 @@ my $json = JSON::XS->new->pretty->utf8->convert_blessed;
 
 sub manage_dispatch {
     my $self = shift;
-    if ( $self->request->method eq 'post' ) {
+    if ($self->request->method eq 'post') {
         return 403 unless $self->check_auth_token;
     }
 
-    if ( $self->request->uri ne '/manage/check' ) {
+    if ($self->request->uri ne '/manage/check') {
         return NOT_FOUND;
     }
 
-    if ( $self->request->method eq 'post' ) {
+    if ($self->request->method eq 'post') {
         return $self->render_check();
 
     }
@@ -39,29 +39,29 @@ sub render_check {
     my $ip = Net::IP->new($ip_param);
 
     unless ($ip) {
-        $self->tpl_param( 'errors' => { ip => 'not a valid IP address' } );
-        $self->tpl_param( 'ip'     => $ip_param );
+        $self->tpl_param('errors' => {ip => 'not a valid IP address'});
+        $self->tpl_param('ip'     => $ip_param);
         return $self->render_form;
     }
     $ip = $ip->short;
-    $self->tpl_param( 'ip' => $ip );
+    $self->tpl_param('ip' => $ip);
 
     my @ntp = NP::NTP::info($ip);
 
     @ntp = sort {
-        if ( !$a->{error} and !$b->{error} ) {
-            return ( $a->{NTP}->{RTT} || 0 ) <=> ( $b->{NTP}->{RTT} || 0 );
+        if (!$a->{error} and !$b->{error}) {
+            return ($a->{NTP}->{RTT} || 0) <=> ($b->{NTP}->{RTT} || 0);
         }
-        if ( $a->{error} and $b->{error} ) {
+        if ($a->{error} and $b->{error}) {
             return $a->{Server} cmp $b->{Server};
         }
-        if ( $a->{error} ) {
+        if ($a->{error}) {
             return 1;
         }
         return -1;
     } @ntp;
 
-    $self->tpl_param( 'results', \@ntp );
+    $self->tpl_param('results', \@ntp);
 
     return OK, $self->evaluate_template('tpl/check/results.html');
 }

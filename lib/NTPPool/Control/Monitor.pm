@@ -33,8 +33,7 @@ sub render {
     }
 
     if (  !$monitor->last_seen
-        or $monitor->last_seen
-        > DateTime->now()->add(DateTime::Duration->new(minutes => 2)))
+        or $monitor->last_seen > DateTime->now()->add(DateTime::Duration->new(minutes => 2)))
     {
         $monitor->last_seen(DateTime->now);
         $monitor->save;

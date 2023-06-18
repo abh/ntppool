@@ -29,12 +29,13 @@ exit 0;
 sub setup_dns_root {
     warn "Checking if dns_roots are configured\n";
     my $count = NP::Model->dns_root->get_objects_count();
-    warn("- ",
+    warn(
+        "- ",
         (   $count == 1
             ? "have a zone"
             : "have $count zones"
-        )
-        . " in dns_roots\n"
+          )
+          . " in dns_roots\n"
     );
     return if $count > 0;
 
@@ -105,8 +106,7 @@ sub populate_country_zones {
               or die "no continent for country '$cc'";
             my $continent = $continents{$continent_code};
             if (!$continent) {
-                warn
-                  "Could not find continent for $cc (continent code: $continent_code)";
+                warn "Could not find continent for $cc (continent code: $continent_code)";
                 next;
             }
             $zone->parent($continent) if $continent;

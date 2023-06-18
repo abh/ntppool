@@ -268,7 +268,6 @@ sub _edit_monitor {
     return $mon;
 }
 
-
 sub suggested_locationcodes {
 
     # my $self = shift;

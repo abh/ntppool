@@ -24,9 +24,9 @@ sub init {
 
     $self->tpl_params->{page} ||= {};
 
-    if ( $self->is_logged_in ) {
+    if ($self->is_logged_in) {
         $self->request->env->{REMOTE_USER} = $self->user->username;
-        $self->tpl_param( 'account' => $self->current_account );
+        $self->tpl_param('account' => $self->current_account);
     }
 
     return OK;
@@ -108,7 +108,10 @@ sub render {
     if ($self->request->method eq 'get') {
         my $account       = $self->current_account;
         my $account_param = $self->req_param('a');
-        if ($account_param and $account and $account_param ne $account->id_token) {
+        if (    $account_param
+            and $account
+            and $account_param ne $account->id_token)
+        {
             return $self->redirect($self->current_url({a => $account->id_token}));
         }
     }
@@ -165,13 +168,13 @@ sub handle_login {
         my @emails =
           map { $_->{profileData}->{email} }
           grep {
-            my $p = $_->{profileData};
-            my $ok =
+              my $p = $_->{profileData};
+              my $ok =
                  $p
               && $p->{email}
               && $p->{email_verified}
               && !$uniq{$p->{email}}++;
-            $ok;
+              $ok;
           } ({profileData => $userdata}, @{$userdata->{identities}});
         for my $email (@emails) {
             my ($email_user) = NP::Model->user->fetch(email => $email);
@@ -329,9 +332,11 @@ sub show_staff {
 
 sub account_monitor_count {
     my $self = shift;
-    return $self->{_account_monitor_count} if defined $self->{_account_monitor_count};
+    return $self->{_account_monitor_count}
+      if defined $self->{_account_monitor_count};
 
-    return $self->{_account_monitor_count} = 0 unless $self->current_account; # if we are being invited to a new account
+    return $self->{_account_monitor_count} = 0
+      unless $self->current_account;    # if we are being invited to a new account
 
     my $monitor_count =
       NP::Model->monitor->get_objects_count(query => [account_id => $self->current_account->id]);

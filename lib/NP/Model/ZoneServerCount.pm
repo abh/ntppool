@@ -41,6 +41,5 @@ sub first_stats {
     $class->fetch(id => $id);
 }
 
-
 1;
 

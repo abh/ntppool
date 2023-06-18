@@ -27,8 +27,9 @@ sub sub_zone_count {
 sub children {
     my $self = shift;
     $self->{_children} ||= [sort { $a->name cmp $b->name } $self->zones];
+
     # the template using this gets confused if it gets an arrayref
-    return @{ $self->{_children} };
+    return @{$self->{_children}};
 }
 
 sub random_subzone_ids {
@@ -70,7 +71,7 @@ sub first_stats {
 use constant deletion_grace_days => 14;
 
 sub active_servers {
-    my $self = shift;
+    my $self       = shift;
     my $ip_version = shift or return;
 
     my $dbh = NP::Model->dbh;
@@ -118,7 +119,7 @@ sub server_count {
       and (s.deletion_on IS NULL OR s.deletion_on > DATE_ADD(NOW(), interval ? day))
       $ip_version_sql
   ], undef,
-       $self->id, NP::Model::Server->active_score, deletion_grace_days()
+        $self->id, NP::Model::Server->active_score, deletion_grace_days()
     );
 }
 
@@ -164,9 +165,7 @@ sub netspeed_active {
     );
 }
 
-
 1;
-
 
 __END__
 

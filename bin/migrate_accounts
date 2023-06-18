@@ -9,7 +9,7 @@ use NP::Model;
 
 local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
 
-my $db = NP::Model->db;
+my $db  = NP::Model->db;
 my $txn = $db->begin_scoped_work;
 
 my $zones = NP::Model->vendor_zone->get_vendor_zones_iterator(
@@ -40,7 +40,6 @@ while (my $vz = $zones->next) {
     $vz->save;
 }
 
-
 my $servers = NP::Model->server->get_servers_iterator(
     query   => [account_id => undef],
     sort_by => 'user_id',
@@ -58,10 +57,10 @@ while (my $s = $servers->next) {
     }
     unless ($account) {
         $account = NP::Model->account->create(
-            name  => $s->user->name,
-            users => [$s->user_id],
+            name           => $s->user->name,
+            users          => [$s->user_id],
             public_profile => $s->user->public_profile,
-            url_slug => $s->user->username,
+            url_slug       => $s->user->username,
         );
         $account->save;
     }

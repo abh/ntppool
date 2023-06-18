@@ -30,7 +30,7 @@ while (my $zone = $zones->next) {
         $data->{count_registered} = $zone->server_count_all($ip_version);
         $data->{netspeed_active}  = $zone->netspeed_active($ip_version) || 0;
 
-        # printf "%-8s %s %3i %3i\n", $zone->name, $ip_version, $data->{count_active}, $data->{count_registered};
+# printf "%-8s %s %3i %3i\n", $zone->name, $ip_version, $data->{count_active}, $data->{count_registered};
         $dbh->do(
             q[insert into zone_server_counts
                  (zone_id,ip_version,date,count_active,count_registered,netspeed_active)

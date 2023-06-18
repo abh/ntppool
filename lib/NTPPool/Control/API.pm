@@ -10,7 +10,7 @@ sub post_process {
 }
 
 sub check_auth {
-    my $self = shift;
+    my $self   = shift;
     my $method = shift;
 
     if (!$self->check_auth_token) {

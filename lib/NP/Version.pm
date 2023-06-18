@@ -53,7 +53,6 @@ sub hostname {
     $hostname;
 }
 
-
 sub installed_version {
 
     my $sha1_len = 8;

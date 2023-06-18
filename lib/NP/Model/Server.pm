@@ -259,7 +259,6 @@ sub log_scores_csv {
     $out;
 }
 
-
 sub netspeed_human {
     my $self     = shift;
     my $netspeed = $self->netspeed;
@@ -289,7 +288,6 @@ sub graph_uri {
         return $path;
     }
 }
-
 
 package NP::Model::Server::Manager;
 use strict;

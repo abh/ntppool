@@ -40,15 +40,14 @@ sub manage_dispatch {
 
         $account = NP::Model->account->create(users => [$self->user]);
         $account->name($self->user->name);
-        NP::Model::Log->log_changes($self->user, "account", "account created",
-            $account);
+        NP::Model::Log->log_changes($self->user, "account", "account created", $account);
         $account->save();
     }
 
     # check access
     return $self->redirect("/manage/")
       unless ($account->id == 0
-        or $account->can_edit($self->user));
+          or $account->can_edit($self->user));
 
     if ($self->request->method eq 'post') {
         return 403 unless $self->check_auth_token;
@@ -61,8 +60,7 @@ sub manage_dispatch {
     }
     elsif ($self->request->uri =~ m!^/manage/account/team$!) {
         if ($self->request->method eq 'post' and $account->can_edit($self->user)) {
-            return $self->render_users_invite($account,
-                $self->req_param('invite_email'))
+            return $self->render_users_invite($account, $self->req_param('invite_email'))
               if $self->req_param('invite_email');
 
             my $delete_user_id = $self->req_param('user_id');
@@ -101,9 +99,8 @@ sub remove_user_from_account {
         $param, {site => 'manage', config => $self->config});
 
     my $email =
-      Email::Stuffer->from(NP::Email::address("sender"))
-      ->reply_to(NP::Email::address("support"))->subject("NTP Pool account change")
-      ->text_body($msg);
+      Email::Stuffer->from(NP::Email::address("sender"))->reply_to(NP::Email::address("support"))
+      ->subject("NTP Pool account change")->text_body($msg);
 
     $email->to($user->email);
     my @cc = grep { $_->id != $user_id } @$users;
@@ -158,8 +155,7 @@ sub handle_invitation {
     $invite->account->save
       or return $self->render_invite_error("Error saving database update");
 
-    NP::Model::Log->log_changes($user, "account-users",
-        "Accepted invitation to account",
+    NP::Model::Log->log_changes($user, "account-users", "Accepted invitation to account",
         $invite->account);
     $db->commit or return $self->render_invite_error("database commit error");
 
@@ -224,8 +220,7 @@ sub render_users_invite {
 
     my $tpl = Combust::Template->new;
     my $msg =
-      $tpl->process('tpl/account_invite.txt', $param,
-        {site => 'manage', config => $self->config});
+      $tpl->process('tpl/account_invite.txt', $param, {site => 'manage', config => $self->config});
 
     # todo: if there's a vendor zone, use the vendor address
     # for the sender?
@@ -305,7 +300,7 @@ sub render_account_edit {
 
     my $account_token = $self->req_param('a');
     my $account_id    = NP::Model::Account->token_id($account_token);
-    my $account = $account_id ? NP::Model->account->fetch(id => $account_id) : undef;
+    my $account       = $account_id ? NP::Model->account->fetch(id => $account_id) : undef;
 
     if ($account_token eq 'new') {
         $account = NP::Model->account->create(users => [$self->user]);
@@ -341,8 +336,7 @@ sub render_account_edit {
     if ($changed) {
         $account->save(changes_only => 1);
 
-        NP::Model::Log->log_changes($self->user, "account", "update account",
-            $account, $old);
+        NP::Model::Log->log_changes($self->user, "account", "update account", $account, $old);
     }
 
     return $self->render_account_form($account);

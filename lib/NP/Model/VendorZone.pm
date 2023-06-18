@@ -5,16 +5,16 @@ use NP::Model::TokenID;
 use base qw(NP::Model::TokenID);
 
 my %reserved_zone_names = map { $_ => 1 } qw(
-  europe
-  north-america
-  south-america
-  america
-  asia
-  africa
+    europe
+    north-america
+    south-america
+    america
+    asia
+    africa
 
-  root
-  ntppool
-  vendor
+    root
+    ntppool
+    vendor
 );
 
 sub token_key_config {
@@ -30,7 +30,9 @@ sub json_model {
 
     my $j = {zone_id => $vz->id_token};
 
-    for my $f (qw(zone_name contact_information device_count organization_name request_information opensource opensource_info))
+    for my $f (
+        qw(zone_name contact_information device_count organization_name request_information opensource opensource_info)
+      )
     {
         $j->{$f} = $vz->$f();
     }

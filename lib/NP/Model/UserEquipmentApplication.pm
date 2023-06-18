@@ -41,5 +41,4 @@ sub can_view {
 sub contact_information_html { convert_to_html(shift->contact_information) }
 sub application_html         { convert_to_html(shift->application) }
 
-
 1;

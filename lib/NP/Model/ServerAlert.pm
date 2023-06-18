@@ -8,5 +8,4 @@ sub mark_sent {
     $self->save;
 }
 
-
 1;
