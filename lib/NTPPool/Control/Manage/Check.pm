@@ -36,6 +36,8 @@ sub render_check {
         return $self->render_form;
     }
 
+    $ip_param =~ s/\s+//;
+
     my $ip = Net::IP->new($ip_param);
 
     unless ($ip) {
