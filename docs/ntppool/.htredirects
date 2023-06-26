@@ -5,6 +5,8 @@
 /vendors/list http://eepurl.com/PN-3f
 /tos https://www.ntppool.org/tos.html perm
 
+/favicon.ico /static/images/favicon.v1.ico
+
 /ordb.html /
 /rsbl.html /
 /duinv.html /
