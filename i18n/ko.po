@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Last-Translator: Hyunjun Kim <kim@hyunjun.kr>\n"
+"Last-Translator: Jesse Friedman <jesse@jesse.ws>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -24,6 +24,9 @@ msgstr "남아메리카"
 msgid "Europe"
 msgstr "유럽"
 
+msgid "Oceania"
+msgstr "오세아니아"
+
 msgid "Global"
 msgstr "전지역"
 
@@ -34,34 +37,52 @@ msgstr "모든 풀 서버"
 msgid "Translations"
 msgstr "번역"
 
+# index.html
+msgid  "Introduction"
+msgstr "소개"
+
+msgid  "Active Servers"
+msgstr "활성 서버"
+
+msgid  "Links"
+msgstr "링크"
+
+msgid  "Terms of service"
+msgstr "서비스 이용약관"
+
+msgid  "Subscribe in a reader"
+msgstr "피드 리더 앱으로 구독"
+
+msgid  "Older news"
+msgstr "지난 소식"
+
 # mailinglists.html
-msgid  "NTP Pool mailing lists"
-msgstr "NTP 풀 메일링 리스트"
-
-msgid  "subscribe"
-msgstr "가입"
-
 msgid  "archive"
-msgstr "지난 것"
+msgstr "지난 소식"
 
-msgid  "Announcement list"
-msgstr "공지사항 목록"
+msgid  "NTP Pool Forum"
+msgstr "NTP 풀 게시판"
+
+msgid  "Discourse forum"
+msgstr "디스코스 게시판"
+
+msgid  "News site"
+msgstr "소식 사이트"
 
 msgid  "Discussion list"
-msgstr "토론 목록"
+msgstr "논의 리스트"
 
-msgid  "Development list"
-msgstr "개발 목록"
+msgid  "Development"
+msgstr "개발"
 
-msgid  "announcement_list_description"
-msgstr "아주 적은 트래픽을 차지하는 NTP 풀 뉴스 공지사항. 모든 서버 운영자들은 공지사항 목록에 가입하십시오."
+msgid  "forum_description"
+msgstr "NTP 풀에 대한 문답, 개선 제안, 그리고 NTP 서버 운영에 대한 논의."
 
-msgid  "discussion_list_description"
-msgstr "이 프로젝트에 더 깊이 관여하고 싶은 서버 운영자들과 사용자들은 가입하십시오.<br/> 물론 NTP에 대한 일반적인 토론은 유즈넷 뉴스그룹 %1 에서 하십시오. (<a href=\"%2\">구글 그룹</a>에도 있습니다.)"
+msgid  "news_description"
+msgstr "공지사항 및 소식이 소식 사이트 혹은 게시판에 게시됩니다."
 
 msgid  "development_list_description"
-msgstr "<a href=\"%1\">NTP 풀 코드</a>와 <a href=\"%2\">GeoDNS</a>의 현재 개발에 대한 더 기술적인 토론은 timekeepers-dev 목록에 있습니다."
-
+msgstr "<a href=\"%1\">NTP 풀 코드</a>와 <a href=\"%2\">GeoDNS</a>의 현재 개발에 대한 더 기술적인 토론은 <a href=\"%3\">개발 게시판</a>에 있습니다."
 
 # tpl/server.html
 msgid  "Back to the front page"
@@ -105,10 +126,10 @@ msgid  "Information for vendors"
 msgstr "제조사를 위한 정보"
 
 msgid  "The mailing lists"
-msgstr "메일링 리스트"
+msgstr "커뮤니티"
 
 msgid  "Additional links"
-msgstr "추가 링크"
+msgstr "기타 링크"
 
 msgid  "Can you translate?"
-msgstr "번역할 수 있나요?"
+msgstr "번역해주실 수 있나요?"
