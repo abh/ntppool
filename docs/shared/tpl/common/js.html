@@ -6,6 +6,13 @@ MACRO show_js(list_js_files) BLOCK;
   IF list_js_files && list_js_files.list && list_js_files.list.size;
   FOR js_elem = list_js_files.list;
     FOR js = js_elem.list;
+        module = 0;
+
+        IF (matches = js.match('^module:(.*)'));
+          js = matches.0;
+          module = 1;
+        END;
+
         IF !unique_js.${js};
             IF js.match('^(https?:)?//');
                 jspath = js;
@@ -16,7 +23,7 @@ MACRO show_js(list_js_files) BLOCK;
             END;
 
             %]
-<script src="[%- jspath -%]"></script>
+<script [% IF module %]type="module"[% END %] src="[%- jspath -%]"></script>
 [%
             unique_js.${js} = 1;
         END;

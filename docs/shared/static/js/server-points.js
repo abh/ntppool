@@ -541,3 +541,4 @@ class vt extends K {
   }
 }
 customElements.define("server-points", vt);
+//# sourceMappingURL=server-points.js.map
