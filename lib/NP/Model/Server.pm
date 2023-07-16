@@ -32,7 +32,7 @@ sub insert {
 sub setup_server {
     my $self = shift;
 
-    my $start_score = -5;
+    my $start_score = 0;
     my $ls          = $self->add_log_scores({step => 1, score => $start_score, offset => 0});
     my $log_status  = $self->log_status({last_check => 'now', ts_archived => 'now'});
     $self->deletion_on(undef);
