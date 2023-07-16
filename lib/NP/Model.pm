@@ -692,7 +692,7 @@ __PACKAGE__->meta->setup(
   columns => [
     id           => { type => 'serial', not_null => 1 },
     scorer_id    => { type => 'integer', not_null => 1 },
-    log_score_id => { type => 'bigint' },
+    log_score_id => { type => 'bigint', not_null => 1 },
     modified_on  => { type => 'timestamp', not_null => 1 },
   ],
 

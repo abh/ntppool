@@ -918,5 +918,9 @@ alter table zone_server_counts
 alter table vendor_zones
    add device_information text null after request_information;
 
+#110
+alter table scorer_status
+   modify log_score_id bigint(20) unsigned not null;
+
 #todo
 - ...
