@@ -76,9 +76,9 @@ This server is <span class="deletion">scheduled for deletion</span> on %1.
    END;
  %]
 
-
 <p>
 [% | loc(server.score, server.active_score) %]Current score: %1 (only servers with a score higher than %2 are used in the pool)[% END %]
+
 </p>
 
 <p>
@@ -89,8 +89,7 @@ This server is <span class="deletion">scheduled for deletion</span> on %1.
 <div class="graph-legend"></div>
 <p class="graph_desc">
 Green/orange/red small dots are offsets (in milliseconds, using the left axis).<br>
-Blue/red "double size" dots are points/scores (using the right axis).<br>
-The y-axes (both) aren't linear to highlight what is usually the most interesting area of the data.<br>
+Blue/red (bigger) dots are the calculated scores (using the right axis).<br>
 </p>
 
 <noscript id="graph_noscript">
@@ -108,6 +107,19 @@ and enable javascript to see the new graphs.<br><br>
 <div id="legacy-graphs"
    data-offset-graph-url="[% server.graph_uri('offset') %]"
 ></div>
+
+<p>
+<h3>Client distribution</h3>
+[% page.js.push("server-points.js"); %]
+<server-points serverip="[% server.ip %]"></server-points>
+
+<br>
+The units are in permyriad (&pertenk;, 1/10000), or 1/100 of a percent.
+100 equals one percent of DNS queries from the specified country.<br>
+
+The countries are ordered by number of DNS queries answered with the
+server IP from this country.
+</p>
 
 <span class="server-id"># [% server.id %], <a href="[% server.url %]/log?limit=200&monitor=*">[% "CSV log" | l %]</a>
 

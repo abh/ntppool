@@ -354,7 +354,7 @@ sub post_process {
         [   'Content-Security-Policy-Report-Only' => join(
                 " ",
                 qq[default-src 'none'; frame-ancestors 'none';],
-                qq[connect-src 'self' st.ntppool.org 8ll7xvh0qt1p.statuspage.io;],
+                qq[connect-src 'self' www.ntppool.org st.ntppool.org 8ll7xvh0qt1p.statuspage.io;],
                 qq[font-src fonts.gstatic.com;],
                 qq[form-action 'self' mailform.ntppool.org checkout.stripe.com;],
                 qq[img-src 'self' $cspdomains *.mapper.ntppool.org;],

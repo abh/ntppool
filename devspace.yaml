@@ -25,7 +25,7 @@ deployments:
     helm:
       chart:
         #name: ntppool
-        name: ../ntppool-charts/charts/ntppool
+        name: ../ntppool-charts/pub/charts/ntppool
         repo: https://charts.ntppool.org
       valuesFiles:
         #- /Users/ask/src/ntppool-k8s/dev-values-kind.yaml
