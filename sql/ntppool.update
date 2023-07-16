@@ -922,5 +922,8 @@ alter table vendor_zones
 alter table scorer_status
    modify log_score_id bigint(20) unsigned not null;
 
+#111
+insert ignore into system_settings (`key`, `value`, created_on) values ('dns_settings', '{}', NOW());
+
 #todo
 - ...

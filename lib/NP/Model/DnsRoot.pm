@@ -8,8 +8,16 @@ use NP::Model;
 my $config     = Combust::Config->new;
 my $config_ntp = $config->site->{ntppool};
 
+use constant default_ttl => 150;
+
 sub ttl {
-    return 150;
+    my $settings = NP::Model->system_setting->fetch(key => 'dns_settings');
+    $settings = $settings && $settings->value();
+    $settings or return default_ttl;
+    my $ttl = $settings->{ttl} + 0 or return default_ttl;
+    $ttl = default_ttl if $ttl <= 0;
+    $ttl = 30          if $ttl < 30;
+    return $ttl;
 }
 
 sub serial {
