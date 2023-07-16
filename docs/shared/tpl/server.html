@@ -110,15 +110,15 @@ and enable javascript to see the new graphs.<br><br>
 
 <p>
 <h3>Client distribution</h3>
-[% page.js.push("server-points.js"); %]
+[% page.js.push("module:server-points.js"); %]
 <server-points serverip="[% server.ip %]"></server-points>
 
 <br>
-The units are in permyriad (&pertenk;, 1/10000), or 1/100 of a percent.
-100 equals one percent of DNS queries from the specified country.<br>
-
+The units are in permyriad (&pertenk;, 1/10000). "100" equals one percent of DNS queries from the specified country.<br>
+<br>
 The countries are ordered by number of DNS queries answered with the
-server IP from this country.
+server IP from this country. The second number is the servers
+permyriad of the overall "netspeed" for countries configured for the server.
 </p>
 
 <span class="server-id"># [% server.id %], <a href="[% server.url %]/log?limit=200&monitor=*">[% "CSV log" | l %]</a>
