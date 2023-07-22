@@ -925,5 +925,10 @@ alter table scorer_status
 #111
 insert ignore into system_settings (`key`, `value`, created_on) values ('dns_settings', '{}', NOW());
 
+#112
+alter table system_settings
+  modify `key`  varchar(255) not null,
+  modify value  text not null;
+
 #todo
 - ...

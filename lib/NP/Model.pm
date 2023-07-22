@@ -1149,8 +1149,8 @@ __PACKAGE__->meta->setup(
 
   columns => [
     id          => { type => 'serial', not_null => 1 },
-    key         => { type => 'varchar', length => 255 },
-    value       => { type => 'text', length => 65535 },
+    key         => { type => 'varchar', length => 255, not_null => 1 },
+    value       => { type => 'text', length => 65535, not_null => 1 },
     created_on  => { type => 'datetime', default => 'now', not_null => 1 },
     modified_on => { type => 'timestamp', not_null => 1 },
   ],
