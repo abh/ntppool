@@ -101,7 +101,7 @@ function server_chart(div, data, options) {
             }
         })
         .attr("font-weight", function(ms) {
-            console.log("weight", ms);
+            // console.log("font-weight", ms);
             if (this.textContent === "ms") {
                 return "bold";
             }
