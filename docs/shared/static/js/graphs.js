@@ -41,7 +41,7 @@ if (!Pool.Graphs) { Pool.Graphs = {}; }
                 var ip = div.data('server-ip');
                 if (ip) {
                     var graph_legend = div.next('.graph-legend');
-                    d3.json("/scores/"+ ip +"/json?monitor=*&limit=3000").then((json) => {
+                    d3.json("/scores/"+ ip +"/json?monitor=*&limit=5000").then((json) => {
                         if (json) {
                             data[ip] = json;
                             server_chart(div, json, { legend: graph_legend });
