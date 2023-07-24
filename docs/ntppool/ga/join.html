@@ -1,0 +1,58 @@
+[% page.title = 'Glac páirt sa Bhailiúchán NTP!'  %]
+
+<div class="block">
+	<h3><a name="join">How do I join pool.ntp.org?</a></h3>
+	<p>
+	Ar dtús: Go raibh maith agat as do spéis. Tá méadú ollmhór tagtha ar úsáid an bhailiúcháin agus is é an t-aon bhealach inar féidir linn é a choinneáil éasca do gach duine freastalaí bailiúcháin a rith ná líon na bhfreastalaithe atá rannpháirteach a mhéadú freisin.
+	</p>
+
+	<p>
+	Ní mór <b>seoladh IP statach agus nasc idirlín buan a bheith ag do ríomhaire</b>. Tá sé thar a bheith tábhachtach nach n-athraíonn do sheoladh IP nó nach ndéanann sé amhlaidh ach go hannamh (abair uair sa bhliain nó níos lú). Tá an bandaleithead riachtanach sách íseal. Ní sheolfaidh gach cliant ach cúpla paicéad UDP gach cúpla go gach 20 nóiméad.
+	</p>
+
+	<p>
+	Faoi láthair, faigheann an chuid is mó freastalaithe thart ar 5-15 paicéad NTP in aghaidh an tsoicind le spící cúpla uair sa lá de 60-120 paicéad in aghaidh an tsoicind. Tá sé seo comhionann go garbh le 10-15Kbit/soic le spící 50-120Kbit/soic. Faigheann an tionscadal níos mó freastalaithe ama go seasta, mar sin níor cheart go n-ardóidh an t-ualach go mór do gach freastalaí. I dtéarmaí simplí, is dócha go mbeidh bandaleithead 384-512Kbit ar a laghad ag teastáil uait (isteach agus amach).
+	</p>
+	<p>
+	Seo roinnt freastalaithe le graif tráchta/ualach:
+	[% i = 0; FOR server = combust.servers_with_urls; %]
+	   <a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
+	[% END %]
+	</p>
+
+	<p>
+	Níor cheart go mbeadh <tt>pool.ntp.org</tt> mar fhreastalaí/freastalaithe in aghaidh an tsrutha ag na freastalaithe a cheanglaíonn siad, ach ba cheart go ndéanfaí roinnt <a href="http://support.ntp.org/bin/view/Servers/StratumTwoTimeServers">freastalaithe maithe a chumrú de láimh</a> (féadfar na freastalaithe <b>sin</b> a roghnú as an mbailiúchán. Is é an pointe go roghnaítear iad go statach in ionad iad a shannadh go randamach ag gach atosú freastalaí. Cabhróidh sé seo le caighdeán inghlactha seirbhíse a sholáthar.)
+
+	Tabhair faoi deara nach gceanglaítear gur freastalaí strataim 1 nó 2 é do fhreastalaí - toisc go mbaineann an tionscadal seo le dáileadh ualaigh den chuid is mó, níl aon chúis ann nár cheart do fhreastalaí strataim 3 nó fiú strataim 4 a bheith páirteach ann.
+	</p>
+
+	<p>
+	We have a page with <a href="/join/configuration.html">configuration recommendations for servers joining the pool</a>.
+	Tá leathanach againn le <a href="/join/configuration.html">moltaí cumraíochta maidir le freastalaithe a théann isteach sa bhailiúchán</a>.
+	</p>
+	<p>Mar fhocal scoir, ní mór dom a chur in iúl gur <b>gealltanas fadtéarmach</b> é dul isteach sa linn. Tá áthas orainn tú a thógáil amach as an mbailiúchán arís má thagann athrú ar do chúinsí, ach mar gheall ar an gcaoi a bhfeidhmíonn na cliaint ntp. <b>Tógfaidh sé seachtainí, míonna nó fiú BLIAIN sula n-imeoidh an trácht go hiomlán<b>.
+	</p>
+
+	<p>
+	Má tá sé seo ceart go leor, logáil isteach ar an leathanach <a href="/manage">bainistíochta freastalaí</a> agus iarr ar do fhreastalaí a chur leis.
+	Má tá aon deacracht agat leis an gcóras, seol ríomhphost chugam ag <a
+	href="mailto:ask@develooper.com">ask@develooper.com</a>.
+	</p>
+
+	<p>
+	Bígí páirteach sna <a href="[% language_url("/mailinglists.html") %]">fóraim phobail</a> freisin.
+	</p>
+
+	<p>
+	Bheadh sé go deas (ach ní gá) dá bhféadfá port iarratais gréasáin 80 de do fhreastalaí ama a atreorú chuig leathanach gréasáin oifigiúil an tionscadail ag <tt>https://www.ntppool.org</tt>. Má ritheann tú Apache, d'fhéadfá é seo a dhéanamh le:
+	</p>
+
+        [% PROCESS tpl/join/virtual_host_example.html %]
+
+	<p>
+	Arís, níl sé seo ach amháin má ritheann tú freastalaí gréasáin ar aon nós. Tabharfar leathanach gréasáin oifigiúil an tionscadail i gcónaí leis an 'www' ag an tús - ach uaireanta scríobhann daoine <tt>pool.ntp.org</tt> agus bíonn ionadh orthu ansin leathanach gréasáin randamach a fháil.
+	</p>
+	<p>
+	Nuair a chuirtear leis an mbailiúchán déantar monatóireacht leanúnach ar an bhfreastalaí maidir le hinfhaighteacht agus cruinneas. Is féidir leat féachaint ar fheidhmíocht do fhreastalaí ag baint úsáide as an <a href="scores">aghaidh gréasáin</a> nó an <a href="/manage">leathanach bainistíochta</a>.
+	</p>
+</div>

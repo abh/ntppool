@@ -1,0 +1,88 @@
+[% page.title = 'Conas a shocraím NTP chun an bailiúchán a úsáid?' %]
+
+<div class="block">
+	<h3 id="use">Conas a úsáidim pool.ntp.org?</h3>
+
+	<p>
+	Más mian leat clog do ríomhairí a shioncronú leis an líonra, tá an comhad cumraíochta (don chlár ntpd ón dáileadh <a href="http://www.ntp.org">ntp.org</a> ar aon chóras oibriúcháin tacaithe - <b>Linux, *BSD, Windows agus fiú roinnt córais níos coimhthíocha</b>) an-simplí:
+	</p>
+
+	[% INCLUDE "ntppool/use/sample-config.html" %]
+
+	<p>
+	Díríonn na hainmneacha 0, 1, 2 agus 3.pool.ntp.org do shraith randamach freastalaithe a athróidh gach uair an chloig. Cinntigh go bhfuil rud éigin ciallmhar ar chlog do ríomhaire (laistigh de chúpla nóiméad den fhíor-am) - d'fhéadfá <code>ntpdate pool.ntp.org</code> a úsáid, nó d'fhéadfá an t-ordú <code>date</code> a úsáid agus é a shocrú chuig d'uaireadóir. Tosaigh ntpd, agus tar éis roinnt ama (d’fhéadfadh go dtógfadh sé seo chomh fada le leath uair an chloig!), ba cheart do <code>ntpq -pn</code> rud éigin mar seo a aschur:
+	</p>
+
+	[% INCLUDE "ntppool/use/sample-ntpq.html" %]
+
+	<p>
+	Beidh na seoltaí IP difriúil, toisc gur sannadh freastalaithe amanna randamacha duit. Is é an rud riachtanach ná go dtosaíonn ceann de na línte le réiltín (<code>*</code>), ciallaíonn sé seo go bhfaigheann do ríomhaire an t-am ón idirlíon
+	- ní bheidh ort a bheith buartha faoi arís!
+	</p>
+	<p>
+	Má dhéantar cuardach <code>pool.ntp.org</code> (nó <code>0.pool.ntp.org</code>,
+	<code>1.pool.ntp.org</code>, srl) gheobhaidh tú seoltaí IP ar ais do fhreastalaithe i do thír nó gar di. Don chuid is mó d’úsáideoirí tabharfaidh sé seo na torthaí is fearr.
+	</p>
+
+	<p>Is féidir leat an <a href="/zone/@">zóin ilchríochach</a> a úsáid freisin (Mar shampla:
+	<a href="/zone/europe">europe</a>,
+	<a href="/zone/north-america">north-america</a>,
+	<a href="/zone/oceania">oceania</a>
+	nó <a href="/zone/asia">asia</a>.pool.ntp.org),
+	agus zóin tíre (mar
+	ch.pool.ntp.org san Eilvéis) - do na criosanna seo go léir, is féidir leat na réimíreanna 0, 1 nó 2 a úsáid arís, amhail 0.ch.pool.ntp.org. Tabhair faoi deara, áfach, go mb’fhéidir nach bhfuil an zóin tíre ann do do thír féin, nó go bhféadfadh nach mbeadh ann ach freastalaí ama nó dhó.
+	</p>
+	<p>
+	Má tá <b>leagan Windows le déanaí</b> á úsáid agat, is féidir leat an cliant ntp atá ionsuite sa chóras a úsáid. Mar riarthóir cuir isteach</p>
+<pre class="code">
+w32tm /config /syncfromflags:manual /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
+</pre>
+	<p>
+	ag an ordú leid. This will work on Windows 2003 and newer.  Má úsáideann tú leagan níos sine de Windows is féidir leat triail a bhaint as</p>
+<pre class="code">
+net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
+</pre>
+	<p>
+	Is féidir an rud céanna a bhaint amach trí, mar riarthóir, cliceáil ar dheis ar an gclog sa tascbharra, 'Coigeartaigh Dáta/Am' a roghnú agus ainm an fhreastalaí a chur isteach sa chluaisín 'Am Idirlín'.
+	</p>
+
+	<p>
+	Rinne Meinberg port den <a href="http://www.meinberg.de/english/sw/ntp.htm">deamhan ntp do Windows</a>.
+	</p>
+
+	<p>
+	Más cuid d’fhearann é do chóras Windows, seans nach mbeidh tú in ann d’am ríomhaire a nuashonrú go neamhspleách.
+
+	Chun tuilleadh eolais a fháil faoin am a shocrú ar fhuinneoga, féach <a href="http://technet.microsoft.com/en-us/library/cc773013%28WS.10%29.aspx">Conas a Oibríonn Windows Time Service</a>.
+	</p>
+</div>
+
+<div class="block">
+	<h3 id="notes">Nótaí Breise</h3>
+
+		<p><span class="hook">Smaoinigh an bhfuil an Bailiúchán NTP feiliúnach do d’úsáid</span>. Má bhíonn gnó, eagraíocht nó saol an duine ag brath ar an am ceart a bheith agat nó má bhíonn dochar déanta dó má tá sé mícheart, níor cheart duit "é a fháil ón idirlíon". Is gnách go mbíonn Bailiúchán an NTP ar ardchaighdeán, ach is seirbhís é a reáchtálann oibrithe deonacha ina gcuid ama saor. Labhair le do threalamh agus díoltóirí seirbhíse maidir le socrú seirbhíse iontaofa a fháil duit. Féach freisin ar ár <a href="/tos.html">dtéarmaí seirbhíse</a>.
+
+        Molaimid freastalaithe ama ó 
+        <a href="http://www.meinbergglobal.com/english/products/ntp-time-server.htm">Meinberg</a>,
+        ach is féidir leat freastalaithe ama a fháil ó
+        <a href="http://www.endruntechnologies.com/NTP-Servers/gps-cdma-ntp.htm">End Run</a> freisin,
+        <a href="http://spectracom.com/products-services/precision-timing#anchor-2172">Spectracom</a>
+        agus go leor eile.
+        </p>
+
+	<p><span class="hook">Má tá seoladh IP statach agat agus nasc Idirlín réasúnta</span> (níl an bandaleithead chomh tábhachtach sin, ach ba cheart go mbeadh sé cobhsaí agus gan a bheith ró-ualach), smaoinigh le do thoil ar do fhreastalaí a bhronnadh ar an linn freastalaí. Ní chosnaíonn sé níos mó ná cúpla céad beart in aghaidh an tsoicind tráchta, ach cuidíonn tú leis an tionscadal seo maireachtáil. Le do thoil, <a href="/join.html">léigh an leathanach ballraíochta</a> le haghaidh tuilleadh eolais.
+	</p>
+
+	<p><span class="hook">Má tá freastalaí ama ag do sholáthraí Idirlín</span>, nó má tá eolas agat ar fhreastalaí ama maith in aice leat, ba cheart duit é sin a úsáid agus ní an liosta seo - is dócha go bhfaighidh tú am níos fearr agus go mbainfidh tú úsáid as níos lú acmhainní líonra. Mura bhfuil eolas agat ach ar fhreastalaí ama amháin in aice leat, is féidir leat é sin a úsáid ar ndóigh agus dhá cheann ó pool.ntp.org nó mar sin.</p>
+
+	<p><span class="hook">Is annamh a tharlaíonn sé go sanntar an freastalaí ama céanna duit faoi dhó</span> -
+	ach an freastalaí ntp a atosú réitíonn an fhadhb seo de ghnáth. Má úsáideann tú  zón tíre, tabhair faoi deara go bhféadfadh sé a bheith toisc nach bhfuil ach freastalaí amháin ar eolas sa tionscadal - úsáid níos fearr a bhaint as zón ilchríochach sa chás sin. Is féidir leat na <a href="/zone">zóin a bhrabhsáil</a> chun a fheiceáil cé mhéad freastalaithe atá againn i ngach zón.</p>
+
+	<p><span class="hook">Bí cairdiúil</span>. Is oibrithe deonacha a chuireann go leor freastalaithe ar fáil, agus is freastalaithe comhaid nó ríomhphoist nó freastalaí gréasáin iad beagnach gach freastalaí ama a ritheann ntp freisin. Mar sin, ná húsáid níos mó ná freastalaithe ceithre huaire i do chumraíocht, agus ná himirt cleasanna le <code>burst</code> nó <code>minpoll</code> - ní bhfaighidh tú ach airgead breise ar na freastalaithe deonacha ama.</p>
+
+	<p><span class="hook">Cinntigh go bhfuil <i>cumraíocht crios ama</i> do ríomhaire i gceart</span>. Ní dhéanann ntp féin aon rud faoi na criosanna ama, ní úsáideann sé ach UTC go hinmheánach.</p>
+
+	<p><span class="hook">Má tá líonra á shioncronú agat go pool.ntp.org</span>, socraigh ceann de do ríomhairí mar fhreastalaí ama agus sioncrónaigh na ríomhairí eile leis an gceann sin. (Beidh roinnt léitheoireachta le déanamh agat - níl sé deacair áfach. Agus tá an <a href="news:comp.protocols.time.ntp">comp.protocols.time.ntp grúpa nuachta</a> ann i gcónaí)</p>
+
+	<p class="thanks">Ag an bpointe seo, ba mhaith liom buíochas a ghabháil leo siúd a bhronn a gcuid ama agus freastalaithe ama ar an líonra seo.</p>
+</div>

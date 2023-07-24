@@ -1,0 +1,83 @@
+<div class="block">
+
+<h3>Moltaí cumraíochta maidir le freastalaithe a ghlacann páirt sa bhailiúchán</h3>
+
+<p>
+An <a href="http://support.ntp.org/bin/view/Support/WebHome">Tacaíocht
+alt</a> ar <a href="http://support.ntp.org/">support.ntp.org</a> tá go leor
+de eolas úsáideach.
+</p>
+
+<p>
+Más mian leat an bailiúchán a <i>úsáid</i>, féach leathanach <a href="/use.html">úsáide an bhailiúcháin</a>.
+</p>
+
+<p>
+Is é an grúpa nuachta <a
+href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a> an áit is fearr chun cabhair a fháil leis na bogearraí ntpd
+</p>
+
+<p>
+Seo thíos roinnt rudaí a bhfuil tábhacht ar leith leo má tá tú ag dul
+ceangail an Bailiúchán NTP le do fhreastalaí.
+</p>
+
+<p>Tá dréacht foilsithe ag an Tascfhórsa Innealtóireachta Idirlín ar na <a href="https://tools.ietf.org/html/draft-ietf-ntp-bcp">Cleachtais Reatha is Fearr don Phrótacal Ama Líonra a mholaimid.</a></p>
+
+
+<h4 id="management-queries">Ceisteanna bainistíochta</h4>
+
+<p>Déan an chumraíocht réamhshocraithe chun gan "ceisteanna bainistíochta" a cheadú. Le haghaidh ntpd beidh sé seo ag cur an rogha "noquery" leis na línte "restrict" réamhshocraithe, mar shampla:</p>
+
+[% INCLUDE "join/configuration/restrict-default.html" %]
+
+<p>Chun gur féidir orduithe mar "ntpq -c pe" a oibriú ó localhost is féidir leat:</p>
+
+[% INCLUDE "join/configuration/restrict-localhost.html" %]
+
+<h4>Shuiteáil thart ar 5 freastalaithe</h4>
+
+<p>
+Chun oibriú i gceart ní mór do ntpd labhairt le 3 fhreastalaí ar a laghad ("Tá a fhios ag fear le uaireadóir cén t-am atá ann. Níl fear le dhá uaireadóir riamh cinnte").
+</p>
+
+<p>
+Maidir le freastalaithe sa bhailiúchán molaimid nach lú ná 4 fhreastalaí agus gan níos mó ná 7 bhfreastalaí a chumrú..
+</p>
+
+
+<h4>Ná húsáid freastalaithe *.pool.ntp.org</h4>
+
+<p>
+Go híorónta, chun a chinntiú go bhfuil an tseirbhís bailiúcháin chomh maith agus is féidir leat níor chóir duit an ailiasanna *.pool.ntp.org a úsáid i do chumraíocht agus tú chun do fhreastalaí a chur leis an mbailiúchán.
+</p>
+
+<p>
+Ar mhaithe le stóinseacht an bhailiúcháin beidh sé níos sláintiúla má "roghnaíonn" gach oibreoir bailiúcháin freastalaithe ama maithe áitiúla (ciallmhar don líonra).
+Tá <a href="http://support.ntp.org/bin/view/Servers/WebHome">liosta poiblí 
+freastalaithe</a> le NTP.org.
+</p>
+
+
+<h4>Bain úsáid as an ntpd caighdeánach</h4>
+
+<p>
+Táimid go léir ar son na héagsúlachta bogearraí, ach baineann céatadán suntasach de na ceisteanna “níl sé ag obair” a thagann isteach le bogearraí seachas bogearraí
+ntpd.
+</p>
+
+<p>
+Is féidir leat an bailiúchán a <i>úsáid<i> le haon ríomhchlár a labhraíonn NTP, ach má tá tú chun dul isteach sa bhailiúchán, molaimid duit <a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a> a úsáid.
+</p>
+
+
+<h4>Ná húsáid an tiománaí clog ÁITIÚIL</h4>
+
+<p>Níor cheart go mbeadh an tiománaí cloig ÁITIÚIL cumraithe ag freastalaithe sa Bhailiúchán NTP.</p>
+
+<h4>Seachain fiosruithe PTR DNS</h4>
+
+<p>Thuairiscigh roinnt oibreoirí freastalaí go ndéanann cuid de na húsáideoirí NTP (nó a mbogearraí balla dóiteáin) ceist "DNS droim ar ais" (PTR) maidir le seoladh IP an fhreastalaí NTP. Tabhair faoi deara go bhféadfadh méadú a bheith tagtha ar líon na gceisteanna dá bharr. Moltar cur leis an “am le maireachtáil” ar na taifid sin más ábhar imní é líon na bhfiosrúchán DNS, agus go ginearálta is beag an líon fiosrúchán a bheidh ann.
+</p>
+
+</div>
