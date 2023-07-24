@@ -1,0 +1,132 @@
+msgid ""
+msgstr ""
+"Last-Translator: Joey Tatú <joey@joey.tattoo>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "go up"
+msgstr "téigh suas"
+
+# zone names
+msgid "Africa"
+msgstr "Afraic"
+
+msgid "Asia"
+msgstr "Áise"
+
+msgid "North America"
+msgstr "Meiriceá Thuaidh"
+
+msgid "South America"
+msgstr "Meiriceá Theas"
+
+msgid "Europe"
+msgstr "Eoraip"
+
+msgid "Oceania"
+msgstr "Aigéine"
+
+msgid "Global"
+msgstr "Gomhanda"
+
+msgid "All Pool Servers"
+msgstr "Gach Freastalaí Bailiúchán"
+
+# navigation
+msgid "Translations"
+msgstr "Aistriúcháin"
+
+# index.html
+msgid  "Introduction"
+msgstr "Réamhrá"
+
+msgid  "Active Servers"
+msgstr "Freastalaithe Gníomhacha"
+
+msgid  "Links"
+msgstr "Naisc"
+
+msgid  "Terms of service"
+msgstr "Tearmaí Seirbhís"
+
+msgid  "Subscribe in a reader"
+msgstr "Liostáil i léitheoir"
+
+msgid  "Older news"
+msgstr "Nuacht níos sine"
+
+# mailinglists.html
+msgid  "archive"
+msgstr "cartlan"
+
+msgid  "NTP Pool Forum"
+msgstr "Fóram Bailiúchán NTP"
+
+msgid  "News site"
+msgstr "Láithreán nuachta"
+
+msgid  "Discussion list"
+msgstr "Liosta plé"
+
+msgid  "Development"
+msgstr "Forbairt"
+
+msgid  "forum_description"
+msgstr "Ceisteanna (agus freagraí) faoin Bailiúchán NTP, moltaí le haghaidh feabhsuithe agus ábhair a bhaineann le ham a choinneáil agus freastalaithe NTP a oibriú."
+
+msgid  "news_description"
+msgstr "Cuirtear fógraí agus nuacht ar fáil ar an suíomh nuachta nó ar an bhfóram."
+
+msgid  "development_list_description"
+msgstr "Tarlaíonn plé níos teicniúla (agus go hidéalach pragmatach) faoi fhorbairt an <a href=\"%1\">chóid bailiúchán ntp</a> agus <a href=\"%2\">GeoDNS</a> san <a href=\"%3\">fhóram forbartha</a>."
+
+# tpl/server.html
+msgid  "Back to the front page"
+msgstr "Ar ais go dtí an leathanach tosaigh"
+
+msgid  "Find"
+msgstr "Aimsigh"
+
+msgid  "Stats for %1"
+msgstr "Staitisticí le %1"
+
+msgid  "Not active in the pool, monitoring only"
+msgstr "Neamhghníomhach sa bailiúchán, ag monatóireacht amháin"
+
+msgid  "Zones:"
+msgstr "Zóin:"
+
+msgid  "This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
+msgstr "Tá an freastalaí <span class=\"deletion\">seo le scriosadh</span> ar %1 seo.
+
+msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
+msgstr "Scór reatha:: %1 (ní úsáidtear ach freastalaithe le scór níos airde ná %2 sa bailiúchán)"
+
+msgid  "What do the graphs mean?"
+msgstr "Cad a chiallaíonn na graif?"
+
+msgid  "CSV log"
+msgstr "Loga CSV"
+
+# tpl/navigation_sidebar.html
+msgid  "News"
+msgstr "Nuacht"
+
+msgid  "How do I <i>use</i> pool.ntp.org?"
+msgstr "Conas a <i>úsáidim</i> pool.ntp.org?""
+
+msgid  "How do I <i>join</i> pool.ntp.org?"
+msgstr "Conas a <i>rachaidh mé isteach i</I> pool.ntp.org?""
+
+msgid  "Information for vendors"
+msgstr "Faisnéis do dhíoltóirí"
+
+msgid  "The mailing lists"
+msgstr "Pobal"
+
+msgid  "Additional links"
+msgstr "Naisc bhreise"
+
+msgid  "Can you translate?"
+msgstr "An féidir leat aistriúchán?"
