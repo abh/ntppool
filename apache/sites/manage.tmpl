@@ -13,6 +13,11 @@
        [% PH %] NTPPool::Control::Manage::Root->super
     </Location>
 
+    <Location /a/>
+       SetHandler perl-script
+       [% PH %] NTPPool::Control::Manage::UserProfile->super
+    </Location>
+
     <Location /manage>
        SetHandler perl-script
        [% PH %] NTPPool::Control::Manage->super
@@ -51,11 +56,6 @@
     <Location /manage/monitors>
        SetHandler perl-script
        [% PH %] NTPPool::Control::Manage::Monitor->super
-    </Location>
-
-    <Location /manage/equipment>
-       SetHandler perl-script
-       [% PH %] NTPPool::Control::Manage::Equipment->super
     </Location>
 
     <Location /webhook>

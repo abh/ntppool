@@ -38,17 +38,26 @@ sub render {
     return $self->render_account;
 }
 
+# legacy urls, redirecting to new account pages when possible
 sub render_user {
     my $self = shift;
 
     my $user = $self->profile_user;
     return 404 unless $user and $user->public_profile;
 
-    my $accounts = $user->accounts;
-    my ($account) = sort { $a->id <=> $b->id } grep { $_->public_profile } @$accounts;
+    my $accounts  = $user->accounts;
+    my ($account) = sort { $a->id <=> $b->id }
+      grep { $_->public_profile } @$accounts;
 
     return 404 unless $account;
     return $self->redirect($account->public_url);
+}
+
+# overridden in the manage version
+sub profile_visible {
+    my $self    = shift;
+    my $account = shift;
+    return $account->public_profile;
 }
 
 sub render_account {
@@ -56,8 +65,13 @@ sub render_account {
 
     my ($account, $extra) = $self->profile_account;
 
-    unless ($account && $account->public_profile) {
+    unless ($account) {
         $self->cache_control('max-age=30');
+        return 404;
+    }
+
+    unless ($self->profile_visible($account)) {
+        $self->cache_control('max-age=60');
         return 404;
     }
 
