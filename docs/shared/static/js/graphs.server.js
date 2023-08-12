@@ -284,6 +284,7 @@ function server_chart(div, data, options) {
             if (mon.type == "score") {
                 if (mon.name == "recentmedian") {
                     rclass = "table-primary";
+                    name = "active";
                 } else {
                     rclass = "table-secondary";
                 }
