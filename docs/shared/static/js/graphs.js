@@ -5,11 +5,11 @@
 if (!Pool) { var Pool = {}; }
 if (!Pool.Graphs) { Pool.Graphs = {}; }
 
-(function() {
+(function () {
     "use strict";
     var g = Pool.Graphs;
 
-    g.SetupGraphs = function() {
+    g.SetupGraphs = function () {
 
         var data = {};
         var graph_div = $('div.graph');
@@ -20,34 +20,34 @@ if (!Pool.Graphs) { Pool.Graphs = {}; }
             if (!$legacy) { return; }
 
             $legacy.html('Please upgrade to a browser that supports SVG '
-                         + 'to see the new graphs. '
-                         + '(For example <a href="http://www.apple.com/safari/">Safari</a>, '
-                         + '<a href="https://www.google.com/chrome/">Chrome</a>, '
-                         + '<a href="http://www.mozilla.org/firefox">Firefox</a> or '
-                         + '<a href="http://ie.microsoft.com/">IE9+</a>)<br>'
-                        );
+                + 'to see the new graphs. '
+                + '(For example <a href="http://www.apple.com/safari/">Safari</a>, '
+                + '<a href="https://www.google.com/chrome/">Chrome</a>, '
+                + '<a href="http://www.mozilla.org/firefox">Firefox</a> or '
+                + '<a href="http://ie.microsoft.com/">IE9+</a>)<br>'
+            );
 
             $legacy.append($('<br><img class=".legacy-graph-img"/>')
                 .attr('src', $legacy.data('offset-graph-url')));
 
             return;
         }
-        var load_graphs = function() {
+        var load_graphs = function () {
 
-            graph_div.each(function(i) {
+            graph_div.each(function (i) {
 
                 var div = $(this);
 
                 var ip = div.data('server-ip');
                 if (ip) {
                     var graph_legend = div.next('.graph-legend');
-                    d3.json("/scores/"+ ip +"/json?monitor=*&limit=5000").then((json) => {
+                    d3.json("/scores/" + ip + "/json?monitor=*&limit=5000").then((json) => {
                         if (json) {
                             data[ip] = json;
                             server_chart(div, json, { legend: graph_legend });
                             // console.log("width/height", div.width(), div.height());
 
-                            setTimeout(function(){
+                            setTimeout(function () {
                                 $("body").append('<div id="loaded"></div>');
                             }, 50);
 
@@ -80,7 +80,7 @@ if (!Pool.Graphs) { Pool.Graphs = {}; }
 
 })();
 
-$(document).ready(function(){
+$(document).ready(function () {
     "use strict";
     Pool.Graphs.SetupGraphs();
 });

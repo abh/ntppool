@@ -12,11 +12,11 @@ function zone_chart(div, data, options) {
 
     var history = data.history;
 
-    $.each(history, function(i,d) {
+    $.each(history, function (i, d) {
         d.date = new Date(d.ts * 1000);
     });
 
-    var y_max = d3.max(history.map(function(e){ return e.rc })),
+    var y_max = d3.max(history.map(function (e) { return e.rc })),
         y_min = 0;
 
     if (y_max < 10) {
@@ -27,17 +27,17 @@ function zone_chart(div, data, options) {
         y_max = y_max + 1;
     }
 
-    var w = ($(div).data("width")  || 480),
+    var w = ($(div).data("width") || 480),
         h = ($(div).data("height") || 246),
         pad_w = 40,
         pad_h = 19,
 
         y = d3.scaleLinear().domain([y_max, y_min]).range([0, h]),
 
-        x = d3.scaleUtc().domain([d3.min(history.map(function(e){ return e.date; })),
-                                        d3.max(history.map(function(e){ return e.date; }))
-            ])
-            .range([0, w]);
+        x = d3.scaleUtc().domain([
+            d3.min(history.map(function (e) { return e.date; })),
+            d3.max(history.map(function (e) { return e.date; }))
+        ]).range([0, w]);
 
     var svg = d3.select(div.get(0))
         .append("svg")
@@ -83,7 +83,7 @@ function zone_chart(div, data, options) {
         .attr("dy", ".35em")
         // .attr("dy", -4)
         .attr("text-anchor", "end")
-        .text(function(ms) {
+        .text(function (ms) {
             return ms;
             // console.log("ms", ms);
             // return y.tickFormat(0)(ms);
@@ -94,50 +94,50 @@ function zone_chart(div, data, options) {
         .attr("width", w)
         .attr("height", h);
 
-    $.each(['v4', 'v6'], function(i, ip_version) {
+    $.each(['v4', 'v6'], function (i, ip_version) {
 
-        var _class = function(type, name) {
-            return [type, name, name+ip_version, ip_version].join(" ");
+        var _class = function (type, name) {
+            return [type, name, name + ip_version, ip_version].join(" ");
         }
 
-        var dh = data.history.filter(function(d) { return d.iv === ip_version ? true : false; });
+        var dh = data.history.filter(function (d) { return d.iv === ip_version ? true : false; });
 
         svg.selectAll(".registered_count" + ip_version)
-        .data([dh])
-        .enter().append("path")
-        .attr("class", _class("line", "registered_count"))
-        .attr("d", d3.line()
-              .x(function(d) { return x(d.date); })
-              .y(function(d) { return y(d.rc); })
-             );
+            .data([dh])
+            .enter().append("path")
+            .attr("class", _class("line", "registered_count"))
+            .attr("d", d3.line()
+                .x(function (d) { return x(d.date); })
+                .y(function (d) { return y(d.rc); })
+            );
 
         svg.selectAll(".active_count" + ip_version)
-        .data([dh])
-        .enter().append("path")
-        .attr("class", _class("line", "active_count"))
-        .attr("d", d3.line()
-              .x(function(d) { return x(d.date); })
-              .y(function(d) { return y(d.ac); })
-        );
+            .data([dh])
+            .enter().append("path")
+            .attr("class", _class("line", "active_count"))
+            .attr("d", d3.line()
+                .x(function (d) { return x(d.date); })
+                .y(function (d) { return y(d.ac); })
+            );
 
         svg.selectAll(".inactive_count" + ip_version)
-        .data([dh])
-        .enter().append("path")
-        .attr("class", _class("line", "inactive_count"))
-        .attr("d", d3.line()
-              .x(function(d) { return x(d.date); })
-              .y(function(d) { return y(d.rc-d.ac); })
-        );
+            .data([dh])
+            .enter().append("path")
+            .attr("class", _class("line", "inactive_count"))
+            .attr("d", d3.line()
+                .x(function (d) { return x(d.date); })
+                .y(function (d) { return y(d.rc - d.ac); })
+            );
 
     });
 
-   // -----------------------------
-   // Add Title then Legend
-   // -----------------------------
-   svg.append("svg:text")
-       .attr("x", 2)
-       .attr("y", -5)
-       .style("font-weight", "bold")
-       .text("Server counts for " + options.name);
+    // -----------------------------
+    // Add Title then Legend
+    // -----------------------------
+    svg.append("svg:text")
+        .attr("x", 2)
+        .attr("y", -5)
+        .style("font-weight", "bold")
+        .text("Server counts for " + options.name);
 
 }

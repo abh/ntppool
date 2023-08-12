@@ -2,37 +2,38 @@
 /*jshint jquery:true browser:true */
 /*global _:true, templates:true */
 
-if(!1 in window)window.console={log:function(){}};
-else if(!console)var console={log:function(){}};
+if (!1 in window) window.console = { log: function () { } };
+else if (!console) var console = { log: function () { } };
 
 if (!NP) { var NP = {}; }
 
 (function ($) {
     "use strict";
-    $(document).ready(function() {
-        $('#search_form').submit(function(e) {
+    $(document).ready(function () {
+        $('#search_form').submit(function (e) {
             e.preventDefault();
             var q = $(this).find('input:first').val();
             $('#users').html("Loading ...");
             $.post('/api/staff/search',
-                    { q: q,
-                      auth_token: NP.token
-                    },
-                    function(r) {
-                        var reg = new RegExp(q, 'gi');
-                        _.each(r.accounts, function(account) {
-                            _.each(account.servers, function(server) {
-                                server.ip_display = server.ip;
-                                server.ip_display = server.ip_display.replace(reg,
-                                    function(str) {
-                                        console.log("STR", str);
-                                        return '<b>' + str + '</b>';
-                                    }
-                                );
-                            });
+                {
+                    q: q,
+                    auth_token: NP.token
+                },
+                function (r) {
+                    var reg = new RegExp(q, 'gi');
+                    _.each(r.accounts, function (account) {
+                        _.each(account.servers, function (server) {
+                            server.ip_display = server.ip;
+                            server.ip_display = server.ip_display.replace(reg,
+                                function (str) {
+                                    console.log("STR", str);
+                                    return '<b>' + str + '</b>';
+                                }
+                            );
                         });
-                        $('#users').html( templates.users.render( r ));
-                    }, 'json'
+                    });
+                    $('#users').html(templates.users.render(r));
+                }, 'json'
             );
         });
 
@@ -44,13 +45,13 @@ if (!NP) { var NP = {}; }
                     auth_token: NP.token,
                     server: zone_list.data('server-ip')
                 },
-                data: function() { return zone_list.data('zones') },
+                data: function () { return zone_list.data('zones') },
                 indicator: 'Saving...',
                 event: "dblclick",
                 select: false,
                 cancel: 'Cancel',
                 submit: 'Save',
-                callback: function(zones, editable) {
+                callback: function (zones, editable) {
                     var zones_data = JSON.parse(zones),
                         zones_str = zones_data.join(" ");
                     zone_list.data('zones', zones_str);
@@ -60,7 +61,7 @@ if (!NP) { var NP = {}; }
                 }
             });
 
-            $('#server_edit_zones').click(function() {
+            $('#server_edit_zones').click(function () {
                 console.log("button click");
                 zone_list.dblclick();
                 $('#server_edit_zones').hide();
@@ -77,7 +78,7 @@ if (!NP) { var NP = {}; }
                     server: zone_list.data('server-ip')
                 },
                 placeholder: "hostname",
-                callback: function(data, editable) {
+                callback: function (data, editable) {
                     data = JSON.parse(data);
                     server_hostname.html(data.hostname);
                     if (data.error) {

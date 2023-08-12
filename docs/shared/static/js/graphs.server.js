@@ -12,30 +12,31 @@ function server_chart(div, data, options) {
 
     var history = data.history;
 
-    $.each(history, function(i,d) {
+    $.each(history, function (i, d) {
         d.date = new Date(d.ts * 1000);
     });
 
-    var y_offset_max = d3.max(history.map(function(e){ return e.offset * 1; })),
-        y_offset_min = d3.min(history.map(function(e){ return e.offset * 1; }));
+    var y_offset_max = d3.max(history.map(function (e) { return e.offset * 1; })),
+        y_offset_min = d3.min(history.map(function (e) { return e.offset * 1; }));
 
     // more than two seconds off and we'll stop showing just how bad
-    if (y_offset_max >  2) { y_offset_max =  2; }
+    if (y_offset_max > 2) { y_offset_max = 2; }
     if (y_offset_min < -2) { y_offset_min = -2; }
 
     $(".graph_desc").show();
 
-    var w = ($(div).data("width")  || ($(div).width() * 0.7) || 500),
+    var w = ($(div).data("width") || ($(div).width() * 0.7) || 500),
         h = ($(div).data("height") || ($(div).height()) || 246),
         pad_w = 45,
         pad_h = 19,
 
         y_offset = d3.scalePow().exponent(0.5).domain([y_offset_max, y_offset_min]).range([0, h]).clamp(true),
-        y_score = d3.scaleSqrt().domain([25,-105]).range([0,h]),
+        y_score = d3.scaleSqrt().domain([25, -105]).range([0, h]),
 
-        x = d3.scaleUtc().domain([d3.min(history.map(function(e){ return e.date; })),
-                                        d3.max(history.map(function(e){ return e.date; }))
-            ])
+        x = d3.scaleUtc().domain([
+            d3.min(history.map(function (e) { return e.date; })),
+            d3.max(history.map(function (e) { return e.date; }))
+        ])
             .range([0, w]);
 
     // console.log("w", w);
@@ -81,14 +82,14 @@ function server_chart(div, data, options) {
         .attr("y2", y_offset);
 
     // legend in fractional milliseconds if offets are less than 3ms
-    var yformat = d3.format((y_offset_max*1000 < 3 && y_offset_min*1000 > -3) ? "0.1f" : "0.0f");
+    var yformat = d3.format((y_offset_max * 1000 < 3 && y_offset_min * 1000 > -3) ? "0.1f" : "0.0f");
 
     yrule.append("text")
         .attr("x", -4)
         .attr("y", y_offset)
         .attr("dy", ".35em")
         .attr("text-anchor", "end")
-        .text(function(ms) {
+        .text(function (ms) {
             ms = ms * 1000;
             var s = yformat(ms);
             var previous = this.parentNode.previousSibling;
@@ -100,7 +101,7 @@ function server_chart(div, data, options) {
                 return "ms";
             }
         })
-        .attr("font-weight", function(ms) {
+        .attr("font-weight", function (ms) {
             // console.log("font-weight", ms);
             if (this.textContent === "ms") {
                 return "bold";
@@ -110,7 +111,7 @@ function server_chart(div, data, options) {
 
     /* score y lines */
     var yrule_score = svg.selectAll("g.y_scores")
-        .data([20,0,-20,-50,-100])
+        .data([20, 0, -20, -50, -100])
         .enter().append("g")
         .attr("class", "y_score");
 
@@ -125,7 +126,7 @@ function server_chart(div, data, options) {
         .attr("y", y_score)
         .attr("dy", ".35em")
         .attr("text-anchor", "end")
-        .text(function(text) { return text; });
+        .text(function (text) { return text; });
 
 
     var zero_offset = svg.selectAll("g.zero_offset")
@@ -133,13 +134,13 @@ function server_chart(div, data, options) {
         .enter().append("g");
 
     zero_offset.append("line")
-         .attr("x1", 0)
-         .attr("x2", w)
-         .attr("y1", y_offset(0))
-         .attr("y2", y_offset(0))
-         .attr("class", "x")
-         .attr("stroke-width", 2)
-         .attr("stroke", "black");
+        .attr("x1", 0)
+        .attr("x2", w)
+        .attr("y1", y_offset(0))
+        .attr("y2", y_offset(0))
+        .attr("class", "x")
+        .attr("stroke-width", 2)
+        .attr("stroke", "black");
 
     svg.append("rect")
         .attr("width", w)
@@ -148,56 +149,56 @@ function server_chart(div, data, options) {
     svg.selectAll("g.scores")
         .data(data.history)
         .enter().append("circle")
-        .filter(function(d) { return d.monitor_id ? true : false; })
+        .filter(function (d) { return d.monitor_id ? true : false; })
         .attr("class", "scores monitor_data")
         .attr("r", 2)
-        .attr("transform", function(d,i) {
+        .attr("transform", function (d, i) {
             var tr = "translate(" + x(d.date) + "," + y_score(d.score) + ")";
             return tr;
         })
-        .style("fill", function(d) {
+        .style("fill", function (d) {
             if (!d.monitor_id) {
                 return "black";
             }
             if (d.step < -1) {
-               return "red";
+                return "red";
             }
             else if (d.step < 0) {
-               return "orange";
+                return "orange";
             }
             else {
-               return "steelblue";
+                return "steelblue";
             }
         })
-        .on('mouseover',  fade(0.2))
-        .on('mouseout',   fade(1));
+        .on('mouseover', fade(0.2))
+        .on('mouseout', fade(1));
 
     svg.selectAll("g.offsets")
         .data(data.history)
         .enter()
         .append("circle")
-        .filter(function(d) { return d.monitor_id ? true : false; })
+        .filter(function (d) { return d.monitor_id ? true : false; })
         .attr("class", "offsets monitor_data")
         .attr("r", 1.5) // todo: make this 2 if number of data points are < 250 or some such
-        .attr("transform", function(d,i) { return "translate(" + x(d.date) + "," + y_offset(d.offset) + ")"; })
-        .style("fill", function(d) {
+        .attr("transform", function (d, i) { return "translate(" + x(d.date) + "," + y_offset(d.offset) + ")"; })
+        .style("fill", function (d) {
             var offset = d.offset;
 
             if (offset < 0) { offset = offset * -1; }
-            if ( offset < 0.050 ) {
+            if (offset < 0.050) {
                 return "green";
             }
-            else if ( offset < 0.100 ) {
+            else if (offset < 0.100) {
                 return "orange";
             }
             else {
                 return "red";
-           }
+            }
         })
-        .on('mouseover',  fade(0.25))
-        .on('mouseout',   fade(1));
+        .on('mouseover', fade(0.25))
+        .on('mouseout', fade(1));
 
-    var dh = data.history.filter(function(d) { return d.monitor_id === null ? true : false; });
+    var dh = data.history.filter(function (d) { return d.monitor_id === null ? true : false; });
     //console.log("d.history", dh);
 
     svg.selectAll(".total_score")
@@ -208,16 +209,16 @@ function server_chart(div, data, options) {
         .style("stoke", "red")
         .style("stroke-width", 2)
         .attr("d", d3.line()
-              .x(function(d) { return x(d.date); })
-              .y(function(d) { return y_score(d.score); })
-             );
+            .x(function (d) { return x(d.date); })
+            .y(function (d) { return y_score(d.score); })
+        );
 
-   // Add Title then Legend
-   svg.append("svg:text")
-       .attr("x", 0)
-       .attr("y", -5)
-       .style("font-weight", "bold")
-       .text("Offset and scores for " + data.server.ip);
+    // Add Title then Legend
+    svg.append("svg:text")
+        .attr("x", 0)
+        .attr("y", -5)
+        .style("font-weight", "bold")
+        .text("Offset and scores for " + data.server.ip);
 
     if (legend) {
         legend.css("margin-left", pad_w);
@@ -304,30 +305,30 @@ function server_chart(div, data, options) {
         }
 
         var fadeout = fade(0.25);
-        var fadein  = fade(1);
-        table.find('tr').mouseenter(function(e) {
+        var fadein = fade(1);
+        table.find('tr').mouseenter(function (e) {
 
             var mon = $(this).data('monitor_id');
             if (!mon) { return; }
-            fadeout( { monitor_id: mon } );
+            fadeout({ monitor_id: mon });
         });
-        table.find('tr').mouseleave(function(e) {
+        table.find('tr').mouseleave(function (e) {
             var mon = $(this).data('monitor_id');
             if (!mon) { return; }
-            fadein( { monitor_id: mon } );
+            fadein({ monitor_id: mon });
         });
 
         legend.append(table);
     }
 
-    function fade (opacity) {
-        return function(g, i) {
+    function fade(opacity) {
+        return function (g, i) {
             svg.selectAll(".monitor_data")
-               .filter(function(d) {
-                   return d.monitor_id !== g.monitor_id;
-               })
-            .transition()
-            .style("opacity", opacity);
+                .filter(function (d) {
+                    return d.monitor_id !== g.monitor_id;
+                })
+                .transition()
+                .style("opacity", opacity);
         };
     };
 
