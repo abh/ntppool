@@ -227,26 +227,25 @@ function server_chart(div, data, options) {
         var table = $('<table>').addClass('legend table table-striped table-hover table-sm')
 
         var monitors = data.monitors.sort(function compareFn(a, b) {
-            if (a.type == b.type) {
-                if (a.status > b.status) {
-                    return 1;
-                }
-                if (b.status > a.status) {
-                    return -1;
-                }
-                if (a.score_ts > b.score_ts) {
-                    return 1;
-                }
-                if (b.score_ts > a.score_ts) {
-                    return -1;
-                }
-                return 0;
+            if (a.status > b.status) {
+                return 1;
+            }
+            if (b.status > a.status) {
+                return -1;
             }
             if (a.type > b.type) {
                 return -1;
-            } else {
+            } else if (b.type > a.type) {
                 return 1;
             }
+
+            if (a.score_ts > b.score_ts) {
+                return 1;
+            }
+            if (b.score_ts > a.score_ts) {
+                return -1;
+            }
+            return 0;
         });
 
 
@@ -256,7 +255,7 @@ function server_chart(div, data, options) {
             var mon = data.monitors[i];
 
             if (mon.type == "score") {
-                mon.status = "";
+                // mon.status = "";
             }
 
             if (currentStatus != mon.status) {
@@ -267,6 +266,9 @@ function server_chart(div, data, options) {
                 }
                 else if (mon.status == "testing") {
                     rclass = "table-info";
+                }
+                else if (mon.status == "paused") {
+                    rclass = "table-secondary";
                 }
 
                 var row = $('<tr>').addClass(rclass);
@@ -281,10 +283,13 @@ function server_chart(div, data, options) {
             var name = mon.name;
 
             var rclass = "table-light";
+            var tclass = "";
+
             if (mon.type == "score") {
                 if (mon.name == "recentmedian") {
-                    rclass = "table-primary";
-                    name = "active";
+                    // rclass = "table-primary";
+                    tclass = "active";
+                    name = "overall";
                 } else {
                     rclass = "table-secondary";
                 }
@@ -297,8 +302,9 @@ function server_chart(div, data, options) {
 
             }
 
-            row.append($('<td>').text(name).addClass(rclass));
-            row.append($('<td>').text(mon.score));
+            row.append($('<td>').text(name).addClass(tclass)).addClass(rclass);
+            row.append($('<td>').text(mon.score).addClass(tclass)).addClass(rclass);
+
             // row.append($('<td>').text(mon.status));
             // row.append($('<td>').text(mon.type).addClass('legend').data('monitor_id', mon.id));
 

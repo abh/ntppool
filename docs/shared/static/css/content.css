@@ -353,6 +353,10 @@ table.legend {
   font-size: small;
 }
 
+table.legend .active {
+  font-weight: bold;
+}
+
 /* long explanation */
 .server_history_legend {
   font-size: 0.85em;
