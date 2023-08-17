@@ -32,12 +32,16 @@ $ua->default_header("Authorization" => "OAuth " . $api_key);
 
 warn "Getting data\n" if $verbose;
 
-my ($data) = $dbh->selectall_arrayref(
-    'select unix_timestamp(ts)-unix_timestamp(ts)%60 as m, count(*)
-    from log_scores
-    where ts > date_sub(now(), interval 15 minute)
-    group by m order by m'
-);
+my ($data) = $dbh->selectall_arrayref(q[
+    select unix_timestamp(ts)-unix_timestamp(ts)%60 as m, count(*)
+    from log_scores ls
+    inner join monitors m
+      on (m.id=ls.monitor_id)
+    where
+      m.type = 'monitor' and
+      ts > date_sub(now(), interval 15 minute)
+    group by m order by m
+]);
 
 shift @$data;
 
