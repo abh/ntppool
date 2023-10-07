@@ -1,0 +1,6 @@
+[% FOR lang_id = combust.valid_languages_sorted %]
+[%- testing_lang = combust.valid_languages.$lang_id.testing || 0 %]
+[%- NEXT IF testing_lang AND combust.deployment_mode == 'prod' %]
+<link rel="alternate" hreflang="[% lang_id %]" href="/[% lang_id %][% combust.request.uri | html %]" />
+[%- END %]
+<link rel="alternate" hreflang="x-default" href="[% combust.request.uri | html %]" />
