@@ -38,7 +38,7 @@ our %valid_languages = (
     it => {name => "Italiano"},
     ja => {name => "日本語"},
     ko => {name => "한국어",},
-    kz => {name => "Қазақша", testing => 1},
+    kk => {name => "Қазақша", testing => 1},
     nb => {name => "Norsk (bokmål)"},
     nl => {name => "Nederlands",},
     nn => {name => "Norsk (nynorsk)"},
