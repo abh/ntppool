@@ -944,5 +944,9 @@ alter table servers
 
 update servers set netspeed_target = netspeed;
 
+#116
+alter table servers  add flags varchar(4096) NOT NULL DEFAULT '{}';
+alter table accounts add flags varchar(4096) NOT NULL DEFAULT '{}' after url_slug;
+
 #todo
 - ...

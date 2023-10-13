@@ -52,6 +52,7 @@ __PACKAGE__->meta->setup(
     organization_url   => { type => 'varchar', length => 150 },
     public_profile     => { type => 'integer', default => '0', not_null => 1 },
     url_slug           => { type => 'varchar', length => 150 },
+    flags              => { type => 'varchar', default => '', length => 4096, not_null => 1 },
     created_on         => { type => 'datetime', default => 'now', not_null => 1 },
     modified_on        => { type => 'timestamp', not_null => 1 },
     stripe_customer_id => { type => 'varchar', length => 255 },
@@ -109,6 +110,8 @@ __PACKAGE__->meta->setup(
     },
   ],
 );
+
+__PACKAGE__->meta->setup_json_columns(qw< flags >);
 
 push @table_classes, __PACKAGE__;
 }
@@ -755,6 +758,7 @@ __PACKAGE__->meta->setup(
     score_ts        => { type => 'datetime' },
     score_raw       => { type => 'scalar', default => '0', length => 64, not_null => 1 },
     deletion_on     => { type => 'date' },
+    flags           => { type => 'varchar', default => '', length => 4096, not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
@@ -833,6 +837,8 @@ __PACKAGE__->meta->setup(
     },
   ],
 );
+
+__PACKAGE__->meta->setup_json_columns(qw< flags >);
 
 push @table_classes, __PACKAGE__;
 }

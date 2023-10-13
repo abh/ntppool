@@ -18,6 +18,8 @@ my %json_fields = (
     servers_monitor_review => 'config',
     system_settings        => 'value',
     logs                   => 'changes',
+    servers                => 'flags',
+    accounts               => 'flags',
 );
 
 sub json_columns {
