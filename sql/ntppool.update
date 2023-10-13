@@ -937,5 +937,12 @@ alter table monitors
 #114
 insert ignore into system_settings (`key`, `value`, created_on) values ('scorer', '{}', now());
 
+#115
+alter table servers
+  add netspeed_target mediumint unsigned not null default '10000' after netspeed,
+  modify netspeed mediumint unsigned not null default '10000';
+
+update servers set netspeed_target = netspeed;
+
 #todo
 - ...
