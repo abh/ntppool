@@ -930,5 +930,12 @@ alter table system_settings
   modify `key`  varchar(255) not null,
   modify value  text not null;
 
+#113
+alter table monitors
+  add index type_status (`type`, `status`);
+
+#114
+insert ignore into system_settings (`key`, `value`, created_on) values ('scorer', '{}', now());
+
 #todo
 - ...
