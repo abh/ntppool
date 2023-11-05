@@ -1,0 +1,23 @@
+<div class="block">
+
+<h3>Verify [% server.ip %]</h3>
+
+<p>
+Please confirm that you are an operator of the NTP service on
+[% server.ip %] and that you are authorized to add the server
+to the NTP Pool system.
+</p>
+
+<p>
+<form action="/manage/server/verify/[% token %]" method="post">
+<input type="hidden" name="server" value="[% server.id %]" />
+<input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
+<input type="submit" name="verify" class="btn btn-outline-primary" value="I am authorized to add [% server.ip %] to the NTP Pool" />
+</form>
+</p>
+
+<a class="btn btn-outline-info btn-sm" href="/manage/server/delete?server=[% server.ip | html %]">No, please delete the server</a>
+
+<p><a href="/manage/servers">Return to servers page</a></p>
+
+</div>

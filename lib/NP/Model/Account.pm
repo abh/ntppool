@@ -111,6 +111,7 @@ sub servers {
                 deletion_on => {'gt' => DateTime->today}    # deleted in the future
             ],
         ],
+        with_objects => ['server_verification'],
     );
     $s = [
         sort {

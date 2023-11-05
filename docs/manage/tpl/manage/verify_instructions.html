@@ -1,0 +1,28 @@
+<div class="block">
+
+<h3>Verify [% server.ip %]</h3>
+
+<p>
+To verify that you operate the server retrieve a verification
+token by doing an HTTP request from the NTP server to
+<code>[% validation_server | html %]</code>. The validation
+server will return a URL for you to load to finish the
+validation process.
+<p>
+For example one of these commands:
+</p>
+
+<p>
+<code>
+    curl [% validation_server | html %]<br>
+    wget -O- [% validation_server | html %]<br>
+</code>
+</p>
+
+<p>
+The server also responds to non-TLS requests.
+</p>
+
+<p><a href="[% server.manage_urlx || "/manage/servers" %]">Return to servers page</a></p>
+
+</div>

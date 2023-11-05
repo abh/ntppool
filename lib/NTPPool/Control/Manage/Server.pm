@@ -31,6 +31,8 @@ sub render {
     return $self->handle_add if $self->request->uri =~ m!^/manage/server/add!;
     return $self->handle_update
       if $self->request->uri =~ m!^/manage/server/update!;
+    return $self->handle_verify
+      if $self->request->uri =~ m!^/manage/server/verify!;
     return $self->handle_delete
       if $self->request->uri =~ m!^/manage/server/delete!;
     return $self->handle_move
@@ -140,7 +142,7 @@ sub handle_add {
         my $return = NP::Email::sendmail($email->email);
         warn Data::Dumper->Dump([\$msg, \$email, \$return], [qw(msg email return)]);
 
-        return $self->redirect($self->manage_url('/manage/servers') . '#s-' . ($s && $s->ip));
+        return $self->redirect($s ? $s->manage_url : "/manage/servers");
     }
 
     my @all_zones = NP::Model->zone->get_zones(
@@ -372,8 +374,11 @@ sub handle_update_netspeed {
         $netspeed = 1000  if $netspeed < 0;
 
         my $old = $server->get_data_hash;
+
+        # todo: adjust elsewhere based on verification, etc
         $server->netspeed($netspeed);
-        if ($server->netspeed < 768) {
+        $server->netspeed_target($netspeed);
+        if ($server->netspeed_target < 768) {
             $server->leave_zone('@');
         }
         else {
@@ -381,8 +386,12 @@ sub handle_update_netspeed {
         }
 
         NP::Model::Log->log_changes($self->user, "server-netspeed",
-            "set netspeed to " . $server->netspeed,
+            "set netspeed to " . $server->netspeed_target,
             $server, $old);
+
+        if ($server->netspeed > $server->netspeed_target) {
+            $server->netspeed($server->netspeed_target);
+        }
 
         $server->save;
 
@@ -392,7 +401,7 @@ sub handle_update_netspeed {
     return $self->redirect('/manage/servers') if $self->req_param('noscript');
 
     my $return = {
-        netspeed => $self->netspeed_human($server->netspeed),
+        netspeed => $self->netspeed_human($server->netspeed_target),
         zones    => $self->evaluate_template(
             'tpl/manage/server_zones.html',
             {page_style => "bare.html", server => $server}
@@ -403,6 +412,62 @@ sub handle_update_netspeed {
 
     return OK, encode_json($return);
 
+}
+
+sub handle_verify {
+    my $self = shift;
+    my $db   = NP::Model->db;
+    my $txn  = $db->begin_scoped_work;
+
+    my ($token) = ($self->request->uri =~ m!^/manage/server/verify/(.+)!);
+    unless ($token) {
+        my $server = $self->req_server or return NOT_FOUND;
+        $self->tpl_param(server           => $server);
+        $self->tpl_param(verification_url => $config->site->{ntppool}->{verification_url});
+
+        my $validate_settings = $self->system_setting('validation');
+        if ($validate_settings and %$validate_settings) {
+            warn "validate settings not configured in system_settings";
+        }
+
+        warn "validation_settings: ", Data::Dump::pp($validate_settings);
+
+        my $validation_server = $validate_settings->{"server_" . $server->ip_version};
+        if (!$validation_server) {
+            warn "no validation server for ", $server->ip_version;
+        }
+
+        $self->tpl_param('validation_server', $validation_server);
+
+        return OK, $self->evaluate_template('tpl/manage/verify_instructions.html');
+    }
+
+    my $verification = NP::Model->server_verification->fetch(token => $token);
+    return NOT_FOUND unless $verification;
+    my $server = $verification->server;
+    return 403 unless $server->account->can_edit($self->user);
+
+    # if verified already, redirect to server on manage page
+    if ($verification->verified_on) {
+        return $self->redirect($server->manage_url);
+    }
+
+    $self->tpl_param(server => $server);
+    $self->tpl_param(token  => $verification->token);
+
+    if ($self->request->method eq 'post') {
+        return 403 unless $self->check_auth_token;
+
+        $verification->verified_on(DateTime->now());
+        $verification->user_ip($self->request->remote_ip);
+        $verification->user_id($self->user->id);
+        $verification->save();
+        $db->commit;
+
+        return $self->redirect($server->manage_url);
+    }
+
+    return OK, $self->evaluate_template('tpl/manage/verify_confirm.html');
 }
 
 sub handle_delete {
@@ -432,6 +497,7 @@ sub handle_delete {
                     "Deletion scheduled for " . $date->ymd,
                     $server, $old);
                 $server->save;
+                $db->commit;
             }
         }
         if ($self->req_param('cancel_deletion')) {
@@ -444,10 +510,11 @@ sub handle_delete {
                 "Deletion cancelled by " . $self->user->who,
                 $server, $old);
             $server->save;
+
+            $db->commit;
+            return $self->redirect($server->manage_url);
         }
     }
-
-    $db->commit;
 
     if ($server->deletion_on) {
         return OK, $self->evaluate_template('tpl/manage/delete_set.html');

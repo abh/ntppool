@@ -52,7 +52,7 @@ __PACKAGE__->meta->setup(
     organization_url   => { type => 'varchar', length => 150 },
     public_profile     => { type => 'integer', default => '0', not_null => 1 },
     url_slug           => { type => 'varchar', length => 150 },
-    flags              => { type => 'varchar', default => '', length => 4096, not_null => 1 },
+    flags              => { type => 'varchar', default => '{}', length => 4096, not_null => 1 },
     created_on         => { type => 'datetime', default => 'now', not_null => 1 },
     modified_on        => { type => 'timestamp', not_null => 1 },
     stripe_customer_id => { type => 'varchar', length => 255 },
@@ -758,7 +758,7 @@ __PACKAGE__->meta->setup(
     score_ts        => { type => 'datetime' },
     score_raw       => { type => 'scalar', default => '0', length => 64, not_null => 1 },
     deletion_on     => { type => 'date' },
-    flags           => { type => 'varchar', default => '', length => 4096, not_null => 1 },
+    flags           => { type => 'varchar', default => '{}', length => 4096, not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
@@ -820,6 +820,13 @@ __PACKAGE__->meta->setup(
       class      => 'NP::Model::ServerUrl',
       column_map => { id => 'server_id' },
       type       => 'one to many',
+    },
+
+    server_verification => {
+      class                => 'NP::Model::ServerVerification',
+      column_map           => { id => 'server_id' },
+      type                 => 'one to one',
+      with_column_triggers => '0',
     },
 
     servers_monitor_review => {
@@ -1050,6 +1057,65 @@ __PACKAGE__->make_manager_methods('server_urls');
 eval { require NP::Model::ServerUrl }
   or $@ !~ m:^Can't locate NP/Model/ServerUrl.pm: and die $@;
 
+{ package NP::Model::ServerVerification;
+
+use strict;
+
+use base qw(NP::Model::_Object);
+
+__PACKAGE__->meta->setup(
+  table   => 'server_verifications',
+
+  columns => [
+    id          => { type => 'serial', not_null => 1 },
+    server_id   => { type => 'integer', not_null => 1 },
+    user_id     => { type => 'integer' },
+    user_ip     => { type => 'varchar', default => '', length => 45, not_null => 1 },
+    verified_on => { type => 'datetime' },
+    token       => { type => 'varchar', length => 36 },
+    created_on  => { type => 'datetime', default => 'now', not_null => 1 },
+    modified_on => { type => 'timestamp', not_null => 1 },
+  ],
+
+  primary_key_columns => [ 'id' ],
+
+  unique_keys => [
+    [ 'server_id' ],
+    [ 'token' ],
+  ],
+
+  foreign_keys => [
+    server => {
+      class       => 'NP::Model::Server',
+      key_columns => { server_id => 'id' },
+      rel_type    => 'one to one',
+    },
+
+    user => {
+      class       => 'NP::Model::User',
+      key_columns => { user_id => 'id' },
+    },
+  ],
+);
+
+push @table_classes, __PACKAGE__;
+}
+
+{ package NP::Model::ServerVerification::Manager;
+
+use strict;
+
+our @ISA = qw(Combust::RoseDB::Manager);
+
+sub object_class { 'NP::Model::ServerVerification' }
+
+__PACKAGE__->make_manager_methods('server_verifications');
+}
+
+# Allow user defined methods to be added
+eval { require NP::Model::ServerVerification }
+  or $@ !~ m:^Can't locate NP/Model/ServerVerification.pm: and die $@;
+
 { package NP::Model::ServerZone;
 
 use strict;
@@ -1239,6 +1305,12 @@ __PACKAGE__->meta->setup(
 
     monitors => {
       class      => 'NP::Model::Monitor',
+      column_map => { id => 'user_id' },
+      type       => 'one to many',
+    },
+
+    server_verifications => {
+      class      => 'NP::Model::ServerVerification',
       column_map => { id => 'user_id' },
       type       => 'one to many',
     },
@@ -1654,6 +1726,7 @@ eval { require NP::Model::ZoneServerCount }
   sub server_note { our $server_note ||= bless [], 'NP::Model::ServerNote::Manager' }
   sub server_score { our $server_score ||= bless [], 'NP::Model::ServerScore::Manager' }
   sub server_url { our $server_url ||= bless [], 'NP::Model::ServerUrl::Manager' }
+  sub server_verification { our $server_verification ||= bless [], 'NP::Model::ServerVerification::Manager' }
   sub server_zone { our $server_zone ||= bless [], 'NP::Model::ServerZone::Manager' }
   sub servers_monitor_review { our $servers_monitor_review ||= bless [], 'NP::Model::ServersMonitorReview::Manager' }
   sub system_setting { our $system_setting ||= bless [], 'NP::Model::SystemSetting::Manager' }

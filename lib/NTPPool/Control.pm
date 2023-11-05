@@ -11,6 +11,7 @@ use I18N::LangTags::Detect ();
 use List::Util qw(first);
 use Unicode::Collate;
 use Data::ULID;
+use JSON::XS qw(decode_json);
 
 use NP::I18N;
 use NP::Version;
@@ -309,7 +310,6 @@ sub system_setting {
         return undef;
     }
     $settings = $settings->value;
-
     return $self->{$k} = $settings;
 }
 

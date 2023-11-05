@@ -14,6 +14,7 @@ my %not_a_map_table;
     qw(
         log_scores
         server_scores
+        server_verifications
         vendor_zones
         dns_roots
     )

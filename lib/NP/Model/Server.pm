@@ -118,6 +118,11 @@ sub url {
     return '/scores/' . $self->ip;
 }
 
+sub manage_url {
+    my $self = shift;
+    return '/manage/servers#s-' . $self->ip;
+}
+
 sub urls {
     my $urls = shift->server_urls;
     return unless $urls and @$urls;

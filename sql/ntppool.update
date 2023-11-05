@@ -948,5 +948,22 @@ update servers set netspeed_target = netspeed;
 alter table servers  add flags varchar(4096) NOT NULL DEFAULT '{}';
 alter table accounts add flags varchar(4096) NOT NULL DEFAULT '{}' after url_slug;
 
+#117
+CREATE TABLE `server_verifications` (
+  `id`          int unsigned NOT NULL AUTO_INCREMENT,
+  `server_id`   int unsigned NOT NULL,
+  `user_id`     int unsigned null,
+  `user_ip`     varchar(45) not null default '',
+  `verified_on` datetime null,
+  `token`       varchar(36),
+  `created_on`  datetime NOT NULL,
+  `modified_on` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `server` (`server_id`),
+  UNIQUE KEY `token` (`token`),
+  CONSTRAINT `server_verifications_ibfk_1` FOREIGN KEY (`server_id`) REFERENCES `servers` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `server_verifications_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 #todo
 - ...

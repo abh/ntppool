@@ -5,7 +5,14 @@
         <input type="hidden" name="a" value="[% combust.current_account.id_token %]">
 
         [% IF server.hostname %]Hostname: <b>[% server.hostname | html %]</b><br />[% END %]
-        IP: <b><a href="[% combust.www_url(server.url) %]">[% server.ip | html %]</a></b><br>
+        IP: <b><a href="[% combust.www_url(server.url) %]">[% server.ip | html %]</a></b>
+        [% IF server.server_verification.verified_on %]
+        &check; <!-- &#x2705; -->
+        [% ELSE %]
+        &nbsp; <a href="/manage/server/verify/?server=[% server.ip %]">&cross;</a>
+        [% END %]
+
+        <br>
         [% IF server.deletion_on %]
         This server is <span class="deletion">scheduled for deletion</span>
         on [% server.deletion_on.strftime("%B %d, %Y") %].
