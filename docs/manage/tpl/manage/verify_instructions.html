@@ -14,8 +14,8 @@ For example one of these commands:
 
 <p>
 <code>
-    curl [% validation_server | html %]<br>
-    wget -O- [% validation_server | html %]<br>
+curl --interface [% server.ip %] [% validation_server | html %]<br><br>
+wget --bind-address=[% server.ip %] -O- [% validation_server | html %]<br>
 </code>
 </p>
 

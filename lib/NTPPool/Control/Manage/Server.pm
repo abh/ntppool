@@ -461,6 +461,7 @@ sub handle_verify {
         $verification->verified_on(DateTime->now());
         $verification->user_ip($self->request->remote_ip);
         $verification->user_id($self->user->id);
+        $verification->token(undef);
         $verification->save();
         $db->commit;
 
