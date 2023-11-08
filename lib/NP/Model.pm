@@ -1071,6 +1071,7 @@ __PACKAGE__->meta->setup(
     server_id   => { type => 'integer', not_null => 1 },
     user_id     => { type => 'integer' },
     user_ip     => { type => 'varchar', default => '', length => 45, not_null => 1 },
+    indirect_ip => { type => 'varchar', default => '', length => 45, not_null => 1 },
     verified_on => { type => 'datetime' },
     token       => { type => 'varchar', length => 36 },
     created_on  => { type => 'datetime', default => 'now', not_null => 1 },

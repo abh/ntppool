@@ -965,5 +965,9 @@ CREATE TABLE `server_verifications` (
   CONSTRAINT `server_verifications_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+#118
+alter table server_verifications
+  add indirect_ip varchar(45) not null default '' after user_ip;
+
 #todo
 - ...

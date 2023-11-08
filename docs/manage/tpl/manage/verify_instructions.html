@@ -23,6 +23,19 @@ wget --bind-address=[% server.ip %] -O- [% validation_server | html %]<br>
 The server also responds to non-TLS requests.
 </p>
 
+<p>
+
+If you can't send HTTP requests from the NTP server, you can do the
+requests from another system on the same network:<br>
+<code>curl [% validation_server | html %]indirect/[% server.ip %]</code><br>
+<code>wget -O- [% validation_server | html %]indirect/[% server.ip %]</code><br>
+</p>
+
+<p>
+If you encounter an error with the process, please email
+<a href="mailto:[% "support" | email %]">[% "support" | email %]</a>.
+</p>
+
 <p><a href="[% server.manage_urlx || "/manage/servers" %]">Return to servers page</a></p>
 
 </div>
