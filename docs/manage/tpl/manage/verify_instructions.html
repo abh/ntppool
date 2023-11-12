@@ -13,10 +13,12 @@ For example one of these commands:
 </p>
 
 <p>
-<code>
-curl --interface [% server.ip %] [% validation_server | html %]<br><br>
-wget --bind-address=[% server.ip %] -O- [% validation_server | html %]<br>
-</code>
+<pre class="code">
+curl --interface [% server.ip %] [% validation_server | html %]
+
+wget --bind-address=[% server.ip %] -O- [% validation_server | html %]
+</pre>
+
 </p>
 
 <p>
@@ -26,9 +28,13 @@ The server also responds to non-TLS requests.
 <p>
 
 If you can't send HTTP requests from the NTP server, you can do the
-requests from another system on the same network:<br>
-<code>curl [% validation_server | html %]indirect/[% server.ip %]</code><br>
-<code>wget -O- [% validation_server | html %]indirect/[% server.ip %]</code><br>
+requests from another system on the same network:
+
+<pre class="code">
+curl [% validation_server | html %]indirect/[% server.ip %]
+
+wget -O- [% validation_server | html %]indirect/[% server.ip %]
+</pre>
 </p>
 
 <p>
