@@ -376,19 +376,39 @@ sub handle_update_netspeed {
     if (defined(my $netspeed = $self->req_param('netspeed'))) {
         return 403 unless $self->check_auth_token;
 
-        my $db  = NP::Model->db;
-        my $txn = $db->begin_scoped_work;
-
         return unless $netspeed =~ m/^\d+$/;
-        $netspeed = 10000 if $netspeed > 1000000;
-        $netspeed = 1000  if $netspeed < 0;
+        $netspeed = 100000 if $netspeed > 2000000;
+        $netspeed = 1000   if $netspeed < 0;
 
         my $old = $server->get_data_hash;
+
+        warn "new netspeed: $netspeed";
+        warn "old netspeed: ", $server->netspeed_target;
+
+        if ($netspeed > $server->netspeed_target) {
+            unless ($server->verified) {
+                my $return = {
+                    netspeed => $self->netspeed_human($server->netspeed_target),
+                    zones    => $self->evaluate_template(
+                        'tpl/manage/server_zones.html',
+                        {   page_style => "bare.html",
+                            server     => $server,
+                            "error" => "Please verify your server before increasing the netspeed",
+                            verify_link => 1,
+                        }
+                    )
+                };
+                return OK, encode_json($return);
+            }
+        }
+
+        my $db  = NP::Model->db;
+        my $txn = $db->begin_scoped_work;
 
         # todo: adjust elsewhere based on verification, etc
         $server->netspeed($netspeed);
         $server->netspeed_target($netspeed);
-        if ($server->netspeed_target < 768) {
+        if ($server->netspeed_target < 10000) {
             $server->leave_zone('@');
         }
         else {

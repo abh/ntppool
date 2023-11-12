@@ -282,7 +282,7 @@ sub _netspeed_human {
 
     return ("disabled, monitoring only") if $netspeed == 0;
 
-    return ($netspeed / 1_000_000) . ' Gbit' if ($netspeed / 1_000_000 > 1);
+    return ($netspeed / 1_000_000) . ' Gbit' if ($netspeed / 1_000_000 >= 1);
     return ($netspeed / 1_000) . ' Mbit'     if ($netspeed / 1_000 >= 1);
     return "$netspeed Kbit";
 }
