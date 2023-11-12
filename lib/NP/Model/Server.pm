@@ -105,6 +105,13 @@ sub deleted {
     $self->deletion_on and $self->deletion_on <= DateTime->today;
 }
 
+sub verified {
+    my $self = shift;
+    my $v    = $self->server_verification;
+    return 1 if $v && $v->verified_on;
+    return 0;
+}
+
 sub score {
     my $self = shift;
     croak "Can't set 'score' - use 'score_raw'" if @_;

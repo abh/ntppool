@@ -74,10 +74,16 @@ sub handle_add {
     return 403 unless $self->check_auth_token;
 
     my $account = $self->current_account;
-    my $host    = $self->req_param('host');
+
+    my $host = $self->req_param('host');
     $host =~ s/^\s+|\s+$//g;
 
     $self->tpl_param('host', $host);
+
+    unless ($account->can_add_servers) {
+        $self->tpl_param('error', 'Please verify your existing servers before adding more.');
+        return OK, $self->evaluate_template('tpl/manage/add_form.html');
+    }
 
     my @servers;
 
@@ -319,8 +325,12 @@ sub get_server_info {
 sub req_server {
     my $self      = shift;
     my $server_id = $self->req_param('server') or return;
-    my $server    = NP::Model->server->fetch(($server_id =~ m/[.:]/ ? 'ip' : 'id') => $server_id);
-    return unless $server and $server->account->can_edit($self->user);
+    my $servers   = NP::Model->server->get_servers(
+        query        => [($server_id =~ m/[.:]/ ? 'ip' : 'id') => $server_id],
+        with_objects => ['server_verification', 'account'],
+    );
+    my ($server) = ($servers && $servers->[0]);
+    return unless $server and $server->account and $server->account->can_edit($self->user);
     return $server;
 }
 
@@ -503,6 +513,11 @@ sub handle_delete {
         }
         if ($self->req_param('cancel_deletion')) {
             return 403 unless $self->check_auth_token;
+
+            unless ($self->current_account->can_add_servers) {
+                $self->tpl_param('error', 'Please verify active servers in the account first.');
+                return OK, $self->evaluate_template('tpl/manage/delete_set.html');
+            }
 
             my $old = $server->get_data_hash;
 

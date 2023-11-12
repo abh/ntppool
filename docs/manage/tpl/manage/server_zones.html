@@ -4,3 +4,6 @@
 <a href="[% combust.www_url(zone.url) %]">[% zone.name %]</a>
 [% END  %]
 </span>
+[% IF error %]
+<div class="error">[% error | html %]</div>
+[% END %]

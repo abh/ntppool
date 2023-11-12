@@ -10,6 +10,10 @@
     That goes even if the server is listed as a public server!
     </p>
 
+    [% IF error %]
+    <p><span class="error">[% error | html %]</span></p>
+    [% END %]
+
     <p>
     Your server hostname or IP address: <br />
     [% IF host_error %]<span class="error">[% host_error | html %]</span><br />

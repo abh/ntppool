@@ -23,6 +23,9 @@
         <div>
             <a name="add"></a>
             [% PROCESS tpl/manage/add_form.html %]
+            [% UNLESS account.can_add_servers %]
+            <p><span class="error">Please verify your servers before adding more.</span></p>
+            [% END %]
         </div>
 
         [% IF servers.size > 0 %]

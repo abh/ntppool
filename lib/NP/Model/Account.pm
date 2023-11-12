@@ -74,6 +74,37 @@ sub can_view {
     return shift->can_edit(shift);
 }
 
+sub can_add_servers {
+    my $self = shift;
+
+    my $counts = NP::Model->dbh->selectall_arrayref(
+        q[select ISNULL(sv.verified_on) v, count(*) from accounts a
+          inner join servers s
+          on s.account_id=a.id
+          left outer join server_verifications sv
+          on sv.server_id=s.id
+          where a.id=?
+          and s.deletion_on is null
+          group by v;
+        ],
+        undef,
+        $self->id,
+    );
+
+    # allow adding servers if none are there
+    return 1 unless $counts && @$counts;
+
+    my ($verified)     = map { $_->[1] } grep { $_->[0] == 0 } @$counts;
+    my ($not_verified) = map { $_->[1] } grep { $_->[0] == 0 } @$counts;
+
+    # todo: make this an account flag
+    if ($not_verified > 2) {
+        return 0;
+    }
+
+    return 0;
+}
+
 sub have_live_subscription {
     my $self = shift;
     return 1 if $self->live_subscriptions;

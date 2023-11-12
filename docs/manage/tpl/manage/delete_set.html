@@ -2,6 +2,10 @@
 
 <h3>[% server.ip %] has been scheduled for deletion</h3>
 
+[% IF error %]
+<p><span class="error">[% error | html %]</span></p>
+[% END %]
+
 <p>
 [% server.ip %] will be deleted from the pool system on [%
 server.deletion_on.strftime("%B %d, %Y") %].  The IP will stop being
