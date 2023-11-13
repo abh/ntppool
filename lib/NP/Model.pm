@@ -829,6 +829,12 @@ __PACKAGE__->meta->setup(
       with_column_triggers => '0',
     },
 
+    server_verifications_history => {
+      class      => 'NP::Model::ServerVerificationsHistory',
+      column_map => { id => 'server_id' },
+      type       => 'one to many',
+    },
+
     servers_monitor_review => {
       class                => 'NP::Model::ServersMonitorReview',
       column_map           => { id => 'server_id' },
@@ -1117,6 +1123,59 @@ __PACKAGE__->make_manager_methods('server_verifications');
 eval { require NP::Model::ServerVerification }
   or $@ !~ m:^Can't locate NP/Model/ServerVerification.pm: and die $@;
 
+{ package NP::Model::ServerVerificationsHistory;
+
+use strict;
+
+use base qw(NP::Model::_Object);
+
+__PACKAGE__->meta->setup(
+  table   => 'server_verifications_history',
+
+  columns => [
+    id          => { type => 'serial', not_null => 1 },
+    server_id   => { type => 'integer', not_null => 1 },
+    user_id     => { type => 'integer' },
+    user_ip     => { type => 'varchar', default => '', length => 45, not_null => 1 },
+    indirect_ip => { type => 'varchar', default => '', length => 45, not_null => 1 },
+    verified_on => { type => 'datetime' },
+    created_on  => { type => 'datetime', default => 'now', not_null => 1 },
+    modified_on => { type => 'timestamp', not_null => 1 },
+  ],
+
+  primary_key_columns => [ 'id' ],
+
+  foreign_keys => [
+    server => {
+      class       => 'NP::Model::Server',
+      key_columns => { server_id => 'id' },
+    },
+
+    user => {
+      class       => 'NP::Model::User',
+      key_columns => { user_id => 'id' },
+    },
+  ],
+);
+
+push @table_classes, __PACKAGE__;
+}
+
+{ package NP::Model::ServerVerificationsHistory::Manager;
+
+use strict;
+
+our @ISA = qw(Combust::RoseDB::Manager);
+
+sub object_class { 'NP::Model::ServerVerificationsHistory' }
+
+__PACKAGE__->make_manager_methods('server_verifications_histories');
+}
+
+# Allow user defined methods to be added
+eval { require NP::Model::ServerVerificationsHistory }
+  or $@ !~ m:^Can't locate NP/Model/ServerVerificationsHistory.pm: and die $@;
+
 { package NP::Model::ServerZone;
 
 use strict;
@@ -1312,6 +1371,12 @@ __PACKAGE__->meta->setup(
 
     server_verifications => {
       class      => 'NP::Model::ServerVerification',
+      column_map => { id => 'user_id' },
+      type       => 'one to many',
+    },
+
+    server_verifications_history => {
+      class      => 'NP::Model::ServerVerificationsHistory',
       column_map => { id => 'user_id' },
       type       => 'one to many',
     },
@@ -1728,6 +1793,7 @@ eval { require NP::Model::ZoneServerCount }
   sub server_score { our $server_score ||= bless [], 'NP::Model::ServerScore::Manager' }
   sub server_url { our $server_url ||= bless [], 'NP::Model::ServerUrl::Manager' }
   sub server_verification { our $server_verification ||= bless [], 'NP::Model::ServerVerification::Manager' }
+  sub server_verifications_history { our $server_verifications_history ||= bless [], 'NP::Model::ServerVerificationsHistory::Manager' }
   sub server_zone { our $server_zone ||= bless [], 'NP::Model::ServerZone::Manager' }
   sub servers_monitor_review { our $servers_monitor_review ||= bless [], 'NP::Model::ServersMonitorReview::Manager' }
   sub system_setting { our $system_setting ||= bless [], 'NP::Model::SystemSetting::Manager' }

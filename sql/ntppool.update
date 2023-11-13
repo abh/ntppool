@@ -969,5 +969,15 @@ CREATE TABLE `server_verifications` (
 alter table server_verifications
   add indirect_ip varchar(45) not null default '' after user_ip;
 
+#119
+create table server_verifications_history like server_verifications;
+alter table server_verifications_history
+  drop key `server`,
+  drop column `token`,
+  drop key `server_verifications_ibfk_2`,
+  add CONSTRAINT `server_verifications_history_ibfk_1` FOREIGN KEY (`server_id`) REFERENCES `servers` (`id`) ON DELETE CASCADE,
+  add CONSTRAINT `server_verifications_history_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+
+
 #todo
 - ...

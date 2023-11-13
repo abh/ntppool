@@ -221,6 +221,18 @@ sub _add_server {
     $s->deletion_on(undef);
     $s->zones([]);
 
+    if (my $v = $s->server_verification) {
+
+        # move verification to history table
+        my %d = ();
+        for my $k (qw(server_id user_id user_ip indirect_ip verified_on created_on modified_on)) {
+            $d{$k} = $v->$k;
+        }
+        my $h = NP::Model->server_verifications_history->create(%d);
+        $h->save;
+        $v->delete;
+    }
+
     $s->join_zone($_) for @{$server->{zones}};
     if (my $zone_name = $self->req_param('explicit_zone_' . $s->ip)) {
         warn "user picked [$zone_name]";
