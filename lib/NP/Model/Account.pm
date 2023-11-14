@@ -94,15 +94,18 @@ sub can_add_servers {
     # allow adding servers if none are there
     return 1 unless $counts && @$counts;
 
-    my ($verified)     = map { $_->[1] } grep { $_->[0] == 0 } @$counts;
-    my ($not_verified) = map { $_->[1] } grep { $_->[0] == 0 } @$counts;
+    #warn Data::Dump::pp("account: ", $self->id(), $counts);
+
+    # might be undef
+    my ($verified)     = (map { $_->[1] } grep { $_->[0] == 0 } @$counts);
+    my ($not_verified) = (map { $_->[1] } grep { $_->[0] == 1 } @$counts);
 
     # todo: make this an account flag
-    if ($not_verified > 2) {
+    if ($not_verified && $not_verified >= 2) {
         return 0;
     }
 
-    return 0;
+    return 1;
 }
 
 sub have_live_subscription {

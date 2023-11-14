@@ -394,9 +394,6 @@ sub handle_update_netspeed {
 
         my $old = $server->get_data_hash;
 
-        warn "new netspeed: $netspeed";
-        warn "old netspeed: ", $server->netspeed_target;
-
         if ($netspeed > $server->netspeed_target) {
             unless ($server->verified) {
                 my $return = {
