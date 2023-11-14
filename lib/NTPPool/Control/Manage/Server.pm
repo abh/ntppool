@@ -567,10 +567,10 @@ sub handle_delete {
     else {
         my @dates;
         my $dt = DateTime->now(time_zone => 'UTC');
-        $dt->add(days => 4);
-        for (1 .. 90) {
+        $dt->add(days => 3);
+        for (1 .. 10) {
             push @dates, $dt->clone;
-            $dt->add(days => 1);
+            $dt->add(days => ($_ < 5 ? 1 : 3));
         }
         $self->tpl_param('dates' => \@dates);
 
