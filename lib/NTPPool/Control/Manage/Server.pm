@@ -389,7 +389,7 @@ sub handle_update_netspeed {
         return 403 unless $self->check_auth_token;
 
         return unless $netspeed =~ m/^\d+$/;
-        $netspeed = 100000 if $netspeed > 2000000;
+        $netspeed = 100000 if $netspeed > 3000000;
         $netspeed = 1000   if $netspeed < 0;
 
         my $old = $server->get_data_hash;

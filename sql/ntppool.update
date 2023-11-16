@@ -978,6 +978,10 @@ alter table server_verifications_history
   add CONSTRAINT `server_verifications_history_ibfk_1` FOREIGN KEY (`server_id`) REFERENCES `servers` (`id`) ON DELETE CASCADE,
   add CONSTRAINT `server_verifications_history_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 
+#120
+alter table servers
+  modify netspeed_target int unsigned not null default '10000' after netspeed,
+  modify netspeed int unsigned not null default '10000';
 
 #todo
 - ...
