@@ -7,20 +7,19 @@
 	<a href="https://community.ntppool.org/">community.ntppool.org</a>
     </p>
 
-        <h3>[% "News site" | loc %]</h3>
+        <h3 dir="auto">[% "News site" | loc %]</h3>
 
-	<p>[%|l%]news_description[%END%]
+	<p dir="auto">[%|l%]news_description[%END%]
 	<br>
 	<a href="https://news.ntppool.org/">NTP Pool News</a>
         | <a href="https://news.ntppool.org/atom.xml">
           <img width="16" height="16" src="[% combust.static_url('/images/feed-icon16x16.png') %]"
                alt="Atom feed" class="atom-icon" /></a>
-	| <a href="https://news.ntppool.org/archives.html"
+	| <a href="https://news.ntppool.org/archives.html" dir="auto"
 	>[% "archive" | loc %]</a>
 	</p>
 
 	<h3>[%|l%]Development[% END %]</h3>
-	<p>
+	<p dir="auto">
         [% | l('https://github.com/abh/ntppool/', 'https://github.com/abh/geodns/', 'https://community.ntppool.org/c/dev') %]development_list_description[% END %]<br>
         <a href="https://community.ntppool.org/c/dev">Discourse development forum</a>
-
