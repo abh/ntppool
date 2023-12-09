@@ -11,6 +11,8 @@ my $json = JSON::XS->new->pretty->utf8->convert_blessed;
 
 sub manage_dispatch {
     my $self = shift;
+    $self->set_span_name("manage.check");
+
     if ($self->request->method eq 'post') {
         return 403 unless $self->check_auth_token;
     }

@@ -11,6 +11,7 @@ use NP::Email ();
 
 sub manage_dispatch {
     my $self = shift;
+    $self->set_span_name("manage.account");
 
     my $account;
 

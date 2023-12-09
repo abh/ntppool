@@ -5,17 +5,29 @@ use Combust::Constant qw(OK DECLINED);
 use NP::Model;
 use List::Util qw(min);
 use JSON ();
+use experimental qw( defer );
+use Syntax::Keyword::Dynamically;
+use OpenTelemetry::Constants qw( SPAN_KIND_INTERNAL SPAN_STATUS_ERROR SPAN_STATUS_OK );
+use OpenTelemetry -all;
 
 my $json = JSON::XS->new->utf8;
 
 sub render {
     my $self = shift;
 
+    my $span = NP::Tracing->tracer->create_span(
+        name => "scores.render",
+        kind => SPAN_KIND_INTERNAL,
+    );
+    dynamically otel_current_context = otel_context_with_span($span);
+    defer { $span->end(); };
+
     my $public = $self->site->name eq 'ntppool' ? 1 : 0;
     $self->cache_control('s-maxage=600,max-age=300') if $public;
 
     unless ($public or $self->user) {
-        $self->redirect($self->www_url($self->request->uri, $self->request->query_parameters));
+        return $self->redirect(
+            $self->www_url($self->request->uri, $self->request->query_parameters));
     }
 
     if (!$public) {
@@ -52,6 +64,8 @@ sub render {
     if (my ($p, $mode) = $self->request->uri =~ m!^/scores/([^/]+)(?:/(\w+))?!) {
         return 404 unless $p;
         $mode ||= '';
+
+        $span->set_attribute("scores.mode", $mode);
 
         my ($server) = NP::Model->server->find_server($p);
         return 404 unless $server;
@@ -91,6 +105,7 @@ sub render {
             $since = 0 if defined $since and $since =~ m/\D/;
 
             my $monitor_id = $self->req_param('monitor');
+            $span->set_attribute("scores.monitor_id", $monitor_id);
 
             # return data for the primary scorer if no monitor (or *) is specified
             unless ($monitor_id) {
@@ -123,21 +138,31 @@ sub render {
             my %relevant_monitors;
 
             my $history = $server->history($options);
-            $history = [
-                map {
-                    my $h      = $_;
-                    my %h      = ();
-                    my @fields = qw(offset step score monitor_id);
-                    @h{@fields} =
-                      map { my $v = $h->$_; defined $v ? $v + 0 : $v } @fields;
-                    $h{ts} = $h->ts->epoch;
-                    $relevant_monitors{$h{monitor_id}} = 1;
-                    \%h;
-                } @$history
-            ];
 
-            unless (defined $options->{since}) {
-                $history = [reverse @$history];
+            {
+                my $span = NP::Tracing->tracer->create_span(
+                    name => "scores.format_history",
+                    kind => SPAN_KIND_INTERNAL,
+                );
+                dynamically otel_current_context = otel_context_with_span($span);
+                defer { $span->end(); };
+
+                $history = [
+                    map {
+                        my $h      = $_;
+                        my %h      = ();
+                        my @fields = qw(offset step score monitor_id);
+                        @h{@fields} =
+                          map { my $v = $h->$_; defined $v ? $v + 0 : $v } @fields;
+                        $h{ts} = $h->ts->epoch;
+                        $relevant_monitors{$h{monitor_id}} = 1;
+                        \%h;
+                    } @$history
+                ];
+
+                unless (defined $options->{since}) {
+                    $history = [reverse @$history];
+                }
             }
 
             # if it hasn't changed for a while, cache it for longer

@@ -23,7 +23,10 @@ sub render {
     }
     else {
         my @r = $self->localize_url;
-        return @r if @r;
+        if (@r) {
+            $self->set_span_name("localize redirect");
+            return @r;
+        }
     }
 
     return $self->SUPER::render(@_);

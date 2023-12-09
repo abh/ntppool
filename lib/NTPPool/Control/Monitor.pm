@@ -14,7 +14,6 @@ sub error {
 
 sub render {
     my $self = shift;
-
     if ($self->request->path eq '/monitor/map') {
         return $self->render_server_map;
     }

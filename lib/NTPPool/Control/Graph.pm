@@ -15,6 +15,8 @@ my $ua = LWP::UserAgent->new(
 sub render {
     my $self = shift;
 
+#    $self->set_span_name("graph");
+
     $self->cache_control('s-maxage=1800');
 
     my ($p, $type) = ($self->request->uri =~ m!^/graph/([^/]+)/(\w+).png!);

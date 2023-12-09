@@ -6,6 +6,11 @@ use Carp qw(croak);
 use Net::IP ();
 use Combust::Config;
 
+use experimental qw( defer );
+use Syntax::Keyword::Dynamically;
+use OpenTelemetry::Constants qw( SPAN_KIND_INTERNAL SPAN_STATUS_ERROR SPAN_STATUS_OK );
+use OpenTelemetry -all;
+
 use POSIX qw();
 $ENV{TZ} = 'UTC';
 POSIX::tzset();
@@ -138,6 +143,14 @@ sub urls {
 
 sub history {
     my ($self, $options) = @_;
+
+    my $span = NP::Tracing->tracer->create_span(
+        name => "server.history",
+        kind => SPAN_KIND_INTERNAL,
+    );
+    dynamically otel_current_context = otel_context_with_span($span);
+    defer { $span->end(); };
+
     ref $options or $options = {count => $options};
 
     my $count      = $options->{count};
@@ -199,6 +212,13 @@ sub monitors {
     my $self   = shift;
     my $cutoff = shift;
 
+    my $span = NP::Tracing->tracer->create_span(
+        name => "server.monitors",
+        kind => SPAN_KIND_INTERNAL,
+    );
+    dynamically otel_current_context = otel_context_with_span($span);
+    defer { $span->end(); };
+
     my $monitors = $self->server_scores;
 
     $monitors = [
@@ -231,6 +251,10 @@ sub monitors {
 
 sub log_scores_csv {
     my ($self, $options) = @_;
+    my $span = NP::Tracing->tracer->create_span(name => "server.log_scores_csv",);
+    dynamically otel_current_context = otel_context_with_span($span);
+    defer { $span->end(); };
+
     my $history = $self->history($options);
     my $csv     = Text::CSV_XS->new();
     $csv->combine(

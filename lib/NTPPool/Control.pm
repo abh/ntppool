@@ -12,6 +12,10 @@ use List::Util qw(first);
 use Unicode::Collate;
 use Data::ULID;
 use JSON::XS qw(decode_json);
+use Syntax::Keyword::Dynamically;
+use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
+use OpenTelemetry -all;
+use OpenTelemetry::Trace;
 
 use NP::I18N;
 use NP::Version;
@@ -84,10 +88,30 @@ sub request_id {
 sub init {
     my $self = shift;
 
+    my $span       = OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
+    my $class_name = ref $self;
+    $span->set_attribute("class", $class_name);
+
+    # set better name for the outer span
+    $class_name =~ s/^NTPPool::Control:://;
+    $self->set_span_name($class_name);
+
+    my $tracer = NP::Tracing->tracer;
+    my $span   = $tracer->create_span(
+        name => "init",
+
+        # kind => SPAN_KIND_SERVER,
+        # attributes => {url => $uri,},
+    );
+    dynamically otel_current_context = otel_context_with_span($span);
+
     NP::Model->db->ping;
 
     my $request_id = $self->request_id(Data::ULID::ulid());
     $self->request->header_out('Request-ID', $request_id);
+
+    my $trace_id = $span->context->hex_trace_id;
+    $self->request->header_out('Traceparent', $trace_id);
 
     if ($self->site ne 'manage') {
 
@@ -99,6 +123,7 @@ sub init {
 
     if ($config->site->{$self->site}->{ssl_only}) {
         if (($self->request->header_in('X-Forwarded-Proto') || 'http') eq 'http') {
+            $span->end();
             return $self->redirect($self->_url($self->site, $self->request->path));
         }
         else {
@@ -120,6 +145,8 @@ sub init {
 
     if ($path !~ m{^/s(cores)?/.*::$} and $path =~ s/[\).:>}]+$//) {
 
+        $span->end();
+
         # :: is for ipv6 "null" addresses in /scores urls
         return $self->redirect($path, 301);
     }
@@ -127,6 +154,7 @@ sub init {
     $self->tpl_param('pool_domain' => Combust::Config->new->site->{ntppool}->{pool_domain}
           || 'pool.ntp.org');
 
+    $span->end();
     return OK;
 }
 
@@ -219,6 +247,23 @@ sub detect_language {
     my $lang = $self->valid_language(@lang);
 
     return $lang;
+}
+
+sub set_span_name {
+    my $self = shift;
+    my $name = shift or return;
+    my $span = OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
+    $span->recording or return;
+
+    if (!$span->can('snapshot')) {
+        warn "span does not have snapshot method, can't change name";
+        return;
+    }
+    # set better name for the outer span
+    my $span_name = $span->snapshot->name;
+    $span_name =~ s/^(\S+).*/$1 ${name}/;    # preserve the http method
+    $span->set_name($span_name);
+
 }
 
 *loc = \&localize;

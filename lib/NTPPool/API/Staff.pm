@@ -6,6 +6,8 @@ use Net::IP;
 
 sub search {
     my $self = shift;
+    $self->set_span_name("api.search");
+
     return {error => 'No access'} unless $self->user && $self->user->is_staff;
     my $q = $self->_required_param('q');
 

@@ -15,6 +15,7 @@ my $json = JSON::XS->new->utf8;
 
 sub render {
     my $self = shift;
+    $self->set_span_name("manage.webhook");
 
     my $bearer = $self->request->header_in("Authorization");
     return FORBIDDEN unless $self->_check_jwt($bearer);

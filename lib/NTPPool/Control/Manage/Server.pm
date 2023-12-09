@@ -1,5 +1,7 @@
 package NTPPool::Control::Manage::Server;
+use v5.30;
 use strict;
+use warnings;
 use NTPPool::Control::Manage;
 use base qw(NTPPool::Control::Manage);
 use NP::Model;
@@ -15,30 +17,54 @@ use Net::DNS;
 use Math::BaseCalc qw();
 use Math::Random::Secure qw(irand);
 use NP::NTP;
+use OpenTelemetry -all;
+use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
+use experimental qw( defer );
+use Syntax::Keyword::Dynamically;
 
 my $config     = Combust::Config->new;
 my $config_ntp = $config->site->{ntppool};
 
 sub render {
     my $self = shift;
+    $self->set_span_name("manage.servers");
 
-    return $self->login unless $self->user;
+    my $span = NP::Tracing->tracer->create_span(
+        name => "manage servers",
+        kind => SPAN_KIND_SERVER,
+    );
+    dynamically otel_current_context = otel_context_with_span($span);
+
+    unless ($self->user) {
+        $span->end();
+        return $self->login;
+    }
 
     unless ($self->current_account) {
         return $self->redirect("/manage/account");
     }
 
-    return $self->handle_add if $self->request->uri =~ m!^/manage/server/add!;
-    return $self->handle_update
-      if $self->request->uri =~ m!^/manage/server/update!;
-    return $self->handle_verify
-      if $self->request->uri =~ m!^/manage/server/verify!;
-    return $self->handle_delete
-      if $self->request->uri =~ m!^/manage/server/delete!;
-    return $self->handle_move
-      if $self->request->uri =~ m!^/manage/servers/move!;
+    my $fn = "";
 
-    return $self->show_manage if $self->request->uri =~ m!^/manage/servers!;
+    for ($self->request->uri) {
+        if    (m!^/manage/server/add!)    { $fn = "handle_add" }
+        elsif (m!^/manage/server/update!) { $fn = "handle_update" }
+        elsif (m!^/manage/server/verify!) { $fn = "handle_verify" }
+        elsif (m!^/manage/server/delete!) { $fn = "handle_delete" }
+        elsif (m!^/manage/servers/move!)  { $fn = "handle_move" }
+        elsif (m!^/manage/servers!)       { $fn = "show_manage" }
+    }
+
+    warn "fn: $fn from ", $self->request->uri;
+
+    if ($fn and $self->can($fn)) {
+        my @r = $self->$fn;
+        $span->set_name("manage.servers.$fn");
+        $span->end();
+        return @r;
+    }
+
+    $span->end();
 
     return NOT_FOUND;
 }
@@ -46,6 +72,9 @@ sub render {
 sub show_manage {
     my $self = shift;
     $self->tpl_params->{page}->{is_servers} = 1;
+
+    my $span = NP::Tracing->tracer->create_span(name => "show_manage",);
+    dynamically otel_current_context = otel_context_with_span($span);
 
     my $servers = $self->current_account->servers;
     $self->tpl_param('servers', $servers);
@@ -104,14 +133,12 @@ sub handle_add {
     }
 
     for my $server (@servers) {
-        my @zones;
         if (!$server->{country_zone}) {
             $server->{data_missing} ||= 'Country not specified'
               if !$server->{error} and $self->req_param('yes');
             next;
         }
-        my @zones;
-        push @zones, $server->{country_zone};
+        push my @zones, $server->{country_zone};
         unshift @zones, $zones[0]->parent while ($zones[0]->parent);
         $server->{zones} = \@zones;
     }

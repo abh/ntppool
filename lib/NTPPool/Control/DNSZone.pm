@@ -7,6 +7,8 @@ use NP::Model qw();
 sub render {
     my $self = shift;
 
+    #    $self->set_span_name("dnszone");
+
     $self->cache_control('private, no-cache');
 
     my $token = $1

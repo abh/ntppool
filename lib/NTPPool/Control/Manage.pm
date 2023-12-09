@@ -15,6 +15,11 @@ use Math::Random::Secure qw(irand);
 use URI::URL ();
 use URI::QueryParam;
 use NP::UA;
+use OpenTelemetry::Trace;
+use OpenTelemetry -all;
+use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
+use experimental qw( defer );
+use Syntax::Keyword::Dynamically;
 
 sub ua { return $NP::UA::ua }
 
@@ -26,7 +31,21 @@ sub init {
 
     if ($self->is_logged_in) {
         $self->request->env->{REMOTE_USER} = $self->user->username;
-        $self->tpl_param('account' => $self->current_account);
+
+        my $span = OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
+
+        if (my $account = $self->current_account) {
+            $self->tpl_param('account' => $account);
+            $span->set_attribute("account.id",       $account->id);
+            $span->set_attribute("account.id_token", $account->id_token);
+        }
+
+        if ($self->user) {
+            $span->set_attribute("user.is_staff", $self->user->is_staff);
+            $span->set_attribute("user.email",    $self->user->email);
+            $span->set_attribute("user.username", $self->user->username);
+        }
+
     }
 
     return OK;
@@ -77,11 +96,17 @@ sub current_url {
 sub render {
     my $self = shift;
 
+    my $span = OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
+
+    # $span->set_name("request manage");
+    $span->set_attribute("manage_class", ref $self);
+
     # this method is shared between the Manage related controllers
 
     $self->cache_control('private');
 
     if ($self->request->uri =~ m!^/manage/logout!) {
+        $self->set_span_name("manage.logout");
         $self->cookie($self->user_cookie_name, 0);
         $self->cookie("xs",                    0);
         $self->redirect('/manage');
@@ -90,6 +115,7 @@ sub render {
     $self->tpl_param('xs', $self->cookie('xs'));
 
     if ($self->request->uri =~ m!^/manage/login!) {
+        $self->set_span_name("manage.login");
         $self->handle_login();
         if ($self->user) {
             my $r = $self->req_param('r') || '/manage';
@@ -103,7 +129,7 @@ sub render {
         return $self->redirect($self->login_url);
     }
 
-    return $self->login unless $self->user;
+    return $self->login unless ($self->user);
 
     if ($self->request->method eq 'get') {
         my $account       = $self->current_account;
@@ -121,15 +147,27 @@ sub render {
 
 sub handle_login {
     my $self = shift;
+
+    my $span = NP::Tracing->tracer->create_span(
+        name => "handle_login",
+        kind => SPAN_KIND_SERVER,
+    );
+    dynamically otel_current_context = otel_context_with_span($span);
+
     my $code = $self->req_param('code');
-    return unless $code;
+    unless ($code) {
+        $span->set_status(SPAN_STATUS_ERROR, "missing code parameter");
+        $span->end;
+        return;
+    }
 
     my ($userdata, $error) = $self->_get_auth0_user($code);
     if ($error) {
-        warn "auth0 user error: $error";
+        warn "Auth0 error: ", Data::Dump::pp(\$error) if $error;
+        $span->set_status(SPAN_STATUS_ERROR, "auth0 user error: $error");
+        $span->end();
         return $self->login($error);
     }
-    warn "Error: ", Data::Dump::pp(\$error) if $error;
 
     my ($identity, $user);
 
@@ -208,6 +246,8 @@ sub handle_login {
 
     $self->cookie("xs", join "", map { $base36->to_base(irand) } (undef) x 6);
     $self->cookie($self->user_cookie_name, $user->id);
+
+    $span->end();
 
     $self->user($user);
 }

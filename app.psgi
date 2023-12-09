@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 use lib 'lib';
+use NP::Tracing;
 use NP::App;
 
 my $app = NP::App->new;
