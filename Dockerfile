@@ -6,8 +6,9 @@ ENV BUILD 20231202
 
 RUN apk -U --no-cache upgrade --ignore alpine-baselayout
 RUN cpanm Net::Async::HTTP::Server Plack::Handler::Net::Async::HTTP::Server Plack::Middleware::Headers
-RUN cpanm OpenTelemetry OpenTelemetry::SDK OpenTelemetry::Exporter::OTLP
-RUN cpanm https://tmp.askask.com/2023/12/Plack-Middleware-OpenTelemetry-0.233370-TRIAL.tar.gz
+RUN cpanm OpenTelemetry OpenTelemetry::SDK OpenTelemetry::Exporter::OTLP Plack::Middleware::OpenTelemetry
+#RUN cpanm https://tmp.askask.com/2023/12/Plack-Middleware-OpenTelemetry-0.233370-TRIAL.tar.gz
+RUN cpanm https://tmp.askask.com/2023/12/Net-Async-HTTP-Server-0.14.tar.gz
 
 ENV CBCONFIG=
 ENV HULK /usr/local/bin/hulk
