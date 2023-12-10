@@ -97,92 +97,16 @@ sub render {
         }
         elsif ($mode eq 'log' or $self->req_param('log') or $mode eq 'json') {
             $mode = $mode eq 'json' ? $mode : 'log';
-            my $limit = $self->req_param('limit') || 0;
-            $limit = 50 unless $limit and $limit !~ m/\D/;
-            $limit = 4000 if $limit > 4000;
 
-            my $since = $self->req_param('since');
-            $since = 0 if defined $since and $since =~ m/\D/;
-
-            my $monitor_id = $self->req_param('monitor');
-            $span->set_attribute("scores.monitor_id", $monitor_id);
-
-            # return data for the primary scorer if no monitor (or *) is specified
-            unless ($monitor_id) {
-                my $mon = NP::Model->monitor->fetch(tls_name => "recentmedian.scores.ntp.dev");
-                if ($mon) {
-                    $monitor_id = $mon->id;
-                }
-            }
-
-            my $options = {
-                count      => $limit,
-                since      => $since,
-                monitor_id => $monitor_id,
-            };
-
-            if ($since) {
-                $self->cache_control('s-maxage=300');
-            }
-
-            if ($mode eq 'log') {
-                return OK, $server->log_scores_csv($options), 'text/plain';
-            }
-
-            #local ($Rose::DB::Object::Debug, $Rose::DB::Object::Manager::Debug) = (1, 1);
-            # This logic should probably just be in the server
-            # model, similar to log_scores_csv.
-
-            $self->request->header_out('Access-Control-Allow-Origin' => '*');
-
-            my %relevant_monitors;
-
-            my $history = $server->history($options);
-
-            {
-                my $span = NP::Tracing->tracer->create_span(
-                    name => "scores.format_history",
-                    kind => SPAN_KIND_INTERNAL,
-                );
-                dynamically otel_current_context = otel_context_with_span($span);
-                defer { $span->end(); };
-
-                $history = [
-                    map {
-                        my $h      = $_;
-                        my %h      = ();
-                        my @fields = qw(offset step score monitor_id);
-                        @h{@fields} =
-                          map { my $v = $h->$_; defined $v ? $v + 0 : $v } @fields;
-                        $h{ts} = $h->ts->epoch;
-                        $relevant_monitors{$h{monitor_id}} = 1;
-                        \%h;
-                    } @$history
-                ];
-
-                unless (defined $options->{since}) {
-                    $history = [reverse @$history];
-                }
-            }
-
-            # if it hasn't changed for a while, cache it for longer
-            if (@$history && $history->[-1]->{ts} < time - 86400) {
-                $self->cache_control('maxage=28800');
-            }
-
-            my $m = $server->monitors;
-
-            my $monitors =
-              [grep { $relevant_monitors{$_->{id}} } @$m];
-
-            return OK,
-              $json->encode(
-                  {   history  => $history,
-                      monitors => $monitors,
-                      server   => {ip => $server->ip}
-                  }
-              ),
-              'application/json';
+            # $self->request->header_out('Cache-Control' => 'public,max-age=86400,s-maxage=86400');
+            $self->request->header_out('Fastly-Follow' => '1');
+            return $self->redirect(
+                $self->www_url(
+                    "/api/data/server/scores/" . $server->ip . "/$mode",
+                    $self->request->query_parameters
+                ),
+                301
+            );
         }
         elsif ($mode eq 'rrd') {
             return 404;

@@ -141,55 +141,6 @@ sub urls {
     [map { $_->url } @$urls];
 }
 
-sub history {
-    my ($self, $options) = @_;
-
-    my $span = NP::Tracing->tracer->create_span(
-        name => "server.history",
-        kind => SPAN_KIND_INTERNAL,
-    );
-    dynamically otel_current_context = otel_context_with_span($span);
-    defer { $span->end(); };
-
-    ref $options or $options = {count => $options};
-
-    my $count      = $options->{count};
-    my $since      = $options->{since};
-    my $monitor_id = $options->{monitor_id};
-
-    $count ||= 100;
-
-    if ($since) {
-        $since = DateTime->from_epoch(epoch => $since);
-    }
-
-    my @monitor_where = (monitor_id => undef);
-    if (defined $monitor_id) {
-        if ($monitor_id eq '*') {
-            @monitor_where = ();
-        }
-        elsif ($monitor_id == 0) {
-
-            # this doesn't make sense with monitoring v2 since the
-            # scores have a monitor_id, too
-            @monitor_where = (monitor_id => undef);
-        }
-        else {
-            @monitor_where = (monitor_id => $monitor_id);
-        }
-    }
-
-    my $history = NP::Model->log_score->get_log_scores(
-        query => [
-            server_id => $self->id,
-            @monitor_where,
-            ($since ? (ts => {'>' => $since}) : ())
-        ],
-        sort_by => 'ts ' . (defined $since ? "" : "desc"),
-        limit   => $count,
-    );
-}
-
 sub alert {
     my $self = shift;
     return NP::Model->server_alert->fetch_or_create(server => $self);
@@ -247,52 +198,6 @@ sub monitors {
     ];
 
     return $monitors;
-}
-
-sub log_scores_csv {
-    my ($self, $options) = @_;
-    my $span = NP::Tracing->tracer->create_span(name => "server.log_scores_csv",);
-    dynamically otel_current_context = otel_context_with_span($span);
-    defer { $span->end(); };
-
-    my $history = $self->history($options);
-    my $csv     = Text::CSV_XS->new();
-    $csv->combine(
-        qw(ts_epoch ts offset step score),
-        defined $options->{monitor_id} ? qw(monitor_id monitor_name) : (),
-        qw(leap error)
-    );
-
-    my $out = $csv->string . "\n";
-
-    my %monitors;
-
-    for my $l (@$history) {
-
-        my $monitor_id;
-        my $monitor_name;
-
-        if ($options->{monitor_id}) {
-            $monitor_id = $l->monitor_id;
-            if ($monitor_id) {
-                $monitor_name =
-                  defined $monitors{$monitor_id}
-                  ? $monitors{$monitor_id}
-                  : ($monitors{$monitor_id} = $l->monitor->display_name || "");
-            }
-        }
-
-        $csv->combine(
-            $l->ts->epoch,
-            $l->ts->strftime("%F %T"),
-            map ({ $l->$_ } qw(offset step score)),
-            ($options->{monitor_id} ? ($monitor_id, $monitor_name) : ()),
-            ($l->attributes         ? $l->attributes->{leap}       : 0),
-            ($l->attributes         ? $l->attributes->{error}      : ""),
-        );
-        $out .= $csv->string . "\n";
-    }
-    $out;
 }
 
 sub netspeed_human {
