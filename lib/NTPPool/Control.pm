@@ -205,8 +205,10 @@ sub get_include_path {
 sub language {
     my $self = shift;
     return $self->{_lang} if $self->{_lang};
-    my $language = $self->path_language || $self->detect_language;
-    return $self->{_lang} = $language || 'en';
+    my $language = $self->path_language || $self->detect_language || 'en';
+    my $span     = OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
+    $span->set_attribute("combust.lang", $language);
+    return $self->{_lang} = $language;
 }
 
 sub valid_language {
@@ -238,13 +240,24 @@ sub detect_language {
 
     $self->request->header_out('Vary', 'Accept-Language');
 
+    my $span = OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
+    for my $h (qw(X-Varnish-Accept-Language Accept-Language)) {
+        my $d = $self->request->header_in($h);
+        $span->set_attribute(lc("http.request.header.$h"), $d) if $d;
+    }
+
     my $language_choice = $self->request->header_in('X-Varnish-Accept-Language');
-    return $language_choice if $self->valid_language($language_choice);
+    if ($self->valid_language($language_choice)) {
+        $span->set_attribute("combust.lang_detect", $language_choice);
+        return $language_choice;
+    }
 
     $ENV{REQUEST_METHOD}       = $self->request->method;
     $ENV{HTTP_ACCEPT_LANGUAGE} = $self->request->header_in('Accept-Language') || '';
     my @lang = implicate_supers(I18N::LangTags::Detect::detect());
     my $lang = $self->valid_language(@lang);
+
+    $span->set_attribute("combust.lang_detect", $lang);
 
     return $lang;
 }
@@ -259,6 +272,7 @@ sub set_span_name {
         warn "span does not have snapshot method, can't change name";
         return;
     }
+
     # set better name for the outer span
     my $span_name = $span->snapshot->name;
     $span_name =~ s/^(\S+).*/$1 ${name}/;    # preserve the http method
