@@ -226,6 +226,8 @@ function server_chart(div, data, options) {
         // legend.append('<span class="legend_header">Monitoring Station:</span>');
         var table = $('<table>').addClass('legend table table-striped table-hover table-sm')
 
+        if (!data.monitors) { data.monitors = [] }
+
         var monitors = data.monitors.sort(function compareFn(a, b) {
             if (a.status > b.status) {
                 return 1;
