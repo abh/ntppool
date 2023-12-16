@@ -3,9 +3,9 @@ use strict;
 use base qw(NTPPool::Control);
 use NP::Model;
 use Combust::Constant qw(OK);
-use JSON              qw(encode_json);
-use List::Util        qw(uniq);
-use experimental      qw( defer );
+use JSON qw(encode_json);
+use List::Util qw(uniq);
+use experimental qw( defer );
 use Syntax::Keyword::Dynamically;
 use OpenTelemetry::Constants qw( SPAN_KIND_INTERNAL SPAN_STATUS_ERROR SPAN_STATUS_OK );
 use OpenTelemetry -all;
@@ -50,7 +50,8 @@ sub show_servers {
 sub render {
     my $self      = shift;
     my $zone_name = $self->zone_name;
-    my $zone      = NP::Model->zone->fetch(name => $zone_name);
+    return 404 if (length($zone_name) > 100);
+    my $zone = NP::Model->zone->fetch(name => $zone_name);
     return 404 unless $zone;
 
     # discourage trailing slashes
