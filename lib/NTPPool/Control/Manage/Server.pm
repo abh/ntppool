@@ -415,7 +415,7 @@ sub handle_update_netspeed {
     if (defined(my $netspeed = $self->req_param('netspeed'))) {
         return 403 unless $self->check_auth_token;
 
-        return unless $netspeed =~ m/^\d+$/;
+        return 400 unless $netspeed =~ m/^\d+$/;
         $netspeed = 100000 if $netspeed > 3000000;
         $netspeed = 1000   if $netspeed < 0;
 
