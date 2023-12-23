@@ -61,7 +61,7 @@ if (!Pool.Graphs) { Pool.Graphs = {}; }
 
                 var zone = div.data('zone');
                 if (zone) {
-                    d3.json("/zone/" + zone + ".json?limit=240").then((json) => {
+                    d3.json("/zone/" + zone + ".json?limit=480").then((json) => {
                         if (json) {
                             data[zone] = json;
                             zone_chart(div, json, { name: zone });

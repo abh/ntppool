@@ -66,63 +66,15 @@ sub render {
     elsif ($self->request->path =~ m!\.json$!) {
         my $limit = $self->req_param('limit') || 0;
 
-        {
-            my $span = NP::Tracing->tracer->create_span(
-                name => "zone.json",
-                kind => SPAN_KIND_INTERNAL,
-            );
-            dynamically otel_current_context = otel_context_with_span($span);
-            defer { $span->end(); };
-
-            # don't Vary: Accept-Language
-            $self->request->header_out('Vary', undef);
-
-            my $data = NP::Model->zone_server_count->get_objects(
-                query   => [zone_id => $zone->id],
-                sort_by => 'date',
-                limit   => 20000,
-            );
-
-            my @dates = uniq(map { $_->date->epoch } @$data);
-            my %data;
-            for (@$data) {
-                $data{$_->date->epoch}->{$_->ip_version} = $_;
-            }
-
-            my $count = scalar @dates;
-
-            my @out;
-            if ($limit and $count > $limit) {
-                my $skip = $count / $limit;
-                my $i    = 0;
-                while ($i < $count) {
-                    my $date = $dates[$i];
-                    push @out, values %{$data{$date}};
-                    $i += $skip;
-                }
-
-                # make sure we always include the most recent day
-                if ($out[-1]->date->epoch < $dates[-1]) {
-                    push @out, values %{$data{$dates[-1]}};
-                }
-            }
-
-            my @data = map {
-                +{  d  => $_->date->date,
-                    ts => $_->date->epoch + 0,
-                    ac => $_->count_active + 0,
-                    rc => $_->count_registered + 0,
-                    w  => $_->netspeed_active + 0,
-                    iv => $_->ip_version,
-                }
-            } @out ? @out : @$data;
-
-            $span->set_attribute("zone.history_count", scalar(@data));
-
-            $self->cache_control('s-maxage=43200, max-age=7200');
-
-            return OK, encode_json({history => \@data}), 'application/json';
-        }
+        # $self->request->header_out('Cache-Control' => 'public,max-age=86400,s-maxage=86400');
+        $self->request->header_out('Fastly-Follow' => '1');
+        return $self->redirect(
+            $self->www_url(
+                "/api/data/zone/counts/" . $zone->name,
+                {($limit ? (limit => $limit) : ())}
+            ),
+            301
+        );
     }
 
     $self->tpl_param('zone' => $zone);
