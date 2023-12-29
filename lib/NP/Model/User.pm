@@ -1,6 +1,11 @@
 package NP::Model::User;
 use strict;
 use Net::IP ();
+use base qw(NP::Model::TokenID);
+
+sub token_key_config {
+    return 'user_id_key';
+}
 
 sub is_staff {
     my $self       = shift;

@@ -30,7 +30,7 @@ sub init {
     $self->tpl_params->{page} ||= {};
 
     if ($self->is_logged_in) {
-        $self->request->env->{REMOTE_USER} = $self->user->username;
+        $self->request->env->{REMOTE_USER} = $self->user->username . '|' . $self->user->id_token;
 
         my $span = OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
 
@@ -38,12 +38,16 @@ sub init {
             $self->tpl_param('account' => $account);
             $span->set_attribute("account.id",       $account->id);
             $span->set_attribute("account.id_token", $account->id_token);
+
+            $self->request->env->{REMOTE_USER} .= '|' . $account->id_token;
         }
 
-        if ($self->user) {
-            $span->set_attribute("user.is_staff", $self->user->is_staff);
-            $span->set_attribute("user.email",    $self->user->email);
-            $span->set_attribute("user.username", $self->user->username);
+        if (my $user = $self->user) {
+            $span->set_attribute("user.is_staff", $user->is_staff);
+            $span->set_attribute("user.email",    $user->email);
+            $span->set_attribute("user.username", $user->username);
+            $span->set_attribute("user.id",       $user->id);
+            $span->set_attribute("user.id_token", $user->id_token);
         }
 
     }
