@@ -65,7 +65,9 @@ sub render {
         return 404 unless $p;
         $mode ||= '';
 
-        $span->set_attribute("scores.mode", $mode);
+        if ($mode) {
+            $span->set_attribute("scores.mode", $mode);
+        }
 
         my ($server) = NP::Model->server->find_server($p);
         return 404 unless $server;
