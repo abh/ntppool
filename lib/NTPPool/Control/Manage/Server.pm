@@ -102,14 +102,18 @@ sub handle_add {
 
     return 403 unless $self->check_auth_token;
 
+    my $span = OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
+
     my $account = $self->current_account;
 
     my $host = $self->req_param('host');
     $host =~ s/^\s+|\s+$//g;
 
     $self->tpl_param('host', $host);
+    $span->set_attribute("param.host", $host);
 
     unless ($account->can_add_servers) {
+        $span->set_attribute("request.error", "verify_existing");
         $self->tpl_param('error', 'Please verify your existing servers before adding more.');
         return OK, $self->evaluate_template('tpl/manage/add_form.html');
     }
@@ -287,12 +291,24 @@ sub get_server_info {
 
     warn "getting server info for $ip";
 
-    $ip = Net::IP->new($ip);
-
     my %server;
+
+    my $span = NP::Tracing->tracer->create_span(name => "manage.servers.get_server_info",);
+    dynamically otel_current_context = otel_context_with_span($span);
+    defer {
+        if (my $err = $server{error}) {
+            $err =~ s/\n$//;
+            $span->set_attribute("server.error", $err);
+        }
+        $span->end();
+    };
+
+    $ip = Net::IP->new($ip);
 
     $server{ip}         = $ip->short;
     $server{ip_version} = 'v' . $ip->version;
+
+    $span->set_attribute("server.ip", $ip->short);
 
     {
         my $type = $ip->iptype;
