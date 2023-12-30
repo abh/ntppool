@@ -9,3 +9,5 @@ User-Agent: *
 Disallow: /dns.html
 Disallow: /monitor/
 
+User-agent: PetalBot
+Disallow: /
