@@ -257,7 +257,7 @@ sub detect_language {
     my @lang = implicate_supers(I18N::LangTags::Detect::detect());
     my $lang = $self->valid_language(@lang);
 
-    $span->set_attribute("combust.lang_detect", $lang);
+    $span->set_attribute("combust.lang_detect", ($lang || ''));
 
     return $lang;
 }
