@@ -96,6 +96,18 @@ sub init {
     $class_name =~ s/^NTPPool::Control:://;
     $self->set_span_name($class_name);
 
+    for my $h (
+        qw(
+            X-Forwarded-For
+            CF-Connecting-IP CF-RAY
+            Fastly-Client-IP
+        )
+      )
+    {
+        my $d = $self->request->header_in($h);
+        $span->set_attribute(lc("http.request.header.$h"), $d) if $d;
+    }
+
     my $tracer = NP::Tracing->tracer;
     my $span   = $tracer->create_span(
         name => "init",
