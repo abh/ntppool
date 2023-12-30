@@ -29,6 +29,8 @@ sub render {
         }
     }
 
+    $self->cache_control('s-maxage=1800,max-age=3600');
+
     return $self->SUPER::render(@_);
 }
 
