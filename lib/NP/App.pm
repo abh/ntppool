@@ -19,6 +19,19 @@ after 'init' => sub {
 my $lang_regexp = "(" . join("|", keys %NTPPool::Control::valid_languages) . ")";
 $lang_regexp = qr!^/$lang_regexp/!;
 
+$SIG{__WARN__} = sub {
+    my $message = shift;
+    my $span    = OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
+    if ($span) {
+        my $trace_id = $span->context->hex_trace_id;
+        my $span_id  = $span->context->hex_span_id;
+        warn "trace_id=$trace_id span_id=$span_id $message";
+    }
+    else {
+        warn "$message";
+    }
+};
+
 augment 'reference' => sub {
     my $self = shift;
 
@@ -32,9 +45,12 @@ augment 'reference' => sub {
             my $env = shift;
             my $uri = $env->{PATH_INFO};
 
-            if ($uri eq "/__health" and ($env->{REQUEST_METHOD} eq "GET" or $env->{REQUEST_METHOD} eq "HEAD")) {
+            if ($uri eq "/__health"
+                and ($env->{REQUEST_METHOD} eq "GET" or $env->{REQUEST_METHOD} eq "HEAD"))
+            {
                 {
-                    my $pspan = OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
+                    my $pspan =
+                      OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
                     $pspan->set_name($env->{REQUEST_METHOD} . " __health");
                     my $span = NP::Tracing->tracer->create_span(
                         name => "flush_otel",
