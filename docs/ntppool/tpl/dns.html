@@ -32,8 +32,7 @@ The DNS data was updated
 <br/>
 [% ns.status.id %], [% ns.status.v | html %]<br>
 uptime: [% time_dur.duration(ns.status.up) | html %]<br>
-[% ns.status.qs | format_number | html %] queries
-([% ns.status.qs / ns.status.up | format_number | html %]/qps)<br>
+[% ns.status.qs | format_number | html %] queries<br>
 [% END %]
 
 [% IF ns.version %]
