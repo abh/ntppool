@@ -2,12 +2,12 @@ FROM harbor.ntppool.org/ntppool/base-os:3.19.0-1
 #FROM harbor.ntppool.org/ntppool/base-os@sha256:0e2e854c256547417439128e6754c82d4b32a06a4298b3c585c1dbfb62b300fc
 USER root
 
-RUN apk -U --no-cache upgrade
+#RUN apk -U --no-cache upgrade
 
 ENV BUILD 20231126
 RUN cpanm Net::Async::HTTP::Server Plack::Handler::Net::Async::HTTP::Server Plack::Middleware::Headers
 RUN cpanm OpenTelemetry OpenTelemetry::SDK OpenTelemetry::Exporter::OTLP Plack::Middleware::OpenTelemetry
-#RUN cpanm https://tmp.askask.com/2023/12/Plack-Middleware-OpenTelemetry-0.233370-TRIAL.tar.gz
+RUN cpanm https://tmp.askask.com/2024/01/Plack-Middleware-OpenTelemetry-0.240030.tar.gz
 RUN cpanm https://tmp.askask.com/2023/12/Net-Async-HTTP-Server-0.14.tar.gz
 
 USER root
