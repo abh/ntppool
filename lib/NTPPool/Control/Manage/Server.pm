@@ -55,7 +55,7 @@ sub render {
         elsif (m!^/manage/servers!)       { $fn = "show_manage" }
     }
 
-    warn "fn: $fn from ", $self->request->uri;
+    #warn "fn: $fn from ", $self->request->uri;
 
     if ($fn and $self->can($fn)) {
         my @r = $self->$fn;
