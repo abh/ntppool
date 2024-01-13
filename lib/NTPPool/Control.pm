@@ -96,6 +96,10 @@ sub init {
     $class_name =~ s/^NTPPool::Control:://;
     $self->set_span_name($class_name);
 
+    my $request_id = $self->request_id(Data::ULID::ulid());
+    $self->request->header_out('Request-ID', $request_id);
+    $span->set_attribute("combust.request-id", $request_id);
+
     for my $h (
         qw(
             X-Forwarded-For
@@ -118,9 +122,6 @@ sub init {
     dynamically otel_current_context = otel_context_with_span($span);
 
     NP::Model->db->ping;
-
-    my $request_id = $self->request_id(Data::ULID::ulid());
-    $self->request->header_out('Request-ID', $request_id);
 
     my $trace_id = $span->context->hex_trace_id;
     $self->request->header_out('Traceparent', $trace_id);
