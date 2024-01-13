@@ -7,13 +7,12 @@ use Socket qw(inet_ntoa);
 use Socket6;
 use JSON::XS qw(encode_json decode_json);
 use Net::DNS;
-use Net::OAuth2::Profile::WebServer;
+use Crypt::JWT qw(decode_jwt);
 use LWP::UserAgent qw();
 use Mozilla::CA qw();
 use Math::BaseCalc qw();
 use Math::Random::Secure qw(irand);
 use URI::URL ();
-use URI::QueryParam;
 use NP::UA;
 use OpenTelemetry::Trace;
 use OpenTelemetry -all;
@@ -22,6 +21,8 @@ use experimental qw( defer );
 use Syntax::Keyword::Dynamically;
 
 sub ua { return $NP::UA::ua }
+
+my $base36 = Math::BaseCalc->new(digits => ['a' .. 'k', 'm' .. 'z', 2 .. 9]);
 
 sub init {
     my $self = shift;
@@ -113,6 +114,7 @@ sub render {
         $self->set_span_name("manage.logout");
         $self->cookie($self->user_cookie_name, 0);
         $self->cookie("xs",                    0);
+        $self->cookie("login_state",           0);
         $self->redirect('/manage');
     }
 
@@ -165,29 +167,32 @@ sub handle_login {
         return;
     }
 
+    my $state = $self->req_param('state');
+    unless ($state && $state eq $self->cookie('login_state')) {
+        $span->set_status(SPAN_STATUS_ERROR, "invalid state parameter");
+        $span->end;
+        return;
+    }
+
+    # todo: check state variable
+
     my ($userdata, $error) = $self->_get_auth0_user($code);
     if ($error) {
         warn "Auth0 error: ", Data::Dump::pp(\$error) if $error;
         $span->set_status(SPAN_STATUS_ERROR, "auth0 user error: $error");
         $span->end();
-        return $self->login($error);
     }
 
     my ($identity, $user);
 
     # check if profile exists for any of the identities
-    for my $identity_id ($userdata->{user_id},
-        map { join "|", $_->{provider}, $_->{user_id} } @{$userdata->{identities}})
-    {
-        warn "Identity id: '$identity_id'";
-        $identity = NP::Model->user_identity->fetch(profile_id => $identity_id);
-        last if $identity;
-    }
+    my $identity_id = $userdata->{sub};
+    my $identity    = NP::Model->user_identity->fetch(profile_id => $identity_id);
+
     my $email = $userdata->{email_verified} && $userdata->{email};
-    my $provider =
-         $userdata->{identities}
-      && $userdata->{identities}->[0]
-      && $userdata->{identities}->[0]->{provider};
+
+    my ($provider) = ($identity_id =~ m/^(.*)|/);
+
     if ($identity) {
         $identity->provider($provider) if $provider;
         $identity->data(encode_json($userdata));
@@ -198,10 +203,11 @@ sub handle_login {
             return $self->login("Email not verified");
         }
         $identity = NP::Model->user_identity->create(
-            profile_id => $userdata->{user_id},
+            profile_id => $identity_id,
             email      => $email,
             data       => encode_json($userdata),
             provider   => $provider,
+            created_on => 'now',
         );
 
         # look for an account with a verified email address we
@@ -218,6 +224,7 @@ sub handle_login {
               && !$uniq{$p->{email}}++;
               $ok;
           } ({profileData => $userdata}, @{$userdata->{identities}});
+
         for my $email (@emails) {
             my ($email_user) = NP::Model->user->fetch(email => $email);
             if ($email_user) {
@@ -232,7 +239,6 @@ sub handle_login {
     # some reason we have an identity without a user
     # associated.
     $user = $user || $identity->user;
-    my $base36 = Math::BaseCalc->new(digits => ['a' .. 'k', 'm' .. 'z', 2 .. 9]);
     if (!$user) {
         my $username = join "", map { $base36->to_base(irand) } (undef) x 3;
         $user = NP::Model->user->create(
@@ -286,28 +292,56 @@ sub _get_auth0_user {
 
     my $url = URI->new("https://${auth0_domain}/oauth/token");
 
+    # https://auth0.com/docs/secure/tokens/access-tokens/get-access-tokens
     my %form = (
         'code'          => $self->req_param('code'),
         'client_id'     => $auth0_client,
         'redirect_uri'  => $self->callback_url,
         'client_secret' => $auth0_secret,
-        'grant_type'    => 'authorization_code',
+
+        'grant_type' => 'authorization_code',
+        'scope'      => 'openid profile name email preferred_username',
+
+        # 'grant_type' => 'client_credentials',
+        'audience' => 'api-dev',
     );
     my $resp = $self->ua->post($url, \%form);
+
+    # warn "token request: ", pp(\%form);
     use Data::Dump qw(pp);
-    warn "token data: ", pp($resp);
 
     $resp->is_success or return undef, "Could not fetch oauth token";
 
     my $data = decode_json($resp->decoded_content())
       or return undef, "Could not decode token data";
 
-    $resp =
-      $self->ua->get("https://${auth0_domain}/userinfo/?access_token=" . $data->{access_token});
-    $resp->is_success or return undef, "Could not fetch user data";
+    warn "token data: ", pp($data);
 
-    my $user = decode_json($resp->decoded_content())
-      or return undef, "Could not decode user data";
+    #$resp =
+    #  $self->ua->get("https://${auth0_domain}/userinfo/?access_token=" . $data->{access_token});
+    #$resp->is_success or return undef, "Could not fetch user data";
+
+    my $cache = Combust::Cache->new();
+
+    my $jwt_keys = $cache->fetch(id => "auth0_jwks");
+    if ($jwt_keys) {
+        $jwt_keys = $jwt_keys->{data};
+    }
+    else {
+        my $resp = ua()->get("https://${auth0_domain}/.well-known/jwks.json");
+        unless ($resp->is_success) {
+            return undef, "could not fetch jwks";
+        }
+        $jwt_keys = $resp->decoded_content;
+        $cache->store(data => $jwt_keys, expires => 60 * 60 * 4);
+    }
+
+    my $jwt_data = decode_jwt(token => $data->{id_token}, kid_keys => $jwt_keys);
+    warn "jwt: ", pp($jwt_data);
+
+    $jwt_data or return undef, "Could not decode user data";
+
+    my $user = $jwt_data;
 
     warn "user data: ", pp($user);
 
@@ -333,20 +367,31 @@ sub callback_url {
 sub login_url {
     my $self = shift;
 
+    my $state = $self->cookie('login_state');
+    unless ($state) {
+        $state = (join "", map { $base36->to_base(irand) } (undef) x 6);
+        $self->cookie('login_state', $state);
+    }
+
     my ($auth0_domain, $auth0_client, $auth0_secret) = $self->_auth0_config();
 
-    my $auth = Net::OAuth2::Profile::WebServer->new(
-        name              => 'NTP Pool Login',
-        client_id         => $auth0_client,
-        client_secret     => $auth0_secret,
-        site              => 'https://' + $auth0_domain,
-        authorize_path    => '/authorize',
-        access_token_path => '/token',
-        scope             => 'openid email',
-        redirect_uri      => $self->callback_url,
+ # https://auth0.com/docs/get-started/authentication-and-authorization-flow/add-login-auth-code-flow
+ # https://community.auth0.com/t/invalid-access-token-payload-jwt-encrypted-with-a256gcm/77893
+
+    my $login_url = URI->new('https://' . $auth0_domain . "/authorize");
+    $login_url->query_form(
+        client_id     => $auth0_client,
+        redirect_uri  => $self->callback_url,
+        response_type => 'code',
+        audience      => 'api-dev',
+        scope         => 'openid name email profile preferred_username',
+        state         => $state,
     );
 
-    return "https://" . $auth0_domain . $auth->authorize;
+    use Data::Dump qw(pp);
+    warn "login_url: ", $login_url->as_string, pp($login_url);
+
+    return $login_url->as_string;
 }
 
 sub manage_dispatch {

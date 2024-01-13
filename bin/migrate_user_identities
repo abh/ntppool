@@ -1,0 +1,57 @@
+# -*- cperl -*-
+eval 'exec $CBROOT/bin/perl $0 ${1+"$@"}'
+  unless $running_under_some_shell;
+use 5.30.0;
+use strict;
+use Data::Dumper;
+use JSON::XS qw(decode_json);
+use Encode qw(encode decode encode_utf8);
+use DateTime::Format::MySQL;
+
+use NP::Model;
+
+my $json = JSON::XS->new->utf8();
+
+local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
+
+my $db  = NP::Model->db;
+my $txn = $db->begin_scoped_work;
+
+my $identities = NP::Model->user_identity->get_user_identities_iterator(sort_by => 'user_id',);
+
+while (my $ident = $identities->next) {
+    say "ID:   ", $ident->id;
+    my $data = $json->decode(encode_utf8($ident->data));
+    die "could not decode data" unless $data;
+    warn Data::Dumper->Dump([\$data]);
+
+    my %upd;
+
+    for my $f (qw(created_at updated_at)) {
+        next unless $data->{$f};
+        $upd{$f} = DateTime::Format::MySQL->parse_datetime($data->{$f}, 'UTC');
+        say "parsed: $upd{$f}";
+    }
+
+    unless ($upd{created_at}) {
+        my $iat = $data->{iat};
+        unless ($iat) {
+            say "no iat value, next";
+            next;
+        }
+        $upd{created_at} = $upd{updated_at} = DateTime->from_epoch($iat);
+    }
+
+    if ($upd{created_at}) {
+        $ident->created_on($upd{created_at});
+        $ident->modified_on($upd{updated_at} || $upd{created_at});
+        $ident->save;
+    }
+
+    say "";
+
+}
+
+say "committing ...";
+$db->commit;
+say "done";
