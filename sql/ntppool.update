@@ -983,5 +983,10 @@ alter table servers
   modify netspeed_target int unsigned not null default '10000' after netspeed,
   modify netspeed int unsigned not null default '10000';
 
+#121
+alter table user_identities
+  add `created_on`  datetime NOT NULL default '2003-01-27 00:00:00',
+  add `modified_on` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+
 #todo
 - ...

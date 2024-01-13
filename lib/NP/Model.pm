@@ -1487,12 +1487,14 @@ __PACKAGE__->meta->setup(
   table   => 'user_identities',
 
   columns => [
-    id         => { type => 'serial', not_null => 1 },
-    profile_id => { type => 'varchar', length => 255, not_null => 1 },
-    user_id    => { type => 'integer', not_null => 1 },
-    provider   => { type => 'varchar', length => 255, not_null => 1 },
-    data       => { type => 'text', length => 65535 },
-    email      => { type => 'varchar', length => 255 },
+    id          => { type => 'serial', not_null => 1 },
+    profile_id  => { type => 'varchar', length => 255, not_null => 1 },
+    user_id     => { type => 'integer', not_null => 1 },
+    provider    => { type => 'varchar', length => 255, not_null => 1 },
+    data        => { type => 'text', length => 65535 },
+    email       => { type => 'varchar', length => 255 },
+    created_on  => { type => 'datetime', default => '2003-01-27 00:00:00', not_null => 1 },
+    modified_on => { type => 'timestamp', not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
