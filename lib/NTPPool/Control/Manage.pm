@@ -101,6 +101,10 @@ sub current_url {
 sub render {
     my $self = shift;
 
+    unless ($self->request->uri =~ m{^/manage(/.*)?$}) {
+        return NOT_FOUND;
+    }
+
     my $span = OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
 
     # $span->set_name("request manage");
@@ -122,7 +126,9 @@ sub render {
 
     if ($self->request->uri =~ m!^/manage/login!) {
         $self->set_span_name("manage.login");
-        $self->handle_login();
+        if ($self->req_param('code')) {
+            $self->handle_login();
+        }
         if ($self->user) {
             my $r = $self->req_param('r') || '/manage';
             return $self->redirect($r);
