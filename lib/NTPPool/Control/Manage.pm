@@ -197,7 +197,7 @@ sub handle_login {
 
     my $email = $userdata->{email_verified} && $userdata->{email};
 
-    my ($provider) = ($identity_id =~ m/^(.*)|/);
+    my ($provider) = ($identity_id =~ m/^(.*)\|/);
 
     if ($identity) {
         $identity->provider($provider) if $provider;
