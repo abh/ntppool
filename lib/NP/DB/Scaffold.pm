@@ -20,6 +20,7 @@ my %json_fields = (
     logs                   => 'changes',
     servers                => 'flags',
     accounts               => 'flags',
+    user_tasks             => 'status',
 );
 
 sub json_columns {

@@ -28,6 +28,8 @@ sub init {
     my $self = shift;
     $self->SUPER::init(@_);
 
+    $self->cache_control('private');
+
     $self->tpl_params->{page} ||= {};
 
     if ($self->is_logged_in) {
@@ -190,6 +192,13 @@ sub handle_login {
     }
 
     my ($identity, $user);
+
+    #$userdata = {
+    #   map { ($userdata->{$_} ? ($_ => $userdata->{$_}) : () }
+    #   qw( sub iat sid iss exp aud user_id identities
+    #       email emails email_verified name app_metadata picture
+    #       created_at updated_at)
+    #};
 
     # check if profile exists for any of the identities
     my $identity_id = $userdata->{sub};

@@ -991,5 +991,23 @@ alter table user_identities
 #122
 drop table log_status;
 
+#123
+
+alter table users
+  add deleted tinyint(1) NOT NULL DEFAULT '0';
+
+create table user_tasks (
+  id         int unsigned NOT NULL AUTO_INCREMENT,
+  user_id    int(10) unsigned not null,
+  task       enum('download', 'delete') not null,
+  status     text not null,
+  traceid    varchar(32) not null default '',
+  `created_on`  datetime NOT NULL,
+  `modified_on` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  constraint `user_tasks_user_fk` foreign key (`user_id`) references users (`id`),
+  primary key (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
 #todo
 - ...

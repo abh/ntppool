@@ -73,6 +73,9 @@ sub manage_dispatch {
         }
         return $self->render_users($account);
     }
+    elsif ($self->request->uri =~ m!^/manage/account/download(/data/.*)?$!) {
+        return $self->render_download($self->user);
+    }
 
     return NOT_FOUND;
 }
@@ -341,6 +344,66 @@ sub render_account_edit {
     }
 
     return $self->render_account_form($account);
+}
+
+sub render_download {
+    my ($self, $user) = @_;
+    $self->cache_control('private');
+
+    if ($self->request->uri
+        =~ (m!^/manage/account/download/data/([^/]+)/([^/]+(\.tar\.gz|\.zip))$!))
+    {
+        my $traceid  = $1;
+        my $filename = $2;
+        return NOT_FOUND unless $traceid && $filename;
+        warn "checking downloads for $traceid / $filename";
+        my $tasks = NP::Model->user_task->get_user_tasks(
+            query => [
+                task    => 'download',
+                user_id => $user->id,
+                traceid => $traceid,
+            ],
+            sort_by => 'created_on desc'
+        );
+        return NOT_FOUND unless $tasks && @$tasks;
+        my $task = $tasks->[0];
+        return NOT_FOUND unless $task;
+        my $task_filename = $task && $task->status->{Filename} or return NOT_FOUND;
+        return NOT_FOUND unless $task_filename eq $filename;
+
+        # warn "redirecting to fastly: ", $task->status->{URL};
+        $self->request->header_out('Fastly-Follow' => '1');
+
+        return $self->redirect($task->status->{URL}, 302);
+    }
+
+    $self->tpl_param('user', $user);
+
+    my $requests = NP::Model->user_task->get_user_tasks(
+        query => [
+            task    => 'download',
+            user_id => $user->id,
+        ],
+        sort_by => 'created_on desc'
+    );
+
+    $self->tpl_param('requests', $requests);
+
+    if ($requests && grep { $_->status eq '' } @$requests) {
+        $self->tpl_param('pending_requests', 1);
+    }
+    else {
+        if ($self->request->method eq 'post') {
+            my $task = NP::Model->user_task->create(
+                user   => $user->id,
+                task   => 'download',
+                status => '',
+            );
+            $task->save;
+            $self->tpl_param('request_submitted', 1);
+        }
+    }
+    return OK, $self->evaluate_template('tpl/account/download.html');
 }
 
 1;

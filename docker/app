@@ -23,6 +23,7 @@ docker pull $IMAGE
 
 docker run $tparm \
  --platform linux/amd64 \
+ -e EXPERIMENTAL_DOCKER_DESKTOP_FORCE_QEMU=1 \
  -v $(pwd):/ntppool \
  --env-file=ntppool.env \
  $ports \

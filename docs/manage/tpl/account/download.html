@@ -1,0 +1,65 @@
+<div class="row">
+    <div class="col-md-10">
+        <h3>[% user.email | html %]</h3>
+
+        <p>
+            You can request a copy of the information the system is storing
+            about your account. It will typically be available for download
+            within an hour.
+        </p>
+
+        [% IF request_submitted %]
+        The system is processing your request.<br>
+        [% END %]
+
+        [% IF requests %]
+            <table>
+                [% FOR req IN requests %]
+                <tr>
+                <td>[% req.created_on | html %]</td>
+                [% UNLESS req.status %]
+                <td>Processing</td>
+                [% ELSE %]
+                <td>
+                [% IF req.status.URL %]
+                    <a href="[% req.download_url | html %]">
+                        Download archive
+                    </a>
+                [% ELSE %]
+                  [% IF req.status.Error %]
+                  Error: [% req.traceid %]
+                  [% END %]
+                [% END %]
+                </td>
+                [% END %]
+                </tr>
+                [% END %]
+            </table>
+        [% END %]
+
+
+        <p>
+        [% IF request_submitted %]
+            <!-- Your request has been received. -->
+        [% ELSIF pending_requests %]
+            <!-- The system is processing your request. -->
+        [% ELSE %]
+        <form id="download-form" action="[% combust.manage_url('/manage/account/download', u => user.id_token) %]" method="post" accept-charset="utf-8">
+            <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
+
+            <button class="btn btn-primary btn-sm"
+                name="user_id" value="[% user.id %]" type="submit">
+                Request user information download
+            </button>
+        </form>
+        [% END %]
+        </p>
+
+        <br>
+
+        <p>
+            <a href="[% combust.manage_url('/manage/account') %]">Back to account page</a>
+        </p>
+
+    </div>
+</div>

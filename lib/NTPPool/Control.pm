@@ -385,6 +385,13 @@ sub system_setting {
     return $self->{$k} = $settings;
 }
 
+sub system_feature {
+    my $self     = shift;
+    my $name     = shift;
+    my $features = $self->system_setting('features') or return 0;
+    return $features->{$name} ? 1 : 0;
+}
+
 sub count_by_continent {
     my $self   = shift;
     my $global = NP::Model->zone->fetch(name => '@');

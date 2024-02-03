@@ -1277,6 +1277,7 @@ __PACKAGE__->meta->setup(
     name           => { type => 'varchar', length => 255 },
     username       => { type => 'varchar', length => 40 },
     public_profile => { type => 'integer', default => '0', not_null => 1 },
+    deleted        => { type => 'integer', default => '0', not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
@@ -1353,6 +1354,12 @@ __PACKAGE__->meta->setup(
       column_map           => { id => 'user_id' },
       type                 => 'one to one',
       with_column_triggers => '0',
+    },
+
+    user_tasks => {
+      class      => 'NP::Model::UserTask',
+      column_map => { id => 'user_id' },
+      type       => 'one to many',
     },
 
     vendor_zones => {
@@ -1521,6 +1528,55 @@ __PACKAGE__->make_manager_methods('user_privileges');
 # Allow user defined methods to be added
 eval { require NP::Model::UserPrivilege }
   or $@ !~ m:^Can't locate NP/Model/UserPrivilege.pm: and die $@;
+
+{ package NP::Model::UserTask;
+
+use strict;
+
+use base qw(NP::Model::_Object);
+
+__PACKAGE__->meta->setup(
+  table   => 'user_tasks',
+
+  columns => [
+    id          => { type => 'serial', not_null => 1 },
+    user_id     => { type => 'integer', not_null => 1 },
+    task        => { type => 'enum', check_in => [ 'download', 'delete' ], not_null => 1 },
+    status      => { type => 'text', length => 65535, not_null => 1 },
+    traceid     => { type => 'varchar', default => '', length => 32, not_null => 1 },
+    created_on  => { type => 'datetime', default => 'now', not_null => 1 },
+    modified_on => { type => 'timestamp', not_null => 1 },
+  ],
+
+  primary_key_columns => [ 'id' ],
+
+  foreign_keys => [
+    user => {
+      class       => 'NP::Model::User',
+      key_columns => { user_id => 'id' },
+    },
+  ],
+);
+
+__PACKAGE__->meta->setup_json_columns(qw< status >);
+
+push @table_classes, __PACKAGE__;
+}
+
+{ package NP::Model::UserTask::Manager;
+
+use strict;
+
+our @ISA = qw(Combust::RoseDB::Manager);
+
+sub object_class { 'NP::Model::UserTask' }
+
+__PACKAGE__->make_manager_methods('user_tasks');
+}
+
+# Allow user defined methods to be added
+eval { require NP::Model::UserTask }
+  or $@ !~ m:^Can't locate NP/Model/UserTask.pm: and die $@;
 
 { package NP::Model::VendorZone;
 
@@ -1751,6 +1807,7 @@ eval { require NP::Model::ZoneServerCount }
   sub user_equipment_application { our $user_equipment_application ||= bless [], 'NP::Model::UserEquipmentApplication::Manager' }
   sub user_identity { our $user_identity ||= bless [], 'NP::Model::UserIdentity::Manager' }
   sub user_privilege { our $user_privilege ||= bless [], 'NP::Model::UserPrivilege::Manager' }
+  sub user_task { our $user_task ||= bless [], 'NP::Model::UserTask::Manager' }
   sub vendor_zone { our $vendor_zone ||= bless [], 'NP::Model::VendorZone::Manager' }
   sub zone { our $zone ||= bless [], 'NP::Model::Zone::Manager' }
   sub zone_server_count { our $zone_server_count ||= bless [], 'NP::Model::ZoneServerCount::Manager' }
