@@ -10,7 +10,13 @@ sub render {
     my $self = shift;
 
     if ($self->request->path eq '/') {
+        # manage controller, login page
+        $self->cache_control('private');
         return $self->SUPER::render(@_);
+    }
+
+    if ($self->is_logged_in) {
+        $self->cache_control('private');
     }
     return NOT_FOUND;
 }

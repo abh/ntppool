@@ -103,7 +103,7 @@ sub current_url {
 sub render {
     my $self = shift;
 
-    unless ($self->request->uri =~ m{^/manage(/.*)?$}) {
+    unless ($self->request->uri =~ m{^/(manage(/.*)?)?$}) {
         return NOT_FOUND;
     }
 
