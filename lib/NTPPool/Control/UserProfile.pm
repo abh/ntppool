@@ -66,7 +66,7 @@ sub render_account {
     my ($account, $extra) = $self->profile_account;
 
     unless ($account) {
-        $self->cache_control('max-age=30');
+        $self->cache_control('max-age=60');
         return 404;
     }
 

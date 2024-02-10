@@ -4,3 +4,5 @@ $CBROOT/bin/cmysql ntppool -e 'update account_invites set status = "expired" whe
 $CBROOT/bin/cmysql ntppool -e 'delete from account_invites where status = "expired" and expires_on < DATE_SUB(NOW(), interval 168 hour);'
 
 $CBROOT/bin/cmysql ntppool -e 'delete from server_verifications where verified_on is null and modified_on < DATE_SUB(now(), interval 72 hour);'
+
+$CBROOT/bin/cmysql ntppool -e 'delete from user_tasks where modified_on < DATE_SUB(now(), interval 168 hour);'

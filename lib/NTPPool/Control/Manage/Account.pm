@@ -13,6 +13,8 @@ sub manage_dispatch {
     my $self = shift;
     $self->set_span_name("manage.account");
 
+    $self->cache_control('private');
+
     my $account;
 
     if ($self->request->uri =~ m!^/manage/account/invite/!) {
@@ -348,7 +350,6 @@ sub render_account_edit {
 
 sub render_download {
     my ($self, $user) = @_;
-    $self->cache_control('private');
 
     if ($self->request->uri
         =~ (m!^/manage/account/download/data/([^/]+)/([^/]+(\.tar\.gz|\.zip))$!))
@@ -400,10 +401,12 @@ sub render_download {
                 status => '',
             );
             $task->save;
-            $self->tpl_param('request_submitted', 1);
+
+            # to a GET request so reloading the page works
+            return $self->redirect($self->manage_url('/manage/account/download'));
         }
     }
-    return OK, $self->evaluate_template('tpl/account/download.html');
+    return OK, $self->evaluate_template('tpl/user/download.html');
 }
 
 1;
