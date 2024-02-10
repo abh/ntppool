@@ -115,7 +115,12 @@
         <p>To change your email address, add the new address to the team and login to remove the old address.</p>
 
         [% IF combust.system_feature('user-download') %]
-        <a href="[% combust.manage_url('/manage/account/download', u => user.id_token) %]">Download user data</a>
+        <a href="[% combust.manage_url('/manage/account/download', u => user.id_token) %]">Download user data</a><br>
+        [% END %]
+
+        [% IF combust.system_feature('user-deletion') %]
+        <br>
+        <a href="[% combust.manage_url('/manage/account/delete', u => user.id_token) %]">Delete user</a><br>
         [% END %]
 
     </div>

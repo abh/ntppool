@@ -78,6 +78,9 @@ sub manage_dispatch {
     elsif ($self->request->uri =~ m!^/manage/account/download(/data/.*)?$!) {
         return $self->render_download($self->user);
     }
+    elsif ($self->request->uri =~ m!^/manage/account/delete$!) {
+        return $self->render_user_delete($self->user);
+    }
 
     return NOT_FOUND;
 }
@@ -407,6 +410,58 @@ sub render_download {
         }
     }
     return OK, $self->evaluate_template('tpl/user/download.html');
+}
+
+sub render_user_delete {
+    my ($self, $user) = @_;
+
+    # todo:
+    #   if u= parameter, get user from id_token
+    #   and check it's the current user; or an admin
+
+    $self->tpl_param('user', $user);
+
+    my $delete_ok = 1;
+
+    # todo:
+    # - check there are no active servers on the account
+    # - or that there are an alternate user
+    for my $a ($user->accounts) {
+        my @users = grep { $_->id != $user->id } @{$a->users};
+        next if @users;
+        for my $s ($a->servers) {
+            unless ($s->deletion_on) {
+                warn "account has active servers";
+                $delete_ok = 0;
+                last;
+            }
+        }
+        for my $v ($a->vendor_zones) {
+            warn "account has vendor zones";
+            $delete_ok = 0;
+            last;
+        }
+        for my $m ($a->monitors) {
+            unless ($m->status eq 'deleted') {
+                warn "account has monitors";
+                $delete_ok = 0;
+                last;
+            }
+        }
+    }
+
+    $self->tpl_param('delete_available', $delete_ok);
+
+    return OK, $self->evaluate_template('tpl/user/delete_confirmation.html')
+      unless $delete_ok;
+
+    if ($self->request->method eq 'post') {
+        $user->deletion_on('now');
+        $user->save;
+        return $self->redirect($self->manage_url('/manage/logout'));
+    }
+
+    return OK, $self->evaluate_template('tpl/user/delete_confirmation.html');
 }
 
 1;

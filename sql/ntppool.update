@@ -1008,6 +1008,11 @@ create table user_tasks (
   primary key (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+#124
+
+alter table users
+  drop deleted,
+  add deletion_on datetime NULL;
 
 #todo
 - ...

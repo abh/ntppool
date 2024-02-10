@@ -53,6 +53,10 @@ sub init {
             $span->set_attribute("user.id_token", $user->id_token);
         }
 
+        if ($self->user->deletion_on and $self->request->uri ne "/manage/logout") {
+            return $self->redirect($self->manage_url('/manage/logout'));
+        }
+
     }
 
     return OK;
@@ -182,8 +186,6 @@ sub handle_login {
         return;
     }
 
-    # todo: check state variable
-
     my ($userdata, $error) = $self->_get_auth0_user($code);
     if ($error) {
         warn "Auth0 error: ", Data::Dump::pp(\$error) if $error;
@@ -267,12 +269,28 @@ sub handle_login {
         $identity->user_id($user->id);
     }
 
+    if ($user->deletion_on) {
+
+        # todo: email the user to tell them deletion was cancelled
+        $user->deletion_on(undef);
+        $user->save;
+    }
+
     $identity->save;
 
-    $self->cookie("xs", join "", map { $base36->to_base(irand) } (undef) x 6);
+    # user id information
     $self->cookie($self->user_cookie_name, $user->id);
 
+    # xss
+    $self->cookie("xs", join "", map { $base36->to_base(irand) } (undef) x 6);
+
+    # last login timestamp
+    $self->cookie("ll", time);
+
     $span->end();
+
+    # done with this, don't keep it around
+    $self->cookie('login_state', '');
 
     $self->user($user);
 }

@@ -1,0 +1,48 @@
+<div class="row">
+    <div class="col-md-10">
+        <h3>[% user.email | html %]</h3>
+
+        [% IF delete_available %]
+        <p>
+        Click the delete button below to continue to schedule your
+        account for deletion.
+        </p>
+
+        <p>
+        The user deletion will typically be processed
+        within a week. If you login again before the deletion is
+        done the deletion process will get cancelled.
+        </p>
+
+        <form id="download-form" action="[% combust.manage_url('/manage/account/delete', u => user.id_token) %]" method="post" accept-charset="utf-8">
+            <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
+
+            <button class="btn btn-warning"
+                name="user_id" value="[% user.id %]" type="submit">
+                Delete user account
+            </button>
+        </form>
+        </p>
+        [% ELSE %]
+        <p>
+        This user can't be deleted. To prepare the
+        account for deletion, please make sure that
+        the account either has an alternate user or
+        all servers have been marked for deletion.
+        </p>
+        <p>
+        If this is unexpected, please email
+        <a href="mailto:[% "support" | email %]">[% "support" | email %]</a>
+        and we will help.
+        [% rid = combust.request_id; IF rid %]
+            Include request id <code>[% rid %]</code> in the email.
+        [% END %]
+        </p>
+        [% END %]
+
+        <p>
+            <a href="[% combust.manage_url('/manage/account') %]">Back to account page</a>
+        </p>
+
+    </div>
+</div>

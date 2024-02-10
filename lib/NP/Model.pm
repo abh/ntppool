@@ -1277,7 +1277,7 @@ __PACKAGE__->meta->setup(
     name           => { type => 'varchar', length => 255 },
     username       => { type => 'varchar', length => 40 },
     public_profile => { type => 'integer', default => '0', not_null => 1 },
-    deleted        => { type => 'integer', default => '0', not_null => 1 },
+    deletion_on    => { type => 'datetime' },
   ],
 
   primary_key_columns => [ 'id' ],
