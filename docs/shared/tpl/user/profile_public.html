@@ -17,7 +17,11 @@
 [% FOR server = servers %]
 <div class="server">
 [% IF server.hostname %]Hostname: <b>[% server.hostname | html %]</b><br />[% END %]
-IP: <b><a href="[% server.url %]">[% server.ip | html %]</a></b><br />
+IP: <b><a href="[% server.url %]">[% server.ip | html %]</a></b>
+[% IF server.server_verification.verified_on %]
+&nbsp;&check;
+[% END %]
+<br />
 [% UNLESS server.in_pool %]
 <i>[% |l %]Not active in the pool, monitoring only[% END %]</i><br/>
 [% END %]

@@ -51,6 +51,9 @@ Account: <a href="[% server.account.public_url | html %]"
 [% FOR zone = server.zones_display %]
 <a href="[% combust.www_url(zone.url) %]">[% zone.name %]</a>
 [% END  %]
+[% IF server.server_verification.verified_on %]
+&nbsp;&check;
+[% END %]
 </span>
 [% IF manage_site AND combust.user.is_staff %]
    <button id="server_edit_zones">Edit</button>
