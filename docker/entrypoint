@@ -11,6 +11,12 @@ while [ ! -e confd ]; do
     sleep 2
 done
 
+fastly_ips=/etc/fastly-ips/fastly.json
+
+if [ -e $fastly_ips ]; then
+  export proxyip_forwarders=`jq -cr '[.ipv6_addresses, .addresses] | flatten | join(", ") ' < $fastly_ips`
+fi
+
 confd -onetime -confdir=confd -backend env -log-level warning
 export CBCONFIG=/var/ntppool/combust.conf
 

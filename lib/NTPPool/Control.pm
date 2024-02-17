@@ -103,6 +103,8 @@ sub init {
     for my $h (
         qw(
             X-Forwarded-For
+            X-Original-Forwarded-For
+            X-Real-IP
             CF-Connecting-IP CF-RAY
             Fastly-Client-IP
         )
