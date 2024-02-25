@@ -48,8 +48,11 @@ sub validate {
             $errors->{url_slug} =
               "Page URL can only contain basic letters, numbers, hypens and underscores";
         }
-
-        # check uniqueness
+        else {
+            if (NP::Model->account->get_accounts_count(query => [url_slug => $account->url_slug])) {
+                $errors->{url_slug} = "this page URL isn't available";
+            }
+        }
     }
 
     $account->{_validation_errors} = $errors;
