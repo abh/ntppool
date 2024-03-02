@@ -1540,10 +1540,11 @@ __PACKAGE__->meta->setup(
 
   columns => [
     id          => { type => 'serial', not_null => 1 },
-    user_id     => { type => 'integer', not_null => 1 },
+    user_id     => { type => 'integer' },
     task        => { type => 'enum', check_in => [ 'download', 'delete' ], not_null => 1 },
     status      => { type => 'text', length => 65535, not_null => 1 },
     traceid     => { type => 'varchar', default => '', length => 32, not_null => 1 },
+    execute_on  => { type => 'datetime' },
     created_on  => { type => 'datetime', default => 'now', not_null => 1 },
     modified_on => { type => 'timestamp', not_null => 1 },
   ],

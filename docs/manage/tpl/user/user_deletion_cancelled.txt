@@ -1,0 +1,17 @@
+[% page.style = 'email.txt'; USE wrap; -%]
+
+Hi,
+
+This is to let you know that the deletion of the user
+with email [% user.email %] has been cancelled.
+
+If this was unexpected, please let us know by replying
+to this email. You can also re-schedule the deletion
+on the manage portal.
+
+
+NTP Pool team
+
+--
+[% config.base_url('ntppool') %]/
+trace-id: [% trace_id %]

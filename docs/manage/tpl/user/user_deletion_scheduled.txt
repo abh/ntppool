@@ -1,0 +1,20 @@
+[% page.style = 'email.txt'; USE wrap; -%]
+
+Hi,
+
+This is to let you know that the user with the email
+[% user.email %] has been scheduled for deletion in
+the NTP Pool system.
+
+You can cancel the deletion by logging into the
+system again before the deletion task has executed.
+
+If this was unexpected, please let us know immediately
+by replying to this email.
+
+
+NTP Pool team
+
+--
+[% config.base_url('ntppool') %]/
+trace-id: [% trace_id %]

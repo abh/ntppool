@@ -271,9 +271,37 @@ sub handle_login {
 
     if ($user->deletion_on) {
 
-        # todo: email the user to tell them deletion was cancelled
+        my $db  = NP::Model->db;
+        my $txn = $db->begin_scoped_work;
+
         $user->deletion_on(undef);
         $user->save;
+
+        NP::Model->user_task->delete_user_tasks(
+            where => [
+                task    => 'delete',
+                user_id => $user->id,
+                status  => '',
+            ],
+        );
+
+        $db->commit or die "could not undelete user";
+
+        my $param = {
+            user     => $user,
+            trace_id => $span->context->hex_trace_id,
+        };
+
+        my $msg = Combust::Template->new->process('tpl/user/user_deletion_cancelled.txt',
+            $param, {site => 'manage', config => $self->config});
+
+        my $email =
+          Email::Stuffer->from(NP::Email::address("sender"))
+          ->reply_to(NP::Email::address("support"))->subject("NTP Pool user deletion cancelled")
+          ->text_body($msg);
+
+        $email->to($user->email);
+        NP::Email::sendmail($email);
     }
 
     $identity->save;
@@ -343,7 +371,10 @@ sub _get_auth0_user {
     # warn "token request: ", pp(\%form);
     use Data::Dump qw(pp);
 
-    $resp->is_success or return undef, "Could not fetch oauth token";
+    unless ($resp->is_success) {
+        warn pp($resp);
+        return undef, "Could not fetch oauth token";
+    }
 
     my $data = decode_json($resp->decoded_content())
       or return undef, "Could not decode token data";

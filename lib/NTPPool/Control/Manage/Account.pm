@@ -8,6 +8,11 @@ use Math::BaseCalc ();
 use Math::Random::Secure qw(irand);
 use Combust::Template;
 use NP::Email ();
+use OpenTelemetry::Trace;
+use OpenTelemetry -all;
+use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
+use experimental qw( defer );
+use Syntax::Keyword::Dynamically;
 
 sub manage_dispatch {
     my $self = shift;
@@ -415,6 +420,13 @@ sub render_download {
 sub render_user_delete {
     my ($self, $user) = @_;
 
+    my $tracer = NP::Tracing->tracer;
+    my $span   = $tracer->create_span(
+        name => "render_user_delete",
+        kind => SPAN_KIND_SERVER,
+    );
+    dynamically otel_current_context = otel_context_with_span($span);
+
     # todo:
     #   if u= parameter, get user from id_token
     #   and check it's the current user; or an admin
@@ -427,7 +439,7 @@ sub render_user_delete {
     # - check there are no active servers on the account
     # - or that there are an alternate user
     for my $a ($user->accounts) {
-        my @users = grep { $_->id != $user->id } @{$a->users};
+        my @users = grep { $_->id != $user->id && not $_->deletion_on } @{$a->users};
         next if @users;
         for my $s ($a->servers) {
             unless ($s->deletion_on) {
@@ -456,8 +468,39 @@ sub render_user_delete {
       unless $delete_ok;
 
     if ($self->request->method eq 'post') {
+
+        my $db  = NP::Model->db;
+        my $txn = $db->begin_scoped_work;
+
         $user->deletion_on('now');
         $user->save;
+
+        my $task = NP::Model->user_task->create(
+            user       => $user->id,
+            task       => 'delete',
+            status     => '',
+            execute_on => DateTime->now()->add(days => 7),
+        );
+        $task->save;
+
+        $db->commit or die "could not mark user deleted";
+
+        my $param = {
+            user     => $user,
+            trace_id => $span->context->hex_trace_id,
+        };
+
+        my $msg = Combust::Template->new->process('tpl/user/user_deletion_scheduled.txt',
+            $param, {site => 'manage', config => $self->config});
+
+        my $email =
+          Email::Stuffer->from(NP::Email::address("sender"))
+          ->reply_to(NP::Email::address("support"))->subject("NTP Pool user deletion scheduled")
+          ->text_body($msg);
+
+        $email->to($user->email);
+        NP::Email::sendmail($email);
+
         return $self->redirect($self->manage_url('/manage/logout'));
     }
 
