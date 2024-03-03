@@ -701,7 +701,7 @@ __PACKAGE__->meta->setup(
     id              => { type => 'serial', not_null => 1 },
     ip              => { type => 'varchar', length => 40, not_null => 1 },
     ip_version      => { type => 'enum', check_in => [ 'v4', 'v6' ], default => 'v4', not_null => 1 },
-    user_id         => { type => 'integer', not_null => 1 },
+    user_id         => { type => 'integer' },
     account_id      => { type => 'integer' },
     hostname        => { type => 'varchar', length => 255 },
     stratum         => { type => 'integer' },

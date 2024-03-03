@@ -1015,10 +1015,13 @@ alter table users
   add deletion_on datetime NULL;
 
 #125
-
 alter table user_tasks
   add execute_on datetime null after traceid,
   modify user_id int unsigned null;
+
+#126
+alter table servers
+  modify user_id int unsigned;
 
 #todo
 - ...
