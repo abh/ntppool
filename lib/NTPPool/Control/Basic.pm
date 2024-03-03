@@ -29,7 +29,12 @@ sub render {
         }
     }
 
-    $self->cache_control('s-maxage=1800,max-age=3600');
+    if ($self->request->uri =~ m{\.v[0-9a-f.]+\.(css|js|gif|png|jpg|png|ico)$}) {
+        $self->cache_control('s-maxage=1209600,max-age=31536000');
+    }
+    else {
+        $self->cache_control('s-maxage=1800,max-age=3600');
+    }
 
     return $self->SUPER::render(@_);
 }
