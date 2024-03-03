@@ -13,12 +13,13 @@
         [% END %]
 
         [% IF requests %]
+            <p>
             <table>
                 [% FOR req IN requests %]
                 <tr>
                 <td>[% req.created_on | html %]</td>
                 [% UNLESS req.status %]
-                <td>Processing</td>
+                <td>Processing archive, check back later.</td>
                 [% ELSE %]
                 <td>
                 [% IF req.status.URL %]
@@ -35,6 +36,7 @@
                 </tr>
                 [% END %]
             </table>
+            </p>
 
             <p>
             Archives will be available for download for about a week.
