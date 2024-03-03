@@ -251,6 +251,8 @@ sub _add_server {
     $s->in_pool(1);
     $s->deleted(0);
     $s->deletion_on(undef);
+    $s->netspeed_target(10000);
+    $s->netspeed(10000);
     $s->zones([]);
 
     if (my $v = $s->server_verification) {
