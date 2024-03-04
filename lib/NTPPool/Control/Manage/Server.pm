@@ -180,7 +180,8 @@ sub handle_add {
         my $return = NP::Email::sendmail($email->email);
         warn Data::Dumper->Dump([\$msg, \$email, \$return], [qw(msg email return)]);
 
-        return $self->redirect($s ? $s->manage_url : "/manage/servers");
+        my $next = $s ? $s->manage_url : "/manage/servers";
+        return $self->redirect($self->manage_url($next));
     }
 
     my @all_zones = NP::Model->zone->get_zones(
@@ -534,7 +535,7 @@ sub handle_verify {
 
     # if verified already, redirect to server on manage page
     if ($verification->verified_on) {
-        return $self->redirect($server->manage_url);
+        return $self->redirect($self->manage_url($server->manage_url));
     }
 
     $self->tpl_param(server => $server);
@@ -550,7 +551,7 @@ sub handle_verify {
         $verification->save();
         $db->commit;
 
-        return $self->redirect($server->manage_url);
+        return $self->redirect($self->manage_url($server->manage_url));
     }
 
     return OK, $self->evaluate_template('tpl/manage/verify_confirm.html');
@@ -603,7 +604,7 @@ sub handle_delete {
             $server->save;
 
             $db->commit;
-            return $self->redirect($server->manage_url);
+            return $self->redirect($self->manage_url($server->manage_url));
         }
     }
 
