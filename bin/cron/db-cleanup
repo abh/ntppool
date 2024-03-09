@@ -7,3 +7,11 @@ $CBROOT/bin/cmysql ntppool -e 'delete from server_verifications where verified_o
 
 $CBROOT/bin/cmysql ntppool -e 'delete from user_tasks where modified_on < DATE_SUB(now(), interval 168 hour)
   and execute_on is null or execute_on < DATE_SUB(now(), interval 168 hour);'
+
+$CBROOT/bin/cmysql ntppool -e '
+delete r
+from servers_monitor_review r, servers s
+where
+(s.id=r.server_id) and
+s.deletion_on is not null and
+s.deletion_on < NOW();'
