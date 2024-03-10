@@ -1023,5 +1023,9 @@ alter table user_tasks
 alter table servers
   modify user_id int unsigned;
 
+#127
+alter table server_scores
+  add queue_ts datetime null after status;
+
 #todo
 - ...
