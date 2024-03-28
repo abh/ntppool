@@ -44,25 +44,16 @@
 	</p>
 	<p>
 	If you're using <b>a recent Windows version</b>, you can use the ntp
-	client that is built into the system. As administrator enter</p>
-<pre class="code">
-w32tm /config /syncfromflags:manual /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
-</pre>
+	client that is built into the system.</p>
+	<p>Right click the data time in system area and select Adjust Date/time or open up settings with Win+I and click Time & Language -> Date & Time.
+		scroll down and click Date, time, regional formatting
+		scroll down and click Additional date, time & regional settings
+		click Date and Time and Internet Time
+		click the Change settings button. Enter <code>pool.ntp.org</code> and click Update now.</p>
 	<p>
-	at the command prompt.  This will work on Windows 2003 and newer.  If you use an
-	older version of windows you can try</p>
-<pre class="code">
-net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
-</pre>
-	<p>
-	The same can be achieved by, as administrator, right-clicking the clock in the taskbar,
-	selecting 'Adjust Date/Time' and entering the server name in the 'Internet Time' tab.
+		Test by Right click the data time in system area and select Adjust Date/time or open up settings with Win+I and click Time & Language -> Date & Time.
+		Click the "Sync now" button.
 	</p>
-
-	<p>
-	Meinberg made a port of the <a href="http://www.meinberg.de/english/sw/ntp.htm">ntp daemon for windows</a>.
-	</p>
-
 	<p>
 	If your Windows system is part of a domain, you might not be able to independently update your computer time.
 
