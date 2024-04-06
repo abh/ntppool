@@ -40,40 +40,39 @@ process needs full root access to a kernel).
 
     <dt>Operating System</dt>
     <dd>
-        Basically just a minimal-ish install of (64-bit, x86_64) CentOS or
+        I minimal-ish install of (64-bit, x86_64) CentOS or
         Ubuntu LTS.  Our software also works with FreeBSD, but we
         prefer not maintaining the base system on other operating
         systems than Ubunutu and CentOS, so if the system runs FreeBSD
-        we prefer just getting a jail on a well maintained system.
+        we prefer getting a jail on a well maintained system.
     </dd>
 
     <dt>CPU</dt>
 
-    <dd>Almost any two core 64-bit CPU from the last 4-5 years will do a nice job
+    <dd>Any two or more core 64-bit CPU from the last decade will do a nice job
     </dd>
 
     <dt>RAM</dt>
-    <dd>Minimum 1GB, ideally 2-4GB to ease system maintenance tasks.
+    <dd>Minimum 1.5GB, ideally 2-4GB to ease system maintenance tasks.
     </dd>
 
     <dt>Disk space</dt>
     <dd>
-        6-8GB or more, again mostly to allow for system updates etc. It
-        can be just about as slow as you can imagine and it'll be
-        fine.
+        8GB or more, again mostly to allow for system updates etc. There
+        are no specific performance requirements for disk IO.
     </dd>
 
     <dt>IP addresses</dt>
     <dd>
         One routable IPv4 address, ideally also IPv6. If your
-        network supports us announcing our anycast network then we like doing that,
-        see below for BGP information.
+        network supports us announcing our anycast network then
+        announcing our anycast prefixes is possible.
     </dd>
 
     <dt>Bandwidth</dt>
     <dd>
-        It used to be less, currently it's about 5-10Mbit/second per server (anywhere
-        from 1-2TB data per month).
+        It used to be less, currently it's about 5-20Mbit/second per server (anywhere
+        from 1-4TB data per month).
         <br><br>
         During certain times of the hour and the day the rate goes up significantly
         for a few seconds. If you are in a country with poor DNS server coverage
@@ -98,10 +97,13 @@ process needs full root access to a kernel).
 
     <dt>Firewall/security</dt>
     <dd>
-      No external firewall is needed, but in case you operate one:
+      Our system configuration includes firewall rules, so
+      no external firewall is needed. In case you operate one
+      and need to apply rules, the necessary ports are:
 
         <ol>
         <li>port 53 (UDP and TCP)</li>
+        <li>port 443 (DNS over HTTP, UDP and TCP)</li>
         <li>port 22 (ssh)</li>
         <li>port 8052 and 8053 (mTLS authenticated monitoring)</li>
         <li>port 179 (for optional bgp setups)</li>
@@ -111,7 +113,7 @@ process needs full root access to a kernel).
 
     <dt>Management</dt>
     <dd>
-        We typically do the day-to-day management of the system.
+        We do the day-to-day management of the system.
     </dd>
 
     <p>If you are interested in helping with this, please email <a href="mailto:ask@develooper.com">
