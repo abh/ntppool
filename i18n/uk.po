@@ -1,14 +1,15 @@
-# translation of to Ukrainian
-# Oleksandr Yudin <oleksandr.yudin@gmail.com>, 2011.
+# Translation into Ukrainian
+# Yulian Mysko
 
 msgid ""
 msgstr ""
+"Last-Translator: Ask Bjørn Hansen <ask@develooper.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 msgid "go up"
-msgstr "нагору"
+msgstr "вверх"
 
 # zone names
 msgid "Africa"
@@ -23,6 +24,12 @@ msgstr "Північна Америка"
 msgid "South America"
 msgstr "Південна Америка"
 
+msgid "Europe"
+msgstr "Європа"
+
+msgid "Oceania"
+msgstr "Океанія"
+
 msgid "Global"
 msgstr "Глобально"
 
@@ -31,83 +38,98 @@ msgstr "Всі сервери пулу"
 
 # navigation
 msgid "Translations"
-msgstr "Переклади"
+msgstr "Іншими мовами"
+
+# index.html
+msgid "Introduction"
+msgstr "Ознайомлення"
+
+msgid "Active Servers"
+msgstr "Активні сервери"
+
+msgid "Links"
+msgstr "Посилання"
+
+msgid "Terms of service"
+msgstr "Умови обслуговування"
+
+msgid "Subscribe in a reader"
+msgstr "Підписатися через читач"
+
+msgid "Older news"
+msgstr "Старіші новини"
 
 # mailinglists.html
-msgid  "NTP Pool mailing lists"
-msgstr "Списки розсилки пула NTP"
-
-msgid  "subscribe"
-msgstr "підписатися"
-
-msgid  "archive"
+msgid "archive"
 msgstr "архів"
 
-msgid  "Announcement list"
-msgstr "Список оголошеннь"
+msgid "NTP Pool Forum"
+msgstr "Форум NTP Pool"
 
-msgid  "Discussion list"
-msgstr "Список обговорення"
+msgid "News site"
+msgstr "Сайт новин"
 
-msgid  "Development list"
-msgstr "Список розробки"
+msgid "Discussion list"
+msgstr "Список обговорень"
 
-msgid  "announcement_list_description"
-msgstr "Оголошення новин пулу NTP з дуже низьким трафіком. Всім адміністраторам серверів бажано мати підписку на ці оголошення."
+msgid "Development"
+msgstr "Розробка"
 
-msgid  "discussion_list_description"
-msgstr "Адміністратори та користувачі серверів, які бажають приймати більшу участь у проекті, можуть мати підписку на список обговорення.<br/> Зрозуміло, що обговорення ntp має відбуватися в %1 Usenet конференції (також на <a href=\"%2\">Google Groups</a>)."
+msgid "forum_description"
+msgstr "Питання (і відповіді) про пул NTP, пропозиції щодо покращень і теми, пов'язані з веденням часу та експлуатацією NTP серверів."
 
-msgid  "development_list_description"
-msgstr "Технічна дискусія розробки <a href=\"%1\">коду пулу ntp</a> та <a href=\"%2\">GeoDNS</a>."
+msgid "news_description"
+msgstr "Оголошення та новини публікуються на сайті новин або на форумі."
 
+msgid "development_list_description"
+msgstr "Більш технічні (і бажано прагматичні) обговорення розробки <a href=\"%1\">коду пулу NTP</a> і <a href=\"%2\">GeoDNS</a> відбуваються на <a href=\"%3\">форумі розробників</a>."
 
 # tpl/server.html
-msgid  "Back to the front page"
-msgstr "На головну"
+msgid "Back to the front page"
+msgstr "Повернутися на головну сторінку"
 
-msgid  "Find"
+msgid "Find"
 msgstr "Пошук"
 
-msgid  "Stats for %1"
+msgid "Stats for %1"
 msgstr "Статистика для %1"
 
-msgid  "Not active in the pool, monitoring only"
-msgstr "Не бере участь у пулі, тільки спостерігається."
+msgid "Not active in the pool, monitoring only"
+msgstr "Не активний у пулі, лише моніторинг"
 
-msgid  "Zones:"
+msgid "Zones:"
 msgstr "Зони:"
 
-msgid  "This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
-msgstr "Цей сервер <span class=\"deletion\">заплановано до видалення</span> %1."
+msgid "This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
+msgstr "Цей сервер <span class=\"deletion\">запланований до видалення</span> %1."
 
-msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
-msgstr "Поточний рейтинг: %1 (в пулі використовуються тільки сервери з рейтингом вище ніж %2)"
+msgid "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
+msgstr "Поточний рейтинг: %1 (лише сервери з рейтингом вище %2 використовуються в пулі)"
 
-msgid  "What do the graphs mean?"
+msgid "What do the graphs mean?"
 msgstr "Що означають ці графіки?"
 
-msgid  "CSV log"
-msgstr "Журнал в форматі CVS"
+msgid "CSV log"
+msgstr "Журнал CSV"
 
 # tpl/navigation_sidebar.html
-msgid  "News"
+msgid "News"
 msgstr "Новини"
 
-msgid  "How do I <i>use</i> pool.ntp.org?"
-msgstr "Як мені <i>використовувати</i> pool.ntp.org?"
+msgid "How do I <i>use</i> pool.ntp.org?"
+msgstr "Як <i>користуватись</i> pool.ntp.org?"
 
-msgid  "How do I <i>join</i> pool.ntp.org?"
-msgstr "Як мені <i>приєднатися</i> до pool.ntp.org?"
+msgid "How do I <i>join</i> pool.ntp.org?"
+msgstr "Як <i>приєднатись</i> до pool.ntp.org?"
 
-msgid  "Information for vendors"
+msgid "Information for vendors"
 msgstr "Інформація для виробників"
 
-msgid  "The mailing lists"
-msgstr "Списки розсилки"
+msgid "The mailing lists"
+msgstr "Спільнота"
 
-msgid  "Additional links"
+msgid "Additional links"
 msgstr "Додаткові посилання"
 
-msgid  "Can you translate?"
-msgstr "Можеш перекласти?"
+msgid "Can you translate?"
+msgstr "Можете перекласти?"
