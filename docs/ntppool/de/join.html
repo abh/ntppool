@@ -3,23 +3,23 @@
 <div class="block">
  <h3><a name="join">Wie trete ich dem NTP Pool bei?</a></h3>
  <p>
-  Zuallererst: Herzlichen Dank f&uuml;r das Interesse. Die Nutzlast des Pools
-  hat stark zugenommen - um die Benutzung auch in Zukunft m&ouml;glichst
+  Zuallererst: Herzlichen Dank f&uuml;r das Interesse. Die Nutzung des Pools
+  hat stark zugenommen. Um die Benutzung auch in Zukunft m&ouml;glichst
   einfach gestalten zu k&ouml;nnen, muss die Zahl der teilnehmenden Server
   ebenfalls steigen.
  </p>
 
  <p>
   Ihr Computer muss <b>&uuml;ber eine statische IP-Adresse verf&uuml;gen</b> und
-  eine permanente Verbindung mit dem Internet aufweisen. Es ist zwingend
+  eine dauerhafte Verbindung mit dem Internet aufweisen. Es ist zwingend
   erforderlich, dass sich die Adresse Ihres Servers nur &auml;u&szlig;erst
   selten (weniger als einmal im Jahr) &auml;ndert. Die ben&ouml;tigte
   Bandbreite ist relativ gering, da jeder Client nur
-  ein paar UDP-Packete anfordert.
+  ein paar UDP-Pakete anfordert.
  </p>
 
  <p>
-  Aktuell werden die meisten Server mit etwa 5-15 NTP Packeten pro Sekunde
+  Aktuell werden die meisten Server mit etwa 5-15 NTP Paketen pro Sekunde
   belastet, mit Spitzenwerten von ca. 60-120 Packeten pro Sekunde.  Grob
   gerechnet entspricht das einer Datenrate von 10-15 Kbit/s bzw. 50-120 Kbit/s.
   Dem Pool werden st&auml;ndig neue Zeitserver hinzugef&uuml;gt, so dass
@@ -35,16 +35,16 @@
  </p>
 
  <p>
-  Teilnehmende Server sollten <tt>pool.ntp.org</tt> nicht als Zeitquelle
-  angegeben haben, sollten jedoch einen <a
-   href="http://support.ntp.org/bin/view/Servers/StratumTwoTimeServers">guten
+  Teilnehmende Server sollten nicht <tt>pool.ntp.org</tt> als Zeitquelle
+  angeben, sondern mehrere <a
+   href="https://support.ntp.org/Servers/StratumTwoTimeServers/">gute
    Zeitserver</a> benutzen - diese <b>k&ouml;nnen</b> dann aus dem Pool stammen.
-  Grund hierf&uuml;r ist, dass die Zeitserver bei jedem Start statisch
-  ausgew&auml;hlt werden. Dadurch soll eine akzeptable Qualit&auml;t der
-  Zeitsynchronisation gew&auml;rleistet werden.
+  Ziel ist, dass die Zeitquellen bei jedem Start statisch ausgew&auml;hlt werden
+  und nicht zufällig &uuml;ber den Pool. Dadurch soll eine akzeptable
+  Qualit&auml;t der Zeitsynchronisation gew&auml;hrleistet werden.
 
-  Ihr Server muss kein Stratum 1 oder 2 sein, da der NTP Pool die Last
-  schlie&szlig;lich auf viele Server verteilen will. F&uuml;r
+  Ihr Server muss kein Stratum 1 oder 2 sein, da der NTP Pool prim&auml;r das
+  Ziel hat, die Last auf viele Server zu verteilen. F&uuml;r
   Stratum 3 oder 4 gibt es keinen Grund, dem Pool nicht beizutreten.
  </p>
 
@@ -54,30 +54,27 @@
 
  <p>Es wird darauf hingewiesen, dass die Teilnahme am NTP Pool eine
   <b>langfristige Entscheidung</b> sein sollte. Gerne k&ouml;nnen wir Ihren
-  Server auch aus dem Pool entfernen, doch auf Grund der technischen Umsetzung
-  des NTP Pools kann es Wochen, Monate oder sogar Jahre dauern, bis kein Client
-  mehr Anfragen an Sie richtet.
+  Server auch aus dem Pool entfernen, doch aufgrund der Art, wie NTP Clients
+  arbeiten, kann es Wochen, Monate oder sogar Jahre dauern, bis Sie keinerlei
+  NTP Anfragen mehr bekommen.
  </p>
 
  <p>
   F&uuml;r die Teilnahme begeben Sie sich bitte auf die Seiten des
-  <a href="/manage">Server Managements</a> and beantragen Sie Ihre Teilnahme.
-  Sollten noch Schwierigkeiten entstehen, schreiben Sie mir bitte eine E-Mail:
+  <a href="/manage">Server Managements</a> und beantragen Ihre Teilnahme.
+  Sollten dabei Probleme auftreten, schreiben Sie mir bitte eine E-Mail:
   <a href="mailto:ask@develooper.com">ask@develooper.com</a>.
  </p>
 
  <p>
-  Au&szlig;erdem bitte ich Sie, den
-  <a href="https://news.ntppool.org/atom.xml">Weblog</a>
-  und eventuell die
-  <a href="https://lists.ntp.org/listinfo/pool">Pool Mailingliste</a> zu
-  abonnieren.
+  Au&szlig;erdem bitte ich Sie, dem
+  <a href="[% language_url("/mailinglists.html") %]">Forum des Projektes</a> beizutreten.
  </p>
 
  <p>
   Es w&auml;re nett (aber nicht erforderlich), wenn Sie Anfragen auf Port 80
   Ihres NTP-Servers zur offiziellen Webseite des Projektes
-  <tt>https://www.ntppool.org</tt> weiterleiten k&ouml;nnten.
+  <tt>https://www.ntppool.org/</tt> weiterleiten k&ouml;nnten.
   Wenn Sie Apache einsetzen, konfigurieren Sie das durch:
  </p>
 
@@ -91,8 +88,8 @@
  </p>
  <p>
   Einmal zum Pool hinzugef&uuml;gt, wird Ihr Server kontinuierlich auf
-  Verf&uuml;gbarkeit &uuml;berwacht und die Genauigkeit Ihres Zeitservers
-  untersucht. Die Ergebnisse k&ouml;nnen Sie auf der
+  Verf&uuml;gbarkeit und Genauigkeit &uuml;berwacht.
+  Die Ergebnisse k&ouml;nnen Sie auf der
   <a href="/manage">Management Seite</a> oder dem <a href="scores">Web
    Frontend</a> einsehen.
  </p>

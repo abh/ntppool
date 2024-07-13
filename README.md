@@ -1,6 +1,6 @@
 # NTP Pool Project
 
-This is the code for the NTP Pool project, http://www.pool.ntp.org/
+This is the code for the NTP Pool project, https://www.ntppool.org/
 
 See the LICENSE file for detailed copyright and licensing information.
 

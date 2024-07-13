@@ -4,22 +4,22 @@
 	<h3><a name="join">How do I join pool.ntp.org?</a></h3>
 	<p>
 	First: Thanks for your interest.  Usage of the pool has grown
-	enormously and the only way we can keep it easy for everyone to run a
+	enormously, and the only way we can keep it easy for everyone to run a
 	pool server is to also grow the number of servers participating.
 	</p>
 
 	<p>
 	Your computer <b>must have a static IP address</b> and a permanent
-	internet connection.  It's very imporant that your IP address doesn't
+	Internet connection.  It's very important that your IP address doesn't
 	change or only does so extremely infrequently (say once a year or
 	less).  The required bandwidth is relatively low.  Each client will
-	only send a couple of UDP packets every few to every 20 minutes.
+	only send a few UDP packets every few to every 20 minutes.
 	</p>
 
 	<p>
 	Currently most servers get about 5-15 NTP packets per second
-	with spikes a couple of times a day of 60-120 packets per
-	second.  This is roughly equivalent to 10-15Kbit/sec with
+	with spikes of 60-120 packets per second a few times a day.
+	This is roughly equivalent to 10-15Kbit/sec with
 	spikes of 50-120Kbit/sec.  The project steadily acquires more
 	timeservers, so the load should not increase dramatically for
 	each server.  In plain terms, you probably need at least
@@ -34,10 +34,10 @@
 
 	<p>
 	The servers joining should not have <tt>pool.ntp.org</tt> as their upstream
-	server(s), but should configure some <a href="http://support.ntp.org/bin/view/Servers/StratumTwoTimeServers">good servers</a> manually (those servers
+	server(s), but should configure some <a href="https://support.ntp.org/Servers/StratumTwoTimeServers/">good servers</a> manually. Those servers
 	<b>may</b> be chosen from the pool. The point is that they are chosen
-	statically instead of assigned randomly at each server restart.  This
-	will help providing an acceptable quality of service.)
+	statically instead of being assigned randomly from the pool at each server
+	restart.  This will help providing an acceptable quality of service.
 
 	Note that it is not required that your server is a stratum 1 or 2
 	server - as this project is about load distribution mostly, there is
@@ -49,7 +49,7 @@
 	</p>
 	<p>Finally, I must emphasize that joining the pool is a <b>long term
 	commitment</b>.  We are happy to take you out of the pool again if your
-	circumstances change, but because of how the ntp clients operate <b>it
+	circumstances change, but because of how the NTP clients operate <b>it
 	will take weeks, months or even YEARS before the traffic completely
     goes away</b>.
 	</p>
@@ -62,13 +62,13 @@
 	</p>
 
 	<p>
-	Please also join the <a href="[% language_url("/mailinglists.html") %]">community forums</a>
+	Please also join the <a href="[% language_url("/mailinglists.html") %]">community forum</a>
 	</p>
 
 	<p>
 	It would be nice (but it's not necessary) if you could redirect web requests
 	on port 80 of your time server to the official web page of the project at
-	<tt>https://www.ntppool.org</tt>. If you run Apache, you could do this with:
+	<tt>https://www.ntppool.org/</tt>. If you run Apache, you could do this with:
 	</p>
 
         [% PROCESS tpl/join/virtual_host_example.html %]

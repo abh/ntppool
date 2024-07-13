@@ -41,7 +41,7 @@ msgstr "Übersetzungen"
 
 # mailinglists.html
 msgid  "NTP Pool mailing lists"
-msgstr "NTP Pool Mailinglisten"
+msgstr "NTP Pool Forum"
 
 msgid  "subscribe"
 msgstr "abonnieren"
@@ -74,10 +74,10 @@ msgid  "discussion_list_description"
 msgstr "Serveradministratoren (und Benutzer), die sich am NTP-Pool-Projekt beteiligen wollen, sind in diesem Verteiler herzlich Willkommen.<br/>Über allgemeine Themen rund um NTP sollte jedoch in der Usenet Newsgruppe %1 diskutiert werden (siehe auch <a href=\"%2\">Google Groups</a>)."
 
 msgid  "development_list_description"
-msgstr "Technische (und idealerweise immer pragmatische) Diskussionen über die aktuelle Entwicklung des <a href=\"%1\">NTP-Pool Quellcodes</a> und <a href=\"%2\">GeoDNS</a> werden über den <i>timekeepers-dev</i>-Verteiler geführt."
+msgstr "Technische (und idealerweise immer pragmatische) Diskussionen über die Weiterentwicklung des <a href=\"%1\">NTP-Pool</a> und <a href=\"%2\">GeoDNS Quellcodes</a> werden im <a href=\"%3\">Forum</a> geführt."
 
 msgid  "forum_description"
-msgstr "Fragen (und Antworten) über den NTP Pool, Vorschläge zur Verbesserung und Themen über das behalten von Zeiten und betreiben eines eigenen NTP Servers"
+msgstr "Fragen (und Antworten) zum NTP Pool, Verbesserungsvorschl&auml;ge und Themen rund um Zeithaltung und das Betreiben eines eigenen NTP Servers: "
 
 msgid  "news_description"
 msgstr "Neuigkeiten und Ankündigungen werden auf der Nachrichtenseite des Forums gepostet"
@@ -102,10 +102,10 @@ msgid  "This server is <span class=\"deletion\">scheduled for deletion</span> on
 msgstr "Dieser Server ist zur <span class=\"deletion\">Löschung</span> am %1 markiert."
 
 msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
-msgstr "Aktuelle Bewertung: %1 (Nur Server mit einer Bewertung über %2 werden in den Pool aufgenommen)"
+msgstr "Aktuelle Bewertung: %1 (Nur Server mit einer Bewertung über %2 werden in den Pool aufgenommen.)"
 
 msgid  "What do the graphs mean?"
-msgstr "Was bedeuten diese Graphen?"
+msgstr "Was stellen diese Diagramme dar?"
 
 msgid  "CSV log"
 msgstr "CSV Protokoll"
@@ -124,7 +124,7 @@ msgid  "Information for vendors"
 msgstr "Informationen für Hersteller"
 
 msgid  "The mailing lists"
-msgstr "E-Mail-Verteiler"
+msgstr "Forum"
 
 msgid  "Additional links"
 msgstr "Zusätzliche Links"
@@ -134,7 +134,7 @@ msgstr "Können Sie übersetzen?"
 
 # index.html
 msgid  "Introduction"
-msgstr "Anleitung"
+msgstr "Einf&uuml;hrung"
 
 msgid  "Active Servers"
 msgstr "Aktive Server"
@@ -143,10 +143,10 @@ msgid  "Links"
 msgstr "Links"
 
 msgid  "Terms of service"
-msgstr "Nutzungsbedinungen"
+msgstr "Nutzungsbedingungen"
 
 msgid  "Subscribe in a reader"
-msgstr "Einen Leser abonnieren"
+msgstr "Mit einem Newsreader abonnieren"
 
 msgid  "Older news"
 msgstr "Ältere Neuigkeiten"
