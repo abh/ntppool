@@ -26,11 +26,11 @@
 
 <h4 id="management-queries">Management queries</h4>
 
-<p>Verbiete in der Standard Konfiguration die "management queries". Für ntpd this muss man die "noquery" Einstellung in die Standard "restrict" Zeile hinzuf&uuml;gen. Zum Beispiel:</p>
+<p>Verbiete in der Standard Konfiguration die "management queries". Für ntpd muss man dazu die "noquery" Option in der "restrict" Zeile hinzuf&uuml;gen. Zum Beispiel:</p>
 
 [% INCLUDE "join/configuration/restrict-default.html" %]
 
-<p>Um Befehle wie "ntpq -c pe" vom lokalen Ger&auml;t zu erlauben kann man folgenden Eintrag hinzufügen:</p>
+<p>Um Befehle wie "ntpq -c pe" vom lokalen Ger&auml;t zu erlauben, kann man folgenden Eintrag hinzufügen:</p>
 
 [% INCLUDE "join/configuration/restrict-localhost.html" %]
 
@@ -60,7 +60,7 @@
  F&uuml;r einen robusten und gesunden Pool ist es das Beste, Sie w&auml;hlen den
  f&uuml;r Sie am besten funktionierenden Zeitserver in Ihrer Umgebung. Das
  NTP.org Wiki hat daf&uuml;r eine <a
- href="http://support.ntp.org/bin/view/Servers/WebHome">Liste &ouml;ffentlicher
+ href="https://support.ntp.org/Servers/">Liste &ouml;ffentlicher
  Server</a>.
 </p>
 
@@ -68,7 +68,7 @@
 
 <p>
  Softwarealternativen sind prinzipiell etwas Gutes, jedoch hat sich
- herausgestellt, das der Gro&szlig;teil der aufgetretenen Problem durch den
+ herausgestellt, das der Gro&szlig;teil der aufgetretenen Probleme durch den
  Einsatz des Standard <tt>ntpd</tt>-Dienst behoben werden konnte.
 </p>
 
@@ -90,12 +90,12 @@
  Server im NTP Pool sollten auf den Einsatz der lokalen Uhrzeit verzichten.
 </p>
 
-<h4>Beachten sie die PTR DNS Anfragen</h4>
+<h4>Beachten Sie die PTR DNS Anfragen</h4>
 
 <p>Manche Server Betreiber haben festgestellt, dass NTP Nutzer (oder deren Firewall)
-eine "Reverse DNS" (PTR) Anfrage auf die Server IP ausf&uuml;hren.
-Dies kann zu einem Anstieg an Anfragen auf dem Server f&uuml;hren.
-Deswegen wird empfohlen die "time to live" (TTL) dieser Einträge zu erhöhen.
+"Reverse DNS" (PTR) Anfragen zu Server IP Adressen ausf&uuml;hren.
+Dies kann zu einem Anstieg an Anfragen auf dem DNS Server f&uuml;hren.
+Deswegen wird empfohlen, die "time to live" (TTL) dieser PTR Einträge zu erhöhen.
 Dies reduziert die Anzahl der Anfragen deutlich.
 </p>
 

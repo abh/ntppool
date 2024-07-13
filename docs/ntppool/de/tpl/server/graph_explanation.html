@@ -1,31 +1,31 @@
 <div id="graph_explanation_box" class="graph_explanation [% graph_explanation ? 'visible' : '' %]">
 
-<h3>Das Punktediagram</h3>
+<h3>Das Punktediagramm</h3>
 
 <p>
  Mehrmals pro Stunde wird die Zeit Ihres Zeitservers mit der
  tats&auml;chlichen Zeit verglichen. Sollte Ihr Server nicht erreichbar sein,
- oder geht Ihre Uhr mehr als 100 ms falsch, werden Ihnen Punkte abgezogen.
+ oder geht Ihre Uhr mehr als 100ms falsch, werden Ihnen Punkte abgezogen.
  F&uuml;r gr&ouml;&szlig;ere Fehler werden mehr Punkte abgezogen.
 </p>
 
 <p>
  Wenn Ihr Punktestand f&auml;llt, zeigt Ihnen die Hintergrundfarbe in der oberen
- H&auml;lfte des Diagrams die Schwere des Punkteabzugs an. Die Farbskala geht
- von blaub f&uuml;r sehr kleine Fehler &uuml;ber gelb und orange bis rot, falls
+ H&auml;lfte des Diagramms die Schwere des Punkteabzugs an. Die Farbskala geht
+ von blau f&uuml;r sehr kleine Fehler &uuml;ber gelb und orange bis rot, falls
  der Zeitfehler mehrere Sekunden betr&auml;gt oder Ihr Server nicht erreichbar ist.
- Durch die eingesetzte Mittelung kann es teilweise sehr schwer werden auf die
+ Durch die eingesetzte Mittelung kann es teilweise sehr schwer werden, auf die
  Ursache des Punkteabzugs zu schlie&szlig;en. Das Diagramm dient lediglich als
  Werkzeug zur Visualisierung eines Trends. Die exakten Ergebnisse des
  &Uuml;berwachungssystems k&ouml;nnen als CSV-Datei heruntergeladen werden.
 </p>
 
-<h3>Das Versatzdiagram</h3>
+<h3>Das Versatzdiagramm</h3>
 
 <p>
  Das &Uuml;berwachungssystem funktioniert etwa wie ein <a
-  href="http://www.ntp.org/ntpfaq/NTP-s-def.htm#AEN1242">SNTP</a> (<a
-  href="http://www.eecis.udel.edu/~mills/database/rfc/rfc2030.txt">RFC 2030</a>)
+  href="https://www.ntp.org/ntpfaq/NTP-s-def/#412-what-is-sntp">SNTP</a> (<a
+  href="https://www.eecis.udel.edu/~mills/database/rfc/rfc2030.txt">RFC 2030</a>)
   Client, so dass es viel empfindlicher auf Netzwerklatenzen zwischen Server und
   &Uuml;berwachungssystem reagiert, als ein normaler <tt>ntpd</tt>-Dienst. In
   anderen Worten: Die Diagramme k&ouml;nnen nicht zur absoluten Leistungsmessung
@@ -33,4 +33,3 @@
 </p>
 
 </div>
-
