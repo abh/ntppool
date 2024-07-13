@@ -26,12 +26,6 @@
 	per ogni server.  In parole semplici, ti serviranno almeno 384-512Kbit
 	di banda (in ingresso e in uscita).
 	</p>
-	<p>
-	Qui trovi alcuni server con grafico traffico/carico:
-	[% i = 0; FOR server = combust.servers_with_urls; %]
-	   <a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
-	[% END %]
-	</p>
 
 	<p>
 	I server che aderiscono non dovrebbero avere <tt>pool.ntp.org</tt> come loro

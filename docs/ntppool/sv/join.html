@@ -26,12 +26,6 @@
 	alltför mycket.  I realiteten, behöver du nog ha en anslutning på
 	minst 384-512Kbit/s (både upp- och nedströms).
 	</p>
-	<p>
-	Här är några servrar med grafer för trafik och belastning:
-	[% i = 0; FOR server = combust.servers_with_urls; %]
-	   <a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
-	[% END %]
-	</p>
 
 	<p>
 	Servrar som går med skall inte använda <tt>pool.ntp.org</tt> för sin

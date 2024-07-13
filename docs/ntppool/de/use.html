@@ -36,7 +36,7 @@
   Da <tt>pool.ntp.org</tt> zuf&auml;llige Zeitserver aus der ganzen
   Welt zuweist, kann es zu einer ungenauen Synchronisation kommen. F&uuml;r
   etwas bessere Ergebnisse empfielt es sich, eine der
-  <a href="/zone/@">kontinentalen Zonen</a> (z. B.
+  <a href="/zone/@">kontinentalen Zonen</a> (z.B.
   <a href="/zone/europe">europe</a>,
   <a href="/zone/north-america">north-america</a>,
   <a href="/zone/oceania">oceania</a>
@@ -44,7 +44,7 @@
   oder gar noch besser eine L&auml;nderzone wie zum Beispiel
   <i>ch.pool.ntp.org</i> in der Schweiz oder <i>de.pool.ntp.org</i> in
   Deutschland zu benutzen. Auch in diesen Zonen k&ouml;nnen wieder die Ziffern
-  0, 1, 2 oder 3 vorangestellt werden (z. B. 0.de.pool.ntp.org).
+  0, 1, 2 oder 3 vorangestellt werden (z.B. 0.de.pool.ntp.org).
   Bitte beachten Sie, dass nicht alle L&auml;nderzonen existieren, oder
   darin nur wenige Zeitserver enthalten sein k&ouml;nnen. Sollten Sie einen
   Zeitserver kennen, der sich in Ihrer N&auml;he befindet, wird die
@@ -73,7 +73,7 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 
  <p>
   Der <i>ntpd</i>-Dienst wurde von Meinberg auf Windows portiert: <a
-  href="http://www.meinberg.de/german/sw/ntp.htm">ntpd f&uuml;r Windows</a>.
+  href="https://www.meinberg.de/german/sw/ntp.htm">ntpd f&uuml;r Windows</a>.
  </p>
 
  <p>
@@ -89,7 +89,7 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 <div class="block">
  <h3>Zus&auml;tzliche Anmerkungen</h3>
  <p><span class="hook">Wenn Sie &uuml;ber eine statische IP-Adresse und eine
-   vern&uuml;nftige Bandbreite verf&uuml;gen</span> (die Bandbreite ist weniger
+  vern&uuml;nftige Bandbreite verf&uuml;gen</span> (die Bandbreite ist weniger
   relevant als eine stabile Anbindung), erw&auml;gen Sie bitte, Ihren Server in
   den NTP Pool mit aufnehmen zu lassen. Der zus&auml;tzlich entstehende Verkehr
   betr&auml;gt im Allgemeinen nicht mehr als ein paar hundert Byte pro
@@ -99,7 +99,7 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
  </p>
 
  <p><span class="hook">Verf&uuml;gt Ihr Internetanbieter &uuml;ber einen
-   Zeitserver</span> oder Sie kennen einen guten Zeitserver in Ihrer
+  Zeitserver</span> oder Sie kennen einen guten Zeitserver in Ihrer
   N&auml;he, sollten Sie diesen nutzen anstelle des NTP Pools. Die
   Zeitsynchronisation wird dadurch besser und es werden weniger
   Netzwerkressourcen genutzt. Selbstverst&auml;ndlich k&ouml;nnen
@@ -107,7 +107,7 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
   Servern hinzuf&uuml;gen.</p>
 
  <p><span class="hook">In seltenen F&auml;llen kann es passieren, dass Ihnen
-   der gleiche Zeitserver zweimal zugewiesen wurde</span>. In einem solchen
+  der gleiche Zeitserver zweimal zugewiesen wird</span>. In einem solchen
   Fall hilft ein einfaches Neustarten des <i>ntpd</i>-Dienstes.
   Wenn Sie L&auml;nderzonen einsetzen, in denen nur wenige Zeitserver
   registriert sind, steigt jedoch die Wahrscheinlichkeit eines solchen Falles.
@@ -127,8 +127,8 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
   selbst kennt keine Zeitzonen - es arbeitet intern mit UTC.</p>
 
  <p><span class="hook">Wenn Sie ein Netzwerk mit pool.ntp.org synchronisieren
-   m&ouml;chten</span>, setzen Sie bitte einen Ihrer Server als Zeitserver
-  ein, der dann als einziger den NTP Pool nutzt und synchronisieren Sie alle anderen
+  m&ouml;chten</span>, setzen Sie bitte einen Ihrer Server als Zeitserver
+  ein, der dann als einziger den NTP Pool nutzt, und synchronisieren Sie alle anderen
   Computer mit diesem. Das Aufsetzten eines eigenen Zeitservers ist nicht
   weiter schwierig, erfordert allerdings, ein paar Seiten der Anleitung zu lesen.
   Bei Schwierigkeiten wird Ihnen sicherlich die <a href="news:comp.protocols.time.ntp"

@@ -24,12 +24,6 @@
   dramatisk for hver tjener. I korte trekk, trenger du nok minst 384-512Kb/s
   båndbredde (både inn- og utgående).
 	</p>
-	<p>
-	Her er noen tjenere med trafikk-/belastnings-grafer:
-	[% i = 0; FOR server = combust.servers_with_urls; %]
-	   <a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
-	[% END %]
-	</p>
 
 	<p>
 	Tjenerne som blir med burde ikke bruke <tt>pool.ntp.org</tt> som sin(e) oppstrømstjener(e),

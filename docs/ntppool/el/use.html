@@ -4,7 +4,7 @@
 	<h3 id="use">How do I use pool.ntp.org?</h3>
 
 	<p>
-	If you just want to synchronise your computers clock to the network, the configuration file (for the ntpd program from the <a href="https://www.ntp.org">ntp.org distribution</a>, on any supported operating system - <b>Linux, *BSD, Windows and even some more exotic systems</b>) is really simple:
+	If you just want to synchronise your computer's clock to the network, the configuration file (for the ntpd program from the <a href="https://www.ntp.org/">ntp.org distribution</a>, on any supported operating system - <b>Linux, *BSD, Windows and even some more exotic systems</b>) is really simple:
 	</p>
 
 	[% INCLUDE "ntppool/use/sample-config.html" %]
@@ -39,11 +39,11 @@
 	or <a href="/zone/asia">asia</a>.pool.ntp.org),
 	and a country zone (like
 	ch.pool.ntp.org in Switzerland) - for all these zones, you can again use the 0,
-	1 or 2 prefixes, like 0.ch.pool.ntp.org.  Note, however, that the country zone
+	1, 2, or 3 prefixes, like 0.ch.pool.ntp.org.  Note, however, that the country zone
 	might not exist for your country, or might contain only one or two timeservers.
 	</p>
 	<p>
-	If you're using <b>a recent Windows version</b>, you can use the ntp
+	If you're using <b>a recent Windows version</b>, you can use the NTP
 	client that is built into the system. As administrator enter</p>
 <pre class="code">
 w32tm /config /syncfromflags:manual /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"

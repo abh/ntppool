@@ -27,13 +27,6 @@
 	</p>
 
 	<p>
-	Aqu&iacute; tienes algunos servidores con gr&aacute;ficos de tr&aacute;fico y carga:
-	[% i = 0; FOR server = combust.servers_with_urls; %]
-	   <a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
-	[% END %]
-	</p>
-
-	<p>
 	Los servidores participantes no deber&iacute;an tener configurado <tt>pool.ntp.org</tt> como servidor
 	de referencia, por el contrario debes configurar algunos <a href="https://support.ntp.org/Servers/StratumTwoTimeServers/">servidores fiables</a>
 	manualmente (estos servidores <b>se pueden</b> elegir de la lista de servidores. La idea es

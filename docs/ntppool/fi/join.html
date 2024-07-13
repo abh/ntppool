@@ -31,13 +31,6 @@
 	</p>
 
 	<p>
-	Joidenkin palvelimien liikenne-/kuormakäyriä:
-	[% i = 0; FOR server = combust.servers_with_urls; %]
-	   <a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
-	[% END %]
-	</p>
-
-	<p>
 	Liittyvien palvelimien ei pidä käyttää <tt>pool.ntp.org</tt>:ia
 	omana aikapalvelimenaan, vaan määrittää muutama
   <a href="https://support.ntp.org/Servers/StratumTwoTimeServers/">hyvä palvelin</a> manuaalisesti.

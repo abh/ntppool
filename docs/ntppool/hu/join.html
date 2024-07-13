@@ -20,12 +20,6 @@
 	A projekt folyamatosan egyre több szerverrel bővül, ezzel megakadályozva, hogy az egyes kiszolgálókra egyre nagyobb feladat háruljon.
 	Röviden tehát, minimum kb. 384-512Kbps ki és bemenő sávszélességre van szükség.
 	</p>
-	<p>
-	Néhány szerver forgalmi és terheltségi grafikonja:
-	[% i = 0; FOR server = combust.servers_with_urls; %]
-	   <a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
-	[% END %]
-	</p>
 
 	<p>
 	A csatlakozni kívánó szerveren időszinkronizálás céljából a <tt>pool.ntp.org</tt> 

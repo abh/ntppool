@@ -27,13 +27,6 @@
 	</p>
 
 	<p>
-	Вот несколько серверов, для которых строятся графики по трафику и загрузке:
-	[% i = 0; FOR server = combust.servers_with_urls; %]
-	   <a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
-	[% END %]
-	</p>
-
-	<p>
 	Сервер, входящий в пул, не&nbsp;должен использовать для синхронизации
 	<tt>pool.ntp.org</tt>. Рекомендуем вручную выбирать сервера для синхронизации
 	из <a href="https://support.ntp.org/Servers/StratumTwoTimeServers/">этого</a> списка.

@@ -27,12 +27,6 @@
 	elke server. Plat gezegd heb je in ieder geval ongeveer 384-512 Kbit/sec
 	nodig (in- en uitgaand).
 	</p>
-	<p>
-	Hier zijn enkele servers met verkeer/belasting grafieken:
-	[% i = 0; FOR server = combust.servers_with_urls; %]
-	   <a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
-	[% END %]
-	</p>
 
 	<p>
 	De servers die deelnemen moeten niet <tt>pool.ntp.org</tt> als hun
