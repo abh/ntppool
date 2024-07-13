@@ -40,25 +40,24 @@ process needs full root access to a kernel).
 
     <dt>Operating System</dt>
     <dd>
-        A minimal-ish install of (64-bit, x86_64) CentOS or
-        Ubuntu LTS.  Our software also works with FreeBSD, but we
-        prefer not maintaining the base system on other operating
-        systems than Ubuntu and CentOS, so if the system runs FreeBSD
-        we prefer getting a jail on a well maintained system.
+        A minimal-ish install of (64-bit, x86_64) Ubuntu LTS.
+
+        Our software also works with Enterprise Linux and FreeBSD, but
+        our automation is most tested with Ubuntu.
     </dd>
 
     <dt>CPU</dt>
 
-    <dd>Any two or more core 64-bit CPU from the last decade will do a nice job
+    <dd>Any two or more core 64-bit CPU from the last decade will do a nice job.
     </dd>
 
     <dt>RAM</dt>
-    <dd>Minimum 1.5GB, ideally 2-4GB to ease system maintenance tasks.
+    <dd>Minimum 2GB; 3-4GB preferred if possible.
     </dd>
 
     <dt>Disk space</dt>
     <dd>
-        8GB or more, again mostly to allow for system updates etc. There
+        12GB or more, again mostly to allow for system updates etc. There
         are no specific performance requirements for disk IO.
     </dd>
 
@@ -76,7 +75,8 @@ process needs full root access to a kernel).
         <br><br>
         During certain times of the hour and the day the rate goes up significantly
         for a few seconds. If you are in a country with poor DNS server coverage
-        but can't serve that many requests, we have tools to give you less traffic.
+        but can't serve that many requests, we have tools to send less traffic to
+        a particular DNS server.
     </dd>
 
     <dt>Software</dt>
