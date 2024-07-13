@@ -24,12 +24,6 @@
 	384-512Kbit (příchozí i odchozí).
 	</p>
 	<p>
-	Zde je několik serverů s grafy provozu/zátěže:
-	[% i = 0; FOR server = combust.servers_with_urls; %]
-	   <a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
-	[% END %]
-	</p>
-	<p>
 	Servery, které se připojují by neměly mít <tt>pool.ntp.org</tt> nastaven
 	mezi svými nadřazenými servery, ale měly by mít nastaveny některé z
 	<a href="https://support.ntp.org/Servers/StratumTwoTimeServers/">dobrých serverů</a>

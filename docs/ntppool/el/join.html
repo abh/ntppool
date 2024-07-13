@@ -25,12 +25,6 @@
 	each server.  In plain terms, you probably need at least
 	384-512Kbit bandwidth (in and out-going).
 	</p>
-	<p>
-	Here are a few servers with traffic/load graphs:
-	[% i = 0; FOR server = combust.servers_with_urls; %]
-	   <a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
-	[% END %]
-	</p>
 
 	<p>
 	The servers joining should not have <tt>pool.ntp.org</tt> as their upstream

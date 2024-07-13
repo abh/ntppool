@@ -25,12 +25,6 @@
 	각 서버당 부하량이 갑자기 늘어나는 일은 없을 것입니다.
 	쉽게 말해 귀하는 최소 384~512Kbit 의 (양방향) 대역폭이 필요합니다.
 	</p>
-	<p>
-	몇 개 서버의 대역폭/부하 그래프는 다음과 같습니다.
-	[% i = 0; FOR server = combust.servers_with_urls; %]
-	   <a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
-	[% END %]
-	</p>
 
 	<p>
 	합류하는 서버에 <tt>pool.ntp.org</tt>를 상위 서버로 설정해서는 안됩니다.

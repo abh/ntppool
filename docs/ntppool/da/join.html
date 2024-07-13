@@ -24,12 +24,6 @@
 	enkelte server. Sagt lige ud vil du få brug for en 384-512 Kbit
 	forbindelse (begge retninger).
 	</p>
-	<p>
-	Her er et par servere med trafik/belastnings grafer:
-	[% i = 0; FOR server = combust.servers_with_urls; %]
-	   <a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
-	[% END %]
-	</p>
 
 	<p>
 	Tilmeldte servere bør ikke have <tt>pool.ntp.org</tt> som deres upstream server(e),

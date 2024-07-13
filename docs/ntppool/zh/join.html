@@ -21,12 +21,6 @@
 	这个项目稳步获取更多的时间服务器，所以每一台服务器的负载不会极具增加。
 	在普通条件下，您可能需要最少384-512Kbit的（上行和下行）带宽。
 	</p>
-	<p>
-	这是一些具有流量/负载图表的服务器：
-	[% i = 0; FOR server = combust.servers_with_urls; %]
-	   <a href="/scores?ip=[% server.ip %]">[% i=i+1; i %]</a>
-	[% END %]
-	</p>
 
 	<p>
 	加入计划的服务器不能把 <tt>pool.ntp.org</tt> 用作上游服务器，而是需要手动设置一些<a href="https://support.ntp.org/Servers/StratumTwoTimeServers/">好的服务器</a>(这些服务器
