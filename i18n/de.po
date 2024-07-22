@@ -93,7 +93,7 @@ msgid  "Stats for %1"
 msgstr "Statistiken für %1"
 
 msgid  "Not active in the pool, monitoring only"
-msgstr "Nicht im Pool aktiv, nur Überwachung."
+msgstr "Nicht im Pool aktiv, nur Überwachung"
 
 msgid  "Zones:"
 msgstr "Zonen:"
