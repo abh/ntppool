@@ -1,7 +1,7 @@
 [% page.title = 'Использование пула NTP' %]
 
 <div class="block">
-	<h3><a name="use"></a>Как пользоваться пулом NTP?</h3>
+	<h3 id="use">Как пользоваться пулом NTP?</h3>
 
 	<p>
 	Если вы используете программу ntpd из <a href="https://www.ntp.org">комплекта, рапространяемого ntp.org</a>
@@ -56,12 +56,10 @@
 net time /setsntp:pool.ntp.org
 </pre>
 	<p>
-	В некоторых версиях Windows можно указывать более одного сервера:
+	В некоторых версиях Windows можно указывать более одного сервера:</p>
 <pre class="code">
 net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 </pre>
-	</p>
-
 	<p>
 	Это должно работать на Windows 2000/XP/2003. Также вы можете, войдя в
 	систему с правами администратора, щелкнуть правой кнопкой мыши по часам на

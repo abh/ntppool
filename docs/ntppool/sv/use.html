@@ -1,7 +1,7 @@
 [% page.title = 'Hur konfigurerar jag NTP för att använda poolen?' %]
 
 <div class="block">
-	<h3><a name="use"></a>Hur använder jag pool.ntp.org?</h3>
+	<h3 id="use">Hur använder jag pool.ntp.org?</h3>
 
 	<p>
 	Om du helt enkelt vill synkronisera din dators tid med nätverket, så är
@@ -55,17 +55,17 @@ w32tm /config /syncfromflags:manual /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.o
 </pre>
 	<p>
 	i ett kommandofönster.  Det fungerarar på Windows 2003 och nyare.  På äldre version
-	av Windows kan du prova
+	av Windows kan du prova</p>
 <pre class="code">
 net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
 </pre>
-	Samma resultat kan erhållas om du, som administratör, högerklickar på klockan
+	<p>Samma resultat kan erhållas om du, som administratör, högerklickar på klockan
 	i aktivitetsfältet och väljer 'Ändra datum/tid' och sedan anger servernamnet
 	under fliken för 'Internettid'.
 	</p>
 
 	<p>
-	Meinberg har porterat <a href="http://www.meinberg.de/english/sw/ntp.htm">ntp daemon till windows</a>.
+	Meinberg har porterat <a href="http://www.meinberg.de/english/sw/ntp.htm">ntp daemon till Windows</a>.
 	</p>
 
 	<p>

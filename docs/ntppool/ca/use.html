@@ -1,7 +1,7 @@
 [% page.title = 'Com he de configurar NTP per fer servir el pool?' %]
 
 <div class="block">
-	<h3><a name="use"></a>Com faig servir pool.ntp.org?</h3>
+	<h3 id="use">Com faig servir pool.ntp.org?</h3>
 
 	<p>
 	Si només voleu sincronitzar el rellotge del vostre ordinador amb la xarxa,
@@ -55,11 +55,10 @@ w32tm /config /syncfromflags:manual /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.o
 </pre>
 	<p>
 	Això funcionarà amb Windows 2003 o versions més recents. Si en feu servir una versió més
-    antiga, podeu provar el següent:
+	antiga, podeu provar el següent:</p>
 <pre class="code">
 net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
 </pre>
-	</p>
 	<p>
 	El mateix es pot aconseguir fent clic (com a administrador) amb el botó dret
 	sobre la icona del rellotge a la barra de tasques, seleccionant 'Ajusta la data i l'hora'
