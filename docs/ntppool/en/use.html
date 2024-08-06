@@ -10,7 +10,7 @@
 	[% INCLUDE "ntppool/use/sample-config.html" %]
 
 	<p>
-	The 0, 1, 2 and 3.pool.ntp.org names point to a random set of servers that will
+	The 0, 1, 2 and <code>3.pool.ntp.org<code/> names point to a random set of servers that will
 	change every hour.  Make sure your computer's clock is set to something
 	sensible (within a few minutes of the 'true' time) - you could use <code>ntpdate
 	pool.ntp.org</code>, or you could just use the <code>date</code> command and set it
@@ -36,28 +36,28 @@
 	<a href="/zone/europe">europe</a>,
 	<a href="/zone/north-america">north-america</a>,
 	<a href="/zone/oceania">oceania</a>
-	or <a href="/zone/asia">asia</a>.pool.ntp.org),
+	or <code><a href="/zone/asia">asia</a>.pool.ntp.org</code>),
 	and a country zone (like
-	ch.pool.ntp.org in Switzerland) - for all these zones, you can again use the 0,
+	<code>ch.pool.ntp.org</code> in Switzerland) - for all these zones, you can again use the 0,
 	1, 2, or 3 prefixes, like <code>0.ch.pool.ntp.org</code>.  Note, however, that the country zone
 	might not exist for your country, or might contain only one or two timeservers.
 	</p>
 	<p>
 	If you're using <b>a recent Windows version</b>, you can use the ntp
 	client that is built into the system.</p>
-	<p>Right click the data time in system area and select Adjust Date/time or open up settings with Win+I and click Time & Language -> Date & Time.
+	<p>Right click the data time in system area and select Adjust Date/time or open up settings with Win+I and click Time &amp; Language -&gt; Date &amp; Time.
 		scroll down and click Date, time, regional formatting
-		scroll down and click Additional date, time & regional settings
+		scroll down and click Additional date, time &amp; regional settings
 		click Date and Time and Internet Time
 		click the Change settings button. Enter <code>pool.ntp.org</code> and click Update now.</p>
 	<p>
-		Test by Right click the data time in system area and select Adjust Date/time or open up settings with Win+I and click Time & Language -> Date & Time.
+		Test by Right click the data time in system area and select Adjust Date/time or open up settings with Win+I and click Time &amp; Language -&gt; Date &amp; Time.
 		Click the "Sync now" button.
 	</p>
 	<p>
 	If your Windows system is part of a domain, you might not be able to independently update your computer time.
 
-	For more information about setting the time on windows, see <a href="https://technet.microsoft.com/en-us/library/cc773013%28WS.10%29.aspx">How Windows Time Service Works</a>.
+	For more information about setting the time on Windows, see <a href="https://technet.microsoft.com/en-us/library/cc773013%28WS.10%29.aspx">How Windows Time Service Works</a>.
 	</p>
 </div>
 

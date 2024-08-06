@@ -1,7 +1,7 @@
 [% page.title = '풀을 사용하려면 NTP 설정을 어떻게?' %]
 
 <div class="block">
-	<h3><a name="use"></a>pool.ntp.org를 사용하려면 어떻게?</h3>
+	<h3 id="use">pool.ntp.org를 사용하려면 어떻게?</h3>
 
 	<p>
 	귀하의 컴퓨터의 시간을 네트웍 시간과 맞추기 위한 설정파일은 매우 간단합니다.
@@ -61,11 +61,10 @@ net time /setsntp:pool.ntp.org
 </pre>
 
 	<p>
-	어떤 윈도우즈 버전은 다음과 같이 여러 개의 서버를 지정할 수 있습니다.
+	어떤 윈도우즈 버전은 다음과 같이 여러 개의 서버를 지정할 수 있습니다.</p>
 <pre class="code">
 net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 </pre>
-	</p>
 	<p>
 	윈도우즈 2000/XP/2003 에서 동작하는 것으로 알려져 있습니다.
 	이렇게 하지 않아도 윈도우즈 화면의 태스크바에 있는 시계에 마우스를 갖다 대고 오른쪽 클릭을 한 후

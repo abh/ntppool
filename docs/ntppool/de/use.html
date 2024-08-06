@@ -1,18 +1,18 @@
 [% page.title = 'Wie benutze ich den NTP Pool?' %]
 
 <div class="block">
- <h3><a name="use"></a>Wie benutze ich pool.ntp.org?</h3>
+ <h3 id="use">Wie benutze ich pool.ntp.org?</h3>
 
  <p>
   Zur Synchronisation der Uhrzeit Ihres Computers nutzen Sie die folgende,
-  einfache Konfiguration f&uuml;r den <a href="https://www.ntp.org">ntpd</a>
+  einfache Konfiguration f&uuml;r den <a href="https://www.ntp.org/">ntpd</a>
   Dienst, unabh&auml;ngig davon, welches Betriebssystem Sie einsetzen:
  </p>
 
  [% INCLUDE "ntppool/use/sample-config.html" %]
 
  <p>
-  Die Ziffern 0, 1, 2 und 3 zusammen mit <i>pool.ntp.org</i> zeigen auf
+  Die Ziffern 0, 1, 2 und 3 zusammen mit <code>pool.ntp.org</code> zeigen auf
   einen Satz von Servern, der sich st&uuml;ndlich &auml;ndert. Bevor der
   <i>ntpd</i>-Dienst gestartet werden kann, muss die Systemzeit grob (im
   Bereich weniger Minuten) eingestellt werden. Das kann manuell mit
@@ -33,18 +33,18 @@
   ab jetzt nicht mehr darum sorgen.
  </p>
  <p>
-  Da <tt>pool.ntp.org</tt> zuf&auml;llige Zeitserver aus der ganzen
+  Da <code>pool.ntp.org</code> zuf&auml;llige Zeitserver aus der ganzen
   Welt zuweist, kann es zu einer ungenauen Synchronisation kommen. F&uuml;r
   etwas bessere Ergebnisse empfielt es sich, eine der
   <a href="/zone/@">kontinentalen Zonen</a> (z.B.
   <a href="/zone/europe">europe</a>,
   <a href="/zone/north-america">north-america</a>,
   <a href="/zone/oceania">oceania</a>
-  oder <a href="/zone/asia">asia</a>.pool.ntp.org),
+  oder <code><a href="/zone/asia">asia</a>.pool.ntp.org</code>),
   oder gar noch besser eine L&auml;nderzone wie zum Beispiel
-  <i>ch.pool.ntp.org</i> in der Schweiz oder <i>de.pool.ntp.org</i> in
+  <code>ch.pool.ntp.org</code> in der Schweiz oder <code>de.pool.ntp.org</code> in
   Deutschland zu benutzen. Auch in diesen Zonen k&ouml;nnen wieder die Ziffern
-  0, 1, 2 oder 3 vorangestellt werden (z.B. 0.de.pool.ntp.org).
+  0, 1, 2 oder 3 vorangestellt werden (z.B. <code>0.de.pool.ntp.org</code>).
   Bitte beachten Sie, dass nicht alle L&auml;nderzonen existieren, oder
   darin nur wenige Zeitserver enthalten sein k&ouml;nnen. Sollten Sie einen
   Zeitserver kennen, der sich in Ihrer N&auml;he befindet, wird die
@@ -58,11 +58,10 @@
 <pre class="code">
 w32tm /config /syncfromflags:manual /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 </pre>
-Dieses Kommando funktioniert auf Versionen ab Windows 2003. Wenn Sie eine ältere Windows-Version benutzen, können Sie folgendes Kommando probieren:
+<p>Dieses Kommando funktioniert auf Versionen ab Windows 2003. Wenn Sie eine ältere Windows-Version benutzen, können Sie folgendes Kommando probieren:</p>
 <pre class="code">
 net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 </pre>
- </p>
  <p>
   Das Gleiche kann als Administrator erreicht werden, wenn Sie mit der rechten
   Maustaste auf die Uhrzeit in der Systemleiste klicken und dann auf

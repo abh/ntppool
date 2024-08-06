@@ -10,7 +10,7 @@ Si vous voulez simplement synchroniser les horloges de vos ordinateurs au résea
 [% INCLUDE "ntppool/use/sample-config.html" %]
 
 <p>
-Les noms 0, 1, 2 et 3.pool.ntp.org pointent vers un ensemble aléatoire de serveurs qui change à toutes les heures. S'assurer que l'horloge de votre ordinateur est réglée à une heure qui se situe tout près de l'heure réelle). Vous pouvez utiliser <tt>ntpdate pool.ntp.org</tt> ou simplement la commande <tt>date</tt> pour mettre l'horloge de votre ordinateur à l'heure de votre montre. Démarrez ntpd et après un certain temps (cela peut durer jusqu'à une demi-heure !), la commande <tt>ntpq -pn</tt> devrait vous donner un résultat semblable à celui-ci:
+Les noms 0, 1, 2 et <code>3.pool.ntp.org</code> pointent vers un ensemble aléatoire de serveurs qui change à toutes les heures. S'assurer que l'horloge de votre ordinateur est réglée à une heure qui se situe tout près de l'heure réelle. Vous pouvez utiliser <tt>ntpdate pool.ntp.org</tt> ou simplement la commande <tt>date</tt> pour mettre l'horloge de votre ordinateur à l'heure de votre montre. Démarrez ntpd et après un certain temps (cela peut durer jusqu'à une demi-heure !), la commande <tt>ntpq -pn</tt> devrait vous donner un résultat semblable à celui-ci:
 </p>
 
 [% INCLUDE "ntppool/use/sample-ntpq.html" %]
@@ -20,9 +20,9 @@ Les adresses IP seront différentes car on vous aura assigné des serveurs de te
 </p>
 
 <p>
-La connexion à <tt>pool.ntp.org</tt> se fera normalement à des serveurs de temps provenant de votre pays, ou d'un pays tout près du vôtre. Pour la plupart des utilisateurs, la connexion à cette adresse donnera les meilleurs résultats.
+La connexion à <code>pool.ntp.org</code> se fera normalement à des serveurs de temps provenant de votre pays, ou d'un pays tout près du vôtre. Pour la plupart des utilisateurs, la connexion à cette adresse donnera les meilleurs résultats.
 
-Vous obtiendrez un meilleur résultat si vous utilisez les <a href="https://www.ntppool.org/zone/@">zones continentales</a> (par exemple : <a href="https://www.ntppool.org/zone/europe">Europe</a>, <a href="https://www.ntppool.org/zone/north-america">North-America</a>, <a href="https://www.ntppool.org/zone/oceania">Oceania</a> ou <a href="https://www.ntppool.org/zone/asia">Asia</a>.pool.ntp.org), ou une zone de pays (tel que ch.pool.ntp.org pour la Suisse). Il est aussi possible d'utiliser les préfixes 0, 1 et 2 pour toutes ces zones (par exemple : 0.ch.pool.ntp.org). Notez cependant que la zone du pays pourrait ne pas exister pour votre pays ou pourrait ne contenir qu'un ou deux serveurs de temps. Si vous connaissez des serveurs de temps à proximité de votre emplacement géographique (en terme de distance réseau, mesurable avec <tt>traceroute</tt> ou <tt>ping</tt>), l'heure obtenue sera possiblement plus précise.
+Vous obtiendrez un meilleur résultat si vous utilisez les <a href="https://www.ntppool.org/zone/@">zones continentales</a> (par exemple : <a href="https://www.ntppool.org/zone/europe">Europe</a>, <a href="https://www.ntppool.org/zone/north-america">North-America</a>, <a href="https://www.ntppool.org/zone/oceania">Oceania</a> ou <code><a href="https://www.ntppool.org/zone/asia">Asia</a>.pool.ntp.org</code>), ou une zone de pays (tel que <code>ch.pool.ntp.org</code> pour la Suisse). Il est aussi possible d'utiliser les préfixes 0, 1,  2 et 3 pour toutes ces zones (par exemple : <code>0.ch.pool.ntp.org</code>). Notez cependant que la zone du pays pourrait ne pas exister pour votre pays ou pourrait ne contenir qu'un ou deux serveurs de temps. Si vous connaissez des serveurs de temps à proximité de votre emplacement géographique (en terme de distance réseau, mesurable avec <tt>traceroute</tt> ou <tt>ping</tt>), l'heure obtenue sera possiblement plus précise.
 </p>
 
 <p>
@@ -36,6 +36,7 @@ Si vous utilisez <b>une version récente de Windows</b>, vous pouvez aussi utili
   net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 </pre>
 
+<p>
 Vous pouvez parvenir au même résultat, en tant qu'administrateur, en cliquant avec le bouton droit de la souris sur l'horloge dans la barre des tâches et en sélectionnant « Ajuster la date/heure ». Entrer ensuite le nom du serveur dans l'onglet « Heure Internet ».
 </p>
 
@@ -51,7 +52,7 @@ Si votre système Windows fait partie d'un domaine Active Directory, il se peut 
 <div class="block">
 <h3 id="notes">Remarques supplémentaires</h3>
 
-<p><span class="hook">Évaluez si pool.ntp.org est appoprié pour votre utilisation.</span>. Si votre entreprise, votre organisation ou votre mode mode de vie dépend du fait d'avoir l'heure la plus précise possible ou s'il peut être dangereux pour quiconque de ne pas l'avoir, vous ne devriez pas dépendre de l'heure Internet. La grappe NTP de pool.ntp.org est généralement de très bonne qualité, mais ça demeure un service supporté en partie par des volontaires lors de temps libres. Si c'est votre cas, merci de parler à votre vendeur ou fournisseur de services afin d'obtenir une installation locale et fiable pour votre besoin. Voir également les <a href="/tos.html">terms of service</a>. Nous recommandons des serveurs de temps de <a href="http://www.meinbergglobal.com/english/products/ntp-time-server.htm">Meinberg</a>, mais vous pouvez également trouver des serveurs de temps chez <a href="http://www.endruntechnologies.com/NTP-Servers/gps-cdma-ntp.htm">End Run</a>, <a href="http://spectracom.com/products-services/precision-timing#anchor-2172">Spectracom</a> et chez plusieurs autres commerçants.
+<p><span class="hook">Évaluez si pool.ntp.org est approprié pour votre utilisation.</span> Si votre entreprise, votre organisation ou votre mode de vie dépend du fait d'avoir l'heure la plus précise possible ou s'il peut être dangereux pour quiconque de ne pas l'avoir, vous ne devriez pas dépendre de l'heure Internet. La grappe NTP de pool.ntp.org est généralement de très bonne qualité, mais ça demeure un service supporté en partie par des volontaires lors de temps libres. Si c'est votre cas, merci de parler à votre vendeur ou fournisseur de services afin d'obtenir une installation locale et fiable pour votre besoin. Voir également les <a href="/tos.html">terms of service</a>. Nous recommandons des serveurs de temps de <a href="http://www.meinbergglobal.com/english/products/ntp-time-server.htm">Meinberg</a>, mais vous pouvez également trouver des serveurs de temps chez <a href="http://www.endruntechnologies.com/NTP-Servers/gps-cdma-ntp.htm">End Run</a>, <a href="http://spectracom.com/products-services/precision-timing#anchor-2172">Spectracom</a> et chez plusieurs autres commerçants.
 </p>
 
 <p><span class="hook">Si vous avez une adresse IP statique et une connexion à Internet de bonne qualité</span> (la bande passante n'est pas importante, mais elle doit être stable et ne pas être surchargée), merci de considérer l'ajout de votre serveur au pool.ntp.org. Cela ne vous coûtera pas plus qu'un trafic de quelques centaines d'octets par seconde et vous contribuerez à la survie de ce projet. Plus d'informations sur la page <a href="/join.html">Rejoindre le projet</a>.
