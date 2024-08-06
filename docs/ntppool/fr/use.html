@@ -26,6 +26,13 @@ Vous obtiendrez un meilleur résultat si vous utilisez les <a href="https://www.
 </p>
 
 <p>
+Veuillez noter également que le système actuellement fournit des adresses IPv6 pour une zone en plus
+aux adresses IPv4 seulement si le nom de la zone est préfixé par le chiffre 2, par ex. <code>2.pool.ntp.org</code>
+(à condition qu'il y ait des serveurs NTP IPv6 dans la zone respective). Noms de zones non préfixés ou
+préfixés par 0, 1 ou 3 uniquement fournissent des adresses IPv4 à ce temps.
+</p>
+
+<p>
 Si vous utilisez <b>une version récente de Windows</b>, vous pouvez aussi utiliser le client ntp qui est intégré au système. En tant qu'administrateur, exécuter :</p>
 <pre>
    w32tm /config /syncfromflags:manual /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"

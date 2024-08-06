@@ -43,6 +43,11 @@
 	might not exist for your country, or might contain only one or two timeservers.
 	</p>
 	<p>
+	Please also note that the system currently only provides IPv6 addresses for a zone in addition
+	to IPv4 addresses if the zone name is prefixed by the number 2, e.g. <code>2.pool.ntp.org</code>
+	(provided there are any IPv6 NTP servers in the respective zone). Zone names not prefixed by a
+	number, or prefixed with any of 0, 1 or 3, currently provide IPv4 addresses only.
+	<p>
 	If you're using <b>a recent Windows version</b>, you can use the ntp
 	client that is built into the system.</p>
 	<p>Right click the data time in system area and select Adjust Date/time or open up settings with Win+I and click Time &amp; Language -&gt; Date &amp; Time.

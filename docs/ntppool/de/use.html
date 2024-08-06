@@ -51,6 +51,14 @@
   Zeitsynchronisation damit vermutlich besser sein.
  </p>
  <p>
+  Beachten Sie bitte auch, dass das System derzeit neben IPv4 Adressen
+  nur dann IPv6 Adressen f&uuml;r eine Zone liefert, wenn der Zone die Ziffer 2
+  vorangestellt ist, z.B. <code>2.de.pool.ntp.org</code> oder
+  <code>2.europe.pool.ntp.org</code> (sofern es in der jeweiligen Zone IPv6 NTP
+  Server gibt). Die Zonen ohne vorangestellte Ziffer oder mit vorangestellter
+  0, 1 oder 3 liefern derzeit ausschlie&szlig;lich IPv4 Adressen.
+ </p>
+ <p>
   Sollten Sie eine neuere Version von <b>Windows</b> einsetzen,
   k&ouml;nnen Sie den NTP-Client nutzen, der in das System integriert
   ist. F&uuml;hren Sie dazu folgendes Kommando als Administrator aus:
