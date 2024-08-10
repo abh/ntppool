@@ -48,8 +48,6 @@ sub data {
         }
 
         $data->{""}->{ns} = {map { $_ => undef } split /[\s+,]/, $self->ns_list};
-        $data->{"_dmarc"}->{txt} =
-          "v=DMARC1; p=reject; pct=100; rua=mailto:re+h6dgrfy2ghh\@dmarc.postmarkapp.com; sp=reject; aspf=r;";
 
         $data->{""}->{txt} = [
 
@@ -62,8 +60,13 @@ sub data {
             # google domain verification
             $data->{"v4zgfk4oagsu"}->{cname} = "gv-35off4weczdcxg.dv.googlehosted.com.";
             push @{$data->{""}->{txt}},
+              {txt => "v=spf1 -all"},
               {txt => "facebook-domain-verification=sfjgxys7hmryn50lszk658gi7amidt"},
               {txt => "google-site-verification=PRDJb3cjUxA4K-Abx2wItCnGwTkkNTRqJVjCkmAk54Q"};
+
+            $data->{"_dmarc"}->{txt} =
+              'v=DMARC1; p=reject; pct=100; rua=mailto:4649a710@in.mailhardener.com; sp=reject; adkim=s; aspf=r; ruf=mailto:4649a710@in.mailhardener.com';
+
         }
         elsif ($self->origin eq "beta.grundclock.com") {
             $data->{"fchof3xzaiyl"}->{cname} = "gv-fveibxaoathoje.dv.googlehosted.com.";
