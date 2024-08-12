@@ -55,6 +55,9 @@ sub data {
             {txt => "_globalsign-domain-verification=mVYWxIl-2ab_B1yPPFxEmDCLrBcl6ucouXJOU_P0_C"},
         ];
 
+        # null MX records by default, rfc7505
+        $data->{""}->{mx} = [{mx => ".", preference => 0},];
+
         if ($self->origin eq "pool.ntp.org") {
 
             # google domain verification
@@ -126,6 +129,7 @@ sub populate_country_zones {
             if ($ttl) {
                 $data->{$pgeodns_group}->{ttl} = $ttl;
             }
+            $data->{$pgeodns_group}->{mx} = [{mx => ".", preference => 0}];
 
             $min_non_duplicate_size = int(@$entries / $zone_count)
               if (@$entries / $zone_count > $min_non_duplicate_size);
@@ -142,6 +146,8 @@ sub populate_country_zones {
                     if ($data->{$pgeodns_group}->{alias}) {
                         next;
                     }
+
+                    $data->{$pgeodns_group}->{mx} = [{mx => ".", preference => 0}];
 
                     $data->{$pgeodns_group}->{a} = [];
                     if ($ttl) {
@@ -167,6 +173,8 @@ sub populate_country_zones {
                         my $e = shift @$entries;
                         push @{$data->{$pgeodns_group}->{a}}, $e;
                     }
+
+                    $data->{$pgeodns_group}->{mx} = [{mx => ".", preference => 0}];
                 }
             }
         }
