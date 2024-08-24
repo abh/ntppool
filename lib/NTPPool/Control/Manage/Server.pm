@@ -104,6 +104,7 @@ sub handle_add {
     return 403 unless $self->check_auth_token;
 
     my $span = OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
+    $self->set_span_name("manage.servers.add");
 
     my $account = $self->current_account;
 
