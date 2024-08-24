@@ -19,8 +19,10 @@ Login / Add server
 
 <p>
 
-If you need help logging in, please fill out the form below. If you
-need help using or participating in the NTP Pool,
+[% UNLESS msg_thanks %]
+If you need help logging in, please fill out the form below.
+[% END %]
+If you need help using or participating in the NTP Pool,
 see <a href="https://community.ntppool.org">community.ntppool.org</a>
 or <a href="https://www.ntppool.org/">ntppool.org</a>. Information for
 developers or distributors of software or hardware,
@@ -29,6 +31,10 @@ see <a href="https://www.ntppool.org/vendors">vendor information</a>.
 </p>
 
 <p>
+[% IF msg_thanks %]
+<i>Your message has been sent, thanks!</i>
+[% ELSE %]
+
 <form action="https://mailform.ntppool.org/send/jsrthkgjkw45ht3f"
     method="POST">
     <input type="text" name="name" placeholder="Your name"><br>
@@ -40,8 +46,10 @@ see <a href="https://www.ntppool.org/vendors">vendor information</a>.
     <br>
     <input type="text" name="_gotcha" value="" class="gotcha" />
     <input type="submit" value="Request help">
-    <input type="hidden" name="_next" value="[% callback_url %]">
+    <input type="hidden" name="_next" value="[% combust.manage_url('/manage', "msg"="thanks") %]">
 </form>
+[% END %]
+</p>
 
 </div></div>
 

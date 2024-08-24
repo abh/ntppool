@@ -19,6 +19,11 @@ sub login {
     $self->tpl_param('callback_url', $self->callback_url);
     $self->tpl_param('message',      $msg);
 
+    # form message has been sent, so don't show the form again
+    if (($self->req_param('msg') || '') eq 'thanks') {
+        $self->tpl_param('msg_thanks', 1);
+    }
+
     return OK, $self->evaluate_template('tpl/login.html');
 }
 
