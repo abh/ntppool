@@ -62,6 +62,17 @@ our %valid_languages = (
     zh_TW => {name => "中文（繁體）"},
 );
 
+# We unfortunately have dialects to deal with now.
+our %language_aliases = (
+    'zh' => 'zh_CN',
+    'zh_Hans' => 'zh_CN',
+    'zh_Hant' => 'zh_TW',
+    'zh_HK' => 'zh_TW',
+    'zh_MO' => 'zh_TW',
+    'zh_SG' => 'zh_CN',
+    'zh_MY' => 'zh_CN',
+);
+
 NP::I18N::loc_lang('en');
 
 my $uc = Unicode::Collate->new();
@@ -233,7 +244,10 @@ sub language {
 sub valid_language {
     my $self      = shift;
     my @languages = @_;
-    return first { $valid_languages{$_} } @languages;
+    return first {
+        s/-/_/g;
+        $valid_languages{$_} // $valid_languages{$language_aliases{$_}}
+    } @languages;
 }
 
 sub valid_languages {
