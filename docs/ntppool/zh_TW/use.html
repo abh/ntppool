@@ -1,0 +1,78 @@
+[% page.title = '我能如何安裝 NTP 以使用NTP池？' %]
+
+<div class="block">
+	<h3 id="use">我能如何使用 pool.ntp.org？</h3>
+
+	<p>
+	如果您只是想透過網路校準您計算機上的時鐘，這個（ntpd 程式的）設定檔案 (來自 <a href="https://www.ntp.org">ntp.org 發行的</a>, 在任何支援的作業系統上 -例如 <b>Linux, *BSD, Windows 和甚至是更多的小眾的作業系統</b>) 真是非常簡單：
+	</p>
+
+	[% INCLUDE "ntppool/use/sample-config.html" %]
+
+	<p>
+	其中 0, 1, 2 and 3.pool.ntp.org 域名解析將會每小時更新，隨機指向一系列伺服器。確認您的計算機時間設定得大致合理（和「真實」時間相差幾分鐘）——可以使用 <code>ntpdate pool.ntp.org</code>，或者直接用 <code>date</code> 命令來將它的時間設定成和您的手錶一樣。接下來執行ntpd，並且等候一段時間（這可能花費大約半小時！），在這之後 <code>ntpq -pn</code> 應該會輸出類似下面的結果：
+	</p>
+
+	[% INCLUDE "ntppool/use/sample-ntpq.html" %]
+
+	<p>
+	IP地址可能會不同，因為您會被隨機分配時間伺服器。重要的是其中有一行以星號 (<code>*</code>)開頭：這就意味著您的計算機已經從網路上獲取了時間，您再也不用為它擔心了！
+	</p>
+	<p>
+	從 <code>pool.ntp.org</code>進行查詢 (或者 <code>0.pool.ntp.org</code>、<code>1.pool.ntp.org</code>，等等) 通常會返回您的國家（或是靠近您的國家的）的伺服器的IP地址。對大多數使用者，這將能取得最佳的結果。
+	</p>
+
+	<p>您也能使用<a href="/zone/@">洲際空間（zone）</a>（比如
+	<a href="/zone/europe">歐洲 [europe]</a>,
+	<a href="/zone/north-america">北美 [north-america]</a>,
+	<a href="/zone/oceania">大洋洲 [oceania]</a>
+	或者 <a href="/zone/asia">亞洲 [asia]</a>.pool.ntp.org）,
+	以及國家空間 (像是中國的 
+	cn.pool.ntp.org) - 對所有的這些時區, 您也能使用 0,
+	1 or 2 字首，如 0.cn.pool.ntp.org。 注意，您的國家可能不存在這方面的空間，或者空間裡只包含一至二臺時間伺服器。
+	</p>
+	<p>
+	如果您正在使用 <b>Windows 的較新版本</b>，您可以使用系統內建的ntp客戶端。</p>
+	<p>
+	作為管理員，右鍵工作列的時鐘，選擇「更改日期和時間設定...」，選擇「加入其他時區的時鐘」，然後在「Internet時間」選項卡下輸入伺服器名。輸入之後，選擇「立即更新」。
+	</p>
+	<p>
+	要測試時間，只需要右鍵工作列的時鐘，選擇「更改日期和時間設定...」，然後點選「立即同步」按鈕。
+	</p>
+
+	<p>
+	如果您的Windows 系統是一個域的一部分，您可能不能夠獨立地更新您的計算機時間。 
+
+	更多有關在Windows 系統上設定時間的資訊，請參閱<a href="https://technet.microsoft.com/en-us/library/cc773013%28WS.10%29.aspx">Windows 時間服務是如何工作的</a>。
+	</p>
+</div>
+
+<div class="block">
+	<h3 id="notes">附加註意事項</h3>
+
+        <p><span class="hook">請考慮 NTP 池是否適合您使用</span>。 如果商用、組織或是人的生命依賴正確的時間，或是時間錯誤將會有害的情形，您不應簡單地依賴網際網路。NTP 池總體來說非常優質，但是它是一個由志願者利用閒暇時間執行的服務。請與您的裝置和服務供應商交流，以瞭解有關您獲得本地可靠時間服務的方法。您也可以參考我們的<a href="/tos.html">服務條款</a>。
+
+        我們向您推薦來自 
+        <a href="http://www.meinbergglobal.com/english/products/ntp-time-server.htm">Meinberg</a>的時間伺服器,
+        但您也能從
+        <a href="http://www.endruntechnologies.com/NTP-Servers/gps-cdma-ntp.htm">End Run</a>、
+        <a href="http://spectracom.com/products-services/precision-timing#anchor-2172">Spectracom</a>
+        或是其他的站點找到時間伺服器。
+        </p>
+
+	<p><span class="hook">如果您有靜態IP地址，並且有尚可的網路連線條件</span>（頻寬並不怎麼重要，但它應當穩定並且負載不太重），請考慮為伺服器池貢獻您的伺服器。它每秒不會花費您多於幾百Byte的流量，但是您將幫助這個專案存活下來！	請<a href="/join.html">閱讀「加入頁面」</a>來獲取更多資訊。
+	</p>
+
+	<p><span class="hook">如果您的Internet提供商擁有時間伺服器</span>，或者您知道您附近的優質時間伺服器 ，您應該使用它們而不是這個清單中的伺服器——您將可以使用更少的網路資源來獲得更準確的時間。如果您只知道一臺您附近的時間伺服器，您當然可以選擇使用它外加NTP池中的兩臺來對時。</p>
+
+	<p><span class="hook">很偶然的情況下，您可能會兩次被分配到同一臺時間伺服器</span>——	只要重啟ntp伺服器，通常就會解決這個問題。如果您使用國家空間，請注意它在專案中可能只有一臺時鐘伺服器——這樣的話您最好還是使用洲際空間。您可以透過<a href="/zone">瀏覽空間</a>來確定每個空間裡我們到底有多少臺伺服器。</p>
+
+	<p><span class="hook">請友善對待服務</span>。許多伺服器都是志願者提供，並且幾乎所有的時間伺服器是真實的檔案或郵件伺服器，
+	它們只是恰巧順帶執行ntp。所以請不要在您的設定中使用多於4臺伺服器，並且不要使用 <code>burst</code> 或者是 <code>minpoll</code>搗亂——那麼做只會使志願者的時間伺服器增加負載，對你也無益。</p>
+
+	<p><span class="hook">請確認您計算機上的<u>時區設定</u>正確</span>。ntpd 本身並不會對時區設定進行任何修改，它只是在內部使用UTC。</p>
+
+	<p><span class="hook">如果您正使用pool.ntp.org來校準一個網路的時間</span>，請將您網路中的一臺計算機設定為時鐘伺服器，並且讓其他計算機向它獲取與校準時間。（您將需要閱讀一些東西+但是它們並不難懂。並且<a href="news:comp.protocols.time.ntp">comp.protocols.time.ntp 新聞組</a>將一直與你同在。）</p>
+
+	<p class="thanks">在這裡，我想感謝那些為這個網站貢獻時間和時間伺服器的人們。謝謝你們！</p>
+</div>
