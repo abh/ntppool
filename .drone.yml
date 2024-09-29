@@ -7,6 +7,7 @@ steps:
 - name: submodules
   image: alpine/git
   commands:
+  - git fetch --tags
   - git submodule update --init --recursive
 
 - name: docker
@@ -24,6 +25,6 @@ steps:
       from_secret: harbor_password
 ---
 kind: signature
-hmac: 73431ff051c236556115120c88b7ce7be5a45611578ea5a695dbe779a721334b
+hmac: a0bb8189d87668bb32165e34e1d660947effabf3696facf169826e590ea963fe
 
 ...
