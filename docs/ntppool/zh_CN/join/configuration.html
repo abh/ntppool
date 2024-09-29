@@ -1,0 +1,79 @@
+<div class="block">
+
+<h3>服务器加入NTP池的设置建议</h3>
+
+<p>
+<a href="http://support.ntp.org/">support.ntp.org</a> 上的<a href="http://support.ntp.org/bin/view/Support/WebHome">支持页面</a>有着许多有用的信息。
+</p>
+
+<p>
+如果您只是想要<u>使用</u>NTP池, 请参阅<a href="/use.html">池的用法</a> 页面。
+</p>
+
+<p>
+<a
+href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a>
+新闻组是您获得有关 ntpd 软件帮助的最佳途径。
+</p>
+
+<p>
+如果您将要把您的服务器加入NTP池，下方是一些特别重要的注意事项：
+</p>
+
+<p>互联网工程任务组（IETF）有一份<a href="https://tools.ietf.org/html/draft-ietf-ntp-bcp">网络时间协议最佳当前实践</a>草案,包含我们的推荐设置。</p>
+
+<h4 id="management-queries">管理层查询</h4>
+
+<p>您应注意在默认设置中拒绝“管理层查询”（management queries）。对于ntpd来说，你应该吧noquery选项加入默认的“限制”（"restrict"）行，例如：</p>
+
+[% INCLUDE "join/configuration/restrict-default.html" %]
+
+<p>为使诸如 "ntpq -c pe" 之类的命令在本地（localhost）正常工作，您可以添加下列代码：</p>
+
+[% INCLUDE "join/configuration/restrict-localhost.html" %]
+
+<h4>配置大约5个服务器</h4>
+
+<p>
+为了正常工作，ntpd需要与至少3台服务器通讯，毕竟“有一个手表的人知道时间；但是如果一个人有两个手表，他就不能确定时间”。
+</p>
+
+<p>
+对于加入池中的服务器，我们建议设置不少于4台服务器，也不多于7台。
+</p>
+
+
+<h4>不要使用 *.pool.ntp.org 的服务器</h4>
+
+<p>
+这听起来有点好笑，但是如果您将要把您的服务器加入池中，为了确保池的服务达到最佳水平，您不应该在设置中使用 *.pool.ntp.org 的别名。
+</p>
+
+<p>
+如果所有的池操作者手动选取的优质本地（从网络上说）时间服务器的话，池子会更稳健。NTP.org wiki 有一个 <a
+href="https://support.ntp.org/Servers/">公共服务器清单</a>。
+</p>
+
+
+<h4>使用标准的 ntpd</h4>
+
+<p>
+我们一直支持软件多样性，但是很大一部分有关“它不工作”的问题出现在 ntpd 以外的其他软件中。
+</p>
+
+<p>
+您能通过任何遵循NTP协议的软件中<u>使用</u>这个池，但如果您想加入池中，我们推荐您使用<a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>。<!-- 译注：假的。-->
+</p>
+
+
+<h4>请勿使用本地时钟驱动！</h4>
+
+<p>NTP池中的服务器不应有本地（LOCAL）时钟驱动的设置。</p>
+
+
+<h4>小心 PTR DNS 查询</h4>
+
+<p>一些服务器操作员报告说，一些 NTP 用户（或他们的防火墙软件）会对 NTP 服务器的 IP 地址进行 “反向 DNS”（PTR）查询。请注意，这可能会导致查询次数增加。如果担心 DNS 查询次数过多，建议增加这些记录的 “有效时间”（TTL），之后应该可以让查询次数减少到可以忽略不计。
+</p>
+
+</div>

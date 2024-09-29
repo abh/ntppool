@@ -96,10 +96,10 @@ msgid  "News"
 msgstr "新聞"
 
 msgid  "How do I <i>use</i> pool.ntp.org?"
-msgstr "如何<i>使用</i> pool.ntp.org?"
+msgstr "如何<u>使用</u> pool.ntp.org?"
 
 msgid  "How do I <i>join</i> pool.ntp.org?"
-msgstr "如何<i>加入</i> pool.ntp.org?"
+msgstr "如何<u>加入</u> pool.ntp.org?"
 
 msgid  "Information for vendors"
 msgstr "為服務提供者所準備的資訊"
