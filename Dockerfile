@@ -1,4 +1,4 @@
-FROM harbor.ntppool.org/ntppool/base-os:3.19.1
+FROM harbor.ntppool.org/ntppool/base-os:3.20.2
 #FROM harbor.ntppool.org/ntppool/base-os@sha256:0e2e854c256547417439128e6754c82d4b32a06a4298b3c585c1dbfb62b300fc
 USER root
 
