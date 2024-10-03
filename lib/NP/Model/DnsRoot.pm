@@ -116,77 +116,76 @@ sub populate_country_zones {
         $name = ''       if $name eq '@';
         $name = "$name." if $name;
 
-        if (my $entries = $zone->active_servers('v4')) {
+        my @ip_versions = ('v4', 'v6');
+        my %record_types = (v4 => 'a',
+                            v6 => 'aaaa');
 
-            my $min_non_duplicate_size = 2;
-            my $response_records       = 3;
-            my @zones                  = ("0.", "1.", "2.", "3.");
-            my $zone_count             = scalar @zones;
+        foreach my $ip_version (@ip_versions) {
 
-            # add all servers to the non-numbered "NTP" zone
-            (my $pgeodns_group = "${name}") =~ s/\.$//;
-            push @{$data->{$pgeodns_group}->{a}}, $_ for @$entries;
-            if ($ttl) {
-                $data->{$pgeodns_group}->{ttl} = $ttl;
-            }
-            $data->{$pgeodns_group}->{mx} = [{mx => ".", preference => 0}];
+            my $record_type = $record_types{$ip_version};
 
-            $min_non_duplicate_size = int(@$entries / $zone_count)
-              if (@$entries / $zone_count > $min_non_duplicate_size);
+            if (my $entries = $zone->active_servers($ip_version)) {
 
-            # print $fh "# " . scalar @$entries . " active servers in ", $zone->name, "\n";
+                my $min_non_duplicate_size = 2;
+                my $response_records       = 3;
+                my @zones                  = ("0.", "1.", "2.", "3.");
+                my $zone_count             = scalar @zones;
 
-            if ($#$entries < ($min_non_duplicate_size * $zone_count - 1)) {
+                # add all servers to the non-numbered "NTP" zone
+                (my $pgeodns_group = "${name}") =~ s/\.$//;
+                push @{$data->{$pgeodns_group}->{$record_type}}, $_ for @$entries;
+                if ($ttl) {
+                    $data->{$pgeodns_group}->{ttl} = $ttl;
+                }
+                $data->{$pgeodns_group}->{mx} = [{mx => ".", preference => 0}];
 
-                # possible duplicates, not enough servers
-                foreach my $z (@zones) {
-                    (my $pgeodns_group = "$z${name}") =~ s/\.$//;
+                $min_non_duplicate_size = int(@$entries / $zone_count)
+                if (@$entries / $zone_count > $min_non_duplicate_size);
 
-                    # already has an alias, so don't add more data
-                    if ($data->{$pgeodns_group}->{alias}) {
-                        next;
+                # print $fh "# " . scalar @$entries . " active servers in ", $zone->name, "\n";
+
+                if ($#$entries < ($min_non_duplicate_size * $zone_count - 1)) {
+
+                    # possible duplicates, not enough servers
+                    foreach my $z (@zones) {
+                        (my $pgeodns_group = "$z${name}") =~ s/\.$//;
+
+                        # already has an alias, so don't add more data
+                        if ($data->{$pgeodns_group}->{alias}) {
+                            next;
+                        }
+
+                        $data->{$pgeodns_group}->{mx} = [{mx => ".", preference => 0}];
+
+                        $data->{$pgeodns_group}->{$record_type} = [];
+                        if ($ttl) {
+                            $data->{$pgeodns_group}->{ttl} = $ttl;
+                        }
+                        @$entries = shuffle(@$entries);
+                        foreach my $e (@$entries) {
+                            push @{$data->{$pgeodns_group}->{$record_type}}, $e;
+                        }
                     }
+                }
+                else {
 
-                    $data->{$pgeodns_group}->{mx} = [{mx => ".", preference => 0}];
-
-                    $data->{$pgeodns_group}->{a} = [];
-                    if ($ttl) {
-                        $data->{$pgeodns_group}->{ttl} = $ttl;
-                    }
+                    # 'big' zone without duplicates
                     @$entries = shuffle(@$entries);
-                    foreach my $e (@$entries) {
-                        push @{$data->{$pgeodns_group}->{a}}, $e;
+                    foreach my $z (@zones) {
+                        (my $pgeodns_group = "$z${name}") =~ s/\.$//;
+                        if ($ttl) {
+                            $data->{$pgeodns_group}->{ttl} = $ttl;
+                        }
+                        $data->{$pgeodns_group}->{$record_type} = [];
+                        for (my $i = 0; $i < $min_non_duplicate_size; $i++) {
+                            my $e = shift @$entries;
+                            push @{$data->{$pgeodns_group}->{$record_type}}, $e;
+                        }
+                        $data->{$pgeodns_group}->{mx} = [{mx => ".", preference => 0}];
                     }
                 }
             }
-            else {
-
-                # 'big' zone without duplicates
-                @$entries = shuffle(@$entries);
-                foreach my $z (@zones) {
-                    (my $pgeodns_group = "$z${name}") =~ s/\.$//;
-                    if ($ttl) {
-                        $data->{$pgeodns_group}->{ttl} = $ttl;
-                    }
-                    $data->{$pgeodns_group}->{a} = [];
-                    for (my $i = 0; $i < $min_non_duplicate_size; $i++) {
-                        my $e = shift @$entries;
-                        push @{$data->{$pgeodns_group}->{a}}, $e;
-                    }
-
-                    $data->{$pgeodns_group}->{mx} = [{mx => ".", preference => 0}];
-                }
-            }
         }
-
-        if (my $entries = $zone->active_servers('v6')) {
-            @$entries = shuffle(@$entries);
-
-            # for now just put all IPv6 servers in the '2' zone
-            (my $pgeodns_group = "2.${name}") =~ s/\.$//;
-            push @{$data->{$pgeodns_group}->{aaaa}}, $_ for @$entries;
-        }
-
     }
 }
 
