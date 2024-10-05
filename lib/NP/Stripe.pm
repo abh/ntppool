@@ -97,6 +97,9 @@ sub billing_portal_url {
             return_url  => $return_url,
         }
     );
+    if ($r && $r->{error}) {
+        warn "could not get billing portal: ", $r->{error};
+    }
     return $r ? $r->{url} : "";
 }
 
