@@ -167,19 +167,23 @@ sub handle_add {
             }
         }
         $self->tpl_param(servers => \@added);
-        my $msg = $self->evaluate_template('tpl/manage/add_email.txt');
-        my $email =
-          Email::Stuffer->from(NP::Email::address("sender"))
-          ->to(NP::Email::address("notifications"))->reply_to($self->user->email)->text_body($msg);
 
-        my $subject = "New addition to the NTP Pool: " . join(", ", map { $_->{ip} } @added);
-        if (grep { $_->{hostname} } @added) {
-            $subject .= " (" . join(", ", map { $_->{hostname} } @added) . ")";
+        if ($self->req_param('comment')) {
+            my $msg = $self->evaluate_template('tpl/manage/add_email.txt');
+            my $email =
+              Email::Stuffer->from(NP::Email::address("sender"))
+              ->to(NP::Email::address("notifications"))->reply_to($self->user->email)
+              ->text_body($msg);
+
+            my $subject = "New addition to the NTP Pool: " . join(", ", map { $_->{ip} } @added);
+            if (grep { $_->{hostname} } @added) {
+                $subject .= " (" . join(", ", map { $_->{hostname} } @added) . ")";
+            }
+            $email->subject($subject);
+
+            my $return = NP::Email::sendmail($email->email);
+            warn Data::Dumper->Dump([\$msg, \$email, \$return], [qw(msg email return)]);
         }
-        $email->subject($subject);
-
-        my $return = NP::Email::sendmail($email->email);
-        warn Data::Dumper->Dump([\$msg, \$email, \$return], [qw(msg email return)]);
 
         my $next = $s ? $s->manage_url : "/manage/servers";
         return $self->redirect($self->manage_url($next));
