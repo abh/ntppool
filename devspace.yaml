@@ -11,7 +11,7 @@ images:
       kaniko:
         cache: true
         snapshotMode: full
-        image: gcr.io/kaniko-project/executor:v1.18.0
+        image: gcr.io/kaniko-project/executor:v1.23.2
         resources:
           limits:
             cpu: 2000m
@@ -37,10 +37,6 @@ deployments:
           manage_hostname: manage.askdev.grundclock.com
           web_hostname: web.askdev.grundclock.com
           pool_domain: ntp.askdev.grundclock.com
-          # db_dsn: dbi:mysql:database=askntp_prod;host=ntp-db-mysql-master.ntpdb.svc.cluster.local
-          db_dsn: dbi:mysql:database=askntp;host=ntp-db-mysql-master.ntpdb.svc.cluster.local
-          db_user: askntp
-          stripe_gw_service: http://stripe-gw
           httpd_maxclients: "6"
           static_base: https://st.ntppool.org/askntp/
       wait: true
