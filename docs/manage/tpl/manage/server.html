@@ -38,7 +38,7 @@
         <select name="netspeed"
             onchange="NP.update_netspeed('[% server.id %]', this.value, '[% combust.auth_token %]'); return false;">
             <option value="">Set connection speed</option>
-            [% speeds = [server.netspeed, 0, 512, 1500, 3000, 6000, 12000, 25000, 50000, 100000, 250000, 500000, 1000000, 1500000, 2000000, 3000000]; %]
+            [% speeds = [server.netspeed, 0, 5, 10, 50, 100, 250, 512, 1500, 3000, 6000, 12000, 25000, 50000, 100000, 250000, 500000, 1000000, 1500000, 2000000, 3000000]; %]
             [% FOR speed = speeds.nsort.unique; %] <option
                 value="[% speed %]">[% combust.netspeed_human(speed) %]</option>
             [%- END %]
