@@ -1,6 +1,6 @@
+# Translator: tnhung2011
 msgid ""
 msgstr ""
-"Last-Translator: Ask Bjørn Hansen <ask@develooper.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
