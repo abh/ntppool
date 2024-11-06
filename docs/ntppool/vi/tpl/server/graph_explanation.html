@@ -1,0 +1,21 @@
+<div id="graph_explanation_box" class="graph_explanation [% graph_explanation ? 'visible' : '' %]">
+
+<h3>Biểu đồ chỉ số hoạt động và độ trễ</h3>
+
+<p>
+Cứ vài lần mỗi giờ, hệ thống quản lý pool sẽ kiểm tra thời gian được lưu trữ trong máy chủ được nêu và so sánh nó với thời gian địa phương chính thức. Chỉ số sẽ bị trừ đi khi hệ thống không thể truy cập máy chủ được nêu hay khi độ lệch thời gian lớn hơn 100ms (theo như hệ thống đánh giá). Chỉ số càng thấp thì độ lệch thời gian càng lớn.
+</p>
+
+<p>
+Biểu đồ chỉ nên được dùng để trực quan hóa xu hướng. Để biết thông tin chi tiết về những gì hệ thống giám sát tìm thấy, bạn có thể nhấp vào liên kết CSV.
+</p>
+
+<h3>Hệ thống giám sát máy chủ</h3>
+
+<p>
+Hệ thống giám sát hoạt động gần giống như máy khách <a href="https://www.ntp.org/ntpfaq/NTP-s-def/#412-what-is-sntp"></a>SNTP</a> (<a href="https://tools.ietf.org/html/rfc2030">RFC 2030</a>), do đó dễ bị ảnh hưởng bởi độ trễ mạng ngẫu nhiên với máy chủ hơn là máy tính chạy ntpd thông thường.
+<p>
+Hệ thống giám sát có thể bị sai sót lên đến 10ms hoặc hơn.
+</p>
+
+</div>
