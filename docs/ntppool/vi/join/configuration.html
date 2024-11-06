@@ -1,0 +1,88 @@
+<div class="block">
+
+<h3>Những việc nên làm khi điều hành máy chủ liên kết với NTP Pool</h3>
+
+<p>
+Trang <a href="http://support.ntp.org/bin/view/Support/WebHome">Support
+
+</a> trên <a href="http://support.ntp.org/">support.ntp.org</a> có rất
+nhiều thông tin hữu ích.
+</p>
+
+<p>
+Nếu bạn chỉ muốn <i>sử dụng</i> dịch vụ đồng bộ thời gian của NTP Pool, hãy xem trang <a href="/use.html">hướng dẫn sử dụng</a>.
+</p>
+
+<p>
+Bạn có thể giải đáp thắc mắc về phần mềm ntpd trong nhóm newsgroup <a
+href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a>.
+</p>
+
+<p>
+Các thông tin sau đây chỉ quan trọng nếu bạn muốn liên kết máy chủ của bạn với dự án NTP Pool.
+</p>
+
+<p>Ngoài các thông tin sau, chúng tôi cũng khuyến nghị bạn đọc bản thảo văn bản
+<a href="https://tools.ietf.org/html/draft-ietf-ntp-bcp">
+Network Time Protocol Best Current Practices</a> (tạm dịch: Các Cấu hình và Phương pháp Vận hành Tốt nhất Hiện tại cho Giao thức Network Time Protocol) của IETF.</p>
+
+<h4 id="management-queries">Truy vấn hoạt động (management query)</h4>
+
+<p>Đặt cấu hình mặc định là không cho phép các "truy vấn hoạt động" (management query). Với phần mềm ntpd, điều này có nghĩa là thêm tham số "noquery" vào lệnh "restrict" đặt cấu hình, ví dụ:</p>
+
+[% INCLUDE "join/configuration/restrict-default.html" %]
+
+<p>Để cho phép các lệnh như "ntpq -c pe" hoạt động từ localhost, bạn có thể thêm:</p>
+
+[% INCLUDE "join/configuration/restrict-localhost.html" %]
+
+<h4>Thiết lập khoảng 5 máy chủ</h4>
+
+<p>
+Để hoạt động bình thường, ntpd cần phải truyền dữ liệu với ít nhất 3 máy chủ.
+</p>
+
+<p>
+Khi thêm máy chủ vào vào pool, chúng tôi khuyên bạn chỉ nên cấu hình trong khoảng 4-7 máy chủ.
+</p>
+
+<h4>Không sử dụng máy chủ *.pool.ntp.org</h4>
+
+<p>
+Để đảm bảo dịch vụ đồng bộ thời gian được nhanh hơn, bạn
+không nên dùng chuỗi đại diện (wildcard) *.pool.ntp.org trong cấu hình của mình khi
+bạn thêm máy chủ vào pool.
+</p>
+
+<p>
+Ngoài ra, bạn cũng nên chọn thủ công một máy chủ kết cụm gần nhất và nhanh nhất (theo khu vực địa lý và đường truyền mạng) khi kết nối với pool.
+Các máy chủ kết cụm như vậy có thể được tìm thấy trong <a
+href="https://support.ntp.org/Servers/">danh sách trên wiki của NTP.org</a>.
+</p>
+
+<h4>Nên sử dụng ntpd (thay cho phần mềm khác)</h4>
+
+<p>
+Chúng tôi ủng hộ sự đa dạng phần mềm, nhưng việc sử dụng các phần mềm khác
+bên ngoài cũng có nghĩa là bạn sẽ không có nhiều tư liệu hỗ trợ như
+bên ntpd.
+</p>
+
+<p>
+Bạn có thể <i>sử dụng</i> NTP Pool với bất kỳ chương trình nào hỗ trợ giao thức NTP, nhưng nếu bạn
+dự định <i>thêm máy chủ vào</i> nhóm, chúng tôi khuyên bạn nên
+dùng phần mềm <a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
+</p>
+
+<h4>Không đồng bộ thời gian bằng driver LOCAL</h4>
+
+<p>Các máy chủ tham gia NTP Pool phải bỏ cài đặt đồng bộ thời gian bằng driver LOCAL.</p>
+
+<h4>Cảnh giác với các truy vấn DNS PTR</h4>
+
+<p>Một số người vận hành máy chủ NTP đã báo cáo rằng người dùng của họ (do chính người dùng hay phần mềm tường lửa)
+đã thực hiện "phân giải ngược DNS" (PTR) trên địa chỉ IP của máy chủ, nhiều lúc làm cho máy chủ bị chậm khi số lượng truy vấn tăng.
+Để giảm tác động của việc đó, bạn nên tăng thời hạn lưu trữ (time to live) của các truy vấn ấy.
+</p>
+
+</div>
