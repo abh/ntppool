@@ -4,7 +4,7 @@
 	<h3 id="use">Làm sao để sử dụng pool.ntp.org?</h3>
 
 	<p>
-	Nếu bạn chỉ muốn đồng bộ thời gian trên máy tính với mạng lưới NTP Pool, bạn có thể cài đặt trên phần mềm ntpd như sau:
+	Nếu bạn chỉ muốn đồng bộ thời gian trên máy tính với mạng lưới NTP Pool, bạn có thể đặt cấu hình đồng bộ thời gian trên phần mềm ntpd như sau:
 	</p>
 
 	[% INCLUDE "ntppool/use/sample-config.html" %]
@@ -39,27 +39,27 @@
 	các phân vùng cấp quốc gia có thể không tồn tại với đất nước của bạn hay chỉ chứa một hoặc hai máy chủ thời gian.
 	</p>
 	<p>
-	Các phân vùng cấp lục địa như là
+	Các địa chỉ phân vùng cấp lục địa như là
 	<code>2.pool.ntp.org</code> sẽ chỉ trả về địa chỉ IPv6
-	(nhưng nó sẽ không trả về IPv6 khi không có máy chủ nào trong phân vùng).
-	Các phân vùng nào có tiền tố 0, 1, 3, hoặc ký tự khác hiện chỉ cung cấp địa chỉ IPv4.
-	<p>Nếu bạn đang sử dụng Windows, bạn có thể dùng hệ thống NTP tích hợp sẵn của hệ điều hành để đồng bộ thời gian.</p>
+	(nó sẽ không trả về IPv6 khi không có máy chủ nào trong phân vùng).
+	Còn các địa chỉ phân vùng nào có tiền tố là các ký tự khác (kể cả các số 0, 1, 3) hiện chỉ cung cấp địa chỉ IPv4.
+	<p>Nếu bạn đang sử dụng Windows, bạn có thể dùng hệ thống NTP do Windows tích hợp sẵn để đồng bộ thời gian. Để đồng bộ, bạn có thể chạy lệnh:</p>
 	<pre class="code">
 	w32tm /config /syncfromflags:manual /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 	</pre>
 	<p>
-	Phương pháp này được biết là hoạt động trên Windows 2003 trở lên.
-	Nếu bạn đang sử dụng phiên bản Windows cũ hơn, hãy thử cách sau:
+	Lệnh này được biết là hoạt động trên Windows 2003 trở lên.
+	Với các phiên bản Windows cũ hơn, bạn có thể đồng bộ tương tự với lệnh sau:
 	</p>
 	<pre class="code">
 	net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 	</pre>
 	<p>
-	Tương tự, bạn cũng có thể cài đặt đồng bộ thời gian với NTP Pool bằng cách nhấp chuột phải vào đồng hồ trên thanh tác vụ, chọn "Điều chỉnh Ngày/Giờ" (Adjust Date/Time) và bấm vào thẻ "Giờ Internet" (Internet Time).
+	Ngoài các cách đó, bạn cũng có thể cài đặt đồng bộ thời gian với NTP Pool bằng cách nhấp chuột phải vào đồng hồ trên thanh tác vụ, chọn "Điều chỉnh Ngày/Giờ" (Adjust Date/Time) và bấm vào thẻ "Giờ Internet" (Internet Time).
 	</p>
 	
 	<p>
-	Bạn cũng có thể cài đặt <a href="http://www.meinberg.de/english/sw/ntp.htm">phần mềm chạy giao thức NTP</a> tách biệt với phần mềm chính thống của Windows.
+	Bạn cũng có thể sử dụng <a href="http://www.meinberg.de/english/sw/ntp.htm">phần mềm NTP</a> (ở đây là bản phân phối không chính thức của công ty Meinburg) tách biệt với phần mềm của Windows.
 	</p>
 	
 	<p>
@@ -76,7 +76,7 @@
 			Nếu doanh nghiệp, tổ chức hoặc cuộc sống con người phụ thuộc vào việc có thời gian chính xác hoặc có thể bị tổn hại nếu thời gian sai, bạn không nên "chỉ cần xóa nó khỏi Internet". NTP Pool thường có chất lượng rất cao, nhưng đây là dịch vụ do các tình nguyện viên điều hành trong thời gian rảnh rỗi. Vui lòng trao đổi với nhà cung cấp thiết bị và dịch vụ của bạn về việc thiết lập dịch vụ cục bộ và đáng tin cậy cho bạn. Xem thêm các điều khoản dịch vụ của chúng tôi. Chúng tôi khuyên bạn nên sử dụng máy chủ thời gian từ Meinberg, nhưng bạn cũng có thể tìm thấy máy chủ thời gian từ End Run, Spectracom và nhiều công ty khác.
 			Bạn cũng có thể xem thêm <a href="/tos.html">Điều khoản Dịch vụ</a> của chúng tôi.
 		</p><p>
-        Ngoài ra, chúng tôi còn khuyến khích bạn nên dùng thiết bị đồng bộ thời gian trên giao thức NTP của công ty
+        Chúng tôi khuyến khích bạn nên dùng thiết bị đồng bộ thời gian NTP của công ty
         <a href="http://www.meinbergglobal.com/english/products/ntp-time-server.htm">Meinberg</a>,
         nhưng bạn cũng có thể tìm các thiết bị như vậy trên trang web của các công ty
         <a href="http://www.endruntechnologies.com/NTP-Servers/gps-cdma-ntp.htm">End Run</a>,
@@ -105,5 +105,5 @@
 	<p><span class="hook">Nếu bạn muốn đồng bộ hóa cả mạng nội bộ với pool.ntp.org</span>, vui lòng thiết lập
 	dịch vụ cung cấp NTP trên máy chủ và đồng bộ các máy tính trong mạng nội bộ với máy chủ đó.</p>
 
-	<p class="thanks">Chúng tôi xin chân thành cảm ơn những người đã góp công sức và thời gian để xây dựng nên dự án này!</p>
+	<p class="thanks">Xin chân thành cảm ơn những người đã góp công sức và thời gian để xây dựng nên dự án này!</p>
 </div>
