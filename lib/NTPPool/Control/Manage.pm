@@ -369,17 +369,17 @@ sub _get_auth0_user {
     my $resp = $self->ua->post($url, \%form);
 
     # warn "token request: ", pp(\%form);
-    use Data::Dump qw(pp);
+    # use Data::Dump qw(pp);
 
     unless ($resp->is_success) {
-        warn pp($resp);
+        warn "token fetch error", pp($resp);
         return undef, "Could not fetch oauth token";
     }
 
     my $data = decode_json($resp->decoded_content())
       or return undef, "Could not decode token data";
 
-    warn "token data: ", pp($data);
+    # warn "token data: ", pp($data);
 
     #$resp =
     #  $self->ua->get("https://${auth0_domain}/userinfo/?access_token=" . $data->{access_token});
@@ -401,13 +401,13 @@ sub _get_auth0_user {
     }
 
     my $jwt_data = decode_jwt(token => $data->{id_token}, kid_keys => $jwt_keys);
-    warn "jwt: ", pp($jwt_data);
+    # warn "jwt: ", pp($jwt_data);
 
     $jwt_data or return undef, "Could not decode user data";
 
     my $user = $jwt_data;
 
-    warn "user data: ", pp($user);
+    warn "jwt user data: ", pp($user);
 
     return $user, undef;
 
