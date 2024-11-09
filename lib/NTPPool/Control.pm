@@ -13,9 +13,10 @@ use Unicode::Collate;
 use Data::ULID;
 use JSON::XS qw(decode_json);
 use Syntax::Keyword::Dynamically;
-use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
+use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_KIND_INTERNAL SPAN_STATUS_ERROR SPAN_STATUS_OK );
 use OpenTelemetry -all;
 use OpenTelemetry::Trace;
+use experimental qw( defer );
 
 use NP::I18N;
 use NP::Version;
@@ -410,6 +411,14 @@ sub count_by_continent {
 
 sub redirect {
     my ($self, $url) = (shift, shift);
+
+    my $span = NP::Tracing->tracer->create_span(
+        name => "redirect",
+    );
+    dynamically otel_current_context = otel_context_with_span($span);
+    defer { $span->end(); };
+    $span->set_attribute("redirect.url", $url);
+
     $self->post_process;
     return $self->SUPER::redirect($url, @_);
 }
