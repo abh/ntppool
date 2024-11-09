@@ -1,5 +1,6 @@
 package NTPPool::Control::Basic;
 use base qw(NTPPool::Control Combust::Control::Basic);
+use Combust::Constant qw(OK NOT_FOUND);
 
 sub init {
     my $self = shift;
@@ -9,6 +10,11 @@ sub init {
 
 sub render {
     my $self = shift;
+
+    # avoid "no providers for template prefix 'xx'" error
+    if ($self->request->path =~ m!^/[^/]+:!) {
+        return NOT_FOUND;
+    }
 
     if ($self->request->path =~ m!^/static/(js|css)!) {
         $self->request->header_out('Access-Control-Allow-Origin' => '*');
