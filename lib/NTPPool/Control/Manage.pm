@@ -217,6 +217,8 @@ sub handle_login {
     else {
         warn "Didn't find identity in the database";
         if (!$email) {
+            warn "email not verified";
+            $span->end();
             return $self->login("Email not verified");
         }
         $identity = NP::Model->user_identity->create(
