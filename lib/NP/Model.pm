@@ -547,7 +547,7 @@ __PACKAGE__->meta->setup(
   unique_keys => [
     [ 'api_key' ],
     [ 'ip', 'ip_version' ],
-    [ 'tls_name' ],
+    [ 'tls_name', 'ip_version' ],
   ],
 
   foreign_keys => [

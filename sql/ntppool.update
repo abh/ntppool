@@ -1027,5 +1027,10 @@ alter table servers
 alter table server_scores
   add queue_ts datetime null after status;
 
+#128
+alter table monitors
+  drop index monitors_tls_name,
+  add unique key monitors_tls_name (tls_name, ip_version);
+
 #todo
 - ...
