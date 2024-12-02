@@ -54,6 +54,7 @@ our %valid_languages = (
     ru => {name => "Русский"},
     sr => {name => "Српски"},
     sv => {name => "Svenska"},
+    vi => {name => "Tiếng Việt", testing => 1},
     tr => {name => "Türkçe"},
     uk => {name => "Українська"},
     zh => {name => "中文（简体）"},
