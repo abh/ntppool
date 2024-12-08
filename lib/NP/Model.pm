@@ -576,6 +576,12 @@ __PACKAGE__->meta->setup(
       type       => 'one to many',
     },
 
+    monitor_registrations => {
+      class      => 'NP::Model::MonitorRegistration',
+      column_map => { id => 'monitor_id' },
+      type       => 'one to many',
+    },
+
     server_scores => {
       class      => 'NP::Model::ServerScore',
       column_map => { id => 'monitor_id' },
@@ -603,6 +609,62 @@ __PACKAGE__->make_manager_methods('monitors');
 # Allow user defined methods to be added
 eval { require NP::Model::Monitor }
   or $@ !~ m:^Can't locate NP/Model/Monitor.pm: and die $@;
+
+{ package NP::Model::MonitorRegistration;
+
+use strict;
+
+use base qw(NP::Model::_Object);
+
+__PACKAGE__->meta->setup(
+  table   => 'monitor_registrations',
+
+  columns => [
+    id                 => { type => 'serial', not_null => 1 },
+    monitor_id         => { type => 'integer' },
+    request_token      => { type => 'varchar', length => 128, not_null => 1 },
+    verification_token => { type => 'varchar', length => 32, not_null => 1 },
+    api_token          => { type => 'text', length => 65535 },
+    ip                 => { type => 'varchar', alias => '_ip', length => 39, not_null => 1 },
+    name               => { type => 'varchar', default => '', length => 256, not_null => 1 },
+    client             => { type => 'varchar', default => '', length => 256, not_null => 1 },
+    status             => { type => 'enum', check_in => [ 'pending', 'approved', 'rejected', 'cancelled' ], not_null => 1 },
+    last_seen          => { type => 'datetime', default => 'CURRENT_TIMESTAMP', not_null => 1 },
+    created_on         => { type => 'datetime', default => 'now', not_null => 1 },
+  ],
+
+  primary_key_columns => [ 'id' ],
+
+  unique_keys => [
+    [ 'request_token' ],
+    [ 'verification_token' ],
+  ],
+
+  foreign_keys => [
+    monitor => {
+      class       => 'NP::Model::Monitor',
+      key_columns => { monitor_id => 'id' },
+    },
+  ],
+);
+
+push @table_classes, __PACKAGE__;
+}
+
+{ package NP::Model::MonitorRegistration::Manager;
+
+use strict;
+
+our @ISA = qw(Combust::RoseDB::Manager);
+
+sub object_class { 'NP::Model::MonitorRegistration' }
+
+__PACKAGE__->make_manager_methods('monitor_registrations');
+}
+
+# Allow user defined methods to be added
+eval { require NP::Model::MonitorRegistration }
+  or $@ !~ m:^Can't locate NP/Model/MonitorRegistration.pm: and die $@;
 
 { package NP::Model::SchemaRevision;
 
@@ -1793,6 +1855,7 @@ eval { require NP::Model::ZoneServerCount }
   sub log { our $log ||= bless [], 'NP::Model::Log::Manager' }
   sub log_score { our $log_score ||= bless [], 'NP::Model::LogScore::Manager' }
   sub monitor { our $monitor ||= bless [], 'NP::Model::Monitor::Manager' }
+  sub monitor_registration { our $monitor_registration ||= bless [], 'NP::Model::MonitorRegistration::Manager' }
   sub schema_revision { our $schema_revision ||= bless [], 'NP::Model::SchemaRevision::Manager' }
   sub scorer_statu { our $scorer_statu ||= bless [], 'NP::Model::ScorerStatu::Manager' }
   sub server { our $server ||= bless [], 'NP::Model::Server::Manager' }

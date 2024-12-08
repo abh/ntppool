@@ -1032,5 +1032,31 @@ alter table monitors
   drop index monitors_tls_name,
   add unique key monitors_tls_name (tls_name, ip_version);
 
+#129
+create table monitor_registrations (
+    id                 int unsigned NOT NULL AUTO_INCREMENT primary key,
+    monitor_id         int unsigned null,
+
+    -- from the client
+    request_token      varchar(128) NOT NULL UNIQUE,
+
+    -- generated, provide to the user to authenticate to the api server
+    verification_token varchar(32) NOT NULL UNIQUE,
+
+    -- temporary storage for delivery to the client
+    -- (todo: come up with something better)
+    api_token          text,
+
+    ip                 varchar(39) NOT NULL,
+    name               varchar(256) NOT NULL DEFAULT '',
+    client             varchar(256) NOT NULL DEFAULT '',
+    status             enum('pending', 'approved', 'rejected', 'cancelled') not null,
+    last_seen          datetime not null default now(),
+    created_on         datetime not null,
+
+    CONSTRAINT `monitor_registrations_monitor_id_fk` FOREIGN KEY (`monitor_id`)
+      REFERENCES `monitors` (`id`) on delete cascade
+);
+
 #todo
 - ...
