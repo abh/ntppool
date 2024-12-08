@@ -4,7 +4,7 @@
 	<h3 id="use">Làm sao để sử dụng pool.ntp.org?</h3>
 
 	<p>
-	Nếu bạn chỉ muốn đồng bộ thời gian trên máy tính với mạng lưới NTP Pool, bạn có thể đặt cấu hình đồng bộ thời gian trên phần mềm ntpd như sau:
+	Để đồng bộ thời gian của máy với NTP Pool, bạn có thể đặt cấu hình đồng bộ thời gian trên phần mềm ntpd như sau:
 	</p>
 
 	[% INCLUDE "ntppool/use/sample-config.html" %]
@@ -20,14 +20,14 @@
 	[% INCLUDE "ntppool/use/sample-ntpq.html" %]
 
 	<p>
-	Địa chỉ IP mỗi dòng sẽ khác nhau vì bạn đã được chỉ định các máy chủ
+	Lúc này, địa chỉ IP mỗi dòng sẽ khác nhau vì chúng được chỉ định
 	ngẫu nhiên. Nếu bạn muốn biết rằng máy tính có đang đồng bộ NTP liên tục
 	với Internet hay không, bạn có thể tìm dấu sao ở một trong các dòng (<code>*</code>; như đầu ra trên).
 	Có dấu sao nghĩa là lúc này máy tính đang được đồng bộ.
 	</p>
 	<p>
 	Tra cứu <code>pool.ntp.org</code> (hoặc <code>0.pool.ntp.org</code>, <code>1.pool.ntp.org</code>, v.v.) thường sẽ trả về địa chỉ IP cho các máy chủ đồng bộ thời gian gần máy tính bạn.
-	Đối với hầu hết người dùng, các địa chỉ ấy thường sẽ mang kết quả tốt nhất.
+	Nếu bạn chỉ sử dụng với mục đích đơn giản, các IP ấy thường sẽ mang kết quả tốt nhất.
 	</p>
 
 	<p>Bạn cũng có thể sử dụng các phân vùng cấp lục địa
@@ -36,7 +36,7 @@
 	<a href="/zone/oceania">oceania</a>
 	hoặc <code><a href="/zone/asia">asia</a>.pool.ntp.org</code>)
 	hay cấp quốc gia (như ch.pool.ntp.org ở Thụy Sĩ) - đối với tất cả các vùng này, bạn cũng có thể sử dụng các tiền tố 0, 1, 2 hoặc 3 (ví dụ như <code>0.ch.pool.ntp.org</code>). Xin lưu ý rằng
-	các phân vùng cấp quốc gia có thể không tồn tại với quốc gia của bạn hay chỉ chứa một hoặc hai máy chủ thời gian.
+	các phân vùng cấp quốc gia có thể không có sẵn với quốc gia của bạn hay chứa một vài máy chủ thời gian.
 	</p>
 	<p>
 	Các địa chỉ phân vùng cấp lục địa như là
