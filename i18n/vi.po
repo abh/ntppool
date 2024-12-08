@@ -110,7 +110,7 @@ msgstr "Log CSV"
 
 # tpl/navigation_sidebar.html
 msgid  "News"
-msgstr "Tin tức"
+msgstr "Bản tin"
 
 msgid  "How do I <i>use</i> pool.ntp.org?"
 msgstr "Làm sao để <i>sử dụng</i> pool.ntp.org?"
