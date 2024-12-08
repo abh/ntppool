@@ -6,19 +6,20 @@ if [ -z $CBROOT ]; then
   export CBROOT=$CBROOTLOCAL/combust
 fi
 
-while [ ! -e confd ]; do
-    echo "waiting for code to be synced (confd dir)"
-    sleep 2
-done
-
 fastly_ips=/etc/fastly-ips/fastly.json
 
 if [ -e $fastly_ips ]; then
   export proxyip_forwarders=`jq -cr '[.ipv6_addresses, .addresses] | flatten | join(", ") ' < $fastly_ips`
 fi
 
-confd -onetime -confdir=confd -backend env -log-level warning
-export CBCONFIG=/var/ntppool/combust.conf
+while [ ! -e combust.conf.tmpl ]; do
+    echo "waiting for code to be synced"
+    sleep 2
+done
+
+
+export CBCONFIG=`mktemp -d`/combust.conf
+gomplate -f combust.conf.tmpl -o $CBCONFIG
 
 set -x
 

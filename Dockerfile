@@ -4,6 +4,7 @@ USER root
 ENV BUILD 20241130
 
 RUN apk -U --no-cache upgrade --ignore alpine-baselayout
+RUN apk --no-cache add gomplate
 RUN cpanm Net::Async::HTTP::Server Plack::Handler::Net::Async::HTTP::Server Plack::Middleware::Headers
 RUN cpanm OpenTelemetry OpenTelemetry::SDK OpenTelemetry::Exporter::OTLP Plack::Middleware::OpenTelemetry
 #RUN cpanm https://tmp.askask.com/2024/01/Plack-Middleware-OpenTelemetry-0.240030.tar.gz

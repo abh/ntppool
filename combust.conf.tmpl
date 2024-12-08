@@ -72,14 +72,15 @@ keepalivetimeout    = 5
 # Configure sites
 
 [ntppool]
-{{ $names := split (getenv "web_hostname") "," }}
+{{ $names := getenv "web_hostname" | strings.Split "," }}
 servername = {{ index $names 0 }}
-{{ if gt (len $names) 1 }}
-aliases = {{ range $names }}{{.}}, {{ end}} web
+{{ if gt (len $names) 1 }}{{ $names = coll.GoSlice $names 1 }}
+aliases = {{ join $names ", " }}
 {{ end }}
 
 pool_domain = {{ getenv "pool_domain" }}
 static_base = {{ getenv "static_base" }}
+
 {{ $www_cname := or (getenv "www_cname") ""}}
 {{ if gt (len $www_cname) 0 }}
 www_cname = {{ $www_cname }}
@@ -107,9 +108,11 @@ external_port = 443
 #deployment_mode = {{ $mode }}
 
 [manage]
-{{ $names := split (getenv "manage_hostname") "," }}
+{{ $names := getenv "manage_hostname" | strings.Split "," }}
 servername = {{ index $names 0 }}
-aliases = {{ range $names }}{{.}}, {{ end}} manage
+{{ if gt (len $names) 1 }}{{ $names = coll.GoSlice $names 1 }}
+aliases = {{ join $names ", " }}
+{{ end }}
 
 deployment_mode = {{ $mode }}
 static_base = {{ getenv "static_base" }}
