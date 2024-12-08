@@ -1,14 +1,13 @@
-FROM harbor.ntppool.org/ntppool/base-os:3.20.3
+FROM harbor.ntppool.org/ntppool/base-os:3.21.0
 USER root
 
-ENV BUILD 20241130
+ENV BUILD 20241215
 
 RUN apk -U --no-cache upgrade --ignore alpine-baselayout
-RUN apk --no-cache add gomplate
+RUN apk --no-cache add gomplate alpine-base
 RUN cpanm Net::Async::HTTP::Server Plack::Handler::Net::Async::HTTP::Server Plack::Middleware::Headers
 RUN cpanm OpenTelemetry OpenTelemetry::SDK OpenTelemetry::Exporter::OTLP Plack::Middleware::OpenTelemetry
-#RUN cpanm https://tmp.askask.com/2024/01/Plack-Middleware-OpenTelemetry-0.240030.tar.gz
-RUN cpanm https://tmp.askask.com/2024/02/Net-Async-HTTP-Server-0.14bis2.tar.gz
+RUN cpanm -v https://tmp.askask.com/2024/12/Net-Async-HTTP-Server-0.14bis4.tar.gz
 
 ENV CBCONFIG=
 ENV HULK /usr/local/bin/hulk

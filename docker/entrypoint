@@ -17,8 +17,10 @@ while [ ! -e combust.conf.tmpl ]; do
     sleep 2
 done
 
+if [ -z "$CBCONFIG" ]; then
+    export CBCONFIG=`mktemp -d`/combust.conf
+fi
 
-export CBCONFIG=`mktemp -d`/combust.conf
 gomplate -f combust.conf.tmpl -o $CBCONFIG
 
 set -x
