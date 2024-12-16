@@ -1,15 +1,17 @@
+# Sebastiano Pistore <SebastianoPistore.info@protonmail.ch>, 2021-2024.
+
 msgid ""
 msgstr ""
-"Project-Id-Version: \n"
+"Project-Id-Version: ntppool\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: \n"
+"PO-Revision-Date: 2024-12-12 11:32+0100\n\n"
 "Last-Translator: Sebastiano Pistore <SebastianoPistore.info@protonmail.ch>\n"
 "Language-Team: \n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.0.1\n"
+"X-Generator: Poedit 3.5\n"
 
 msgid "go up"
 msgstr "vai su"
@@ -27,19 +29,40 @@ msgstr "Nord America"
 msgid "South America"
 msgstr "Sud America"
 
+msgid "Europe"
+msgstr "Europa"
+
+msgid "Oceania"
+msgstr "Oceania"
+
 msgid "Global"
 msgstr "Globale"
 
 msgid "All Pool Servers"
-msgstr "Tutti i Pool Server"
+msgstr "Tutti i server di pool"
 
 # navigation
 msgid "Translations"
 msgstr "Traduzioni"
 
-# mailinglists.html
-msgid "NTP Pool mailing lists"
-msgstr "Mailing list NTP Pool"
+# index.html
+msgid "Introduction"
+msgstr "Presentazione"
+
+msgid "Active Servers"
+msgstr "Server attivi"
+
+msgid "Links"
+msgstr "Link"
+
+msgid "Terms of service"
+msgstr "Termini di servizio"
+
+msgid "Subscribe in a reader"
+msgstr "Seguici via RSS"
+
+msgid "Older news"
+msgstr "Notizie precedenti"
 
 msgid "subscribe"
 msgstr "sottoscrivi"
@@ -47,23 +70,40 @@ msgstr "sottoscrivi"
 msgid "archive"
 msgstr "archivio"
 
-msgid "Announcement list"
-msgstr "Lista annunci"
+msgid "NTP Pool Forum"
+msgstr "Forum di NTP Pool"
+
+# tpl/navigation_sidebar.html
+msgid "News site"
+msgstr "Notizie"
 
 msgid "Discussion list"
 msgstr "Lista discussioni"
 
-msgid "Development list"
+msgid "Development"
 msgstr "Lista sviluppo"
 
-msgid "announcement_list_description"
-msgstr "Annunci di notizie su NTP Pool a traffico molto basso.  Tutti gli operatori server dovrebbero essere sottoscritti alla lista annunci."
+msgid "forum_description"
+msgstr ""
+"domande (e risposte) sul pool NTP, suggerimenti per il miglioramento e "
+"argomenti relativi alla misurazione del tempo e al funzionamento dei server "
+"NTP. community.ntppool.org"
+
+msgid "news_description"
+msgstr "annunci e notizie vengono pubblicati qui o sul forum"
 
 msgid "discussion_list_description"
-msgstr "Operatori server (e utenti) che desiderano essere maggiormente coinvolti nel progetto possono sottoscrivere la lista discussioni.<br/> Certamente, discussioni generali su ntp dovrebbero aver luogo sul newsgroup Usenet %1 (anche su <a href=\"%2\">Google Gruppi</a>)."
+msgstr ""
+"operatori server (e utenti) che desiderano essere maggiormente coinvolti nel "
+"progetto possono sottoscrivere la lista discussioni.<br/> Certamente, "
+"discussioni generali su ntp dovrebbero aver luogo sul newsgroup Usenet %1 "
+"(anche su <a href=\"%2\">Google Gruppi</a>)"
 
 msgid "development_list_description"
-msgstr "Discussioni maggiormente tecniche (e possibilmente sempre pragmatiche) riguardo lo sviluppo corrente del <a href=\\\"%1\\\">codice ntp pool</a> e <a href=\\\"%2\\\">GeoDNS</a> si tengono presso la lista timekeepers-dev."
+msgstr ""
+"discussioni tecniche (e possibilmente pragmatiche) riguardo lo sviluppo del "
+"<a href=\"%1\">codice di ntp pool</a> e <a href=\"%2\">GeoDNS</a> si "
+"trovano sulla lista timekeepers-dev"
 
 # tpl/server.html
 msgid "Back to the front page"
@@ -76,16 +116,22 @@ msgid "Stats for %1"
 msgstr "Statistiche per %1"
 
 msgid "Not active in the pool, monitoring only"
-msgstr "Non attivo nel pool, solo monitorando"
+msgstr "Non attivo nel pool, sta solo monitorando"
 
 msgid "Zones:"
 msgstr "Zone:"
 
-msgid "This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
-msgstr "Questo server è <span class=\"deletion\">programmato per l'eliminazione</span> su %1."
+msgid ""
+"This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
+msgstr ""
+"Questo server è <span class=\"deletion\">programmato per l'eliminazione</span> su %1."
 
-msgid "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
-msgstr "Punteggio attuale: %1 (solo i server con punteggio maggiore di %2 vengono usati nel pool)"
+msgid ""
+"Current score: %1 (only servers with a score higher than %2 are used in the "
+"pool)"
+msgstr ""
+"Punteggio attuale: %1 (solo i server con punteggio maggiore di %2 vengono "
+"usati nel pool)"
 
 msgid "What do the graphs mean?"
 msgstr "Cosa significano i grafici?"
@@ -107,10 +153,17 @@ msgid "Information for vendors"
 msgstr "Informazioni per venditori"
 
 msgid "The mailing lists"
-msgstr "Le mailing list"
+msgstr "Mailing list"
 
 msgid "Additional links"
 msgstr "Ulteriori link"
 
 msgid "Can you translate?"
-msgstr "Puoi tradurre?"
+msgstr "Puoi aiutarci a tradurre?"
+
+# mailinglists.html
+#~ msgid "NTP Pool mailing lists"
+#~ msgstr "mailing list NTP Pool"
+
+#~ msgid "Announcement list"
+#~ msgstr "Lista annunci"
