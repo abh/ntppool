@@ -1,7 +1,7 @@
 package NP::Vault;
 use strict;
 use warnings;
-use NP::LWP;
+use NP::UA qw();
 use LWP::UserAgent;
 use JSON::XS ();
 
@@ -19,15 +19,17 @@ sub _ua {
     my $ca = '/vault/secrets/vault-ca';
     if (-e $ca) {
         $ua = LWP::UserAgent->new(
-            timeout  => 2,
-            ssl_opts => {
+            timeout           => 2,
+            protocols_allowed => ['http', 'https'],
+            max_size          => (20 * 1024 * 1024),
+            ssl_opts          => {
                 SSL_verify_mode => 0x02,
                 SSL_ca_file     => $ca,
             }
         );
     }
     else {
-        $ua = NP::LWP::ua();
+        $ua = $NP::UA::ua;
     }
 }
 

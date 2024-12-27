@@ -1,7 +1,7 @@
 package NP::Stripe;
 use strict;
 use NP::Model;
-use NP::LWP;
+use NP::UA qw($ua);
 use JSON::XS;
 use List::Util qw(uniq);
 use Data::Dump ();
@@ -30,10 +30,10 @@ sub _gw_api {
             $uri->query_form_hash({%$o, %$data});
             $url = $uri->as_string();
         }
-        $res = NP::LWP->ua->$method($url);
+        $res = $ua->$method($url);
     }
     elsif ($method eq 'post') {
-        $res = NP::LWP->ua->post($url, $data);
+        $res = $ua->post($url, $data);
     }
     else {
         warn qq[unknown method "$method" for stripe _gw_api];

@@ -273,7 +273,7 @@ sub suggested_locationcodes {
     # my $self = shift;
     my $ip = shift;
 
-    my $ua = NP::LWP::ua();
+    my $ua = $NP::UA::ua;
 
     my $geoip = $ENV{geoip_service} || 'geoip';
     my $res   = $ua->get("http://${geoip}/api/json?ip=$ip");

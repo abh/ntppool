@@ -1,6 +1,9 @@
 package NP::UA;
 use strict;
 use warnings;
+use LWP::UserAgent qw();
+use Mozilla::CA qw();
+
 use Exporter 'import';
 our @EXPORT_OK = qw(
     $ua
