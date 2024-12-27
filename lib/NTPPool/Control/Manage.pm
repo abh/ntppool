@@ -3,21 +3,21 @@ use strict;
 use base qw(NTPPool::Control);
 use NP::Model;
 use Combust::Constant qw(OK NOT_FOUND);
-use Socket qw(inet_ntoa);
+use Socket            qw(inet_ntoa);
 use Socket6;
 use JSON::XS qw(encode_json decode_json);
 use Net::DNS;
-use Crypt::JWT qw(decode_jwt);
-use LWP::UserAgent qw();
-use Mozilla::CA qw();
-use Math::BaseCalc qw();
+use Crypt::JWT           qw(decode_jwt);
+use LWP::UserAgent       qw();
+use Mozilla::CA          qw();
+use Math::BaseCalc       qw();
 use Math::Random::Secure qw(irand);
-use URI::URL ();
+use URI                  ();
 use NP::UA;
 use OpenTelemetry::Trace;
 use OpenTelemetry -all;
 use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
-use experimental qw( defer );
+use experimental             qw( defer );
 use Syntax::Keyword::Dynamically;
 
 sub ua { return $NP::UA::ua }
@@ -308,6 +308,23 @@ sub handle_login {
 
     $identity->save;
 
+    my $resp = $self->ua->post("10.42.20.249:4211/int/session", {user_id => $user->id});
+    if ($resp->is_success) {
+        warn "session created";
+
+        my $data = decode_json($resp->decoded_content());
+        unless ($data->{session_key}) {
+            warn "could not get session key from response";
+        }
+        else {
+            $self->plain_cookie('sess', $data->{session_key});
+        }
+    }
+    else {
+        warn "could not create sesssion: ", $resp->status_line;
+    }
+
+    # todo: reset the legacy cooki
     # user id information
     $self->cookie($self->user_cookie_name, $user->id);
 
@@ -403,6 +420,7 @@ sub _get_auth0_user {
     }
 
     my $jwt_data = decode_jwt(token => $data->{id_token}, kid_keys => $jwt_keys);
+
     # warn "jwt: ", pp($jwt_data);
 
     $jwt_data or return undef, "Could not decode user data";
@@ -455,7 +473,8 @@ sub login_url {
     );
 
     use Data::Dump qw(pp);
-    warn "login_url: ", $login_url->as_string, pp($login_url);
+
+    # warn "login_url: ", $login_url->as_string, pp($login_url);
 
     return $login_url->as_string;
 }

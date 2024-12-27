@@ -1058,5 +1058,19 @@ create table monitor_registrations (
       REFERENCES `monitors` (`id`) on delete cascade
 );
 
+#130
+create table user_sessions (
+  id int unsigned NOT NULL AUTO_INCREMENT primary key,
+  user_id       int unsigned not null,
+  token_lookup  varchar(16) not null,
+  token_hashed  varchar(256) not null,
+
+  last_seen     datetime,
+  created_on    datetime not null default now(),
+
+  constraint `user_sessions_user_fk` foreign key (`user_id`) references users (`id`),
+  index (token_lookup)
+);
+
 #todo
 - ...

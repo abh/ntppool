@@ -6,6 +6,8 @@ RUN cpanm Net::Async::HTTP::Server Plack::Handler::Net::Async::HTTP::Server Plac
 RUN cpanm OpenTelemetry OpenTelemetry::SDK OpenTelemetry::Exporter::OTLP Plack::Middleware::OpenTelemetry
 RUN cpanm -v https://tmp.askask.com/2024/12/Net-Async-HTTP-Server-0.14bis4.tar.gz
 
+RUN cpanm Crypt::Passphrase::Bcrypt
+
 RUN apk --no-cache add alpine-base
 
 ENV CBCONFIG=

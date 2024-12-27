@@ -13,7 +13,7 @@ our @EXPORT_OK = qw(
 
 our $ua = LWP::UserAgent->new(
     agent             => 'ntppool/1',
-    timeout           => 2,
+    timeout           => 3,
     protocols_allowed => ['http', 'https'],
     max_size          => (20 * 1024 * 1024),
     ssl_opts          => {
