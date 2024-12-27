@@ -4,7 +4,7 @@ use Combust::Constant qw(OK NOT_FOUND);
 
 # Be a simpler "Basic" controller than the main website one
 # to let manage be it's own templated site
-use base qw(NTPPool::Control NTPPool::Control::Manage Combust::Control::Basic);
+use parent qw(NTPPool::Control::Manage Combust::Control::Basic);
 
 sub render {
     my $self = shift;

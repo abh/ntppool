@@ -1,6 +1,6 @@
 package NTPPool;
 
-our $VERSION = '2023';
+our $VERSION = '2025';
 
 use NTPPool::Control;
 use NTPPool::Control::Basic;

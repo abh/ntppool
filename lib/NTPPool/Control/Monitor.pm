@@ -1,6 +1,6 @@
 package NTPPool::Control::Monitor;
 use strict;
-use base qw(NTPPool::Control);
+use parent qw(NTPPool::Control);
 use NP::Model;
 use Combust::Constant qw(OK NOT_FOUND);
 use Data::Dump        qw(pp);

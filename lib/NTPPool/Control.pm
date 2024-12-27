@@ -2,7 +2,7 @@ package NTPPool::Control;
 use strict;
 use utf8;
 use Combust::Constant qw(OK);
-use base              qw(Combust::Control Combust::Control::StaticFiles NTPPool::Control::Login);
+use base              qw(Combust::Control Combust::Control::StaticFiles);
 
 use Carp                   qw(cluck);
 use Storable               qw(retrieve);
@@ -346,6 +346,13 @@ sub _url {
     return $uri->as_string;
 }
 
+sub user {
+
+    # can only be logged in when the base class includes ::Login
+    # (on the manage site), so don't even check otherwise
+    return;
+}
+
 sub www_url {
     my $self = shift;
     return $self->_url('ntppool', @_);
@@ -492,7 +499,7 @@ sub plain_cookie {
 
     my $ocookie = $self->request->get_cookie($cookie) || '';
 
-    unless (defined $value and $value ne ($ocookie || '')) {
+    unless (defined $value and $value ne $ocookie) {
         return $ocookie;
     }
 
@@ -505,7 +512,7 @@ sub plain_cookie {
     $args->{path} ||= '/';
     $args->{expires} = time + (30 * 86400) unless defined $args->{expires};
     if ($args->{expires} =~ m/^-/) {
-        $args->{expires} = 1;
+        $args->{expires} = 1;    # 1970-01-01
     }
 
     $args->{secure} = 1;

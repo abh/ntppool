@@ -1,7 +1,7 @@
 package NTPPool::Control::Manage::Webhook;
 use strict;
 use NTPPool::Control::Manage;
-use base qw(NTPPool::Control::Manage);
+use parent qw(NTPPool::Control::Manage);
 use NP::Model;
 use Combust::Constant qw(OK NOT_FOUND FORBIDDEN);
 use Combust::Config   ();

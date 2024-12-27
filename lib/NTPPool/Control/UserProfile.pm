@@ -1,6 +1,6 @@
 package NTPPool::Control::UserProfile;
 use strict;
-use base qw(NTPPool::Control);
+use parent qw(NTPPool::Control);
 use NP::Model;
 use Combust::Constant qw(OK);
 

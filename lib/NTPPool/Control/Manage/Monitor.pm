@@ -1,12 +1,12 @@
 package NTPPool::Control::Manage::Monitor;
 use v5.30.0;
 use warnings;
-use base qw(NTPPool::Control::Manage);
+use parent qw(NTPPool::Control::Manage);
 use NP::Model;
 use Combust::Constant qw(OK NOT_FOUND FORBIDDEN);
-use JSON ();
-use MIME::Base64 qw(encode_base64);
-use Data::Dump qw(pp);
+use JSON              ();
+use MIME::Base64      qw(encode_base64);
+use Data::Dump        qw(pp);
 
 my $json = JSON::XS->new->pretty->utf8->convert_blessed;
 

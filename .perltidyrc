@@ -15,7 +15,7 @@
 
 # extras/overrides/deviations from PBP
 
---maximum-line-length=100
+--maximum-line-length=90
 --warning-output                      # Show warnings
 --nohanging-side-comments             # troublesome for commented out code
 

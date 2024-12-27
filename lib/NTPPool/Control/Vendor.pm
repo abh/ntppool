@@ -1,6 +1,6 @@
 package NTPPool::Control::Vendor;
 use strict;
-use base qw(NTPPool::Control::Manage);
+use parent qw(NTPPool::Control::Manage);
 use NP::Model;
 use Combust::Constant qw(OK NOT_FOUND FORBIDDEN);
 use NP::Email         ();

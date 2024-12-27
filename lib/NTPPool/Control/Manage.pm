@@ -1,6 +1,6 @@
 package NTPPool::Control::Manage;
 use strict;
-use base qw(NTPPool::Control);
+use parent qw(NTPPool::Control::Login NTPPool::Control);
 use NP::Model;
 use Combust::Constant qw(OK NOT_FOUND);
 use Socket            qw(inet_ntoa);
@@ -121,14 +121,10 @@ sub render {
     $self->cache_control('private');
 
     if ($self->request->uri =~ m!^/manage/logout!) {
-        $self->set_span_name("manage.logout");
-        $self->cookie($self->user_cookie_name, 0);
-        $self->cookie("xs",                    0);
-        $self->cookie("login_state",           0);
-        $self->redirect('/manage');
+        return $self->logout;
     }
 
-    $self->tpl_param('xs', $self->cookie('xs'));
+    $self->tpl_param("xs", $self->cookie("xs"));
 
     if ($self->request->uri =~ m!^/manage/login!) {
         $self->set_span_name("manage.login");
@@ -308,14 +304,13 @@ sub handle_login {
 
     $identity->save;
 
-    # user id information
-    $self->cookie($self->user_cookie_name, $user->id);
+    $self->setup_session($user->id);
 
-    # xss
-    $self->cookie("xs", join "", map { $base36->to_base(irand) } (undef) x 6);
+    # clear legacy cookie information
+    $self->cookie($self->user_cookie_name, '');
 
-    # last login timestamp
-    $self->cookie("ll", time);
+    # xss for manage page
+    $self->cookie("xs", join("", map { $base36->to_base(irand) } (undef) x 6));
 
     $span->end();
 
@@ -371,6 +366,7 @@ sub _get_auth0_user {
     my $resp = $self->ua->post($url, \%form);
 
     # warn "token request: ", pp(\%form);
+
     # use Data::Dump qw(pp);
 
     unless ($resp->is_success) {
@@ -456,7 +452,8 @@ sub login_url {
     );
 
     use Data::Dump qw(pp);
-    warn "login_url: ", $login_url->as_string, pp($login_url);
+
+    # warn "login_url: ", $login_url->as_string, pp($login_url);
 
     return $login_url->as_string;
 }

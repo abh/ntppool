@@ -3,7 +3,7 @@ use v5.30;
 use strict;
 use warnings;
 use NTPPool::Control::Manage;
-use base qw(NTPPool::Control::Manage);
+use parent qw(NTPPool::Control::Manage);
 use NP::Model;
 use Combust::Constant qw(OK NOT_FOUND);
 use Combust::Config   ();

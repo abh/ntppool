@@ -1,5 +1,5 @@
 package NTPPool::Control::Basic;
-use base              qw(NTPPool::Control Combust::Control::Basic);
+use parent            qw(NTPPool::Control Combust::Control::Basic);
 use Combust::Constant qw(OK NOT_FOUND);
 
 sub init {

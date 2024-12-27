@@ -1,6 +1,6 @@
 package NTPPool::Control::Scores;
 use strict;
-use base              qw(NTPPool::Control);
+use parent            qw(NTPPool::Control);
 use Combust::Constant qw(OK DECLINED);
 use NP::Model;
 use List::Util   qw(min);

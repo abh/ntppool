@@ -2,7 +2,7 @@ package NTPPool::Control::Manage::UserProfile;
 use strict;
 use NTPPool::Control::Manage;
 use NTPPool::Control::UserProfile;
-use base              qw(NTPPool::Control::UserProfile NTPPool::Control::Manage);
+use parent            qw(NTPPool::Control::UserProfile NTPPool::Control::Manage);
 use Combust::Constant qw(OK);
 
 sub profile_visible {

@@ -1,6 +1,14 @@
 package NTPPool::Control::Login;
 use strict;
 use Combust::Constant qw(OK);
+use Crypt::Passphrase;
+use Crypt::Passphrase::Bcrypt;
+use JSON::XS qw(decode_json);
+use OpenTelemetry::Trace;
+use OpenTelemetry -all;
+use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
+use experimental             qw( defer );
+use Syntax::Keyword::Dynamically;
 
 sub user_cookie_name {
     return 'npuid';
@@ -29,13 +37,63 @@ sub login {
 
 sub bc_user_class { NP::Model->user }
 
+my $crypt = Crypt::Passphrase->new(
+    encoder => {
+        module => 'Bcrypt',
+        cost   => 4,
+        hash   => 'sha256',
+    }
+);
+
 sub user {
     my $self = shift;
+
     return $self->{_user} if $self->{_user};
     if (@_) { return $self->{_user} = $_[0] }
 
-    my $cookie_name = $self->user_cookie_name;
-    my $uid         = $self->cookie($cookie_name) or return;
+    # if there's no user cookie, we can't be logged in
+    return
+      unless $self->plain_cookie($self->user_cookie_name)
+      or $self->cookie($self->user_cookie_name);
+
+    my $uid;
+
+    if (my $session_cookie = $self->plain_cookie($self->user_cookie_name)) {
+        if (my ($session_key, $checksum) = ($session_cookie =~ m!^nps_([^_]+)_(\d+)(?:;\d+)?$!)) {
+            my $sessions = NP::Model->user_session->get_objects(
+                query   => [token_lookup => $checksum],
+                sort_by => 'last_seen desc',
+            );
+            for my $session (@$sessions) {
+                my $ok = $crypt->verify_password($session_key, $session->token_hashed);
+                if ($ok) {
+                    $uid = $session->user_id;
+                    if (  !$session->last_seen
+                        or $session->last_seen < DateTime->now->subtract(hours => 4))
+                    {
+                        # set the cookie again to update the expires time
+                        $session_cookie =~ s/;.*//;    # remove timestamp
+                        $self->_set_session_cookie($session_cookie);
+                        $session->last_seen(DateTime->now);
+                        $session->update;
+                    }
+                    last;
+                }
+            }
+        }
+    }
+    else {
+
+        # legacy cookie session support; delete some months after release
+        $uid = $self->cookie($self->user_cookie_name);
+        warn "legacy session cookie" if $uid;
+    }
+
+    unless ($uid) {
+        $self->cookie($self->user_cookie_name, '0');
+        $self->plain_cookie($self->user_cookie_name, '', {expires => -1});
+        return;
+    }
 
     my $user;
     if ($self->bc_user_class->can('find')) {
@@ -50,7 +108,9 @@ sub user {
     }
 
     return $self->{_user} = $user if $user;
-    $self->cookie($cookie_name, '0');
+
+    $self->cookie($self->user_cookie_name, '0');
+    $self->plain_cookie($self->user_cookie_name, '', {expires => -1});
     return;
 }
 
@@ -64,7 +124,37 @@ sub is_logged_in {
 sub logout {
     my $self = shift;
     my $uri  = shift || '/';
+
+    my $span = NP::Tracing->tracer->create_span(
+        name => "logout",
+        kind => SPAN_KIND_SERVER,
+    );
+    dynamically otel_current_context = otel_context_with_span($span);
+    defer { $span->end(); };
+
     $self->cookie($self->user_cookie_name, 0);
+    $self->cookie("login_state",           0);
+    $self->cookie("xs",                    '');
+
+    my $session_token = $self->plain_cookie($self->user_cookie_name);
+    if ($session_token) {
+        $self->plain_cookie($self->user_cookie_name, '', {expires => -1});
+
+        # todo: check if there's a current user first to validate
+        # the token before deleting it?
+
+        my ($lookup) = ($session_token =~ m/_(\d+)$/);
+
+        if ($lookup) {
+            my $resp = $self->ua->delete("http://api-internal/int/session/" . $lookup);
+            if ($resp->is_success) {
+                warn "session deleted";
+            }
+        }
+    }
+
+    $self->redirect('/manage');
+
     $self->no_cache(1);
     $self->user(undef);
 
@@ -81,4 +171,32 @@ sub _here_url {
     $here->as_string;
 }
 
+sub setup_session {
+    my ($self, $user_id) = @_;
+    warn "setup_session for $user_id";
+    my $resp = $self->ua->post("http://api-internal/int/session", {user_id => $user_id});
+    if ($resp->is_success) {
+        my $data = decode_json($resp->decoded_content());
+        unless ($data->{session_token}) {
+            warn "could not get session key from response";
+        }
+        else {
+            $self->_set_session_cookie($data->{session_token});
+        }
+    }
+    else {
+        warn "could not create sesssion: ", $resp->status_line;
+    }
+}
+
+sub _set_session_cookie {
+    my ($self, $session_token) = @_;
+    $self->plain_cookie(
+        $self->user_cookie_name,
+        $session_token . ";" . time,    # timestamp to make it unique when set again
+        {   expires  => time + (90 * 86400),
+            samesite => "Lax",
+        }
+    );
+}
 1;
