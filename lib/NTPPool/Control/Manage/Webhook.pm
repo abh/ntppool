@@ -4,9 +4,9 @@ use NTPPool::Control::Manage;
 use base qw(NTPPool::Control::Manage);
 use NP::Model;
 use Combust::Constant qw(OK NOT_FOUND FORBIDDEN);
-use Combust::Config ();
-use JSON::XS        ();
-use Crypt::JWT qw(decode_jwt);
+use Combust::Config   ();
+use JSON::XS          ();
+use Crypt::JWT        qw(decode_jwt);
 
 my $config     = Combust::Config->new;
 my $config_ntp = $config->site->{ntppool};

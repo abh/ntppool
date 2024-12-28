@@ -5,7 +5,7 @@ use base qw(NTPPool::Control::Manage);
 use NP::Model;
 use NP::NTP;
 use Combust::Constant qw(OK NOT_FOUND FORBIDDEN);
-use JSON ();
+use JSON              ();
 
 my $json = JSON::XS->new->pretty->utf8->convert_blessed;
 

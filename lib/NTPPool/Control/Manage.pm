@@ -3,21 +3,21 @@ use strict;
 use base qw(NTPPool::Control);
 use NP::Model;
 use Combust::Constant qw(OK NOT_FOUND);
-use Socket qw(inet_ntoa);
+use Socket            qw(inet_ntoa);
 use Socket6;
 use JSON::XS qw(encode_json decode_json);
 use Net::DNS;
-use Crypt::JWT qw(decode_jwt);
-use LWP::UserAgent qw();
-use Mozilla::CA qw();
-use Math::BaseCalc qw();
+use Crypt::JWT           qw(decode_jwt);
+use LWP::UserAgent       qw();
+use Mozilla::CA          qw();
+use Math::BaseCalc       qw();
 use Math::Random::Secure qw(irand);
-use URI::URL ();
+use URI::URL             ();
 use NP::UA;
 use OpenTelemetry::Trace;
 use OpenTelemetry -all;
 use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
-use experimental qw( defer );
+use experimental             qw( defer );
 use Syntax::Keyword::Dynamically;
 
 sub ua { return $NP::UA::ua }
@@ -403,6 +403,7 @@ sub _get_auth0_user {
     }
 
     my $jwt_data = decode_jwt(token => $data->{id_token}, kid_keys => $jwt_keys);
+
     # warn "jwt: ", pp($jwt_data);
 
     $jwt_data or return undef, "Could not decode user data";

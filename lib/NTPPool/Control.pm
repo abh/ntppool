@@ -2,18 +2,19 @@ package NTPPool::Control;
 use strict;
 use utf8;
 use Combust::Constant qw(OK);
-use base qw(Combust::Control Combust::Control::StaticFiles NTPPool::Control::Login);
+use base              qw(Combust::Control Combust::Control::StaticFiles NTPPool::Control::Login);
 
-use Carp qw(cluck);
-use Storable qw(retrieve);
-use I18N::LangTags qw(implicate_supers);
+use Carp                   qw(cluck);
+use Storable               qw(retrieve);
+use I18N::LangTags         qw(implicate_supers);
 use I18N::LangTags::Detect ();
-use List::Util qw(first);
+use List::Util             qw(first);
 use Unicode::Collate;
 use Data::ULID;
 use JSON::XS qw(decode_json);
 use Syntax::Keyword::Dynamically;
-use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_KIND_INTERNAL SPAN_STATUS_ERROR SPAN_STATUS_OK );
+use OpenTelemetry::Constants
+  qw( SPAN_KIND_SERVER SPAN_KIND_INTERNAL SPAN_STATUS_ERROR SPAN_STATUS_OK );
 use OpenTelemetry -all;
 use OpenTelemetry::Trace;
 use experimental qw( defer );

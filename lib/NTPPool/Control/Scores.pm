@@ -1,10 +1,10 @@
 package NTPPool::Control::Scores;
 use strict;
-use base qw(NTPPool::Control);
+use base              qw(NTPPool::Control);
 use Combust::Constant qw(OK DECLINED);
 use NP::Model;
-use List::Util qw(min);
-use JSON ();
+use List::Util   qw(min);
+use JSON         ();
 use experimental qw( defer );
 use Syntax::Keyword::Dynamically;
 use OpenTelemetry::Constants qw( SPAN_KIND_INTERNAL SPAN_STATUS_ERROR SPAN_STATUS_OK );

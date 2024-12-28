@@ -1,6 +1,6 @@
 package NTPPool::Control::DNSStatus;
 use strict;
-use base qw(NTPPool::Control);
+use base              qw(NTPPool::Control);
 use Combust::Constant qw(OK);
 use NP::Util::DNS;
 

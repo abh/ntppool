@@ -45,7 +45,7 @@ sub render_user {
     my $user = $self->profile_user;
     return 404 unless $user and $user->public_profile;
 
-    my $accounts  = $user->accounts;
+    my $accounts = $user->accounts;
     my ($account) = sort { $a->id <=> $b->id }
       grep { $_->public_profile } @$accounts;
 

@@ -3,7 +3,7 @@ use strict;
 use base qw(NTPPool::Control);
 use NP::Model;
 use Combust::Constant qw(OK NOT_FOUND);
-use Data::Dump qw(pp);
+use Data::Dump        qw(pp);
 
 my $json = JSON::XS->new->pretty;
 
