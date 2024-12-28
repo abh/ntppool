@@ -481,7 +481,7 @@ sub post_process {
 sub plain_cookie {
     my $self   = shift;
     my $cookie = shift;
-    my $value  = shift || '';
+    my $value  = shift;
     my $args   = shift || {};
 
     my $ocookie = $self->request->get_cookie($cookie) || '';
@@ -502,9 +502,12 @@ sub plain_cookie {
         $args->{expires} = 1;
     }
 
+    $args->{secure} = 1;
+
     $args->{value} = $value;
 
-    return $self->request->response->cookies->{$cookie} = $args;
+    $self->request->response->cookies->{$cookie} = $args;
+    return $args->{value};
 }
 
 1;
