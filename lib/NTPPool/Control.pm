@@ -414,11 +414,16 @@ sub count_by_continent {
 sub redirect {
     my ($self, $url) = (shift, shift);
 
-    my $span = NP::Tracing->tracer->create_span(
-        name => "redirect",
-    );
+    my $span = NP::Tracing->tracer->create_span(name => "redirect",);
     dynamically otel_current_context = otel_context_with_span($span);
     defer { $span->end(); };
+
+    if (ref $url) {
+
+        # for the span since it doesn't support references
+        $url = $url->as_string;
+    }
+
     $span->set_attribute("redirect.url", $url);
 
     $self->post_process;
