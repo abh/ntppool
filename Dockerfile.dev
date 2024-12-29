@@ -1,4 +1,4 @@
-FROM harbor.ntppool.org/ntppool/base-os:3.21.0
+FROM harbor.ntppool.org/ntppool/base-os:latest
 USER root
 
 ENV BUILD 20241215
