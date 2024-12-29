@@ -4,3 +4,5 @@
 <link rel="alternate" hreflang="[% lang_id %]" href="[% combust.www_url('/' _ lang_id _ combust.request.uri) | html %]" />
 [%- END %]
 <link rel="alternate" hreflang="x-default" href="[% combust.www_url(combust.request.uri) | html %]" />
+
+[% page.canonical = combust.www_url(combust.request.uri); %]
