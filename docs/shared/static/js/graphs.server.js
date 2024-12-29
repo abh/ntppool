@@ -185,10 +185,10 @@ function server_chart(div, data, options) {
             var offset = d.offset;
 
             if (offset < 0) { offset = offset * -1; }
-            if (offset < 0.050) {
+            if (offset < 0.075) {
                 return "green";
             }
-            else if (offset < 0.100) {
+            else if (offset < 0.250) {
                 return "orange";
             }
             else {
