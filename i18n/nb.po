@@ -57,12 +57,6 @@ msgid  "Older news"
 msgstr "Eldre nyheter"
 
 # mailinglists.html
-msgid  "NTP Pool mailing lists"
-msgstr "NTP-pulje-E-postlister"
-
-msgid  "subscribe"
-msgstr "abonner"
-
 msgid  "archive"
 msgstr "arkiv"
 
@@ -81,20 +75,8 @@ msgstr "Spørsmål (og svar) om NTP-puljen, forslag til forbedringer, og temaer 
 msgid  "news_description"
 msgstr "Annonseringer og nyheter blir lagt ut på nyhetssiden eller i forumet."
 
-msgid  "Announcement list"
-msgstr "Liste for kunngjøringer"
-
 msgid  "Discussion list"
 msgstr "Liste for diskusjoner"
-
-msgid  "Development list"
-msgstr "Liste for utvikling"
-
-msgid  "announcement_list_description"
-msgstr "Veldig lite traffik med kunngjøringer av NTP Pulje-nyheter. Alle tjeneroperatører bør abonnere på kunngjøringslisten."
-
-msgid  "discussion_list_description"
-msgstr "Tjeneroperatører (og brukere) som ønsker å være mer involverte i prosjektet kan abonnere på diskusjonslisten.<br/> Generell diskusjon om ntp bør skje på Usenet-temagruppen (óg på <a href=\"%2\">Google Grupper</a>)."
 
 msgid  "development_list_description"
 msgstr "Mer tekniske (og ideelt sett løsningsorienterte) diskusjoner om aktuell utvikling innen <a href=\"%1\">NTP-puljens kode</a> og <a href=\"%2\">GeoDNS</a> skjer på «timekeepers-dev»- listen."
