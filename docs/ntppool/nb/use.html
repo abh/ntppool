@@ -1,0 +1,154 @@
+[% page.title = 'Hvordan setter jeg opp NTP til å bruke puljen?' %]
+
+<div class="block">
+	<h3 id="use">Hvordan bruker jeg pool.ntp.org?</h3>
+
+	<p>
+		Hvis du bare vil synkronisere datamaskinens klokke til nettverket, er
+		konfigurasjonsfilen (for ntpd-programmet fra
+		<a href="https://www.ntp.org/">ntp.org-distribusjonen</a>, på ethvert
+		støttet operativsystem –
+		<b>Linux, *BSD, Windows og til og med noen mer eksotiske systemer</b>)
+		veldig enkel:
+	</p>
+
+	[% INCLUDE "ntppool/use/sample-config.html" %]
+
+	<p>
+		Navnene 0, 1, 2 og <code>3.pool.ntp.org</code> peker til et tilfeldig sett
+		med servere som endres hver time. Sørg for at datamaskinens klokke er satt
+		til noe fornuftig (innen noen minutter av den "riktige" tiden) – du kan
+		bruke <code>ntpdate pool.ntp.org</code>, eller du kan bruke
+		<code>date</code>-kommandoen og stille den etter klokken din. Start ntpd, og
+		etter en stund (det kan ta opptil en halvtime!) bør
+		<code>ntpq -pn</code> vise noe som dette:
+	</p>
+
+	[% INCLUDE "ntppool/use/sample-ntpq.html" %]
+
+	<p>
+		IP-adressene vil være forskjellige, fordi du har blitt tildelt tilfeldige
+		tidstjenere. Det essensielle er at én av linjene starter med en stjerne
+		(<code>*</code>), som betyr at datamaskinen din får tiden fra internett – som
+		betyr at du aldri trenger å tenke på det igjen!
+	</p>
+	<p>
+		Oppslag mot <code>pool.ntp.org</code> (eller <code>0.pool.ntp.org</code>,
+		<code>1.pool.ntp.org</code>, osv.) vil vanligvis returnere IP-adresser for
+		servere i eller nær ditt land. For de fleste brukere gir dette de beste
+		resultatene.
+	</p>
+
+	<p>
+		Du kan også bruke <a href="/zone/@">kontinentale soner</a> (for eksempel
+		<a href="/zone/europe">europe</a>,
+		<a href="/zone/north-america">north-america</a>,
+		<a href="/zone/oceania">oceania</a> eller
+		<code><a href="/zone/asia">asia</a>.pool.ntp.org</code>), eller en landsone
+		(som <code>no.pool.ntp.org</code> i Norge). Alle disse sonene kan
+		bruke 0, 1, 2 eller 3 som prefiks, som <code>0.no.pool.ntp.org</code>.
+		Husk at det er ikke alle land som har en egen landsone,
+		og noen soner inneholder kun én eller to tidstjenere.
+	</p>
+	<p>
+		Vær også oppmerksom på at systemet for øyeblikket bare gir IPv6-adresser (i
+		tillegg til IPv4-adresser) for en sone som er prefikset med tallet 2, for
+		eksempel <code>2.pool.ntp.org</code> (gitt at det finnes IPv6-NTP-servere i
+		den respektive sonen). Sonenavn uten et tall som prefiks, eller med
+		prefikset 0, 1 eller 3, gir for tiden kun IPv4-adresser.
+	</p>
+
+	<p>
+		Hvis du bruker <b>en nyere Windows-versjon</b>, kan du bruke NTP-klienten
+		som er innebygd i systemet.
+	</p>
+	<p>
+		Høyreklikk på dato/klokke i systemfeltet og velg Juster dato/klokkeslett,
+		eller åpne innstillinger med Win+I og klikk Tid og språk → Dato og tid. Bla
+		ned og klikk Dato, tid og regional formatering. Bla ned og klikk Ytterligere
+		dato-, tids- og regioninnstillinger. Klikk på Dato og tid og deretter
+		Internett-tid. Klikk på knappen Endre innstillinger. Skriv inn
+		<code>pool.ntp.org</code> og klikk Oppdater nå.
+	</p>
+	<p>
+		Test ved å høyreklikke på dato/klokke i systemfeltet og velge Juster
+		dato/klokkeslett, eller åpne innstillinger med Win+I og klikk Tid og språk →
+		Dato og tid. Klikk på knappen "Synkroniser nå".
+	</p>
+	<p>
+		Hvis Windows-systemet ditt er administrert av en katalogtjeneste, kan det
+		hende at du ikke kan oppdatere datamaskinens tid uavhengig. For mer
+		informasjon om å stille inn tid på Windows, se
+		<a
+			href="https://learn.microsoft.com/nb-no/previous-versions/windows/it-pro/windows-server-2003/cc773013(v=ws.10)">How
+			Windows Time Service Works</a>.
+	</p>
+</div>
+
+<div class="block">
+	<h3 id="notes">Tilleggsinformasjon</h3>
+
+	<p>
+		<span class="hook">Vurder om NTP-puljen er passende for ditt bruk</span>.
+		Hvis bedrifter, organisasjoner eller menneskeliv er avhengige av korrekt tid
+		eller kan skades av feil tid, bør du ikke "bare bruke tid fra internett".
+		NTP-puljen er generelt av høy kvalitet, men det er en tjeneste drevet av
+		frivillige på fritiden. Snakk med dine utstyrs- og tjenesteleverandører om å
+		sette opp en lokal og pålitelig tjeneste for deg. Se også våre
+		<a href="/tos.html">bruksvilkår</a>.
+	</p>
+
+	<p>
+		<span class="hook">Hvis du har en statisk IP-adresse og en stabil Internett-tilkobling</span>
+		(båndbredde er ikke så viktig, men den bør være stabil og ikke for høyt
+		belastet), kan du vurdere å donere serveren din til serverpuljen. Det koster deg
+		ikke mer enn noen få hundre byte per sekund med trafikk, og du hjelper
+		prosjektet med å overleve. Vennligst
+		<a href="/join.html">les om hvordan du kan bidra</a> for mer informasjon.
+	</p>
+
+	<p>
+		<span class="hook">Hvis Internett-leverandøren din har en tidstjeneste</span>, eller hvis du kjenner til en god
+		tidstjener i nærheten, bør du bruke den
+		og ikke puljen. Du vil sannsynligvis få bedre tid og bruke færre
+		nettverksressurser. Hvis du bare kjenner til én tidstjener i nærheten, kan
+		du bruke den og supplere med to fra pool.ntp.org.
+	</p>
+
+	<p>
+		<span class="hook">Det kan sjelden skje at du tildeles den samme tidstjeneren to
+			ganger</span>
+		– ved å starte NTP-serveren på nytt løser dette vanligvis problemet. Men hvis du
+		bruker en landsone, kan det også være fordi det bare finnes én kjent server i
+		for det landet. Bruk heller en kontinental sone i slike tilfeller.
+		Du kan <a href="/zone">bla gjennom sonene</a> for å se hvor mange
+		servere som finnes i hver sone.
+	</p>
+
+	<p>
+		<span class="hook">Vær vennlig</span>. Mange av tidstjenerene drives av
+		frivillige, og nesten alle tidstjenere er egentlig fil-, e-post- eller
+		webservere som tilfeldigvis også kjører NTP. Så ikke bruk mer enn fire
+		tidstjenere i konfigurasjonen din, og ikke bruk triks som
+		<code>burst</code> eller <code>minpoll</code>. Det vil bare påføre ekstra
+		belastning på de frivillige tidstjenerne.
+	</p>
+
+	<p>
+		<span class="hook">Sørg for at <i>tidssonekonfigurasjonen</i> på datamaskinen din er
+			korrekt</span>. ntpd selv gjør ingenting med tidssonene, det bruker kun UTC internt.
+	</p>
+
+	<p>
+		<span class="hook">Hvis du synkroniserer et nettverk mot pool.ntp.org</span>, vennligst sett opp én av maskinene
+		dine som tidstjener, og la de andre
+		maskinene synkronisere mot denne. (Du må lese deg opp litt, men det er ikke
+		vanskelig. Og du har alltid
+		<a href="news:comp.protocols.time.ntp">comp.protocols.time.ntp-nyhetsgruppen</a>
+		for å spørre om hjelp.)
+	</p>
+
+	<p class="thanks">
+		Til slutt vil jeg takke alle som donerer tid og tidstjenere til nettverket.
+	</p>
+</div>
