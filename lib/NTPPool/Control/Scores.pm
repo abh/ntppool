@@ -1,6 +1,7 @@
 package NTPPool::Control::Scores;
 use strict;
-use parent            qw(NTPPool::Control);
+# include ::Login since the manage site use this controller, too
+use parent            qw(NTPPool::Control::Login NTPPool::Control);
 use Combust::Constant qw(OK DECLINED);
 use NP::Model;
 use List::Util   qw(min);
@@ -26,6 +27,8 @@ sub render {
     $self->cache_control('s-maxage=600,max-age=300') if $public;
 
     unless ($public or $self->user) {
+        # for manage site, redirect to the public site
+        # unless the user is logged in
         return $self->redirect(
             $self->www_url($self->request->uri, $self->request->query_parameters));
     }
