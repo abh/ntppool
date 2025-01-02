@@ -13,9 +13,10 @@ our @EXPORT_OK = qw(
 
 our $ua = LWP::UserAgent->new(
     agent             => 'ntppool/1',
-    timeout           => 3,
-    protocols_allowed => ['http', 'https'],
+    keep_alive        => 5,
     max_size          => (20 * 1024 * 1024),
+    protocols_allowed => ['http', 'https'],
+    timeout           => 3,
     ssl_opts          => {
         SSL_verify_mode => 0x02,
         SSL_ca_file     => Mozilla::CA::SSL_ca_file()
