@@ -1,0 +1,39 @@
+<div class="row">
+    <div class="col-md-6">
+
+    <h3>Confirm Monitor information</h3>
+
+    [% IF error OR code > 299 %]
+
+    <div class="error">
+    [% error | html %]
+    <br>(code [% code | html %])
+    </div>
+
+    <div>
+    [% IF code == 404 %]
+    Confirmation code not found.
+    [% ELSIF code == 400 %]
+    Bad request.
+    [% ELSIF code == 500 %]
+    Server error.
+    [% END %]
+
+    <p>
+        Email <a href="mailto:[% "support" | email %]?subject=Monitor setup">[% "support" | email %]</a> for help.
+    </p>
+
+    </div>
+
+    [% ELSE %]
+
+    <div class="alert alert-success">
+    <p>Monitor has been confirmed to your account.</p>
+    </div>
+
+     <a href="[% combust.manage_url('/manage/monitors/') %]">Monitor list</a>
+
+    [% END %]
+    </div>
+
+</div>

@@ -1072,5 +1072,33 @@ create table user_sessions (
   index (token_lookup)
 );
 
+#131
+alter table monitor_registrations
+  add ip4 varchar(15) not null default '' after api_token,
+  add ip6 varchar(39) not null default '' after ip4,
+  drop column `ip`;
+
+#132
+alter table monitor_registrations
+  modify status enum('pending', 'accepted', 'completed', 'rejected', 'cancelled') not null,
+  add location_code varchar(5) not null default '' after name,
+  add account_id int unsigned null after location_code,
+  add constraint `monitor_registrations_account_fk` foreign key (`account_id`) references accounts (`id`),
+  drop api_token;
+
+#133
+alter table api_keys
+  add `account_id` int unsigned NULL after id,
+  add `user_id` int unsigned NULL after account_id,
+  add `audience` text not null after grants,
+  add `token_lookup` varchar(16) NOT NULL after audience,
+  add `token_hashed` varchar(256) NOT NULL after token_lookup,
+  add `last_seen` datetime DEFAULT NULL after token_hashed;
+
+alter table monitors
+  add api_key_id int unsigned null after api_key,
+  add constraint `monitors_api_key_fk` foreign key (`api_key_id`) references api_keys (`id`);
+
+
 #todo
 - ...

@@ -305,16 +305,30 @@ __PACKAGE__->meta->setup(
   table   => 'api_keys',
 
   columns => [
-    id          => { type => 'serial', not_null => 1 },
-    api_key     => { type => 'varchar', length => 255 },
-    grants      => { type => 'text', length => 65535 },
-    created_on  => { type => 'datetime', default => 'now', not_null => 1 },
-    modified_on => { type => 'timestamp', not_null => 1 },
+    id           => { type => 'serial', not_null => 1 },
+    account_id   => { type => 'integer' },
+    user_id      => { type => 'integer' },
+    api_key      => { type => 'varchar', length => 255 },
+    grants       => { type => 'text', length => 65535 },
+    audience     => { type => 'text', length => 65535, not_null => 1 },
+    token_lookup => { type => 'varchar', length => 16, not_null => 1 },
+    token_hashed => { type => 'varchar', length => 256, not_null => 1 },
+    last_seen    => { type => 'datetime' },
+    created_on   => { type => 'datetime', default => 'now', not_null => 1 },
+    modified_on  => { type => 'timestamp', not_null => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
 
   unique_key => [ 'api_key' ],
+
+  relationships => [
+    monitors => {
+      class      => 'NP::Model::Monitor',
+      column_map => { id => 'api_key_id' },
+      type       => 'one to many',
+    },
+  ],
 );
 
 push @table_classes, __PACKAGE__;
@@ -534,6 +548,7 @@ __PACKAGE__->meta->setup(
     ip_version     => { type => 'enum', check_in => [ 'v4', 'v6' ] },
     tls_name       => { type => 'varchar', length => 255 },
     api_key        => { type => 'varchar', length => 64 },
+    api_key_id     => { type => 'integer' },
     status         => { type => 'enum', check_in => [ 'pending', 'testing', 'active', 'paused', 'deleted' ], not_null => 1 },
     config         => { type => 'text', length => 65535, not_null => 1 },
     client_version => { type => 'varchar', default => '', length => 255, not_null => 1 },
@@ -556,6 +571,11 @@ __PACKAGE__->meta->setup(
       key_columns => { account_id => 'id' },
     },
 
+    api_key_obj => {
+      class       => 'NP::Model::ApiKey',
+      key_columns => { api_key_id => 'id' },
+    },
+
     user => {
       class       => 'NP::Model::User',
       key_columns => { user_id => 'id' },
@@ -563,6 +583,13 @@ __PACKAGE__->meta->setup(
   ],
 
   relationships => [
+    accounts => {
+      map_class => 'NP::Model::MonitorRegistration',
+      map_from  => 'monitor',
+      map_to    => 'account',
+      type      => 'many to many',
+    },
+
     log_scores => {
       map_class => 'NP::Model::ScorerStatu',
       map_from  => 'scorer',
@@ -572,12 +599,6 @@ __PACKAGE__->meta->setup(
 
     log_scores_objs => {
       class      => 'NP::Model::LogScore',
-      column_map => { id => 'monitor_id' },
-      type       => 'one to many',
-    },
-
-    monitor_registrations => {
-      class      => 'NP::Model::MonitorRegistration',
       column_map => { id => 'monitor_id' },
       type       => 'one to many',
     },
@@ -624,11 +645,13 @@ __PACKAGE__->meta->setup(
     monitor_id         => { type => 'integer' },
     request_token      => { type => 'varchar', length => 128, not_null => 1 },
     verification_token => { type => 'varchar', length => 32, not_null => 1 },
-    api_token          => { type => 'text', length => 65535 },
-    ip                 => { type => 'varchar', alias => '_ip', length => 39, not_null => 1 },
+    ip4                => { type => 'varchar', default => '', length => 15, not_null => 1 },
+    ip6                => { type => 'varchar', default => '', length => 39, not_null => 1 },
     name               => { type => 'varchar', default => '', length => 256, not_null => 1 },
+    location_code      => { type => 'varchar', default => '', length => 5, not_null => 1 },
+    account_id         => { type => 'integer' },
     client             => { type => 'varchar', default => '', length => 256, not_null => 1 },
-    status             => { type => 'enum', check_in => [ 'pending', 'approved', 'rejected', 'cancelled' ], not_null => 1 },
+    status             => { type => 'enum', check_in => [ 'pending', 'accepted', 'completed', 'rejected', 'cancelled' ], not_null => 1 },
     last_seen          => { type => 'datetime', default => 'CURRENT_TIMESTAMP', not_null => 1 },
     created_on         => { type => 'datetime', default => 'now', not_null => 1 },
   ],
@@ -641,6 +664,11 @@ __PACKAGE__->meta->setup(
   ],
 
   foreign_keys => [
+    account => {
+      class       => 'NP::Model::Account',
+      key_columns => { account_id => 'id' },
+    },
+
     monitor => {
       class       => 'NP::Model::Monitor',
       key_columns => { monitor_id => 'id' },

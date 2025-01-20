@@ -1,0 +1,124 @@
+<div class="row">
+    <div class="col-md-6">
+
+    <h3>Confirm Monitor information</h3>
+
+    [% IF error OR code > 299 %]
+
+    <div class="error">
+    [% error | html %]
+    <br>(code [% code | html %])
+    </div>
+
+    <div>
+
+    <p>
+    [% IF code == 404 %]
+    Confirmation code not found.
+    [% ELSIF code == 400 %]
+    Bad request.
+    [% ELSIF code == 409 %]
+    A monitor with this IP address already exists.
+    [% ELSIF code == 410 %]
+    Request has been cancelled.
+    [% ELSIF code == 417 %]
+    The monitor is not in the correct state to be confirmed.
+    [% END %]
+    </p>
+
+    <p>
+        Email <a href="mailto:[% "support" | email %]?subject=Monitor setup">[% "support" | email %]</a> for help.
+    </p>
+
+
+    </div>
+
+    [% END %]
+
+
+    [% UNLESS error %]
+    <form id="monitor-form" action="/manage/monitors/confirm/[% validation_token | html %]" method="post" accept-charset="utf-8">
+        <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
+        <input type="hidden" name="a" value="[% account.id_token %]" />
+
+        <div class="form-group">
+            <label id="ip4-help" class="form-label" for="ip4">IPv4 address</label>
+            <input type="text" class="form-control" name="ip4"
+                value="[% data.ip4 | html %]"
+                id="ip4" maxlength="65" disabled>
+        </div>
+
+        <div class="form-group">
+            <label id="ip6-help" class="form-label" for="ip6">IPv6 address</label>
+            <input type="text" class="form-control" name="ip6"
+                value="[% data.ip6 | html %]"
+                id="ip6" maxlength="65" disabled>
+        </div>
+
+        <div class="form-group">
+            <label id="client-help" class="form-label" for="client">Client</label>
+            <input type="text" class="form-control" name="client"
+                value="[% data.client | html %]"
+                id="client" maxlength="65" disabled>
+        </div>
+
+        [% IF data.name %]
+        <div class="form-group">
+            <label id="client-help" class="form-label" for="name">Name</label>
+            <input type="text" class="form-control" name="name"
+                value="[% data.name | html %]"
+                id="name" maxlength="65" disabled>
+        </div>
+        [% END %]
+
+        [% IF data.locations %]
+        <div class="form-group">
+            <label id="location_code-help" class="form-label" for="location_code">Location code prefix</label>
+
+            <select name="location_code" class="form-select form-control" aria-label="Location code prefix">
+            [% first = 1;
+               IF location_code;
+                  first = 0;
+               END;
+            %]
+            [% FOR code = data.locations %]
+                <option [% IF (first OR (location_code == code.Code)); "selected"; END %] value="[% code.Code | html %]">[% code.Code | html %] ([% code.Name | html %])</option>
+                [% first = 0 %]
+            [% END %]
+        </select>
+            [% IF errors.location_code %]
+                <div class="error">
+                    <span class="badge badge-info">Error</span>
+                    [% errors.location_code | html %]
+                </div>
+            [% END %]
+
+        </div>
+        [% END %]
+
+        <p><input type="submit" class="btn btn-primary" value="[% monitor.id ? 'Update' : 'Confirm' %]"></p>
+        </form>
+        [% END %]
+
+    </div>
+
+    <div class="col-md-3">
+        <h3>Monitor instructions</h3>
+
+        <p>Monitors should run on servers with good connectivity 24/7,
+           and not running NTP service for the NTP Pool on the same
+           hardware.
+        </p>
+        <p>
+           The software is available for FreeBSD and Linux
+           (arm64, amd64 and 386).
+        </p>
+
+        <p>For help or other platforms, please email
+        <a href="mailto:[% "support" | email %]">[% "support" | email %]</a>.
+
+    </div>
+
+</div>
+
+[% INCLUDE tpl/log_table.html %]

@@ -7,6 +7,7 @@ use Combust::Constant qw(OK NOT_FOUND FORBIDDEN);
 use JSON              ();
 use MIME::Base64      qw(encode_base64);
 use Data::Dump        qw(pp);
+use NP::IntAPI;
 
 my $json = JSON::XS->new->pretty->utf8->convert_blessed;
 
@@ -27,6 +28,10 @@ sub manage_dispatch {
           unless $self->account_monitor_count > 0;
 
         return $self->render_monitors;
+    }
+
+    if (my ($token) = ($self->request->uri =~ m!^/manage/monitors/confirm/([^/]+)$!)) {
+        return $self->render_confirm_monitor($token);
     }
 
     my $mon;
@@ -69,6 +74,57 @@ sub manage_dispatch {
     }
 
     return NOT_FOUND;
+}
+
+sub render_confirm_monitor {
+    my $self             = shift;
+    my $validation_token = shift;
+
+    if ($self->request->method eq 'post') {
+        return 403 unless $self->check_auth_token;
+    }
+
+    $self->tpl_param('validation_token', $validation_token);
+
+    if ($self->request->method eq 'get') {
+        my $data = NP::IntAPI::get_monitoring_registration_data($validation_token,
+            $self->plain_cookie($self->user_cookie_name));
+        if ($data->{error}) {
+            $self->tpl_param('error', $data->{error});
+        }
+        $self->tpl_param('message', $data->{message});
+        $self->tpl_param('code',    delete $data->{code});
+        $self->tpl_param('data',    $data);
+
+        return OK, $self->evaluate_template('tpl/monitors/confirm_form.html');
+    }
+
+    unless ($self->request->method eq 'post') {
+        return NOT_FOUND;
+    }
+    my $data = NP::IntAPI::accept_monitoring_registration(
+        $validation_token,
+        $self->plain_cookie($self->user_cookie_name),
+        $self->current_account->id,
+        $self->req_param("location_code"),
+    );
+    if ($data->{error}) {
+        $self->tpl_param('error', $data->{error});
+    }
+    $self->tpl_param('message', $data->{message});
+    $self->tpl_param('code',    delete $data->{code});
+    $self->tpl_param('data',    $data);
+
+    return OK, $self->evaluate_template('tpl/monitors/confirm_accept.html');
+
+    # # if successful, show the monitor page
+    # return $self->redirect(
+    #     $self->manage_url(
+    #         '/manage/monitors/monitor',
+
+    #         # , {id => $mon->id_token}
+    #     )
+    # );
 }
 
 sub _get_id {
@@ -242,7 +298,8 @@ sub _edit_monitor {
         $self->tpl_param('location_codes', $codes);
 
         my $location_code = $self->req_param('location_code') || '';
-        ($location_code) = map { $_->{Code} } grep { $_->{Code} eq $location_code } @$codes
+        ($location_code) =
+          map { $_->{Code} } grep { $_->{Code} eq $location_code } @$codes
           if $location_code;
 
         $mon = NP::Model->monitor->create(
