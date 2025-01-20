@@ -29,7 +29,7 @@ i pulja med din tenar.
 
 [% INCLUDE "join/configuration/restrict-default.html" %]
 
-<p>For å tillate kommandoar som "ntpq -c pe" til å fungere frå localhost kan du 
+<p>For å tillate kommandoar som "ntpq -c pe" til å fungere frå localhost kan du
 leggje til:</p>
 
 [% INCLUDE "join/configuration/restrict-localhost.html" %]
@@ -37,12 +37,12 @@ leggje til:</p>
 <h4>Oppsett med fem tenarar</h4>
 
 <p>
-For at ntpd skal fungere skikkeleg treng ein minst 3 tenarar ("Ein person med ei 
+For at ntpd skal fungere skikkeleg treng ein minst 3 tenarar ("Ein person med ei
 klokke veit kva tida er, med to klokker kan ein aldri være heilt sikker").
 </p>
 
 <p>
-For tenarar som skal vere med i pulja anbefalar me å minst fire og maksimalt 
+For tenarar som skal vere med i pulja anbefalar me å minst fire og maksimalt
 sju tenarar.
 </p>
 
@@ -50,14 +50,14 @@ sju tenarar.
 <h4>Ikkje nytt *.pool.ntp.org -tenarar</h4>
 
 <p>
-Irontisk nok for å bidra best mogleg til pulja bør du ikkje bruke *.pool.ntp.org 
+Irontisk nok for å bidra best mogleg til pulja bør du ikkje bruke *.pool.ntp.org
 alias i konfigurasjonen når du legg til tenaren din i NTP Pool-prosjektet.
 </p>
 
 <p>
 For å sikre at tensta av pulja er robust, ber vi at alle tenaroperatørane "handplukkar" gode regionale (nettverksmessig) tidstenarar.
 Wikisidene på NTP.org har ei <a
-href="https://support.ntp.org/Servers/">liste over offentlege 
+href="https://support.ntp.org/Servers/">liste over offentlege
  tenarar</a>.
 </p>
 
@@ -65,13 +65,13 @@ href="https://support.ntp.org/Servers/">liste over offentlege
 <h4>Bruk standard ntpd</h4>
 
 <p>
-Me er alle for god mangfald når det gjeld programvare, men ein betydeleg 
+Me er alle for god mangfald når det gjeld programvare, men ein betydeleg
 andel av "det fungerer ikkje" -spørsmåla som kjem inn gjeld annan programvare enn
 ntpd.
 </p>
 
 <p>
-Du kan<i>nytte</i> pulja med alle program som støttar NTP, men ynskjer du 
+Du kan<i>nytte</i> pulja med alle program som støttar NTP, men ynskjer du
 å bli med i pulja tilrår me å
 nytte <a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
 </p>
@@ -86,7 +86,7 @@ nytte <a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
 <p>Nokre av tenaradministratorane har rapportert at nokre klientar (eller
 brannmurprogramvara deira) gjer eitt revers DNS (PTR) oppslag for å finne IP
 adressa til NTP tenaren. Slike tilfelle kan gjere at tenaren får fleire
-spørjingar. Om tal DNS-oppslag er ei bekymring for stabiliteten på tenesta, 
+spørjingar. Om tal DNS-oppslag er ei bekymring for stabiliteten på tenesta,
 kan ein auke TTL (levetid) på oppslaga - for å oppnå færre spørjingar.
 </p>
 

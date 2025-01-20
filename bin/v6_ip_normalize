@@ -23,4 +23,3 @@ while (my $server = $servers->next) {
     }
 
 }
-

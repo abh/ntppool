@@ -10,7 +10,7 @@
 	[% INCLUDE "ntppool/use/sample-config.html" %]
 
 	<p>
-	期中 0、1、2 和 3.pool.ntp.org 域名解析将会每小时更新，随机指向一系列服务器。  
+	期中 0、1、2 和 3.pool.ntp.org 域名解析将会每小时更新，随机指向一系列服务器。
 	确认您的计算机时间设置得合理(和“真实”时间相差几分钟) —— 您能使用 <code>ntpdate
 	pool.ntp.org</code>或者您只需使用 <code>date</code> 命令来将它的时间设置成和您的手表一样。
 	接下来运行ntpd，并且等候一段时间（这可能花费大约半小时！），在这之后 <code>ntpq -pn</code> 应该会输出类似下面的结果：
@@ -19,7 +19,7 @@
 	[% INCLUDE "ntppool/use/sample-ntpq.html" %]
 
 	<p>
-	IP地址可能会不同，因为您被随机分配了时间服务器。 重要的是其中有一行以星号 (<code>*</code>)开头，这意味着您的计算机已经从网络上获取了时间 
+	IP地址可能会不同，因为您被随机分配了时间服务器。 重要的是其中有一行以星号 (<code>*</code>)开头，这意味着您的计算机已经从网络上获取了时间
 	—— 您再也不用为它担心了！
 	</p>
 	<p>
@@ -33,7 +33,7 @@
 	<a href="/zone/north-america">南美洲</a>、
 	<a href="/zone/oceania">大洋洲</a>
 	或者 <a href="/zone/asia">亚洲</a>.pool.ntp.org）
-	以及国家空间 (像是瑞士的 
+	以及国家空间 (像是瑞士的
 	ch.pool.ntp.org) - 对所有的这些时区，您也能使用 0、
 	1 或 2 前缀，例如 0.ch.pool.ntp.org 这样。 注意，您的国家可能不存在这方面空间，或者空间里只包含1到2台时间服务器。
 	</p>
@@ -49,7 +49,7 @@
 		点击 “立即同步” 按钮。
 	</p>
 	<p>
-	如果您的Windows 系统是一个域的一部分，您可能无法独立地更新您的计算机时间。 
+	如果您的Windows 系统是一个域的一部分，您可能无法独立地更新您的计算机时间。
 
 	更多有关在Windows 系统上设置时间的信息，请参阅 <a href="https://technet.microsoft.com/en-us/library/cc773013%28WS.10%29.aspx">Windows 时间服务是如何工作的</a>。
 	</p>
@@ -63,7 +63,7 @@
 		请与您的设备和服务供应商联系来获取本地可靠的时间服务。
 		另请参阅我们的 <a href="/tos.html">服务条款</a>。
 
-        我们向您推荐来自 
+        我们向您推荐来自
         <a href="http://www.meinbergglobal.com/english/products/ntp-time-server.htm">Meinberg</a>的时间服务器，
         您也能从
         <a href="http://www.endruntechnologies.com/NTP-Servers/gps-cdma-ntp.htm">End Run</a>、
@@ -75,7 +75,7 @@
 	请 <a href="/join.html">阅读“加入页面”</a> 来获取更多信息。
 	</p>
 
-	<p><span class="hook">如果您的互联网提供商拥有时间服务器</span>，或者您知道您附近的优质时间服务器 ，您应该使用它们而不是这个清单中的服务器 - 您将可能使用更少的网络资源来获得更准确的时间。  
+	<p><span class="hook">如果您的互联网提供商拥有时间服务器</span>，或者您知道您附近的优质时间服务器 ，您应该使用它们而不是这个清单中的服务器 - 您将可能使用更少的网络资源来获得更准确的时间。
 	如果您只知道一台您附近的时间服务器，您当然将它和本清单内的几台服务器搭配使用来校正时间。</p>
 
 	<p><span class="hook">很偶然的情况下，您可能会两次被分配到同一台时间服务器</span> ——

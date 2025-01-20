@@ -1,5 +1,5 @@
 [% IF combust.deployment_mode != "prod";
-   IF !config; 
+   IF !config;
      config=combust.config;
    END;
    www_url = config.base_url("ntppool") _ "/";

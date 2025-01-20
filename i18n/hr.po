@@ -87,5 +87,3 @@ msgstr "Šta znače grafovi?"
 
 msgid  "CSV log"
 msgstr "CSV dnevnik"
-
-

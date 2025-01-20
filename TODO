@@ -35,7 +35,7 @@ allow an organization name and http link for each user for attribution
   - Logic on the zone pages to show the organization url relative to
     the current total score for the user or some such
 
-check if the servers do HTTP redirects 
+check if the servers do HTTP redirects
   - check for request to pool.ntp.org and foo.pool.ntp.org
   - ok if redirect to www.pool.ntp.org
   - ok if none
@@ -49,4 +49,3 @@ Make the monitoring servers use ntpd (noselect) to test the servers
   - figure out if this is even possible/practical for 5-10k servers
   - figure out the magic ntpdc commands to add and remove noselect servers
     (is that even possible?)
-

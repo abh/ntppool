@@ -20,4 +20,3 @@ print join "\n", sort keys %{ $json->{prereqs}->{runtime}->{requires} };
 '
   )
 ) | sort -u > .modules
-

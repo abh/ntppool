@@ -28,4 +28,3 @@ ok($alert->mark_sent, 'mark_sent');
 isnt($alert->first_email_time, $alert->last_email_time, 'different last_email_time than first_email_time');
 
 $db->rollback;
-

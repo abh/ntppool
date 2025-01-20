@@ -9,4 +9,3 @@ use Data::Dumper qw(Dumper);
 
 my ($master, $servers) = NP::Util::DNS::get_dns_info();
 print Dumper(\$servers);
-

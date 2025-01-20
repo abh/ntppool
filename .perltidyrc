@@ -24,7 +24,7 @@
 --extended-continuation-indentation
 
 # we use version control, so just rewrite the file
--b 
+-b
 
 # for the up-tight folk :)
 -pt=2   # High parenthesis tightness

@@ -3,18 +3,18 @@
 <h3>Poängkurvan</h3>
 <p>
 Ett par gånger i timmen hämtar pool-systemet tiden från din server
-och jämför med lokal tid.  Poängavdrag görs när en server inte är 
+och jämför med lokal tid.  Poängavdrag görs när en server inte är
 tillgänglig eller när den går mer än 100ms fel (grovt mätt gentemot
-driftsystemets klocka).  För större tidsavvikelse blir poängavdraget 
+driftsystemets klocka).  För större tidsavvikelse blir poängavdraget
 större.
 </p>
 
 <p>
 När poängen minskar, anger bakgrundsfärgen i övre delen hur omfattande
-&quot;driftstoppet&quot; är.  Färgen varierar från blått (minimal 
-avvikelse) via gult och orange till rött (servern ligger flera sekunder 
+&quot;driftstoppet&quot; är.  Färgen varierar från blått (minimal
+avvikelse) via gult och orange till rött (servern ligger flera sekunder
 fel eller svarar inte).  Beroende på hur diagrammet förändras över tiden
-kan du inte direkt utifrån färgkoderna tolka vad som har hänt. Det är 
+kan du inte direkt utifrån färgkoderna tolka vad som har hänt. Det är
 mer tänkt som ett verktyg för att visa trender.  För detaljerad information
 om vad uppföljningssystemet funnit, kan du klicka på länken för CSV.
 
@@ -26,12 +26,11 @@ om vad uppföljningssystemet funnit, kan du klicka på länken för CSV.
 Uppföljningssystemet fungerar ungefär som en <a
 href="https://www.ntp.org/ntpfaq/NTP-s-def/#412-what-is-sntp">SNTP</a> (<a
 href="https://www.eecis.udel.edu/~mills/database/rfc/rfc2030.txt">RFC
-2030</a>) klient, så det har större risk att drabbas av 
+2030</a>) klient, så det har större risk att drabbas av
 fördröjningar mellan servern och uppföljningssystemet än vad
-en vanlig ntpd klient har.  Därför: Ta inte så hårt på enstaka 
-stora avvikelser, och se inte siffrorna om avvikelser som några 
+en vanlig ntpd klient har.  Därför: Ta inte så hårt på enstaka
+stora avvikelser, och se inte siffrorna om avvikelser som några
 exakta mätvärden.
 </p>
 
 </div>
-

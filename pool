@@ -363,4 +363,3 @@ else {
 #$db->commit() or die "Error on commit\n";
 $SIG{__DIE__} = 'DEFAULT';
 $db->disconnect();
-

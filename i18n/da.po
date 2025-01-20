@@ -1,4 +1,4 @@
-# 
+#
 # Translators:
 # ask <ask@develooper.com>, 2014
 # Bo Herrmannsen, 2015

@@ -3,7 +3,7 @@
 <div class="block">
 	<h3><a name="join">Hogyan csatlakozhatok a pool.ntp.org-hoz?</a></h3>
 	<p>
-	Elsőként: Köszönjük az érdeklődésedet. A szolgáltatást napról napra 
+	Elsőként: Köszönjük az érdeklődésedet. A szolgáltatást napról napra
 	egyre többen használják. Ahhoz, hogy ezzel lépést tudjunk tartani, folyamatosan
 	új szervereket kell bevonjunk a projektbe.
 	</p>
@@ -22,9 +22,9 @@
 	</p>
 
 	<p>
-	A csatlakozni kívánó szerveren időszinkronizálás céljából a <tt>pool.ntp.org</tt> 
+	A csatlakozni kívánó szerveren időszinkronizálás céljából a <tt>pool.ntp.org</tt>
 	helyett kézzel kell néhány <a href="https://support.ntp.org/Servers/StratumTwoTimeServers/">
-	megbízható és pontos</a> szervert kell beállítani. (Ezek a szerverek adott esetben választhatók 
+	megbízható és pontos</a> szervert kell beállítani. (Ezek a szerverek adott esetben választhatók
 	<b>akár</b> a pool-ból is. A lényeg az, hogy statikusan legyenek beállítva és nem pedig véletlenszerűen
 	minden újraindításnál más-más. Ez nagyon fontos a szolgáltatás jó minőségének megőrzése szempontjából.)
 
@@ -48,22 +48,19 @@
 	és esetleg a <a href="https://lists.ntp.org/listinfo/pool">pool levelező listára</a>.
 	</p>
 	<p>
-	Amennyiben megoldható (nem kötelező!), kérlek hogy az időszinkron szervered címének 80-as portjára érkező HTTP forgalmat irányítsd át a <tt>https://www.ntppool.org</tt> címre. 
+	Amennyiben megoldható (nem kötelező!), kérlek hogy az időszinkron szervered címének 80-as portjára érkező HTTP forgalmat irányítsd át a <tt>https://www.ntppool.org</tt> címre.
 	Ha Apache webszervert futtatsz, akkor ezt az alábbi módon tudod megtenni:
 	</p>
 
         [% PROCESS tpl/join/virtual_host_example.html %]
 
 	<p>
-	Ezt csak akkor állítsd be, ha egyébként is fut webszervered, csak ezért ne telepítsd. A projekt 
-	hivatalos weboldalának címe 'www'-vel kezdődik, de néha csak <tt>pool.ntp.org</tt>-ot írnak az emberek a böngésző címsorába és 
+	Ezt csak akkor állítsd be, ha egyébként is fut webszervered, csak ezért ne telepítsd. A projekt
+	hivatalos weboldalának címe 'www'-vel kezdődik, de néha csak <tt>pool.ntp.org</tt>-ot írnak az emberek a böngésző címsorába és
 	meglepetésükre egy véletlenszerűen választott, számukra ismeretlen weblapon kötnek ki.
 	</p>
 	<p>
-	Ha egyszer hozzáadtad a szerveredet a pool-hoz, akkor folyamatosan monitorozzuk elérhetőség és pontosság szempontjából. 
+	Ha egyszer hozzáadtad a szerveredet a pool-hoz, akkor folyamatosan monitorozzuk elérhetőség és pontosság szempontjából.
 	A szervered adatait megtekintheted a <a href="scores">webes felületen</a> vagy a <a href="/manage">szerver kezelés</a> oldalon.
 	</p>
 </div>
-
-
-

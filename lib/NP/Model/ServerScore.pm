@@ -9,4 +9,3 @@ sub score {
 }
 
 1;
-

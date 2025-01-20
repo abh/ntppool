@@ -15,4 +15,3 @@
       PROCESS $default_style_template;
    END;
 %]
-

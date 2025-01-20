@@ -42,4 +42,3 @@ sub first_stats {
 }
 
 1;
-

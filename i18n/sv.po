@@ -116,4 +116,3 @@ msgstr "Extra länkar"
 
 msgid "Can you translate?"
 msgstr "Kan du översätta?"
-
