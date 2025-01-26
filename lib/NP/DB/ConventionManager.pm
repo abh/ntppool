@@ -45,6 +45,10 @@ sub auto_column_method_name {
         return '_ip';
     }
 
+    if ($name eq 'id_token') {
+        return '_id_token';
+    }
+
     return $self->SUPER::auto_column_method_name(@_);
 }
 

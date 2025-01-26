@@ -37,7 +37,9 @@ sub search {
             'users.username' => {like => $q . '%'},
             'users.email'    => {like => '%' . $q . '%'},
             'users.name'     => {like => '%' . $q . '%'},
+            'users.id_token' => {like => '%' . $q . '%'},
             'name'           => {like => '%' . $q . '%'},
+            'id_token'       => {like => '%' . $q . '%'},
         ]
     ];
 

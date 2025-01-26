@@ -47,6 +47,7 @@ __PACKAGE__->meta->setup(
 
   columns => [
     id                 => { type => 'serial', not_null => 1 },
+    id_token           => { type => 'varchar', alias => '_id_token', length => 36 },
     name               => { type => 'varchar', length => 255 },
     organization_name  => { type => 'varchar', length => 150 },
     organization_url   => { type => 'varchar', length => 150 },
@@ -61,6 +62,7 @@ __PACKAGE__->meta->setup(
   primary_key_columns => [ 'id' ],
 
   unique_keys => [
+    [ 'id_token' ],
     [ 'stripe_customer_id' ],
     [ 'url_slug' ],
   ],
@@ -539,6 +541,7 @@ __PACKAGE__->meta->setup(
 
   columns => [
     id             => { type => 'serial', not_null => 1 },
+    id_token       => { type => 'varchar', alias => '_id_token', length => 36 },
     type           => { type => 'enum', check_in => [ 'monitor', 'score' ], default => 'monitor', not_null => 1 },
     user_id        => { type => 'integer' },
     account_id     => { type => 'integer' },
@@ -561,6 +564,7 @@ __PACKAGE__->meta->setup(
 
   unique_keys => [
     [ 'api_key' ],
+    [ 'id_token' ],
     [ 'ip', 'ip_version' ],
     [ 'tls_name', 'ip_version' ],
   ],
@@ -1364,6 +1368,7 @@ __PACKAGE__->meta->setup(
 
   columns => [
     id             => { type => 'serial', not_null => 1 },
+    id_token       => { type => 'varchar', alias => '_id_token', length => 36 },
     email          => { type => 'varchar', length => 255, not_null => 1 },
     name           => { type => 'varchar', length => 255 },
     username       => { type => 'varchar', length => 40 },
@@ -1375,6 +1380,7 @@ __PACKAGE__->meta->setup(
 
   unique_keys => [
     [ 'email' ],
+    [ 'id_token' ],
     [ 'username' ],
   ],
 
@@ -1733,6 +1739,7 @@ __PACKAGE__->meta->setup(
 
   columns => [
     id                  => { type => 'serial', not_null => 1 },
+    id_token            => { type => 'varchar', alias => '_id_token', length => 36 },
     zone_name           => { type => 'varchar', length => 90, not_null => 1 },
     status              => { type => 'enum', check_in => [ 'New', 'Pending', 'Approved', 'Rejected' ], default => 'New', not_null => 1 },
     user_id             => { type => 'integer' },
@@ -1754,7 +1761,10 @@ __PACKAGE__->meta->setup(
 
   primary_key_columns => [ 'id' ],
 
-  unique_key => [ 'zone_name', 'dns_root_id' ],
+  unique_keys => [
+    [ 'id_token' ],
+    [ 'zone_name', 'dns_root_id' ],
+  ],
 
   foreign_keys => [
     account => {

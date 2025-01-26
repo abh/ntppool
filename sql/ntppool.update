@@ -1099,6 +1099,18 @@ alter table monitors
   add api_key_id int unsigned null after api_key,
   add constraint `monitors_api_key_fk` foreign key (`api_key_id`) references api_keys (`id`);
 
+#134
+alter table users
+  add id_token varchar(36) null unique after id;
+
+alter table accounts
+  add id_token varchar(36) null unique after id;
+
+alter table monitors
+  add id_token varchar(36) null unique after id;
+
+alter table vendor_zones
+  add id_token varchar(36) null unique after id;
 
 #todo
 

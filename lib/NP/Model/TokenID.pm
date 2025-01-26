@@ -57,6 +57,7 @@ sub token_key {
     return pack('H20', uc $key);
 }
 
+# convert a token to an id
 sub token_id {
     my $self  = shift;
     my $token = shift or return 0;
@@ -70,6 +71,11 @@ sub token_id {
 }
 
 sub id_token {
+    my $self = shift;
+    return $self->_id_token || $self->id_token_generated;
+}
+
+sub id_token_generated {
     my $self = shift;
     return $self->token_prefix . lc $self->token_cipher->encrypt_number_b32_crockford($self->id);
 }

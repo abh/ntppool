@@ -1,0 +1,42 @@
+# -*- cperl -*-
+eval 'exec $CBROOT/bin/perl $0 ${1+"$@"}'
+  unless $running_under_some_shell;
+use 5.30.0;
+use strict;
+use Data::Dumper;
+use JSON::XS qw(decode_json);
+use Encode   qw(encode decode encode_utf8);
+use DateTime::Format::MySQL;
+
+use NP::Model;
+
+my $json = JSON::XS->new->utf8();
+
+local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
+
+my $db  = NP::Model->db;
+my $txn = $db->begin_scoped_work;
+
+my @types = qw(account user monitor vendor_zone);
+
+for my $t (@types) {
+
+    my $objects =
+      NP::Model->$t->get_objects_iterator(sort_by => 'id', query => [id_token => undef]);
+
+    while (my $obj = $objects->next) {
+        my $id_token = $obj->id_token_generated;
+        say "ID:   ", $obj->id, " -> ", $id_token;
+        $obj->id_token($id_token);
+        if ($obj->can('modified_on')) {
+            $obj->modified_on($obj->modified_on);
+        }
+        $obj->save();
+
+        say "";
+    }
+}
+
+say "committing ...";
+$db->commit;
+say "done";
