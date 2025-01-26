@@ -41,7 +41,9 @@ h4 {
 }
 
 pre,
-tt {
+tt,
+code {
+  color: #002D62;
   font-family: source-code-pro, "source-code-pro-1", "source-code-pro-2", monospace;
   font-weight: 400;
   font-size: 15px;
