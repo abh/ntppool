@@ -1101,4 +1101,6 @@ alter table monitors
 
 
 #todo
+
+- reverse the api_key_id in monitors to be a column in api_keys similar to user / account ids
 - ...

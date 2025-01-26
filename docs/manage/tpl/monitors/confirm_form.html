@@ -5,10 +5,11 @@
 
     [% IF error OR code > 299 %]
 
+    [% IF code != 404 %]
     <div class="error">
     [% error | html %]
-    <br>(code [% code | html %])
     </div>
+    [% END %]
 
     <div>
 
@@ -24,6 +25,12 @@
     [% ELSIF code == 417 %]
     The monitor is not in the correct state to be confirmed.
     [% END %]
+    </p>
+
+    <p>
+    ([% IF data.traceid -%]
+    <code>[%- data.traceid | html %]</code>,
+    [% END %][% code | html %])
     </p>
 
     <p>

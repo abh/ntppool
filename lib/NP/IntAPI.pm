@@ -68,6 +68,7 @@ sub _int_api {
     }
     $r{code}        ||= $res->code;
     $r{status_line} ||= $res->status_line;
+    $r{traceid}     ||= $res->header('TraceID');
 
     warn "Data: ", Data::Dump::pp(\%r);
 
