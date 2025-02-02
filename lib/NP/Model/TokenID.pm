@@ -2,8 +2,8 @@ package NP::Model::TokenID;
 use strict;
 use warnings;
 use Crypt::Skip32::Base32Crockford ();
-use Math::Random::Secure qw(irand);
-use Combust::Config ();
+use Math::Random::Secure           qw(irand);
+use Combust::Config                ();
 use NP::Vault;
 
 my $config = Combust::Config->new;
@@ -70,6 +70,12 @@ sub _save_token_keys {
     NP::Vault::set_kv('token_keys', $tk->{data}, $tk->{metadata}->{version});
 }
 
+sub insert_token_id {
+    my $self = shift;
+    $self->id_token($self->id_token_generated);
+    $self->save;
+}
+
 # convert a token to an id
 sub token_id {
     my $self  = shift;
@@ -85,6 +91,9 @@ sub token_id {
 
 sub id_token {
     my $self = shift;
+    if (my $token = shift) {
+        return $self->_id_token($token);
+    }
     return $self->_id_token || $self->id_token_generated;
 }
 

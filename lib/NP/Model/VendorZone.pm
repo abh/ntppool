@@ -29,6 +29,12 @@ sub token_prefix {
     return 'vz-';
 }
 
+sub insert {
+    my $self = shift;
+    $self->SUPER::insert(@_);
+    $self->insert_token_id();
+}
+
 sub json_model {
     my $vz = shift;
 

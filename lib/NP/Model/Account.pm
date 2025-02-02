@@ -14,6 +14,12 @@ sub token_key_config {
     return 'account_id_key';
 }
 
+sub insert {
+    my $self = shift;
+    $self->SUPER::insert(@_);
+    $self->insert_token_id();
+}
+
 sub url {
     my $self = shift;
     return $config->base_url('manage') . '/manage?a=' . $self->id_token;

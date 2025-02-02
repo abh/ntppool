@@ -7,6 +7,12 @@ sub token_key_config {
     return 'user_id_key';
 }
 
+sub insert {
+    my $self = shift;
+    $self->SUPER::insert(@_);
+    $self->insert_token_id();
+}
+
 sub is_staff {
     my $self       = shift;
     my $privileges = $self->privileges;

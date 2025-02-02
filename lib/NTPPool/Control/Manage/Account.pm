@@ -42,7 +42,7 @@ sub manage_dispatch {
 
         my $invites = $self->user->pending_invites;
         if ($invites && @$invites) {
-            warn "has no account and pending invites...";
+            warn "has no account and there are pending invites...";
             return $self->redirect("/manage/account/invites/");
         }
 

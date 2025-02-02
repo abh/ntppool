@@ -14,6 +14,12 @@ sub token_prefix {
     return 'mon-';
 }
 
+sub insert {
+    my $self = shift;
+    $self->SUPER::insert(@_);
+    $self->insert_token_id();
+}
+
 sub display_name {
     my $self = shift;
 
