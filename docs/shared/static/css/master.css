@@ -43,6 +43,11 @@ h1, h2, h3, h4, h5 {color: #454545;}
 	fill: none;
 }
 
+:root {
+    --bs-nav-link-color: #3885b4;
+    --bs-link-color: #3885b4;
+}
+
 ul#nav li {
 	font-size: 30px;
 	font-family: 'Economica', sans-serif;
