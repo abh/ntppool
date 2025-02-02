@@ -18,7 +18,7 @@
 
                     <div class="col">
 
-                        <label for="zone_name">
+                        <label class="form-label" for="zone_name">
                             <b>Zone name</b> for DNS (valid DNS name - no spaces, no punctuation)
                         </label>
                         [% IF errors and errors.zone_name %]
@@ -64,7 +64,7 @@
 
                 <b>Device count</b> (estimated)<br>
                 [% IF errors.device_count %]<div class="error">[% errors.device_count | html %]</div>[% END %]
-                <select class="custom-select" name="device_count" id="device_count">
+                <select class="form-select custom-select" name="device_count" id="device_count">
                     <option value=""> Number of devices </option>
                     [% USE Number.Format;
                     FOR count = device_count_options %]

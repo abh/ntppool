@@ -103,10 +103,8 @@ sub render_confirm_monitor {
         return NOT_FOUND;
     }
     my $data = NP::IntAPI::accept_monitoring_registration(
-        $validation_token,
-        $self->plain_cookie($self->user_cookie_name),
-        $self->current_account->id,
-        $self->req_param("location_code"),
+        $validation_token,          $self->plain_cookie($self->user_cookie_name),
+        $self->current_account->id, $self->req_param("location_code"),
     );
     if ($data->{error}) {
         $self->tpl_param('error', $data->{error});
@@ -155,10 +153,25 @@ sub render_monitors {
             account_id => $self->current_account->id,
             status     => {"ne" => "deleted"},
         ],
-        sort_by => "created_on desc",
+        sort_by => "tls_name, created_on desc",
     );
 
-    $self->tpl_param('monitors' => $monitors);
+    my %monitors;
+
+    for my $mon (@$monitors) {
+        my $key = $mon->tls_name || $mon->ip;
+        if ($monitors{$key}->{$mon->ip_version}) {
+            warn "Duplicate monitor key: $key + " . $mon->ip_version;
+            $key = $mon->ip . ' ' . $mon->ip_version;
+        }
+        $mon->{__key} = $key;
+        $monitors{$key}->{name} = $key;
+        $monitors{$key}->{$mon->ip_version} = $mon;
+    }
+
+    my @monitors = sort { $a->{name} cmp $b->{name} } values %monitors;
+
+    $self->tpl_param('monitors' => \@monitors);
 
     return OK, $self->evaluate_template('tpl/monitors/list.html');
 }
@@ -189,9 +202,12 @@ sub render_admin_status {
     $mon->status($status);
 
     if (grep { $status eq $_ } qw(testing active)) {
-        $mon->activate_monitor;
+
+        # todo: call internal API to set status
     }
     elsif ($status eq 'deleted') {
+
+        # todo: move this to internal API
         $mon->delete_monitor;
     }
 
@@ -216,36 +232,6 @@ sub render_api_save {
             return OK, $self->evaluate_template('tpl/monitors/api.html');
         }
         $mon->save() or die "Could not save monitor with new tls_name";
-    }
-
-    my $setup_secret = $self->req_param('rotate') || 0;
-
-    my $role_id = $mon->vault_role_id();
-
-    unless ($role_id) {
-        $role_id      = $mon->setup_vault_role();
-        $setup_secret = 1;
-    }
-
-    unless ($mon->api_key) {
-        $mon->api_key($role_id);
-        $mon->save();
-    }
-
-    if ($setup_secret) {
-        my ($secret_id, $secret_id_accessor) = $mon->setup_vault_secret();
-        $self->tpl_param('secret_key', $secret_id);
-
-        my $config = {
-            "name" => $mon->tls_name,
-            "api"  => {
-                "key"    => $role_id,
-                "secret" => $secret_id,
-            },
-        };
-
-        my $config_base64 = encode_base64($json->encode($config));
-        $self->tpl_param('config_file_content', $config_base64);
     }
 
     return OK, $self->evaluate_template('tpl/monitors/api.html');
@@ -275,45 +261,23 @@ sub _edit_monitor {
     my $self = shift;
 
     my $id = $self->_get_id;
-    $id = 0 if $id and $id eq 'new';
+    $id = 0 if $id and $id eq 'new';    # 'new' isn't supported here anymore
 
     my $mon = $id ? NP::Model->monitor->fetch(id => $id) : undef;
+
+    unless ($mon) {
+        return undef, ["Permission denied"];
+    }
 
     if ($mon and !$mon->can_edit($self->user)) {
         return undef, ["Permission denied"];
     }
 
+    # todo: move this to the API and use the client to set the name?
     my @setup_fields = qw(name);
 
-    if ($mon) {
-        for my $f (@setup_fields) {
-            $mon->$f($self->req_param($f) || '');
-        }
-    }
-    else {
-        my $ip = $self->req_param('ip');
-        $ip =~ s/\s+//g;
-
-        my $codes = suggested_locationcodes($ip);
-        $self->tpl_param('location_codes', $codes);
-
-        my $location_code = $self->req_param('location_code') || '';
-        ($location_code) =
-          map { $_->{Code} } grep { $_->{Code} eq $location_code } @$codes
-          if $location_code;
-
-        $mon = NP::Model->monitor->create(
-            (map { $_ => ($self->req_param($_) || '') } @setup_fields),
-
-            user_id    => $self->user->id,
-            account_id => $self->current_account->id,
-            config     => '{}',
-            location   => ($location_code || ''),
-
-            # tls_name is set when the vault role is setup
-            tls_name => undef,
-        );
-        $mon->ip($ip);    # so the ip_version gets set
+    for my $f (@setup_fields) {
+        $mon->$f($self->req_param($f) || '');
     }
 
     unless ($mon->validate) {
@@ -323,48 +287,6 @@ sub _edit_monitor {
 
     $mon->save;
     return $mon;
-}
-
-sub suggested_locationcodes {
-
-    # my $self = shift;
-    my $ip = shift;
-
-    my $ua = $NP::UA::ua;
-
-    my $geoip = $ENV{geoip_service} || 'geoip';
-    my $res   = $ua->get("http://${geoip}/api/json?ip=$ip");
-    my $data  = {};
-
-    $data = $json->decode($res->content) if $res->is_success;
-
-    my $cc  = $data->{Country}->{IsoCode};
-    my $loc = $data->{Location};
-
-    my $radius = $loc->{AccuracyRadius} || 0;
-    $radius = 100 if $radius < 100;
-
-    my $loccode = $ENV{locationcode_service} || 'locationcode';
-
-    my $locationcode_url = URI->new("http://$loccode/v1/code");
-    $locationcode_url->query_form(
-        {   cc     => $cc,
-            lat    => $loc->{Latitude},
-            lng    => $loc->{Longitude},
-            radius => $radius,
-        }
-    );
-
-    say "URL: ", $locationcode_url->as_string;
-
-    $res = $ua->get($locationcode_url->as_string);
-
-    my $codes = [];
-    $codes = $json->decode($res->content) if $res->is_success;
-
-    # say pp($codes);
-
-    return $codes;
 }
 
 1;

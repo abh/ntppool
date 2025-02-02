@@ -558,6 +558,8 @@ __PACKAGE__->meta->setup(
     last_seen      => { type => 'datetime' },
     last_submit    => { type => 'datetime' },
     created_on     => { type => 'datetime', default => 'now', not_null => 1 },
+    deleted_on     => { type => 'datetime' },
+    is_current     => { type => 'integer', default => 1 },
   ],
 
   primary_key_columns => [ 'id' ],
@@ -565,7 +567,7 @@ __PACKAGE__->meta->setup(
   unique_keys => [
     [ 'api_key' ],
     [ 'id_token' ],
-    [ 'ip', 'ip_version' ],
+    [ 'ip', 'is_current' ],
     [ 'tls_name', 'ip_version' ],
   ],
 

@@ -28,12 +28,6 @@
         [% api_secrets = mon.vault_api_secrets %]
 
         [% IF mon.api_key && (secret_key || api_secrets.size > 0) %]
-        API Key: <code class="copy-clipboard">[% mon.api_key | html %]</code><br>
-
-          [% IF secret_key %]
-          Secret Key: <code class="copy-clipboard">[% secret_key | html %]</code> (only shown once)<br><br>
-          [% END %]
-
           [% FOR k = api_secrets %]
             Remaining uses: [% k.secret_id_num_uses %]<br>
             Expiration time: [% k.expiration_time %]<br>
@@ -45,22 +39,8 @@
 
         [% END %]
 
-        [% IF secret_key %]
-          <br>
-          <b><a download="[% mon.tls_name %].json" href="data:application/json;base64,[% config_file_content | html %]">Download config</a></b>
-          <br>
-        [% END %]
-
-
-        [% IF mon.can_generate_api_key %]
-            [% IF !mon.tls_name %]
-              [% PROCESS form_api, button => "Setup API &rarr;" %]
-            [% ELSE %]
-              [% PROCESS form_api,
-                   button => "Rotate API secret &rarr;",
-                   hidden_fields  => { rotate => 1 },
-              %]
-            [% END %]
+        [% IF mon.access_granted AND mon.tls_name %]
+            API access is setup.
         [% ELSE %]
           Email <a href="mailto:[% "support" | email %]?subject=Monitor [% mon.id_token | html %] setup">[% "support" | email %]</a> to continue the setup.
         [% END %]

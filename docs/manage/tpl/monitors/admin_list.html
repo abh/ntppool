@@ -10,7 +10,7 @@
     <h4>[% mon.ip | html %]</h4>
         [% PROCESS tpl/monitors/info_block.html %]
         <a href="[% combust.manage_url('/manage/monitors/monitor', { a => mon.account.id_token, id => mon.id_token }) %]">See details</a>
-        [% IF mon.can_generate_api_key %]
+        [% IF mon.access_granted %]
         | <a href="[% combust.manage_url('/manage/monitors/api', { id => mon.id_token }) %]">API keys</a><br>
         [% END %]
     [% END # monitor %]

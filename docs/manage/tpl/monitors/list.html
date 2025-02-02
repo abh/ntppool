@@ -7,14 +7,17 @@
     [% END %]
 
     [% FOR mon = monitors %]
-        <h3>[% mon.ip | html %]</h3>
-        [% PROCESS tpl/monitors/info_block.html %]
+        <h4>[% mon.name | html %]</h4>
+
+        [% FOR v = [ "v4", "v6" ] %]
+            [% IF mon.$v %]
+                [% PROCESS tpl/monitors/info_block.html, mon = mon.$v %]
+            [% END %]
+        [% END %]
+
         <a href="[% combust.manage_url('/manage/monitors/monitor', { id => mon.id_token }) %]">
             See details</a>
-        [% IF mon.can_generate_api_key %]
-            | <a href="[% combust.manage_url('/manage/monitors/api', { id => mon.id_token }) %]">
-                API keys</a>
-        [% END %]
+
     [% END # monitor %]
 
     <p>

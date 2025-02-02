@@ -1,29 +1,31 @@
-
-
-
 <p class="monitor-info">
 
-<span class="badge badge-pill badge-[% mon.last_seen_html.class %]">[% mon.last_seen_html.text | html %]</span>
+<span class="badge rounded-pill text-bg-[% mon.status_color | html %]">
+Status [% mon.status | html  %]</span>
+[% IF mon.status != "pending" %]
+<span class="badge rounded-pill text-bg-[% mon.last_seen_html.class %]">
+Connection [% mon.last_seen_html.text | html %]
+</span>
+[% END %]
+
 <br>
 
-ID: [% mon.id_token %]<br>
-
-Status: [% mon.status %]<br>
+<code>[% mon.ip %]</code> ([% mon.id_token %])<br>
 
 [% IF mon.name %]
 Name: [% mon.name | html %]<br>
 [% END %]
 
-[% IF mon.location %]
+[% IF !mon.tls_name && mon.location %]
 Location: [% mon.location | html %]<br>
 [% END %]
 
 [% IF mon.tls_name %]
-TLS: [% mon.tls_name | html %]<br>
+<code>[% mon.tls_name | html %]</code><br>
 [% END %]
 
 [% IF mon.client_version %]
-Agent version: [% mon.client_version | html %]<br>
+Version: [% mon.client_version | html %]<br>
 [% END %]
 
 </p>
