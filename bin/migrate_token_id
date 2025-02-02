@@ -9,18 +9,38 @@ use Encode   qw(encode decode encode_utf8);
 use DateTime::Format::MySQL;
 
 use NP::Model;
+use NP::Model::TokenID;
 
 my $json = JSON::XS->new->utf8();
 
-local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
+# local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
 
 my $db  = NP::Model->db;
 my $txn = $db->begin_scoped_work;
 
+my $vault_save = 0;
+
 my @types = qw(account user monitor vendor_zone);
-
 for my $t (@types) {
+    my %t;
+    my $pkg              = NP::Model->$t->create;
+    my $token_key_config = $pkg->token_key_config();
+    my $token_key        = $pkg->token_key();
 
+    my $config_unpacked = $NP::Model::TokenID::tk->{data}->{$token_key_config};
+
+    my $unpacked = uc(unpack("H20", $token_key));
+
+    my $packed = pack("H20", $unpacked);
+    # say "$t -> $token_key_config -> config: $config_unpacked -> unpacked: $unpacked";
+
+    if ($unpacked ne $config_unpacked) {
+        say "token_key for $t (", ref $pkg, ") needs updating";
+        $pkg->_set_token_key($unpacked);
+        $vault_save = 1;
+    }
+
+    # add the id_token column data for searching
     my $objects =
       NP::Model->$t->get_objects_iterator(sort_by => 'id', query => [id_token => undef]);
 
@@ -39,4 +59,9 @@ for my $t (@types) {
 
 say "committing ...";
 $db->commit;
+
+if ($vault_save) {
+  NP::Model::TokenID->_save_token_keys();
+}
+
 say "done";

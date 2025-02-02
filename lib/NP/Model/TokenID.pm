@@ -49,12 +49,25 @@ sub token_key {
             $key .= sprintf("%X", irand(16));
         }
     }
-    $tk->{data}->{$config_key} = $key;
 
-    warn "set key for $config_key, saving with cas=", $tk->{metadata}->{version};
+    $self->_set_token_key($key);
+    $self->_save_token_keys();
 
-    NP::Vault::set_kv('token_keys', $tk->{data}, $tk->{metadata}->{version});
     return pack('H20', uc $key);
+}
+
+sub _set_token_key {
+    my $self = shift;
+    my $key  = shift;
+    my $config_key = $self->token_key_config or die "missing token_key_config";
+    warn "set token_key for ", ref $self, " ($config_key)";
+    $tk->{data}->{$config_key} = $key;
+}
+
+sub _save_token_keys {
+    my $self = shift;
+    warn "saving token_keys to vault with cas=", $tk->{metadata}->{version};
+    NP::Vault::set_kv('token_keys', $tk->{data}, $tk->{metadata}->{version});
 }
 
 # convert a token to an id
