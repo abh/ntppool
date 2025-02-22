@@ -9,9 +9,28 @@
     [% FOR mon = monitors %]
         <h4>[% mon.name | html %]</h4>
 
+        [% IF mon.status %]
+        <span class="badge rounded-pill text-bg-[% mon.status_color | html %]">
+        Status [% mon.status | html  %]</span>
+        [% END %]
+
+        [% IF mon.last_seen_html %]
+        <span class="badge rounded-pill text-bg-[% mon.last_seen_html.class %]">
+        Connection [% mon.last_seen_html.text | html %]
+        </span>
+        [% END %]
+
+        [% IF mon.status OR mon.last_seen_html %]
+        <br>
+        [% END %]
+
         [% FOR v = [ "v4", "v6" ] %]
             [% IF mon.$v %]
-                [% PROCESS tpl/monitors/info_block.html, mon = mon.$v %]
+                [% INCLUDE tpl/monitors/info_block.html,
+                     mon = mon.$v,
+                     show_status = !mon.status
+                     show_connection = !mon.last_seen_html
+                %]
             [% END %]
         [% END %]
 

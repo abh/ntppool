@@ -160,16 +160,29 @@ sub render_monitors {
 
     for my $mon (@$monitors) {
         my $key = $mon->tls_name || $mon->ip;
+        #warn "key: $key / ip_version: ", $mon->ip_version;
         if ($monitors{$key}->{$mon->ip_version}) {
             warn "Duplicate monitor key: $key + " . $mon->ip_version;
             $key = $mon->ip . ' ' . $mon->ip_version;
         }
-        $mon->{__key} = $key;
         $monitors{$key}->{name} = $key;
         $monitors{$key}->{$mon->ip_version} = $mon;
     }
 
     my @monitors = sort { $a->{name} cmp $b->{name} } values %monitors;
+
+    for my $mon (@monitors) {
+        if ($mon->{v4} and $mon->{v6}) {
+            $mon->{name} .= ' (dualstack)';
+
+            if ($mon->{v4}->status eq $mon->{v6}->status) {
+                $mon->{status} = $mon->{v4}->status;
+            }
+            if ($mon->{v4}->last_seen_html->text eq $mon->{v6}->last_seen_html->text) {
+                $mon->{last_seen_html} = $mon->{v4}->last_seen_html
+            }
+        }
+    }
 
     $self->tpl_param('monitors' => \@monitors);
 

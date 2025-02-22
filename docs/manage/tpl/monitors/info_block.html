@@ -1,14 +1,23 @@
 <p class="monitor-info">
 
+info for [% mon.ip_version %].[% mon.id %] ([% mon.id_token %])<br>
+
+[% IF show_status %]
 <span class="badge rounded-pill text-bg-[% mon.status_color | html %]">
 Status [% mon.status | html  %]</span>
+[% END %]
+
 [% IF mon.status != "pending" %]
+[% IF show_connection %]
 <span class="badge rounded-pill text-bg-[% mon.last_seen_html.class %]">
 Connection [% mon.last_seen_html.text | html %]
 </span>
 [% END %]
+[% END %]
 
+[% IF show_status OR show_connection %]
 <br>
+[% END %]
 
 <code>[% mon.ip %]</code> ([% mon.id_token %])<br>
 
