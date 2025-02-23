@@ -113,23 +113,9 @@ sub get_prometheus {
 }
 
 sub get_clickhouse {
-    my $url = URI::URL->new("http://clickhouse-ntp-logs.ntpch:8123/?default_format=JSON&query=");
+    my $url = URI::URL->new("https://www.ntppool.org/api/data/dns/counts");
 
-    my $query = <<EOQ;
-select toUnixTimestamp(toStartOfFiveMinute(t)) as t,
-  sum(q)/$interval as avg, max(q) as max
-from (
- select window as t, sumSimpleState(queries) as q
- from geodns.by_origin_1s
- where
-   window > FROM_UNIXTIME($start)
-   and Origin IN ('pool.ntp.org', 'g.ntpns.org')
- group by t order by t
-)
-group by t order by t
-EOQ
-
-    my $resp = $ua->post($url->as_string, Content => $query);
+    my $resp = $ua->get($url->as_string);
 
     warn "could not query clickhouse: ", $resp->status_line
       unless $resp->is_success;
@@ -137,5 +123,6 @@ EOQ
     my $content = $resp->decoded_content;
 
     my $data = decode_json($content);
-    return $data->{data};
+    return $data;
+    #return $data->{data};
 }
