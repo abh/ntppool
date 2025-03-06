@@ -1,6 +1,7 @@
+# wustudent <12fogcity@tongji.edu.cn>, 2014.
 msgid ""
 msgstr ""
-"Last-Translator: wustudent <12fogcity@tongji.edu.cn>\n"
+"Last-Translator: Mingye Wang <arthur200126@gmail.com>\n"
 "Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -37,7 +38,7 @@ msgstr "语言"
 
 # mailinglists.html
 msgid  "NTP Pool mailing lists"
-msgstr "NTP池-邮件清单"
+msgstr "NTP池—邮件列表"
 
 msgid  "subscribe"
 msgstr "订阅"
@@ -77,7 +78,7 @@ msgid  "Not active in the pool, monitoring only"
 msgstr "在池中不可用，只能进行查看"
 
 msgid  "Zones:"
-msgstr "区域:"
+msgstr "区域："
 
 msgid  "This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
 msgstr "这个服务器预计于 %1 被删除"
@@ -96,10 +97,10 @@ msgid  "News"
 msgstr "新闻"
 
 msgid  "How do I <i>use</i> pool.ntp.org?"
-msgstr "我如何能<i>使用</i> pool.ntp.org?"
+msgstr "我如何能<u>使用</u> pool.ntp.org?"
 
 msgid  "How do I <i>join</i> pool.ntp.org?"
-msgstr "我如何能<i>加入</i> pool.ntp.org?"
+msgstr "我如何能<u>加入</u> pool.ntp.org?"
 
 msgid  "Information for vendors"
 msgstr "为供应商提供的信息"
