@@ -516,6 +516,7 @@ sub plain_cookie {
     }
 
     $args->{secure} = 1;
+    $args->{httpOnly} = 1;
 
     $args->{value} = $value;
 
