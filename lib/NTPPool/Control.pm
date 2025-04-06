@@ -130,6 +130,7 @@ sub init {
 
     my $trace_id = $span->context->hex_trace_id;
     $self->request->header_out('TraceID', $trace_id);
+    $self->tpl_param('trace_id', $trace_id);
 
     if ($self->site ne 'manage') {
 

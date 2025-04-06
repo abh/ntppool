@@ -98,3 +98,8 @@ em {font-style:italic;}
 #ft .color-dot.none {
 	background-color: #2ecc71;
 }
+
+.hidden {
+    visibility: hidden;
+    display: none;
+}

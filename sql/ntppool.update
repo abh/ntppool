@@ -1122,6 +1122,9 @@ alter table monitors
 
 update monitors set is_current = null where status = 'deleted';
 
+#136
+alter table user_privileges add monitor_admin tinyint not null default 0;
+
 #todo
 
 - reverse the api_key_id in monitors relationship to be a column in

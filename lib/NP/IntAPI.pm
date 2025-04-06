@@ -6,6 +6,11 @@ use LWP::UserAgent;
 use JSON::XS   ();
 use Data::Dump ();
 
+use Exporter 'import';
+our @EXPORT_OK = qw(
+    int_api
+);
+
 my $json = JSON::XS->new->utf8;
 
 my $api_base = $ENV{'api-internal'} || 'http://api-internal/';
@@ -20,11 +25,16 @@ sub ua {
     return $ua;
 }
 
+sub int_api {
+    return _int_api(@_);
+}
+
 sub _int_api {
     my ($method, $function, $data) = @_;
 
     my %r;
 
+    $function =~ s{^/}{};
     my $url = "${api_base}/int/$function";
 
     warn "calling internal api: $url";
@@ -49,7 +59,11 @@ sub _int_api {
         $res = $ua->$method($url, 'Authorization' => $auth);
     }
     elsif ($method eq 'post') {
-        $res = $ua->$method($url, $data, 'Authorization' => $auth);
+        $res = $ua->$method(
+            $url,
+            'Authorization' => $auth,
+            Content         => $data
+        );
     }
     else {
         warn qq[unknown method "$method" for _int_api];
@@ -70,7 +84,7 @@ sub _int_api {
     $r{status_line} ||= $res->status_line;
     $r{traceid}     ||= $res->header('TraceID');
 
-    warn "Data: ", Data::Dump::pp(\%r);
+    # warn "Data: ", Data::Dump::pp(\%r);
 
     return \%r;
 }
@@ -81,7 +95,7 @@ sub _parse_message {
 
     my %r;
     if ($res->content_type =~ m{^application/json}) {
-        %r = %{$json->decode($res->decoded_content) || {}};
+        $r{data} = $json->decode($res->decoded_content) || {};
         my $message = $r{message} || $res->status_line;
         if ($type eq 'error') {
             $r{error} = "internal api: $message";

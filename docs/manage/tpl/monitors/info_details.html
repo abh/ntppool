@@ -1,0 +1,31 @@
+<h5 class="card-subtitle">[% mon.IP %]</h5>
+
+[% IF show_status %]
+<span class="badge rounded-pill text-bg-[% mon.StatusColor | html %]">
+    [% mon.Status | html %]</span>
+[% END %]
+
+[% IF mon.Status != "pending" %]
+[% IF show_connection %]
+<span class="badge rounded-pill text-bg-[% mon.LastSeenStatus.Class %]">
+    [% mon.LastSeenStatus.Text | html %]
+</span>
+[% END %]
+[% END %]
+<br>
+
+[% IF !mon.TLSName && mon.Location %]
+Location: [% mon.Location | html %]<br>
+[% END %]
+
+[% IF mon.TLSName %]
+<!-- <code>[% mon.TLSName | html %]</code><br> -->
+[% END %]
+
+[% IF show_client_version AND mon.ClientVersion %]
+[% mon.ClientVersion | html %]<br>
+[% END %]
+
+[% IF show_details %]
+(#[% mon.ID %], [% mon.IDToken %])<br>
+[% END %]

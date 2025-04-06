@@ -2,45 +2,33 @@
 
 <div class="block">
 
-    [% IF combust.user.is_staff %]
+    [% IF !admin_list AND combust.user.is_staff %]
         <p><a href="/manage/monitors/admin">All monitors (admin)</a></p>
     [% END %]
 
+    [% last_account = 0 %]
     [% FOR mon = monitors %]
-        <h4>[% mon.name | html %]</h4>
+    [% IF last_account != mon.Account.ID %]
+      [% IF last_account != 0 %]
+      </div>
+      [% END %]
+      <h2>[% mon.Account.Name || "Account " _ (mon.Account.IDToken || mon.Account.ID) | html %]</h2>
+      <br>
 
-        [% IF mon.status %]
-        <span class="badge rounded-pill text-bg-[% mon.status_color | html %]">
-        Status [% mon.status | html  %]</span>
-        [% END %]
+<div class="row row-cols-1 row-cols-md-2 g-4">
+      [% last_account = mon.Account.ID %]
+    [% END %]
 
-        [% IF mon.last_seen_html %]
-        <span class="badge rounded-pill text-bg-[% mon.last_seen_html.class %]">
-        Connection [% mon.last_seen_html.text | html %]
-        </span>
-        [% END %]
-
-        [% IF mon.status OR mon.last_seen_html %]
-        <br>
-        [% END %]
-
-        [% FOR v = [ "v4", "v6" ] %]
-            [% IF mon.$v %]
-                [% INCLUDE tpl/monitors/info_block.html,
-                     mon = mon.$v,
-                     show_status = !mon.status
-                     show_connection = !mon.last_seen_html
-                %]
-            [% END %]
-        [% END %]
-
-        <a href="[% combust.manage_url('/manage/monitors/monitor', { id => mon.id_token }) %]">
-            See details</a>
+    [% INCLUDE tpl/monitors/info_card.html %]
 
     [% END # monitor %]
 
+</div>
+
+    [% UNLESS admin_list %]
     <p>
         <a href="[% combust.manage_url('/manage/monitors/new') %]">Setup a new monitor</a>
     </p>
+    [% END %]
 
 </div>

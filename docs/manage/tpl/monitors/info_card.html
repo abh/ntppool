@@ -1,0 +1,63 @@
+<div class="col">
+    <div class="card">
+
+        <div class="card-header">
+            <h5 class="card-title">[% mon.display_name || mon.TLSName | html %]</h5>
+        </div>
+
+
+        <ul class="list-group list-group-flush">
+
+            [% IF mon.CombinedStatus OR mon.CombinedLastSeen %]
+
+            <li class="list-group-item">
+                [% IF mon.CombinedStatus %]
+                <span class="badge rounded-pill text-bg-[% mon.StatusColor | html %]">
+                    Status [% mon.Status | html %]</span>
+                [% END %]
+                [% IF mon.CombinedLastSeen %]
+                <span class="badge rounded-pill text-bg-[% mon.LastSeenStatus.Class %]">
+                    Connection [% mon.LastSeenStatus.Text | html %]
+                </span>
+                [% END %]
+            </li>
+
+            [% END %]
+
+            [% FOR v = [ "IPv4", "IPv6" ] %]
+            [% IF mon.$v AND mon.$v.IP %]
+
+            <li class="list-group-item">
+
+                [% INCLUDE tpl/monitors/info_details.html,
+                mon = mon.$v,
+                ip_version = "$v",
+                show_status = !mon.CombinedStatus,
+                show_connection = !mon.CombinedLastSeen,
+                show_client_version = !mon.ClientVersion,
+                %]
+            </li>
+            [% END %]
+            [% END %]
+
+
+            [% IF mon.ClientVersion %]
+            <li class="list-group-item">
+                Version: [% mon.ClientVersion | html %]<br>
+            </li>
+
+            [% END %]
+
+
+            [% UNLESS show_details %]
+
+            <div class="card-footer">
+                <a class="card-link" href="[% combust.manage_url('/manage/monitors/monitor', 
+            { a    => mon.Account.IDToken,
+              name => mon.TLSName })
+        %]">See details</a>
+            </div>
+            [% END %]
+
+    </div>
+</div>

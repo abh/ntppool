@@ -1603,6 +1603,7 @@ __PACKAGE__->meta->setup(
     vendor_admin    => { type => 'integer', default => '0', not_null => 1 },
     equipment_admin => { type => 'integer', default => '0', not_null => 1 },
     support_staff   => { type => 'integer', default => '0', not_null => 1 },
+    monitor_admin   => { type => 'integer', default => '0', not_null => 1 },
   ],
 
   primary_key_columns => [ 'user_id' ],

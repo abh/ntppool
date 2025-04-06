@@ -7,12 +7,19 @@ use Combust::Constant qw(OK NOT_FOUND FORBIDDEN);
 use JSON              ();
 use MIME::Base64      qw(encode_base64);
 use Data::Dump        qw(pp);
-use NP::IntAPI;
+use NP::IntAPI        qw(int_api);
+use OpenTelemetry::Trace;
+use OpenTelemetry -all;
+use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
+use experimental             qw( defer );
+use Syntax::Keyword::Dynamically;
 
 my $json = JSON::XS->new->pretty->utf8->convert_blessed;
 
 sub manage_dispatch {
     my $self = shift;
+
+    $self->cache_control('private, max-age=0, no-cache');
 
     $self->tpl_params->{page}->{is_monitors} = 1;
 
@@ -34,29 +41,8 @@ sub manage_dispatch {
         return $self->render_confirm_monitor($token);
     }
 
-    my $mon;
-    if (my $id = $self->_get_id) {
-        $mon = NP::Model->monitor->fetch(id => $id);
-
-        if ($mon and !$mon->can_edit($self->user)) {
-            return 403, "Permission denied";
-        }
-        $self->tpl_param('mon', $mon);
-    }
-
     if ($self->request->uri =~ m!^/manage/monitors/monitor$!) {
-        return $self->render_save if $self->request->method eq 'post';
-
-        # we might save a new monitor, but need one to show it
-        return 404 unless $mon;
-        return OK, $self->evaluate_template('tpl/monitors/show.html');
-    }
-
-    if ($self->request->uri =~ m!^/manage/monitors/monitor/status$!) {
-        return 403 unless $self->user->is_staff;
-        return 404 unless $mon;
-        return $self->render_admin_status($mon) if $self->request->method eq 'post';
-        return 404;
+        return $self->render_monitor;
     }
 
     if ($self->request->uri =~ m!^/manage/monitors/admin$!) {
@@ -64,21 +50,65 @@ sub manage_dispatch {
         return $self->render_admin_list();
     }
 
-    return 404 unless $mon;
-    return 403, "Permission denied"
-      unless $mon->can_edit($self->user);
-
-    if ($self->request->uri =~ m!^/manage/monitors/api$!) {
-        return $self->render_api_save($mon) if $self->request->method eq 'post';
-        return $self->render_api($mon);
+    if ($self->request->uri =~ m!^/manage/monitors/monitor/status$!) {
+        return 403 unless $self->user->is_staff;
+        return $self->render_admin_status();
     }
 
+    # return 403, "Permission denied"
+    #   unless $mon->can_edit($self->user);
+
+    # if ($self->request->uri =~ m!^/manage/monitors/api$!) {
+    #     return $self->render_api_save($mon) if $self->request->method eq 'post';
+    #     return $self->render_api($mon);
+    # }
+
     return NOT_FOUND;
+}
+
+sub render_monitor {
+    my $self = shift;
+
+    my $span = NP::Tracing->tracer->create_span(
+        name => "monitor.render_monitor",
+        kind => SPAN_KIND_SERVER,
+    );
+    dynamically otel_current_context = otel_context_with_span($span);
+    defer { $span->end(); };
+
+    my $name = $self->req_param('name');
+    unless ($name) {
+        warn "no name provided to render_monitor";
+        return NOT_FOUND;
+    }
+    my $data = int_api(
+        'get',
+        'monitor/admin/monitor',
+        {   name => $name,
+            user => $self->plain_cookie($self->user_cookie_name),
+        }
+    );
+
+    if ($data->{code} != 200) {
+        return NOT_FOUND;
+    }
+
+    my @monitor = _monitor_list($data->{data}->{Monitors} || {});
+    $self->tpl_param('mon',  $monitor[0]);
+    $self->tpl_param('data', $data->{data} || {});
+    return OK, $self->evaluate_template('tpl/monitors/show.html');
 }
 
 sub render_confirm_monitor {
     my $self             = shift;
     my $validation_token = shift;
+
+    my $span = NP::Tracing->tracer->create_span(
+        name => "monitor.render_confirm_monitor",
+        kind => SPAN_KIND_SERVER,
+    );
+    dynamically otel_current_context = otel_context_with_span($span);
+    defer { $span->end(); };
 
     if ($self->request->method eq 'post') {
         return 403 unless $self->check_auth_token;
@@ -94,7 +124,7 @@ sub render_confirm_monitor {
         }
         $self->tpl_param('message', $data->{message});
         $self->tpl_param('code',    delete $data->{code});
-        $self->tpl_param('data',    $data);
+        $self->tpl_param('data',    $data->{data});
 
         return OK, $self->evaluate_template('tpl/monitors/confirm_form.html');
     }
@@ -111,7 +141,7 @@ sub render_confirm_monitor {
     }
     $self->tpl_param('message', $data->{message});
     $self->tpl_param('code',    delete $data->{code});
-    $self->tpl_param('data',    $data);
+    $self->tpl_param('data',    $data->{data});
 
     return OK, $self->evaluate_template('tpl/monitors/confirm_accept.html');
 
@@ -146,60 +176,46 @@ sub render_form {
 sub render_monitors {
     my $self = shift;
 
-    # todo: deleted parameter?
+    my $span = NP::Tracing->tracer->create_span(
+        name => "monitor.render_monitors",
+        kind => SPAN_KIND_SERVER,
+    );
+    dynamically otel_current_context = otel_context_with_span($span);
+    defer { $span->end(); };
 
-    my $monitors = NP::Model->monitor->get_objects(
-        query => [
-            account_id => $self->current_account->id,
-            status     => {"ne" => "deleted"},
-        ],
-        sort_by => "tls_name, created_on desc",
+    my $data = int_api(
+        'get',
+        'monitor/admin/',
+        {   account_id => $self->current_account->id,
+            user       => $self->plain_cookie($self->user_cookie_name),
+        }
     );
 
-    my %monitors;
-
-    for my $mon (@$monitors) {
-        my $key = $mon->tls_name || $mon->ip;
-        #warn "key: $key / ip_version: ", $mon->ip_version;
-        if ($monitors{$key}->{$mon->ip_version}) {
-            warn "Duplicate monitor key: $key + " . $mon->ip_version;
-            $key = $mon->ip . ' ' . $mon->ip_version;
-        }
-        $monitors{$key}->{name} = $key;
-        $monitors{$key}->{$mon->ip_version} = $mon;
-    }
-
-    my @monitors = sort { $a->{name} cmp $b->{name} } values %monitors;
-
-    for my $mon (@monitors) {
-        if ($mon->{v4} and $mon->{v6}) {
-            $mon->{name} .= ' (dualstack)';
-
-            if ($mon->{v4}->status eq $mon->{v6}->status) {
-                $mon->{status} = $mon->{v4}->status;
-            }
-            if ($mon->{v4}->last_seen_html->text eq $mon->{v6}->last_seen_html->text) {
-                $mon->{last_seen_html} = $mon->{v4}->last_seen_html
-            }
-        }
-    }
-
-    $self->tpl_param('monitors' => \@monitors);
-
+    my @monitors = _monitor_list($data->{data}->{Monitors} || {});
+    $self->tpl_param('monitors', \@monitors);
     return OK, $self->evaluate_template('tpl/monitors/list.html');
 }
 
 sub render_admin_list {
     my $self = shift;
 
-    # todo: deleted parameter?
-
-    my $monitors = NP::Model::monitor->get_objects(
-        query           => [status => {"ne" => "deleted"},],
-        require_objects => 'account',
-        sort_by         => "account_id, monitors.created_on desc",
+    my $span = NP::Tracing->tracer->create_span(
+        name => "monitor.render_admin_list",
+        kind => SPAN_KIND_SERVER,
     );
-    $self->tpl_param('monitors', $monitors);
+    dynamically otel_current_context = otel_context_with_span($span);
+    defer { $span->end(); };
+
+    my $data = int_api(
+        'get',
+        'monitor/admin/',
+        {   all_accounts => 1,
+            user         => $self->plain_cookie($self->user_cookie_name),
+        }
+    );
+
+    my @monitors = _monitor_list($data->{data}->{Monitors} || {});
+    $self->tpl_param('monitors', \@monitors);
 
     return OK, $self->evaluate_template('tpl/monitors/admin_list.html');
 }
@@ -208,52 +224,31 @@ sub render_admin_status {
     my $self = shift;
     my $mon  = shift;
 
-    # 'pending','testing','live','paused','deleted'
-    my $status = $self->req_param('status') || '';
-    return 400 unless grep { $status eq $_ } $mon->status_options;
+    my $span = NP::Tracing->tracer->create_span(
+        name => "monitor.render_admin_status",
+        kind => SPAN_KIND_SERVER,
+    );
+    dynamically otel_current_context = otel_context_with_span($span);
+    defer { $span->end(); };
 
-    $mon->status($status);
-
-    if (grep { $status eq $_ } qw(testing active)) {
-
-        # todo: call internal API to set status
+    my $data = int_api(
+        'post',
+        'monitor/admin/status',
+        {   name   => $self->req_param('name')                     || '',
+            id     => $self->req_param('id')                       || '',
+            status => $self->req_param('status')                   || '',
+            user   => $self->plain_cookie($self->user_cookie_name) || '',
+        }
+    );
+    if ($data->{code} >= 400) {
+        $self->tpl_param('error', $data->{error});
+        return $self->render_monitor();
     }
-    elsif ($status eq 'deleted') {
 
-        # todo: move this to internal API
-        $mon->delete_monitor;
-    }
-
-    $mon->save;
-
-    my $redirect = $self->manage_url('/manage/monitors/monitor', {id => $mon->id_token});
+    my $redirect =
+      $self->manage_url('/manage/monitors/monitor', {name => $self->req_param('name')},);
     return $self->redirect($redirect);
 
-}
-
-sub render_api_save {
-    my $self = shift;
-    my $mon  = shift;
-
-    warn "API SAVE for ", $mon->id;
-
-    unless ($mon->tls_name) {
-        warn "Setting up tls name";
-        my $tls_name = $mon->generate_tls_name();
-        unless ($tls_name) {
-            $self->tpl_param('error', 'Could not set tls_name');
-            return OK, $self->evaluate_template('tpl/monitors/api.html');
-        }
-        $mon->save() or die "Could not save monitor with new tls_name";
-    }
-
-    return OK, $self->evaluate_template('tpl/monitors/api.html');
-}
-
-sub render_api {
-    my $self = shift;
-    my $mon  = shift;
-    return OK, $self->evaluate_template('tpl/monitors/api.html');
 }
 
 sub render_save {
@@ -300,6 +295,25 @@ sub _edit_monitor {
 
     $mon->save;
     return $mon;
+}
+
+sub _monitor_list {
+    my $monitors = shift;
+    my @monitors =
+      sort {
+             $a->{Account}->{ID} <=> $b->{Account}->{ID}
+          or $a->{TLSName} cmp $b->{TLSName}
+          or ($a->{IPv4} && $b->{IPv4} && $a->{IPv4}->{IP} cmp $b->{IPv4}->{IP})
+          or ($a->{IPv6} && $b->{IPv6} && $a->{IPv6}->{IP} cmp $b->{IPv6}->{IP})
+      }
+      map {
+          my $display_name =
+          $_->{Name} || $_->{TLSName} || $_->{IPv4}->{IP} || $_->{IPv6}->{IP};
+          $display_name =~ s{\.[^.]+\.mon\.ntppool\.dev}{};
+          $_->{display_name} = $display_name;
+          $_
+      } values %$monitors;
+    return @monitors;
 }
 
 1;

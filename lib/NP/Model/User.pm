@@ -16,8 +16,13 @@ sub insert {
 sub is_staff {
     my $self       = shift;
     my $privileges = $self->privileges;
-    return $privileges->see_all_servers
-      || $privileges->support_staff;
+    return $privileges->support_staff;
+}
+
+sub is_monitor_admin {
+    my $self       = shift;
+    my $privileges = $self->privileges;
+    return $privileges->monitor_admin;
 }
 
 sub who {

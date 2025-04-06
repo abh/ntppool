@@ -51,61 +51,6 @@ sub status_color {
     }->{$status} || "secondary";
 }
 
-sub last_seen_html {
-    my $self = shift;
-
-    my $last = $self->last_seen;
-
-    return {
-        text  => "Never connected",
-        class => "secondary",
-      }
-      unless $last;
-
-    my $now = DateTime->now();
-
-    return {
-        text  => "Active",
-        class => "success",
-      }
-      if $last > $now->subtract(minutes => 4);
-
-    return {
-        text  => "Last seen " . $last->iso8601,
-        class => "warning",
-      }
-      if $last > $now->subtract(minutes => 60 * 24);
-
-    return {
-        text  => "Gone since " . $last->ymd,
-        class => "danger",
-    };
-
-}
-
-sub generate_tls_name {
-    my $mon = shift;
-    return $mon->tls_name if $mon->tls_name;
-    my $domain   = NP::Vault->monitoring_tls_domain();
-    my $tls_name = _choose_tls_name($mon->location, $mon->account->id_token, $domain);
-    if ($tls_name) {
-        return $mon->tls_name($tls_name);
-    }
-    return undef;
-}
-
-sub _choose_tls_name {
-    my ($location, $account_name, $domain) = @_;
-
-    for my $n (1 .. 99) {
-        my $name = $location . $n . "-" . $account_name . "." . $domain;
-        my $mon  = NP::Model->monitor->fetch(tls_name => $name);
-        unless ($mon) {
-            return $name;
-        }
-    }
-    return "";
-}
 
 sub has_api_role {
     my $self = shift;
@@ -146,21 +91,6 @@ sub setup_vault_secret {
     }
 
     return ($secret, $accessor);
-}
-
-sub access_granted {
-    my $self = shift;
-    return 1 if $self->status eq "testing" or $self->status eq "active";
-
-    # =~ m/^(testing|live)$/);
-    return 0;
-}
-
-sub vault_api_secrets {
-    my $self = shift;
-    return [] unless $self->has_api_role;
-    my $keys = NP::Vault::get_monitoring_secret_properties($self->tls_name);
-    return $keys;
 }
 
 sub can_edit {
@@ -204,10 +134,6 @@ sub validate {
 sub validation_errors {
     my $self = shift;
     $self->{_validation_errors} || {};
-}
-
-sub status_options {
-    return qw(pending testing active paused deleted);
 }
 
 sub delete_monitor {

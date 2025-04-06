@@ -4,6 +4,7 @@
 
 <ul id="manage-sidebar" class="manage-sidebar nav nav-pills flex-column">
 
+
     [% IF combust.user.is_staff %]
     <li class="nav-item">
         <a class="nav-link [% page.is_admin ? " active" : "" %]" href="[% combust.manage_url('/manage/admin') %]">Admin
@@ -12,9 +13,10 @@
     [% END %]
 
     <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle account-name" data-toggle="dropdown" href="#" role="button"
+        <a class="nav-link dropdown-toggle account-name" data-bs-toggle="dropdown"  href="#" role="button"
             aria-haspopup="true" aria-expanded="false">
-            <b>[% account.id ? account.name : "New account" | html %]</b></a>
+            <b>[% account.id ? account.name : "New account" | html %]</b>
+        </a>
         <div class="dropdown-menu">
             [% FOR a = combust.user.accounts %]
             <a class="dropdown-item [% account.id == a.id ? 'active' : '' %]"
@@ -26,9 +28,9 @@
                     href="[% combust.manage_url('/manage/account') %]">Manage account</a>
                 <div class="dropdown-item">
                     <form action="/manage/account" method="post" class="form-inline px-2 justify-content-end">
-                        <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
-                        <input type="hidden" name="a" value="new" />
-                        <input type="hidden" name="new_form" value="1" />
+                        <input type="hidden" name="auth_token" value="[% combust.auth_token %]">
+                        <input type="hidden" name="a" value="new">
+                        <input type="hidden" name="new_form" value="1">
                         <button class="btn btn-light btn-sm" type="submit">New account</button>
                     </form>
                 </div>
