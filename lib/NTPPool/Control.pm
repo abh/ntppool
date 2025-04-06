@@ -129,7 +129,7 @@ sub init {
     NP::Model->db->ping;
 
     my $trace_id = $span->context->hex_trace_id;
-    $self->request->header_out('Traceparent', $trace_id);
+    $self->request->header_out('TraceID', $trace_id);
 
     if ($self->site ne 'manage') {
 
