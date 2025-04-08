@@ -1125,6 +1125,11 @@ update monitors set is_current = null where status = 'deleted';
 #136
 alter table user_privileges add monitor_admin tinyint not null default 0;
 
+#137
+alter table api_keys
+ add CONSTRAINT `api_keys_account_fk` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`),
+ add CONSTRAINT `api_keys_user_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+
 #todo
 
 - reverse the api_key_id in monitors relationship to be a column in

@@ -324,6 +324,18 @@ __PACKAGE__->meta->setup(
 
   unique_key => [ 'api_key' ],
 
+  foreign_keys => [
+    account => {
+      class       => 'NP::Model::Account',
+      key_columns => { account_id => 'id' },
+    },
+
+    user => {
+      class       => 'NP::Model::User',
+      key_columns => { user_id => 'id' },
+    },
+  ],
+
   relationships => [
     monitors => {
       class      => 'NP::Model::Monitor',
