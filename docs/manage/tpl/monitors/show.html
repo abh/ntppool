@@ -1,5 +1,3 @@
-[% page.js.push("cdn/libs/htmx/2.0.4/htmx.min.js") %]
-
 [% BLOCK status_form %]
           <form class="monitor-form" action="/manage/monitors/monitor/status?a=[% account.id_token %]&name=[% monitor.TLSName | html %]" method="post" accept-charset="utf-8">
           <input type="hidden" name="auth_token" value="[% combust.auth_token %]">

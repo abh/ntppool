@@ -452,7 +452,7 @@ sub handle_update_netspeed {
                     netspeed => $self->netspeed_human($server->netspeed_target),
                     zones    => $self->evaluate_template(
                         'tpl/manage/server_zones.html',
-                        {   page_style => "bare.html",
+                        {   page_style => "none",
                             server     => $server,
                             "error" => "Please verify your server before increasing the netspeed",
                             verify_link => 1,
@@ -495,7 +495,7 @@ sub handle_update_netspeed {
         netspeed => $self->netspeed_human($server->netspeed_target),
         zones    => $self->evaluate_template(
             'tpl/manage/server_zones.html',
-            {page_style => "bare.html", server => $server}
+            {page_style => "none", server => $server}
         )
     };
 

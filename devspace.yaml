@@ -40,6 +40,7 @@ deployments:
           httpd_maxclients: "6"
           static_base: https://st.ntppool.org/askntp/
       wait: true
+      #timeout: "300s"
 
 dev:
   sync:

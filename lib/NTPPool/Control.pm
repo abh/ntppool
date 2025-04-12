@@ -419,6 +419,16 @@ sub count_by_continent {
     \@zones;
 }
 
+sub is_htmx {
+    my $self = shift;
+    if ($self->request->header_in('HX-Request')) {
+        my $span = OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
+        $span->set_attribute('request.htmx' => 1);
+        return 1;
+    }
+    return 0;
+}
+
 sub redirect {
     my ($self, $url) = (shift, shift);
 

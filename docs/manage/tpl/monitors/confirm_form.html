@@ -1,3 +1,5 @@
+[% page.js.push(combust.static_group("manage.js")) %]
+
 <div class="row">
     <div class="col-md-6">
 
@@ -21,7 +23,7 @@
     [% ELSIF code == 409 %]
     A monitor with this IP address already exists.
     [% ELSIF code == 410 %]
-    Request has been cancelled.
+    Request has been completed or cancelled.
     [% ELSIF code == 417 %]
     The monitor is not in the correct state to be confirmed.
     [% END %]

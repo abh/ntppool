@@ -1,4 +1,3 @@
-[% IF page_style; page.style = page_style; END %]
 <span id="zones_[% server.id %]">
 [% FOR zone = server.zones_display %]
 <a href="[% combust.www_url(zone.url) %]">[% zone.name %]</a>

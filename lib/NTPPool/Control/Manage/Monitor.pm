@@ -37,8 +37,10 @@ sub manage_dispatch {
         return $self->render_monitors;
     }
 
-    if (my ($token) = ($self->request->uri =~ m!^/manage/monitors/confirm/([^/]+)$!)) {
-        return $self->render_confirm_monitor($token);
+    if (my ($token, $status_check) =
+        ($self->request->uri =~ m!^/manage/monitors/confirm/([^/]+)(/status)?$!))
+    {
+        return $self->render_confirm_monitor($token, $status_check);
     }
 
     if ($self->request->uri =~ m!^/manage/monitors/monitor$!) {
@@ -102,6 +104,7 @@ sub render_monitor {
 sub render_confirm_monitor {
     my $self             = shift;
     my $validation_token = shift;
+    my $status_check     = shift;
 
     my $span = NP::Tracing->tracer->create_span(
         name => "monitor.render_confirm_monitor",
@@ -110,21 +113,30 @@ sub render_confirm_monitor {
     dynamically otel_current_context = otel_context_with_span($span);
     defer { $span->end(); };
 
-    if ($self->request->method eq 'post') {
-        return 403 unless $self->check_auth_token;
-    }
-
     $self->tpl_param('validation_token', $validation_token);
 
-    if ($self->request->method eq 'get') {
+    if ($self->request->method ne 'get') {
+        return 403 unless $self->check_auth_token;
+    }
+    else {
+        # GET request
         my $data = NP::IntAPI::get_monitoring_registration_data($validation_token,
             $self->plain_cookie($self->user_cookie_name));
         if ($data->{error}) {
             $self->tpl_param('error', $data->{error});
         }
         $self->tpl_param('message', $data->{message});
-        $self->tpl_param('code',    delete $data->{code});
+        $self->tpl_param('code',    $data->{code});
         $self->tpl_param('data',    $data->{data});
+        $self->tpl_param('error',   $data->{error});
+
+        if ($status_check || $data->{code} != 200) {
+            if ($self->is_htmx) {
+                $self->tpl_param('page_style' => "none");
+                $self->tpl_param('bare'       => 1);
+            }
+            return OK, $self->evaluate_template('tpl/monitors/confirm_status.html');
+        }
 
         return OK, $self->evaluate_template('tpl/monitors/confirm_form.html');
     }
@@ -242,6 +254,7 @@ sub render_admin_status {
     );
     if ($data->{code} >= 400) {
         $self->tpl_param('error', $data->{error});
+
         return $self->render_monitor();
     }
 

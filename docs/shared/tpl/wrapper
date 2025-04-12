@@ -8,6 +8,8 @@
 
    #USE Dumper; Dumper.dump_html(page template)
 
+   IF page_style; page.style = page_style; END;
+
    IF page.style == 'none';
       content;
    ELSE;

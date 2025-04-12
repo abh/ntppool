@@ -103,3 +103,8 @@ em {font-style:italic;}
     visibility: hidden;
     display: none;
 }
+
+/* https://github.com/bigskysoftware/htmx/issues/2832 */
+.htmx-indicator{opacity:0}
+.htmx-request .htmx-indicator{opacity:1; transition: opacity 200ms ease-in;}
+.htmx-request.htmx-indicator{opacity:1; transition: opacity 200ms ease-in;}
