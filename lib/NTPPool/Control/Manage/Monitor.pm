@@ -85,9 +85,10 @@ sub render_monitor {
     }
     my $data = int_api(
         'get',
-        'monitor/admin/monitor',
+        'monitor/manage/monitor',
         {   name => $name,
             user => $self->plain_cookie($self->user_cookie_name),
+            a    => $self->current_account->id_token,
         }
     );
 
@@ -120,8 +121,11 @@ sub render_confirm_monitor {
     }
     else {
         # GET request
-        my $data = NP::IntAPI::get_monitoring_registration_data($validation_token,
-            $self->plain_cookie($self->user_cookie_name));
+        my $data = NP::IntAPI::get_monitoring_registration_data(
+            $validation_token,
+            $self->plain_cookie($self->user_cookie_name),
+            $self->current_account->id_token,
+        );
         if ($data->{error}) {
             $self->tpl_param('error', $data->{error});
         }
@@ -130,7 +134,7 @@ sub render_confirm_monitor {
         $self->tpl_param('data',    $data->{data});
         $self->tpl_param('error',   $data->{error});
 
-        if ($status_check || $data->{code} != 200) {
+        if ($status_check) {
             if ($self->is_htmx) {
                 $self->tpl_param('page_style' => "none");
                 $self->tpl_param('bare'       => 1);
@@ -145,8 +149,11 @@ sub render_confirm_monitor {
         return NOT_FOUND;
     }
     my $data = NP::IntAPI::accept_monitoring_registration(
-        $validation_token,          $self->plain_cookie($self->user_cookie_name),
-        $self->current_account->id, $self->req_param("location_code"),
+        $validation_token,
+        $self->plain_cookie($self->user_cookie_name),
+        $self->current_account->id_token,
+        $self->req_param("location_code"),
+
     );
     if ($data->{error}) {
         $self->tpl_param('error', $data->{error});
@@ -197,11 +204,18 @@ sub render_monitors {
 
     my $data = int_api(
         'get',
-        'monitor/admin/',
+        'monitor/manage/',
         {   account_id => $self->current_account->id,
-            user       => $self->plain_cookie($self->user_cookie_name),
+            a          => $self->current_account->id_token,
+
+            user => $self->plain_cookie($self->user_cookie_name),
         }
     );
+
+    if ($data->{code} >= 400) {
+        $self->tpl_param('error', $data->{error});
+        $self->tpl_param('code',  $data->{code});
+    }
 
     my @monitors = _monitor_list($data->{data}->{Monitors} || {});
     $self->tpl_param('monitors', \@monitors);
@@ -220,11 +234,16 @@ sub render_admin_list {
 
     my $data = int_api(
         'get',
-        'monitor/admin/',
+        'monitor/manage/',
         {   all_accounts => 1,
             user         => $self->plain_cookie($self->user_cookie_name),
         }
     );
+
+    if ($data->{code} >= 400) {
+        $self->tpl_param('error', $data->{error});
+        $self->tpl_param('code',  $data->{code});
+    }
 
     my @monitors = _monitor_list($data->{data}->{Monitors} || {});
     $self->tpl_param('monitors', \@monitors);
@@ -245,8 +264,9 @@ sub render_admin_status {
 
     my $data = int_api(
         'post',
-        'monitor/admin/status',
-        {   name   => $self->req_param('name')                     || '',
+        'monitor/manage/status',
+        {   a      => $self->current_account->id_token,
+            name   => $self->req_param('name')                     || '',
             id     => $self->req_param('id')                       || '',
             status => $self->req_param('status')                   || '',
             user   => $self->plain_cookie($self->user_cookie_name) || '',

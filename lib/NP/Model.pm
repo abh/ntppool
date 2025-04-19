@@ -338,9 +338,10 @@ __PACKAGE__->meta->setup(
 
   relationships => [
     monitors => {
-      class      => 'NP::Model::Monitor',
-      column_map => { id => 'api_key_id' },
-      type       => 'one to many',
+      map_class => 'NP::Model::ApiKeysMonitor',
+      map_from  => 'api_key',
+      map_to    => 'monitor',
+      type      => 'many to many',
     },
   ],
 );
@@ -362,6 +363,53 @@ __PACKAGE__->make_manager_methods('api_keies');
 # Allow user defined methods to be added
 eval { require NP::Model::ApiKey }
   or $@ !~ m:^Can't locate NP/Model/ApiKey.pm: and die $@;
+
+{ package NP::Model::ApiKeysMonitor;
+
+use strict;
+
+use base qw(NP::Model::_Object);
+
+__PACKAGE__->meta->setup(
+  table   => 'api_keys_monitors',
+
+  columns => [
+    api_key_id => { type => 'integer', not_null => 1 },
+    monitor_id => { type => 'integer', not_null => 1 },
+  ],
+
+  primary_key_columns => [ 'api_key_id', 'monitor_id' ],
+
+  foreign_keys => [
+    api_key => {
+      class       => 'NP::Model::ApiKey',
+      key_columns => { api_key_id => 'id' },
+    },
+
+    monitor => {
+      class       => 'NP::Model::Monitor',
+      key_columns => { monitor_id => 'id' },
+    },
+  ],
+);
+
+push @table_classes, __PACKAGE__;
+}
+
+{ package NP::Model::ApiKeysMonitor::Manager;
+
+use strict;
+
+our @ISA = qw(Combust::RoseDB::Manager);
+
+sub object_class { 'NP::Model::ApiKeysMonitor' }
+
+__PACKAGE__->make_manager_methods('api_keys_monitors');
+}
+
+# Allow user defined methods to be added
+eval { require NP::Model::ApiKeysMonitor }
+  or $@ !~ m:^Can't locate NP/Model/ApiKeysMonitor.pm: and die $@;
 
 { package NP::Model::DnsRoot;
 
@@ -563,7 +611,6 @@ __PACKAGE__->meta->setup(
     ip_version     => { type => 'enum', check_in => [ 'v4', 'v6' ] },
     tls_name       => { type => 'varchar', length => 255 },
     api_key        => { type => 'varchar', length => 64 },
-    api_key_id     => { type => 'integer' },
     status         => { type => 'enum', check_in => [ 'pending', 'testing', 'active', 'paused', 'deleted' ], not_null => 1 },
     config         => { type => 'text', length => 65535, not_null => 1 },
     client_version => { type => 'varchar', default => '', length => 255, not_null => 1 },
@@ -589,11 +636,6 @@ __PACKAGE__->meta->setup(
       key_columns => { account_id => 'id' },
     },
 
-    api_key_obj => {
-      class       => 'NP::Model::ApiKey',
-      key_columns => { api_key_id => 'id' },
-    },
-
     user => {
       class       => 'NP::Model::User',
       key_columns => { user_id => 'id' },
@@ -605,6 +647,13 @@ __PACKAGE__->meta->setup(
       map_class => 'NP::Model::MonitorRegistration',
       map_from  => 'monitor',
       map_to    => 'account',
+      type      => 'many to many',
+    },
+
+    api_keies => {
+      map_class => 'NP::Model::ApiKeysMonitor',
+      map_from  => 'monitor',
+      map_to    => 'api_key',
       type      => 'many to many',
     },
 
@@ -665,6 +714,7 @@ __PACKAGE__->meta->setup(
     verification_token => { type => 'varchar', length => 32, not_null => 1 },
     ip4                => { type => 'varchar', default => '', length => 15, not_null => 1 },
     ip6                => { type => 'varchar', default => '', length => 39, not_null => 1 },
+    tls_name           => { type => 'varchar', default => '', length => 255 },
     name               => { type => 'varchar', default => '', length => 256, not_null => 1 },
     location_code      => { type => 'varchar', default => '', length => 5, not_null => 1 },
     account_id         => { type => 'integer' },
@@ -1956,6 +2006,7 @@ eval { require NP::Model::ZoneServerCount }
   sub account_subscription { our $account_subscription ||= bless [], 'NP::Model::AccountSubscription::Manager' }
   sub account_user { our $account_user ||= bless [], 'NP::Model::AccountUser::Manager' }
   sub api_key { our $api_key ||= bless [], 'NP::Model::ApiKey::Manager' }
+  sub api_keys_monitor { our $api_keys_monitor ||= bless [], 'NP::Model::ApiKeysMonitor::Manager' }
   sub dns_root { our $dns_root ||= bless [], 'NP::Model::DnsRoot::Manager' }
   sub log { our $log ||= bless [], 'NP::Model::Log::Manager' }
   sub log_score { our $log_score ||= bless [], 'NP::Model::LogScore::Manager' }

@@ -6,6 +6,10 @@
         <p><a href="/manage/monitors/admin">All monitors (admin)</a></p>
     [% END %]
 
+    [% IF error %]
+    <span class="error">[% error | html %] ([% code | html%])</span>
+    [% END %]
+
     [% last_account = 0 %]
     [% FOR mon = monitors %]
     [% IF last_account != mon.Account.ID %]

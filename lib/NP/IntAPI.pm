@@ -82,9 +82,9 @@ sub _int_api {
     }
     $r{code}        ||= $res->code;
     $r{status_line} ||= $res->status_line;
-    $r{traceid}     ||= $res->header('TraceID');
+    $r{trace_id}     ||= $res->header('TraceID');
 
-    # warn "Data: ", Data::Dump::pp(\%r);
+    warn "Data: ", Data::Dump::pp(\%r);
 
     return \%r;
 }
@@ -122,11 +122,13 @@ sub _int_api_post {
 sub get_monitoring_registration_data {
     my $validation_token = shift;
     my $user_cookie      = shift;
+    my $account_token    = shift;
 
     my $data = _int_api_get(
         "monitor/registration/data",
         {   token => $validation_token,
-            user  => $user_cookie
+            user  => $user_cookie,
+            a     => $account_token,
         }
     );
     return $data;
@@ -135,14 +137,14 @@ sub get_monitoring_registration_data {
 sub accept_monitoring_registration {
     my $validation_token = shift;
     my $user_cookie      = shift;
-    my $account_id       = shift;
+    my $account_token       = shift;
     my $location         = shift;
 
     my $data = _int_api_post(
         "monitor/registration/accept",
         {   token      => $validation_token,
             user       => $user_cookie,
-            account_id => $account_id,
+            a          => $account_token,
             location   => $location,
 
         }
