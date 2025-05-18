@@ -5,17 +5,17 @@
 <div class="row">
     <div class="col-md-6">
 
-    <h3>Confirm Monitor information</h3>
+    <h3>Accepting Monitor</h3>
 
 [% END %]
 
 [% status_url = combust.manage_url(
-          "/manage/monitors/confirm/" _ 
+          "/manage/monitors/confirm/" _
           validation_token _ "/status"
         ) %]
 
 <div id="monitor_registration_status"
-    [% IF code != 201 %]
+    [% IF code != 201 AND code < 300 %]
         hx-get="[% status_url %]"
         hx-target="#monitor_registration_status"
         hx-trigger="load delay:2s"
@@ -25,23 +25,32 @@
     <h4>Status</h4>
 
     [% IF code == 202 %]
-    Monitor registration accepted, pending monitor confirmation.
-    [% ELSIF code == 201 %]
-    Monitor registration completed,
-    <a href="[% combust.manage_url('/manage/monitors/') %]">continue</a>.
-    
-    [% ELSE %]
-    code: [% code %]<br>
-    status: [% data.status | html %]<br>
-    [% END %]
+    Monitor registration accepted, pending confirmation from monitor.
 
+<!--
     <div hx-target="this" hx-swap="outerHTML">
         <button hx-get="[% status_url %]" class="btn btn-info btn-sm">
             Update
         </button>
     </div>
+-->
 
-    <br><small> (request id [% combust.request_id %])</small>
+    [% ELSIF code == 201 %]
+    Monitor registration completed,
+    <a href="[% combust.manage_url('/manage/monitors/') %]">continue</a>.
+
+    [% ELSE %]
+        code: [% code %]<br>
+        [% IF data.status %]
+            status: [% data.status | html %]<br>
+        [% END %]
+        [% IF data.Message %]
+            [% data.Message | html %]<br>
+    [% END %]
+    [% #USE Dumper; Dumper.dump_html(data) %]
+    [% END %]
+
+    <br><small> (request id [% combust.request_id %], status)</small>
 </div>
 
 [% UNLESS bare %]

@@ -1130,6 +1130,30 @@ alter table api_keys
  add CONSTRAINT `api_keys_account_fk` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`),
  add CONSTRAINT `api_keys_user_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 
+#138
+-- when adding an IP to an existing monitor
+alter table monitor_registrations
+  -- pre-acceptance this is the related existing monitor name
+  -- post-acceptance it is the new name
+  add tls_name varchar(255) null default '' after ip6;
+
+#139
+create table if not exists api_keys_monitors (
+  api_key_id int unsigned not null,
+  monitor_id int unsigned not null,
+  primary key (api_key_id, monitor_id),
+  constraint `api_keys_monitors_api_keys_fk` foreign key (`api_key_id`) references api_keys (`id`),
+  constraint `api_keys_monitors_monitors_fk` foreign key (`monitor_id`) references monitors (`id`)
+);
+
+insert ignore into api_keys_monitors (monitor_id, api_key_id)
+(select id, api_key_id from monitors where api_key_id is not null);
+
+alter table monitors
+  drop constraint monitors_api_key_fk,
+  drop api_key_id;
+
+
 #todo
 
 - reverse the api_key_id in monitors relationship to be a column in

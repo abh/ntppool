@@ -449,6 +449,11 @@ img.atom-logo {
   font-weight: bold;
 }
 
+#monitor-form .form-floating {
+  margin-top: 5px;
+}
+
+
 /* #manage-sidebar .dropdown-item-manage-account { width: 50%; } */
 
 #manage-sidebar .account-name {

@@ -29,72 +29,79 @@
     [% END %]
     </p>
 
-    <p>
-    ([% IF traceid -%]
-    <code>[%- traceid | html %]</code>,
-    [% END %][% code | html %])
-    </p>
-
-    <p>
-        Email <a href="mailto:[% "support" | email %]?subject=Monitor setup">[% "support" | email %]</a> for help.
-    </p>
-
-
     </div>
 
     [% END %]
 
+    <p>
+    [% data.precheck.message | html %]
+    </p>
+    <p>
+<code>
+[% # USE Dumper; Dumper.dump_html(data) %]
+</code>
+    </p>
 
-    [% UNLESS error %]
-    <form id="monitor-form" action="/manage/monitors/confirm/[% validation_token | html %]" method="post" accept-charset="utf-8">
+    <form id="monitor-form"
+        action="/manage/monitors/confirm/[% validation_token | html %]" method="post" accept-charset="utf-8">
         <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
         <input type="hidden" name="a" value="[% account.id_token %]" />
 
-        <div class="form-group">
-            <label id="ip4-help" class="form-label" for="ip4">IPv4 address</label>
+        [% IF data.tls_name || data.precheck.monitors.0.tls_name %]
+        <div class="form-floating">
+            <input type="text" class="form-control" name="tlsname"
+                value="[% data.tls_name || data.precheck.monitors.0.tls_name | html %]"
+                id="tlsname" maxlength="65" disabled>
+            <label id="tlsname-help" class="form-label" for="tlsname">Existing Monitor</label>
+        </div>
+        [% END %]
+
+
+        <div class="form-floating">
             <input type="text" class="form-control" name="ip4"
                 value="[% data.ip4 | html %]"
                 id="ip4" maxlength="65" disabled>
+            <label id="ip4-help" class="form-label" for="ip4">IPv4 address</label>
         </div>
 
-        <div class="form-group">
-            <label id="ip6-help" class="form-label" for="ip6">IPv6 address</label>
+        <div class="form-floating">
             <input type="text" class="form-control" name="ip6"
                 value="[% data.ip6 | html %]"
                 id="ip6" maxlength="65" disabled>
+            <label id="ip6-help" class="form-label" for="ip6">IPv6 address</label>
         </div>
 
-        <div class="form-group">
-            <label id="client-help" class="form-label" for="client">Client</label>
+        <div class="form-floating">
             <input type="text" class="form-control" name="client"
                 value="[% data.client | html %]"
                 id="client" maxlength="65" disabled>
+            <label id="client-help" class="form-label" for="client">Client</label>
         </div>
 
         [% IF data.name %]
-        <div class="form-group">
-            <label id="client-help" class="form-label" for="name">Name</label>
+        <div class="form-floating">
             <input type="text" class="form-control" name="name"
                 value="[% data.name | html %]"
                 id="name" maxlength="65" disabled>
+            <label id="client-help" class="form-label" for="name">Name</label>
         </div>
         [% END %]
 
         [% IF data.locations %]
-        <div class="form-group">
-            <label id="location_code-help" class="form-label" for="location_code">Location code prefix</label>
-
+        <div class="form-floating">
             <select name="location_code" class="form-select form-control" aria-label="Location code prefix">
             [% first = 1;
                IF location_code;
                   first = 0;
                END;
             %]
-            [% FOR code = data.locations %]
-                <option [% IF (first OR (location_code == code.Code)); "selected"; END %] value="[% code.Code | html %]">[% code.Code | html %] ([% code.Name | html %])</option>
+            [% FOR locode = data.locations %]
+                <option [% IF (first OR (location_code == locode.Code)); "selected"; END %] value="[% locode.Code | html %]">[% locode.Code | html %] ([% locode.Name | html %])</option>
                 [% first = 0 %]
             [% END %]
-        </select>
+            </select>
+            <label id="location_code-help" class="form-label" for="location_code">Location code prefix</label>
+
             [% IF errors.location_code %]
                 <div class="error">
                     <span class="badge badge-info">Error</span>
@@ -105,9 +112,44 @@
         </div>
         [% END %]
 
-        <p><input type="submit" class="btn btn-primary" value="[% monitor.id ? 'Update' : 'Confirm' %]"></p>
-        </form>
+        [% IF data.precheck.code != "None" %]
+        <p class="mt-2">
+            [% IF data.precheck.code == "ResetName" %]
+                Continuing will disable the existing monitor
+                and create a new monitor and API key.
+
+            [% ELSIF data.precheck.code == "ResetKey" %]
+                Continuing will reset the API key and
+                configuration for the monitor.
+            [% END %]
+
+                <em class="mt-2 d-block">
+                    If you get an error on the next page, please
+                    send an email with the request id.
+                </em>
+                <small>([% data.precheck.code %])</small>
+            </p>
+        </p>
         [% END %]
+
+        <p><input type="submit"
+            [% (code != 200 OR error) ? "disabled" : "" %]
+            class="btn btn-primary"
+            value="[% data.precheck.code == "None" ? 'Confirm' : 'Continue' %]"
+            ></p>
+        </form>
+
+
+    <p>
+        Email <a href="mailto:[% "support" | email %]?subject=Monitor setup">[% "support" | email %]</a> for help.
+    </p>
+
+
+    <p>
+    <small>([% IF trace_id -%]
+    <code>[%- trace_id | html %]</code>,
+    [% END %][% code | html %], form)</small>
+    </p>
 
     </div>
 

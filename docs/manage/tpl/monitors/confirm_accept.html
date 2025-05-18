@@ -4,7 +4,7 @@
 <div class="row">
     <div class="col-md-6">
 
-    <h3>Confirm Monitor information</h3>
+    <h3>Accepting Monitor</h3>
 
     [% IF error OR code > 299 %]
 
@@ -39,6 +39,9 @@
     <a href="[% combust.manage_url('/manage/monitors/') %]">Monitor list</a>
 
     [% END %]
+
+    <br><small> (request id [% combust.request_id %], accept)</small>
+
     </div>
 
 </div>
