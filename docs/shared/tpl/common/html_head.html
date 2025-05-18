@@ -1,6 +1,10 @@
 [% title = page.title || 'the internet cluster of ntp servers' %]
 <title>pool.ntp.org: [% title | html %]</title>
 
+[% IF trace_id %]
+<meta name="trace-id" content="[% trace_id | html %]">
+[% END %]
+
 [%- IF page.canonical %]
 <link rel="canonical" href="[% page.canonical | html %]">
 [% END -%]

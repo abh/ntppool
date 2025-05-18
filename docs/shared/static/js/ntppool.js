@@ -47,10 +47,13 @@ if (!NP) var NP = {};
 
 }());
 
+
 // htmx configuration
 document.addEventListener('DOMContentLoaded', function () {
-    // htmx.config.defaultSwapStyle = 'outerHTML';
-    // htmx.config.refreshOnHistoryMiss = true;
-    htmx.config.historyCacheSize = 20;
-    htmx.config.includeIndicatorStyles = false;
+    if (window.htmx) {
+        // htmx.config.defaultSwapStyle = 'outerHTML';
+        // htmx.config.refreshOnHistoryMiss = true;
+        htmx.config.historyCacheSize = 20;
+        htmx.config.includeIndicatorStyles = false;
+    }
 });

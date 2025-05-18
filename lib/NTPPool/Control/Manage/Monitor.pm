@@ -278,8 +278,13 @@ sub render_admin_status {
         return $self->render_monitor();
     }
 
+    # no content, monitor was deleted
+    if ($data->{code} == 204) {
+        return $self->redirect($self->manage_url('/manage/monitors/admin'));
+    }
+
     my $redirect =
-      $self->manage_url('/manage/monitors/monitor', {name => $self->req_param('name')},);
+      $self->manage_url('/manage/monitors/monitor', {name => $self->req_param('name')});
     return $self->redirect($redirect);
 
 }

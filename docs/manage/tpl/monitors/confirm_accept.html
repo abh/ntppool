@@ -36,11 +36,15 @@
 
     [% PROCESS tpl/monitors/confirm_status.html, bare = 1 %]
 
+    <p>
     <a href="[% combust.manage_url('/manage/monitors/') %]">Monitor list</a>
+    </p>
 
     [% END %]
 
+    <p>
     <br><small> (request id [% combust.request_id %], accept)</small>
+    </p>
 
     </div>
 
