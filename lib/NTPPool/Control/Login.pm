@@ -173,7 +173,6 @@ sub _here_url {
 
 sub setup_session {
     my ($self, $user_id) = @_;
-    warn "setup_session for $user_id";
     my $resp = $self->ua->post("http://api-internal/int/session", {user_id => $user_id});
     if ($resp->is_success) {
         my $data = decode_json($resp->decoded_content());

@@ -27,7 +27,7 @@ sub manage_dispatch {
         return 403 unless $self->check_auth_token;
     }
 
-    return $self->render_form if $self->request->uri =~ m!^/manage/monitors/new$!;
+    return $self->render_instructions if $self->request->uri =~ m!^/manage/monitors/new$!;
 
     if ($self->request->uri =~ m!^/manage/monitors/?$!) {
 
@@ -181,15 +181,9 @@ sub _get_id {
     return $id;
 }
 
-sub render_form {
+sub render_instructions {
     my $self = shift;
-    my $mon  = shift;
-
-    if ($mon) {
-        $self->tpl_param('monitor', $mon);
-    }
-
-    return OK, $self->evaluate_template('tpl/monitors/form.html');
+    return OK, $self->evaluate_template('tpl/monitors/instructions.html');
 }
 
 sub render_monitors {
@@ -287,20 +281,6 @@ sub render_admin_status {
       $self->manage_url('/manage/monitors/monitor', {name => $self->req_param('name')});
     return $self->redirect($redirect);
 
-}
-
-sub render_save {
-    my $self = shift;
-    my ($mon, $errors) = $self->_edit_monitor;
-
-    if ($errors) {
-        $self->tpl_param('errors', $errors);
-        warn "monitor form errors: ", pp($errors);
-        return $self->render_form($mon);
-    }
-
-    my $redirect = $self->manage_url('/manage/monitors/monitor', {id => $mon->id_token});
-    return $self->redirect($redirect);
 }
 
 sub _edit_monitor {
