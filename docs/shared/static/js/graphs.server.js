@@ -64,14 +64,14 @@ function server_chart(div, data, options) {
 
     // Custom 24-hour time formatter to avoid 12-hour format in minute displays
     function custom24HourFormatter() {
-        const formatMillisecond = d3.utcFormat(".%L"),
-              formatSecond = d3.utcFormat(":%S"),
-              formatMinute = d3.utcFormat("%H:%M"),  // Always use 24-hour format
-              formatHour = d3.utcFormat("%H"),       // Always use 24-hour format
-              formatDay = d3.utcFormat("%a %d"),
-              formatWeek = d3.utcFormat("%b %d"),
-              formatMonth = d3.utcFormat("%B"),
-              formatYear = d3.utcFormat("%Y");
+        var formatMillisecond = d3.utcFormat(".%L"),
+            formatSecond = d3.utcFormat(":%S"),
+            formatMinute = d3.utcFormat("%H:%M"),  // Always use 24-hour format
+            formatHour = d3.utcFormat("%H"),       // Always use 24-hour format
+            formatDay = d3.utcFormat("%a %d"),
+            formatWeek = d3.utcFormat("%b %d"),
+            formatMonth = d3.utcFormat("%B"),
+            formatYear = d3.utcFormat("%Y");
 
         return function(date) {
             return (d3.utcSecond(date) < date ? formatMillisecond
