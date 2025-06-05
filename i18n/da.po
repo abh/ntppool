@@ -66,32 +66,29 @@ msgid "Older news"
 msgstr "Gamle nyheder"
 
 # mailinglists.html
-msgid "NTP Pool mailing lists"
-msgstr "NTP Pool-postlister"
-
-msgid "subscribe"
-msgstr "abonnér"
-
 msgid "archive"
 msgstr "arkiv"
 
-msgid "Announcement list"
-msgstr "Nyhedsliste"
+msgid "NTP Pool Forum"
+msgstr "NTP Pool Forum"
+
+msgid "News site"
+msgstr "Nyhedsside"
 
 msgid "Discussion list"
 msgstr "Diskussionsliste"
 
-msgid "Development list"
-msgstr "Udviklingsliste"
+msgid "Development"
+msgstr "Udvikling"
 
-msgid "announcement_list_description"
-msgstr "Nyhedsliste med meget lav trafik.  Alle serveroperatører burde være tilmeldt nyhedslisten."
+msgid "forum_description"
+msgstr "Spørgsmål (og svar) om NTP Pool, forslag til forbedringer og emner relateret til tidssynkronisering og drift af NTP-servere."
 
-msgid "discussion_list_description"
-msgstr "Serveroperatører (og brugere) som ønsker at være mere engageret i projektet kan abonnere på diskussionslisten.<br/>Generel diskussion omkring ntp bør selvfølgelig tage sted i %1 Usenet-nyhedsgruppen (også på <a href=\"%2\">Google Groups</a>)."
+msgid "news_description"
+msgstr "Meddelelser og nyheder bliver offentliggjort på nyhedssiden eller i forummet."
 
 msgid "development_list_description"
-msgstr "Mere tekniske (og ideelt set altid pragmatiske) diskussioner om den nuværende udvikling af <a href=\"%1\">ntp pool-koden</a> og <a href=\"%2\">GeoDNS</a> sker på timekeepers-dev-listen."
+msgstr "Mere tekniske (og ideelt set pragmatiske) diskussioner om udvikling af <a href=\"%1\">ntp pool-koden</a> og <a href=\"%2\">GeoDNS</a> foregår i <a href=\"%3\">udviklingsforum</a>."
 
 # tpl/server.html
 msgid "Back to the front page"
@@ -135,10 +132,10 @@ msgid "Information for vendors"
 msgstr "Information til producenter"
 
 msgid "The mailing lists"
-msgstr "Mailing listerne"
+msgstr "Fællesskab"
 
 msgid "Additional links"
-msgstr "Yderlig links"
+msgstr "Yderligere links"
 
 msgid "Can you translate?"
 msgstr "Kan du oversætte?"
