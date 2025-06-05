@@ -43,49 +43,60 @@
 	e incluso mejor si usas la zona de tu pa&iacute;s (por ejemplo es.pool.ntp.org en Espa&ntilde;a).
 	Para todas estas zonas, tambi&eacute;n puedes usar los prefijos 0, 1, 2 o 3, como 0.es.pool.ntp.org.
 	Observa, sin embargo, que la zona puede no existir en tu pa&iacute;s, o podr&iacute;a contener solo
-	uno o dos servidores de hora. Si conoces servidores de hora cercanos
-	(medido en distancia de red, con las &oacute;rdenes <tt>traceroute</tt> o <tt>ping</tt>),
-	mejor a&uacute;n.
+	uno o dos servidores de hora.
+	</p>
+	<p>
+	Ten en cuenta tambi&eacute;n que el sistema actualmente solo proporciona direcciones IPv6 para una zona
+	adem&aacute;s de las direcciones IPv4 si el nombre de la zona tiene el prefijo n&uacute;mero 2, por ejemplo <code>2.pool.ntp.org</code>
+	(siempre que haya servidores NTP IPv6 en la zona respectiva). Los nombres de zona que no tienen prefijo num&eacute;rico,
+	o tienen prefijo 0, 1 o 3, actualmente proporcionan solo direcciones IPv4.
 	</p>
 
 	<p>
 	Si est&aacute;s usando <b>una versi&oacute;n de Windows reciente</b>, puedes utilizar
-	el cliente ntp integrado en el sistema. Para ello, ejecuta como administrador
+	el cliente ntp integrado en el sistema.
 	</p>
-
-<pre class="code">
-w32tm /config /syncfromflags:manual /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
-</pre>
+	<p>Haz clic derecho en la fecha y hora en el &aacute;rea del sistema y selecciona Ajustar fecha/hora o abre configuraci&oacute;n con Win+I y haz clic en Hora e idioma -&gt; Fecha y hora.
+		despl&aacute;zate hacia abajo y haz clic en Fecha, hora, formato regional
+		despl&aacute;zate hacia abajo y haz clic en Configuraci&oacute;n adicional de fecha, hora y regi&oacute;n
+		haz clic en Fecha y hora e Hora de Internet
+		haz clic en el bot&oacute;n Cambiar configuraci&oacute;n. Introduce <code>pool.ntp.org</code> y haz clic en Actualizar ahora.
+	</p>
 	<p>
-	en el s&iacute;mbolo de espera de &oacute;rdenes del sistema. Esto deber&iacute;a
-	funcionar en Windows 2003 y versiones posteriores. Si utilizas una versi&oacute;n anterior
-	de Windows, puedes intentar
+		Prueba haciendo clic derecho en la fecha y hora en el &aacute;rea del sistema y selecciona Ajustar fecha/hora o abre configuraci&oacute;n con Win+I y haz clic en Hora e idioma -&gt; Fecha y hora.
+		Haz clic en el bot&oacute;n "Sincronizar ahora".
 	</p>
-
-<pre class="code">
-net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
-</pre>
-
-	<p>
-	Puedes tambi&eacute;n conseguirlo, haciendo clic derecho en el reloj de la barra
-	de tareas (como administrador) y seleccionar 'Ajustar fecha y hora' e introducir el
-	nombre del servidor en la pesta&ntilde;a 'Hora de Internet'.
-	</p>
-
-	<p>
-	Meinberg port&oacute; el <a href="http://www.meinberg.de/english/sw/ntp.htm">demonio ntp a Windows</a>.
-	</p>
-
 	<p>
 	Si tu sistema Windows forma parte de un dominio, no puedes actualizar la hora de tu ordenador
-	de forma independiente. Para m&aacute;s informaci&oacute;n acerca de c&oacute;mo ajustar la
+	de forma independiente.
+
+	Para m&aacute;s informaci&oacute;n acerca de c&oacute;mo ajustar la
 	hora en Windows, echa un vistazo a
-	<a href="https://technet.microsoft.com/es-es/library/cc757178%28WS.10%29.aspx">Introducci&oacute;n al servicio de hora de Windows</a>.
+	<a href="https://technet.microsoft.com/en-us/library/cc773013%28WS.10%29.aspx">C&oacute;mo funciona el servicio de hora de Windows</a>.
 	</p>
 </div>
 
 <div class="block">
 	<h3>Notas adicionales</h3>
+
+        <p><span class="hook">Considera si el Pool NTP es apropiado
+        para tu uso</span>. Si tu negocio, organizaci&oacute;n o vida humana
+        depende de tener la hora correcta o puede verse da&ntilde;ada si est&aacute;
+        mal, no deber&iacute;as "simplemente tomarla de Internet". El Pool
+        NTP es generalmente de muy alta calidad, pero es un servicio gestionado
+        por voluntarios en su tiempo libre. Por favor, habla con tus
+        proveedores de equipos y servicios para configurar un servicio local y confiable.
+        Ve tambi&eacute;n nuestros <a href="/tos.html">t&eacute;rminos
+        de servicio</a>.
+
+        Recomendamos servidores de hora de
+        <a href="http://www.meinbergglobal.com/english/products/ntp-time-server.htm">Meinberg</a>,
+        pero tambi&eacute;n puedes encontrar servidores de hora de
+        <a href="http://www.endruntechnologies.com/NTP-Servers/gps-cdma-ntp.htm">End Run</a>,
+        <a href="http://spectracom.com/products-services/precision-timing#anchor-2172">Spectracom</a>
+        y muchos otros.
+        </p>
+
 	<p><span class="hook">Si tienes una direcci&oacute;n IP est&aacute;tica y una conexi&oacute;n a Internet razonable</span>
 	(el ancho de banda no es tan importante, simplemente deber&iacute;a ser estable y no estar demasiado sobrecargado),
 	por favor, considera donar tu servidor a la lista de servidores. No te costar&aacute; m&aacute;s que algunos
