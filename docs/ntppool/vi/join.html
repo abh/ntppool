@@ -4,12 +4,12 @@
 	<h3><a name="join">Làm sao để thêm máy chủ vào pool.ntp.org?</a></h3>
 	<p>
 	Mở lời bài viết này, chúng tôi chân thành cảm ơn bạn khi đã quan tâm đến việc thêm máy chủ vào NTP Pool,
-	nhất là khi lượng sử dụng pool đang dần tăng và vì việc liên kết thêm máy chủ là rất quan trọng để duy trì dự án.
+	nhất là khi lượng sử dụng pool đang tăng và việc liên kết máy chủ đóng vai trò quan trọng trong việc duy trì dự án.
 	</p>
 
 	<p>
-	Để thêm máy chủ vào dự án, máy tính của bạn <b>phải có</b> địa chỉ IP tĩnh và kết nối Internet cố định.
-	Quan trọng nhất là địa chỉ IP của bạn không thay đổi hoặc thay đổi hạn chế (tầm một lần một năm hoặc ít hơn).
+	Để thêm máy chủ vào dự án, máy tính cần thêm <b>phải có</b> địa chỉ IP tĩnh (không đổi) và kết nối Internet cố định.
+	Quan trọng nhất là IP của máy không thay đổi hoặc thay đổi hạn chế (tầm một lần một năm hoặc ít hơn).
 	Băng thông yêu cầu tương đối thấp. Các máy khách thường chỉ yêu cầu một vài gói UDP trong một khoảng thời gian 20 phút.
 	</p>
 
@@ -26,44 +26,43 @@
 	<b>có thể</b> được chọn từ pool. Vấn đề là các máy chủ đó đều phân vùng
 	một cách thủ công thay vì được chỉ định ngẫu nhiên từ pool tại mỗi lần khởi động lại máy chủ.
 	Điều này sẽ giúp giữ chất lượng dịch vụ được tốt.
-	Khi tham gia, bạn cũng không cần bận tâm đến việc là máy chủ của bạn cấp (stratum) mấy vì cơ cấu dự án hoạt động chủ yếu dựa trên việc phân bổ lượng tải dữ liệu.
+	Khi tham gia, bạn cũng không cần tính đến việc là máy chủ đang chạy ở cấp độ (stratum) nào vì cơ cấu dự án hoạt động chủ yếu dựa trên việc phân bổ lượng tải dữ liệu.
 	</p>
 
 	<p>
 	Chúng tôi có bài viết về <a href="/join/configuration.html">các khuyến nghị về cấu hình cho các máy chủ tham gia nhóm</a>.
 	</p>
-	<p>Cuối cùng, chúng tôi phải nhấn mạnh rằng việc tham gia nhóm là một <b>cam kết dài hạn</b>. Chúng tôi rất vui khi đưa bạn ra khỏi nhóm một lần nữa nếu
-	hoàn cảnh của bạn thay đổi, nhưng do cách thức hoạt động của các máy khách NTP, <b>sẽ mất nhiều tuần, nhiều tháng hoặc thậm chí là cả năm</b> trước khi lưu lượng truy cập máy chủ hoàn toàn
-	biến mất.
+	<p>Cuối cùng, chúng tôi phải nhấn mạnh rằng việc tham gia nhóm là một <b>cam kết dài hạn</b>. Chúng tôi vẫn có thể xóa IP máy chủ bạn khỏi pool khi bạn cần
+	nhưng do các máy khách NTP có thể lưu trữ dài hạn, khả năng cao là <b>sẽ mất nhiều tuần, nhiều tháng hoặc thậm chí là cả năm</b> trước khi lưu lượng truy cập máy chủ hoàn toàn biến mất.
 	</p>
 
 	<p>
-	Khi bạn đã chuẩn bị xong, hãy đăng nhập vào
-	<a href="/manage">trang quản lý máy chủ</a> và yêu cầu thêm máy chủ của bạn.
-	Nếu bạn gặp bất kỳ sự cố nào với hệ thống quản lý, bạn có thể gửi email cho quản trị viên dự án Ask Bjørn Hansen qua địa chỉ <a
+	Khi đã chuẩn bị xong, bạn cần đăng nhập vào
+	<a href="/manage">trang quản lý máy chủ</a> và yêu cầu thêm máy chủ.
+	Nếu bạn gặp bất kỳ sự cố nào với hệ thống, bạn có thể gửi email cho quản trị dự án Ask Bjørn Hansen qua địa chỉ là <a
 	href="mailto:ask@develooper.com">ask@develooper.com</a>.
 	</p>
 
 	<p>
-	Để thảo luận về các vấn đề về NTP Pool, bạn cũng có thể tham gia <a href="[% language_url("/mailinglists.html") %]">diễn đàn cộng đồng</a>.
+	Để thảo luận về các vấn đề về NTP Pool, bạn có thể tham gia <a href="[% language_url("/mailinglists.html") %]">diễn đàn cộng đồng</a>.
 	</p>
 
 	<p>
-	Để ủng hộ dự án, bạn cũng có thể chuyển hướng các yêu cầu web
-	trên cổng 80 của máy chủ thời gian của bạn đến trang web chính thức của dự án tại
-	<tt>https://www.ntppool.org/</tt>. Nếu máy chủ web của bạn chạy Apache, bạn có thể thêm các dòng sau để điều hướng:
+	Để ủng hộ dự án, bạn có thể chuyển hướng các yêu cầu HTTP
+	trên cổng 80 của máy chủ đến trang web chính thức của dự án tại
+	<tt>https://www.ntppool.org/</tt>. Nếu máy chủ web của bạn chạy Apache, bạn có thể thêm các dòng sau để làm vậy:
 	</p>
 
 	[% PROCESS tpl/join/virtual_host_example.html %]
 
 	<p>
-	Một lần nữa, điều này chỉ áp dụng nếu bạn có tích hợp máy chủ web với NTP.
-	Và vì hai chương trình chạy song song như vậy nên một số người sẽ ngạc nhiên khi nhập vô địa chỉ <tt>pool.ntp.org</tt> (trả về địa chỉ IP của máy chủ web, từ đó hiển thị trang web).
+	Việc trên chỉ có thể áp dụng nếu bạn có chạy kết hợp máy chủ web với NTP.
+	Và vì hai chương trình chạy song song như vậy nên một số người sẽ ngạc nhiên khi nhập vô địa chỉ <tt>pool.ntp.org</tt> (trả về IP của máy chủ web, từ đó hiển thị trang web).
 	</p>
 	<p>
-	Sau khi được thêm vào nhóm, máy chủ sẽ được theo dõi liên tục
-	về tính khả dụng và độ chính xác. Bạn có thể theo dõi hiệu suất của máy chủ
-	bằng cách sử dụng <a href="scores">trang thống kê</a> hoặc
+	Sau khi được thêm vào nhóm, máy chủ bạn sẽ được theo dõi liên tục
+	về độ trễ và tính chính xác. Bạn có thể theo dõi hiệu suất của máy chủ
+	với <a href="scores">trang thống kê</a> hoặc
 	<a href="/manage">trang quản lý</a>.
 	</p>
 </div>
