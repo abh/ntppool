@@ -22,6 +22,12 @@ msgstr "Norteamérica"
 msgid "South America"
 msgstr "Sudamérica"
 
+msgid "Europe"
+msgstr "Europa"
+
+msgid "Oceania"
+msgstr "Oceanía"
+
 msgid "Global"
 msgstr "Global"
 
@@ -32,7 +38,41 @@ msgstr "Todos los servidores"
 msgid "Translations"
 msgstr "Traducciones"
 
+# index.html
+msgid  "Introduction"
+msgstr "Introducción"
+
+msgid  "Active Servers"
+msgstr "Servidores Activos"
+
+msgid  "Links"
+msgstr "Enlaces"
+
+msgid  "Terms of service"
+msgstr "Términos de servicio"
+
+msgid  "Subscribe in a reader"
+msgstr "Suscribirse en un lector"
+
+msgid  "Older news"
+msgstr "Noticias anteriores"
+
 # mailinglists.html
+msgid  "NTP Pool Forum"
+msgstr "Foro del Pool NTP"
+
+msgid  "News site"
+msgstr "Sitio de noticias"
+
+msgid  "Development"
+msgstr "Desarrollo"
+
+msgid  "forum_description"
+msgstr "Preguntas (y respuestas) acerca del Pool NTP, sugerencias para mejoras y temas relacionados con el mantenimiento de la hora y operación de servidores NTP."
+
+msgid  "news_description"
+msgstr "Los anuncios y noticias se publican en el sitio de noticias o en el foro."
+
 msgid  "NTP Pool mailing lists"
 msgstr "Listas de correo de equipos de NTP"
 
@@ -58,7 +98,7 @@ msgid  "discussion_list_description"
 msgstr "Los operadores de servidor (y los usuarios) que deseen involucrase más en el proyecto pueden suscribirse a la lista de debates.<br/>Por supuesto, los debates generales sobre ntp deben estar en el grupo de noticias %1 de Usenet (incluso en <a href=\"%2\">Google Groups</a>)."
 
 msgid  "development_list_description"
-msgstr "Los debates más técnicos (e idealmente siempre útiles) sobre el actual desarrollo del <a href=\"%1\">código de grupo ntp</a> y <a href=\"%2\">GeoDNS</a> ocurre en la lista timekeepers-dev (desarrollo de cronómetros)."
+msgstr "Los debates más técnicos (e idealmente pragmáticos) sobre el desarrollo del <a href=\"%1\">código del pool ntp</a> y <a href=\"%2\">GeoDNS</a> ocurren en el <a href=\"%3\">foro de desarrollo</a>."
 
 
 # tpl/server.html
@@ -103,7 +143,10 @@ msgid  "Information for vendors"
 msgstr "Información para vendedores"
 
 msgid  "The mailing lists"
-msgstr "Las listas de correo"
+msgstr "Comunidad"
 
 msgid  "Additional links"
 msgstr "Enlaces adicionales"
+
+msgid  "Can you translate?"
+msgstr "¿Puedes traducir?"
