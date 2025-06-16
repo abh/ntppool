@@ -52,10 +52,13 @@
             [% UNLESS show_details %]
 
             <div class="card-footer">
-                <a class="card-link" href="[% combust.manage_url('/manage/monitors/monitor', 
-            { a    => mon.Account.IDToken,
-              name => mon.TLSName })
-        %]">See details</a>
+                <a class="card-link" href="[%
+                    combust.manage_url('/manage/monitors/monitor', 
+                        a    => mon.Account.IDToken,
+                        b    => 'cx',
+                        name => mon.TLSName,
+                    )
+        %]">See details [% mon.Account.IDToken %]</a>
             </div>
             [% END %]
 

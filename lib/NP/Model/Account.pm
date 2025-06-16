@@ -80,7 +80,10 @@ sub can_edit {
 }
 
 sub can_view {
-    return shift->can_edit(shift);
+    my ($self, $user) = @_;
+    return 1 if $self->can_edit($user);
+    return 1 if $user->is_monitor_admin;
+    return 0;
 }
 
 sub can_add_servers {

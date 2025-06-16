@@ -2,7 +2,7 @@
 
 <div class="block">
 
-    [% IF !admin_list AND combust.user.is_staff %]
+    [% IF !admin_list AND combust.user.is_monitor_admin %]
         <p><a href="/manage/monitors/admin">All monitors (admin)</a></p>
     [% END %]
 

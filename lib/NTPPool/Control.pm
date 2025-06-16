@@ -526,7 +526,7 @@ sub plain_cookie {
         $args->{expires} = 1;    # 1970-01-01
     }
 
-    $args->{secure} = 1;
+    $args->{secure}   = 1;
     $args->{httpOnly} = 1;
 
     $args->{value} = $value;

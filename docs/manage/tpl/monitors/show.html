@@ -49,7 +49,8 @@
           [% END %]
 
           [% IF mon.CombinedStatus %]
-          <button class="btn btn-secondary btn-sm" hx-on:click="htmx.findAll('.monitor-status').forEach(function(child) { htmx.toggleClass(child, 'hidden') })">
+          <button class="btn btn-secondary btn-sm"
+            hx-on:click="htmx.findAll('.monitor-status').forEach(function(child) { htmx.toggleClass(child, 'hidden') })">
           Change status for both or individually</button>
           [% END %]
 

@@ -48,12 +48,10 @@ sub manage_dispatch {
     }
 
     if ($self->request->uri =~ m!^/manage/monitors/admin$!) {
-        return 403 unless $self->user->is_staff;
         return $self->render_admin_list();
     }
 
     if ($self->request->uri =~ m!^/manage/monitors/monitor/status$!) {
-        return 403 unless $self->user->is_staff;
         return $self->render_admin_status();
     }
 
@@ -93,6 +91,7 @@ sub render_monitor {
     );
 
     if ($data->{code} != 200) {
+        $self->cache_control('private, max-age=0, no-cache');
         return NOT_FOUND;
     }
 

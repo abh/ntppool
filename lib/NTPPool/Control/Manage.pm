@@ -74,7 +74,7 @@ sub current_account {
         my $account    = $account_id ? NP::Model->account->fetch(id => $account_id) : undef;
         if ($account) {
             return $self->{_current_account} = $account
-              if $account->can_edit($self->user);
+              if $account->can_view($self->user);
         }
     }
 
