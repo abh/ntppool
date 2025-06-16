@@ -5,29 +5,24 @@
 <div class="row">
     <div class="col-md-6">
 
-    <h3>Accepting Monitor</h3>
+        <h3>Accepting Monitor</h3>
 
-[% END %]
+        [% END %]
 
-[% status_url = combust.manage_url(
-          "/manage/monitors/confirm/" _
-          validation_token _ "/status"
+        [% status_url = combust.manage_url(
+        "/manage/monitors/confirm/" _
+        validation_token _ "/status"
         ) %]
 
-<div id="monitor_registration_status"
-    [% IF code != 201 AND code < 300 %]
-        hx-get="[% status_url %]"
-        hx-target="#monitor_registration_status"
-        hx-trigger="load delay:3s"
-    [% END %]
-    class="">
+        <div id="monitor_registration_status" [% IF code !=201 AND code < 300 %] hx-get="[% status_url %]"
+            hx-target="#monitor_registration_status" hx-trigger="load delay:3s" [% END %] class="">
 
-    <h4>Status</h4>
+            <h4>Status</h4>
 
-    [% IF code == 202 %]
-    Monitor registration accepted, pending confirmation from monitor.
+            [% IF code == 202 %]
+            Monitor registration accepted, pending confirmation from monitor.
 
-<!--
+            <!--
     <div hx-target="this" hx-swap="outerHTML">
         <button hx-get="[% status_url %]" class="btn btn-info btn-sm">
             Update
@@ -35,23 +30,24 @@
     </div>
 -->
 
-    [% ELSIF code == 201 %]
-    Monitor registration completed,
-    <a href="[% combust.manage_url('/manage/monitors/monitor', name => data.tls_name) %]">continue</a>.
+            [% ELSIF code == 201 %]
+            Monitor registration completed,
+            <a href="[% combust.manage_url('/manage/monitors/monitor', name => data.tls_name) %]">continue</a>.
 
-    [% ELSE %]
-        code: [% code %]<br>
-        [% IF data.status %]
+            [% ELSE %]
+            code: [% code %]<br>
+            [% IF data.status %]
             status: [% data.status | html %]<br>
-        [% END %]
-        [% IF data.Message %]
+            [% END %]
+            [% IF data.Message %]
             [% data.Message | html %]<br>
-    [% END %]
-    [% END %]
+            [% END %]
+            [% END %]
 
-    <br><!-- <small> (request id [% combust.request_id %], status)</small> -->
+            <br><!-- <small> (request id [% combust.request_id %], status)</small> -->
+        </div>
+
+        [% UNLESS bare %]
+    </div>
 </div>
-
-[% UNLESS bare %]
-</div></div>
 [% END %]

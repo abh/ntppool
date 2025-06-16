@@ -4,47 +4,50 @@
 <div class="row">
     <div class="col-md-6">
 
-    <h3>Accepting Monitor</h3>
+        <h3>Accepting Monitor</h3>
 
-    [% IF error OR code > 299 %]
+        [% IF error OR code > 299 %]
 
-    <div class="error">
-    [% error | html %]
-    <br>(code [% code | html %])
-    </div>
+        <div class="error">
+            [% error | html %]
+            <br>(code [% code | html %])
+        </div>
 
-    <div>
-    [% IF code == 404 %]
-    Confirmation code not found.
-    [% ELSIF code == 400 %]
-    Bad request.
-    [% ELSIF code == 500 %]
-    Server error.
-    [% END %]
+        <div>
+            [% IF code == 404 %]
+            Confirmation code not found.
+            [% ELSIF code == 400 %]
+            Bad request.
+            [% ELSIF code == 500 %]
+            Server error.
+            [% END %]
 
-    <p>
-        Email <a href="mailto:[% "support" | email %]?subject=Monitor setup">[% "support" | email %]</a> for help.
-    </p>
+            <p>
+                Email <a href="mailto:[% " support" | email %]?subject=Monitor setup">[% "support" | email %]</a> for
+                help.
+            </p>
 
-    </div>
+        </div>
 
-    [% ELSE %]
+        [% ELSE %]
 
-    <div class="alert alert-success">
-    <p>You have accepted the monitor registration to your account.</p>
-    </div>
+        <div class="alert alert-success">
+            <p>You have accepted the monitor registration to your account.</p>
+        </div>
 
-    [% PROCESS tpl/monitors/confirm_status.html, bare = 1 %]
+        <p>
+            [% PROCESS tpl/monitors/confirm_status.html, bare = 1 %]
+        </p>
 
-    <p>
-    <a href="[% combust.manage_url('/manage/monitors/') %]">Monitor list</a>
-    </p>
+        <p>
+            <a href="[% combust.manage_url('/manage/monitors/') %]">Monitor list</a>
+        </p>
 
-    [% END %]
+        [% END %]
 
-    <p>
-    <br><small> (request id [% combust.request_id %], accept)</small>
-    </p>
+        <p>
+            <br><small> (request id [% combust.request_id %], accept)</small>
+        </p>
 
     </div>
 

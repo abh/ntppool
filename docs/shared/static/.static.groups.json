@@ -24,8 +24,8 @@
   },
   "manage.js": {
       "files": [
-        "js/ntppool.js",
-        "cdn/libs/htmx/2.0.4/htmx.min.js"
+          "cdn/libs/htmx/2.0.4/htmx.min.js",
+          "js/ntppool.js"
       ],
   },
   "admin.js": {

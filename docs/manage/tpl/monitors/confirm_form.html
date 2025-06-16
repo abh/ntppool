@@ -3,125 +3,122 @@
 <div class="row">
     <div class="col-md-6">
 
-    <h3>Confirm Monitor information</h3>
+        <h3>Confirm Monitor information</h3>
 
-    [% IF error OR code > 299 %]
+        [% IF error OR code > 299 %]
 
-    [% IF code != 404 %]
-    <div class="error">
-    [% error | html %]
-    </div>
-    [% END %]
+        [% IF code != 404 %]
+        <div class="error">
+            [% error | html %]
+        </div>
+        [% END %]
 
-    <div>
+        <div>
 
-    <p>
-    [% IF code == 404 %]
-    Confirmation code not found.
-    [% ELSIF code == 400 %]
-    Bad request.
-    [% ELSIF code == 409 %]
-    A monitor with this IP address already exists.
-    [% ELSIF code == 410 %]
-    Request has been completed or cancelled.
-    [% ELSIF code == 417 %]
-    The monitor is not in the correct state to be confirmed.
-    [% END %]
-    </p>
+            <p>
+                [% IF code == 404 %]
+                Confirmation code not found.
+                [% ELSIF code == 400 %]
+                Bad request.
+                [% ELSIF code == 409 %]
+                A monitor with this IP address already exists.
+                [% ELSIF code == 410 %]
+                Request has been completed or cancelled.
+                [% ELSIF code == 417 %]
+                The monitor is not in the correct state to be confirmed.
+                [% END %]
+            </p>
 
-    </div>
+        </div>
 
-    [% END %]
+        [% END %]
 
-    <p>
-    [% data.precheck.message | html %]
-    </p>
-    <p>
-<code>
+        <p>
+            [% data.precheck.message | html %]
+        </p>
+        <p>
+            <code>
 [% # USE Dumper; Dumper.dump_html(data) %]
 </code>
-    </p>
+        </p>
 
-    <form id="monitor-form"
-        action="/manage/monitors/confirm/[% validation_token | html %]" method="post" accept-charset="utf-8">
-        <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
-        <input type="hidden" name="a" value="[% account.id_token %]" />
+        <form id="monitor-form" action="/manage/monitors/confirm/[% validation_token | html %]" method="post"
+            accept-charset="utf-8">
+            <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
+            <input type="hidden" name="a" value="[% account.id_token %]" />
 
-        [% IF data.tls_name || data.precheck.monitors.0.tls_name %]
-        <div class="form-floating">
-            <input type="text" class="form-control" name="tlsname"
-                value="[% data.tls_name || data.precheck.monitors.0.tls_name | html %]"
-                id="tlsname" maxlength="65" disabled>
-            <label id="tlsname-help" class="form-label" for="tlsname">Existing Monitor</label>
-        </div>
-        [% END %]
-
-
-        <div class="form-floating">
-            <input type="text" class="form-control" name="ip4"
-                value="[% data.ip4 | html %]"
-                id="ip4" maxlength="65" disabled>
-            <label id="ip4-help" class="form-label" for="ip4">IPv4 address</label>
-        </div>
-
-        <div class="form-floating">
-            <input type="text" class="form-control" name="ip6"
-                value="[% data.ip6 | html %]"
-                id="ip6" maxlength="65" disabled>
-            <label id="ip6-help" class="form-label" for="ip6">IPv6 address</label>
-        </div>
-
-        <div class="form-floating">
-            <input type="text" class="form-control" name="client"
-                value="[% data.client | html %]"
-                id="client" maxlength="65" disabled>
-            <label id="client-help" class="form-label" for="client">Client</label>
-        </div>
-
-        [% IF data.name %]
-        <div class="form-floating">
-            <input type="text" class="form-control" name="name"
-                value="[% data.name | html %]"
-                id="name" maxlength="65" disabled>
-            <label id="client-help" class="form-label" for="name">Name</label>
-        </div>
-        [% END %]
-
-        [% IF data.locations %]
-        <div class="form-floating">
-            <select name="location_code" class="form-select form-control" aria-label="Location code prefix">
-            [% first = 1;
-               IF location_code;
-                  first = 0;
-               END;
-            %]
-            [% FOR locode = data.locations %]
-                <option [% IF (first OR (location_code == locode.Code)); "selected"; END %] value="[% locode.Code | html %]">[% locode.Code | html %] ([% locode.Name | html %])</option>
-                [% first = 0 %]
+            [% IF data.tls_name || data.precheck.monitors.0.tls_name %]
+            <div class="form-floating">
+                <input type="text" class="form-control" name="tlsname"
+                    value="[% data.tls_name || data.precheck.monitors.0.tls_name | html %]" id="tlsname" maxlength="65"
+                    disabled>
+                <label id="tlsname-help" class="form-label" for="tlsname">Existing Monitor</label>
+            </div>
             [% END %]
-            </select>
-            <label id="location_code-help" class="form-label" for="location_code">Location code prefix</label>
 
-            [% IF errors.location_code %]
+
+            <div class="form-floating">
+                <input type="text" class="form-control" name="ip4" value="[% data.ip4 | html %]" id="ip4" maxlength="65"
+                    disabled>
+                <label id="ip4-help" class="form-label" for="ip4">IPv4 address</label>
+            </div>
+
+            <div class="form-floating">
+                <input type="text" class="form-control" name="ip6" value="[% data.ip6 | html %]" id="ip6" maxlength="65"
+                    disabled>
+                <label id="ip6-help" class="form-label" for="ip6">IPv6 address</label>
+            </div>
+
+            <div class="form-floating">
+                <input type="text" class="form-control" name="client" value="[% data.client | html %]" id="client"
+                    maxlength="65" disabled>
+                <label id="client-help" class="form-label" for="client">Client</label>
+            </div>
+
+            [% IF data.name %]
+            <div class="form-floating">
+                <input type="text" class="form-control" name="name" value="[% data.name | html %]" id="name"
+                    maxlength="65" disabled>
+                <label id="client-help" class="form-label" for="name">Name</label>
+            </div>
+            [% END %]
+
+            [% IF data.locations %]
+            <div class="form-floating">
+                <select name="location_code" class="form-select form-control" aria-label="Location code prefix">
+                    [% first = 1;
+                    IF location_code;
+                    first = 0;
+                    END;
+                    %]
+                    [% FOR locode = data.locations %]
+                    <option [% IF (first OR (location_code==locode.Code)); "selected" ; END %]
+                        value="[% locode.Code | html %]">[% locode.Code | html %] ([% locode.Name | html %])</option>
+                    [% first = 0 %]
+                    [% END %]
+                </select>
+                <label id="location_code-help" class="form-label" for="location_code">Location code prefix</label>
+
+                [% IF errors.location_code %]
                 <div class="error">
                     <span class="badge badge-info">Error</span>
                     [% errors.location_code | html %]
                 </div>
+                [% END %]
+
+            </div>
             [% END %]
 
-        </div>
-        [% END %]
-
-        [% IF data.precheck.code != "None" %]
-        <p class="mt-2">
-            [% IF data.precheck.code == "ResetName" %]
+            [% IF data.precheck.code != "None" %]
+            <p class="mt-2">
+                [% IF data.precheck.code == "ResetName" %]
                 Continuing will disable the existing monitor
                 and create a new monitor and API key.
 
-            [% ELSIF data.precheck.code == "ResetKey" %]
+                [% ELSIF data.precheck.code == "ResetKey" %]
                 Continuing will reset the API key and
                 configuration for the monitor.
-            [% END %]
+                [% END %]
 
                 <em class="mt-2 d-block">
                     If you get an error on the next page, please
@@ -129,27 +126,24 @@
                 </em>
                 <small>([% data.precheck.code %])</small>
             </p>
-        </p>
-        [% END %]
+            </p>
+            [% END %]
 
-        <p><input type="submit"
-            [% (code != 200 OR error) ? "disabled" : "" %]
-            class="btn btn-primary"
-            value="[% data.precheck.code == "None" ? 'Confirm' : 'Continue' %]"
-            ></p>
+            <p><input type="submit" [% (code !=200 OR error) ? "disabled" : "" %] class="btn btn-primary"
+                    value="[% data.precheck.code == " None" ? 'Confirm' : 'Continue' %]"></p>
         </form>
 
 
-    <p>
-        Email <a href="mailto:[% "support" | email %]?subject=Monitor setup">[% "support" | email %]</a> for help.
-    </p>
+        <p>
+            Email <a href="mailto:[% " support" | email %]?subject=Monitor setup">[% "support" | email %]</a> for help.
+        </p>
 
 
-    <p>
-    <small>([% IF trace_id -%]
-    <code>[%- trace_id | html %]</code>,
-    [% END %][% code | html %], form)</small>
-    </p>
+        <p>
+            <small>([% IF trace_id -%]
+                <code>[%- trace_id | html %]</code>,
+                [% END %][% code | html %], form)</small>
+        </p>
 
     </div>
 
@@ -157,16 +151,16 @@
         <h3>Monitor instructions</h3>
 
         <p>Monitors should run on servers with good connectivity 24/7,
-           and not running NTP service for the NTP Pool on the same
-           hardware.
+            and not running NTP service for the NTP Pool on the same
+            hardware.
         </p>
         <p>
-           The software is available for FreeBSD and Linux
-           (arm64, amd64 and 386).
+            The software is available for FreeBSD and Linux
+            (arm64, amd64 and 386).
         </p>
 
         <p>For help or other platforms, please email
-        <a href="mailto:[% "support" | email %]">[% "support" | email %]</a>.
+            <a href="mailto:[% " support" | email %]">[% "support" | email %]</a>.
 
     </div>
 
