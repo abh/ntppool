@@ -1154,6 +1154,13 @@ alter table monitors
   drop api_key_id;
 
 
+#140
+alter table api_keys_monitors
+  drop foreign key api_keys_monitors_api_keys_fk;
+
+alter table api_keys_monitors
+  add constraint `api_keys_monitors_api_keys_fk` foreign key (`api_key_id`) references api_keys (`id`) ON DELETE CASCADE;
+
 #todo
 
 - reverse the api_key_id in monitors relationship to be a column in
