@@ -3,7 +3,7 @@ use v5.30.0;
 use warnings;
 use parent qw(NTPPool::Control::Manage);
 use NP::Model;
-use Combust::Constant qw(OK NOT_FOUND FORBIDDEN);
+use Combust::Constant qw(OK NOT_FOUND FORBIDDEN SERVER_ERROR);
 use JSON              ();
 use MIME::Base64      qw(encode_base64);
 use Data::Dump        qw(pp);
@@ -15,6 +15,33 @@ use experimental             qw( defer );
 use Syntax::Keyword::Dynamically;
 
 my $json = JSON::XS->new->pretty->utf8->convert_blessed;
+
+sub _map_api_error_code {
+    my ($self, $data, $context) = @_;
+    
+    my $api_code = $data->{code};
+    return $api_code if $api_code == 200;
+    
+    $self->cache_control('private, max-age=0, no-cache');
+    $self->tpl_param('error', $data->{error}) unless $self->tpl_param('error');
+    $self->tpl_param('code', $api_code);
+    
+    if ($api_code == 401) {
+        warn "API unauthorized access in $context: user " . ($self->user ? $self->user->username : 'none');
+        return 401;
+    }
+    elsif ($api_code == 404) {
+        return NOT_FOUND;
+    }
+    elsif ($api_code >= 400 && $api_code < 500) {
+        return FORBIDDEN;
+    }
+    elsif ($api_code >= 500) {
+        return SERVER_ERROR;
+    }
+    
+    return NOT_FOUND;  # fallback
+}
 
 sub manage_dispatch {
     my $self = shift;
@@ -91,8 +118,7 @@ sub render_monitor {
     );
 
     if ($data->{code} != 200) {
-        $self->cache_control('private, max-age=0, no-cache');
-        return NOT_FOUND;
+        return $self->_map_api_error_code($data, "render_monitor for $name");
     }
 
     my @monitor = _monitor_list($data->{data}->{Monitors} || {});
@@ -206,8 +232,7 @@ sub render_monitors {
     );
 
     if ($data->{code} >= 400) {
-        $self->tpl_param('error', $data->{error});
-        $self->tpl_param('code',  $data->{code});
+        return $self->_map_api_error_code($data, "render_monitors");
     }
 
     my @monitors = _monitor_list($data->{data}->{Monitors} || {});
@@ -234,8 +259,7 @@ sub render_admin_list {
     );
 
     if ($data->{code} >= 400) {
-        $self->tpl_param('error', $data->{error});
-        $self->tpl_param('code',  $data->{code});
+        return $self->_map_api_error_code($data, "render_admin_list");
     }
 
     my @monitors = _monitor_list($data->{data}->{Monitors} || {});
@@ -266,9 +290,7 @@ sub render_admin_status {
         }
     );
     if ($data->{code} >= 400) {
-        $self->tpl_param('error', $data->{error});
-
-        return $self->render_monitor();
+        return $self->_map_api_error_code($data, "render_admin_status");
     }
 
     # no content, monitor was deleted
