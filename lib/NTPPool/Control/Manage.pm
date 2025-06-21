@@ -509,9 +509,9 @@ sub monitor_eligibility {
     # Default safe values if account not available
     unless ($self->current_account) {
         return $self->{_monitor_eligibility} = {
-            enabled      => 0,
-            can_register => 0,
-            server_count => 0,
+            enabled       => 0,
+            can_register  => 0,
+            monitor_count => 0,
         };
     }
 
@@ -525,18 +525,18 @@ sub monitor_eligibility {
 
     if ($data->{code} == 200) {
         return $self->{_monitor_eligibility} = $data->{data}
-          || {enabled      => 0,
-              can_register => 0,
-              server_count => 0,
+          || {enabled       => 0,
+              can_register  => 0,
+              monitor_count => 0,
           };
     }
     elsif ($data->{code} == 404) {
 
         # Account not found - return safe defaults
         return $self->{_monitor_eligibility} = {
-            enabled      => 0,
-            can_register => 0,
-            server_count => 0,
+            enabled       => 0,
+            can_register  => 0,
+            monitor_count => 0,
         };
     }
     else {
@@ -544,10 +544,10 @@ sub monitor_eligibility {
         warn "Monitor eligibility API error: "
           . ($data->{status_line} || 'unknown error');
         return $self->{_monitor_eligibility} = {
-            enabled      => 0,
-            can_register => 0,
-            server_count => 0,
-            error        => 'api_unavailable'
+            enabled       => 0,
+            can_register  => 0,
+            monitor_count => 0,
+            error         => 'api_unavailable'
         };
     }
 }

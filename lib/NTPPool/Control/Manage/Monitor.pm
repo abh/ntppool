@@ -60,7 +60,7 @@ sub manage_dispatch {
     if ($self->request->uri =~ m!^/manage/monitors/?$!) {
 
         # If account has existing monitors, show the list
-        if ($self->monitor_eligibility->{server_count} > 0) {
+        if ($self->monitor_eligibility->{monitor_count}) {
             return $self->render_monitors;
         }
 
