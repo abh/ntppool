@@ -1161,6 +1161,18 @@ alter table api_keys_monitors
 alter table api_keys_monitors
   add constraint `api_keys_monitors_api_keys_fk` foreign key (`api_key_id`) references api_keys (`id`) ON DELETE CASCADE;
 
+#141
+alter table monitors change name hostname varchar(255) not null default '';
+alter table monitor_registrations change name hostname varchar(256) not null default '';
+
+drop view if exists monitors_data;
+create view monitors_data as
+select id, account_id, type,
+   IF(type="score", hostname, SUBSTRING_INDEX(tls_name,'.',1)) as name,
+   ip,  ip_version, status, client_version, last_seen, last_submit
+from monitors
+where tls_name not like '%.system';
+
 #todo
 
 - reverse the api_key_id in monitors relationship to be a column in
