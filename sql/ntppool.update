@@ -1043,8 +1043,7 @@ create table monitor_registrations (
     -- generated, provide to the user to authenticate to the api server
     verification_token varchar(32) NOT NULL UNIQUE,
 
-    -- temporary storage for delivery to the client
-    -- (todo: come up with something better)
+    -- dropped below
     api_token          text,
 
     ip                 varchar(39) NOT NULL,
@@ -1173,10 +1172,24 @@ select id, account_id, type,
 from monitors
 where tls_name not like '%.system';
 
+#142
+-- Modify flags column in accounts table for per-account settings
+alter table accounts modify flags json null;
+
+-- Add default system settings for monitor eligibility
+insert ignore into system_settings (`key`, `value`, created_on)
+values ('monitor_server_verification_months', '18', NOW());
+
+insert ignore into system_settings (`key`, `value`, created_on)
+values ('monitor_global_max', '0', NOW());
+-- Note: 0 means no limit
+
 #todo
 
-- reverse the api_key_id in monitors relationship to be a column in
-  api_keys similar to user / account ids
+
+- drop api_key in monitors table when it's empty
+
+
 - add check constraints in monitors
   - make sure ip / ip_version make sense (or in postgres just use one column)
   - make sure status + is_current + deleted_on are in sync

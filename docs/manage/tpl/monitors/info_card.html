@@ -1,8 +1,25 @@
 <div class="col">
     <div class="card">
 
+        [% UNLESS show_details %]
+        [% details_link = combust.manage_url('/manage/monitors/monitor',
+                            a    => mon.Account.IDToken,
+                            name => mon.TLSName,
+                        )
+        %]
+        [% END %]
+
         <div class="card-header">
-            <h5 class="card-title">[% mon.display_name || mon.TLSName | html %]</h5>
+            <h5 class="card-title">
+                [% IF show_details %]
+                    [% mon.display_name || mon.TLSName | html %]
+                [% ELSE %]
+                <a href="[% details_link %]">
+                    [% mon.display_name || mon.TLSName | html %]
+                </a>
+                [% END %]
+            </h5>
+            [% IF mon.Hostname %][% mon.Hostname | html %][% END %]
         </div>
 
 
@@ -43,7 +60,7 @@
 
             [% IF mon.ClientVersion %]
             <li class="list-group-item">
-                Version: [% mon.ClientVersion | html %]<br>
+                <small>[% mon.ClientVersion | html %]</small><br>
             </li>
 
             [% END %]
@@ -52,13 +69,7 @@
             [% UNLESS show_details %]
 
             <div class="card-footer">
-                <a class="card-link" href="[%
-                    combust.manage_url('/manage/monitors/monitor', 
-                        a    => mon.Account.IDToken,
-                        b    => 'cx',
-                        name => mon.TLSName,
-                    )
-        %]">See details [% mon.Account.IDToken %]</a>
+                <a class="card-link" href="[% details_link %]">See details</a>
             </div>
             [% END %]
 

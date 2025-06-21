@@ -75,11 +75,11 @@
                 <label id="client-help" class="form-label" for="client">Client</label>
             </div>
 
-            [% IF data.name %]
+            [% IF data.hostname %]
             <div class="form-floating">
-                <input type="text" class="form-control" name="name" value="[% data.name | html %]" id="name"
-                    maxlength="65" disabled>
-                <label id="client-help" class="form-label" for="name">Name</label>
+                <input type="text" class="form-control" name="hostname" value="[% data.hostname | html %]" id="hostname"
+                    maxlength="100" disabled>
+                <label id="hostname-help" class="form-label" for="hostname">Hostname</label>
             </div>
             [% END %]
 

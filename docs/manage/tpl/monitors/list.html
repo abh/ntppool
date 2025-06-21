@@ -30,9 +30,26 @@
 </div>
 
     [% UNLESS admin_list %]
-    <p>
-        <a href="[% combust.manage_url('/manage/monitors/new') %]">Setup a new monitor</a>
-    </p>
+        [% eligibility = combust.monitor_eligibility %]
+        [% IF eligibility.can_register %]
+            <p>
+                <a href="[% combust.manage_url('/manage/monitors/new') %]" class="btn btn-primary">Setup a new monitor</a>
+            </p>
+        [% ELSIF eligibility.enabled %]
+            [% IF eligibility.global_limit_reached %]
+                <div class="alert alert-warning">
+                    <p>Monitor registration is temporarily unavailable due to the configured global maximum number of monitors.</p>
+                </div>
+            [% ELSE %]
+                <div class="alert alert-info">
+                    <p>
+                        You have reached your monitor limit.
+                        Email <a href="mailto:[% "support" | email %]">[% "support" | email %]</a>
+                        if you need help.
+                    </p>
+                </div>
+            [% END %]
+        [% END %]
     [% END %]
 
 </div>

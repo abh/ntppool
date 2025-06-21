@@ -18,16 +18,17 @@ my $json = JSON::XS->new->pretty->utf8->convert_blessed;
 
 sub _map_api_error_code {
     my ($self, $data, $context) = @_;
-    
+
     my $api_code = $data->{code};
     return $api_code if $api_code == 200;
-    
+
     $self->cache_control('private, max-age=0, no-cache');
     $self->tpl_param('error', $data->{error}) unless $self->tpl_param('error');
-    $self->tpl_param('code', $api_code);
-    
+    $self->tpl_param('code',  $api_code);
+
     if ($api_code == 401) {
-        warn "API unauthorized access in $context: user " . ($self->user ? $self->user->username : 'none');
+        warn "API unauthorized access in $context: user "
+          . ($self->user ? $self->user->username : 'none');
         return 401;
     }
     elsif ($api_code == 404) {
@@ -39,8 +40,8 @@ sub _map_api_error_code {
     elsif ($api_code >= 500) {
         return SERVER_ERROR;
     }
-    
-    return NOT_FOUND;  # fallback
+
+    return NOT_FOUND;    # fallback
 }
 
 sub manage_dispatch {
@@ -58,10 +59,13 @@ sub manage_dispatch {
 
     if ($self->request->uri =~ m!^/manage/monitors/?$!) {
 
-        return $self->redirect($self->manage_url('/manage/monitors/new'))
-          unless $self->account_monitor_count > 0;
+        # If account has existing monitors, show the list
+        if ($self->monitor_eligibility->{server_count} > 0) {
+            return $self->render_monitors;
+        }
 
-        return $self->render_monitors;
+        # Otherwise redirect to instructions page
+        return $self->redirect($self->manage_url('/manage/monitors/new'));
     }
 
     if (my ($token, $status_check) =

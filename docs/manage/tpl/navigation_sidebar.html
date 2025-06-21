@@ -58,9 +58,14 @@
     </li>
     [% END %]
 
-    [% IF combust.system_setting('monitors') AND combust.account_monitor_count > 0 %]
+    [% IF combust.system_setting('monitors') AND combust.monitor_eligibility.enabled %]
     <li class="nav-item">
-        <a class="nav-link [% page.is_monitors ? " active" : "" %]" href="[% combust.manage_url('/manage/monitors') %]">Monitors</a>
+        <a class="nav-link [% page.is_monitors ? " active" : "" %]" href="[% combust.manage_url('/manage/monitors') %]">
+            Monitors
+            [% IF combust.monitor_eligibility.can_register %]
+                <span class="badge badge-success">+</span>
+            [% END %]
+        </a>
     </li>
     [% END %]
 

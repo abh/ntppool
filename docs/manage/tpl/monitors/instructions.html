@@ -1,36 +1,95 @@
 [% page.js.push(combust.static_group("manage.js")) %]
 
 <div class="row">
-    <div class="col-md-9">
+    <div class="col-md-12">
 
         <h3>Monitor setup</h3>
 
+        [% eligibility = combust.monitor_eligibility %]
+
+        [% IF eligibility.can_register %]
         <p>
-            The NTP Pool's monitoring infrastructure relies on
-            dedicated volunteers from our community who run
-            monitoring agents around the world. To ensure system
-            reliability and maintain balanced coverage, our
-            monitoring program operates by invitation only. If
-            you're an active participant in the NTP Pool
-            community, you can learn more about contributing
-            through discussions at
-            <a href="https://community.ntppool.org">
-                community.ntppool.org
-            </a>.
+            You're eligible to set up a monitoring agent! The NTP Pool's monitoring
+            infrastructure relies on dedicated volunteers from our community who run
+            monitoring agents around the world.
         </p>
 
         <p>
-            To install the monitoring agent, add the
-            <a href="https://builds.ntppool.dev/repo/">
-                yum/dnf or apt/dpkg repository</a> and install
-            the <code>ntppool-agent</code> package.
+            <strong>Installation and setup commands (for systemd managed systems)</strong>.
+            If you are using a different platform, <a href="mailto:[% " support" | email %]">
+            email us</a> or post on the <a href="https://community.ntppool.org/c/dev/5">community</a>
+            development forum.
         </p>
 
+        <div class="alert alert-info">
+            <p><strong>Step 1:</strong> Add the <strong><a href="https://builds.ntppool.dev/repo/">package repository</a></strong></p>
+
+            <p><strong>Step 2:</strong> Install the agent</p>
+            <p>Ubuntu, Debian:</p>
+            <pre><code>sudo apt install -y ntppool-agent</code></pre>
+
+            <p>Enterprise Linux, Fedora, etc:</p>
+            <pre><code>sudo yum install -y ntppool-agent</code></pre>
+
+            <p><strong>Step 3:</strong> Enable and start the service</p>
+            <pre><code>sudo systemctl enable --now ntppool-agent@[% combust.deployment_mode %]</code></pre>
+
+            <p><strong>Step 4:</strong> Monitor the logs (in one terminal window)</p>
+            <pre><code>sudo journalctl -u ntppool-agent@\* -f</code></pre>
+
+            <p><strong>Step 5:</strong> Setup the agent (in another terminal window on the same server)</p>
+            <pre><code>sudo -u ntpmon ntppool-agent setup -e [% combust.deployment_mode %] -a [% combust.current_account.id_token %]</code></pre>
+
+            <p><strong>Step 6:</strong> Open the provided link from the setup process to authenticate the agent to your account</p>
+        </div>
+
         <p>
-            Further instructions can be found in the
-            (invitation-only) monitoring category on
-            the community site.
+            Further instructions can be found in the monitoring category on
+            <a href="https://community.ntppool.org">community.ntppool.org</a>.
         </p>
+        [% ELSIF eligibility.enabled %]
+        [% IF eligibility.global_limit_reached %]
+        <div class="alert alert-warning">
+            <h4>Monitor registration temporarily unavailable</h4>
+            <p>
+                Monitor registration is temporarily unavailable due to the configured global maximum number of monitors.
+                Please try again later or check
+                <a href="https://community.ntppool.org">community.ntppool.org</a>
+                for updates.
+            </p>
+        </div>
+        [% ELSE %]
+        <div class="alert alert-info">
+            <h4>Monitor limit reached</h4>
+            <p>
+                You have reached your monitor limit for this account.
+                Email <a href="mailto:[% " support" | email %]">[% "support" | email %]</a> if you need help.
+            </p>
+        </div>
+        [% END %]
+
+        <p>
+            You can view and manage your existing monitors on the
+            <a href="[% combust.manage_url('/manage/monitors') %]">monitors page</a>.
+        </p>
+        [% ELSE %]
+        <div class="alert alert-info">
+            <h4>Monitor eligibility</h4>
+            <p>
+                Monitor management is available for accounts with existing monitors
+                or servers that have been verified for [% eligibility.server_months ? eligibility.server_months _
+                (eligibility.server_months == 1 ? " month" : " months") : "a meaningful length of time" %].
+            </p>
+            <p>
+                If you're an active participant in the NTP Pool community,
+                you can learn more about contributing through discussions at
+                <a href="https://community.ntppool.org">community.ntppool.org</a>.
+            </p>
+            <p>
+                <a href="[% combust.manage_url('/manage/servers') %]">Manage your servers</a>.
+            </p>
+        </div>
+        [% END %]
 
 
     </div>

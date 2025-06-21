@@ -14,6 +14,7 @@ use Math::BaseCalc       qw();
 use Math::Random::Secure qw(irand);
 use URI::URL             ();
 use NP::UA;
+use NP::IntAPI qw(int_api);
 use OpenTelemetry::Trace;
 use OpenTelemetry -all;
 use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
@@ -33,9 +34,11 @@ sub init {
     $self->tpl_params->{page} ||= {};
 
     if ($self->is_logged_in) {
-        $self->request->env->{REMOTE_USER} = $self->user->username . '|' . $self->user->id_token;
+        $self->request->env->{REMOTE_USER} =
+          $self->user->username . '|' . $self->user->id_token;
 
-        my $span = OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
+        my $span =
+          OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
 
         if (my $account = $self->current_account) {
             $self->tpl_param('account' => $account);
@@ -71,7 +74,7 @@ sub current_account {
 
     if (my $account_token = $self->req_param('a')) {
         my $account_id = NP::Model::Account->token_id($account_token);
-        my $account    = $account_id ? NP::Model->account->fetch(id => $account_id) : undef;
+        my $account = $account_id ? NP::Model->account->fetch(id => $account_id) : undef;
         if ($account) {
             return $self->{_current_account} = $account
               if $account->can_view($self->user);
@@ -295,8 +298,8 @@ sub handle_login {
 
         my $email =
           Email::Stuffer->from(NP::Email::address("sender"))
-          ->reply_to(NP::Email::address("support"))->subject("NTP Pool user deletion cancelled")
-          ->text_body($msg);
+          ->reply_to(NP::Email::address("support"))
+          ->subject("NTP Pool user deletion cancelled")->text_body($msg);
 
         $email->to($user->email);
         NP::Email::sendmail($email);
@@ -379,9 +382,9 @@ sub _get_auth0_user {
 
     # warn "token data: ", pp($data);
 
-    #$resp =
-    #  $self->ua->get("https://${auth0_domain}/userinfo/?access_token=" . $data->{access_token});
-    #$resp->is_success or return undef, "Could not fetch user data";
+#$resp =
+#  $self->ua->get("https://${auth0_domain}/userinfo/?access_token=" . $data->{access_token});
+#$resp->is_success or return undef, "Could not fetch user data";
 
     my $cache = Combust::Cache->new();
 
@@ -438,8 +441,8 @@ sub login_url {
 
     my ($auth0_domain, $auth0_client, $auth0_secret) = $self->_auth0_config();
 
- # https://auth0.com/docs/get-started/authentication-and-authorization-flow/add-login-auth-code-flow
- # https://community.auth0.com/t/invalid-access-token-payload-jwt-encrypted-with-a256gcm/77893
+# https://auth0.com/docs/get-started/authentication-and-authorization-flow/add-login-auth-code-flow
+# https://community.auth0.com/t/invalid-access-token-payload-jwt-encrypted-with-a256gcm/77893
 
     my $login_url = URI->new('https://' . $auth0_domain . "/authorize");
     $login_url->query_form(
@@ -492,9 +495,61 @@ sub account_monitor_count {
       unless $self->current_account;    # if we are being invited to a new account
 
     my $monitor_count =
-      NP::Model->monitor->get_objects_count(query => [account_id => $self->current_account->id]);
+      NP::Model->monitor->get_objects_count(
+          query => [account_id => $self->current_account->id]);
 
     return $self->{_account_monitor_count} = $monitor_count;
+}
+
+sub monitor_eligibility {
+    my $self = shift;
+    return $self->{_monitor_eligibility}
+      if exists $self->{_monitor_eligibility};
+
+    # Default safe values if account not available
+    unless ($self->current_account) {
+        return $self->{_monitor_eligibility} = {
+            enabled      => 0,
+            can_register => 0,
+            server_count => 0,
+        };
+    }
+
+    my $data = int_api(
+        'get',
+        'monitor/manage/eligibility',
+        {   a    => $self->current_account->id_token,
+            user => $self->plain_cookie($self->user_cookie_name),
+        }
+    );
+
+    if ($data->{code} == 200) {
+        return $self->{_monitor_eligibility} = $data->{data}
+          || {enabled      => 0,
+              can_register => 0,
+              server_count => 0,
+          };
+    }
+    elsif ($data->{code} == 404) {
+
+        # Account not found - return safe defaults
+        return $self->{_monitor_eligibility} = {
+            enabled      => 0,
+            can_register => 0,
+            server_count => 0,
+        };
+    }
+    else {
+        # API error - log and return safe defaults for degraded experience
+        warn "Monitor eligibility API error: "
+          . ($data->{status_line} || 'unknown error');
+        return $self->{_monitor_eligibility} = {
+            enabled      => 0,
+            can_register => 0,
+            server_count => 0,
+            error        => 'api_unavailable'
+        };
+    }
 }
 
 1;
