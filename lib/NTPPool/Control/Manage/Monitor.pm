@@ -171,6 +171,18 @@ sub render_confirm_monitor {
             return OK, $self->evaluate_template('tpl/monitors/confirm_status.html');
         }
 
+        # Check if registration is already completed or accepted
+        if ($data->{code} == 201    # StatusCreated - monitor has been setup
+            || $data->{code} == 202 # StatusAccepted - user accepted registration; waiting for monitor to confirm
+            || (   $data->{data}
+                && $data->{data}->{status}
+                && $data->{data}->{status} ne 'pending')
+          )
+        {
+            # Show status page instead of form for non-pending registrations
+            return OK, $self->evaluate_template('tpl/monitors/confirm_status.html');
+        }
+
         return OK, $self->evaluate_template('tpl/monitors/confirm_form.html');
     }
 

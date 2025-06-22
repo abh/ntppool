@@ -5,7 +5,16 @@
 
         <h3>Confirm Monitor information</h3>
 
-        [% IF error OR code > 299 %]
+        [% IF data.status AND data.status != 'pending' %]
+        <div class="alert alert-info">
+            <p>This monitor registration has already been [% data.status | html %].</p>
+            [% IF data.tls_name %]
+            <p><a href="[% combust.manage_url('/manage/monitors/monitor', name => data.tls_name) %]" class="btn btn-primary">View Monitor</a></p>
+            [% ELSE %]
+            <p><a href="[% combust.manage_url('/manage/monitors/') %]" class="btn btn-primary">Monitor List</a></p>
+            [% END %]
+        </div>
+        [% ELSIF error OR code > 299 %]
 
         [% IF code != 404 %]
         <div class="error">
@@ -33,6 +42,7 @@
 
         [% END %]
 
+        [% UNLESS data.status AND data.status != 'pending' %]
         <p>
             [% data.precheck.message | html %]
         </p>
@@ -144,6 +154,7 @@
                 <code>[%- trace_id | html %]</code>,
                 [% END %][% code | html %], form)</small>
         </p>
+        [% END %]
 
     </div>
 
