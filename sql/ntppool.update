@@ -1184,6 +1184,17 @@ insert ignore into system_settings (`key`, `value`, created_on)
 values ('monitor_global_max', '0', NOW());
 -- Note: 0 means no limit
 
+#143
+-- Extend server_scores.status enum to include 'candidate' state
+ALTER TABLE server_scores
+MODIFY COLUMN status enum('new','candidate','testing','active') NOT NULL DEFAULT 'new';
+
+-- Add constraint tracking columns to server_scores
+ALTER TABLE server_scores
+ADD COLUMN constraint_violation_type varchar(50) DEFAULT NULL,
+ADD COLUMN constraint_violation_since datetime DEFAULT NULL,
+ADD INDEX idx_constraint_violation (constraint_violation_type, constraint_violation_since);
+
 #todo
 
 
