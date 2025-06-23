@@ -1196,7 +1196,8 @@ ADD COLUMN constraint_violation_since datetime DEFAULT NULL,
 ADD INDEX idx_constraint_violation (constraint_violation_type, constraint_violation_since);
 
 #144
-select flags from accounts
+update accounts
+SET flags = JSON_SET(flags, '$.monitor_enabled', true)
 where id in
   (select account_id from monitors
    where account_id is not null group by account_id
