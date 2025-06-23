@@ -1195,6 +1195,19 @@ ADD COLUMN constraint_violation_type varchar(50) DEFAULT NULL,
 ADD COLUMN constraint_violation_since datetime DEFAULT NULL,
 ADD INDEX idx_constraint_violation (constraint_violation_type, constraint_violation_since);
 
+#144
+select flags from accounts
+where id in
+  (select account_id from monitors
+   where account_id is not null group by account_id
+  );
+
+update monitors
+  set status = 'deleted', is_current = 0, deleted_on = now()
+  where
+    status != 'deleted' and tls_name is null
+    and type = 'monitor' and created_on < '2025-06-01';
+
 #todo
 
 
