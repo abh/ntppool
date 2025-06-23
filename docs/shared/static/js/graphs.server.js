@@ -229,12 +229,22 @@ function server_chart(div, data, options) {
         if (!data.monitors) { data.monitors = [] }
 
         var monitors = data.monitors.sort(function compareFn(a, b) {
-            if (a.status > b.status) {
-                return 1;
+            var statusOrder = {
+                'active': 0,
+                'testing': 1,
+                'candidate': 2,
+                'pending': 3,
+                'paused': 4,
+                'deleted': 5
+            };
+
+            var aStatusOrder = statusOrder[a.status] !== undefined ? statusOrder[a.status] : 999;
+            var bStatusOrder = statusOrder[b.status] !== undefined ? statusOrder[b.status] : 999;
+
+            if (aStatusOrder !== bStatusOrder) {
+                return aStatusOrder - bStatusOrder;
             }
-            if (b.status > a.status) {
-                return -1;
-            }
+
             if (a.type > b.type) {
                 return -1;
             } else if (b.type > a.type) {
