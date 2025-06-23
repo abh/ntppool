@@ -1,13 +1,14 @@
 { "common.css": {
-      "files": [ "css/fonts.css",
-                 "cdn/libs/bootstrap/5.3.3/css/bootstrap.min.css",
-                 "css/master.css",
-                 "css/content.css"
+      "files": [
+          "cdn/libs/bootstrap/5.3.7/css/bootstrap.css",
+          "css/fonts.css",
+          "css/main.css",
+          "css/content.css"
       ]
   },
   "common.js": {
       "files": [ "cdn/libs/jquery/3.7.1/jquery.min.js",
-                 "cdn/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"
+                 "cdn/libs/bootstrap/5.3.7/js/bootstrap.bundle.js"
                ]
   },
   "d3.js": {
@@ -24,7 +25,7 @@
   },
   "manage.js": {
       "files": [
-          "cdn/libs/htmx/2.0.4/htmx.min.js",
+          "cdn/libs/htmx/2.0.5/htmx.min.js",
           "js/ntppool.js"
       ],
   },

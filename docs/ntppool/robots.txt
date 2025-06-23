@@ -11,3 +11,6 @@ Disallow: /monitor/
 
 User-agent: PetalBot
 Disallow: /
+
+User-Agent: Claude-User
+Allow: /

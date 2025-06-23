@@ -224,7 +224,7 @@ function server_chart(div, data, options) {
         legend.css("margin-left", pad_w);
         legend.css("width", "50%");
         // legend.append('<span class="legend_header">Monitoring Station:</span>');
-        var table = $('<table>').addClass('legend table table-striped table-hover table-sm')
+        var table = $('<table>').addClass('table table-striped table-hover table-sm small border-bottom')
 
         if (!data.monitors) { data.monitors = [] }
 
@@ -269,8 +269,14 @@ function server_chart(div, data, options) {
                 else if (mon.status == "testing") {
                     rclass = "table-info";
                 }
-                else if (mon.status == "paused") {
+                else if (mon.status == "candidate") {
                     rclass = "table-secondary";
+                }
+                else if (mon.status == "paused") {
+                    rclass = "table-danger";
+                }
+                else if (mon.status == "deleted") {
+                    rclass = "table-danger";
                 }
 
                 var row = $('<tr>').addClass(rclass);
@@ -280,7 +286,7 @@ function server_chart(div, data, options) {
                 currentStatus = mon.status;
             }
 
-            var row = $('<tr>').addClass('legend').data('monitor_id', mon.id);
+            var row = $('<tr>').data('monitor_id', mon.id);
 
             var name = mon.name;
 
@@ -290,7 +296,7 @@ function server_chart(div, data, options) {
             if (mon.type == "score") {
                 if (mon.name == "recentmedian") {
                     // rclass = "table-primary";
-                    tclass = "active";
+                    tclass = "fw-bold";
                     name = "overall";
                 } else {
                     rclass = "table-secondary";
@@ -304,8 +310,9 @@ function server_chart(div, data, options) {
 
             }
 
-            row.append($('<td>').text(name).addClass(tclass)).addClass(rclass);
-            row.append($('<td>').text(mon.score).addClass(tclass)).addClass(rclass);
+            row.addClass(rclass);
+            row.append($('<td>').text(name).addClass(tclass));
+            row.append($('<td>').text(mon.score).addClass(tclass));
 
             // row.append($('<td>').text(mon.status));
             // row.append($('<td>').text(mon.type).addClass('legend').data('monitor_id', mon.id));

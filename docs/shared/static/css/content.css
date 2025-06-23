@@ -350,19 +350,39 @@ span.deletion {
   stroke-width: 2px
 }
 
-table.legend {
-  border-bottom: 1px dotted black;
-  font-size: small;
+/* Bootstrap table colors - force overrides due to CSS loading order */
+.table-success {
+  background-color: var(--bs-table-bg, #d1e7dd) !important;
 }
 
-table.legend .active {
-  font-weight: bold;
+.table-info {
+  background-color: var(--bs-table-bg, #cff4fc) !important;
+}
+
+.table-light {
+  background-color: var(--bs-table-bg, #f8f9fa) !important;
+}
+
+.table-secondary {
+  background-color: var(--bs-table-bg, #e2e3e5) !important;
+}
+
+/* Bootstrap table hover effect - force override */
+table.table-hover tbody tr:hover td,
+table.table-hover tbody tr:hover th {
+  background-color: rgba(0, 0, 0, .075) !important;
+}
+
+/* Bootstrap table padding - force override to match Bootstrap 4 */
+table.table td,
+table.table th {
+  padding: .75rem !important;
 }
 
 /* long explanation */
-.server_history_legend {
+/* .server_history_legend {
   font-size: 0.85em;
-}
+} */
 
 p.serverurls {
   font-size: 0.8em;
