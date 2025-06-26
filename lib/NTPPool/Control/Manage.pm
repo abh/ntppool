@@ -5,7 +5,8 @@ use NP::Model;
 use Combust::Constant qw(OK NOT_FOUND);
 use Socket            qw(inet_ntoa);
 use Socket6;
-use JSON::XS qw(encode_json decode_json);
+use JSON::XS   qw(encode_json decode_json);
+use Data::Dump qw(pp);
 use Net::DNS;
 use Crypt::JWT           qw(decode_jwt);
 use LWP::UserAgent       qw();
@@ -32,6 +33,12 @@ sub init {
     $self->cache_control('private');
 
     $self->tpl_params->{page} ||= {};
+
+    # For HTMX requests, return just fragments
+    if ($self->is_htmx) {
+        $self->tpl_param('page_style' => "none");
+        $self->tpl_param('bare'       => 1);
+    }
 
     if ($self->is_logged_in) {
         $self->request->env->{REMOTE_USER} =
@@ -540,6 +547,7 @@ sub monitor_eligibility {
         };
     }
     else {
+
         # API error - log and return safe defaults for degraded experience
         warn "Monitor eligibility API error: "
           . ($data->{status_line} || 'unknown error');
@@ -550,6 +558,76 @@ sub monitor_eligibility {
             error         => 'api_unavailable'
         };
     }
+}
+
+sub account_monitor_config {
+    my ($self, $account) = @_;
+
+    # Use passed account or fall back to current_account
+    $account ||= $self->current_account;
+    warn "DEBUG: account_monitor_config called, account: "
+      . ($account ? $account->id : 'NONE');
+
+    # Create a cache key that includes the account ID
+    my $cache_key = '_account_monitor_config_' . ($account ? $account->id : 'none');
+    warn "DEBUG: Cache key: $cache_key";
+
+    if (exists $self->{$cache_key}) {
+        warn "DEBUG: Returning cached config";
+        return $self->{$cache_key};
+    }
+
+    # Default values if account not available
+    unless ($account) {
+        warn "DEBUG: No account available, returning defaults";
+        return $self->{$cache_key} = {
+            monitor_enabled     => 0,
+            monitor_limit       => 3,
+            monitors_per_server => 1,
+        };
+    }
+
+    # Parse account flags from database-loaded account object
+    my $config = {};
+    warn "DEBUG: Account flags raw: " . ($account->flags || 'NULL');
+
+    if ($account->flags) {
+
+        # Check if flags is already a hash reference or a JSON string
+        if (ref($account->flags) eq 'HASH') {
+            warn "DEBUG: Account flags is already a hash reference";
+            $config = $account->flags;
+        }
+        else {
+            warn "DEBUG: Account flags is a string, trying to parse as JSON";
+            eval { $config = decode_json($account->flags); };
+            if ($@) {
+                warn "Could not parse account flags for account " . $account->id . ": $@";
+                $config = {};
+            }
+            else {
+                warn "DEBUG: Parsed config: " . Data::Dump::pp($config);
+            }
+        }
+    }
+    else {
+        warn "DEBUG: Account has no flags set";
+    }
+
+    # Set defaults and user-friendly values
+    my $monitor_config = {
+        monitor_enabled     => $config->{monitor_enabled} ? 1 : 0,
+        monitor_limit       => $config->{monitor_limit}             || 3,
+        monitors_per_server => $config->{monitors_per_server_limit} || 1,
+    };
+
+    warn "DEBUG: Before special case handling: " . Data::Dump::pp($monitor_config);
+
+    # Handle special case where monitor_limit is 0 (use default)
+    $monitor_config->{monitor_limit} = 3 if $monitor_config->{monitor_limit} == 0;
+
+    warn "DEBUG: Final monitor config: " . Data::Dump::pp($monitor_config);
+    return $self->{$cache_key} = $monitor_config;
 }
 
 1;

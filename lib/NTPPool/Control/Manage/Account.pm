@@ -7,7 +7,10 @@ use Combust::Constant    qw(OK NOT_FOUND);
 use Math::BaseCalc       ();
 use Math::Random::Secure qw(irand);
 use Combust::Template;
-use NP::Email ();
+use NP::Email  ();
+use NP::IntAPI qw(int_api);
+use JSON::XS   qw(encode_json decode_json);
+use Data::Dump qw(pp);
 use OpenTelemetry::Trace;
 use OpenTelemetry -all;
 use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
@@ -66,6 +69,21 @@ sub manage_dispatch {
           if ($self->request->method eq 'post' and !$self->req_param('new_form'));
         return $self->render_account_form($account);
     }
+    elsif ($self->request->uri =~ m!^/manage/account/monitor-config$!) {
+        warn "DEBUG: monitor-config route hit, method: " . $self->request->method;
+        warn "DEBUG: request URI: " . $self->request->uri;
+        return 403 unless $self->user->is_monitor_admin;
+        if ($self->request->method eq 'post') {
+            warn "DEBUG: Handling POST request for monitor config update (will use PATCH to API)";
+            return $self->render_monitor_config_update($account);
+        }
+        else {
+            warn "DEBUG: Handling GET request for monitor config form";
+
+            # GET request - return the edit form
+            return $self->render_monitor_config_form($account);
+        }
+    }
     elsif ($self->request->uri =~ m!^/manage/account/team$!) {
         if ($self->request->method eq 'post' and $account->can_edit($self->user)) {
             return $self->render_users_invite($account, $self->req_param('invite_email'))
@@ -113,8 +131,9 @@ sub remove_user_from_account {
         $param, {site => 'manage', config => $self->config});
 
     my $email =
-      Email::Stuffer->from(NP::Email::address("sender"))->reply_to(NP::Email::address("support"))
-      ->subject("NTP Pool account change")->text_body($msg);
+      Email::Stuffer->from(NP::Email::address("sender"))
+      ->reply_to(NP::Email::address("support"))->subject("NTP Pool account change")
+      ->text_body($msg);
 
     $email->to($user->email);
     my @cc = grep { $_->id != $user_id } @$users;
@@ -233,8 +252,8 @@ sub render_users_invite {
     my $param = {invite => $invite};
 
     my $tpl = Combust::Template->new;
-    my $msg =
-      $tpl->process('tpl/account_invite.txt', $param, {site => 'manage', config => $self->config});
+    my $msg = $tpl->process('tpl/account_invite.txt', $param,
+        {site => 'manage', config => $self->config});
 
     # todo: if there's a vendor zone, use the vendor address
     # for the sender?
@@ -296,6 +315,21 @@ sub render_users {
 sub render_account_form {
     my ($self, $account) = @_;
     $self->tpl_param('account', $account);
+
+    # Set monitor config for admin users
+    if ($self->user->is_monitor_admin && $account) {
+        warn "DEBUG: Setting monitor config for admin user, account ID: " . $account->id;
+        warn "DEBUG: Account flags: " . ($account->flags || 'NULL');
+        my $config = $self->account_monitor_config($account);
+        warn "DEBUG: Monitor config data: " . Data::Dump::pp($config);
+        $self->tpl_param('monitor_config', $config);
+    }
+    else {
+        warn "DEBUG: NOT setting monitor config - is_monitor_admin: "
+          . ($self->user->is_monitor_admin || 0)
+          . ", has account: "
+          . (defined $account ? 'yes' : 'no');
+    }
 
     # todo: how do you end up here without an account?
     if ($self->user->is_staff && $self->current_account) {
@@ -495,8 +529,8 @@ sub render_user_delete {
 
         my $email =
           Email::Stuffer->from(NP::Email::address("sender"))
-          ->reply_to(NP::Email::address("support"))->subject("NTP Pool user deletion scheduled")
-          ->text_body($msg);
+          ->reply_to(NP::Email::address("support"))
+          ->subject("NTP Pool user deletion scheduled")->text_body($msg);
 
         $email->to($user->email);
         NP::Email::sendmail($email);
@@ -505,6 +539,119 @@ sub render_user_delete {
     }
 
     return OK, $self->evaluate_template('tpl/user/delete_confirmation.html');
+}
+
+sub render_monitor_config_form {
+    my ($self, $account) = @_;
+
+    warn "DEBUG: render_monitor_config_form called for account " . $account->id;
+
+    # Check if this is a cancel request
+    if ($self->request->header('X-Cancel')) {
+        warn "DEBUG: Cancel request detected, returning display template";
+        return $self->render_monitor_config_display($account);
+    }
+
+    # This method returns the monitor config form for HTMX requests
+    my $config = $self->account_monitor_config($account);
+    warn "DEBUG: Form config data: " . Data::Dump::pp($config);
+    $self->tpl_param('monitor_config', $config);
+    $self->tpl_param('account',        $account);
+
+    warn "DEBUG: About to render monitor_config_edit_form.html template";
+    return OK, $self->evaluate_template('tpl/account/monitor_config_edit_form.html');
+}
+
+sub render_monitor_config_update {
+    my ($self, $account) = @_;
+
+    # Debug: Show all form parameters
+    warn "DEBUG: All form parameters: " . Data::Dump::pp($self->request->param);
+    warn "DEBUG: monitor_enabled param: " . ($self->req_param('monitor_enabled') || 'UNDEF');
+    warn "DEBUG: monitor_limit param: " .   ($self->req_param('monitor_limit')   || 'UNDEF');
+    warn "DEBUG: monitors_per_server param: "
+      . ($self->req_param('monitors_per_server') || 'UNDEF');
+
+    my %update_data = ();
+
+    # Process form parameters
+    # Always include monitor_enabled since checkboxes don't send unchecked values
+    # API expects boolean values, not integers
+    $update_data{monitor_enabled} =
+      $self->req_param('monitor_enabled') ? JSON::XS::true : JSON::XS::false;
+
+    if (defined $self->req_param('monitor_limit')) {
+        my $limit = $self->req_param('monitor_limit');
+        if ($limit =~ /^\-?\d+$/) {
+            $update_data{monitor_limit} = $limit;
+        }
+    }
+
+    if (defined $self->req_param('monitors_per_server')) {
+        my $per_server = $self->req_param('monitors_per_server');
+        if ($per_server =~ /^\d+$/ && $per_server > 0) {
+            $update_data{monitors_per_server_limit} = $per_server;
+        }
+    }
+
+    # Call internal API to update account flags
+    warn "DEBUG: Update data being sent: " . Data::Dump::pp(\%update_data);
+    for my $k (qw(monitor_limit monitors_per_server_limit)) {
+        $update_data{$k} += 0 if defined $update_data{$k};
+    }
+
+    my $json_data = $json->encode(\%update_data);
+    warn "DEBUG: JSON data being sent: $json_data";
+
+    my $data = int_api(
+        'patch',
+        'monitor/admin/account-config',
+        {   a    => $account->id_token,
+            user => $self->plain_cookie($self->user_cookie_name),
+            data => $json_data,
+        }
+    );
+
+    if ($data->{code} == 200) {
+
+        # Success - refresh account data and clear cache
+        my $cache_key = '_account_monitor_config_' . $account->id;
+        delete $self->{$cache_key};
+
+        # Reload account from database to get updated flags
+        my $updated_account = NP::Model->account->fetch(id => $account->id);
+        if ($updated_account) {
+
+            # Update the cached account
+            $self->{_current_account} = $updated_account;
+        }
+
+        $self->tpl_param('success', 'Monitor configuration updated successfully');
+    }
+    elsif ($data->{code} == 403) {
+        $self->tpl_param('error', 'Access denied - insufficient privileges');
+    }
+    elsif ($data->{code} == 400) {
+        $self->tpl_param('error', 'Invalid request - ' . ($data->{message} || 'bad request'));
+    }
+    else {
+        warn "Monitor config update API error: " . ($data->{status_line} || 'unknown error');
+        $self->tpl_param('error', 'Unable to update monitor configuration - please try again');
+    }
+
+    return $self->render_monitor_config_display($account);
+}
+
+sub render_monitor_config_display {
+    my ($self, $account) = @_;
+
+    # This method returns the monitor config display section for HTMX updates
+    my $config = $self->account_monitor_config($account);
+    $self->tpl_param('monitor_config', $config);
+    $self->tpl_param('account',        $account);
+
+    # Use clean template for HTMX responses (no debug sections)
+    return OK, $self->evaluate_template('tpl/account/monitor_config_display_clean.html');
 }
 
 1;

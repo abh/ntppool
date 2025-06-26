@@ -57,3 +57,56 @@ document.addEventListener('DOMContentLoaded', function () {
         htmx.config.includeIndicatorStyles = false;
     }
 });
+
+// Monitor configuration error handler for HTMX
+function showMonitorConfigError(event) {
+    console.log('showMonitorConfigError called', event);
+    var xhr = event.detail.xhr;
+    console.log('XHR object:', xhr);
+    console.log('XHR status:', xhr.status);
+    console.log('XHR response:', xhr.responseText);
+
+    var errorDiv = document.getElementById('monitor-config-error');
+    var messageSpan = document.getElementById('monitor-config-error-message');
+    var traceidSpan = document.getElementById('monitor-config-error-traceid');
+
+    if (!errorDiv || !messageSpan || !traceidSpan) {
+        console.error('Monitor config error elements not found');
+        return;
+    }
+
+    // Debug all response headers
+    console.log('All response headers:', xhr.getAllResponseHeaders());
+
+    // Extract error message and trace ID
+    var message = 'Server error occurred';
+    var traceid = xhr.getResponseHeader('TraceID') || xhr.getResponseHeader('traceid') || xhr.getResponseHeader('Traceid') || 'Not available';
+    console.log("traceid attempts: ", {
+        TraceID: xhr.getResponseHeader('TraceID'),
+        traceid: xhr.getResponseHeader('traceid'),
+        Traceid: xhr.getResponseHeader('Traceid')
+    });
+
+    // Try to parse JSON response for more detailed error
+    try {
+        var response = JSON.parse(xhr.responseText);
+        if (response && response.error) {
+            message = response.error;
+        } else if (response && response.message) {
+            message = response.message;
+        }
+    } catch (e) {
+        // If not JSON, use status text or default message
+        if (xhr.statusText) {
+            message = xhr.statusText;
+        }
+    }
+
+    // Show the error
+    messageSpan.textContent = message;
+    traceidSpan.textContent = traceid;
+    errorDiv.classList.remove('d-none');
+
+    // Scroll to error message
+    errorDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}

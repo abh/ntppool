@@ -5,6 +5,8 @@ use NP::UA qw();
 use LWP::UserAgent;
 use JSON::XS   ();
 use Data::Dump ();
+use HTTP::Request;
+use URI;
 
 use Exporter 'import';
 our @EXPORT_OK = qw(
@@ -65,6 +67,29 @@ sub _int_api {
             Content         => $data
         );
     }
+    elsif ($method eq 'patch') {
+
+        # For PATCH, $data should contain the JSON body and auth parameters
+        my $json_body = delete $data->{data} || '{}';
+
+        # Add auth parameters to URL like GET requests
+        if ($data && %$data) {
+            my $uri = URI->new($url);
+            my $o   = $uri->query_form_hash();
+            $uri->query_form_hash({%$o, %$data});
+            $url = $uri->as_string();
+        }
+
+        $res = $ua->request(
+            HTTP::Request->new(
+                'PATCH', $url,
+                [   'Authorization' => $auth,
+                    'Content-Type'  => 'application/json',
+                ],
+                $json_body
+            )
+        );
+    }
     else {
         warn qq[unknown method "$method" for _int_api];
     }
@@ -82,7 +107,7 @@ sub _int_api {
     }
     $r{code}        ||= $res->code;
     $r{status_line} ||= $res->status_line;
-    $r{trace_id}     ||= $res->header('TraceID');
+    $r{trace_id}    ||= $res->header('TraceID');
 
     warn "Data: ", Data::Dump::pp(\%r);
 
@@ -137,15 +162,15 @@ sub get_monitoring_registration_data {
 sub accept_monitoring_registration {
     my $validation_token = shift;
     my $user_cookie      = shift;
-    my $account_token       = shift;
+    my $account_token    = shift;
     my $location         = shift;
 
     my $data = _int_api_post(
         "monitor/registration/accept",
-        {   token      => $validation_token,
-            user       => $user_cookie,
-            a          => $account_token,
-            location   => $location,
+        {   token    => $validation_token,
+            user     => $user_cookie,
+            a        => $account_token,
+            location => $location,
 
         }
     );

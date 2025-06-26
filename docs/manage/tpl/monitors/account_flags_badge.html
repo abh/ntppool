@@ -1,0 +1,27 @@
+[% IF combust.user.is_monitor_admin %]
+    [% IF mon.Account.flags %]
+        <small class="ml-2">
+            [% IF mon.Account.flags.match('monitor_enabled.*true') %]
+                <span class="badge badge-success" title="Monitor bypass enabled - can register without verified servers">
+                    <i class="fa fa-check-circle"></i> Bypass
+                </span>
+            [% END %]
+            [% IF mon.Account.flags.match('monitor_limit') %]
+                [% IF mon.Account.flags.match('monitor_limit.*-1') %]
+                    <span class="badge badge-danger" title="Monitor registration disabled">
+                        <i class="fa fa-ban"></i> Disabled
+                    </span>
+                [% ELSIF mon.Account.flags.match('monitor_limit.*[0-9]+') %]
+                    <span class="badge badge-info" title="Custom monitor limit set">
+                        <i class="fa fa-tachometer-alt"></i> Custom Limit
+                    </span>
+                [% END %]
+            [% END %]
+            [% IF mon.Account.flags.match('monitors_per_server') %]
+                <span class="badge badge-warning" title="Custom monitors per server limit">
+                    <i class="fa fa-server"></i> Per-Server
+                </span>
+            [% END %]
+        </small>
+    [% END %]
+[% END %]

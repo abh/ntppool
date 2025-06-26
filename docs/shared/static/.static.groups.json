@@ -8,7 +8,8 @@
   },
   "common.js": {
       "files": [ "cdn/libs/jquery/3.7.1/jquery.min.js",
-                 "cdn/libs/bootstrap/5.3.7/js/bootstrap.bundle.js"
+                 "cdn/libs/bootstrap/5.3.7/js/bootstrap.bundle.js",
+                 "cdn/libs/htmx/2.0.5/htmx.min.js",
                ]
   },
   "d3.js": {

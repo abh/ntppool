@@ -16,7 +16,10 @@
       [% IF last_account != 0 %]
       </div>
       [% END %]
-      <h2>[% mon.Account.Name || "Account " _ (mon.Account.IDToken || mon.Account.ID) | html %]</h2>
+      <h2>
+        [% mon.Account.Name || "Account " _ (mon.Account.IDToken || mon.Account.ID) | html %]
+        [% INCLUDE tpl/monitors/account_flags_badge.html %]
+      </h2>
       <br>
 
 <div class="row row-cols-1 row-cols-md-2 g-4">
