@@ -30,7 +30,7 @@ sub init {
     my $self = shift;
     $self->SUPER::init(@_);
 
-    $self->cache_control('private');
+    $self->cache_control('private, no-cache');
 
     $self->tpl_params->{page} ||= {};
 
@@ -127,8 +127,6 @@ sub render {
     $span->set_attribute("manage_class", ref $self);
 
     # this method is shared between the Manage related controllers
-
-    $self->cache_control('private');
 
     if ($self->request->uri =~ m!^/manage/logout!) {
         return $self->logout;

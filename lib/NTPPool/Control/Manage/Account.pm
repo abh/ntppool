@@ -17,11 +17,11 @@ use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_
 use experimental             qw( defer );
 use Syntax::Keyword::Dynamically;
 
+my $json = JSON::XS->new->utf8;
+
 sub manage_dispatch {
     my $self = shift;
     $self->set_span_name("manage.account");
-
-    $self->cache_control('private');
 
     my $account;
 
