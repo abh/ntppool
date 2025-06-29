@@ -28,7 +28,7 @@
                     <div class="form-group">
                         <label for="monitor_limit"><strong>Monitor Limit:</strong></label>
                         <select class="form-control" id="monitor_limit" name="monitor_limit">
-                            <option value="0" [% IF monitor_config.monitor_limit == 3 %]selected[% END %]>
+                            <option value="0" [% IF monitor_config.monitor_limit == 0 || monitor_config.monitor_limit == 3 %]selected[% END %]>
                                 Default (3)
                             </option>
                             <option value="1" [% IF monitor_config.monitor_limit == 1 %]selected[% END %]>

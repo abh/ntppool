@@ -639,7 +639,7 @@ sub render_monitor_config_update {
         $self->tpl_param('error', 'Unable to update monitor configuration - please try again');
     }
 
-    return $self->render_monitor_config_display($account);
+    return $self->render_monitor_config_display($updated_account || $account);
 }
 
 sub render_monitor_config_display {
