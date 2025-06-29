@@ -1,3 +1,4 @@
+[% PROCESS tpl/monitors/metrics.html %]
 [% BLOCK status_form %]
           <form class="monitor-form" action="/manage/monitors/monitor/status?a=[% account.id_token %]&name=[% monitor.TLSName | html %]" method="post" accept-charset="utf-8">
           <input type="hidden" name="auth_token" value="[% combust.auth_token %]">
@@ -21,6 +22,8 @@
         show_details => 1,
         %]
 
+        [% PROCESS metrics_error %]
+
         <p>
         [% UNLESS mon.Status == "testing" OR mon.Status == "active" %]
           Email <a href="mailto:[% "support" | email %]?subject=Monitor [% mon.id_token | html %] setup">[% "support" | email %]</a> to continue the setup.
@@ -30,7 +33,7 @@
         [% IF combust.user.is_monitor_admin %]
         <h3>Admin actions</h3>
 
-        <p>        
+        <p>
 
           [% IF mon.CombinedStatus %]
           <div class="monitor-status">

@@ -612,6 +612,7 @@ sub render_monitor_config_update {
         }
     );
 
+    my $updated_account;
     if ($data->{code} == 200) {
 
         # Success - refresh account data and clear cache
@@ -619,7 +620,7 @@ sub render_monitor_config_update {
         delete $self->{$cache_key};
 
         # Reload account from database to get updated flags
-        my $updated_account = NP::Model->account->fetch(id => $account->id);
+        $updated_account = NP::Model->account->fetch(id => $account->id);
         if ($updated_account) {
 
             # Update the cached account

@@ -128,6 +128,11 @@ sub render_monitor {
     my @monitor = _monitor_list($data->{data}->{Monitors} || {});
     $self->tpl_param('mon',  $monitor[0]);
     $self->tpl_param('data', $data->{data} || {});
+
+    # Fetch metrics for this specific monitor
+    my $metrics = $self->monitor_metrics(names => $name);
+    $self->tpl_param('metrics', $metrics);
+
     return OK, $self->evaluate_template('tpl/monitors/show.html');
 }
 
@@ -253,6 +258,11 @@ sub render_monitors {
 
     my @monitors = _monitor_list($data->{data}->{Monitors} || {});
     $self->tpl_param('monitors', \@monitors);
+
+    # Fetch metrics for all monitors in this account
+    my $metrics = $self->monitor_metrics(account_token => $self->current_account->id_token);
+    $self->tpl_param('metrics', $metrics);
+
     return OK, $self->evaluate_template('tpl/monitors/list.html');
 }
 
@@ -280,6 +290,11 @@ sub render_admin_list {
 
     my @monitors = _monitor_list($data->{data}->{Monitors} || {});
     $self->tpl_param('monitors', \@monitors);
+    $self->tpl_param('admin_list', 1);
+
+    # Fetch metrics for all accounts (admin view)
+    my $metrics = $self->monitor_metrics(all_accounts => 1);
+    $self->tpl_param('metrics', $metrics);
 
     return OK, $self->evaluate_template('tpl/monitors/admin_list.html');
 }
@@ -350,6 +365,73 @@ sub _edit_monitor {
 
     $mon->save;
     return $mon;
+}
+
+sub monitor_metrics {
+    my $self = shift;
+    my %params = @_;
+
+    my $api_params = {
+        user => $self->plain_cookie($self->user_cookie_name),
+        a    => $self->current_account->id_token,
+    };
+
+    # Determine the actual parameters and cache key
+    my $actual_account_token;
+    my $actual_names;
+    my $all_accounts = 0;
+
+    if ($params{account_token}) {
+        # Use 'a' parameter for account token per API specification
+        $api_params->{a} = $params{account_token};
+        $actual_account_token = $params{account_token};
+    } elsif ($params{names}) {
+        $api_params->{names} = $params{names};
+        $actual_names = $params{names};
+    } elsif ($params{all_accounts}) {
+        $api_params->{all_accounts} = 'true';
+        $all_accounts = 1;
+    } else {
+        # Default to current account using id_token with 'a' parameter
+        $actual_account_token = $self->current_account->id_token;
+        $api_params->{a} = $actual_account_token;
+    }
+
+    # Request-scoped caching to avoid multiple API calls
+    my $cache_key = "_monitor_metrics_" . ($actual_account_token || '') . '_' . ($actual_names || '') . '_' . ($all_accounts ? 'all' : '');
+    return $self->{$cache_key} if exists $self->{$cache_key};
+
+    my $data = int_api(
+        'get',
+        'monitor/manage/metrics/summary',
+        $api_params
+    );
+
+    # Handle different response codes with graceful degradation
+    if ($data->{code} == 200) {
+        # The API returns data.data.monitors, so we need to extract the inner data
+        my $metrics_data = $data->{data}->{data} || $data->{data};
+        return $self->{$cache_key} = {
+            success => 1,
+            data => $metrics_data
+        };
+    }
+    elsif ($data->{code} == 404) {
+        # No metrics available for these monitors
+        return $self->{$cache_key} = {
+            success => 0,
+            error => 'No metrics available',
+            trace_id => $data->{trace_id}
+        };
+    }
+    else {
+        # API error - return error info for display
+        return $self->{$cache_key} = {
+            success => 0,
+            error => $data->{error} || 'Metrics temporarily unavailable',
+            trace_id => $data->{trace_id}
+        };
+    }
 }
 
 sub _monitor_list {

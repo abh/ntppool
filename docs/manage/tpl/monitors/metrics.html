@@ -1,0 +1,96 @@
+[%# Reusable metrics display components %]
+
+[%# Display account totals - works for both regular and admin views %]
+[% BLOCK account_totals %]
+  [% # Try different sources for account totals %]
+  [% totals = metrics.data.account_totals || (metrics.data.accounts.item(mon.Account.IDToken)) %]
+  [% IF totals %]
+    <div class="alert alert-info mb-3">
+      <small>
+        <strong>1 hour:</strong> [% totals.tests_per_minute_1h.total | format('%.1f') %] tests/min
+        ([% totals.tests_per_minute_1h.ok | format('%.1f') %] ok,
+        [% totals.tests_per_minute_1h.timeout | format('%.1f') %] timeout,
+        [% totals.tests_per_minute_1h.offset | format('%.1f') %] offset)
+        <br>
+        <strong>24 hours:</strong> [% totals.tests_per_minute_24h.total | format('%.1f') %] tests/min
+        ([% totals.tests_per_minute_24h.ok | format('%.1f') %] ok,
+        [% totals.tests_per_minute_24h.timeout | format('%.1f') %] timeout,
+        [% totals.tests_per_minute_24h.offset | format('%.1f') %] offset)
+      </small>
+    </div>
+  [% END %]
+[% END %]
+
+[%# Display monitor metrics as list item %]
+[% BLOCK monitor_metrics %]
+  [% IF metrics && metrics.success && metrics.data.monitors %]
+    [% mon_key = mon.TLSName %]
+    [% mon_metrics = metrics.data.monitors.$mon_key %]
+    [% IF mon_metrics %]
+      [% IF show_details %]
+        <li class="list-group-item">
+          <small><strong>Metrics</strong></small><br>
+          <small>
+            [% PROCESS metrics_breakdown
+               metrics_1h = mon_metrics.tests_per_minute_1h
+               metrics_24h = mon_metrics.tests_per_minute_24h
+               detailed = 1
+            %]
+          </small>
+        </li>
+      [% ELSE %]
+        <li class="list-group-item">
+          <small>
+            <strong>Tests/min:</strong>
+            [% PROCESS metrics_breakdown
+               metrics_1h = mon_metrics.tests_per_minute_1h
+               metrics_24h = mon_metrics.tests_per_minute_24h
+               detailed = 0
+            %]
+          </small>
+        </li>
+      [% END %]
+    [% END %]
+  [% END %]
+[% END %]
+
+[%# Display metrics breakdown - handles both detailed object and simple numeric formats %]
+[% BLOCK metrics_breakdown %]
+  [% IF detailed %]
+    [% IF metrics_1h.total %]
+      [%# Detailed breakdown format %]
+      <strong>1 hour:</strong> [% metrics_1h.total | format('%.1f') %] tests/min
+      ([% metrics_1h.ok | format('%.1f') %] ok,
+      [% metrics_1h.timeout | format('%.1f') %] timeout,
+      [% metrics_1h.offset | format('%.1f') %] offset)<br>
+      <strong>24 hours:</strong> [% metrics_24h.total | format('%.1f') %] tests/min
+      ([% metrics_24h.ok | format('%.1f') %] ok,
+      [% metrics_24h.timeout | format('%.1f') %] timeout,
+      [% metrics_24h.offset | format('%.1f') %] offset)
+    [% ELSE %]
+      [%# Simple numeric format %]
+      <strong>1 hour:</strong> [% metrics_1h | format('%.1f') %] tests/min<br>
+      <strong>24 hours:</strong> [% metrics_24h | format('%.1f') %] tests/min
+    [% END %]
+  [% ELSE %]
+    [% IF metrics_1h.total %]
+      [% metrics_1h.total | format('%.1f') %] (1h),
+      [% metrics_24h.total | format('%.1f') %] (24h)
+    [% ELSE %]
+      [% metrics_1h | format('%.1f') %] (1h),
+      [% metrics_24h | format('%.1f') %] (24h)
+    [% END %]
+  [% END %]
+[% END %]
+
+[%# Display metrics error message %]
+[% BLOCK metrics_error %]
+  [% IF metrics && !metrics.success %]
+    <div class="alert alert-warning">
+      <small>
+        Metrics: [% metrics.error | html %]
+        [% IF metrics.trace_id %](Trace ID: [% metrics.trace_id | html %])[% END %]
+      </small>
+    </div>
+  [% END %]
+[% END %]

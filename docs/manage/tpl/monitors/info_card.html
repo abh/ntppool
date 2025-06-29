@@ -1,3 +1,4 @@
+[% PROCESS tpl/monitors/metrics.html %]
 <div class="col">
     <div class="card">
 
@@ -64,6 +65,8 @@
             </li>
 
             [% END %]
+
+            [% PROCESS monitor_metrics %]
 
 
             [% UNLESS show_details %]
