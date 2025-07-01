@@ -62,12 +62,34 @@ function server_chart(div, data, options) {
         .attr("y1", 0)
         .attr("y2", h);
 
+    // Custom 24-hour time formatter to avoid 12-hour format in minute displays
+    function custom24HourFormatter() {
+        var formatMillisecond = d3.utcFormat(".%L"),
+            formatSecond = d3.utcFormat(":%S"),
+            formatMinute = d3.utcFormat("%H:%M"),  // Always use 24-hour format
+            formatHour = d3.utcFormat("%H"),       // Always use 24-hour format
+            formatDay = d3.utcFormat("%a %d"),
+            formatWeek = d3.utcFormat("%b %d"),
+            formatMonth = d3.utcFormat("%B"),
+            formatYear = d3.utcFormat("%Y");
+
+        return function(date) {
+            return (d3.utcSecond(date) < date ? formatMillisecond
+                : d3.utcMinute(date) < date ? formatSecond
+                : d3.utcHour(date) < date ? formatMinute
+                : d3.utcDay(date) < date ? formatHour
+                : d3.utcMonth(date) < date ? (d3.utcWeek(date) < date ? formatDay : formatWeek)
+                : d3.utcYear(date) < date ? formatMonth
+                : formatYear)(date);
+        };
+    }
+
     xrule.append("text")
         .attr("x", x)
         .attr("y", h + 3)
         .attr("dy", ".71em")
         .attr("text-anchor", "middle")
-        .text(x.tickFormat(xticks));
+        .text(custom24HourFormatter());
 
     /* offset y lines */
     var yrule = svg.selectAll("g.y")
