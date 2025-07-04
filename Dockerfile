@@ -1,12 +1,10 @@
-FROM harbor.ntppool.org/ntppool/base-os:3.22.0
+FROM harbor.ntppool.org/ntppool/base-os:3.22.0-1
 USER root
 
 ENV BUILD 20241215
 
 RUN apk -U --no-cache upgrade --ignore alpine-baselayout
 RUN apk --no-cache add gomplate alpine-base
-RUN cpanm Net::Async::HTTP::Server Plack::Handler::Net::Async::HTTP::Server Plack::Middleware::Headers
-RUN cpanm OpenTelemetry OpenTelemetry::SDK OpenTelemetry::Exporter::OTLP Plack::Middleware::OpenTelemetry
 RUN cpanm -v https://tmp.askask.com/2024/12/Net-Async-HTTP-Server-0.14bis4.tar.gz
 
 ENV CBCONFIG=
