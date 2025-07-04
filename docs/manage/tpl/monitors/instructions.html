@@ -14,6 +14,18 @@
             monitoring agents around the world.
         </p>
 
+        <div class="alert alert-success">
+            <h5>Monitor deployment guidelines</h5>
+            <ul>
+                <li>We welcome monitors all over the planet. The system figures out to make best use of them. There are no areas of the world where we can't use more diversity of monitors.</li>
+                <li>At the moment the system works best with just 3 monitors per user or organization. If you are able to run many more, setup a few first and then get in touch if you are willing to run more.</li>
+                <li>You <em>can</em> run the monitor on the same system as your NTP server. The system will avoid monitoring your own server.</li>
+                <li>The monitoring software gets updated regularly; updating it at least every few months is a requirement.</li>
+                <li>We have builds for amd64, arm64 and i386 for Linux and FreeBSD. Other platforms available upon request.</li>
+                <li>The agent runs NTP queries, and in the future will add other diagnostics like traceroutes and DNS queries. The bandwidth needs are very low.</li>
+            </ul>
+        </div>
+
         <p>
             <strong>Installation and setup commands (for systemd managed systems)</strong>.
             If you are using a different platform, <a href="mailto:[% " support" | email %]">

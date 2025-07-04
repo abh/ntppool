@@ -31,8 +31,12 @@
 -->
 
             [% ELSIF code == 201 %]
-            Monitor registration completed,
-            <a href="[% combust.manage_url('/manage/monitors/monitor', name => data.tls_name) %]">continue</a>.
+            <div hx-on:htmx:afterSwap="autoRedirectOnSuccess(event)"
+                 data-redirect-url="[% combust.manage_url('/manage/monitors/monitor', name => data.tls_name) %]"
+                 data-delay="1500">
+                Monitor registration completed,
+                <a href="[% combust.manage_url('/manage/monitors/monitor', name => data.tls_name) %]">continue</a>.
+            </div>
 
             [% ELSE %]
             code: [% code %]<br>

@@ -55,8 +55,45 @@ document.addEventListener('DOMContentLoaded', function () {
         // htmx.config.refreshOnHistoryMiss = true;
         htmx.config.historyCacheSize = 20;
         htmx.config.includeIndicatorStyles = false;
+
+        document.addEventListener('htmx:afterSwap', function(event) {
+            // Look for auto-redirect elements in the swapped content
+            var redirectElements = event.target.querySelectorAll('[data-redirect-url]');
+
+            redirectElements.forEach(function(elem) {
+                // Trigger the redirect directly
+                var fakeEvent = { target: elem };
+                autoRedirectOnSuccess(fakeEvent);
+            });
+        });
     }
 });
+
+// Auto-redirect for monitor acceptance success (triggered by HTMX)
+function autoRedirectOnSuccess(event) {
+    var targetUrl = event.target.getAttribute('data-redirect-url');
+    var delay = parseInt(event.target.getAttribute('data-delay')) || 1500;
+    var countdown = Math.floor(delay / 1000);
+
+    // Create and insert countdown message directly into the element
+    var countdownP = document.createElement('p');
+    countdownP.innerHTML = '<small>Redirecting to monitor in <span id="countdown">' + countdown + '</span> seconds...</small>';
+    event.target.appendChild(countdownP);
+
+    var countdownElement = document.getElementById('countdown');
+
+    var timer = setInterval(function() {
+        countdown--;
+        if (countdownElement) {
+            countdownElement.textContent = countdown;
+        }
+
+        if (countdown <= 0) {
+            clearInterval(timer);
+            window.location.href = targetUrl;
+        }
+    }, 1000);
+}
 
 // Monitor configuration error handler for HTMX
 function showMonitorConfigError(event) {

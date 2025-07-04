@@ -7,6 +7,17 @@
         <p><a href="/manage/monitors/admin">All monitors (admin)</a></p>
     [% END %]
 
+    [% UNLESS admin_list %]
+        [% IF monitors.size > 2 %]
+            [% eligibility = combust.monitor_eligibility %]
+            [% IF eligibility.can_register %]
+                <p>
+                    <a href="[% combust.manage_url('/manage/monitors/new') %]" class="btn btn-primary">Setup a new monitor</a>
+                </p>
+            [% END %]
+        [% END %]
+    [% END %]
+
     [% IF error %]
     <span class="error">[% error | html %] ([% code | html%])</span>
     [% END %]
@@ -18,7 +29,13 @@
       </div>
       [% END %]
       <h2>
-        [% mon.Account.Name || "Account " _ (mon.Account.IDToken || mon.Account.ID) | html %]
+        [% IF admin_list %]
+          <a href="[% combust.manage_url('/manage/monitors', { a => mon.Account.IDToken }) %]">
+            [% mon.Account.Name || "Account " _ (mon.Account.IDToken || mon.Account.ID) | html %]
+          </a>
+        [% ELSE %]
+          [% mon.Account.Name || "Account " _ (mon.Account.IDToken || mon.Account.ID) | html %]
+        [% END %]
         [% INCLUDE tpl/monitors/account_flags_badge.html %]
       </h2>
 
@@ -37,7 +54,7 @@
     [% UNLESS admin_list %]
         [% eligibility = combust.monitor_eligibility %]
         [% IF eligibility.can_register %]
-            <p>
+            <p class="mt-4">
                 <a href="[% combust.manage_url('/manage/monitors/new') %]" class="btn btn-primary">Setup a new monitor</a>
             </p>
         [% ELSIF eligibility.enabled %]
