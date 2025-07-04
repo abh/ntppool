@@ -373,10 +373,10 @@ table.table-hover tbody tr:hover th {
   background-color: rgba(0, 0, 0, .075) !important;
 }
 
-/* Bootstrap table padding - force override to match Bootstrap 4 */
+/* Bootstrap table padding - reduced spacing between rows */
 table.table td,
 table.table th {
-  padding: .75rem !important;
+  padding: .35rem !important;
 }
 
 /* long explanation */
