@@ -19,6 +19,12 @@ use Syntax::Keyword::Dynamically;
 
 my $json = JSON::XS->new->utf8;
 
+sub _get_request_context {
+    my $self = shift;
+    my $x_forwarded_for = $self->request->header_in('X-Forwarded-For');
+    return $x_forwarded_for ? { x_forwarded_for => $x_forwarded_for } : undef;
+}
+
 sub manage_dispatch {
     my $self = shift;
     $self->set_span_name("manage.account");
@@ -609,7 +615,8 @@ sub render_monitor_config_update {
         {   a    => $account->id_token,
             user => $self->plain_cookie($self->user_cookie_name),
             data => $json_data,
-        }
+        },
+        $self->_get_request_context()
     );
 
     my $updated_account;

@@ -21,7 +21,13 @@ $api_base =~ s{/$}{};
 # ua returns a user agent object with the correct headers for the internal API,
 # it should be called for every request
 sub ua {
+    my ($request_context) = @_;
     my $ua = $NP::UA::ua;
+
+    # Add X-Forwarded-For header if request context is provided
+    if ($request_context && $request_context->{x_forwarded_for}) {
+        $ua->default_header('X-Forwarded-For' => $request_context->{x_forwarded_for});
+    }
 
     # todo: add global headers for api authentication
     return $ua;
@@ -32,7 +38,7 @@ sub int_api {
 }
 
 sub _int_api {
-    my ($method, $function, $data) = @_;
+    my ($method, $function, $data, $request_context) = @_;
 
     my %r;
 
@@ -49,7 +55,7 @@ sub _int_api {
         $auth = "Bearer $user";
     }
 
-    my $ua = ua();
+    my $ua = ua($request_context);
 
     if ($method eq 'get') {
         if ($data) {
@@ -96,6 +102,15 @@ sub _int_api {
 
     warn $res->status_line,     "\n";
     warn $res->decoded_content, "\n";
+
+    # Check for rate limit headers and log warning if remaining requests are low
+    my $rate_limit_remaining = $res->header('X-RateLimit-Remaining');
+    if (defined $rate_limit_remaining && $rate_limit_remaining < 5) {
+        my $rate_limit_limit = $res->header('X-RateLimit-Limit') || 'unknown';
+        my $rate_limit_reset = $res->header('X-RateLimit-Reset') || 'unknown';
+
+        warn "API rate limit warning: remaining=$rate_limit_remaining, limit=$rate_limit_limit, reset=$rate_limit_reset (function: $function)";
+    }
 
     if ($res->code >= 300) {
         warn "api-internal response code $function call: ", $res->status_line;
@@ -148,13 +163,15 @@ sub get_monitoring_registration_data {
     my $validation_token = shift;
     my $user_cookie      = shift;
     my $account_token    = shift;
+    my $request_context  = shift;
 
     my $data = _int_api_get(
         "monitor/registration/data",
         {   token => $validation_token,
             user  => $user_cookie,
             a     => $account_token,
-        }
+        },
+        $request_context
     );
     return $data;
 }
@@ -164,6 +181,7 @@ sub accept_monitoring_registration {
     my $user_cookie      = shift;
     my $account_token    = shift;
     my $location         = shift;
+    my $request_context  = shift;
 
     my $data = _int_api_post(
         "monitor/registration/accept",
@@ -172,7 +190,8 @@ sub accept_monitoring_registration {
             a        => $account_token,
             location => $location,
 
-        }
+        },
+        $request_context
     );
     return $data;
 }

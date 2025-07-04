@@ -24,6 +24,12 @@ use Syntax::Keyword::Dynamically;
 
 sub ua { return $NP::UA::ua }
 
+sub _get_request_context {
+    my $self = shift;
+    my $x_forwarded_for = $self->request->header_in('X-Forwarded-For');
+    return $x_forwarded_for ? { x_forwarded_for => $x_forwarded_for } : undef;
+}
+
 my $base36 = Math::BaseCalc->new(digits => ['a' .. 'k', 'm' .. 'z', 2 .. 9]);
 
 sub init {
@@ -525,7 +531,8 @@ sub monitor_eligibility {
         'monitor/manage/eligibility',
         {   a    => $self->current_account->id_token,
             user => $self->plain_cookie($self->user_cookie_name),
-        }
+        },
+        $self->_get_request_context()
     );
 
     if ($data->{code} == 200) {

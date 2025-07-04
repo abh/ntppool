@@ -16,6 +16,12 @@ use Syntax::Keyword::Dynamically;
 
 my $json = JSON::XS->new->pretty->utf8->convert_blessed;
 
+sub _get_request_context {
+    my $self = shift;
+    my $x_forwarded_for = $self->request->header_in('X-Forwarded-For');
+    return $x_forwarded_for ? { x_forwarded_for => $x_forwarded_for } : undef;
+}
+
 sub _map_api_error_code {
     my ($self, $data, $context) = @_;
 
@@ -118,7 +124,8 @@ sub render_monitor {
         {   name => $name,
             user => $self->plain_cookie($self->user_cookie_name),
             a    => $self->current_account->id_token,
-        }
+        },
+        $self->_get_request_context()
     );
 
     if ($data->{code} != 200) {
@@ -159,6 +166,7 @@ sub render_confirm_monitor {
             $validation_token,
             $self->plain_cookie($self->user_cookie_name),
             $self->current_account->id_token,
+            $self->_get_request_context(),
         );
         if ($data->{error}) {
             $self->tpl_param('error', $data->{error});
@@ -199,7 +207,7 @@ sub render_confirm_monitor {
         $self->plain_cookie($self->user_cookie_name),
         $self->current_account->id_token,
         $self->req_param("location_code"),
-
+        $self->_get_request_context(),
     );
     if ($data->{error}) {
         $self->tpl_param('error', $data->{error});
@@ -249,7 +257,8 @@ sub render_monitors {
             a          => $self->current_account->id_token,
 
             user => $self->plain_cookie($self->user_cookie_name),
-        }
+        },
+        $self->_get_request_context()
     );
 
     if ($data->{code} >= 400) {
@@ -281,7 +290,8 @@ sub render_admin_list {
         'monitor/manage/',
         {   all_accounts => 1,
             user         => $self->plain_cookie($self->user_cookie_name),
-        }
+        },
+        $self->_get_request_context()
     );
 
     if ($data->{code} >= 400) {
@@ -318,7 +328,8 @@ sub render_admin_status {
             id     => $self->req_param('id')                       || '',
             status => $self->req_param('status')                   || '',
             user   => $self->plain_cookie($self->user_cookie_name) || '',
-        }
+        },
+        $self->_get_request_context()
     );
     if ($data->{code} >= 400) {
         return $self->_map_api_error_code($data, "render_admin_status");
@@ -404,7 +415,8 @@ sub monitor_metrics {
     my $data = int_api(
         'get',
         'monitor/manage/metrics/summary',
-        $api_params
+        $api_params,
+        $self->_get_request_context()
     );
 
     # Handle different response codes with graceful degradation
