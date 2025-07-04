@@ -42,7 +42,8 @@ my $crypt = Crypt::Passphrase->new(
         module => 'Bcrypt',
         cost   => 4,
         hash   => 'sha256',
-    }
+    },
+    validators => ["Argon2"],
 );
 
 sub user {
