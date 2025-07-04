@@ -1216,6 +1216,14 @@ WHERE ss.server_id = s.id
 AND ss.monitor_id = m.id
 AND m.account_id = s.account_id;
 
+#146
+-- Migrate any existing 'new' status records to 'candidate' before removing 'new' from enum
+UPDATE server_scores SET status = 'candidate' WHERE status = 'new';
+
+-- Remove 'new' status from server_scores enum and set default to 'candidate'
+ALTER TABLE server_scores
+MODIFY COLUMN status enum('candidate','testing','active') NOT NULL DEFAULT 'candidate';
+
 #todo
 
 
