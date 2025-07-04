@@ -1209,6 +1209,13 @@ update monitors
     status != 'deleted' and tls_name is null
     and type = 'monitor' and created_on < '2025-06-01';
 
+#145
+-- delete server_scores where monitor and server is on the same account
+DELETE ss FROM server_scores ss, servers s, monitors m
+WHERE ss.server_id = s.id
+AND ss.monitor_id = m.id
+AND m.account_id = s.account_id;
+
 #todo
 
 
