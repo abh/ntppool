@@ -46,7 +46,7 @@ sub setup_server {
         server_id => $self->id,
         config    => '{}',
     );
-    $mr->next_review(DateTime->now()->add(DateTime::Duration->new(minutes => 5)));
+    $mr->next_review(DateTime->now()->add(DateTime::Duration->new(minutes => 2)));
     $mr->save();
 
     my $monitors = NP::Model->monitor->get_objects(query => [ip_version => $self->ip_version]);
@@ -55,7 +55,7 @@ sub setup_server {
             {   server_id  => $self->id,
                 monitor_id => $monitor->id,
                 score_raw  => $self->score_raw,
-                status     => 'testing',
+                status     => 'candidate',
             }
         );
     }
