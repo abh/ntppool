@@ -2,7 +2,7 @@ package NTPPool::Control::Manage;
 use strict;
 use parent qw(NTPPool::Control::Login NTPPool::Control);
 use NP::Model;
-use Combust::Constant qw(OK NOT_FOUND);
+use Combust::Constant qw(OK NOT_FOUND SERVER_ERROR);
 use Socket            qw(inet_ntoa);
 use Socket6;
 use JSON::XS   qw(encode_json decode_json);
@@ -25,9 +25,9 @@ use Syntax::Keyword::Dynamically;
 sub ua { return $NP::UA::ua }
 
 sub _get_request_context {
-    my $self = shift;
+    my $self            = shift;
     my $x_forwarded_for = $self->request->header_in('X-Forwarded-For');
-    return $x_forwarded_for ? { x_forwarded_for => $x_forwarded_for } : undef;
+    return $x_forwarded_for ? {x_forwarded_for => $x_forwarded_for} : undef;
 }
 
 my $base36 = Math::BaseCalc->new(digits => ['a' .. 'k', 'm' .. 'z', 2 .. 9]);
@@ -318,7 +318,19 @@ sub handle_login {
 
     $identity->save;
 
-    $self->setup_session($user->id);
+    my $session_result = $self->setup_session($user->id);
+    unless ($session_result->{success}) {
+        $span->set_status(SPAN_STATUS_ERROR,
+            "session creation failed: " . $session_result->{error});
+        $span->end();
+
+        # Set error details for user display
+        $self->cache_control('private, max-age=0, no-cache');
+        $self->tpl_param('error',    $session_result->{error});
+        $self->tpl_param('trace_id', $span->context->hex_trace_id);
+
+        return SERVER_ERROR;
+    }
 
     # clear legacy cookie information
     $self->cookie($self->user_cookie_name, '');
