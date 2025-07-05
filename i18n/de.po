@@ -40,12 +40,6 @@ msgid "Translations"
 msgstr "Übersetzungen"
 
 # mailinglists.html
-msgid  "NTP Pool mailing lists"
-msgstr "NTP Pool Forum"
-
-msgid  "subscribe"
-msgstr "abonnieren"
-
 msgid  "archive"
 msgstr "Archiv"
 
@@ -55,32 +49,20 @@ msgstr "NTP Pool Forum"
 msgid  "News site"
 msgstr "Neuigkeiten"
 
-msgid  "Announcement list"
-msgstr "Verteiler \"Ankündigungen\""
-
 msgid  "Discussion list"
 msgstr "Verteiler \"Diskussionen\""
 
 msgid  "Development"
 msgstr "Entwicklung"
 
-msgid  "Development list"
-msgstr "Verteiler \"Entwicklung\""
-
-msgid  "announcement_list_description"
-msgstr "Wenig frequentierter Verteiler für die wichtigsten Ankündigungen des NTP-Pool-Projekts. Alle Serveradministratoren sollten diese Liste abonniert haben."
-
-msgid  "discussion_list_description"
-msgstr "Serveradministratoren (und Benutzer), die sich am NTP-Pool-Projekt beteiligen wollen, sind in diesem Verteiler herzlich Willkommen.<br/>Über allgemeine Themen rund um NTP sollte jedoch in der Usenet Newsgruppe %1 diskutiert werden (siehe auch <a href=\"%2\">Google Groups</a>)."
-
-msgid  "development_list_description"
-msgstr "Technische (und idealerweise immer pragmatische) Diskussionen über die Weiterentwicklung des <a href=\"%1\">NTP-Pool</a> und <a href=\"%2\">GeoDNS Quellcodes</a> werden im <a href=\"%3\">Forum</a> geführt."
-
 msgid  "forum_description"
 msgstr "Fragen (und Antworten) zum NTP Pool, Verbesserungsvorschl&auml;ge und Themen rund um Zeithaltung und das Betreiben eines eigenen NTP Servers: "
 
 msgid  "news_description"
 msgstr "Neuigkeiten und Ankündigungen werden auf der Nachrichtenseite des Forums gepostet"
+
+msgid  "development_list_description"
+msgstr "Technische (und idealerweise immer pragmatische) Diskussionen über die Weiterentwicklung des <a href=\"%1\">NTP-Pool</a> und <a href=\"%2\">GeoDNS Quellcodes</a> werden im <a href=\"%3\">Forum</a> geführt."
 
 # tpl/server.html
 msgid  "Back to the front page"
