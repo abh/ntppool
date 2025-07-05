@@ -57,35 +57,29 @@ msgid  "Older news"
 msgstr "Korábbi hírek"
 
 # mailinglists.html
-msgid  "NTP Pool mailing lists"
-msgstr "NTP Pool levelezőlisták"
-
-msgid  "subscribe"
-msgstr "feliratkozás"
-
 msgid  "archive"
 msgstr "archívum"
 
-msgid  "Announcement list"
-msgstr "Bejelentések levelezőlistája"
+msgid  "NTP Pool Forum"
+msgstr "NTP Pool Fórum"
+
+msgid  "News site"
+msgstr "Hírek"
 
 msgid  "Discussion list"
 msgstr "Vita levelezőlista"
 
-msgid  "Development list"
-msgstr "Fejlesztői levelezőlista"
+msgid  "Development"
+msgstr "Fejlesztés"
 
-msgid  "announcement_list_description"
-msgstr "Nagyon alacsony forgalmú levelezőlista az NTP Pool híreivel, amelyre érdemes minden szerver üzemeltetőnek feliratkoznia."
+msgid  "forum_description"
+msgstr "Kérdések (és válaszok) az NTP Pool-ról, javaslatok fejlesztésre és időmérés valamint NTP szerverek működtetésével kapcsolatos témák."
 
-msgid  "discussion_list_description"
-msgstr "Minden szerver üzemeltetőnek és végfelhasználónak javasolt feliratkozni a listára, aki szeretne a projektbe jobban belelátni.<br/> Az általános NTP-vel kapcsolatos beszélgetések és viták helye a %1 Usenet hírcsoport és a <a href=\"%2\">Google Csoportok</a>."
+msgid  "news_description"
+msgstr "Bejelentések és hírek a hírek oldalon vagy a fórumon jelennek meg."
 
 msgid  "development_list_description"
 msgstr "Az aktuális <a href=\"%1\">ntp pool forráskód</a>dal és <a href=\"%2\">GeoDNS</a>sel kapcsolatos beszélgetések levelezőlistája."
-
-msgid  "irc_channel_description"
-msgstr "Az %1 szerveren elérhető az %2 csatorna."
 
 # tpl/server.html
 msgid  "Back to the front page"
