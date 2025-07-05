@@ -57,35 +57,29 @@ msgid  "Older news"
 msgstr "חדשות קודמות"
 
 # mailinglists.html
-msgid  "NTP Pool mailing lists"
-msgstr "רשימות תפוצה של ה-NTP Pool"
-
-msgid  "subscribe"
-msgstr "הרשם"
-
 msgid  "archive"
 msgstr "ארכיון"
 
-msgid  "Announcement list"
-msgstr "תפוצת הכרזות"
+msgid  "NTP Pool Forum"
+msgstr "פורום NTP Pool"
+
+msgid  "News site"
+msgstr "אתר חדשות"
 
 msgid  "Discussion list"
 msgstr "תפוצת דיונים"
 
-msgid  "Development list"
-msgstr "תפוצת פיתוח"
+msgid  "Development"
+msgstr "פיתוח"
 
-msgid  "announcement_list_description"
-msgstr "הכרזות חדשות בנוגע ל NTP Pool הנשלחות לעתים נדירות מאוד. כל מפעילי השרתים צריכים להיות רשומים לתפוצת ההכרזות."
+msgid  "forum_description"
+msgstr "שאלות (ותשובות) על NTP Pool, הצעות לשיפורים ונושאים הקשורים למדידת זמן והפעלת שרתי NTP."
 
-msgid  "discussion_list_description"
-msgstr "מפעילי שרתים (ומשתמשים) אשר מעוניינים להיות מעורבים יותר בפרוייקט יכולים להרשם אל רשימת הדיונים.<br/> כמובן, שדיונים כלליים אודות ntp מקומם בקבוצת היוזנט %1 (וגם ב<a href=\"%2\">קבוצות גוגל</a>)."
+msgid  "news_description"
+msgstr "הודעות וחדשות מתפרסמות באתר החדשות או בפורום."
 
 msgid  "development_list_description"
 msgstr "דיונים יותר טכניים (ובאופן אידאלי תמיד פרגמטיים) אודות הפיתוח הנוכחי של <a href=\"%1\">קוד ה-ntp pool</a> ושל <a href=\"%2\">GeoDNS</a> מתרחשים ברשימת התפוצה timekeepers-dev."
-
-msgid  "irc_channel_description"
-msgstr "ישנו ערוץ IRC בשם %2 עבור מפעילי שרתים ומשתמשים ברשת %1."
 
 # tpl/server.html
 msgid  "Back to the front page"
