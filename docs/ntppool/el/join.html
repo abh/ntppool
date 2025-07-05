@@ -27,7 +27,7 @@
 	</p>
 
 	<p>
-	The servers joining should not have <tt>pool.ntp.org</tt> as their upstream
+	The servers joining should not have <code>pool.ntp.org</code> as their upstream
 	server(s), but should configure some <a href="https://support.ntp.org/Servers/StratumTwoTimeServers/">good servers</a> manually. Those servers
 	<b>may</b> be chosen from the pool. The point is that they are chosen
 	statically instead of being assigned randomly from the pool at each server
@@ -62,7 +62,7 @@
 	<p>
 	It would be nice (but it's not necessary) if you could redirect web requests
 	on port 80 of your time server to the official web page of the project at
-	<tt>https://www.ntppool.org/</tt>. If you run Apache, you could do this with:
+	<code>https://www.ntppool.org/</code>. If you run Apache, you could do this with:
 	</p>
 
         [% PROCESS tpl/join/virtual_host_example.html %]
@@ -70,7 +70,7 @@
 	<p>
 	Again, this is only if you run a webserver anyway. The official project web
 	page will always be given with the 'www' at the beginning - but sometimes
-	people type <tt>pool.ntp.org</tt> and are then surprised to get a random web
+	people type <code>pool.ntp.org</code> and are then surprised to get a random web
         page.
 	</p>
 	<p>

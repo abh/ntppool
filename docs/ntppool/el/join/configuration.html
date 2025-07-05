@@ -1,99 +1,97 @@
 <div class="block">
 
-<h3>Configuration recommendations for servers joining the pool</h3>
+<h3>Συστάσεις διαμόρφωσης για διακομιστές που συμμετέχουν στη δεξαμενή</h3>
 
 <p>
-The <a href="http://support.ntp.org/bin/view/Support/WebHome">Support
-section</a> on <a href="http://support.ntp.org/">support.ntp.org</a> has a lot
-of useful information.
+Η <a href="http://support.ntp.org/bin/view/Support/WebHome">ενότητα υποστήριξης</a> στο <a href="http://support.ntp.org/">support.ntp.org</a> έχει πολλές
+χρήσιμες πληροφορίες.
 </p>
 
 <p>
-If you just want to <i>use</i> the pool, see the <a href="/use.html">pool usage</a> page.
+Αν απλά θέλετε να <i>χρησιμοποιήσετε</i> τη δεξαμενή, δείτε τη σελίδα <a href="/use.html">χρήσης δεξαμενής</a>.
 </p>
 
 <p>
-The <a
-href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a>
-newsgroup is the best place to get help with the ntpd software.
+Η <a
+href="http://groups.google.com/group/comp.protocols.time.ntp">ομάδα ειδήσεων comp.protocols.time.ntp</a>
+είναι το καλύτερο μέρος για να πάρετε βοήθεια με το λογισμικό ntpd.
 </p>
 
 <p>
-Below are some things of particular importance if you are going to
-join the NTP Pool with your server.
+Παρακάτω είναι μερικά πράγματα ιδιαίτερης σημασίας αν πρόκειται να
+συμμετάσχετε στη Δεξαμενή NTP με τον διακομιστή σας.
 </p>
 
-<p>The Internet Engineering Task Force have published a draft on
+<p>Η Internet Engineering Task Force έχει δημοσιεύσει ένα προσχέδιο για
 <a href="https://tools.ietf.org/html/draft-ietf-ntp-bcp">
-Network Time Protocol Best Current Practices</a> that we recommend.</p>
+Network Time Protocol Best Current Practices</a> που συστήνουμε.</p>
 
-<h4 id="management-queries">Management queries</h4>
+<h4 id="management-queries">Ερωτήματα διαχείρισης</h4>
 
-<p>Make the default configuration be to not allow "management queries". For ntpd this will be adding the "noquery" option to the default "restrict" lines, for example:</p>
+<p>Κάντε την προεπιλεγμένη διαμόρφωση να μην επιτρέπει "ερωτήματα διαχείρισης". Για το ntpd αυτό θα είναι η προσθήκη της επιλογής "noquery" στις προεπιλεγμένες γραμμές "restrict", για παράδειγμα:</p>
 
 [% INCLUDE "join/configuration/restrict-default.html" %]
 
-<p>To allow commands like "ntpq -c pe" to work from localhost you can add:</p>
+<p>Για να επιτρέψετε εντολές όπως "ntpq -c pe" να λειτουργούν από το localhost μπορείτε να προσθέσετε:</p>
 
 [% INCLUDE "join/configuration/restrict-localhost.html" %]
 
-<h4>Setup about 5 servers</h4>
+<h4>Ρυθμίστε περίπου 5 διακομιστές</h4>
 
 <p>
-To work properly ntpd needs to talk to at least 3 servers ("A man with
-a watch knows what time it is. A man with two watches is never sure").
+Για να λειτουργήσει σωστά το ntpd χρειάζεται να μιλάει σε τουλάχιστον 3 διακομιστές ("Ένας άντρας με
+ένα ρολόι ξέρει τι ώρα είναι. Ένας άντρας με δύο ρολόγια δεν είναι ποτέ σίγουρος").
 </p>
 
 <p>
-For servers in the pool we recommend configuring no less than 4 and no
-more than 7 servers.
+Για διακομιστές στη δεξαμενή συνιστούμε διαμόρφωση όχι λιγότερων από 4 και όχι
+περισσότερων από 7 διακομιστές.
 </p>
 
 
-<h4>Don't use *.pool.ntp.org servers</h4>
+<h4>Μη χρησιμοποιείτε διακομιστές *.pool.ntp.org</h4>
 
 <p>
-Ironically to make sure the pool service is the best it can be you
-shouldn't use the *.pool.ntp.org aliases in your configuration when
-you are going to add your server to the pool.
+Ειρωνικά για να βεβαιωθείτε ότι η υπηρεσία δεξαμενής είναι η καλύτερη που μπορεί να είναι δεν
+θα πρέπει να χρησιμοποιείτε τα ψευδώνυμα *.pool.ntp.org στη διαμόρφωσή σας όταν
+πρόκειται να προσθέσετε τον διακομιστή σας στη δεξαμενή.
 </p>
 
 <p>
-For the robustness of the pool it's healthier if all pool operators "hand pick" good local (network wise) time servers.
-The NTP.org wiki has  a <a
-href="https://support.ntp.org/Servers/">list of public
-servers</a>.
+Για την ανθεκτικότητα της δεξαμενής είναι πιο υγιές αν όλοι οι χειριστές δεξαμενής "επιλέγουν χειροκίνητα" καλούς τοπικούς (δικτυακά) διακομιστές χρόνου.
+Το wiki του NTP.org έχει μια <a
+href="https://support.ntp.org/Servers/">λίστα δημόσιων
+διακομιστών</a>.
 </p>
 
 
-<h4>Use the standard ntpd</h4>
+<h4>Χρησιμοποιήστε το τυπικό ntpd</h4>
 
 <p>
-We are all for software diversity, but a significant percentage of the
-"it's not working" questions that come in are for software other than
+Υποστηρίζουμε την ποικιλία λογισμικού, αλλά ένα σημαντικό ποσοστό των
+ερωτήσεων "δεν λειτουργεί" που έρχονται αφορούν λογισμικό διαφορετικό από το
 ntpd.
 </p>
 
 <p>
-You can <i>use</i> the pool with any program speaking NTP, but if you
-are going to join the pool we recommend you
-use <a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
+Μπορείτε να <i>χρησιμοποιήσετε</i> τη δεξαμενή με οποιοδήποτε πρόγραμμα που μιλάει NTP, αλλά αν
+πρόκειται να συμμετάσχετε στη δεξαμενή συνιστούμε να
+χρησιμοποιήσετε <a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
 </p>
 
 
-<h4>Don't use the LOCAL clock driver</h4>
+<h4>Μη χρησιμοποιείτε τον οδηγό ρολογιού LOCAL</h4>
 
-<p>Servers in the NTP Pool should not have the LOCAL clock driver
-configured.</p>
+<p>Οι διακομιστές στη Δεξαμενή NTP δεν θα πρέπει να έχουν διαμορφωμένο τον οδηγό ρολογιού LOCAL.</p>
 
-<h4>Beware of PTR DNS queries</h4>
+<h4>Προσοχή στα ερωτήματα PTR DNS</h4>
 
-<p>Some server operators have reported that some of the NTP users (or
-their firewall software) does a "reverse DNS" (PTR) query for the IP address
-of the NTP server. Beware that this might cause the number of queries to
-go up. Increasing the "time to live" on those records is recommended if
-the number of DNS queries is a concern, and will generally make the number
-of queries negligible.
+<p>Κάποιοι χειριστές διακομιστών έχουν αναφέρει ότι μερικοί από τους χρήστες NTP (ή
+το λογισμικό firewall τους) κάνουν ένα ερώτημα "αντίστροφου DNS" (PTR) για τη διεύθυνση IP
+του διακομιστή NTP. Προσέξτε ότι αυτό μπορεί να αυξήσει τον αριθμό των ερωτημάτων.
+Η αύξηση του "time to live" σε αυτές τις εγγραφές συνιστάται αν
+ο αριθμός των ερωτημάτων DNS είναι ανησυχητικός, και θα κάνει γενικά τον αριθμό
+των ερωτημάτων αμελητέο.
 </p>
 
 </div>
