@@ -12,6 +12,7 @@ use List::Util             qw(first);
 use Unicode::Collate;
 use Data::ULID;
 use JSON::XS qw(decode_json);
+use File::Slurper qw(read_binary);
 use Syntax::Keyword::Dynamically;
 use OpenTelemetry::Constants
   qw( SPAN_KIND_SERVER SPAN_KIND_INTERNAL SPAN_STATUS_ERROR SPAN_STATUS_OK );
@@ -25,50 +26,38 @@ use NP::Version;
 my $version = NP::Version->new;
 my $config  = Combust::Config->new;
 
-our %valid_languages = (
-    ar => {name => "اَلْعَرَبِيَّةُ", testing => 1},
-    bg => {name => "Български",       testing => 1},
-    ca => {name => "Català",          testing => 1},
-    da => {name => "Dansk"},
-    de => {name => "Deutsch"},
-    el => {name => "Ελληνικά"},
-    en => {name => "English",},
-    es => {name => "Español"},
-    eu => {name => "Euskara", testing => 1},
-    fa => {name => "فارسی",   testing => 1},
-    fi => {name => "Suomi"},
-    fr => {name => "Français",},
-    he => {name => "עברית", testing => 1},
-    hi => {name => "हिन्दी"},
-    hu => {name => "Magyar",           testing => 1},
-    id => {name => "Bahasa Indonesia", testing => 1},
-    it => {name => "Italiano"},
-    ja => {name => "日本語"},
-    kk => {name => "Қазақша", testing => 1},
-    ko => {name => "한국어",},
-    nb => {name => "Norsk (bokmål)"},
-    nl => {name => "Nederlands",},
-    nn => {name => "Norsk (nynorsk)"},
-    pl => {name => "Język", testing => 1},
-    pt => {name => "Português"},
-    ro => {name => "Română", testing => 1},
-    ru => {name => "Русский"},
-    sr => {name => "Српски"},
-    sv => {name => "Svenska"},
-    vi => {name => "Tiếng Việt", testing => 1},
-    tr => {name => "Türkçe"},
-    uk => {name => "Українська"},
-    zh => {name => "中文（简体）"},
-);
+our %valid_languages;
 
 NP::I18N::loc_lang('en');
 
 my $uc = Unicode::Collate->new();
 
-my $valid_languages_sorted = [
-    sort { $uc->cmp($valid_languages{$a}->{name}, $valid_languages{$b}->{name}) }
-      keys %valid_languages
-];
+my $valid_languages_sorted;
+
+# Load languages immediately at startup
+{
+    my $json_file = ($ENV{CBROOTLOCAL} || '.') . '/i18n/languages.json';
+
+    # Add debugging and error handling
+    unless (-f $json_file) {
+        die "Language file not found: $json_file (CBROOTLOCAL=" . ($ENV{CBROOTLOCAL} || 'unset') . ")";
+    }
+
+    my $json_content = read_binary($json_file);
+    my $languages = decode_json($json_content);
+    %valid_languages = %$languages;
+
+    $valid_languages_sorted = [
+        sort { $uc->cmp($valid_languages{$a}->{name}, $valid_languages{$b}->{name}) }
+          keys %valid_languages
+    ];
+
+    # Debug: dump the loaded data structure
+    use Data::Dumper;
+    warn "Loaded languages from $json_file:\n" . Dumper(\%valid_languages);
+    warn "Language keys: " . join(', ', sort keys %valid_languages) . "\n";
+    warn "Sorted languages: " . join(', ', @$valid_languages_sorted) . "\n";
+}
 
 my $ctemplate;
 

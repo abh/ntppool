@@ -4,7 +4,7 @@ USER root
 ENV BUILD 20241215
 
 RUN apk -U --no-cache upgrade --ignore alpine-baselayout
-RUN apk --no-cache add gomplate alpine-base
+RUN apk --no-cache add gomplate alpine-base perl-file-slurper
 RUN cpanm -v https://tmp.askask.com/2024/12/Net-Async-HTTP-Server-0.14bis4.tar.gz
 
 ENV CBCONFIG=
