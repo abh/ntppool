@@ -60,8 +60,11 @@ msgstr "Tin tức cũ hơn"
 msgid  "archive"
 msgstr "archive"
 
-msgid  "NTP Pool mailing lists"
-msgstr "Diễn đàn và tin tức"
+msgid  "NTP Pool Forum"
+msgstr "Diễn đàn NTP Pool"
+
+msgid  "Discussion list"
+msgstr "Danh sách thảo luận"
 
 # "Discourse forum" untranslated
 
