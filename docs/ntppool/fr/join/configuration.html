@@ -19,6 +19,8 @@ href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.tim
 Voici quelques points d'importance particulière si vous voulez rejoindre le pool.ntp.org avec votre serveur.
 </p>
 
+<p>L'Internet Engineering Task Force a publié un projet sur les <a href="https://tools.ietf.org/html/draft-ietf-ntp-bcp">meilleures pratiques actuelles du protocole de temps réseau</a> que nous recommandons.</p>
+
 <h4 id="management-queries">Requêtes de gestion</h4>
 
 <p>Par défaut, ne pas autoriser "les requêtes de gestion". Pour ntpd ce sera l'ajout de "noquery" dans l'option par défaut "restrict", par exemple:</p>
@@ -63,5 +65,9 @@ Vous pouvez <i>utiliser</i> pool.ntp.org avec tout programme qui parle le NTP, m
 <h4>Ne pas utiliser le pilote d'horloge locale</h4>
 
 <p>Les serveurs dans le pool.ntp.org ne devraient pas avoir configuré le pilote de l'horloge locale.</p>
+
+<h4>Attention aux requêtes DNS PTR</h4>
+
+<p>Certains opérateurs de serveurs ont signalé que certains utilisateurs NTP (ou leur logiciel de pare-feu) effectuent une requête "DNS inversé" (PTR) pour l'adresse IP du serveur NTP. Attention, cela peut faire augmenter le nombre de requêtes. Il est recommandé d'augmenter la "durée de vie" de ces enregistrements si le nombre de requêtes DNS est une préoccupation, et cela rendra généralement le nombre de requêtes négligeable.</p>
 
 </div>
