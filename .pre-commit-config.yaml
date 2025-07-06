@@ -11,6 +11,7 @@ repos:
       - id: check-shebang-scripts-are-executable
       - id: check-merge-conflict
       - id: check-symlinks
+      - id: check-json
 
   - repo: https://github.com/adrienverge/yamllint
     rev: v1.35.1
