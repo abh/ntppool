@@ -35,6 +35,10 @@ msgstr "Świat"
 msgid "All Pool Servers"
 msgstr "Wszystkie serwery puli"
 
+# navigation
+msgid "Translations"
+msgstr "Tłumaczenia"
+
 # index.html
 
 msgid "Introduction"
@@ -56,29 +60,26 @@ msgid  "Older news"
 msgstr "Starsze wiadomości"
 
 # mailinglists.html
-msgid  "NTP Pool mailing lists"
-msgstr "Listy mailingowe puli NTP"
-
-msgid  "subscribe"
-msgstr "zapisz się"
-
 msgid  "archive"
 msgstr "archiwum"
 
-msgid  "Announcement list"
-msgstr "Lista ogłoszeń"
+msgid  "NTP Pool Forum"
+msgstr "Forum NTP Pool"
+
+msgid  "News site"
+msgstr "Serwis informacyjny"
 
 msgid  "Discussion list"
 msgstr "Lista dyskusyjna"
 
-msgid  "Development list"
-msgstr "Lista deweloperów"
+msgid  "Development"
+msgstr "Rozwój"
 
-msgid  "announcement_list_description"
-msgstr "Lista ogłoszeń puli NTP o bardzo małym ruchu. Wszyscy operatorzy serwerów powinni się zapisać na listę ogłoszeń."
+msgid  "forum_description"
+msgstr "Pytania (i odpowiedzi) dotyczące NTP Pool, sugestie ulepszeń i tematy związane z pomiarem czasu i prowadzeniem serwerów NTP."
 
-msgid  "discussion_list_description"
-msgstr "Operatorzy (i użytkownicy) serwerów, którzy chcieliby być bardziej zaangażowani w projekcie mogą się zapisać na listę dyskusujną.<br/> Oczywiście ogólne tematy dotyczące NTP powinny być poruszane na grupie dyskusyjnej Usenetu %1 (także na <a href=\"%2\">Grupach Google</a>)."
+msgid  "news_description"
+msgstr "Ogłoszenia i wiadomości są publikowane na stronie informacyjnej lub na forum."
 
 msgid  "development_list_description"
 msgstr "Bardziej techniczne (i najlepiej zawsze praktyczne) dyskusje o bieżącym rozwoju <a href=\"%1\">kodu puli NTP</a> i <a href=\"%2\">GeoDNS</a> mają miejsce na liście timekeepers-dev."
