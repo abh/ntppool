@@ -63,9 +63,6 @@ msgstr "지난 소식"
 msgid  "NTP Pool Forum"
 msgstr "NTP 풀 게시판"
 
-msgid  "Discourse forum"
-msgstr "디스코스 게시판"
-
 msgid  "News site"
 msgstr "소식 사이트"
 
