@@ -73,29 +73,11 @@ msgstr "Preguntas (y respuestas) acerca del Pool NTP, sugerencias para mejoras y
 msgid  "news_description"
 msgstr "Los anuncios y noticias se publican en el sitio de noticias o en el foro."
 
-msgid  "NTP Pool mailing lists"
-msgstr "Listas de correo de equipos de NTP"
-
-msgid  "subscribe"
-msgstr "suscribirse"
-
 msgid  "archive"
 msgstr "archivo"
 
-msgid  "Announcement list"
-msgstr "Lista de avisos"
-
 msgid  "Discussion list"
 msgstr "Lista de debates"
-
-msgid  "Development list"
-msgstr "Lista de desarrollo"
-
-msgid  "announcement_list_description"
-msgstr "Avisos de tráfico muy muy lento de noticias del grupo NTP. Todas las operaciones del servidor se deben suscribir a la lista de avisos."
-
-msgid  "discussion_list_description"
-msgstr "Los operadores de servidor (y los usuarios) que deseen involucrase más en el proyecto pueden suscribirse a la lista de debates.<br/>Por supuesto, los debates generales sobre ntp deben estar en el grupo de noticias %1 de Usenet (incluso en <a href=\"%2\">Google Groups</a>)."
 
 msgid  "development_list_description"
 msgstr "Los debates más técnicos (e idealmente pragmáticos) sobre el desarrollo del <a href=\"%1\">código del pool ntp</a> y <a href=\"%2\">GeoDNS</a> ocurren en el <a href=\"%3\">foro de desarrollo</a>."

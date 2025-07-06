@@ -1,13 +1,13 @@
-[% page.title = '&iquest;C&oacute;mo configuro el NTP en el grupo?' %]
+[% page.title = '¿Cómo configuro el NTP en el grupo?' %]
 
 <div class="block">
-	<h3 id="use">&iquest;C&oacute;mo utilizo pool.ntp.org?</h3>
+	<h3 id="use">¿Cómo utilizo pool.ntp.org?</h3>
 
 	<p>
-	Si &uacute;nicamente quieres sincronizar el reloj de tus ordenadores con la hora de la red,
-	el archivo de configuraci&oacute;n (para el ntpd que se distribuye en
+	Si únicamente quieres sincronizar el reloj de tus ordenadores con la hora de la red,
+	el archivo de configuración (para el ntpd que se distribuye en
 	<a href="https://www.ntp.org/">ntp.org</a> en cualquiera de los sistemas operativos
-	soportados - <b>Linux, *BSD, Windows e incluso algunos otros sistemas m&aacute;s ex&oacute;ticos</b>),
+	soportados - <b>Linux, *BSD, Windows e incluso algunos otros sistemas más exóticos</b>),
 	es muy sencillo:
 	</p>
 
@@ -15,64 +15,68 @@
 
 	<p>
 	Los nombres 0, 1, 2 y 3.pool.ntp.org apuntan a un conjunto de servidores seleccionados de
-	forma aleatoria que cambian cada hora. Aseg&uacute;rate de que el reloj de tu ordenador
-	est&eacute; configurado de forma correcta (con muy pocos minutos de diferencia con la hora 'real').
-	Podr&iacute;as usar <tt>ntpdate pool.ntp.org</tt>, o simplemente la orden <tt>date</tt>
-	y sincronizarlo con tu reloj de pulsera. Arranca ntpd, y en un tiempo m&aacute;s o
-	menos razonable (&iexcl;Podr&iacute;a ser de hasta media hora!),
-	la orden <tt>ntpq -pn</tt> deber&iacute;a mostrar algo as&iacute;:
+	forma aleatoria que cambian cada hora. Asegúrate de que el reloj de tu ordenador
+	esté configurado de forma correcta (con muy pocos minutos de diferencia con la hora 'real').
+	Podrías usar <code>ntpdate pool.ntp.org</code>, o simplemente la orden <code>date</code>
+	y sincronizarlo con tu reloj de pulsera. Arranca ntpd, y en un tiempo más o
+	menos razonable (¡Podría ser de hasta media hora!),
+	la orden <code>ntpq -pn</code> debería mostrar algo así:
 	</p>
 
 	[% INCLUDE "ntppool/use/sample-ntpq.html" %]
 
 	<p>
-	Las direcciones IP podr&iacute;an ser diferentes, porque se asignan servidores de hora
-	de forma aleatoria. Lo m&aacute;s importante es que las l&iacute;neas que empiezan con asterisco (<tt>*</tt>),
+	Las direcciones IP podrían ser diferentes, porque se asignan servidores de hora
+	de forma aleatoria. Lo más importante es que las líneas que empiezan con asterisco (<code>*</code>),
 	indican que tu ordenador obtiene la hora de Internet.
-	&iexcl;Ya no te tendr&aacute;s que preocuparte por ello nunca m&aacute;s!
+	¡Ya no te tendrás que preocupar por ello nunca más!
+	</p>
+	<p>
+	Buscar <code>pool.ntp.org</code> (o <code>0.pool.ntp.org</code>,
+	<code>1.pool.ntp.org</code>, etc.) normalmente devolverá direcciones IP de
+	servidores en o cerca de tu país. Para la mayoría de usuarios esto dará
+	los mejores resultados.
 	</p>
 
-	<p>
-	Como <tt>pool.ntp.org</tt> asigna servidores de hora de cualquier parte del mundo,
-	la calidad de la hora no ser&aacute; la ideal. Obtendr&aacute;s mejores resultados si
-	usas las <a href="/zone/@">zonas continentales</a> (Por ejemplo
-	<i><a href="/zone/europe">Europa</a>,
-	<a href="/zone/north-america">Norteam&eacute;rica</a>,
-	<a href="/zone/oceania">Ocean&iacute;a</a> o
-	<a href="/zone/asia">Asia</a>.pool.ntp.org</i>),
-	e incluso mejor si usas la zona de tu pa&iacute;s (por ejemplo es.pool.ntp.org en Espa&ntilde;a).
-	Para todas estas zonas, tambi&eacute;n puedes usar los prefijos 0, 1, 2 o 3, como 0.es.pool.ntp.org.
-	Observa, sin embargo, que la zona puede no existir en tu pa&iacute;s, o podr&iacute;a contener solo
-	uno o dos servidores de hora.
+	<p>También puedes usar las <a href="/zone/@">zonas continentales</a> (Por ejemplo
+	<a href="/zone/europe">Europa</a>,
+	<a href="/zone/north-america">Norteamérica</a>,
+	<a href="/zone/oceania">Oceanía</a> o
+	<code><a href="/zone/asia">Asia</a>.pool.ntp.org</code>),
+	y una zona de país (como
+	<code>es.pool.ntp.org</code> en España) - para todas estas zonas, puedes
+	usar de nuevo los prefijos 0, 1, 2, o 3, como <code>0.es.pool.ntp.org</code>.
+	Ten en cuenta, sin embargo, que la zona de país puede no existir para tu país,
+	o puede contener solo uno o dos servidores de hora.
 	</p>
 	<p>
-	Ten en cuenta tambi&eacute;n que el sistema actualmente solo proporciona direcciones IPv6 para una zona
-	adem&aacute;s de las direcciones IPv4 si el nombre de la zona tiene el prefijo n&uacute;mero 2, por ejemplo <code>2.pool.ntp.org</code>
-	(siempre que haya servidores NTP IPv6 en la zona respectiva). Los nombres de zona que no tienen prefijo num&eacute;rico,
+	Ten en cuenta también que el sistema actualmente solo proporciona direcciones IPv6 para una zona
+	además de las direcciones IPv4 si el nombre de la zona tiene el prefijo número 2, por ejemplo <code>2.pool.ntp.org</code>
+	(siempre que haya servidores NTP IPv6 en la zona respectiva). Los nombres de zona que no tienen prefijo numérico,
 	o tienen prefijo 0, 1 o 3, actualmente proporcionan solo direcciones IPv4.
 	</p>
 
 	<p>
-	Si est&aacute;s usando <b>una versi&oacute;n de Windows reciente</b>, puedes utilizar
+	Si estás usando <b>una versión de Windows reciente</b>, puedes utilizar
 	el cliente ntp integrado en el sistema.
 	</p>
-	<p>Haz clic derecho en la fecha y hora en el &aacute;rea del sistema y selecciona Ajustar fecha/hora o abre configuraci&oacute;n con Win+I y haz clic en Hora e idioma -&gt; Fecha y hora.
-		despl&aacute;zate hacia abajo y haz clic en Fecha, hora, formato regional
-		despl&aacute;zate hacia abajo y haz clic en Configuraci&oacute;n adicional de fecha, hora y regi&oacute;n
+	<p>Haz clic derecho en la fecha y hora en el área del sistema y selecciona Ajustar fecha/hora o abre configuración con Win+I y haz clic en Hora e idioma -&gt; Fecha y hora.
+		desplázate hacia abajo y haz clic en Fecha, hora, formato regional
+		desplázate hacia abajo y haz clic en Configuración adicional de fecha, hora y región
 		haz clic en Fecha y hora e Hora de Internet
-		haz clic en el bot&oacute;n Cambiar configuraci&oacute;n. Introduce <code>pool.ntp.org</code> y haz clic en Actualizar ahora.
+		haz clic en el botón Cambiar configuración. Introduce <code>pool.ntp.org</code> y haz clic en Actualizar ahora.
 	</p>
 	<p>
-		Prueba haciendo clic derecho en la fecha y hora en el &aacute;rea del sistema y selecciona Ajustar fecha/hora o abre configuraci&oacute;n con Win+I y haz clic en Hora e idioma -&gt; Fecha y hora.
-		Haz clic en el bot&oacute;n "Sincronizar ahora".
+		Prueba haciendo clic derecho en la fecha y hora en el área del sistema y selecciona Ajustar fecha/hora o abre configuración con Win+I y haz clic en Hora e idioma -&gt; Fecha y hora.
+		Haz clic en el botón "Sincronizar ahora".
 	</p>
 	<p>
 	Si tu sistema Windows forma parte de un dominio, no puedes actualizar la hora de tu ordenador
 	de forma independiente.
 
-	Para m&aacute;s informaci&oacute;n acerca de c&oacute;mo ajustar la
+	Para más información acerca de cómo ajustar la
 	hora en Windows, echa un vistazo a
-	<a href="https://technet.microsoft.com/en-us/library/cc773013%28WS.10%29.aspx">C&oacute;mo funciona el servicio de hora de Windows</a>.
+	<a href="https://technet.microsoft.com/en-us/library/cc773013%28WS.10%29.aspx">Cómo funciona el servicio de hora de Windows</a>.
 	</p>
 </div>
 
@@ -80,59 +84,59 @@
 	<h3>Notas adicionales</h3>
 
         <p><span class="hook">Considera si el Pool NTP es apropiado
-        para tu uso</span>. Si tu negocio, organizaci&oacute;n o vida humana
-        depende de tener la hora correcta o puede verse da&ntilde;ada si est&aacute;
-        mal, no deber&iacute;as "simplemente tomarla de Internet". El Pool
+        para tu uso</span>. Si tu negocio, organización o vida humana
+        depende de tener la hora correcta o puede verse dañada si está
+        mal, no deberías "simplemente tomarla de Internet". El Pool
         NTP es generalmente de muy alta calidad, pero es un servicio gestionado
         por voluntarios en su tiempo libre. Por favor, habla con tus
         proveedores de equipos y servicios para configurar un servicio local y confiable.
-        Ve tambi&eacute;n nuestros <a href="/tos.html">t&eacute;rminos
+        Ve también nuestros <a href="/tos.html">términos
         de servicio</a>.
 
         Recomendamos servidores de hora de
         <a href="http://www.meinbergglobal.com/english/products/ntp-time-server.htm">Meinberg</a>,
-        pero tambi&eacute;n puedes encontrar servidores de hora de
+        pero también puedes encontrar servidores de hora de
         <a href="http://www.endruntechnologies.com/NTP-Servers/gps-cdma-ntp.htm">End Run</a>,
         <a href="http://spectracom.com/products-services/precision-timing#anchor-2172">Spectracom</a>
         y muchos otros.
         </p>
 
-	<p><span class="hook">Si tienes una direcci&oacute;n IP est&aacute;tica y una conexi&oacute;n a Internet razonable</span>
-	(el ancho de banda no es tan importante, simplemente deber&iacute;a ser estable y no estar demasiado sobrecargado),
-	por favor, considera donar tu servidor a la lista de servidores. No te costar&aacute; m&aacute;s que algunos
-	cientos de bytes por segundo de tr&aacute;fico y nos ayudar&aacute;s a mantener este proyecto vivo.
-	Por favor, lee <a href="/join.html">la p&aacute;gina de participaci&oacute;n</a> para obtener m&aacute;s informaci&oacute;n.
+	<p><span class="hook">Si tienes una dirección IP estática y una conexión a Internet razonable</span>
+	(el ancho de banda no es tan importante, simplemente debería ser estable y no estar demasiado sobrecargado),
+	por favor, considera donar tu servidor a la lista de servidores. No te costará más que algunos
+	cientos de bytes por segundo de tráfico y nos ayudarás a mantener este proyecto vivo.
+	Por favor, lee <a href="/join.html">la página de participación</a> para obtener más información.
 	</p>
 
 	<p><span class="hook">Si tu proveedor de Internet tiene un servidor de hora</span>, o si conoces un
-	servidor de hora fiable cercano, deber&iacute;as usarlo en lugar de los de esta lista.
-	Probablemente obtendr&aacute;s una hora m&aacute;s precisa y usar&aacute;s menos recursos de red.
-	Si solo conoces un servidor de hora cercano, puedes por supuesto usarlo y usar dos m&aacute;s de pool.ntp.org.
+	servidor de hora fiable cercano, deberías usarlo en lugar de los de esta lista.
+	Probablemente obtendrás una hora más precisa y usarás menos recursos de red.
+	Si solo conoces un servidor de hora cercano, puedes por supuesto usarlo y usar dos más de pool.ntp.org.
 	</p>
 
 	<p><span class="hook">Es raro, pero alguna vez puede ocurrir que se asigne dos veces el mismo servidor</span>.
 	Normalmente, con solo reiniciar el servicio ntp es suficiente para soluciona el problema.
-	Si usas una zona de pa&iacute;s, por favor, piensa que hay posibilidad de que solo
-	haya un servidor conocido en el proyecto en el pa&iacute;s. En este caso, es mejor utilizar
+	Si usas una zona de país, por favor, piensa que hay posibilidad de que solo
+	haya un servidor conocido en el proyecto en el país. En este caso, es mejor utilizar
 	una zona continental. Puedes <a href="/zone">explorar las zonas</a> para ver cuantos
 	servidores tenemos en cada una.
 	</p>
 
-	<p><span class="hook">S&eacute; ben&eacute;volo</span>. Algunos servidores est&aacute;n administrados por voluntarios,
-	y en la mayor&iacute;a de las ocasiones, los servidores son realmente servidores de archivos,
-	de correo o web, los cuales tambi&eacute;n ejecutan el servicio ntp.
-	Por tanto, no uses m&aacute;s de tres servidores de hora en tu configuraci&oacute;n y no hagas jugarretas
-	con con <tt>burst</tt> o <tt>minpoll</tt>. Todo lo que conseguir&aacute;s es una carga extra
+	<p><span class="hook">Sé benévolo</span>. Algunos servidores están administrados por voluntarios,
+	y en la mayoría de las ocasiones, los servidores son realmente servidores de archivos,
+	de correo o web, los cuales también ejecutan el servicio ntp.
+	Por tanto, no uses más de tres servidores de hora en tu configuración y no hagas trucos
+	con <code>burst</code> o <code>minpoll</code>. Todo lo que conseguirás es una carga extra
 	en los servidores de los voluntarios.
         </p>
 
-	<p><span class="hook">Aseg&uacute;rate de que la <i>configuraci&oacute;n de zona horaria</i> de tu ordenador sea correcta</span>.
+	<p><span class="hook">Asegúrate de que la <i>configuración de zona horaria</i> de tu ordenador sea correcta</span>.
 	ntpd no hace nada con las zonas horarias, solo usa la zona horaria UTC (Tiempo Universal Coordinado) internamente.
 	</p>
 
 	<p><span class="hook">Si estas sincronizando una red de ordenadores con pool.ntp.org</span>,
-	por favor, configura uno de tus ordenadores como servidor de hora y configura el resto de ordenadores para que se sincronicen con &eacute;ste,
-	(tendr&aacute;s que leer un poco para hacerlo, pero no es dif&iacute;cil).
+	por favor, configura uno de tus ordenadores como servidor de hora y configura el resto de ordenadores para que se sincronicen con éste,
+	(tendrás que leer un poco para hacerlo, pero no es difícil).
 	Y siempre puedes contar con el <a href="news:comp.protocols.time.ntp">grupo de noticias comp.protocols.time.ntp</a>
 	</p>
 
