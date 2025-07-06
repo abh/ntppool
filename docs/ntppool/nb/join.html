@@ -26,7 +26,7 @@
 	</p>
 
 	<p>
-	Tjenerne som blir med burde ikke bruke <tt>pool.ntp.org</tt> som sin(e) oppstrømstjener(e),
+	Tjenerne som blir med burde ikke bruke <code>pool.ntp.org</code> som sin(e) oppstrømstjener(e),
   men de burde sette opp noen <a href="https://support.ntp.org/Servers/StratumTwoTimeServers">gode tjenere</a> manuelt (disse tjenerene
 	<b>kan</b> bli valgt fra puljen. Poenget er at de blir valgt statisk i stedet
   for å bli tilfeldig tilegnet ved hver tjeneromstart. Dette vil hjelpe til
@@ -59,7 +59,7 @@
 	<p>
 	Det hadde vært hyggelig (men ikke påkrevd) om du kunne omdirigert nettforespørsler
   til port 80 på tidstjeneren din til prosjektets offisielle nettside hos
-	<tt>https://www.ntppool.org</tt>. Dersom du kjører Apache, kan du gjøre dette med:
+	<code>https://www.ntppool.org</code>. Dersom du kjører Apache, kan du gjøre dette med:
 	</p>
 
         [% PROCESS tpl/join/virtual_host_example.html %]
@@ -67,7 +67,7 @@
 	<p>
 	Jeg sier nok en gang at dette kun er dersom du uansett drifter en nettjener. Prosjektets
   offisielle nettside vil alltid starte med 'www' - men noen ganger skriver folk inn
-  <tt>pool.ntp.org</tt> og blir overrasket over å komme til en tilfeldig nettside.
+  <code>pool.ntp.org</code> og blir overrasket over å komme til en tilfeldig nettside.
 	</p>
 	<p>
 	Når tjeneren har blitt lagt til i puljen, blir den konstant holdt øye med for
