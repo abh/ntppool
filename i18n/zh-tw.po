@@ -25,6 +25,9 @@ msgstr "南美"
 msgid "Europe"
 msgstr "歐洲"
 
+msgid "Oceania"
+msgstr "大洋洲"
+
 msgid "Global"
 msgstr "全球"
 
@@ -35,33 +38,49 @@ msgstr "所有可用伺服器"
 msgid "Translations"
 msgstr "語言"
 
+# index.html
+msgid  "Introduction"
+msgstr "介紹"
+
+msgid  "Active Servers"
+msgstr "現有伺服器"
+
+msgid  "Links"
+msgstr "連結"
+
+msgid  "Terms of service"
+msgstr "服務條款"
+
+msgid  "Subscribe in a reader"
+msgstr "訂閱RSS"
+
+msgid  "Older news"
+msgstr "舊新聞"
+
 # mailinglists.html
-msgid  "NTP Pool mailing lists"
-msgstr "NTP Pool郵件群組"
-
-msgid  "subscribe"
-msgstr "訂閱"
-
 msgid  "archive"
 msgstr "存檔"
 
-msgid  "Announcement list"
-msgstr "公告列表"
+msgid  "NTP Pool Forum"
+msgstr "NTP Pool論壇"
+
+msgid  "News site"
+msgstr "新聞網站"
 
 msgid  "Discussion list"
-msgstr "討論列表"
+msgstr "討論群組"
 
-msgid  "Development list"
-msgstr "開發列表"
+msgid  "Development"
+msgstr "開發"
 
-msgid  "announcement_list_description"
-msgstr "NTP Pool的最新消息的資料量非常非常的少，請所有伺服器管理員務必要訂閱！"
+msgid  "forum_description"
+msgstr "有關NTP Pool的問題（和解答）、改進建議以及與計時和操作NTP伺服器相關的話題。"
 
-msgid  "discussion_list_description"
-msgstr "不管你是伺服器管理員還是使用者，如果你想更多的參預這個專案，請訂閱我們的討論清單。<br/> 一般有關NTP的討論則應該在 %1 Usenet 新聞群組上 (或是在 <a href=\"%2\">Google Groups</a>)"
+msgid  "news_description"
+msgstr "公告和新聞發布在新聞網站或論壇上。"
 
 msgid  "development_list_description"
-msgstr "更多有關目前開發<a href=\"%1\">ntp pool 程式碼</a> 以及 <a href=\"%2\">GeoDNS</a> 相關技術的討論會在timekeepers-dev清單上."
+msgstr "關於<a href=\"%1\">ntp pool程式碼</a>和<a href=\"%2\">GeoDNS</a>開發的更多技術性（並且理想情況下實用的）討論在<a href=\"%3\">開發論壇</a>中進行。"
 
 # tpl/server.html
 msgid  "Back to the front page"
