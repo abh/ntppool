@@ -1,15 +1,12 @@
 {
   "ar": {
-    "name": "اَلْعَرَبِيَّةُ",
-    "testing": 1
+    "name": "اَلْعَرَبِيَّةُ"
   },
   "bg": {
-    "name": "Български",
-    "testing": 1
+    "name": "Български"
   },
   "ca": {
-    "name": "Català",
-    "testing": 1
+    "name": "Català"
   },
   "cs": {
     "name": "Čeština"
@@ -30,12 +27,10 @@
     "name": "Español"
   },
   "eu": {
-    "name": "Euskara",
-    "testing": 1
+    "name": "Euskara"
   },
   "fa": {
-    "name": "فارسی",
-    "testing": 1
+    "name": "فارسی"
   },
   "fi": {
     "name": "Suomi"
@@ -44,8 +39,7 @@
     "name": "Français"
   },
   "he": {
-    "name": "עברית",
-    "testing": 1
+    "name": "עברית"
   },
   "hr": {
     "name": "Hrvatski",
@@ -55,12 +49,10 @@
     "name": "हिन्दी"
   },
   "hu": {
-    "name": "Magyar",
-    "testing": 1
+    "name": "Magyar"
   },
   "id": {
-    "name": "Bahasa Indonesia",
-    "testing": 1
+    "name": "Bahasa Indonesia"
   },
   "it": {
     "name": "Italiano"
@@ -69,8 +61,7 @@
     "name": "日本語"
   },
   "kk": {
-    "name": "Қазақша",
-    "testing": 1
+    "name": "Қазақша"
   },
   "ko": {
     "name": "한국어"
@@ -91,15 +82,13 @@
     "name": "Português"
   },
   "ro": {
-    "name": "Română",
-    "testing": 1
+    "name": "Română"
   },
   "ru": {
     "name": "Русский"
   },
   "si": {
-    "name": "සිංහල",
-    "testing": 1
+    "name": "සිංහල"
   },
   "sr": {
     "name": "Српски"
@@ -114,8 +103,7 @@
     "name": "Українська"
   },
   "vi": {
-    "name": "Tiếng Việt",
-    "testing": 1
+    "name": "Tiếng Việt"
   },
   "zh": {
     "name": "中文（简体）"
