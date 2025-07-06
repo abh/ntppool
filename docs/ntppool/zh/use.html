@@ -12,7 +12,7 @@
 	<p>
 	期中 0、1、2 和 3.pool.ntp.org 域名解析将会每小时更新，随机指向一系列服务器。
 	确认您的计算机时间设置得合理(和“真实”时间相差几分钟) —— 您能使用 <code>ntpdate
-	pool.ntp.org</code>或者您只需使用 <code>date</code> 命令来将它的时间设置成和您的手表一样。
+	pool.ntp.org</code> 或者您只需使用 <code>date</code> 命令来将它的时间设置成和您的手表一样。
 	接下来运行ntpd，并且等候一段时间（这可能花费大约半小时！），在这之后 <code>ntpq -pn</code> 应该会输出类似下面的结果：
 	</p>
 
@@ -23,7 +23,7 @@
 	—— 您再也不用为它担心了！
 	</p>
 	<p>
-	您可以从 <code>pool.ntp.org</code>进行查询 (或者 <code>0.pool.ntp.org</code>、
+	您可以从 <code>pool.ntp.org</code> 进行查询 (或者 <code>0.pool.ntp.org</code>、
 	<code>1.pool.ntp.org</code>，等等) 它们通常会返回您的国家（或是靠近您的国家的）的服务器的IP地址。
 	对大多数用户，这将能取得最佳的结果。
 	</p>
@@ -64,7 +64,7 @@
 		另请参阅我们的 <a href="/tos.html">服务条款</a>。
 
         我们向您推荐来自
-        <a href="http://www.meinbergglobal.com/english/products/ntp-time-server.htm">Meinberg</a>的时间服务器，
+        <a href="http://www.meinbergglobal.com/english/products/ntp-time-server.htm">Meinberg</a> 的时间服务器，
         您也能从
         <a href="http://www.endruntechnologies.com/NTP-Servers/gps-cdma-ntp.htm">End Run</a>、
         <a href="http://spectracom.com/products-services/precision-timing#anchor-2172">Spectracom</a>
@@ -83,7 +83,7 @@
 	—— 这样的话您最好还是使用洲际空间。  您可以 <a href="/zone">浏览空间</a> 来确定每个空间里我们到底有多少台服务器。</p>
 
 	<p><span class="hook">请友善对待</span>。 许多服务器都是志愿者提供，并且几乎所有的时间服务器是真实的文件、邮件或是网页服务器，
-	它们只是恰巧顺带运行ntp。 所以请不要在您的设置中使用多于4台服务器，并且不要使用 <code>burst</code> 或者是 <code>minpoll</code>捣乱，那么做只会使志愿者的时间服务器增加负载。</p>
+	它们只是恰巧顺带运行ntp。 所以请不要在您的设置中使用多于4台服务器，并且不要使用 <code>burst</code> 或者是 <code>minpoll</code> 捣乱，那么做只会使志愿者的时间服务器增加负载。</p>
 
 	<p><span class="hook">请确认您计算机上的 <i>时区设置</i> 正确</span>.
 	ntpd 本身并不会对时区设置进行任何修改，它只是在内部使用UTC</p>

@@ -23,14 +23,14 @@
 	</p>
 
 	<p>
-	加入计划的服务器不能把 <tt>pool.ntp.org</tt> 用作上游服务器，而是需要手动设置一些<a href="https://support.ntp.org/Servers/StratumTwoTimeServers/">好的服务器</a>(这些服务器
+	加入计划的服务器不能把 <code>pool.ntp.org</code> 用作上游服务器，而是需要手动设置一些 <a href="https://support.ntp.org/Servers/StratumTwoTimeServers/">好的服务器</a>(这些服务器
 	<b>可以</b> 从池中选取。 重要的是它们是被静态选择的，而不是在每台服务器重启后动态分配的，这将有助于提供可接受品质的服务)。
 	注意，对于你的服务器是1层或者是2层（stratum 1 or 2）的我们没有要求 - 正如这个项目是最大程度上分散负载，对于为什么
 	3层或者是4层的服务器（stratum 3 or 4）不应该加入，我想我们不必解释。
 	</p>
 
 	<p>
-	我们有一个包含 <a href="/join/configuration.html">服务器加入NTP池的设置建议</a>的页面。
+	我们有一个包含 <a href="/join/configuration.html">服务器加入NTP池的设置建议</a> 的页面。
 	</p>
 	<p>最后，我必须强调：加入NTP池的行为是一个 <b>长期承诺</b>。  我们很乐意当您的形势改变时将你退出池，但是由于ntp 客户端的操作机理， <b>访问流量完全消失可能要耗费数周、数月，甚至数年！</b>
 	</p>
@@ -46,7 +46,7 @@
 	以及可能的话还有 <a href="https://lists.ntp.org/listinfo/pool">池邮件列表</a>。
 	</p>
 	<p>
-	如果您能把您的服务器80端口的请求重定向到项目的官方页面<tt>https://www.ntppool.org</tt>，那将是极好的（不过可能也不太现实）。
+	如果您能把您的服务器80端口的请求重定向到项目的官方页面 <code>https://www.ntppool.org</code>，那将是极好的（不过可能也不太现实）。
 	如果您的服务器运行Apache，您可以按下列方法把您的服务器80端口的请求重定向到项目的官方页面：
 	</p>
 
@@ -54,10 +54,10 @@
 
 	<p>
 	重申一下，如果您正在运行web服务器。这个项目的官方地址是以“www”开头的 - 但是有时人们偷懒只打了
-	<tt>pool.ntp.org</tt> 随后会因为获得一个随机页面而感到惊讶。
+	<code>pool.ntp.org</code> 随后会因为获得一个随机页面而感到惊讶。
 	</p>
 	<p>
 	一旦被加入池中，服务器将每隔一段时间被监控可用性和精确性。
-	您能在 <a href="scores">web前端</a> 或是 <a href="/manage">服务器管理</a>页面上查看您服务器的表现。
+	您能在 <a href="scores">web前端</a> 或是 <a href="/manage">服务器管理</a> 页面上查看您服务器的表现。
 	</p>
 </div>
