@@ -57,29 +57,26 @@ msgid  "Older news"
 msgstr "Daha önceki haberler"
 
 # mailinglists.html
-msgid  "NTP Pool mailing lists"
-msgstr "NTP Havuz posta listeleri"
-
-msgid  "subscribe"
-msgstr "abonelik"
-
 msgid  "archive"
 msgstr "arşiv"
 
-msgid  "Announcement list"
-msgstr "Duyuru listesi"
+msgid  "NTP Pool Forum"
+msgstr "NTP Havuz Forum"
+
+msgid  "News site"
+msgstr "Haber sitesi"
 
 msgid  "Discussion list"
 msgstr "Tartışma listesi"
 
-msgid  "Development list"
-msgstr "Geliştirme listesi"
+msgid  "Development"
+msgstr "Geliştirme"
 
-msgid  "announcement_list_description"
-msgstr "NTP Havuz bildirilerinin duyuru trafiği çok çok düşük. Tüm sunucu operatörleri duyuru listesine abone olmalıdır."
+msgid  "forum_description"
+msgstr "NTP Havuzu hakkında sorular (ve cevaplar), geliştirme önerileri ve zaman ölçümü ve NTP sunucularının çalıştırılması ile ilgili konular."
 
-msgid  "discussion_list_description"
-msgstr "Sunucu operatörleri ve kullanıcılardan projede daha aktif olmak isteyen varsa tartışma listesine abone olabilir.<br/> NTP hakkında genel tartışmalar tabii ki %1 Usenet haber grubunda (aynı zamanda <a href=\"%2\">Google Gruplarında</a>) olmalıdır."
+msgid  "news_description"
+msgstr "Duyurular ve haberler haber sitesinde veya forumda yayınlanır."
 
 msgid  "development_list_description"
 msgstr "<a href=\"%1\">NTP havuz kodu</a> ve <a href=\"%2\">GeoDNS</a> geliştirmeleri hakkındaki daha teknik (ve öyle de olmalı) tartışmalar timekeepers-dev listesinde olmalı."
