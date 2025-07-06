@@ -1,82 +1,81 @@
-[% page.title = 'Join the NTP Pool!'  %]
+[% page.title = 'Συμμετέχετε στη Δεξαμενή NTP!'  %]
 
 <div class="block">
-	<h3><a name="join">How do I join pool.ntp.org?</a></h3>
+	<h3><a name="join">Πώς μπορώ να συμμετάσχω στο pool.ntp.org;</a></h3>
 	<p>
-	First: Thanks for your interest.  Usage of the pool has grown
-	enormously, and the only way we can keep it easy for everyone to run a
-	pool server is to also grow the number of servers participating.
+	Πρώτα: Ευχαριστούμε για το ενδιαφέρον σας. Η χρήση της δεξαμενής έχει αυξηθεί
+	τεράστια, και ο μόνος τρόπος να διατηρήσουμε εύκολη τη λειτουργία ενός
+	διακομιστή δεξαμενής για όλους είναι να αυξήσουμε επίσης τον αριθμό των συμμετεχόντων διακομιστών.
 	</p>
 
 	<p>
-	Your computer <b>must have a static IP address</b> and a permanent
-	Internet connection.  It's very important that your IP address doesn't
-	change or only does so extremely infrequently (say once a year or
-	less).  The required bandwidth is relatively low.  Each client will
-	only send a few UDP packets every few to every 20 minutes.
+	Ο υπολογιστής σας <b>πρέπει να έχει στατική διεύθυνση IP</b> και μόνιμη
+	σύνδεση Διαδικτύου. Είναι πολύ σημαντικό η διεύθυνση IP σας να μην
+	αλλάζει ή να το κάνει εξαιρετικά σπάνια (ας πούμε μία φορά το χρόνο ή
+	λιγότερο). Το απαιτούμενο bandwidth είναι σχετικά χαμηλό. Κάθε πελάτης θα
+	στέλνει μόνο λίγα UDP πακέτα κάθε λίγα έως κάθε 20 λεπτά.
 	</p>
 
 	<p>
-	Currently most servers get about 5-15 NTP packets per second
-	with spikes of 60-120 packets per second a few times a day.
-	This is roughly equivalent to 10-15Kbit/sec with
-	spikes of 50-120Kbit/sec.  The project steadily acquires more
-	timeservers, so the load should not increase dramatically for
-	each server.  In plain terms, you probably need at least
-	384-512Kbit bandwidth (in and out-going).
+	Επί του παρόντος οι περισσότεροι διακομιστές λαμβάνουν περίπου 5-15 πακέτα NTP ανά δευτερόλεπτο
+	με αιχμές 60-120 πακέτων ανά δευτερόλεπτο λίγες φορές τη μέρα.
+	Αυτό ισοδυναμεί περίπου με 10-15Kbit/δευτ με
+	αιχμές 50-120Kbit/δευτ. Το έργο αποκτά σταθερά περισσότερους
+	διακομιστές χρόνου, οπότε το φορτίο δεν θα πρέπει να αυξηθεί δραματικά για
+	κάθε διακομιστή. Με απλά λόγια, χρειάζεστε πιθανώς τουλάχιστον
+	384-512Kbit bandwidth (εισερχόμενο και εξερχόμενο).
 	</p>
 
 	<p>
-	The servers joining should not have <code>pool.ntp.org</code> as their upstream
-	server(s), but should configure some <a href="https://support.ntp.org/Servers/StratumTwoTimeServers/">good servers</a> manually. Those servers
-	<b>may</b> be chosen from the pool. The point is that they are chosen
-	statically instead of being assigned randomly from the pool at each server
-	restart.  This will help providing an acceptable quality of service.
+	Οι διακομιστές που συμμετέχουν δεν θα πρέπει να έχουν <code>pool.ntp.org</code> ως ανάντη
+	διακομιστή(-ες) τους, αλλά θα πρέπει να διαμορφώσουν κάποιους <a href="https://support.ntp.org/Servers/StratumTwoTimeServers/">καλούς διακομιστές</a> χειροκίνητα. Αυτοί οι διακομιστές
+	<b>μπορούν</b> να επιλεγούν από τη δεξαμενή. Το σημείο είναι ότι επιλέγονται
+	στατικά αντί να ανατίθενται τυχαία από τη δεξαμενή σε κάθε επανεκκίνηση διακομιστή.
+	Αυτό θα βοηθήσει στην παροχή αποδεκτής ποιότητας υπηρεσίας.
 
-	Note that it is not required that your server is a stratum 1 or 2
-	server - as this project is about load distribution mostly, there is
-	no reason why a stratum 3 or even stratum 4 server shouldn't join.
+	Σημειώστε ότι δεν απαιτείται ο διακομιστής σας να είναι stratum 1 ή 2
+	διακομιστής - καθώς αυτό το έργο αφορά κυρίως τη διανομή φορτίου, δεν υπάρχει
+	λόγος να μη συμμετάσχει ένας διακομιστής stratum 3 ή ακόμη και stratum 4.
 	</p>
 
 	<p>
-	We have a page with <a href="/join/configuration.html">configuration recommendations for servers joining the pool</a>.
+	Έχουμε μια σελίδα με <a href="/join/configuration.html">συστάσεις διαμόρφωσης για διακομιστές που συμμετέχουν στη δεξαμενή</a>.
 	</p>
-	<p>Finally, I must emphasize that joining the pool is a <b>long term
-	commitment</b>.  We are happy to take you out of the pool again if your
-	circumstances change, but because of how the NTP clients operate <b>it
-	will take weeks, months or even YEARS before the traffic completely
-    goes away</b>.
+	<p>Τέλος, πρέπει να τονίσω ότι η συμμετοχή στη δεξαμενή είναι μια <b>μακροπρόθεσμη
+	δέσμευση</b>. Χαρούμε να σας αφαιρέσουμε από τη δεξαμενή ξανά αν οι
+	συνθήκες σας αλλάξουν, αλλά λόγω του τρόπου λειτουργίας των πελατών NTP <b>θα
+	χρειαστούν εβδομάδες, μήνες ή ακόμη και ΧΡΟΝΙΑ πριν η κίνηση εξαφανιστεί
+	εντελώς</b>.
 	</p>
 
 	<p>
-	If this is all ok, login to the
-	<a href="/manage">server management</a> page and request your server to be added.
-	If you have any trouble with the system, email me at <a
+	Αν όλα αυτά είναι εντάξει, συνδεθείτε στη
+	σελίδα <a href="/manage">διαχείρισης διακομιστή</a> και ζητήστε τον διακομιστή σας να προστεθεί.
+	Αν έχετε οποιοδήποτε πρόβλημα με το σύστημα, στείλτε μου email στο <a
 	href="mailto:ask@develooper.com">ask@develooper.com</a>.
 	</p>
 
 	<p>
-	Please also join the <a href="[% language_url("/mailinglists.html") %]">community forum</a>
+	Παρακαλούμε επίσης συμμετάσχετε στο <a href="[% language_url("/mailinglists.html") %]">φόρουμ κοινότητας</a>
 	</p>
 
 	<p>
-	It would be nice (but it's not necessary) if you could redirect web requests
-	on port 80 of your time server to the official web page of the project at
-	<code>https://www.ntppool.org/</code>. If you run Apache, you could do this with:
+	Θα ήταν ωραίο (αλλά δεν είναι απαραίτητο) αν μπορούσατε να ανακατευθύνετε τα αιτήματα web
+	στη θύρα 80 του διακομιστή χρόνου σας στην επίσημη ιστοσελίδα του έργου στο
+	<code>https://www.ntppool.org/</code>. Αν τρέχετε Apache, θα μπορούσατε να το κάνετε αυτό με:
 	</p>
 
         [% PROCESS tpl/join/virtual_host_example.html %]
 
 	<p>
-	Again, this is only if you run a webserver anyway. The official project web
-	page will always be given with the 'www' at the beginning - but sometimes
-	people type <code>pool.ntp.org</code> and are then surprised to get a random web
-        page.
+	Πάλι, αυτό είναι μόνο αν τρέχετε έναν webserver ούτως ή άλλως. Η επίσημη ιστοσελίδα του έργου
+	θα δίνεται πάντα με το 'www' στην αρχή - αλλά μερικές φορές
+	οι άνθρωποι πληκτρολογούν <code>pool.ntp.org</code> και στη συνέχεια εκπλήσσονται που παίρνουν μια τυχαία ιστοσελίδα.
 	</p>
 	<p>
-	Once added to the pool the server is constantly monitored for
-        availability and precision.  You can watch your server's
-        performance using the <a href="scores">web frontend</a> or
-        the <a href="/manage">management page</a>.
+	Μόλις προστεθεί στη δεξαμενή ο διακομιστής παρακολουθείται συνεχώς για
+	διαθεσιμότητα και ακρίβεια. Μπορείτε να παρακολουθήσετε την απόδοση του διακομιστή σας
+	χρησιμοποιώντας το <a href="scores">web frontend</a> ή
+	τη <a href="/manage">σελίδα διαχείρισης</a>.
 	</p>
 </div>
