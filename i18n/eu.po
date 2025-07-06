@@ -10,25 +10,124 @@ msgstr ""
 msgid "go up"
 msgstr "Aldera gain"
 
+# zone names
 msgid "Africa"
 msgstr "Afrika"
+
 msgid "Asia"
 msgstr "Asia"
+
 msgid "North America"
 msgstr "Iparramerika"
+
 msgid "South America"
 msgstr "Hegoamerika"
+
+msgid "Europe"
+msgstr "Europa"
+
 msgid "Oceania"
-msgstr "Hegoaldeko Ozeano Barea"
+msgstr "Ozeania"
 
 msgid "Global"
-msgstr "Guztira"
-msgid "All Pool Servers"
-msgstr "Oro zerbitzarik"
+msgstr "Globala"
 
-msgid "NTP Pool mailing lists"
-msgstr "NTPko puleko bidalketazerrendak"
-msgid "subscribe"
-msgstr "harpidetu"
+msgid "All Pool Servers"
+msgstr "Pool zerbitzari guztiak"
+
+# navigation
+msgid "Translations"
+msgstr "Itzulpenak"
+
+# Modern forum/community entries
+msgid "Introduction"
+msgstr "Sarrera"
+
+msgid "Active Servers"
+msgstr "Zerbitzari aktiboak"
+
+msgid "Links"
+msgstr "Estekak"
+
+msgid "Terms of service"
+msgstr "Zerbitzu baldintzak"
+
+msgid "Subscribe in a reader"
+msgstr "Irakurgailuan harpidetu"
+
+msgid "Older news"
+msgstr "Berri zaharragoak"
+
 msgid "archive"
-msgstr "zahar norberak"
+msgstr "artxiboa"
+
+msgid "NTP Pool Forum"
+msgstr "NTP Pool Foroa"
+
+msgid "News site"
+msgstr "Berri gunea"
+
+msgid "Discussion list"
+msgstr "Eztabaida zerrenda"
+
+msgid "Development"
+msgstr "Garapena"
+
+msgid "forum_description"
+msgstr "NTP Pool proiektuari buruzko galderak (eta erantzunak), hobekuntza proposamenak eta denbora mantenimendua eta NTP zerbitzarien kudeaketarekin zerikusia duten gaiak."
+
+msgid "news_description"
+msgstr "NTP Pool proiektuaren berriak eta iragarpenak"
+
+msgid "development_list_description"
+msgstr "NTP Pool proiektuaren garapenari buruzko eztabaida teknikoak"
+
+# tpl/server.html
+msgid "Back to the front page"
+msgstr "Hasierako orrira itzuli"
+
+msgid "Find"
+msgstr "Bilatu"
+
+msgid "Stats for %1"
+msgstr "%1-entzako estatistikak"
+
+msgid "Not active in the pool, monitoring only"
+msgstr "Ez dago aktibo poolean, monitorizazioa soilik"
+
+msgid "Zones:"
+msgstr "Eremuak:"
+
+msgid "This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
+msgstr "Zerbitzari hau <span class=\"deletion\">ezabatzeko programatuta</span> dago %1-an."
+
+msgid "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
+msgstr "Oraingo puntuazioa: %1 (%2 baino puntuazio handiagoa duten zerbitzariak bakarrik erabiltzen dira poolean)"
+
+msgid "What do the graphs mean?"
+msgstr "Zer esan nahi dute grafikoek?"
+
+msgid "CSV log"
+msgstr "CSV egunkaria"
+
+# tpl/navigation_sidebar.html
+msgid "News"
+msgstr "Berriak"
+
+msgid "How do I <i>use</i> pool.ntp.org?"
+msgstr "Nola <i>erabili</i> pool.ntp.org?"
+
+msgid "How do I <i>join</i> pool.ntp.org?"
+msgstr "Nola <i>elkartu</i> pool.ntp.org-ekin?"
+
+msgid "Information for vendors"
+msgstr "Hornitzaileentzako informazioa"
+
+msgid "The mailing lists"
+msgstr "Posta zerrendak"
+
+msgid "Additional links"
+msgstr "Esteka gehigarriak"
+
+msgid "Can you translate?"
+msgstr "Itzuli dezakezu?"
