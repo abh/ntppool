@@ -21,7 +21,7 @@
   [% IF metrics && metrics.success && metrics.data.monitors %]
     [% mon_key = mon.TLSName %]
     [% mon_metrics = metrics.data.monitors.$mon_key %]
-    [% IF mon_metrics && mon_metrics.tests_per_minute_1h.total > 0 %]
+    [% IF mon_metrics && (mon_metrics.tests_per_minute_1h.total || mon_metrics.tests_per_minute_1h) > 0 %]
       [% IF show_details %]
         <li class="list-group-item">
           <small><strong>Metrics</strong></small><br>
