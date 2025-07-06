@@ -23,39 +23,65 @@ msgstr "Северная Америка"
 msgid "South America"
 msgstr "Южная Америка"
 
+msgid "Europe"
+msgstr "Европа"
+
+msgid "Oceania"
+msgstr "Океания"
+
 msgid "Global"
 msgstr "Итого"
 
 msgid "All Pool Servers"
 msgstr "Всего серверов в пуле"
 
+# navigation
+msgid "Translations"
+msgstr "Переводы"
+
+# index.html
+msgid "Introduction"
+msgstr "Введение"
+
+msgid "Active Servers"
+msgstr "Активные серверы"
+
+msgid "Links"
+msgstr "Ссылки"
+
+msgid "Terms of service"
+msgstr "Условия обслуживания"
+
+msgid "Subscribe in a reader"
+msgstr "Подписаться в ридере"
+
+msgid "Older news"
+msgstr "Старые новости"
+
 # mailinglists.html
-msgid  "NTP Pool mailing lists"
-msgstr "Списки рассылки пула NTP"
-
-msgid  "subscribe"
-msgstr "подписаться"
-
-msgid  "archive"
+msgid "archive"
 msgstr "архив"
 
-msgid  "Announcement list"
-msgstr "Новостная рассылка"
+msgid "NTP Pool Forum"
+msgstr "Форум NTP Pool"
 
-msgid  "Discussion list"
-msgstr "Рассылка для обсуждений"
+msgid "News site"
+msgstr "Сайт новостей"
 
-msgid  "Development list"
-msgstr "Рассылка для разработчиков"
+msgid "Discussion list"
+msgstr "Список обсуждений"
 
-msgid  "announcement_list_description"
-msgstr "Трафик рассылки новостей пула NTP очень очень маленький. Всем администраторам серверов пула рекомендуется подписаться на эту рассылку."
+msgid "Development"
+msgstr "Разработка"
 
-msgid  "discussion_list_description"
-msgstr "Эта рассылка предназначена для администраторов серверов пула и просто пользователей, которые хотят более активно участвовать в проекте.<br/> Разумеется, обсуждение общих вопросов, относящихся к NTP, должно происходить в Usenet-конференции %1 (<a href=\"%2\">доступна</a> через сервис Google Groups)."
+msgid "forum_description"
+msgstr "Вопросы (и ответы) о NTP Pool, предложения по улучшению и темы, связанные с хронометражом и работой NTP-серверов."
 
-msgid  "development_list_description"
-msgstr "Здесь обсуждаются технические вопросы, связанные с разработкой <a href=\"%1\">исходного кода пула NTP</a> и <a href=\"%2\">GeoDNS</a>."
+msgid "news_description"
+msgstr "Объявления и новости публикуются на сайте новостей или на форуме."
+
+msgid "development_list_description"
+msgstr "Более технические (и в идеале всегда прагматичные) обсуждения текущей разработки <a href=\"%1\">кода пула ntp</a> и <a href=\"%2\">GeoDNS</a> происходят в списке timekeepers-dev."
 
 
 # tpl/server.html
@@ -104,3 +130,6 @@ msgstr "Список E-mail рассылки"
 
 msgid  "Additional links"
 msgstr "Дополнительные ссылки"
+
+msgid "Can you translate?"
+msgstr "Можете ли вы переводить?"
