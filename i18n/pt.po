@@ -32,6 +32,12 @@ msgstr "América do Norte"
 msgid "South America"
 msgstr "América do Sul"
 
+msgid "Europe"
+msgstr "Europa"
+
+msgid "Oceania"
+msgstr "Oceania"
+
 msgid "Global"
 msgstr "Global"
 
@@ -42,33 +48,49 @@ msgstr "Todos os servidores"
 msgid "Translations"
 msgstr "Traduções"
 
+# index.html
+msgid "Introduction"
+msgstr "Introdução"
+
+msgid "Active Servers"
+msgstr "Servidores Ativos"
+
+msgid "Links"
+msgstr "Links"
+
+msgid "Terms of service"
+msgstr "Termos de serviço"
+
+msgid "Subscribe in a reader"
+msgstr "Subscrever em um leitor"
+
+msgid "Older news"
+msgstr "Notícias anteriores"
+
 # mailinglists.html
-msgid  "NTP Pool mailing lists"
-msgstr "Listas de discussão do NTP Pool"
-
-msgid  "subscribe"
-msgstr "inscrever-se"
-
-msgid  "archive"
+msgid "archive"
 msgstr "arquivo"
 
-msgid  "Announcement list"
-msgstr "Lista de anúncio"
+msgid "NTP Pool Forum"
+msgstr "Fórum NTP Pool"
 
-msgid  "Discussion list"
+msgid "News site"
+msgstr "Site de notícias"
+
+msgid "Discussion list"
 msgstr "Lista de discussão"
 
-msgid  "Development list"
-msgstr "Lista de desenvolvimento"
+msgid "Development"
+msgstr "Desenvolvimento"
 
-msgid  "announcement_list_description"
-msgstr "Muito, mas muito pouco tráfego de anúncios de novidades do NTP Pool. Todos os administradores de servidores deveriam se inscrever na lista de anúncio."
+msgid "forum_description"
+msgstr "Perguntas (e respostas) sobre NTP Pool, sugestões de melhorias e tópicos relacionados a cronometragem e operação de servidores NTP."
 
-msgid  "discussion_list_description"
-msgstr "Administradores (e usuários) de servidores que queiram se envolver mais no projeto podem ser inscrever na lista de discussão.<br/>É claro, discussões gerais sobre o ntp deveriam ocorrer no grupo de notícias Usenet %1 (também no <a href=\"%2\">Grupo do Google</a>)."
+msgid "news_description"
+msgstr "Anúncios e notícias são publicados no site de notícias ou no fórum."
 
-msgid  "development_list_description"
-msgstr "Discussões mais técnicas (e idealmente sempre programática) sobre o atual desenvolvimento do <a href=\"%1\">código do ntp pool</a> e <a href=\"%2\">GeoDNS</a> ocorrem na lsita dos desenvolvedores mantenedores dos relógios."
+msgid "development_list_description"
+msgstr "Discussões mais técnicas (e idealmente sempre pragmáticas) sobre o desenvolvimento atual do <a href=\"%1\">código do pool ntp</a> e <a href=\"%2\">GeoDNS</a> acontecem na lista timekeepers-dev."
 
 # tpl/server.html
 msgid  "Back to the front page"
