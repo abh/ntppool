@@ -64,9 +64,6 @@ msgstr "Seguici via RSS"
 msgid "Older news"
 msgstr "Notizie precedenti"
 
-msgid "subscribe"
-msgstr "sottoscrivi"
-
 msgid "archive"
 msgstr "archivio"
 
@@ -91,13 +88,6 @@ msgstr ""
 
 msgid "news_description"
 msgstr "annunci e notizie vengono pubblicati qui o sul forum"
-
-msgid "discussion_list_description"
-msgstr ""
-"operatori server (e utenti) che desiderano essere maggiormente coinvolti nel "
-"progetto possono sottoscrivere la lista discussioni.<br/> Certamente, "
-"discussioni generali su ntp dovrebbero aver luogo sul newsgroup Usenet %1 "
-"(anche su <a href=\"%2\">Google Gruppi</a>)"
 
 msgid "development_list_description"
 msgstr ""
