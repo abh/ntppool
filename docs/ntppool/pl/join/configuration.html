@@ -1,0 +1,96 @@
+<div class="block">
+
+<h3>Zalecenia konfiguracji dla serwerów dołączających do puli</h3>
+
+<p>
+<a href="http://support.ntp.org/bin/view/Support/WebHome">Sekcja wsparcia</a> na <a href="http://support.ntp.org/">support.ntp.org</a> zawiera wiele
+przydatnych informacji.
+</p>
+
+<p>
+Jeśli chcesz tylko <i>używać</i> puli, zobacz stronę <a href="/use.html">używania puli</a>.
+</p>
+
+<p>
+Grupa dyskusyjna <a
+href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a>
+to najlepsze miejsce na uzyskanie pomocy z oprogramowaniem ntpd.
+</p>
+
+<p>
+Poniżej znajdują się niektóre rzeczy szczególnie ważne, jeśli zamierzasz
+dołączyć do Puli NTP ze swoim serwerem.
+</p>
+
+<p>Internet Engineering Task Force opublikował szkic dotyczący
+<a href="https://tools.ietf.org/html/draft-ietf-ntp-bcp">
+Najlepszych Obecnych Praktyk Network Time Protocol</a>, które polecamy.</p>
+
+<h4 id="management-queries">Zapytania zarządzania</h4>
+
+<p>Ustaw domyślną konfigurację tak, aby nie zezwalała na "zapytania zarządzania". Dla ntpd będzie to dodanie opcji "noquery" do domyślnych linii "restrict", na przykład:</p>
+
+[% INCLUDE "join/configuration/restrict-default.html" %]
+
+<p>Aby umożliwić działanie poleceń takich jak "ntpq -c pe" z localhost, możesz dodać:</p>
+
+[% INCLUDE "join/configuration/restrict-localhost.html" %]
+
+<h4>Skonfiguruj około 5 serwerów</h4>
+
+<p>
+Aby działać prawidłowo, ntpd musi komunikować się z co najmniej 3 serwerami ("Człowiek z
+jednym zegarkiem wie, która jest godzina. Człowiek z dwoma zegarkami nigdy nie jest pewny").
+</p>
+
+<p>
+Dla serwerów w puli zalecamy konfigurację nie mniej niż 4 i nie
+więcej niż 7 serwerów.
+</p>
+
+
+<h4>Nie używaj serwerów *.pool.ntp.org</h4>
+
+<p>
+Paradoksalnie, aby upewnić się, że usługa puli jest najlepsza, jaka może być,
+nie powinieneś używać aliasów *.pool.ntp.org w swojej konfiguracji, gdy
+zamierzasz dodać swój serwer do puli.
+</p>
+
+<p>
+Dla solidności puli zdrowiej jest, jeśli wszyscy operatorzy puli "ręcznie wybierają" dobre lokalne (sieciowo) serwery czasu.
+Wiki NTP.org ma <a
+href="https://support.ntp.org/Servers/">listę serwerów publicznych</a>.
+</p>
+
+
+<h4>Używaj standardowego ntpd</h4>
+
+<p>
+Jesteśmy za różnorodnością oprogramowania, ale znaczny procent
+pytań "to nie działa", które napływają, dotyczy oprogramowania innego niż
+ntpd.
+</p>
+
+<p>
+Możesz <i>używać</i> puli z dowolnym programem mówiącym NTP, ale jeśli
+zamierzasz dołączyć do puli, zalecamy
+użycie <a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
+</p>
+
+
+<h4>Nie używaj sterownika zegara LOCAL</h4>
+
+<p>Serwery w Puli NTP nie powinny mieć skonfigurowanego sterownika zegara LOCAL.</p>
+
+<h4>Uważaj na zapytania PTR DNS</h4>
+
+<p>Niektórzy operatorzy serwerów zgłaszali, że niektórzy użytkownicy NTP (lub
+ich oprogramowanie firewall) wykonują zapytanie "odwrotne DNS" (PTR) dla adresu IP
+serwera NTP. Należy pamiętać, że może to spowodować wzrost liczby zapytań.
+Zwiększenie "czasu życia" tych rekordów jest zalecane, jeśli
+liczba zapytań DNS jest problemem, i generalnie sprawi, że liczba
+zapytań będzie pomijalnie mała.
+</p>
+
+</div>

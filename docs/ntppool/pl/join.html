@@ -1,0 +1,81 @@
+[% page.title = 'Dołącz do Puli NTP!'  %]
+
+<div class="block">
+	<h3><a name="join">Jak dołączyć do pool.ntp.org?</a></h3>
+	<p>
+	Najpierw: Dzięki za zainteresowanie. Użytkowanie puli wzrosło
+	ogromnie, i jedynym sposobem na utrzymanie łatwości prowadzenia
+	serwera puli dla wszystkich jest również zwiększenie liczby serwerów uczestniczących.
+	</p>
+
+	<p>
+	Twój komputer <b>musi mieć statyczny adres IP</b> i stałe
+	połączenie internetowe. Jest bardzo ważne, aby twój adres IP nie
+	zmieniał się lub zmieniał się bardzo rzadko (powiedzmy raz w roku lub
+	rzadziej). Wymagana przepustowość jest stosunkowo niska. Każdy klient będzie
+	wysyłał tylko kilka pakietów UDP co kilka do 20 minut.
+	</p>
+
+	<p>
+	Obecnie większość serwerów otrzymuje około 5-15 pakietów NTP na sekundę
+	z nagłymi wzrostami do 60-120 pakietów na sekundę kilka razy dziennie.
+	To jest w przybliżeniu równoważne 10-15Kbit/sek z
+	nagłymi wzrostami do 50-120Kbit/sek. Projekt stale pozyskuje więcej
+	serwerów czasu, więc obciążenie nie powinno drastycznie wzrosnąć dla
+	każdego serwera. W prostych słowach, prawdopodobnie potrzebujesz co najmniej
+	384-512Kbit przepustowości (przychodzący i wychodzący).
+	</p>
+
+	<p>
+	Serwery dołączające nie powinny mieć <code>pool.ntp.org</code> jako swoich nadrzędnych
+	serwerów, ale powinny skonfigurować ręcznie jakieś <a href="https://support.ntp.org/Servers/StratumTwoTimeServers/">dobre serwery</a>. Te serwery
+	<b>mogą</b> być wybrane z puli. Chodzi o to, że są wybierane
+	statycznie zamiast być przypisywane losowo z puli przy każdym restarcie serwera.
+	To pomoże zapewnić akceptowalną jakość usługi.
+
+	Zauważ, że nie jest wymagane, aby twój serwer był serwerem stratum 1 lub 2
+	- ponieważ ten projekt dotyczy głównie dystrybucji obciążenia, nie ma
+	powodu, dla którego serwer stratum 3 lub nawet stratum 4 nie miałby dołączyć.
+	</p>
+
+	<p>
+	Mamy stronę z <a href="/join/configuration.html">zaleceniami konfiguracji dla serwerów dołączających do puli</a>.
+	</p>
+	<p>Na koniec, muszę podkreślić, że dołączenie do puli to <b>długoterminowe
+	zobowiązanie</b>. Z radością usuniemy Cię z puli ponownie, jeśli twoje
+	okoliczności się zmienią, ale z powodu sposobu działania klientów NTP <b>zajmie
+	tygodnie, miesiące lub nawet LATA, zanim ruch całkowicie
+    ustanie</b>.
+	</p>
+
+	<p>
+	Jeśli to wszystko jest w porządku, zaloguj się na
+	<a href="/manage">stronę zarządzania serwerem</a> i poproś o dodanie twojego serwera.
+	Jeśli masz jakiekolwiek problemy z systemem, napisz do mnie na <a
+	href="mailto:ask@develooper.com">ask@develooper.com</a>.
+	</p>
+
+	<p>
+	Proszę również dołącz do <a href="[% language_url("/mailinglists.html") %]">forum społeczności</a>
+	</p>
+
+	<p>
+	Byłoby miło (ale nie jest konieczne), gdybyś mógł przekierować żądania web
+	na porcie 80 twojego serwera czasu do oficjalnej strony projektu pod adresem
+	<code>https://www.ntppool.org/</code>. Jeśli używasz Apache, możesz to zrobić za pomocą:
+	</p>
+
+        [% PROCESS tpl/join/virtual_host_example.html %]
+
+	<p>
+	Ponownie, to tylko jeśli i tak prowadzisz serwer web. Oficjalna strona projektu
+	będzie zawsze podawana z 'www' na początku - ale czasami
+	ludzie wpisują <code>pool.ntp.org</code> i są wtedy zaskoczeni, otrzymując losową stronę web.
+	</p>
+	<p>
+	Po dodaniu do puli serwer jest stale monitorowany pod kątem
+        dostępności i precyzji. Możesz obserwować wydajność swojego serwera
+        używając <a href="scores">interfejsu web</a> lub
+        <a href="/manage">strony zarządzania</a>.
+	</p>
+</div>

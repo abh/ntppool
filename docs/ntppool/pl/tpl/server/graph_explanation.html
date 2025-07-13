@@ -1,0 +1,23 @@
+<div id="graph_explanation_box" class="graph_explanation [% graph_explanation ? 'visible' : '' %]">
+
+<h3>Wykres punktacji</h3>
+
+<p>
+Kilka razy na godzinę system puli sprawdza czas z twojego serwera i porównuje go ze swoim lokalnym czasem. Punkty są odejmowane, jeśli serwer nie może być osiągnięty lub jeśli przesunięcie czasu jest większe niż 100ms (mierzone z systemów monitorowania). Więcej punktów jest odejmowanych, im większe jest przesunięcie.
+</p>
+
+<p>
+Wykres ma służyć jedynie jako narzędzie do wizualizacji trendów. Aby uzyskać dokładniejsze szczegóły tego, co znalazł system monitorowania, możesz kliknąć na link CSV.
+</p>
+
+<h3>Wykres przesunięcia</h3>
+
+<p>
+System monitorowania działa mniej więcej jak klient <a href="https://www.ntp.org/ntpfaq/NTP-s-def/#412-what-is-sntp">SNTP</a> (<a href="https://tools.ietf.org/html/rfc2030">RFC 2030</a>), więc jest bardziej podatny na losowe opóźnienia sieciowe między serwerem a systemem monitorowania niż regularny serwer ntpd.
+</p>
+
+<p>
+System monitorowania może być niedokładny nawet o 10ms lub więcej.
+</p>
+
+</div>

@@ -1,0 +1,96 @@
+<div class="block">
+
+<h3>Recomandări de configurare pentru serverele care se alătură pool-ului</h3>
+
+<p>
+<a href="http://support.ntp.org/bin/view/Support/WebHome">Secțiunea de suport</a> de pe <a href="http://support.ntp.org/">support.ntp.org</a> conține multe
+informații utile.
+</p>
+
+<p>
+Dacă doriți doar să <i>folosiți</i> pool-ul, consultați pagina <a href="/use.html">utilizarea pool-ului</a>.
+</p>
+
+<p>
+Grupul de discuții <a
+href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a>
+este cel mai bun loc pentru a obține ajutor cu software-ul ntpd.
+</p>
+
+<p>
+Mai jos sunt câteva lucruri de importanță particulară dacă urmează să
+vă alăturați la NTP Pool cu serverul dumneavoastră.
+</p>
+
+<p>Internet Engineering Task Force a publicat o schiță despre
+<a href="https://tools.ietf.org/html/draft-ietf-ntp-bcp">
+Cele Mai Bune Practici Curente ale Network Time Protocol</a> pe care o recomandăm.</p>
+
+<h4 id="management-queries">Interogări de gestionare</h4>
+
+<p>Faceți configurația implicită să nu permită "interogări de gestionare". Pentru ntpd aceasta va fi adăugarea opțiunii "noquery" la liniile "restrict" implicite, de exemplu:</p>
+
+[% INCLUDE "join/configuration/restrict-default.html" %]
+
+<p>Pentru a permite comenzi precum "ntpq -c pe" să funcționeze de pe localhost puteți adăuga:</p>
+
+[% INCLUDE "join/configuration/restrict-localhost.html" %]
+
+<h4>Configurați aproximativ 5 servere</h4>
+
+<p>
+Pentru a funcționa corect, ntpd trebuie să comunice cu cel puțin 3 servere ("Un om cu
+un ceas știe ce oră este. Un om cu două ceasuri nu este niciodată sigur").
+</p>
+
+<p>
+Pentru serverele din pool recomandăm să configurați nu mai puțin de 4 și nu
+mai mult de 7 servere.
+</p>
+
+
+<h4>Nu folosiți serverele *.pool.ntp.org</h4>
+
+<p>
+Ironic, pentru a vă asigura că serviciul pool-ului este cel mai bun posibil,
+nu ar trebui să folosiți aliasurile *.pool.ntp.org în configurația dumneavoastră când
+urmează să adăugați serverul la pool.
+</p>
+
+<p>
+Pentru robustețea pool-ului este mai sănătos dacă toți operatorii pool-ului "aleg manual" servere de timp locale bune (din punct de vedere al rețelei).
+Wiki-ul NTP.org are o <a
+href="https://support.ntp.org/Servers/">listă de servere publice</a>.
+</p>
+
+
+<h4>Folosiți ntpd standard</h4>
+
+<p>
+Suntem pentru diversitatea software-ului, dar un procent semnificativ din
+întrebările "nu funcționează" care vin sunt pentru software altul decât
+ntpd.
+</p>
+
+<p>
+Puteți <i>folosi</i> pool-ul cu orice program care vorbește NTP, dar dacă
+urmează să vă alăturați la pool recomandăm să
+folosiți <a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
+</p>
+
+
+<h4>Nu folosiți driver-ul de ceas LOCAL</h4>
+
+<p>Serverele din NTP Pool nu ar trebui să aibă configurat driver-ul de ceas LOCAL.</p>
+
+<h4>Atenție la interogările PTR DNS</h4>
+
+<p>Unii operatori de servere au raportat că unii dintre utilizatorii NTP (sau
+software-ul lor de firewall) fac o interogare "DNS inversă" (PTR) pentru adresa IP
+a serverului NTP. Atenție că aceasta ar putea cauza creșterea numărului de interogări.
+Creșterea "timpului de viață" pe acele înregistrări este recomandată dacă
+numărul de interogări DNS este o preocupare, și în general va face numărul
+de interogări neglijabil.
+</p>
+
+</div>

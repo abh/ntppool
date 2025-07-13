@@ -1,0 +1,80 @@
+[% page.title = 'Alăturați-vă la NTP Pool!'  %]
+
+<div class="block">
+	<h3><a name="join">Cum mă alătur la pool.ntp.org?</a></h3>
+	<p>
+	Mai întâi: Mulțumim pentru interesul dumneavoastră. Utilizarea pool-ului a crescut
+	enorm, iar singura cale prin care putem păstra ușurința pentru toată lumea de a rula un
+	server de pool este să creștem și numărul de servere participante.
+	</p>
+
+	<p>
+	Computerul dumneavoastră <b>trebuie să aibă o adresă IP statică</b> și o conexiune
+	permanentă la Internet. Este foarte important ca adresa IP să nu
+	se schimbe sau să o facă extrem de rar (să zicem o dată pe an sau
+	mai puțin). Lățimea de bandă necesară este relativ mică. Fiecare client va
+	trimite doar câteva pachete UDP la fiecare câteva minute până la 20 de minute.
+	</p>
+
+	<p>
+	În prezent, majoritatea serverelor primesc aproximativ 5-15 pachete NTP pe secundă
+	cu vârfuri de 60-120 pachete pe secundă de câteva ori pe zi.
+	Aceasta este aproximativ echivalentă cu 10-15Kbit/sec cu
+	vârfuri de 50-120Kbit/sec. Proiectul dobândește constant mai multe
+	servere de timp, așa că încărcătura nu ar trebui să crească dramatic pentru
+	fiecare server. În termeni simpli, probabil aveți nevoie de cel puțin
+	384-512Kbit lățime de bandă (intrare și ieșire).
+	</p>
+
+	<p>
+	Serverele care se alătură nu ar trebui să aibă <code>pool.ntp.org</code> ca serverele lor de referință,
+	ci ar trebui să configureze manual niște <a href="https://support.ntp.org/Servers/StratumTwoTimeServers/">servere bune</a>. Acele servere
+	<b>pot</b> fi alese din pool. Ideea este că acestea sunt alese
+	static în loc să fie atribuite aleatoriu din pool la fiecare repornire a serverului.
+	Aceasta va ajuta la furnizarea unei calități acceptabile a serviciului.
+
+	Rețineți că nu este necesar ca serverul dumneavoastră să fie un server stratum 1 sau 2
+	- deoarece acest proiect se referă în principal la distribuția încărcăturii, nu există
+	niciun motiv pentru care un server stratum 3 sau chiar stratum 4 să nu se alăture.
+	</p>
+
+	<p>
+	Avem o pagină cu <a href="/join/configuration.html">recomandări de configurare pentru serverele care se alătură pool-ului</a>.
+	</p>
+	<p>În final, trebuie să subliniez că alăturarea la pool este un <b>angajament pe termen lung</b>.
+	Suntem bucuroși să vă scoatem din pool din nou dacă circumstanțele se schimbă,
+	dar din cauza modului în care operează clienții NTP <b>va dura
+	săptămâni, luni sau chiar ANI înainte ca traficul să dispară complet</b>.
+	</p>
+
+	<p>
+	Dacă totul este în regulă, conectați-vă la
+	<a href="/manage">pagina de gestionare a serverului</a> și solicitați ca serverul dumneavoastră să fie adăugat.
+	Dacă aveți probleme cu sistemul, trimiteți-mi un email la <a
+	href="mailto:ask@develooper.com">ask@develooper.com</a>.
+	</p>
+
+	<p>
+	Vă rugăm să vă alăturați și la <a href="[% language_url("/mailinglists.html") %]">forumul comunității</a>
+	</p>
+
+	<p>
+	Ar fi frumos (dar nu este necesar) dacă ați putea redirecționa cererile web
+	de pe portul 80 al serverului dumneavoastră de timp către pagina web oficială a proiectului la
+	<code>https://www.ntppool.org/</code>. Dacă rulați Apache, ați putea face aceasta cu:
+	</p>
+
+        [% PROCESS tpl/join/virtual_host_example.html %]
+
+	<p>
+	Din nou, aceasta doar dacă rulați oricum un server web. Pagina web oficială a proiectului
+	va fi întotdeauna dată cu 'www' la început - dar uneori
+	oamenii tastează <code>pool.ntp.org</code> și sunt apoi surprinși să primească o pagină web aleatorie.
+	</p>
+	<p>
+	Odată adăugat la pool, serverul este monitorizat constant pentru
+        disponibilitate și precizie. Puteți urmări performanța serverului dumneavoastră
+        folosind <a href="scores">interfața web</a> sau
+        <a href="/manage">pagina de gestionare</a>.
+	</p>
+</div>

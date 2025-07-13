@@ -1,0 +1,128 @@
+[% page.title = 'Cum configurez NTP să folosească pool-ul?' %]
+
+<div class="block">
+	<h3 id="use">Cum folosesc pool.ntp.org?</h3>
+
+	<p>
+	Dacă doriți doar să sincronizați ceasul computerului dumneavoastră cu rețeaua, fișierul de configurare (pentru programul ntpd din <a href="https://www.ntp.org/">distribuția ntp.org</a>, pe orice sistem de operare suportat - <b>Linux, *BSD, Windows și chiar unele sisteme mai exotice</b>) este foarte simplu:
+	</p>
+
+	[% INCLUDE "ntppool/use/sample-config.html" %]
+
+	<p>
+	Numele 0, 1, 2 și <code>3.pool.ntp.org</code> indică spre un set aleatoriu de servere care se va
+	schimba în fiecare oră. Asigurați-vă că ceasul computerului dumneavoastră este setat la ceva
+	rezonabil (în câteva minute de timpul 'adevărat') - ați putea folosi <code>ntpdate
+	pool.ntp.org</code>, sau ați putea pur și simplu să folosiți comanda <code>date</code> și să o setați
+	la ceasul dumneavoastră de mână. Porniți ntpd, și după ceva timp (aceasta ar putea dura până la
+	jumătate de oră!), <code>ntpq -pn</code> ar trebui să afișeze ceva de genul:
+	</p>
+
+	[% INCLUDE "ntppool/use/sample-ntpq.html" %]
+
+	<p>
+	Adresele IP vor fi diferite, pentru că vi s-au atribuit servere de timp aleatorii.
+	Lucrul esențial este că una din linii să înceapă cu un
+	asterisc (<code>*</code>), aceasta înseamnă că computerul dumneavoastră primește timpul de pe Internet
+	- nu va trebui niciodată să vă mai faceți griji pentru aceasta!
+	</p>
+	<p>
+	Căutarea <code>pool.ntp.org</code> (sau <code>0.pool.ntp.org</code>,
+	<code>1.pool.ntp.org</code>, etc) va returna de obicei adrese IP pentru servere
+	din țara dumneavoastră sau aproape de ea. Pentru majoritatea utilizatorilor aceasta va da cele mai bune rezultate.
+	</p>
+
+	<p>Puteți folosi și <a href="/zone/@">zonele continentale</a> (De exemplu
+	<a href="/zone/europe">europa</a>,
+	<a href="/zone/north-america">america-de-nord</a>,
+	<a href="/zone/oceania">oceania</a>
+	sau <code><a href="/zone/asia">asia</a>.pool.ntp.org</code>),
+	și o zonă de țară (precum
+	<code>ro.pool.ntp.org</code> în România) - pentru toate aceste zone, puteți din nou să folosiți prefixele 0,
+	1, 2, sau 3, precum <code>0.ro.pool.ntp.org</code>. Rețineți, totuși, că zona de țară
+	ar putea să nu existe pentru țara dumneavoastră, sau ar putea conține doar unul sau două servere de timp.
+	</p>
+	<p>
+	Vă rugăm să rețineți de asemenea că sistemul furnizează în prezent adrese IPv6 pentru o zonă în plus
+	la adresele IPv4 doar dacă numele zonei este prefixat cu numărul 2, de ex. <code>2.pool.ntp.org</code>
+	(cu condiția să existe servere NTP IPv6 în zona respectivă). Numele de zone care nu sunt prefixate cu un
+	număr, sau sunt prefixate cu 0, 1 sau 3, furnizează în prezent doar adrese IPv4.
+	</p>
+
+	<p>
+	Dacă folosiți <b>o versiune recentă de Windows</b>, puteți folosi clientul ntp
+	care este încorporat în sistem.</p>
+	<p>Faceți clic dreapta pe data și ora din zona de sistem și selectați Ajustare dată/oră sau deschideți setările cu Win+I și faceți clic pe Ora & Limba -> Data & Ora.
+		derulați în jos și faceți clic pe Data, ora, formatarea regională
+		derulați în jos și faceți clic pe Setări suplimentare pentru dată, oră și regiune
+		faceți clic pe Data și ora și Ora pe Internet
+		faceți clic pe butonul Schimbă setările. Introduceți <code>pool.ntp.org</code> și faceți clic pe Actualizează acum.</p>
+	<p>
+		Testați făcând clic dreapta pe data și ora din zona de sistem și selectați Ajustare dată/oră sau deschideți setările cu Win+I și faceți clic pe Ora & Limba -> Data & Ora.
+		Faceți clic pe butonul "Sincronizează acum".
+	</p>
+	<p>
+	Dacă sistemul dumneavoastră Windows face parte dintr-un domeniu, s-ar putea să nu puteți actualiza timpul computerului în mod independent.
+
+	Pentru mai multe informații despre setarea timpului pe Windows, consultați <a href="https://technet.microsoft.com/en-us/library/cc773013%28WS.10%29.aspx">Cum funcționează serviciul de timp Windows</a>.
+	</p>
+</div>
+
+<div class="block">
+	<h3 id="notes">Note suplimentare</h3>
+
+        <p><span class="hook">Considerați dacă NTP Pool este potrivit
+        pentru utilizarea dumneavoastră</span>. Dacă afacerea, organizația sau viața umană
+        depinde de timpul corect sau poate fi afectată de timpul greșit,
+        nu ar trebui să "îl luați pur și simplu de pe Internet". NTP
+        Pool este în general de foarte înaltă calitate, dar este un serviciu rulat
+        de voluntari în timpul lor liber. Vă rugăm să discutați cu
+        furnizorii dumneavoastră de echipamente și servicii despre configurarea unui serviciu local și fiabil
+        pentru dumneavoastră. Consultați și <a href="/tos.html">termenii
+        noștri de serviciu</a>.
+
+        Recomandăm servere de timp de la
+        <a href="http://www.meinbergglobal.com/english/products/ntp-time-server.htm">Meinberg</a>,
+        dar puteți găsi servere de timp și de la
+        <a href="http://www.endruntechnologies.com/NTP-Servers/gps-cdma-ntp.htm">End Run</a>,
+        <a href="http://spectracom.com/products-services/precision-timing#anchor-2172">Spectracom</a>
+        și mulți alții.
+        </p>
+
+	<p><span class="hook">Dacă aveți o adresă IP statică și o conexiune Internet rezonabilă</span> (lățimea de bandă
+	nu este atât de importantă, dar ar trebui să fie stabilă și nu prea încărcată), vă rugăm
+	să considerați donarea serverului dumneavoastră la pool-ul de servere. Nu vă costă mai mult de
+	câteva sute de octeți pe secundă de trafic, dar ajutați acest proiect să supraviețuiască.
+	Vă rugăm <a href="/join.html">să citiți pagina de alăturare</a> pentru mai multe informații.
+	</p>
+
+	<p><span class="hook">Dacă furnizorul dumneavoastră de Internet are un server de timp</span>, sau dacă cunoașteți un server de timp bun
+	aproape de dumneavoastră, ar trebui să îl folosiți pe acela și nu această listă - probabil veți obține
+	un timp mai bun și veți folosi mai puține resurse de rețea. Dacă cunoașteți doar un server de timp
+	aproape de dumneavoastră, puteți desigur să îl folosiți pe acela și două de la pool.ntp.org sau așa.</p>
+
+	<p><span class="hook">Se poate întâmpla rar să vi se atribuie același server de timp de două ori</span> -
+	pur și simplu repornirea serverului ntp rezolvă de obicei această problemă. Dacă
+	folosiți o zonă de țară, vă rugăm să rețineți că aceasta se poate întâmpla pentru că există doar
+	un server cunoscut în proiect - mai bine folosiți o zonă continentală în
+	acel caz. Puteți <a href="/zone">răsfoi zonele</a> pentru a vedea câte
+	servere avem în fiecare zonă.</p>
+
+	<p><span class="hook">Fiți prietenoși</span>. Multe servere sunt furnizate de voluntari, și aproape toate
+	serverele de timp sunt de fapt servere de fișiere sau de mail sau web care se întâmplă să ruleze și ntp.
+	Deci nu folosiți mai mult de patru servere de timp în configurația dumneavoastră, și nu faceți
+	trucuri cu <code>burst</code> sau <code>minpoll</code> - tot ce veți câștiga este încărcătură suplimentară
+        pe serverele de timp ale voluntarilor.</p>
+
+	<p><span class="hook">Asigurați-vă că <i>configurația fusului orar</i> a computerului dumneavoastră este corectă</span>.
+	ntpd însuși nu face nimic cu fusurile orare, folosește doar UTC
+	intern.</p>
+
+	<p><span class="hook">Dacă sincronizați o rețea cu pool.ntp.org</span>, vă rugăm să configurați unul dintre computerele dumneavoastră
+	ca server de timp și să sincronizați celelalte computere cu acela.
+	(va trebui să citiți puțin - nu este dificil totuși. Și întotdeauna există
+	<a href="news:comp.protocols.time.ntp">grupul de știri comp.protocols.time.ntp</a>.)</p>
+
+	<p class="thanks">La acest punct, aș dori să mulțumesc celor care donează timpul și serverele de timp
+	acestei rețele.</p>
+</div>
