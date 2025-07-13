@@ -1,86 +1,170 @@
-/*! Copyright 2012-2013 Ask Bjørn Hansen, Develooper LLC */
-/*jshint jquery:true browser:true */
-/*globals d3:true, Modernizr:true */
+/* Copyright 2012-2025 Ask Bjørn Hansen, Develooper LLC & NTP Pool Project */
 
-if (!Pool) { var Pool = {}; }
-if (!Pool.Graphs) { Pool.Graphs = {}; }
+/**
+ * Main graph initialization module
+ * Modern ES6+ implementation without jQuery or Modernizr dependencies
+ */
 
-(function () {
-    "use strict";
-    var g = Pool.Graphs;
+import {
+    querySelector,
+    querySelectorAll,
+    fetchChartData,
+    showLoading,
+    showError,
+    clearContainer,
+    debounce
+} from './chart-utils.js';
 
-    g.SetupGraphs = function () {
+// Import chart modules (will be created next)
+import { createZoneChart } from './graphs.zone.js';
+import { createServerChart } from './graphs.server.js';
 
-        var data = {};
-        var graph_div = $('div.graph');
+// Global namespace for backward compatibility (if needed)
+window.Pool = window.Pool || {};
+window.Pool.Graphs = window.Pool.Graphs || {};
 
-        if (!NP.svg_graphs && !Modernizr.svg) { // no svg support, show the noscript section
-            var $legacy = $('#legacy-graphs');
+/**
+ * Check for SVG support in the browser
+ * @returns {boolean}
+ */
+function checkSvgSupport() {
+    // Modern browsers all support SVG, but we'll check anyway
+    return !!(document.createElementNS &&
+             document.createElementNS('http://www.w3.org/2000/svg', 'svg').createSVGRect);
+}
 
-            if (!$legacy) { return; }
+/**
+ * Show legacy browser message
+ * @param {Element} container - Container element
+ */
+function showLegacyMessage(container) {
+    if (!container) return;
 
-            $legacy.html('Please upgrade to a browser that supports SVG '
-                + 'to see the new graphs. '
-                + '(For example <a href="http://www.apple.com/safari/">Safari</a>, '
-                + '<a href="https://www.google.com/chrome/">Chrome</a>, '
-                + '<a href="http://www.mozilla.org/firefox">Firefox</a> or '
-                + '<a href="http://ie.microsoft.com/">IE9+</a>)<br>'
-            );
+    container.innerHTML = `
+        <div class="alert alert-warning">
+            <p>Please upgrade to a modern browser that supports SVG to see the graphs.</p>
+            <p>Recommended browsers:
+                <a href="https://www.google.com/chrome/">Chrome</a>,
+                <a href="https://www.mozilla.org/firefox">Firefox</a>,
+                <a href="https://www.apple.com/safari/">Safari</a>, or
+                <a href="https://www.microsoft.com/edge">Edge</a>
+            </p>
+        </div>
+    `;
+}
 
-            $legacy.append($('<br><img class=".legacy-graph-img"/>')
-                .attr('src', $legacy.data('offset-graph-url')));
+/**
+ * Load and render a single graph
+ * @param {Element} container - Graph container element
+ * @returns {Promise<void>}
+ */
+async function loadGraph(container) {
+    // Show loading state
+    showLoading(container);
 
-            return;
+    // Check for server IP (server chart)
+    const serverIp = container.dataset.serverIp;
+    if (serverIp) {
+        const legendElement = container.nextElementSibling?.classList.contains('graph-legend')
+            ? container.nextElementSibling
+            : null;
+
+        const url = `/scores/${serverIp}/json?monitor=*&limit=5000&source=c`;
+        const result = await fetchChartData(url);
+
+        if (result.success) {
+            clearContainer(container);
+            createServerChart(container, result.data, { legend: legendElement });
+
+            // Signal that chart has loaded (for compatibility)
+            setTimeout(() => {
+                const loadedDiv = document.createElement('div');
+                loadedDiv.id = 'loaded';
+                document.body.appendChild(loadedDiv);
+            }, 50);
+        } else {
+            showError(container, result.error);
         }
-        var load_graphs = function () {
+        return;
+    }
 
-            graph_div.each(function (i) {
+    // Check for zone (zone chart)
+    const zone = container.dataset.zone;
+    if (zone) {
+        const url = `/zone/${zone}.json?limit=480`;
+        const result = await fetchChartData(url);
 
-                var div = $(this);
+        if (result.success) {
+            clearContainer(container);
+            createZoneChart(container, result.data, { name: zone });
+        } else {
+            showError(container, result.error);
+        }
+    }
+}
 
-                var ip = div.data('server-ip');
-                if (ip) {
-                    var graph_legend = div.next('.graph-legend');
-                    var url = "/scores/" + ip + "/json?monitor=*&limit=5000&source=c"
-                    // url = "/api/data/server" + url
-                    d3.json(url).then((json) => {
-                        if (json) {
-                            data[ip] = json;
-                            server_chart(div, json, { legend: graph_legend });
-                            // console.log("width/height", div.width(), div.height());
-                        }
-                        else {
-                            div.html('<p>Error downloading graph data</p>');
-                        }
-                        setTimeout(function () {
-                            $("body").append('<div id="loaded"></div>');
-                        }, 50);
-                    });
-                    return;
-                }
+/**
+ * Initialize all graphs on the page
+ */
+async function initializeGraphs() {
+    // Check for SVG support
+    const svgSupported = window.NP?.svg_graphs !== false && checkSvgSupport();
 
-                var zone = div.data('zone');
-                if (zone) {
-                    d3.json("/zone/" + zone + ".json?limit=480").then((json) => {
-                        if (json) {
-                            data[zone] = json;
-                            zone_chart(div, json, { name: zone });
+    if (!svgSupported) {
+        const legacyContainer = querySelector('#legacy-graphs');
+        showLegacyMessage(legacyContainer);
+        return;
+    }
 
-                        }
-                        else {
-                            div.html('<p>Error downloading graph data</p>');
-                        }
-                    });
-                }
-            });
-        };
+    // Find all graph containers
+    const graphContainers = querySelectorAll('div.graph');
 
-        load_graphs();
-    };
+    // Load graphs in parallel
+    const loadPromises = Array.from(graphContainers).map(container =>
+        loadGraph(container).catch(error => {
+            console.error('Error loading graph:', error);
+            showError(container, 'Failed to load graph');
+        })
+    );
 
-})();
+    await Promise.all(loadPromises);
+}
 
-$(document).ready(function () {
-    "use strict";
-    Pool.Graphs.SetupGraphs();
-});
+/**
+ * Handle window resize for responsive charts
+ */
+const handleResize = debounce(() => {
+    // Re-render all charts with new dimensions
+    const graphContainers = querySelectorAll('div.graph svg');
+    graphContainers.forEach(svg => {
+        const container = svg.parentElement;
+        if (container.dataset.serverIp || container.dataset.zone) {
+            // Clear and reload the chart
+            clearContainer(container);
+            loadGraph(container);
+        }
+    });
+}, 300);
+
+// Set up event listeners
+function setupEventListeners() {
+    window.addEventListener('resize', handleResize);
+}
+
+// Export for backward compatibility
+window.Pool.Graphs.SetupGraphs = initializeGraphs;
+
+// Initialize when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        initializeGraphs();
+        setupEventListeners();
+    });
+} else {
+    // DOM is already ready
+    initializeGraphs();
+    setupEventListeners();
+}
+
+// Export functions for module usage
+export { initializeGraphs, loadGraph };

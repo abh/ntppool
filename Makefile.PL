@@ -67,12 +67,41 @@ WriteMakefile(
 sub MY::postamble {
     return <<'MAKE_FRAG';
 
-.PHONY: testcover
+.PHONY: testcover js js-dev js-build js-clean js-deps
 
 HULK ?= ./node_modules/hogan.js/bin/hulk
+NPM ?= npm
+NODE_MODULES = node_modules/.installed
 
-templates:
+# JavaScript build targets
+$(NODE_MODULES): package.json
+	$(NPM) install
+	@touch $(NODE_MODULES)
+
+js-deps: $(NODE_MODULES)
+
+js-dev: js-deps
+	$(NPM) run dev
+
+js-build: js-deps
+	$(NPM) run build
+	@echo "JavaScript bundles built to dist/js/"
+
+js-clean:
+	$(NPM) run clean
+	rm -rf node_modules/.installed
+
+js: js-build
+
+# Legacy templates target (kept for compatibility)
+templates: js-deps
 	($(HULK) docs/manage/tpl/client/*.html > docs/shared/static/js/admin-templates.js)
+
+# Build everything
+all: js templates
+
+# Clean everything
+realclean: clean js-clean
 
 testcover:
 	cover -delete

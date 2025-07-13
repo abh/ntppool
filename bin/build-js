@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+#
+# Build JavaScript assets for NTP Pool
+#
+
+set -e
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROJECT_ROOT="$( cd "$SCRIPT_DIR/.." && pwd )"
+
+cd "$PROJECT_ROOT"
+
+echo "Building JavaScript assets..."
+
+# Check if npm is installed
+if ! command -v npm &> /dev/null; then
+    echo "ERROR: npm is not installed. Please install Node.js and npm first."
+    exit 1
+fi
+
+# Install dependencies if needed
+if [ ! -f "node_modules/.installed" ] || [ "package.json" -nt "node_modules/.installed" ]; then
+    echo "Installing npm dependencies..."
+    npm install
+    touch node_modules/.installed
+fi
+
+# Build JavaScript bundles
+echo "Building production bundles..."
+npm run build
+
+# Build legacy admin templates if Hogan is available
+if [ -d "node_modules/hogan.js" ]; then
+    echo "Building admin templates..."
+    ./node_modules/hogan.js/bin/hulk docs/manage/tpl/client/*.html > docs/shared/static/js/admin-templates.js
+fi
+
+echo "Build complete!"
+
+# Show bundle sizes
+echo ""
+echo "Bundle sizes:"
+find docs/shared/static/js -name "*.bundle.js" -o -name "*.bundle-legacy.js" | while read file; do
+    size=$(du -h "$file" | cut -f1)
+    echo "  $(basename "$file"): $size"
+done
+
+# Check if source maps were generated
+if ls docs/shared/static/js/*.map &> /dev/null; then
+    echo ""
+    echo "Source maps generated for debugging"
+fi
+
+echo ""
+echo "JavaScript assets built successfully!"
+echo "Use 'make js-clean' to remove build artifacts"

@@ -27,3 +27,13 @@ node_modules
 
 # Ignore DevSpace cache and log folder
 .devspace/
+
+# Vite/Node build artifacts
+dist/
+node_modules/.installed
+docs/shared/static/js/*.bundle.*
+docs/shared/static/js/chunks/
+docs/shared/static/js/assets/
+docs/shared/static/js/*.map
+docs/shared/static/js/legacy/
+*.log
