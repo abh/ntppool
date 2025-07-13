@@ -1,0 +1,244 @@
+{
+  "version": "1.0.0",
+  "description": "Configuration for NTP Pool translation tools",
+
+  "html_entities": {
+    "description": "HTML entities that should be converted to UTF-8",
+    "safe_to_convert": {
+      "&oslash;": "ø",
+      "&Oslash;": "Ø",
+      "&aring;": "å",
+      "&Aring;": "Å",
+      "&aelig;": "æ",
+      "&AElig;": "Æ",
+      "&ccedil;": "ç",
+      "&Ccedil;": "Ç",
+      "&eacute;": "é",
+      "&Eacute;": "É",
+      "&egrave;": "è",
+      "&Egrave;": "È",
+      "&ecirc;": "ê",
+      "&Ecirc;": "Ê",
+      "&euml;": "ë",
+      "&Euml;": "Ë",
+      "&iacute;": "í",
+      "&Iacute;": "Í",
+      "&igrave;": "ì",
+      "&Igrave;": "Ì",
+      "&icirc;": "î",
+      "&Icirc;": "Î",
+      "&iuml;": "ï",
+      "&Iuml;": "Ï",
+      "&ntilde;": "ñ",
+      "&Ntilde;": "Ñ",
+      "&oacute;": "ó",
+      "&Oacute;": "Ó",
+      "&ograve;": "ò",
+      "&Ograve;": "Ò",
+      "&ocirc;": "ô",
+      "&Ocirc;": "Ô",
+      "&otilde;": "õ",
+      "&Otilde;": "Õ",
+      "&ouml;": "ö",
+      "&Ouml;": "Ö",
+      "&uacute;": "ú",
+      "&Uacute;": "Ú",
+      "&ugrave;": "ù",
+      "&Ugrave;": "Ù",
+      "&ucirc;": "û",
+      "&Ucirc;": "Û",
+      "&uuml;": "ü",
+      "&Uuml;": "Ü",
+      "&yacute;": "ý",
+      "&Yacute;": "Ý",
+      "&yuml;": "ÿ",
+      "&szlig;": "ß",
+      "&raquo;": "»",
+      "&laquo;": "«",
+      "&rdquo;": "\\u201D",
+      "&ldquo;": "\\u201C",
+      "&rsquo;": "\\u2019",
+      "&lsquo;": "\\u2018",
+      "&mdash;": "—",
+      "&ndash;": "–",
+      "&hellip;": "…",
+      "&nbsp;": " "
+    },
+    "preserve_in_context": {
+      "&amp;": "Preserve in HTML attributes and when part of URLs",
+      "&lt;": "Always preserve - required for valid HTML",
+      "&gt;": "Always preserve - required for valid HTML",
+      "&quot;": "Preserve in HTML attributes"
+    }
+  },
+
+  "hosting_providers": {
+    "description": "Current hosting providers (authoritative source: English)",
+    "current": [
+      {
+        "name": "Equinix",
+        "url": "https://www.equinix.com/"
+      },
+      {
+        "name": "Netactuate",
+        "url": "https://www.netactuate.com/"
+      }
+    ],
+    "outdated": [
+      "Packet",
+      "Equinix Metal",
+      "Develooper",
+      "NetActuate",
+      "OSUOSL",
+      "Fastly"
+    ]
+  },
+
+  "technical_references": {
+    "description": "Technical values that should be consistent across translations",
+    "server_count_recommendation": "four",
+    "pool_domains": [
+      "0.pool.ntp.org",
+      "1.pool.ntp.org",
+      "2.pool.ntp.org",
+      "3.pool.ntp.org"
+    ],
+    "ntp_software": "ntp.org distribution"
+  },
+
+  "language_groups": {
+    "description": "Language groups for batch processing",
+    "nordic": {
+      "name": "Nordic Languages",
+      "languages": ["da", "sv", "nb", "nn", "fi"],
+      "description": "Danish, Swedish, Norwegian (Bokmål & Nynorsk), Finnish"
+    },
+    "romance": {
+      "name": "Romance Languages",
+      "languages": ["es", "fr", "it", "pt", "ro"],
+      "description": "Spanish, French, Italian, Portuguese, Romanian"
+    },
+    "germanic": {
+      "name": "Germanic Languages",
+      "languages": ["de", "nl"],
+      "description": "German, Dutch"
+    },
+    "slavic": {
+      "name": "Slavic Languages",
+      "languages": ["cs", "pl", "ru", "uk", "sr", "bg"],
+      "description": "Czech, Polish, Russian, Ukrainian, Serbian, Bulgarian"
+    },
+    "asian": {
+      "name": "Asian Languages",
+      "languages": ["ja", "ko", "zh", "hi", "vi"],
+      "description": "Japanese, Korean, Chinese, Hindi, Vietnamese"
+    },
+    "middle_eastern": {
+      "name": "Middle Eastern Languages",
+      "languages": ["ar", "fa", "he", "tr"],
+      "description": "Arabic, Persian, Hebrew, Turkish"
+    },
+    "other": {
+      "name": "Other Languages",
+      "languages": ["el", "hu", "id", "kk", "eu", "si", "ca"],
+      "description": "Greek, Hungarian, Indonesian, Kazakh, Basque, Sinhala, Catalan"
+    }
+  },
+
+  "standard_files": {
+    "description": "Standard HTML files that should exist for each language",
+    "files": [
+      "homepage/intro.html",
+      "join.html",
+      "join/configuration.html",
+      "tpl/server/graph_explanation.html",
+      "use.html"
+    ]
+  },
+
+  "language_characters": {
+    "description": "Expected characters for each language (for encoding validation)",
+    "da": {
+      "name": "Danish",
+      "expected_chars": ["æ", "ø", "å", "Æ", "Ø", "Å"],
+      "common_words": ["kørende", "ønsker", "så", "før", "både", "måde"]
+    },
+    "de": {
+      "name": "German",
+      "expected_chars": ["ä", "ö", "ü", "ß", "Ä", "Ö", "Ü"],
+      "common_words": ["für", "möchten", "können", "größer", "wäre", "müssen"]
+    },
+    "es": {
+      "name": "Spanish",
+      "expected_chars": ["ñ", "á", "é", "í", "ó", "ú", "ü", "Ñ", "Á", "É", "Í", "Ó", "Ú"],
+      "common_words": ["información", "configuración", "también", "después", "así", "más"]
+    },
+    "fr": {
+      "name": "French",
+      "expected_chars": ["à", "â", "ä", "ç", "è", "é", "ê", "ë", "î", "ï", "ô", "ù", "û", "ü", "ÿ", "À", "Â", "Ç", "È", "É", "Ê", "Ë", "Î", "Ï", "Ô", "Ù", "Û", "Ü"],
+      "common_words": ["français", "configuré", "être", "très", "après", "général"]
+    },
+    "it": {
+      "name": "Italian",
+      "expected_chars": ["à", "è", "é", "ì", "í", "î", "ò", "ó", "ù", "ú", "À", "È", "É", "Ì", "Í", "Î", "Ò", "Ó", "Ù", "Ú"],
+      "common_words": ["però", "così", "più", "città", "qualità", "università"]
+    },
+    "pt": {
+      "name": "Portuguese",
+      "expected_chars": ["á", "â", "ã", "à", "ç", "é", "ê", "í", "ó", "ô", "õ", "ú", "ü", "Á", "Â", "Ã", "À", "Ç", "É", "Ê", "Í", "Ó", "Ô", "Õ", "Ú"],
+      "common_words": ["configuração", "não", "informações", "versão", "também", "operação"]
+    },
+    "sv": {
+      "name": "Swedish",
+      "expected_chars": ["å", "ä", "ö", "Å", "Ä", "Ö"],
+      "common_words": ["för", "så", "större", "kör", "även", "både"]
+    },
+    "fi": {
+      "name": "Finnish",
+      "expected_chars": ["ä", "ö", "Ä", "Ö"],
+      "common_words": ["käyttää", "määrittää", "työskentelyn", "sähköposti", "yhteisö"]
+    },
+    "nb": {
+      "name": "Norwegian Bokmål",
+      "expected_chars": ["æ", "ø", "å", "Æ", "Ø", "Å"],
+      "common_words": ["før", "både", "også", "så", "større", "møte"]
+    },
+    "nn": {
+      "name": "Norwegian Nynorsk",
+      "expected_chars": ["æ", "ø", "å", "Æ", "Ø", "Å"],
+      "common_words": ["før", "både", "òg", "så", "større", "møte"]
+    },
+    "nl": {
+      "name": "Dutch",
+      "expected_chars": ["é", "ë", "í", "ï", "ó", "ö", "ú", "ü", "É", "Ë", "Í", "Ï", "Ó", "Ö", "Ú", "Ü"],
+      "common_words": ["één", "configuré", "systéém", "problème"]
+    }
+  },
+
+  "tool_defaults": {
+    "description": "Default settings for translation tools",
+    "backup": true,
+    "dry_run": false,
+    "verbose": false,
+    "interactive": false,
+    "preserve_template_toolkit": true,
+    "validate_changes": true
+  },
+
+  "git_integration": {
+    "description": "Settings for git integration",
+    "commit_message_template": "feat(i18n): update {group} translations\n\nAutomated translation maintenance for: {languages}\n\nChanges include:\n- HTML modernization (deprecated tags, entities)\n- Content synchronization (hosting providers, technical refs)\n- Encoding and consistency fixes\n\nGenerated by {tool}",
+    "auto_add_patterns": [
+      "docs/ntppool/{lang}/",
+      "i18n/{lang}.po"
+    ]
+  },
+
+  "validation": {
+    "description": "Validation rules and thresholds",
+    "max_template_toolkit_changes": 0,
+    "required_sections": ["introduction", "usage", "joining"],
+    "critical_files": ["homepage/intro.html", "use.html", "join.html"],
+    "encoding_checks": ["utf8_validity", "bom_detection", "replacement_chars"]
+  }
+}
