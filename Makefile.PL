@@ -67,35 +67,40 @@ WriteMakefile(
 sub MY::postamble {
     return <<'MAKE_FRAG';
 
-.PHONY: testcover js js-dev js-build js-clean js-deps
+.PHONY: testcover js js-dev js-build js-clean js-deps js-type-check
 
-HULK ?= ./node_modules/hogan.js/bin/hulk
 NPM ?= npm
-NODE_MODULES = node_modules/.installed
+CLIENT_DIR = client
+NODE_MODULES = $(CLIENT_DIR)/node_modules/.installed
 
-# JavaScript build targets
-$(NODE_MODULES): package.json
-	$(NPM) install
+# TypeScript/JavaScript build targets
+$(NODE_MODULES): $(CLIENT_DIR)/package.json
+	cd $(CLIENT_DIR) && $(NPM) install
 	@touch $(NODE_MODULES)
 
 js-deps: $(NODE_MODULES)
 
-js-dev: js-deps
-	$(NPM) run dev
+js-type-check: js-deps
+	cd $(CLIENT_DIR) && $(NPM) run type-check
 
-js-build: js-deps
-	$(NPM) run build
-	@echo "JavaScript bundles built to dist/js/"
+js-dev: js-deps
+	cd $(CLIENT_DIR) && $(NPM) run dev
+
+js-build: js-deps js-type-check
+	cd $(CLIENT_DIR) && $(NPM) run build
+	@echo "TypeScript bundles built to docs/shared/static/js/"
 
 js-clean:
-	$(NPM) run clean
-	rm -rf node_modules/.installed
+	cd $(CLIENT_DIR) && $(NPM) run clean
+	rm -rf $(NODE_MODULES)
 
 js: js-build
 
 # Legacy templates target (kept for compatibility)
 templates: js-deps
-	($(HULK) docs/manage/tpl/client/*.html > docs/shared/static/js/admin-templates.js)
+	cd $(CLIENT_DIR) && test -d node_modules/hogan.js && \
+		./node_modules/hogan.js/bin/hulk ../docs/manage/tpl/client/*.html > ../docs/shared/static/js/admin-templates.js || \
+		echo "Hogan.js not available, skipping template compilation"
 
 # Build everything
 all: js templates

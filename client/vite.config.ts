@@ -3,30 +3,28 @@ import legacy from '@vitejs/plugin-legacy';
 import { resolve } from 'path';
 
 export default defineConfig({
-  // Base public path for production
+  // Base public path for development
   base: '/static/js/',
 
   // Build configuration
   build: {
-    // Output directory
+    // Output directory for development builds
     outDir: 'dist/js',
 
-    // Don't empty outDir since it's within docs/shared/static
+    // Don't empty outDir
     emptyOutDir: false,
 
-    // Generate source maps for production debugging
+    // Generate source maps for debugging
     sourcemap: true,
 
-    // Build targets
-    target: 'es2015',
+    // Build targets - modern browsers for development
+    target: 'es2022',
 
     // Rollup options
     rollupOptions: {
       input: {
-        // Main entry point that imports other modules
-        graphs: resolve(__dirname, 'docs/shared/static/js/graphs.js'),
-        // Chart utilities (will be bundled with graphs)
-        // Other standalone scripts can be added here if needed
+        // Main entry point
+        graphs: resolve(__dirname, 'src/main.ts'),
       },
       output: {
         // Output format
@@ -47,11 +45,11 @@ export default defineConfig({
     minify: 'terser',
     terserOptions: {
       compress: {
-        drop_console: true,
-        drop_debugger: true
+        drop_console: false, // Keep console for development
+        drop_debugger: false
       },
       format: {
-        comments: false
+        comments: true
       }
     }
   },
@@ -60,17 +58,10 @@ export default defineConfig({
   plugins: [
     // Legacy browser support
     legacy({
-      targets: ['defaults', 'not IE 11'],
+      targets: ['Chrome >= 87', 'Firefox >= 78', 'Safari >= 14', 'Edge >= 88'],
       additionalLegacyPolyfills: ['regenerator-runtime/runtime'],
-      // Generate both modern and legacy bundles
-      renderLegacyChunks: true,
-      polyfills: {
-        // Polyfills for older browsers
-        'es.promise': true,
-        'es.array.includes': true,
-        'es.object.assign': true,
-        'es.object.entries': true
-      }
+      renderLegacyChunks: false, // No legacy for development
+      polyfills: true
     })
   ],
 
@@ -89,7 +80,7 @@ export default defineConfig({
   // Module resolution
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'docs/shared/static/js')
+      '@': resolve(__dirname, 'src')
     }
   }
 });

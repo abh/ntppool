@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Build JavaScript assets for NTP Pool
+# Build TypeScript/JavaScript assets for NTP Pool
 #
 
 set -e
@@ -10,13 +10,16 @@ PROJECT_ROOT="$( cd "$SCRIPT_DIR/.." && pwd )"
 
 cd "$PROJECT_ROOT"
 
-echo "Building JavaScript assets..."
+echo "Building TypeScript/JavaScript assets..."
 
 # Check if npm is installed
 if ! command -v npm &> /dev/null; then
     echo "ERROR: npm is not installed. Please install Node.js and npm first."
     exit 1
 fi
+
+# Change to client directory
+cd client
 
 # Install dependencies if needed
 if [ ! -f "node_modules/.installed" ] || [ "package.json" -nt "node_modules/.installed" ]; then
@@ -25,32 +28,46 @@ if [ ! -f "node_modules/.installed" ] || [ "package.json" -nt "node_modules/.ins
     touch node_modules/.installed
 fi
 
-# Build JavaScript bundles
+# Type check TypeScript
+echo "Type checking TypeScript..."
+npm run type-check
+
+# Build production bundles
 echo "Building production bundles..."
 npm run build
-
-# Build legacy admin templates if Hogan is available
-if [ -d "node_modules/hogan.js" ]; then
-    echo "Building admin templates..."
-    ./node_modules/hogan.js/bin/hulk docs/manage/tpl/client/*.html > docs/shared/static/js/admin-templates.js
-fi
 
 echo "Build complete!"
 
 # Show bundle sizes
 echo ""
 echo "Bundle sizes:"
-find docs/shared/static/js -name "*.bundle.js" -o -name "*.bundle-legacy.js" | while read file; do
-    size=$(du -h "$file" | cut -f1)
-    echo "  $(basename "$file"): $size"
+find ../docs/shared/static/js -name "*.bundle.js" -o -name "*.bundle-legacy.js" 2>/dev/null | while read file; do
+    if [ -f "$file" ]; then
+        size=$(du -h "$file" | cut -f1)
+        echo "  $(basename "$file"): $size"
+    fi
 done
 
 # Check if source maps were generated
-if ls docs/shared/static/js/*.map &> /dev/null; then
+if ls ../docs/shared/static/js/*.map &> /dev/null 2>&1; then
     echo ""
     echo "Source maps generated for debugging"
 fi
 
+# Show chunks if they exist
+if [ -d "../docs/shared/static/js/chunks" ]; then
+    echo ""
+    echo "Code-split chunks:"
+    find ../docs/shared/static/js/chunks -name "*.js" | while read file; do
+        size=$(du -h "$file" | cut -f1)
+        echo "  $(basename "$file"): $size"
+    done
+fi
+
 echo ""
-echo "JavaScript assets built successfully!"
-echo "Use 'make js-clean' to remove build artifacts"
+echo "TypeScript/JavaScript assets built successfully!"
+echo "Output location: docs/shared/static/js/"
+echo "Use 'npm run clean' from client/ directory to remove build artifacts"
+
+# Return to original directory
+cd "$PROJECT_ROOT"

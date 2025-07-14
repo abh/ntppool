@@ -9,7 +9,7 @@ export default defineConfig({
   // Build configuration for production
   build: {
     // Output directly to the static directory
-    outDir: 'docs/shared/static/js',
+    outDir: '../docs/shared/static/js',
 
     // Clean only the built files, not everything in the directory
     emptyOutDir: false,
@@ -17,14 +17,11 @@ export default defineConfig({
     // Generate source maps
     sourcemap: true,
 
-    // Build targets
-    target: 'es2015',
-
     // Rollup options
     rollupOptions: {
       input: {
         // Main graphs bundle
-        'graphs.bundle': resolve(__dirname, 'docs/shared/static/js/graphs.js'),
+        'graphs.bundle': resolve(__dirname, 'src/main.ts'),
       },
       output: {
         // Output format
@@ -36,9 +33,7 @@ export default defineConfig({
         // Manual chunks
         manualChunks: {
           // D3.js as a separate chunk
-          'd3-vendor': ['d3'],
-          // Chart utilities as a separate chunk
-          'chart-utils': [resolve(__dirname, 'docs/shared/static/js/chart-utils.js')]
+          'd3-vendor': ['d3']
         }
       },
       // External dependencies that should not be bundled
@@ -66,19 +61,25 @@ export default defineConfig({
 
   // Plugins
   plugins: [
-    // Legacy browser support
+    // Legacy browser support - 2025 best practices
     legacy({
-      targets: ['> 0.5%', 'last 2 versions', 'Firefox ESR', 'not dead'],
+      targets: [
+        'Chrome >= 63',  // Earlier for legacy compatibility
+        'Firefox >= 67', // Earlier for legacy compatibility
+        'Safari >= 12',  // Earlier for legacy compatibility
+        'Edge >= 79'     // Earlier for legacy compatibility
+      ],
       additionalLegacyPolyfills: ['regenerator-runtime/runtime'],
       renderLegacyChunks: true,
-      polyfills: true
+      polyfills: true,
+      modernPolyfills: true
     })
   ],
 
   // Module resolution
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'docs/shared/static/js')
+      '@': resolve(__dirname, 'src')
     }
   }
 });

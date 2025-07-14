@@ -1,0 +1,26 @@
+{
+  "name": "ntppool-frontend",
+  "version": "1.0.0",
+  "description": "NTP Pool Project frontend assets",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build --config vite.config.production.ts",
+    "build:dev": "vite build",
+    "preview": "vite preview",
+    "clean": "rm -rf dist ../docs/shared/static/js/*.bundle.* ../docs/shared/static/js/chunks ../docs/shared/static/js/assets",
+    "watch": "vite build --watch --config vite.config.production.ts",
+    "type-check": "tsc --noEmit",
+    "lint": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/d3": "^7.4.3",
+    "@vitejs/plugin-legacy": "^7.0.0",
+    "terser": "^5.35.0",
+    "typescript": "^5.8.3",
+    "vite": "^7.0.0"
+  },
+  "dependencies": {
+    "d3": "^7.9.0"
+  }
+}
