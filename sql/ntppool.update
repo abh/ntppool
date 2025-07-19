@@ -1224,6 +1224,19 @@ UPDATE server_scores SET status = 'candidate' WHERE status = 'new';
 ALTER TABLE server_scores
 MODIFY COLUMN status enum('candidate','testing','active') NOT NULL DEFAULT 'candidate';
 
+
+#147
+
+drop view if exists monitors_data;
+create
+SQL SECURITY INVOKER
+view monitors_data as
+select id, account_id, type,
+   IF(type="score", hostname, SUBSTRING_INDEX(tls_name,'.',1)) as name,
+   ip,  ip_version, status, client_version, last_seen, last_submit
+from monitors
+where tls_name not like '%.system';
+
 #todo
 
 
