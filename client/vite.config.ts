@@ -3,13 +3,13 @@ import legacy from '@vitejs/plugin-legacy';
 import { resolve } from 'path';
 
 export default defineConfig({
-  // Base public path - use environment static_base + js/
-  base: (process.env.static_base || '/static/') + 'js/',
+  // Base public path - use environment static_base + js/dist/
+  base: (process.env.static_base || '/static/') + 'js/dist/',
 
   // Build configuration
   build: {
     // Output directory for development builds
-    outDir: '../docs/shared/static/js',
+    outDir: '../docs/shared/static/js/dist/',
 
     // Don't empty outDir
     emptyOutDir: false,

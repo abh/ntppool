@@ -4,14 +4,14 @@ import { resolve } from 'path';
 
 export default defineConfig({
   // Base public path - use environment static_base + js/
-  base: (process.env.static_base || '/static/') + 'js/',
+  base: (process.env.static_base || '/static/') + 'js/dist/',
 
   // Build configuration for production
   build: {
     // Build targets - modern browsers
     target: 'es2022',
     // Output directly to the static directory
-    outDir: '../docs/shared/static/js',
+    outDir: '../docs/shared/static/js/dist/',
 
     // Clean only the built files, not everything in the directory
     emptyOutDir: false,
