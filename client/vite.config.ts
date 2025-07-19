@@ -3,8 +3,8 @@ import legacy from '@vitejs/plugin-legacy';
 import { resolve } from 'path';
 
 export default defineConfig({
-  // Base public path - use environment static_base + js/dist/
-  base: (process.env.static_base || '/static/') + 'js/dist/',
+  // Base public path - use relative paths to avoid hardcoded URLs
+  base: './',
 
   // Build configuration
   build: {
@@ -36,14 +36,16 @@ export default defineConfig({
         chunkFileNames: '[name]-v[hash].js',
         assetFileNames: '[name]-v[hash][extname]',
         inlineDynamicImports: false,
-        //manualChunks: undefined
-        // Manual chunks to control bundling
+        // Manual chunks - only separate D3 vendor
         manualChunks: {
           // D3.js as a separate chunk for caching
           'd3-vendor': ['d3']
         }
       }
     },
+
+    // Disable module preload to prevent Safari warnings
+    modulePreload: false,
 
     // Minification options
     minify: 'terser',

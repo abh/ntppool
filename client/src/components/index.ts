@@ -3,21 +3,18 @@
  * Modern, encapsulated chart components using Web Components standard
  */
 
-export { BaseChartComponent } from './base-chart.js';
-
 /**
  * Register all NTP Pool chart components
  * Call this function to register all components globally
  */
 export function registerAllComponents(): void {
-  // Components are automatically registered when imported
-  // This function exists for explicit registration if needed
+  // Only load components that are actually present on the page
 
-  if (!customElements.get('ntp-server-chart')) {
+  if (document.querySelector('ntp-server-chart') && !customElements.get('ntp-server-chart')) {
     import('./server-chart.js');
   }
 
-  if (!customElements.get('ntp-zone-chart')) {
+  if (document.querySelector('ntp-zone-chart') && !customElements.get('ntp-zone-chart')) {
     import('./zone-chart.js');
   }
 }
