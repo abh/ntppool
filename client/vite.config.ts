@@ -17,6 +17,8 @@ export default defineConfig({
     // Generate source maps for debugging
     sourcemap: true,
 
+    manifest: true,
+
     // Build targets - modern browsers for development
     target: 'es2022',
 
@@ -30,16 +32,16 @@ export default defineConfig({
         // Output format
         format: 'es',
         // File naming
-        entryFileNames: '[name].js',
-        chunkFileNames: '[name]-[hash].js',
-        assetFileNames: '[name]-[hash][extname]',
-        inlineDynamicImports: true,
-        manualChunks: undefined
+        entryFileNames: '[name]-v[hash].js',
+        chunkFileNames: '[name]-v[hash].js',
+        assetFileNames: '[name]-v[hash][extname]',
+        inlineDynamicImports: false,
+        //manualChunks: undefined
         // Manual chunks to control bundling
-        //manualChunks: {
+        manualChunks: {
           // D3.js as a separate chunk for caching
-        //  'd3-vendor': ['d3']
-        //}
+          'd3-vendor': ['d3']
+        }
       }
     },
 

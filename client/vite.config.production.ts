@@ -19,6 +19,8 @@ export default defineConfig({
     // Generate source maps
     sourcemap: true,
 
+    manifest: true,
+
     // CSS code splitting
     cssCodeSplit: false,
 
@@ -29,19 +31,19 @@ export default defineConfig({
         graphs: resolve(__dirname, 'src/main.ts'),
       },
       output: {
-        inlineDynamicImports: true,
         // Output format
         format: 'es',
         // File naming
         entryFileNames: '[name].js',
         chunkFileNames: '[name]-[hash].js',
         assetFileNames: '[name]-[hash][extname]',
+        inlineDynamicImports: false,
         // Manual chunks
-        manualChunks: undefined
-        //manualChunks: {
+        // manualChunks: undefined
+        manualChunks: {
           // D3.js as a separate chunk
-        //  'd3-vendor': ['d3']
-        //}
+          'd3-vendor': ['d3']
+        }
       },
       // External dependencies that should not be bundled
       external: [],

@@ -491,6 +491,84 @@ sub post_process {
     return OK;
 }
 
+# Vite manifest cache
+my $vite_manifest;
+my $vite_manifest_mtime;
+
+sub _load_vite_manifest {
+    my $manifest_file =
+      ($ENV{CBROOTLOCAL} || '.') . '/docs/shared/static/js/dist/.vite/manifest.json';
+
+    unless (-f $manifest_file) {
+        warn "Vite manifest not found: $manifest_file";
+        return $vite_manifest = {};
+    }
+
+    my $file_mtime = (stat($manifest_file))[9];
+
+    # In development, check if file has changed
+    my $is_development = ($ENV{CBCONFIG} || '') eq 'devel';
+    if ($is_development) {
+        if ($vite_manifest && $vite_manifest_mtime && $file_mtime <= $vite_manifest_mtime)
+        {
+            return $vite_manifest;
+        }
+    }
+    else {
+        # In production/test, load only once
+        return $vite_manifest if $vite_manifest;
+    }
+
+    eval {
+        my $json_content = read_binary($manifest_file);
+        $vite_manifest       = decode_json($json_content);
+        $vite_manifest_mtime = $file_mtime;
+    };
+
+    if ($@) {
+        warn "Failed to load vite manifest: $@";
+        return $vite_manifest = {};
+    }
+
+    return $vite_manifest;
+}
+
+sub static_url {
+    my $self = shift;
+    my $file = shift;
+
+    # Handle vite-bundled files
+    if ($file =~ m!^/js/dist/(.+)\.js$!) {
+        my $entry_name = $1;
+        my $manifest   = $self->_load_vite_manifest();
+
+        # Find entry with matching name and isEntry: true
+        for my $entry_key (keys %$manifest) {
+            my $entry = $manifest->{$entry_key};
+            if ($entry->{name} && $entry->{name} eq $entry_name && $entry->{isEntry}) {
+
+                # We found the vite manifest entry, construct the result with static base
+                my $vite_file = "/js/dist/" . $entry->{file};
+
+                # Get the static base from configuration and combine with vite filename
+                my $static_base = eval { $self->__static->static_base($self->site) };
+                if ($@ || !$static_base) {
+                    warn "Failed to get static_base for site " . ($self->site || 'unknown') . ": $@" if $@;
+                    $static_base = '/static';  # Default fallback
+                }
+                my $result = $static_base . $vite_file;
+                return $result;
+            }
+        }
+
+        # Fallback to original filename if not found in manifest
+        warn "Vite manifest entry not found for: $entry_name";
+    }
+
+    # Use parent class method for all other files
+    return $self->SUPER::static_url($file, @_);
+}
+
 sub plain_cookie {
     my $self   = shift;
     my $cookie = shift;
