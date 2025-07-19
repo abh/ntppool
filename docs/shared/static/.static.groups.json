@@ -15,19 +15,6 @@
   "d3.js": {
       "files": [ ]
   },
-  "graphs.js": {
-      "files": [
-          "js/graphs.bundle.js"
-      ]
-  },
-  "graphs-source.js": {
-      "files": [
-          "cdn/libs/modernizr/2/modernizr.ntppool.js",
-          "js/graphs.server.js",
-          "js/graphs.zone.js",
-          "js/graphs.js"
-      ]
-  },
   "manage.js": {
       "files": [
           "cdn/libs/htmx/2.0.5/htmx.min.js",
