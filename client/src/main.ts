@@ -1,29 +1,22 @@
 /**
- * Main graph initialization module
- * TypeScript implementation without jQuery or Modernizr dependencies
+ * Main chart initialization module
+ * Modern Web Components implementation for NTP Pool charts
  */
 
 import {
-  querySelector,
-  querySelectorAll,
-  fetchChartData,
-  showLoading,
-  showError,
-  clearContainer,
-  debounce
-} from '@/utils/chart-utils.js';
-import { createZoneChart, createServerChart } from '@/charts/index.js';
-import type {
-  ServerScoreHistoryResponse,
-  ZoneCountsResponse
-} from '@/types/index.js';
+  registerAllComponents,
+  ensureWebComponentsSupport,
+  isWebComponentsSupported
+} from '@/components/index.js';
+import { querySelector } from '@/utils/chart-utils.js';
 
-// Global namespace for backward compatibility (if needed)
+// Global namespace for backward compatibility
 declare global {
   interface Window {
     Pool?: {
       Graphs?: {
         SetupGraphs?: () => Promise<void>;
+        initializeWebComponents?: () => Promise<void>;
       };
     };
     NP?: {
@@ -36,15 +29,6 @@ window.Pool = window.Pool ?? {};
 window.Pool.Graphs = window.Pool.Graphs ?? {};
 
 /**
- * Check for SVG support in the browser
- */
-function checkSvgSupport(): boolean {
-  // Modern browsers all support SVG, but we'll check anyway
-  return !!(document.createElementNS &&
-           document.createElementNS('http://www.w3.org/2000/svg', 'svg').createSVGRect);
-}
-
-/**
  * Show legacy browser message
  */
 function showLegacyMessage(container: Element | null): void {
@@ -52,7 +36,7 @@ function showLegacyMessage(container: Element | null): void {
 
   container.innerHTML = `
     <div class="alert alert-warning">
-      <p>Please upgrade to a modern browser that supports SVG to see the graphs.</p>
+      <p>Please upgrade to a modern browser that supports Web Components to see the charts.</p>
       <p>Recommended browsers:
         <a href="https://www.google.com/chrome/">Chrome</a>,
         <a href="https://www.mozilla.org/firefox">Firefox</a>,
@@ -64,114 +48,62 @@ function showLegacyMessage(container: Element | null): void {
 }
 
 /**
- * Load and render a single graph
+ * Initialize Web Components for charts
  */
-export async function loadGraph(container: Element): Promise<void> {
-  // Show loading state
-  showLoading(container);
+export async function initializeWebComponents(): Promise<void> {
+  try {
+    // Ensure Web Components support (loads polyfills if needed)
+    await ensureWebComponentsSupport();
 
-  // Check for server IP (server chart)
-  const serverIp = (container as HTMLElement).dataset['serverIp'];
-  if (serverIp) {
-    const legendElement = container.nextElementSibling?.classList.contains('graph-legend')
-      ? container.nextElementSibling
-      : null;
+    // Register all chart components
+    registerAllComponents();
 
-    const url = `/scores/${serverIp}/json?monitor=*&limit=5000&source=c`;
-    const result = await fetchChartData<ServerScoreHistoryResponse>(url);
+    console.log('NTP Pool chart components initialized successfully');
 
-    if (result.success && result.data) {
-      clearContainer(container);
-      createServerChart(container, result.data, { legend: legendElement });
+    // Dispatch ready event
+    document.dispatchEvent(new CustomEvent('ntp-charts-ready'));
 
-      // Signal that chart has loaded (for compatibility)
-      setTimeout(() => {
-        const loadedDiv = document.createElement('div');
-        loadedDiv.id = 'loaded';
-        document.body.appendChild(loadedDiv);
-      }, 50);
-    } else {
-      showError(container, result.error);
-    }
-    return;
-  }
+  } catch (error) {
+    console.error('Failed to initialize chart components:', error);
 
-  // Check for zone (zone chart)
-  const zone = (container as HTMLElement).dataset['zone'];
-  if (zone) {
-    const url = `/zone/${zone}.json?limit=480`;
-    const result = await fetchChartData<ZoneCountsResponse>(url);
-
-    if (result.success && result.data) {
-      clearContainer(container);
-      createZoneChart(container, result.data, { name: zone });
-    } else {
-      showError(container, result.error);
-    }
-  }
-}
-
-/**
- * Initialize all graphs on the page
- */
-export async function initializeGraphs(): Promise<void> {
-  // Check for SVG support
-  const svgSupported = window.NP?.svg_graphs !== false && checkSvgSupport();
-
-  if (!svgSupported) {
+    // Show legacy message if Web Components aren't supported
     const legacyContainer = querySelector('#legacy-graphs');
     showLegacyMessage(legacyContainer);
-    return;
+
+    throw error;
   }
-
-  // Find all graph containers
-  const graphContainers = querySelectorAll<HTMLElement>('div.graph');
-
-  // Load graphs in parallel
-  const loadPromises = Array.from(graphContainers).map(container =>
-    loadGraph(container).catch(error => {
-      console.error('Error loading graph:', error);
-      showError(container, 'Failed to load graph');
-    })
-  );
-
-  await Promise.all(loadPromises);
 }
 
 /**
- * Handle window resize for responsive charts
+ * Legacy function for backward compatibility
+ * @deprecated Use initializeWebComponents instead
  */
-const handleResize = debounce(() => {
-  // Re-render all charts with new dimensions
-  const graphContainers = querySelectorAll<HTMLElement>('div.graph svg');
-  graphContainers.forEach(svg => {
-    const container = svg.parentElement;
-    if (container && (container.dataset['serverIp'] || container.dataset['zone'])) {
-      // Clear and reload the chart
-      clearContainer(container);
-      loadGraph(container);
-    }
-  });
-}, 300);
-
-/**
- * Set up event listeners
- */
-function setupEventListeners(): void {
-  window.addEventListener('resize', handleResize);
+export async function initializeGraphs(): Promise<void> {
+  console.warn('initializeGraphs() is deprecated. Web Components are now used automatically.');
+  return initializeWebComponents();
 }
 
-// Export for backward compatibility
+/**
+ * Check if charts are supported in current browser
+ */
+export function areChartsSupported(): boolean {
+  return window.NP?.svg_graphs !== false && isWebComponentsSupported();
+}
+
+// Export functions for backward compatibility
 window.Pool.Graphs.SetupGraphs = initializeGraphs;
+window.Pool.Graphs.initializeWebComponents = initializeWebComponents;
 
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
-    initializeGraphs();
-    setupEventListeners();
+    initializeWebComponents().catch(error => {
+      console.error('Failed to initialize charts on DOM ready:', error);
+    });
   });
 } else {
   // DOM is already ready
-  initializeGraphs();
-  setupEventListeners();
+  initializeWebComponents().catch(error => {
+    console.error('Failed to initialize charts:', error);
+  });
 }
