@@ -31,12 +31,25 @@ export function createZoneChart(
   options: ZoneChartOptions = {}
 ): void {
   // Set default options with proper typing
-  const config: Required<ZoneChartOptions> = {
-    ipVersion: 'v4',
+  const config = {
+    ipVersion: 'v4' as const,
     name: 'Zone',
     showBothVersions: true,
+    width: undefined as number | undefined,
+    height: undefined as number | undefined,
     ...options
   };
+
+  console.log('📊 createZoneChart debug:', {
+    'received options': options,
+    'merged config': config,
+    'container': container,
+    'container.tagName': container.tagName,
+    'container attrs': {
+      width: (container as HTMLElement).getAttribute?.('width'),
+      height: (container as HTMLElement).getAttribute?.('height')
+    }
+  });
 
   // Process history data with type safety
   const history: ZoneHistoryPoint[] = data.history.map(d => ({
@@ -44,16 +57,25 @@ export function createZoneChart(
     date: parseTimestamp(d.ts)
   }));
 
-  // Calculate dimensions
-  const dimensions = getElementDimensions(container, {
-    width: 480,
-    height: 246
+  // Calculate dimensions - use from options if provided, otherwise from container
+  const fallbackDimensions = getElementDimensions(container, { width: 480, height: 246 });
+  const dimensions = {
+    width: config.width || fallbackDimensions.width,
+    height: config.height || fallbackDimensions.height,
+    padding: {
+      horizontal: 40,
+      vertical: 19
+    }
+  };
+
+  console.log('📊 createZoneChart dimensions calculated:', {
+    'config.width': config.width,
+    'config.height': config.height,
+    'fallbackDimensions': fallbackDimensions,
+    'final dimensions': dimensions
   });
 
-  const padding = {
-    horizontal: 40,
-    vertical: 19
-  };
+  const padding = dimensions.padding;
 
   const innerWidth = dimensions.width - (padding.horizontal * 2);
   const innerHeight = dimensions.height - (padding.vertical * 2);
@@ -171,7 +193,7 @@ function drawGrid(
     .attr('dy', '.71em')
     .attr('text-anchor', 'middle')
     .attr('font-size', '12px')
-    .text(d => d3.timeFormat('%b %d')(d));
+    .text(xScale.tickFormat(CHART_DEFAULTS.ticks.x));
 
   // Y-axis grid lines and labels
   const yTicks = yMax > 8 ? 8 : yMax;
@@ -270,6 +292,7 @@ function addLegend(g: GSelection, width: number, _height: number): void {
     label: string;
     class: string;
     color: string;
+    isDashed?: boolean;
   }
 
   const legendItems: LegendItem[] = [
@@ -280,28 +303,48 @@ function addLegend(g: GSelection, width: number, _height: number): void {
 
   const legend = g.append('g')
     .attr('class', 'legend')
-    .attr('transform', `translate(${width - 100}, 20)`);
+    .attr('transform', `translate(${width - 120}, 15)`);
 
   const legendItem = legend.selectAll<SVGGElement, LegendItem>('.legend-item')
     .data(legendItems)
     .enter().append('g')
     .attr('class', 'legend-item')
-    .attr('transform', (_d, i) => `translate(0, ${i * 20})`);
+    .attr('transform', (_d, i) => `translate(0, ${i * 18})`);
 
+  // IPv4 (solid) lines
   legendItem.append('line')
     .attr('x1', 0)
-    .attr('x2', 20)
+    .attr('x2', 18)
     .attr('y1', 0)
     .attr('y2', 0)
     .attr('stroke', d => d.color)
     .attr('stroke-width', 2);
 
+  // IPv6 (dashed) lines
+  legendItem.append('line')
+    .attr('x1', 0)
+    .attr('x2', 18)
+    .attr('y1', 6)
+    .attr('y2', 6)
+    .attr('stroke', d => d.color)
+    .attr('stroke-width', 2)
+    .attr('stroke-dasharray', '3,2')
+    .attr('opacity', 0.8);
+
   legendItem.append('text')
-    .attr('x', 25)
-    .attr('y', 0)
+    .attr('x', 22)
+    .attr('y', 3)
     .attr('dy', '.35em')
-    .attr('font-size', '12px')
+    .attr('font-size', '11px')
     .text(d => d.label);
+
+  // Add explanatory text for line styles
+  legend.append('text')
+    .attr('x', 0)
+    .attr('y', legendItems.length * 18 + 8)
+    .attr('font-size', '10px')
+    .attr('fill', '#666')
+    .text('Solid: IPv4, Dashed: IPv6');
 }
 
 // Export for backward compatibility with global function

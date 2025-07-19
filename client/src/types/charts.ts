@@ -86,6 +86,8 @@ export interface ZoneChartOptions {
   ipVersion?: 'v4' | 'v6';
   name?: string;
   showBothVersions?: boolean;
+  width?: number;
+  height?: number;
 }
 
 /**

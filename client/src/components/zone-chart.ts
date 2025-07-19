@@ -18,8 +18,7 @@ export class ZoneChartComponent extends BaseChartComponent {
 
   constructor() {
     super();
-    this.options.width = 480;
-    this.options.height = 246;
+    // Dimensions controlled by HTML attributes per dimension system refactor
   }
 
   override connectedCallback(): void {
@@ -120,13 +119,29 @@ export class ZoneChartComponent extends BaseChartComponent {
 
     this.clearChart();
 
+    console.log('🎯 ZoneChart render() debug:', {
+      'this.options': this.options,
+      'HTML width attr': this.getAttribute('width'),
+      'HTML height attr': this.getAttribute('height'),
+      'chartContainer': this.chartContainer,
+      'chartContainer.tagName': this.chartContainer.tagName,
+      'component element': this,
+      'component.tagName': this.tagName
+    });
+
     try {
       // Create the D3 chart with current settings
-      createZoneChart(this.chartContainer, this.data as ZoneCountsResponse, {
+      const chartOptions = {
         name: this.getZone() || 'Zone',
         ipVersion: this.getIpVersion(),
-        showBothVersions: this.shouldShowBothVersions()
-      });
+        showBothVersions: this.shouldShowBothVersions(),
+        width: this.options.width,
+        height: this.options.height
+      };
+
+      console.log('🎯 ZoneChart calling createZoneChart with options:', chartOptions);
+
+      createZoneChart(this.chartContainer, this.data as ZoneCountsResponse, chartOptions);
 
       // Update container dimensions
       this.updateContainerDimensions();
@@ -190,10 +205,9 @@ export class ZoneChartComponent extends BaseChartComponent {
         border-color: #3b82f6;
       }
 
-      /* SVG chart styling */
+      /* SVG chart styling - removed responsive overrides to respect fixed dimensions */
       .chart-container svg {
-        width: 100%;
-        height: auto;
+        /* width and height set by updateContainerDimensions() */
         max-width: 100%;
       }
 
@@ -269,10 +283,24 @@ export class ZoneChartComponent extends BaseChartComponent {
   private updateContainerDimensions(): void {
     const svg = this.chartContainer.querySelector('svg');
     if (svg) {
-      svg.style.width = '100%';
-      svg.style.height = 'auto';
+      console.log('🎯 updateContainerDimensions before changes:', {
+        'svg.style.width': svg.style.width,
+        'svg.getAttribute("width")': svg.getAttribute('width'),
+        'this.options.width': this.options.width,
+        'this.options.height': this.options.height
+      });
+
+      // Use fixed dimensions from HTML attributes instead of responsive 100%
+      svg.style.width = `${this.options.width}px`;
+      svg.style.height = `${this.options.height}px`;
       svg.setAttribute('viewBox', `0 0 ${this.options.width} ${this.options.height}`);
       svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+
+      console.log('🎯 updateContainerDimensions after changes:', {
+        'svg.style.width': svg.style.width,
+        'svg.style.height': svg.style.height,
+        'svg viewBox': svg.getAttribute('viewBox')
+      });
     }
   }
 
