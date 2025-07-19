@@ -86,11 +86,11 @@ js-type-check: js-deps
 js-dev: js-deps
 	cd $(CLIENT_DIR) && $(NPM) run dev
 
-js-build: js-deps js-type-check
+js-build: js-deps js-type-check templates
 	cd $(CLIENT_DIR) && $(NPM) run build:dev
 	@echo "TypeScript bundles built to docs/shared/static/js/"
 
-js-build-prod: js-deps js-type-check
+js-build-prod: js-deps js-type-check templates
 	cd $(CLIENT_DIR) && $(NPM) run build
 	@echo "TypeScript production bundles built to docs/shared/static/js/"
 
