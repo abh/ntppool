@@ -4,7 +4,7 @@ USER root
 ENV BUILD 20241215
 
 RUN apk -U --no-cache upgrade --ignore alpine-baselayout
-RUN apk --no-cache add gomplate alpine-base perl-file-slurper
+RUN apk --no-cache add gomplate alpine-base perl-file-slurper nodejs npm
 RUN cpanm -v https://tmp.askask.com/2024/12/Net-Async-HTTP-Server-0.14bis4.tar.gz
 
 ENV CBCONFIG=
@@ -25,6 +25,7 @@ RUN rm -fr docs/ntppool/_syndicate && \
 RUN find ./docs -type f -print0 | xargs -0 touch
 
 RUN perl Makefile.PL && \
+  make js-build && \
   make templates && \
   CBCONFIG=docker/combust.build.conf bin/setup && \
   mkdir -p tmp logs && \

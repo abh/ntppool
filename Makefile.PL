@@ -102,12 +102,6 @@ templates: js-deps
 		./node_modules/hogan.js/bin/hulk ../docs/manage/tpl/client/*.html > ../docs/shared/static/js/admin-templates.js || \
 		echo "Hogan.js not available, skipping template compilation"
 
-# Build everything
-all: js templates
-
-# Clean everything
-realclean: clean js-clean
-
 testcover:
 	cover -delete
 	HARNESS_PERL_SWITCHES=-MDevel::Cover $(MAKE) test
