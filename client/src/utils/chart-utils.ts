@@ -6,6 +6,7 @@
 import * as d3 from 'd3';
 import type {
   ChartDimensions,
+  SvgDimensions,
   ChartColors,
   ChartThresholds,
   ChartDefaults,
@@ -23,9 +24,9 @@ export const CHART_DEFAULTS: ChartDefaults = {
     vertical: 19
   },
   dimensions: {
-    defaultWidth: 500,
-    defaultHeight: 246,
-    widthRatio: 0.7
+    defaultWidth: 500,  // Emergency fallback only
+    defaultHeight: 246, // Emergency fallback only
+    widthRatio: 0.7     // For container-based sizing
   },
   ticks: {
     x: 8,
@@ -112,7 +113,7 @@ export function querySelectorAll<T extends Element = Element>(
 }
 
 /**
- * Get element dimensions with fallbacks
+ * Get element dimensions - HTML attributes are primary source
  */
 export function getElementDimensions(
   element: Element | null,
@@ -129,18 +130,31 @@ export function getElementDimensions(
   }
 
   const htmlElement = element as HTMLElement;
-  const dataWidth = parseInt(htmlElement.dataset['width'] ?? '0', 10);
-  const dataHeight = parseInt(htmlElement.dataset['height'] ?? '0', 10);
+
+  // Simple priority: HTML attributes first, then defaults, then emergency fallback
+  const attrWidth = parseInt(htmlElement.getAttribute('width') ?? '0', 10);
+  const attrHeight = parseInt(htmlElement.getAttribute('height') ?? '0', 10);
+
+  const calculatedWidth = attrWidth ||
+                         defaults.width ||
+                         CHART_DEFAULTS.dimensions.defaultWidth;
+
+  const calculatedHeight = attrHeight ||
+                          defaults.height ||
+                          CHART_DEFAULTS.dimensions.defaultHeight;
+
+  console.log('📏 getElementDimensions Simplified:', {
+    element: htmlElement.tagName,
+    attrWidth,
+    attrHeight,
+    calculatedWidth,
+    calculatedHeight,
+    source: attrWidth ? 'HTML attributes' : defaults.width ? 'options' : 'fallback'
+  });
 
   return {
-    width: dataWidth ||
-           (htmlElement.offsetWidth * CHART_DEFAULTS.dimensions.widthRatio) ||
-           defaults.width ||
-           CHART_DEFAULTS.dimensions.defaultWidth,
-    height: dataHeight ||
-            htmlElement.offsetHeight ||
-            defaults.height ||
-            CHART_DEFAULTS.dimensions.defaultHeight,
+    width: calculatedWidth,
+    height: calculatedHeight,
     padding: defaultPadding
   };
 }
@@ -301,7 +315,7 @@ export function calculateResponsiveDimensions(container: Element): ChartDimensio
  */
 export function createSvgContainer(
   container: Element,
-  dimensions: ChartDimensions
+  dimensions: SvgDimensions
 ): ChartElements {
   const svg = d3.select(container)
     .append('svg')
@@ -310,8 +324,7 @@ export function createSvgContainer(
     .attr('viewBox', `0 0 ${dimensions.width} ${dimensions.height}`)
     .attr('preserveAspectRatio', 'xMidYMid meet') as SvgSelection;
 
-  const g = svg.append('g')
-    .attr('transform', `translate(${dimensions.padding.horizontal},${dimensions.padding.vertical})`) as GSelection;
+  const g = svg.append('g') as GSelection;
 
   return { svg, g };
 }

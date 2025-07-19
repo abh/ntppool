@@ -3,13 +3,13 @@ import legacy from '@vitejs/plugin-legacy';
 import { resolve } from 'path';
 
 export default defineConfig({
-  // Base public path for development
-  base: '/static/js/',
+  // Base public path - use environment static_base + js/
+  base: (process.env.static_base || '/static/') + 'js/',
 
   // Build configuration
   build: {
     // Output directory for development builds
-    outDir: 'dist/js',
+    outDir: '../docs/shared/static/js',
 
     // Don't empty outDir
     emptyOutDir: false,
@@ -33,11 +33,13 @@ export default defineConfig({
         entryFileNames: '[name].js',
         chunkFileNames: '[name]-[hash].js',
         assetFileNames: '[name]-[hash][extname]',
+        inlineDynamicImports: true,
+        manualChunks: undefined
         // Manual chunks to control bundling
-        manualChunks: {
+        //manualChunks: {
           // D3.js as a separate chunk for caching
-          'd3-vendor': ['d3']
-        }
+        //  'd3-vendor': ['d3']
+        //}
       }
     },
 

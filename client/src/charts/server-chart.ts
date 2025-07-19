@@ -61,11 +61,31 @@ export function createServerChart(
   const graphDesc = document.querySelector('.graph_desc') as HTMLElement | null;
   if (graphDesc) graphDesc.style.display = 'block';
 
-  // Calculate dimensions
-  const dimensions = getElementDimensions(container);
-  const padding = { horizontal: 45, vertical: 19 };
-  const innerWidth = dimensions.width - (padding.horizontal * 2);
-  const innerHeight = dimensions.height - (padding.vertical * 2);
+  // Get dimensions from HTML attributes (via options) or container
+  const dimensions = getElementDimensions(container, options);
+  const innerWidth = dimensions.width;
+  const innerHeight = dimensions.height;
+
+  // Calculate total dimensions based on chart content + padding
+  const totalWidth = innerWidth + (CHART_DEFAULTS.padding.horizontal * 2);
+  const totalHeight = innerHeight + (CHART_DEFAULTS.padding.vertical * 2);
+
+  console.log('🔍 Server Chart Dimensions Debug v3:', {
+    serverIp: data.server.ip,
+    optionsProvided: {
+      width: options.width,
+      height: options.height
+    },
+    fallbackDimensions: getElementDimensions(container),
+    finalDimensions: {
+      innerWidth,
+      innerHeight,
+      totalWidth,
+      totalHeight
+    },
+    padding: CHART_DEFAULTS.padding,
+    containerElement: container
+  });
 
   // Create scales with proper typing
   const yOffsetScale: PowerScale = d3.scalePow()
@@ -82,11 +102,24 @@ export function createServerChart(
     .domain(d3.extent(history, d => d.date) as [Date, Date])
     .range([0, innerWidth]);
 
-  // Create SVG container
+  // Create SVG container with total dimensions
   const { svg, g } = createSvgContainer(container, {
-    width: dimensions.width,
-    height: dimensions.height,
-    padding
+    width: totalWidth,
+    height: totalHeight
+  });
+
+  // Apply padding transform to position chart content
+  g.attr('transform', `translate(${CHART_DEFAULTS.padding.horizontal},${CHART_DEFAULTS.padding.vertical})`);
+
+  console.log('🎨 SVG Creation Debug:', {
+    svgElement: svg.node(),
+    svgAttributes: {
+      width: svg.attr('width'),
+      height: svg.attr('height'),
+      viewBox: svg.attr('viewBox')
+    },
+    gElement: g.node(),
+    gTransform: g.attr('transform')
   });
 
   // Add accessibility labels
@@ -111,7 +144,7 @@ export function createServerChart(
 
   // Create legend if specified
   if (config.legend) {
-    createLegend(config.legend, data.monitors, g, padding.horizontal);
+    createLegend(config.legend, data.monitors, g);
   }
 }
 
@@ -260,7 +293,7 @@ function drawDataPoints(
     .data(monitorData)
     .enter().append('circle')
     .attr('class', 'offsets monitor-data')
-    .attr('r', history.length > 250 ? 1.5 : 2)
+    .attr('r', 1.5)
     .attr('cx', d => xScale(d.date))
     .attr('cy', d => yOffsetScale(d.offset))
     .attr('fill', d => getOffsetColor(d.offset))
@@ -323,12 +356,10 @@ function getOffsetColor(offset: number): string {
 function createLegend(
   legendContainer: Element,
   monitors: Monitor[],
-  chartGroup: GSelection,
-  leftMargin: number
+  chartGroup: GSelection
 ): void {
   // Apply styles to container
   const htmlContainer = legendContainer as HTMLElement;
-  htmlContainer.style.marginLeft = `${leftMargin}px`;
   htmlContainer.style.width = '50%';
 
   // Sort monitors

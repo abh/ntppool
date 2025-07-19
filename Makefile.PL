@@ -87,7 +87,7 @@ js-dev: js-deps
 	cd $(CLIENT_DIR) && $(NPM) run dev
 
 js-build: js-deps js-type-check
-	cd $(CLIENT_DIR) && $(NPM) run build
+	cd $(CLIENT_DIR) && $(NPM) run build:dev
 	@echo "TypeScript bundles built to docs/shared/static/js/"
 
 js-clean:

@@ -13,6 +13,11 @@ export interface ChartDimensions {
   };
 }
 
+export interface SvgDimensions {
+  width: number;
+  height: number;
+}
+
 export interface ChartColors {
   offset: {
     good: string;
@@ -73,6 +78,8 @@ export interface ServerChartOptions {
   legend?: Element | null;
   showTooltips?: boolean;
   responsive?: boolean;
+  width?: number;
+  height?: number;
 }
 
 export interface ZoneChartOptions {

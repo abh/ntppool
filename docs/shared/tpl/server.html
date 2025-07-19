@@ -93,7 +93,7 @@ This server [% verb %] <span class="deletion">scheduled for deletion</span> on %
 <h3>History</h3>
 
 <p>
-<ntp-server-chart server-ip="[% server.ip %]" show-legend="true" width="500" height="246" inherit-styles="true"></ntp-server-chart>
+<ntp-server-chart server-ip="[% server.ip %]" show-legend="true" width="550" height="246" inherit-styles="true"></ntp-server-chart>
 <p class="graph_desc">
 In the graph above the green, orange and red dots are offsets (in milliseconds, using the left axis).<br>
 The blue or red (bigger) dots are the <a href="https://news.ntppool.org/docs/monitoring/">
@@ -171,7 +171,7 @@ permyriad of the overall "netspeed" for countries configured for the server.
 <script src="[% combust.static_url("/cdn/libs/es5-shim/1/es5-shim.min.js") %]"></script>
 <![endif]-->
 
-[% page.js.push("module:graphs.bundle.js") %]
+[% page.js.push("module:graphs.js") %]
 
 [% IF manage_site %]
 [% page.js.push(combust.static_group("admin.js")) %]

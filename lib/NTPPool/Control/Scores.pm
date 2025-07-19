@@ -24,7 +24,7 @@ sub render {
     defer { $span->end(); };
 
     my $public = $self->site->name eq 'ntppool' ? 1 : 0;
-    $self->cache_control('s-maxage=600,max-age=300') if $public;
+    $self->cache_control('s-maxage=600,max-age=300') if $public && $self->deployment_mode ne "devel";
 
     unless ($public or $self->user) {
         # for manage site, redirect to the public site

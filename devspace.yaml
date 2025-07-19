@@ -38,7 +38,8 @@ deployments:
           web_hostname: web.askdev.grundclock.com
           pool_domain: ntp.askdev.grundclock.com
           httpd_maxclients: "6"
-          static_base: https://st.ntppool.org/askntp/
+          #static_base: https://st.ntppool.org/askntp/
+          static_base: /static/
       wait: true
       #timeout: "300s"
 

@@ -24,6 +24,7 @@ export default defineConfig({
         'graphs.bundle': resolve(__dirname, 'src/main.ts'),
       },
       output: {
+        inlineDynamicImports: true,
         // Output format
         format: 'es',
         // File naming - use .bundle.js to distinguish from source files
@@ -31,10 +32,11 @@ export default defineConfig({
         chunkFileNames: 'chunks/[name]-[hash].js',
         assetFileNames: 'assets/[name]-[hash][extname]',
         // Manual chunks
-        manualChunks: {
+        manualChunks: undefined
+        //manualChunks: {
           // D3.js as a separate chunk
-          'd3-vendor': ['d3']
-        }
+        //  'd3-vendor': ['d3']
+        //}
       },
       // External dependencies that should not be bundled
       external: [],

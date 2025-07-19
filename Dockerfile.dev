@@ -3,7 +3,7 @@ FROM harbor.ntppool.org/ntppool/base-os:3.22.0-1
 USER root
 
 ENV BUILD 20241215
-RUN cpanm Crypt::Passphrase::Argon2 File::Slurper
+RUN cpanm Crypt::Passphrase::Argon2 File::Slurper Template::Plugin::DateTime
 RUN cpanm -v https://tmp.askask.com/2024/12/Net-Async-HTTP-Server-0.14bis4.tar.gz
 
 RUN apk --no-cache add alpine-base nodejs npm
