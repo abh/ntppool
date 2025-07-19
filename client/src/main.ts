@@ -8,7 +8,7 @@ import {
   ensureWebComponentsSupport,
   isWebComponentsSupported
 } from '@/components/index.js';
-import { querySelector } from '@/utils/chart-utils.js';
+import { querySelector } from '@/utils/dom-utils.js';
 
 // Global namespace for backward compatibility
 declare global {

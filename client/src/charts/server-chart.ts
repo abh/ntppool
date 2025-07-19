@@ -3,7 +3,7 @@
  * TypeScript implementation with D3.js v7 and comprehensive type safety
  */
 
-import * as d3 from 'd3';
+const d3 = await import('d3');
 import {
   getElementDimensions,
   parseTimestamp,
