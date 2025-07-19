@@ -344,7 +344,7 @@ export function sortMonitors<T extends { status: string; type: string; score_ts?
     }
 
     if (a.type !== b.type) {
-      return b.type.localeCompare(a.type);
+      return a.type.localeCompare(b.type);
     }
 
     return (a.score_ts ?? 0) - (b.score_ts ?? 0);

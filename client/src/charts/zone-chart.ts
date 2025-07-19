@@ -74,9 +74,11 @@ export function createZoneChart(
   // Create SVG container
   const { svg, g } = createSvgContainer(container, {
     width: dimensions.width,
-    height: dimensions.height,
-    padding
+    height: dimensions.height
   });
+
+  // Apply padding transform
+  g.attr('transform', `translate(${padding.horizontal},${padding.vertical})`);
 
   // Add accessibility labels
   addAccessibilityLabels(

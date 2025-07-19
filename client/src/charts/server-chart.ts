@@ -33,12 +33,14 @@ export function createServerChart(
   data: ServerScoreHistoryResponse,
   options: ServerChartOptions = {}
 ): void {
-  const config: Required<ServerChartOptions> = {
+  const config = {
     legend: null,
     showTooltips: true,
     responsive: true,
+    width: undefined,
+    height: undefined,
     ...options
-  };
+  } as Required<ServerChartOptions>;
 
   // Process history data with type safety - filter out points with missing offset data
   const history: ServerHistoryPoint[] = data.history
@@ -361,20 +363,21 @@ function createLegend(
   // Apply styles to container
   const htmlContainer = legendContainer as HTMLElement;
   htmlContainer.style.width = '50%';
+  htmlContainer.style.marginLeft = `${CHART_DEFAULTS.padding.horizontal}px`;
 
   // Sort monitors
   const sortedMonitors = sortMonitors(monitors);
 
   // Create table
   const table = document.createElement('table');
-  table.className = 'table table-striped table-hover table-sm small border-bottom';
+  table.className = 'table table-hover table-sm small';
 
   const tbody = document.createElement('tbody');
   let currentStatus = '';
 
   sortedMonitors.forEach(monitor => {
     // Add status header row if status changed
-    if (currentStatus !== monitor.status && monitor.type !== 'score') {
+    if (currentStatus !== monitor.status) {
       const statusConfig = MONITOR_STATUS[monitor.status];
       if (statusConfig) {
         const headerRow = document.createElement('tr');
