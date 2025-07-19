@@ -40,12 +40,14 @@ export function createServerChart(
     ...options
   };
 
-  // Process history data with type safety
-  const history: ServerHistoryPoint[] = data.history.map(d => ({
-    ...d,
-    date: parseTimestamp(d.ts),
-    offset: parseFloat(d.offset.toString())
-  }));
+  // Process history data with type safety - filter out points with missing offset data
+  const history: ServerHistoryPoint[] = data.history
+    .filter(d => d.offset != null)
+    .map(d => ({
+      ...d,
+      date: parseTimestamp(d.ts),
+      offset: parseFloat(d.offset.toString())
+    }));
 
   // Calculate offset bounds
   let yOffsetMax = d3.max(history, d => d.offset) ?? 0;

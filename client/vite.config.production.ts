@@ -3,8 +3,8 @@ import legacy from '@vitejs/plugin-legacy';
 import { resolve } from 'path';
 
 export default defineConfig({
-  // Base public path
-  base: '/cdn/',
+  // Base public path - use environment static_base + js/
+  base: (process.env.static_base || '/static/') + 'js/',
 
   // Build configuration for production
   build: {
