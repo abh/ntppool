@@ -116,7 +116,8 @@ sub handle_add {
 
     unless ($account->can_add_servers) {
         $span->set_attribute("request.error", "verify_existing");
-        $self->tpl_param('error', 'Please verify your existing servers before adding more.');
+        $self->tpl_param('error',
+            'Please verify your existing servers before adding more.');
         return OK, $self->evaluate_template('tpl/manage/add_form.html');
     }
 
@@ -175,7 +176,8 @@ sub handle_add {
               ->to(NP::Email::address("notifications"))->reply_to($self->user->email)
               ->text_body($msg);
 
-            my $subject = "New addition to the NTP Pool: " . join(", ", map { $_->{ip} } @added);
+            my $subject =
+              "New addition to the NTP Pool: " . join(", ", map { $_->{ip} } @added);
             if (grep { $_->{hostname} } @added) {
                 $subject .= " (" . join(", ", map { $_->{hostname} } @added) . ")";
             }
@@ -233,8 +235,9 @@ sub _add_server {
     my ($self, $server) = @_;
 
     my $comment = $self->req_param('comment');
-    $self->tpl_param('comment',    $comment);
-    $self->tpl_param('scores_url', $self->config->base_url('ntppool') . '/scores/' . $server->{ip});
+    $self->tpl_param('comment', $comment);
+    $self->tpl_param('scores_url',
+        $self->config->base_url('ntppool') . '/scores/' . $server->{ip});
 
     my $s;
 
@@ -265,7 +268,10 @@ sub _add_server {
 
         # move verification to history table
         my %d = ();
-        for my $k (qw(server_id user_id user_ip indirect_ip verified_on created_on modified_on)) {
+        for my $k (
+            qw(server_id user_id user_ip indirect_ip verified_on created_on modified_on)
+          )
+        {
             $d{$k} = $v->$k;
         }
         my $h = NP::Model->server_verifications_history->create(%d);
@@ -302,7 +308,8 @@ sub get_server_info {
 
     my %server;
 
-    my $span = NP::Tracing->tracer->create_span(name => "manage.servers.get_server_info",);
+    my $span =
+      NP::Tracing->tracer->create_span(name => "manage.servers.get_server_info",);
     dynamically otel_current_context = otel_context_with_span($span);
     defer {
         if (my $err = $server{error}) {
@@ -394,7 +401,10 @@ sub req_server {
         with_objects => ['server_verification', 'account'],
     );
     my ($server) = ($servers && $servers->[0]);
-    return unless $server and $server->account and $server->account->can_edit($self->user);
+    return
+          unless $server
+      and $server->account
+      and $server->account->can_edit($self->user);
     return $server;
 }
 
@@ -454,7 +464,8 @@ sub handle_update_netspeed {
                         'tpl/manage/server_zones.html',
                         {   page_style => "none",
                             server     => $server,
-                            "error" => "Please verify your server before increasing the netspeed",
+                            "error"    =>
+                              "Please verify your server before increasing the netspeed",
                             verify_link => 1,
                         }
                     )
@@ -513,8 +524,9 @@ sub handle_verify {
     my ($token) = ($self->request->uri =~ m!^/manage/server/verify/(.+)!);
     unless ($token) {
         my $server = $self->req_server or return NOT_FOUND;
-        $self->tpl_param(server           => $server);
-        $self->tpl_param(verification_url => $config->site->{ntppool}->{verification_url});
+        $self->tpl_param(server => $server);
+        $self->tpl_param(
+            verification_url => $config->site->{ntppool}->{verification_url});
 
         my $validate_settings = $self->system_setting('validation');
         if ($validate_settings and %$validate_settings) {
@@ -596,7 +608,8 @@ sub handle_delete {
             return 403 unless $self->check_auth_token;
 
             unless ($self->current_account->can_add_servers) {
-                $self->tpl_param('error', 'Please verify active servers in the account first.');
+                $self->tpl_param('error',
+                    'Please verify active servers in the account first.');
                 return OK, $self->evaluate_template('tpl/manage/delete_set.html');
             }
 
@@ -701,10 +714,12 @@ sub handle_move {
             for my $server (@servers_to_move) {
                 my $old = $server->get_data_hash();
 
-                warn "changing account to token / id ", $new_account->token_id, $new_account->id;
+                warn "changing account to token / id ", $new_account->token_id,
+                  $new_account->id;
                 $server->account_id($new_account->id);
 
-                NP::Model::Log->log_changes($self->user, "server-move", "Server account change",
+                NP::Model::Log->log_changes($self->user, "server-move",
+                    "Server account change",
                     $server, $old);
                 $server->save;
             }

@@ -109,7 +109,8 @@ sub _int_api {
         my $rate_limit_limit = $res->header('X-RateLimit-Limit') || 'unknown';
         my $rate_limit_reset = $res->header('X-RateLimit-Reset') || 'unknown';
 
-        warn "API rate limit warning: remaining=$rate_limit_remaining, limit=$rate_limit_limit, reset=$rate_limit_reset (function: $function)";
+        warn
+          "API rate limit warning: remaining=$rate_limit_remaining, limit=$rate_limit_limit, reset=$rate_limit_reset (function: $function)";
     }
 
     if ($res->code >= 300) {

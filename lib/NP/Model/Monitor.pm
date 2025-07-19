@@ -40,7 +40,7 @@ sub display_name {
 }
 
 sub status_color {
-    my $self = shift;
+    my $self   = shift;
     my $status = $self->status;
     return {
         pending => "primary",
@@ -48,9 +48,9 @@ sub status_color {
         active  => "success",
         paused  => "secondary",
         deleted => "dark",
-    }->{$status} || "secondary";
+    }->{$status}
+      || "secondary";
 }
-
 
 sub has_api_role {
     my $self = shift;
@@ -84,7 +84,8 @@ sub setup_vault_secret {
 
     if ($accessor) {
         my @old =
-          grep { $_ ne $accessor } NP::Vault::get_monitoring_secret_accessors($self->tls_name);
+          grep { $_ ne $accessor }
+          NP::Vault::get_monitoring_secret_accessors($self->tls_name);
         for my $old (@old) {
             NP::Vault::delete_monitoring_secret_accessor($self->tls_name, $old);
         }

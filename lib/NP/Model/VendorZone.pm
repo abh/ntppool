@@ -65,7 +65,8 @@ sub validate {
     }
 
     {
-        my $vz2 = NP::Model->vendor_zone->get_objects(query => [zone_name => $vz->zone_name]);
+        my $vz2 =
+          NP::Model->vendor_zone->get_objects(query => [zone_name => $vz->zone_name]);
         if (@$vz2) {
             unless ($vz and grep { $vz->id == $_->id } @$vz2) {
                 $errors->{zone_name} = 'That zone name is already used.';

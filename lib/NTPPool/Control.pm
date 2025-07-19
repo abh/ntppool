@@ -11,7 +11,7 @@ use I18N::LangTags::Detect ();
 use List::Util             qw(first);
 use Unicode::Collate;
 use Data::ULID;
-use JSON::XS qw(decode_json);
+use JSON::XS      qw(decode_json);
 use File::Slurper qw(read_binary);
 use Syntax::Keyword::Dynamically;
 use OpenTelemetry::Constants
@@ -40,11 +40,12 @@ my $valid_languages_sorted;
 
     # Add debugging and error handling
     unless (-f $json_file) {
-        die "Language file not found: $json_file (CBROOTLOCAL=" . ($ENV{CBROOTLOCAL} || 'unset') . ")";
+        die "Language file not found: $json_file (CBROOTLOCAL="
+          . ($ENV{CBROOTLOCAL} || 'unset') . ")";
     }
 
     my $json_content = read_binary($json_file);
-    my $languages = decode_json($json_content);
+    my $languages    = decode_json($json_content);
     %valid_languages = %$languages;
 
     $valid_languages_sorted = [
@@ -53,10 +54,10 @@ my $valid_languages_sorted;
     ];
 
     # Debug: dump the loaded data structure
-    use Data::Dumper;
-    warn "Loaded languages from $json_file:\n" . Dumper(\%valid_languages);
-    warn "Language keys: " . join(', ', sort keys %valid_languages) . "\n";
-    warn "Sorted languages: " . join(', ', @$valid_languages_sorted) . "\n";
+    #use Data::Dumper;
+    #warn "Loaded languages from $json_file:\n" . Dumper(\%valid_languages);
+    #warn "Language keys: " . join(', ', sort keys %valid_languages) . "\n";
+    #warn "Sorted languages: " . join(', ', @$valid_languages_sorted) . "\n";
 }
 
 my $ctemplate;
@@ -80,7 +81,7 @@ sub request_id {
 sub init {
     my $self = shift;
 
-    my $span       = OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
+    my $span = OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
     my $class_name = ref $self;
     $span->set_attribute("class", $class_name);
 
@@ -135,8 +136,8 @@ sub init {
             return $self->redirect($self->_url($self->site, $self->request->path));
         }
         else {
-           # we're setting Strict-Transport-Security with haproxy
-           # $self->request->header_out('Strict-Transport-Security', 'max-age=' . (86400 * 7 * 20));
+ # we're setting Strict-Transport-Security with haproxy
+ # $self->request->header_out('Strict-Transport-Security', 'max-age=' . (86400 * 7 * 20));
         }
     }
 
@@ -214,7 +215,7 @@ sub language {
     my $self = shift;
     return $self->{_lang} if $self->{_lang};
     my $language = $self->path_language || $self->detect_language || 'en';
-    my $span     = OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
+    my $span = OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
     $span->set_attribute("combust.lang", $language);
     return $self->{_lang} = $language;
 }
@@ -313,7 +314,8 @@ sub localize_url {
         $uri->path("/$lang" . $uri->path);
         $self->request->header_out('Vary', 'Accept-Language');
         $self->cache_control(
-            's-maxage=900, max-age=3600, stale-while-revalidate=90, stale-if-error=43200');
+            's-maxage=900, max-age=3600, stale-while-revalidate=90, stale-if-error=43200'
+        );
         return $self->redirect($uri->as_string);
     }
     return;
@@ -411,7 +413,8 @@ sub count_by_continent {
 sub is_htmx {
     my $self = shift;
     if ($self->request->header_in('HX-Request')) {
-        my $span = OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
+        my $span =
+          OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
         $span->set_attribute('request.htmx' => 1);
         return 1;
     }
@@ -454,7 +457,9 @@ sub post_process {
         [   'Report-To' =>
               '{"group":"default","max_age":31536000,"endpoints":[{"url":"https://ntppool.report-uri.com/a/t/g"}],"include_subdomains":true}'
         ],
-        ['NEL' => '{"report_to":"default","max_age":31536000,"include_subdomains":true}'],
+        [   'NEL' =>
+              '{"report_to":"default","max_age":31536000,"include_subdomains":true}'
+        ],
         [   'Content-Security-Policy-Report-Only' => join(
                 " ",
                 qq[default-src 'none'; frame-ancestors 'none';],
@@ -553,8 +558,10 @@ sub static_url {
                 # Get the static base from configuration and combine with vite filename
                 my $static_base = eval { $self->__static->static_base($self->site) };
                 if ($@ || !$static_base) {
-                    warn "Failed to get static_base for site " . ($self->site || 'unknown') . ": $@" if $@;
-                    $static_base = '/static';  # Default fallback
+                    warn "Failed to get static_base for site "
+                      . ($self->site || 'unknown') . ": $@"
+                      if $@;
+                    $static_base = '/static';    # Default fallback
                 }
                 my $result = $static_base . $vite_file;
                 return $result;

@@ -2,8 +2,8 @@ package NP::Model::Server;
 use strict;
 use Text::CSV_XS;
 use File::Path qw(mkpath);
-use Carp qw(croak);
-use Net::IP ();
+use Carp       qw(croak);
+use Net::IP    ();
 use Combust::Config;
 
 use experimental qw( defer );
@@ -38,7 +38,7 @@ sub setup_server {
     my $self = shift;
 
     my $start_score = 0;
-    my $ls          = $self->add_log_scores({step => 1, score => $start_score, offset => 0});
+    my $ls = $self->add_log_scores({step => 1, score => $start_score, offset => 0});
     $self->deletion_on(undef);
     $self->score_raw($start_score);
 
@@ -49,7 +49,8 @@ sub setup_server {
     $mr->next_review(DateTime->now()->add(DateTime::Duration->new(minutes => 2)));
     $mr->save();
 
-    my $monitors = NP::Model->monitor->get_objects(query => [ip_version => $self->ip_version]);
+    my $monitors =
+      NP::Model->monitor->get_objects(query => [ip_version => $self->ip_version]);
     for my $monitor (@$monitors) {
         $self->add_server_scores(
             {   server_id  => $self->id,
@@ -147,7 +148,8 @@ sub alert {
 
 sub note {
     my ($self, $name) = @_;
-    my $note = NP::Model->server_note->fetch_or_create(server => $self->id, name => $name);
+    my $note =
+      NP::Model->server_note->fetch_or_create(server => $self->id, name => $name);
     return $note;
 }
 

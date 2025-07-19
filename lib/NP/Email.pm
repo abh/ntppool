@@ -6,10 +6,10 @@ use Email::Sender                  ();
 use Email::Sender::Simple          ();
 use Email::Date                    ();
 use Email::Sender::Transport::SMTP ();
-use Data::Dump qw(pp);
+use Data::Dump                     qw(pp);
 use Combust::Config;
 use Sys::Hostname qw(hostname);
-use JSON ();
+use JSON          ();
 
 my $config = Combust::Config->new;
 
@@ -35,8 +35,10 @@ sub sendmail {
     $email->header("X-MSYS-API", JSON->new->encode($msys));
 
     if (!$email->header('Message-ID')) {
-        $email->header_set(
-            'Message-ID' => '<' . join(".", int(rand(1000)), $$, time) . '@' . hostname . '>');
+        $email->header_set('Message-ID' => '<'
+              . join(".", int(rand(1000)), $$, time) . '@'
+              . hostname
+              . '>');
     }
 
     if (!$email->header('Date')) {

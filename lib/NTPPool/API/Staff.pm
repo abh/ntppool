@@ -6,6 +6,7 @@ use Net::IP;
 
 sub search {
     my $self = shift;
+
     #$self->set_span_name("api.search");
 
     return {error => 'No access'} unless $self->user && $self->user->is_staff;
@@ -23,7 +24,8 @@ sub search {
     #local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
 
     my $servers = NP::Model->server->get_servers(
-        query => [or => [($ip ? (ip => $ip->short) : ()), hostname => {like => $q . '%'},]],
+        query =>
+          [or => [($ip ? (ip => $ip->short) : ()), hostname => {like => $q . '%'},]],
         require_objects => ['account']
     );
     if ($servers) {

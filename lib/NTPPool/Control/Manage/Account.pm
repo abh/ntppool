@@ -20,9 +20,9 @@ use Syntax::Keyword::Dynamically;
 my $json = JSON::XS->new->utf8;
 
 sub _get_request_context {
-    my $self = shift;
+    my $self            = shift;
     my $x_forwarded_for = $self->request->header_in('X-Forwarded-For');
-    return $x_forwarded_for ? { x_forwarded_for => $x_forwarded_for } : undef;
+    return $x_forwarded_for ? {x_forwarded_for => $x_forwarded_for} : undef;
 }
 
 sub manage_dispatch {
@@ -80,7 +80,8 @@ sub manage_dispatch {
         warn "DEBUG: request URI: " . $self->request->uri;
         return 403 unless $self->user->is_monitor_admin;
         if ($self->request->method eq 'post') {
-            warn "DEBUG: Handling POST request for monitor config update (will use PATCH to API)";
+            warn
+              "DEBUG: Handling POST request for monitor config update (will use PATCH to API)";
             return $self->render_monitor_config_update($account);
         }
         else {
@@ -258,8 +259,9 @@ sub render_users_invite {
     my $param = {invite => $invite};
 
     my $tpl = Combust::Template->new;
-    my $msg = $tpl->process('tpl/account_invite.txt', $param,
-        {site => 'manage', config => $self->config});
+    my $msg =
+      $tpl->process('tpl/account_invite.txt', $param,
+          {site => 'manage', config => $self->config});
 
     # todo: if there's a vendor zone, use the vendor address
     # for the sender?
@@ -354,7 +356,7 @@ sub render_account_edit {
 
     my $account_token = $self->req_param('a');
     my $account_id    = NP::Model::Account->token_id($account_token);
-    my $account       = $account_id ? NP::Model->account->fetch(id => $account_id) : undef;
+    my $account = $account_id ? NP::Model->account->fetch(id => $account_id) : undef;
 
     if ($account_token eq 'new') {
         $account = NP::Model->account->create(users => [$self->user]);
@@ -390,7 +392,8 @@ sub render_account_edit {
     if ($changed) {
         $account->save(changes_only => 1);
 
-        NP::Model::Log->log_changes($self->user, "account", "update account", $account, $old);
+        NP::Model::Log->log_changes($self->user, "account", "update account",
+            $account, $old);
     }
 
     return $self->render_account_form($account);
@@ -573,8 +576,9 @@ sub render_monitor_config_update {
 
     # Debug: Show all form parameters
     warn "DEBUG: All form parameters: " . Data::Dump::pp($self->request->param);
-    warn "DEBUG: monitor_enabled param: " . ($self->req_param('monitor_enabled') || 'UNDEF');
-    warn "DEBUG: monitor_limit param: " .   ($self->req_param('monitor_limit')   || 'UNDEF');
+    warn "DEBUG: monitor_enabled param: "
+      . ($self->req_param('monitor_enabled') || 'UNDEF');
+    warn "DEBUG: monitor_limit param: " . ($self->req_param('monitor_limit') || 'UNDEF');
     warn "DEBUG: monitors_per_server param: "
       . ($self->req_param('monitors_per_server') || 'UNDEF');
 
@@ -640,11 +644,14 @@ sub render_monitor_config_update {
         $self->tpl_param('error', 'Access denied - insufficient privileges');
     }
     elsif ($data->{code} == 400) {
-        $self->tpl_param('error', 'Invalid request - ' . ($data->{message} || 'bad request'));
+        $self->tpl_param('error',
+            'Invalid request - ' . ($data->{message} || 'bad request'));
     }
     else {
-        warn "Monitor config update API error: " . ($data->{status_line} || 'unknown error');
-        $self->tpl_param('error', 'Unable to update monitor configuration - please try again');
+        warn "Monitor config update API error: "
+          . ($data->{status_line} || 'unknown error');
+        $self->tpl_param('error',
+            'Unable to update monitor configuration - please try again');
     }
 
     return $self->render_monitor_config_display($updated_account || $account);

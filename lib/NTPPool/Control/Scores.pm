@@ -1,5 +1,6 @@
 package NTPPool::Control::Scores;
 use strict;
+
 # include ::Login since the manage site use this controller, too
 use parent            qw(NTPPool::Control::Login NTPPool::Control);
 use Combust::Constant qw(OK DECLINED);
@@ -24,9 +25,11 @@ sub render {
     defer { $span->end(); };
 
     my $public = $self->site->name eq 'ntppool' ? 1 : 0;
-    $self->cache_control('s-maxage=600,max-age=300') if $public && $self->deployment_mode ne "devel";
+    $self->cache_control('s-maxage=600,max-age=300')
+      if $public && $self->deployment_mode ne "devel";
 
     unless ($public or $self->user) {
+
         # for manage site, redirect to the public site
         # unless the user is logged in
         return $self->redirect(
@@ -52,13 +55,17 @@ sub render {
     if ($self->request->uri =~ m!^/s/([^/]+)!) {
         my $server = NP::Model->server->find_server($1) or return 404;
         $self->cache_control('max-age=14400, s-maxage=7200');
-        if ($server->deletion_on && $server->deletion_on < DateTime->now->subtract(years => 3)) {
+        if (   $server->deletion_on
+            && $server->deletion_on < DateTime->now->subtract(years => 3))
+        {
             return 404;
         }
         return $self->redirect('/scores/' . $server->ip, 301);
     }
 
-    if (my ($id, $mode) = ($self->request->uri =~ m!^/scores/graph/(\d+)-(score|offset).png!)) {
+    if (my ($id, $mode) =
+        ($self->request->uri =~ m!^/scores/graph/(\d+)-(score|offset).png!))
+    {
         my $server = NP::Model->server->find_server($id) or return 404;
         $self->cache_control('max-age=14400, s-maxage=7200');
         return $self->redirect($server->graph_uri($mode), 301);
@@ -81,6 +88,7 @@ sub render {
         return $self->redirect('/scores/' . $server->ip, 301) unless $p eq $server->ip;
 
         if ($mode eq '') {
+
             # regular html page
 
             $self->tpl_param('graph_explanation' => 1)
@@ -109,12 +117,13 @@ sub render {
             $self->cache_control('s-maxage=480,max-age=240') if $public;
             my $cutoff   = DateTime->now->subtract(days => 120);
             my $monitors = $server->monitors($cutoff);
-            return OK, $json->convert_blessed->encode({monitors => $monitors}), 'application/json';
+            return OK, $json->convert_blessed->encode({monitors => $monitors}),
+              'application/json';
         }
         elsif ($mode eq 'log' or $self->req_param('log') or $mode eq 'json') {
             $mode = $mode eq 'json' ? $mode : 'log';
 
-            # $self->request->header_out('Cache-Control' => 'public,max-age=86400,s-maxage=86400');
+   # $self->request->header_out('Cache-Control' => 'public,max-age=86400,s-maxage=86400');
             $self->request->header_out('Fastly-Follow' => '1');
             return $self->redirect(
                 $self->www_url(

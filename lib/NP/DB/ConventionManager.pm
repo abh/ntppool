@@ -22,7 +22,8 @@ my %not_a_map_table;
 
 sub looks_like_map_table {
     my ($self, $table) = @_;
-    my $r = $self->SUPER::looks_like_map_table($table) && !exists $not_a_map_table{$table};
+    my $r =
+      $self->SUPER::looks_like_map_table($table) && !exists $not_a_map_table{$table};
     return $r;
 }
 

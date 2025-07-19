@@ -1,7 +1,7 @@
 package NP::Version;
 use strict;
 use Sys::Hostname qw();
-use List::Util ();
+use List::Util    ();
 
 my $dir = $ENV{CBROOTLOCAL};
 

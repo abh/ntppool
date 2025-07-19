@@ -17,9 +17,9 @@ use Syntax::Keyword::Dynamically;
 my $json = JSON::XS->new->pretty->utf8->convert_blessed;
 
 sub _get_request_context {
-    my $self = shift;
+    my $self            = shift;
     my $x_forwarded_for = $self->request->header_in('X-Forwarded-For');
-    return $x_forwarded_for ? { x_forwarded_for => $x_forwarded_for } : undef;
+    return $x_forwarded_for ? {x_forwarded_for => $x_forwarded_for} : undef;
 }
 
 sub _map_api_error_code {
@@ -186,7 +186,8 @@ sub render_confirm_monitor {
 
         # Check if registration is already completed or accepted
         if ($data->{code} == 201    # StatusCreated - monitor has been setup
-            || $data->{code} == 202 # StatusAccepted - user accepted registration; waiting for monitor to confirm
+            || $data->{code}
+            == 202 # StatusAccepted - user accepted registration; waiting for monitor to confirm
             || (   $data->{data}
                 && $data->{data}->{status}
                 && $data->{data}->{status} ne 'pending')
@@ -269,7 +270,8 @@ sub render_monitors {
     $self->tpl_param('monitors', \@monitors);
 
     # Fetch metrics for all monitors in this account
-    my $metrics = $self->monitor_metrics(account_token => $self->current_account->id_token);
+    my $metrics =
+      $self->monitor_metrics(account_token => $self->current_account->id_token);
     $self->tpl_param('metrics', $metrics);
 
     return OK, $self->evaluate_template('tpl/monitors/list.html');
@@ -299,7 +301,7 @@ sub render_admin_list {
     }
 
     my @monitors = _monitor_list($data->{data}->{Monitors} || {});
-    $self->tpl_param('monitors', \@monitors);
+    $self->tpl_param('monitors',   \@monitors);
     $self->tpl_param('admin_list', 1);
 
     # Fetch metrics for all accounts (admin view)
@@ -379,7 +381,7 @@ sub _edit_monitor {
 }
 
 sub monitor_metrics {
-    my $self = shift;
+    my $self   = shift;
     my %params = @_;
 
     my $api_params = {
@@ -393,54 +395,62 @@ sub monitor_metrics {
     my $all_accounts = 0;
 
     if ($params{account_token}) {
+
         # Use 'a' parameter for account token per API specification
         $api_params->{a} = $params{account_token};
         $actual_account_token = $params{account_token};
-    } elsif ($params{names}) {
+    }
+    elsif ($params{names}) {
         $api_params->{names} = $params{names};
         $actual_names = $params{names};
-    } elsif ($params{all_accounts}) {
+    }
+    elsif ($params{all_accounts}) {
         $api_params->{all_accounts} = 'true';
         $all_accounts = 1;
-    } else {
+    }
+    else {
         # Default to current account using id_token with 'a' parameter
         $actual_account_token = $self->current_account->id_token;
         $api_params->{a} = $actual_account_token;
     }
 
     # Request-scoped caching to avoid multiple API calls
-    my $cache_key = "_monitor_metrics_" . ($actual_account_token || '') . '_' . ($actual_names || '') . '_' . ($all_accounts ? 'all' : '');
+    my $cache_key =
+        "_monitor_metrics_"
+      . ($actual_account_token || '') . '_'
+      . ($actual_names         || '') . '_'
+      . ($all_accounts ? 'all' : '');
     return $self->{$cache_key} if exists $self->{$cache_key};
 
     my $data = int_api(
-        'get',
-        'monitor/manage/metrics/summary',
-        $api_params,
-        $self->_get_request_context()
+        'get',       'monitor/manage/metrics/summary',
+        $api_params, $self->_get_request_context()
     );
 
     # Handle different response codes with graceful degradation
     if ($data->{code} == 200) {
+
         # The API returns data.data.monitors, so we need to extract the inner data
         my $metrics_data = $data->{data}->{data} || $data->{data};
         return $self->{$cache_key} = {
             success => 1,
-            data => $metrics_data
+            data    => $metrics_data
         };
     }
     elsif ($data->{code} == 404) {
+
         # No metrics available for these monitors
         return $self->{$cache_key} = {
-            success => 0,
-            error => 'No metrics available',
+            success  => 0,
+            error    => 'No metrics available',
             trace_id => $data->{trace_id}
         };
     }
     else {
         # API error - return error info for display
         return $self->{$cache_key} = {
-            success => 0,
-            error => $data->{error} || 'Metrics temporarily unavailable',
+            success  => 0,
+            error    => $data->{error} || 'Metrics temporarily unavailable',
             trace_id => $data->{trace_id}
         };
     }

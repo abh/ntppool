@@ -15,6 +15,7 @@ sub error {
 sub render {
     my $self = shift;
     if ($self->request->path eq '/monitor/map') {
+
         # todo: move to api service with api token auth
         return $self->render_server_map;
     }
@@ -42,6 +43,5 @@ sub render_server_map {
     $self->cache_control('max-age=900');
     return OK, $json->encode($map);
 }
-
 
 1;

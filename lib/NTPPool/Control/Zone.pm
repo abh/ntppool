@@ -12,7 +12,8 @@ use OpenTelemetry -all;
 
 sub zone_name {
     my $self = shift;
-    my ($zone_name) = ($self->request->uri =~ m!^/zone/(?:graph)?([^/]+?)(\.json|/|(-v6)?\.png)?$!);
+    my ($zone_name) =
+      ($self->request->uri =~ m!^/zone/(?:graph)?([^/]+?)(\.json|/|(-v6)?\.png)?$!);
     $zone_name ||= '.';
     $zone_name;
 }
@@ -66,7 +67,7 @@ sub render {
     elsif ($self->request->path =~ m!\.json$!) {
         my $limit = $self->req_param('limit') || 0;
 
-        # $self->request->header_out('Cache-Control' => 'public,max-age=86400,s-maxage=86400');
+   # $self->request->header_out('Cache-Control' => 'public,max-age=86400,s-maxage=86400');
         $self->request->header_out('Fastly-Follow' => '1');
         return $self->redirect(
             $self->www_url(
