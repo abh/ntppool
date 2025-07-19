@@ -8,6 +8,8 @@ export default defineConfig({
 
   // Build configuration for production
   build: {
+    // Build targets - modern browsers
+    target: 'es2022',
     // Output directly to the static directory
     outDir: '../docs/shared/static/js',
 
@@ -17,20 +19,23 @@ export default defineConfig({
     // Generate source maps
     sourcemap: true,
 
+    // CSS code splitting
+    cssCodeSplit: false,
+
     // Rollup options
     rollupOptions: {
       input: {
-        // Main graphs bundle
-        'graphs.bundle': resolve(__dirname, 'src/main.ts'),
+        // Main entry point
+        graphs: resolve(__dirname, 'src/main.ts'),
       },
       output: {
         inlineDynamicImports: true,
         // Output format
         format: 'es',
-        // File naming - use .bundle.js to distinguish from source files
+        // File naming
         entryFileNames: '[name].js',
-        chunkFileNames: 'chunks/[name]-[hash].js',
-        assetFileNames: 'assets/[name]-[hash][extname]',
+        chunkFileNames: '[name]-[hash].js',
+        assetFileNames: '[name]-[hash][extname]',
         // Manual chunks
         manualChunks: undefined
         //manualChunks: {
@@ -41,9 +46,6 @@ export default defineConfig({
       // External dependencies that should not be bundled
       external: [],
     },
-
-    // CSS code splitting
-    cssCodeSplit: true,
 
     // Minification
     minify: 'terser',
@@ -65,16 +67,10 @@ export default defineConfig({
   plugins: [
     // Legacy browser support - 2025 best practices
     legacy({
-      targets: [
-        'Chrome >= 63',  // Earlier for legacy compatibility
-        'Firefox >= 67', // Earlier for legacy compatibility
-        'Safari >= 12',  // Earlier for legacy compatibility
-        'Edge >= 79'     // Earlier for legacy compatibility
-      ],
+      targets: ['Chrome >= 87', 'Firefox >= 78', 'Safari >= 14', 'Edge >= 88'],
       additionalLegacyPolyfills: ['regenerator-runtime/runtime'],
-      renderLegacyChunks: true,
-      polyfills: true,
-      modernPolyfills: true
+      renderLegacyChunks: false, // No legacy for consistency
+      polyfills: true
     })
   ],
 

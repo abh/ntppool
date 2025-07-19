@@ -67,7 +67,7 @@ WriteMakefile(
 sub MY::postamble {
     return <<'MAKE_FRAG';
 
-.PHONY: testcover js js-dev js-build js-clean js-deps js-type-check
+.PHONY: testcover js js-dev js-build js-build-prod js-clean js-deps js-type-check
 
 NPM ?= npm
 CLIENT_DIR = client
@@ -89,6 +89,10 @@ js-dev: js-deps
 js-build: js-deps js-type-check
 	cd $(CLIENT_DIR) && $(NPM) run build:dev
 	@echo "TypeScript bundles built to docs/shared/static/js/"
+
+js-build-prod: js-deps js-type-check
+	cd $(CLIENT_DIR) && $(NPM) run build
+	@echo "TypeScript production bundles built to docs/shared/static/js/"
 
 js-clean:
 	cd $(CLIENT_DIR) && $(NPM) run clean

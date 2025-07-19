@@ -52,7 +52,9 @@ export default defineConfig({
       },
       format: {
         comments: true
-      }
+      },
+      keep_classnames: true,
+      keep_fnames: true
     }
   },
 
