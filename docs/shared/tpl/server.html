@@ -62,10 +62,14 @@ Account: <a href="[% server.account.public_url | html %]"
 <br>
 
 [% IF server.deletion_on %]
+[%
+  verb = "is";
+  IF server.deletion_on < now; verb = "was"; END;
+%]
 [% | loc(server.deletion_on.strftime("%B %d, %Y")) -%]
-This server is <span class="deletion">scheduled for deletion</span> on %1.
+This server [% verb %] <span class="deletion">scheduled for deletion</span> on %1.
 [% END %]
-<br/>
+<br>
 [% END %]
 
 </p>
@@ -79,15 +83,16 @@ This server is <span class="deletion">scheduled for deletion</span> on %1.
    END;
  %]
 
+[% IF show_history %]
 <p>
 [% | loc(server.score, server.active_score) %]Current score: %1 (only servers with a score higher than %2 are used in the pool)[% END %]
 
 </p>
 
-<p>
 
 <h3>History</h3>
 
+<p>
 <ntp-server-chart server-ip="[% server.ip %]" show-legend="true" width="500" height="246" inherit-styles="true"></ntp-server-chart>
 <p class="graph_desc">
 In the graph above the green, orange and red dots are offsets (in milliseconds, using the left axis).<br>
@@ -123,14 +128,18 @@ The countries are ordered by number of DNS queries from each country
 answered with the server's IP address. The second number is the server's
 permyriad of the overall "netspeed" for countries configured for the server.
 </p>
+[% END %]
 
-<span class="server-id"># [% server.id %], <a href="[% server.url %]/log?limit=200&monitor=*">[% "CSV log" | l %]</a>
-
+<span class="server-id"># [% server.id %]
+[%- IF show_history %]
+, <a href="[% server.url %]/log?limit=200&monitor=*">[% "CSV log" | l %]</a>
 
 [% UNLESS manage_site %]
 <a id="graph_explanation_link"
    onclick="$('#graph_explanation_box').show()"
    href="/scores/[% server.ip %]?graph_explanation=1#graph_explanation">[% "What do the graphs mean?" | l %]</a>
+[% END %]
+
 [% END %]
 
 </span>

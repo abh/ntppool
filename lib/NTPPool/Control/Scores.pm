@@ -81,9 +81,20 @@ sub render {
         return $self->redirect('/scores/' . $server->ip, 301) unless $p eq $server->ip;
 
         if ($mode eq '') {
+            # regular html page
+
             $self->tpl_param('graph_explanation' => 1)
               if $self->req_param('graph_explanation');
             $self->tpl_param('server' => $server);
+
+            # Hide history sections if server was deleted more than 6 months ago
+            my $show_history = 1;
+            if ($server->deletion_on) {
+                $self->tpl_param('now' => DateTime->now());
+                my $six_months_ago = DateTime->now->subtract(months => 6);
+                $show_history = 0 if $server->deletion_on < $six_months_ago;
+            }
+            $self->tpl_param('show_history' => $show_history);
 
             if ($self->req_param('graph_only')) {
                 return OK, $self->evaluate_template('tpl/server_static_graph.html');
