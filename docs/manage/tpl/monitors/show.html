@@ -30,6 +30,34 @@
         [% END %]
         </p>
 
+        <!-- Delete Monitor Section -->
+        <h3>Monitor Actions</h3>
+        <div class="mb-3">
+            <form hx-post="/manage/monitors/monitor/delete?a=[% combust.current_account.id_token %]"
+                  hx-confirm="Are you sure you want to delete this monitor? This action cannot be undone."
+                  hx-target="#delete-result"
+                  hx-swap="innerHTML"
+                  hx-on::response-error="this.querySelector('#delete-result').innerHTML = '&lt;div class=&quot;alert alert-danger&quot;&gt;Unable to delete monitor. Please try again.&lt;/div&gt;'"
+                  hx-on::network-error="this.querySelector('#delete-result').innerHTML = '&lt;div class=&quot;alert alert-danger&quot;&gt;Network error. Please check your connection and try again.&lt;/div&gt;'">
+                <input type="hidden" name="auth_token" value="[% combust.auth_token %]">
+                <input type="hidden" name="name" value="[% mon.TLSName | html %]">
+                <input type="hidden" name="id" value="[% mon.IDToken | html %]">
+
+                <button type="submit" class="btn btn-outline-danger btn-sm">
+                    Delete Monitor
+                </button>
+            </form>
+
+            <div id="delete-result" class="mt-2"></div>
+        </div>
+
+        [% IF error %]
+        <div class="alert alert-warning">
+            [% error | html %]
+            [% IF trace_id %]<small>(Trace ID: [% trace_id | html %])</small>[% END %]
+        </div>
+        [% END %]
+
         [% IF combust.user.is_monitor_admin %]
         <h3>Admin actions</h3>
 
