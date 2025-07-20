@@ -48,6 +48,10 @@ h1, h2, h3, h4, h5 {color: #454545;}
     --bs-link-color: #3885b4;
 }
 
+.zone-input-width {
+    width: 300px;
+}
+
 ul#nav li {
 	font-size: 30px;
 	font-family: 'Economica', sans-serif;

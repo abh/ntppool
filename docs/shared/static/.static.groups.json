@@ -6,19 +6,13 @@
           "css/content.css"
       ]
   },
-  "common.js": {
-      "files": [ "cdn/libs/jquery/3.7.1/jquery.min.js",
-                 "cdn/libs/bootstrap/5.3.7/js/bootstrap.bundle.js",
-                 "cdn/libs/htmx/2.0.5/htmx.min.js"
-               ]
-  },
   "d3.js": {
       "files": [ ]
   },
   "manage.js": {
       "files": [
-          "cdn/libs/htmx/2.0.5/htmx.min.js",
-          "js/ntppool.js"
+          "js/ntppool.js",
+          "cdn/libs/htmx/2.0.5/htmx.min.js"
       ]
   }
 }

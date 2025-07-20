@@ -7,8 +7,6 @@
 
 # legacy scripts
 
-page.js.unshift(combust.static_group("common.js"));
-
 MACRO show_js(list_js_files) BLOCK;
   IF list_js_files && list_js_files.list && list_js_files.list.size;
   FOR js_elem = list_js_files.list;
