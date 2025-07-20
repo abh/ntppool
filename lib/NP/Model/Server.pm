@@ -153,12 +153,6 @@ sub note {
     return $note;
 }
 
-sub mode7check {
-    my $self  = shift;
-    my $mode7 = $self->note('mode7check');
-    return unless $mode7->id;
-    return $mode7;
-}
 
 sub monitors {
     my $self   = shift;

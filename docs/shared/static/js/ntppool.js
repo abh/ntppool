@@ -1,5 +1,5 @@
 /* Copyright 2006-2013 Ask Bjørn Hansen, Develooper LLC */
-/*jshint jquery:true browser:true */
+/*jshint browser:true */
 
 if (!NP) var NP = {};
 
@@ -23,27 +23,7 @@ if (!NP) var NP = {};
         );
     };
 
-    NP.recheck_mode7 = function (server_id) {
-        console.log("recheck mode7");
-        var span = $('#mode7check_' + server_id);
-        var pars = { "server": server_id };
-        span.fadeOut(50);
-        jQuery.getJSON('/manage/server/update/mode7check', pars,
-            function (data, textStatus) {
-                span.fadeIn(100);
-                span.html("Check has been scheduled<br>");
-            }
-        );
-    };
 
-    $(document).ready(function () {
-        $("#busy").ajaxStart(function () {
-            $(this).show(70);
-        })
-            .ajaxStop(function () {
-                $(this).hide(70);
-            });
-    });
 
 }());
 
