@@ -96,6 +96,16 @@ sub _int_api {
             )
         );
     }
+    elsif ($method eq 'delete') {
+        # For DELETE, add parameters to URL like GET requests
+        if ($data && %$data) {
+            my $uri = URI->new($url);
+            my $o   = $uri->query_form_hash();
+            $uri->query_form_hash({%$o, %$data});
+            $url = $uri->as_string();
+        }
+        $res = $ua->$method($url, 'Authorization' => $auth);
+    }
     else {
         warn qq[unknown method "$method" for _int_api];
     }

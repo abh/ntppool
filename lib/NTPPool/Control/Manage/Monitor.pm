@@ -92,6 +92,10 @@ sub manage_dispatch {
         return $self->render_admin_status();
     }
 
+    if ($self->request->uri =~ m!^/manage/monitors/monitor/delete$!) {
+        return $self->render_delete_monitor();
+    }
+
     # return 403, "Permission denied"
     #   unless $mon->can_edit($self->user);
 
@@ -346,6 +350,67 @@ sub render_admin_status {
       $self->manage_url('/manage/monitors/monitor', {name => $self->req_param('name')});
     return $self->redirect($redirect);
 
+}
+
+sub render_delete_monitor {
+    my $self = shift;
+
+    return 403 unless $self->check_auth_token;
+    return 405 unless $self->request->method eq 'post';
+
+    my $name = $self->req_param('name');
+    my $id = $self->req_param('id');
+
+    unless ($name && $id) {
+        warn "Missing required parameters for monitor deletion: name=$name, id=$id";
+        if ($self->is_htmx) {
+            $self->tpl_param('error', 'Unable to delete monitor');
+            return OK, $self->evaluate_template('tpl/monitors/delete_error.html');
+        }
+        return $self->redirect($self->manage_url('/manage/monitors/'));
+    }
+
+    my $data = int_api(
+        'post',
+        'monitor/manage/status',
+        {   name   => $name,
+            id     => $id,
+            status => 'deleted',
+            user   => $self->plain_cookie($self->user_cookie_name),
+            a      => $self->current_account->id_token,
+        },
+        $self->_get_request_context()
+    );
+
+    # Log exact API response for debugging
+    warn "Delete monitor API response for $name: " . Data::Dump::pp($data);
+
+    if ($data->{code} == 204) {
+        # Successful deletion - redirect to monitor list
+        if ($self->is_htmx) {
+            # HTMX redirect header
+            $self->request->header_out('HX-Redirect', $self->manage_url('/manage/monitors/'));
+            return OK, '';
+        }
+        return $self->redirect($self->manage_url('/manage/monitors/'));
+    }
+    else {
+        # Error case - log details, show generic message
+        warn "Failed to delete monitor $name: " . ($data->{error} || 'Unknown error');
+
+        if ($self->is_htmx) {
+            $self->tpl_param('error', 'Unable to delete monitor');
+            $self->tpl_param('trace_id', $data->{trace_id}) if $data->{trace_id};
+            return OK, $self->evaluate_template('tpl/monitors/delete_error.html');
+        }
+
+        # For non-HTMX, render the monitor page with error
+        $self->tpl_param('error', 'Unable to delete monitor');
+        $self->tpl_param('trace_id', $data->{trace_id}) if $data->{trace_id};
+
+        # Call render_monitor to show the page with error
+        return $self->render_monitor();
+    }
 }
 
 sub _edit_monitor {
