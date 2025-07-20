@@ -147,15 +147,7 @@
 	</table>
 	[% END %]
 
-[% page.js.push("module:dist/graphs.js") %]
-
-        <ntp-zone-chart zone="[% zone.name %]" show-both-versions="true" width="520" height="270" inherit-styles="true"></ntp-zone-chart>
-
-        <!--
-	<p>
-	<img src="/zone/graph/[% zone.name %].png" alt="server count graph for IPv4 [% zone.name %].pool.ntp.org"/>
-	<img src="/zone/graph/[% zone.name %]-v6.png" alt="server count graph for IPv6 [% zone.name %].pool.ntp.org"/>
-	</p>
-        -->
+        [% page.js.push("module:dist/graphs.js") %]
+        <ntp-zone-chart zone="[% zone.name %]" show-both-versions="true" width="540" height="275" inherit-styles="true"></ntp-zone-chart>
 
 </div>

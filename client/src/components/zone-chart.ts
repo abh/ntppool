@@ -319,16 +319,14 @@ export class ZoneChartComponent extends BaseChartComponent {
     const showBoth = this.shouldShowBothVersions();
     const ipVersion = this.getIpVersion();
 
-    let infoText = `Zone: ${zone}`;
-    if (!showBoth) {
-      infoText += ` (IPv${ipVersion === 'v6' ? '6' : '4'})`;
-    }
-
-    zoneInfo.textContent = infoText;
-    this.chartContainer.appendChild(zoneInfo);
-
     // Add IP version toggle if not showing both
     if (!showBoth) {
+      let infoText = `Zone: ${zone}`;
+      infoText += ` (IPv${ipVersion === 'v6' ? '6' : '4'})`;
+      zoneInfo.textContent = infoText;
+
+      this.chartContainer.appendChild(zoneInfo);
+
       this.addIpVersionToggle();
     }
   }
