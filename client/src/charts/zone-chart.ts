@@ -142,7 +142,7 @@ export function createZoneChart(
 
   // Add legend if showing both versions
   if (config.showBothVersions) {
-    addLegend(g, innerWidth, innerHeight);
+    addLegend(g);
   }
 }
 
@@ -287,7 +287,7 @@ function drawVersionLines(
 /**
  * Add legend to the chart
  */
-function addLegend(g: GSelection, width: number, _height: number): void {
+function addLegend(g: GSelection): void {
   interface LegendItem {
     label: string;
     class: string;
@@ -303,7 +303,7 @@ function addLegend(g: GSelection, width: number, _height: number): void {
 
   const legend = g.append('g')
     .attr('class', 'legend')
-    .attr('transform', `translate(${width - 120}, 15)`);
+    .attr('transform', `translate(5, 15)`);
 
   const legendItem = legend.selectAll<SVGGElement, LegendItem>('.legend-item')
     .data(legendItems)
@@ -344,7 +344,14 @@ function addLegend(g: GSelection, width: number, _height: number): void {
     .attr('y', legendItems.length * 18 + 8)
     .attr('font-size', '10px')
     .attr('fill', '#666')
-    .text('Solid: IPv4, Dashed: IPv6');
+    .text('Solid: IPv4');
+
+  legend.append('text')
+    .attr('x', 0)
+    .attr('y', legendItems.length * 18 + 20)
+    .attr('font-size', '10px')
+    .attr('fill', '#666')
+    .text('Dashed: IPv6');
 }
 
 // Export for backward compatibility with global function
