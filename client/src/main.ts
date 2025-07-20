@@ -70,3 +70,6 @@ if (document.readyState === 'loading') {
 
 // Load analytics
 import './analytics.js';
+
+// Load HTMX analytics tracking
+import './htmx-analytics.js';

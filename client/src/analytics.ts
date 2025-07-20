@@ -1,32 +1,42 @@
 /**
  * Plausible Analytics Integration
- * Uses the plausible-client NPM package
+ * Uses the upstream plausible script
  */
 
-import { Plausible, enableAutoPageviews, enableAutoOutboundTracking } from 'plausible-client'
+import { init, track } from './plausible.js'
 
 // Read configuration from meta tags
 const domainMeta = document.querySelector('meta[name="plausible-domain"]')
 const apiHostMeta = document.querySelector('meta[name="plausible-api-host"]')
+const propsMeta = document.querySelector('meta[name="plausible-props"]')
 
-// Handle relative API paths by converting to full URL
-const apiHostValue = apiHostMeta?.getAttribute('content') || '/api/event'
-const apiHost = apiHostValue.startsWith('/')
-  ? window.location.origin + apiHostValue
-  : apiHostValue
+// Default to current host, allow override
+const apiHostValue = apiHostMeta?.getAttribute('content') || (window.location.protocol + '//' + window.location.host)
+const endpoint = apiHostValue + '/api/event'
 
-const plausible = new Plausible({
+// Parse custom properties from meta tag
+let customProperties = {}
+try {
+  const propsContent = propsMeta?.getAttribute('content')
+  if (propsContent) {
+    customProperties = JSON.parse(propsContent)
+  }
+} catch (e) {
+  console.warn('Failed to parse plausible-props meta tag:', e)
+}
+
+// Initialize plausible
+init({
   domain: domainMeta?.getAttribute('content') || window.location.hostname,
-  apiHost: apiHost,
+  endpoint: endpoint,
+  autoCapturePageviews: true,
+  outboundLinks: true,
+  fileDownloads: true,
+  customProperties: customProperties,
 })
-
-// Enable automatic page view tracking
-enableAutoPageviews(plausible)
-
-// Enable automatic outbound link tracking
-enableAutoOutboundTracking(plausible)
 
 console.log('Plausible analytics initialized for domain:', domainMeta?.getAttribute('content') || window.location.hostname)
 
-// Export for manual usage if needed
-export default plausible
+// Export track function for manual usage if needed
+export { track }
+export default { track }

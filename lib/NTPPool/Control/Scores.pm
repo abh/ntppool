@@ -25,8 +25,10 @@ sub render {
     defer { $span->end(); };
 
     my $public = $self->site->name eq 'ntppool' ? 1 : 0;
-    $self->cache_control('s-maxage=600,max-age=300')
-      if $public && $self->deployment_mode ne "devel";
+
+    if ($public && $self->deployment_mode ne "devel") {
+        $self->cache_control('s-maxage=600,max-age=300');
+    }
 
     unless ($public or $self->user) {
 
@@ -38,6 +40,7 @@ sub render {
 
     if (!$public) {
         $self->tpl_param('manage_site', 1);
+        $self->cache_control('s-maxage=0,max-age=0');
     }
 
     if (my $ip = ($self->req_param('ip') || $self->req_param('server_ip'))) {

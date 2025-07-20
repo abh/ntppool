@@ -6,6 +6,9 @@
 [% END %]
 
 <meta name="plausible-domain" content="[% combust.analytics_hostname %]">
+[% SET plausible_props = combust.plausible_props; IF plausible_props %]
+<meta name="plausible-props" content="[% plausible_props | html %]">
+[% END %]
 
 [%- IF page.canonical %]
 <link rel="canonical" href="[% page.canonical | html %]">

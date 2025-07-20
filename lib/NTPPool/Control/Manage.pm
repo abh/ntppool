@@ -67,6 +67,11 @@ sub init {
             $span->set_attribute("user.username", $user->username);
             $span->set_attribute("user.id",       $user->id);
             $span->set_attribute("user.id_token", $user->id_token);
+
+            $self->plausible_props("user" => $user->id_token);
+            if (my $a = $self->current_account) {
+                $self->plausible_props("account" => $a->id_token);
+            }
         }
 
         if ($self->user->deletion_on and $self->request->uri ne "/manage/logout") {

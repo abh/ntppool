@@ -11,7 +11,7 @@ use I18N::LangTags::Detect ();
 use List::Util             qw(first);
 use Unicode::Collate;
 use Data::ULID;
-use JSON::XS      qw(decode_json);
+use JSON::XS      qw(decode_json encode_json);
 use File::Slurper qw(read_binary);
 use Syntax::Keyword::Dynamically;
 use OpenTelemetry::Constants
@@ -444,6 +444,25 @@ sub cache_control {
     my $self = shift;
     return $self->{cache_control} unless @_;
     return $self->{cache_control} = shift;
+}
+
+sub plausible_props {
+    my $self = shift;
+    my ($key, $value) = @_;
+
+    # If key and value are provided, set them
+    if (defined $key && defined $value) {
+        $self->{_plausible_props} ||= {};
+        $self->{_plausible_props}->{$key} = $value;
+        return;
+    }
+
+    # If called without parameters, return JSON or empty string
+    if (!$self->{_plausible_props} || !%{$self->{_plausible_props}}) {
+        return '';
+    }
+
+    return encode_json($self->{_plausible_props});
 }
 
 sub post_process {
