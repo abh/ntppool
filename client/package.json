@@ -14,6 +14,7 @@
     "lint": "tsc --noEmit"
   },
   "devDependencies": {
+    "@types/bootstrap": "^5.2.10",
     "@types/d3": "^7.4.3",
     "@vitejs/plugin-legacy": "^7.0.0",
     "terser": "^5.35.0",
@@ -21,6 +22,8 @@
     "vite": "^7.0.0"
   },
   "dependencies": {
+    "@popperjs/core": "^2.11.8",
+    "bootstrap": "^5.3.7",
     "d3": "^7.9.0"
   }
 }

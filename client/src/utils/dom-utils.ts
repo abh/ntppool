@@ -323,3 +323,25 @@ export async function fetchChartData<T = unknown>(url: string): Promise<FetchRes
     };
   }
 }
+
+/**
+ * Initialize graph explanation functionality
+ */
+export function initializeGraphExplanation(): void {
+  const link = querySelector('#graph_explanation_link');
+  if (!link) return;
+
+  // Update href to point to fragment
+  link.setAttribute('href', '#graph_explanation');
+
+  // Add click handler to show explanation box
+  link.addEventListener('click', function(e) {
+    e.preventDefault();
+    const box = querySelector('#graph_explanation_box');
+    if (box) {
+      (box as HTMLElement).style.display = 'block';
+    }
+    // Navigate to fragment
+    window.location.hash = 'graph_explanation';
+  });
+}

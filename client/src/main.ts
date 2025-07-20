@@ -9,7 +9,7 @@ import {
   ensureWebComponentsSupport,
   CHART_TAG_NAMES
 } from '@/components/index.js';
-import { querySelector, showLegacyMessage } from '@/utils/dom-utils.js';
+import { querySelector, showLegacyMessage, initializeGraphExplanation } from '@/utils/dom-utils.js';
 
 
 // Global namespace
@@ -62,6 +62,12 @@ function checkAndInitialize(): void {
   initializeStatusPage().catch(error => {
     console.error('Failed to initialize status page:', error);
   });
+
+  // Initialize graph explanation functionality
+  initializeGraphExplanation();
+
+  // Initialize Bootstrap components conditionally
+  initializeBootstrap();
 }
 
 // Initialize when DOM is ready
@@ -81,3 +87,6 @@ import './htmx-analytics.js';
 
 // Load status page integration
 import { initializeStatusPage } from './status-page.js';
+
+// Load Bootstrap components conditionally
+import { initializeBootstrap } from './bootstrap-loader.js';
