@@ -56,6 +56,7 @@ dev:
         - backup/
         - logs/
         - manage2/
+        - blib/
         - ".data/"
         #- ".git"
         - ".vscode"

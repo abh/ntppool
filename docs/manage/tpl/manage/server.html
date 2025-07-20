@@ -29,20 +29,52 @@
         <br />
 
         <input type="hidden" name="server" value="[% server.id %]">
-        <input type="hidden" name="noscript" value="1">
 
         <a href="#netspeed">Net speed</a>:
         <span id="netspeed_[% server.id %]">[% server.netspeed_human %]
         </span>
                 |
         <select name="netspeed"
-            onchange="NP.update_netspeed('[% server.id %]', this.value, '[% combust.auth_token %]'); return false;">
+                hx-post="/manage/server/update/netspeed"
+                hx-target="#server_[% server.id %]"
+                hx-swap="outerHTML"
+                hx-trigger="change"
+                hx-indicator="#netspeed-loading-[% server.id %]"
+                hx-include="[name='auth_token'],[name='server'],[name='a']">
             <option value="">Set connection speed</option>
-            [% speeds = [server.netspeed, 0, 512, 1500, 3000, 6000, 12000, 25000, 50000, 100000, 250000, 500000, 1000000, 1500000, 2000000, 3000000]; %]
-            [% FOR speed = speeds.nsort.unique; %] <option
-                value="[% speed %]">[% combust.netspeed_human(speed) %]</option>
-            [%- END %]
+            [% all_speeds = [server.netspeed, 0, 512, 1500, 3000, 6000, 12000, 25000, 50000, 100000, 250000, 500000, 1000000, 1500000, 2000000, 3000000]; %]
+            [% is_verified = server.server_verification.verified_on; %]
+            [% available_speeds = []; %]
+            [% disabled_speeds = []; %]
+            [% separator_added = 0; %]
+
+            [% FOR speed IN all_speeds.nsort.unique; %]
+                [% IF is_verified OR speed <= server.netspeed; %]
+                    [% available_speeds.push(speed); %]
+                [% ELSE %]
+                    [% disabled_speeds.push(speed); %]
+                [% END %]
+            [% END %]
+
+            [% FOR speed IN available_speeds; %]
+                <option value="[% speed %]">[% combust.netspeed_human(speed) %]</option>
+            [% END %]
+
+            [% IF !is_verified AND disabled_speeds.size > 0; %]
+                <option disabled>— Verify server to unlock higher speeds —</option>
+                [% FOR speed IN disabled_speeds; %]
+                    <option value="[% speed %]" disabled>[% combust.netspeed_human(speed) %] (verify required)</option>
+                [% END %]
+            [% END %]
         </select>
+        <span id="netspeed-loading-[% server.id %]" class="htmx-indicator">
+            <small>Updating...</small>
+        </span>
+        [% IF error %]
+        <div class="text-danger mt-2">
+            <small>[% error | html %]</small>
+        </div>
+        [% END %]
         <noscript>
             <input type="submit" name="Update" value="Update">
         </noscript>

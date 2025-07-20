@@ -181,10 +181,6 @@ sub render_confirm_monitor {
         $self->tpl_param('error',   $data->{error});
 
         if ($status_check) {
-            if ($self->is_htmx) {
-                $self->tpl_param('page_style' => "none");
-                $self->tpl_param('bare'       => 1);
-            }
             return OK, $self->evaluate_template('tpl/monitors/confirm_status.html');
         }
 
@@ -359,7 +355,7 @@ sub render_delete_monitor {
     return 405 unless $self->request->method eq 'post';
 
     my $name = $self->req_param('name');
-    my $id = $self->req_param('id');
+    my $id   = $self->req_param('id');
 
     unless ($name && $id) {
         warn "Missing required parameters for monitor deletion: name=$name, id=$id";
@@ -386,10 +382,13 @@ sub render_delete_monitor {
     warn "Delete monitor API response for $name: " . Data::Dump::pp($data);
 
     if ($data->{code} == 204) {
+
         # Successful deletion - redirect to monitor list
         if ($self->is_htmx) {
+
             # HTMX redirect header
-            $self->request->header_out('HX-Redirect', $self->manage_url('/manage/monitors/'));
+            $self->request->header_out('HX-Redirect',
+                $self->manage_url('/manage/monitors/'));
             return OK, '';
         }
         return $self->redirect($self->manage_url('/manage/monitors/'));
@@ -399,13 +398,13 @@ sub render_delete_monitor {
         warn "Failed to delete monitor $name: " . ($data->{error} || 'Unknown error');
 
         if ($self->is_htmx) {
-            $self->tpl_param('error', 'Unable to delete monitor');
+            $self->tpl_param('error',    'Unable to delete monitor');
             $self->tpl_param('trace_id', $data->{trace_id}) if $data->{trace_id};
             return OK, $self->evaluate_template('tpl/monitors/delete_error.html');
         }
 
         # For non-HTMX, render the monitor page with error
-        $self->tpl_param('error', 'Unable to delete monitor');
+        $self->tpl_param('error',    'Unable to delete monitor');
         $self->tpl_param('trace_id', $data->{trace_id}) if $data->{trace_id};
 
         # Call render_monitor to show the page with error
