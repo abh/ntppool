@@ -1,0 +1,40 @@
+[% IF results.accounts && results.accounts.size %]
+<ul>
+    [% FOR account IN results.accounts %]
+    <li>[% account.name | html %]
+        (<a href="/manage/servers?a=[% account.account_token | html %]">servers</a>,
+        <a href="/manage/account?a=[% account.account_token | html %]">account</a>)
+        <br>
+        [% IF account.users && account.users.size %]
+        <ol>
+            [% FOR user IN account.users %]
+            <li>[% user.name | html %], [% user.username | html %], [% user.email | html %]</li>
+            [% END %]
+        </ol>
+        [% END %]
+        [% IF account.servers && account.servers.size %]
+        <ol>
+            [% FOR server IN account.servers %]
+            <li[% IF server.deletion_on %] class="text-muted"[% END %]><a href="/scores/[% server.ip | html %]"[% IF server.deletion_on %] class="text-muted"[% END %]>
+                    [% IF query %]
+                        [% server.ip | html | replace(query, '<b>' _ query _ '</b>') %]
+                    [% ELSE %]
+                        [% server.ip | html %]
+                    [% END %]
+                </a> ([% server.score %], [% server.netspeed_human | html %])
+                [% IF server.deletion_on %]<span class="badge badge-warning">[% server.deletion_on | html %]</span>[% END %]
+                [% IF server.zones && server.zones.size %]
+                    [% FOR zone IN server.zones %]
+                        [% zone | html %]
+                    [% END %]
+                [% END %]
+            </li>
+            [% END %]
+        </ol>
+        [% END %]
+    </li>
+    [% END %]
+</ul>
+[% ELSIF query %]
+<p>No results found for "[% query | html %]"</p>
+[% END %]

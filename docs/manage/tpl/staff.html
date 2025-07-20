@@ -6,12 +6,21 @@
 
     <input type="hidden" name="xs" value="[% xs %]">
 
-    <form id="search_form" class="well form-search">
+    <form id="search_form" class="well form-search"
+          hx-post="/manage/admin/search"
+          hx-target="#users"
+          hx-swap="innerHTML"
+          hx-indicator="#search-loading"
+          hx-include="[name='auth_token']">
+      <input type="hidden" name="auth_token" value="[% combust.auth_token %]">
       <input class="form-group form-control form-control col-md-6 search-query"
         id="q" type="text" name="q"
         placeholder="email, ip or user name">
 
       <button type="submit" class="btn btn-primary">Search</button>
+      <span id="search-loading" class="htmx-indicator">
+          <small>Searching...</small>
+      </span>
       &nbsp;
       <small>Search by IP address, email address, user name or id:123</small>
     </form>

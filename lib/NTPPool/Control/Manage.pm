@@ -489,8 +489,13 @@ sub manage_dispatch {
 
     # .../servers and .../account have their own handlers
 
-    if ($self->user->is_staff and $self->request->uri =~ m{/manage/admin/?$}) {
-        return $self->show_staff;
+    if ($self->user->is_staff) {
+        if ($self->request->uri =~ m{/manage/admin/?$}) {
+            return $self->show_staff;
+        }
+        elsif ($self->request->uri =~ m{/manage/admin/search/?$}) {
+            return $self->staff_search;
+        }
     }
 
     if ($self->request->uri eq "/" or $self->request->uri =~ m{^/manage/?$}) {
@@ -506,6 +511,49 @@ sub manage_dispatch {
 sub show_staff {
     my $self = shift;
     $self->tpl_params->{page}->{is_admin} = 1;
+    return OK, $self->evaluate_template('tpl/staff.html');
+}
+
+sub staff_search {
+    my $self = shift;
+
+    # Check staff access
+    unless ($self->user && $self->user->is_staff) {
+        return 403, "Access denied";
+    }
+
+    my $q = $self->req_param('q') || '';
+
+    # If no query, return empty result
+    unless ($q) {
+        $self->tpl_param('results' => {});
+        return OK, $self->evaluate_template('tpl/admin/search_results.html');
+    }
+
+    # Call the existing API method to get search results
+    require NTPPool::API::Staff;
+    my $api = NTPPool::API::Staff->new(
+        args => {
+            user => $self->user,
+            params => {
+                q => $q,
+                auth_token => $self->auth_token,
+            }
+        }
+    );
+
+    my $results = $api->search();
+
+    # Pass results to template
+    $self->tpl_param('results' => $results);
+    $self->tpl_param('query' => $q);
+
+    # Return HTML fragment for HTMX
+    if ($self->is_htmx) {
+        return OK, $self->evaluate_template('tpl/admin/search_results.html');
+    }
+
+    # For non-HTMX requests, return the full page
     return OK, $self->evaluate_template('tpl/staff.html');
 }
 
