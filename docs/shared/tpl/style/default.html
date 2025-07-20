@@ -47,25 +47,6 @@
 
 [% PROCESS tpl/common/js.html %]
 
-[% IF combust.deployment_mode != 'devel' %]
-<script src="https://cdn.statuspage.io/se-v2.js"></script>
-<script>
-(function(i){
-	if (i["StatusPage"] === undefined) {
-		console.log("StatusPage not loaded");
-		return
-	}
-	var sp = new StatusPage.page({ page: '8ll7xvh0qt1p'});
-	sp.summary({
-		success: function(data) {
-			$('.color-description').text(data.status.description);
-			$('.color-dot').addClass(data.status.indicator);
-		}
-	});
-}(window));
-</script>
-[% END %]
-
 <script defer src="https://www.mapper.ntppool.org/mapper.js"></script>
 
 </body>

@@ -57,6 +57,11 @@ function checkAndInitialize(): void {
       console.error('Failed to initialize charts:', error);
     });
   }
+
+  // Initialize status page
+  initializeStatusPage().catch(error => {
+    console.error('Failed to initialize status page:', error);
+  });
 }
 
 // Initialize when DOM is ready
@@ -73,3 +78,6 @@ import './analytics.js';
 
 // Load HTMX analytics tracking
 import './htmx-analytics.js';
+
+// Load status page integration
+import { initializeStatusPage } from './status-page.js';
