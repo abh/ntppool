@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import legacy from '@vitejs/plugin-legacy';
 import { resolve } from 'path';
+import { createSymlinksPlugin } from './vite-plugin-symlinks';
 
 export default defineConfig({
   // Base public path - use relative paths to avoid hardcoded URLs
@@ -8,33 +9,35 @@ export default defineConfig({
 
   // Build configuration
   build: {
-    // Output directory for development builds
-    outDir: '../docs/shared/static/js/dist/',
+    // Build targets - modern browsers
+    target: 'es2022',
+    // Output directory for builds
+    outDir: '../docs/shared/static/build/',
 
-    // Don't empty outDir
+    // Clean only the built files, not everything in the directory
     emptyOutDir: false,
 
-    // Generate source maps for debugging
+    // Generate source maps
     sourcemap: true,
 
     manifest: true,
 
-    // Build targets - modern browsers for development
-    target: 'es2022',
+    // CSS code splitting
+    cssCodeSplit: false,
 
     // Rollup options
     rollupOptions: {
       input: {
-        // Main app entry point (includes analytics and charts)
+        // Main entry point
         app: resolve(__dirname, 'src/main.ts'),
       },
       output: {
         // Output format
         format: 'es',
         // File naming
-        entryFileNames: '[name]-v[hash].js',
-        chunkFileNames: '[name]-v[hash].js',
-        assetFileNames: '[name]-v[hash][extname]',
+        entryFileNames: '[name].v[hash].js',
+        chunkFileNames: '[name].v[hash].js',
+        assetFileNames: '[name].v[hash][extname]',
         inlineDynamicImports: false,
         // Manual chunks - only separate D3 vendor
         manualChunks(id) {
@@ -44,9 +47,6 @@ export default defineConfig({
         }
       }
     },
-
-    // Disable module preload to prevent Safari warnings
-    modulePreload: false,
 
     // Minification options
     minify: false,
@@ -63,6 +63,9 @@ export default defineConfig({
     }
   },
 
+  // Disable module preload to prevent Safari warnings
+  modulePreload: false,
+
   // Plugins
   plugins: [
     // Legacy browser support
@@ -71,7 +74,9 @@ export default defineConfig({
       additionalLegacyPolyfills: ['regenerator-runtime/runtime'],
       renderLegacyChunks: false, // No legacy for development
       polyfills: true
-    })
+    }),
+    // Create symlinks for non-hashed filenames
+    createSymlinksPlugin()
   ],
 
   // Development server configuration
@@ -90,6 +95,36 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src')
+    }
+  },
+
+  // Optimization
+  optimizeDeps: {
+    // Include dependencies that have dynamic imports
+    include: ['d3']
+  },
+
+  // CSS preprocessor options
+  css: {
+    preprocessorOptions: {
+      scss: {
+        quietDeps: true, // Suppress deprecation warnings from dependencies (like Bootstrap)
+        logger: {
+          warn: (message, options) => {
+            // TEMPORARY: Suppress Sass @import deprecation warnings
+            //
+            // Why: Bootstrap 5.3.7 still uses @import syntax, which generates 20+ warnings
+            // When to remove: When Bootstrap 6.x is released with native @use support
+            // OR when we migrate to a Bootstrap alternative that uses modern Sass
+            //
+            // TODO: Remove this suppression when upgrading to Bootstrap 6.x
+            if (message.includes('Sass @import rules are deprecated')) {
+              return;
+            }
+            console.warn(message);
+          }
+        }
+      }
     }
   }
 });

@@ -17,6 +17,7 @@
     "@types/bootstrap": "^5.2.10",
     "@types/d3": "^7.4.3",
     "@vitejs/plugin-legacy": "^7.0.0",
+    "sass": "^1.89.2",
     "terser": "^5.35.0",
     "typescript": "^5.8.3",
     "vite": "^7.0.0"

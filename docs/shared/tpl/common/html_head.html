@@ -16,11 +16,10 @@
 
 [%- PROCESS tpl/common/language_headers.html -%]
 
-<script>
-  if (!NP) var NP = {};
-</script>
 
-[% page.css.unshift( combust.static_group("common.css") );
+<link rel="stylesheet" href="[% combust.static_url("/build/style.css") %]" type="text/css">
+
+[%- # Load any additional page-specific CSS files
    FOR css_elem = page.css;
        FOR css = css_elem.list;
            IF css.match('^/');

@@ -9,8 +9,8 @@
  */
 // Define chart loaders - Vite can statically analyze these
 const chartLoaders = {
-  'ntp-server-chart': () => import('./server-chart.js'),
-  'ntp-zone-chart': () => import('./zone-chart.js')
+  'ntp-server-chart': () => import('./server-chart'),
+  'ntp-zone-chart': () => import('./zone-chart')
 };
 
 // Export chart tag names for reuse

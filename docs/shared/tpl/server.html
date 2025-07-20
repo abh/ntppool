@@ -171,15 +171,7 @@ permyriad of the overall "netspeed" for countries configured for the server.
 <a name="graph_explanation"></a>
 
 [% PROCESS tpl/server/graph_explanation.html %]
-[% END %]
 
 <p><a href="#top">[% "go up" | l %]</a></p>
 
 </div>
-
-<!--[if lt IE 9]>
-[% # this is so d3 can load in ancient browsers even if we end up not using it,
-   # and so we can use modern javascript stuff without too dramatic failures.
- %]
-<script src="[% combust.static_url("/cdn/libs/es5-shim/1/es5-shim.min.js") %]"></script>
-<![endif]-->

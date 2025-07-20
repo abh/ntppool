@@ -1,0 +1,22 @@
+/**
+ * Custom Bootstrap variable overrides for NTP Pool Project
+ * These variables are used by Bootstrap components
+ */
+
+// Typography
+$font-family-base: merriweather, "Georgia", serif;
+$font-size-base: 0.9375rem; // 15px
+$font-weight-base: 400;
+
+// Colors
+$primary: #3885B4;
+$link-color: #3885B4;
+
+// Component-specific variables
+$nav-link-color: #3885B4;
+
+// Custom CSS custom properties (for compatibility with existing styles)
+:root {
+    --bs-nav-link-color: #{$link-color};
+    --bs-link-color: #{$link-color};
+}

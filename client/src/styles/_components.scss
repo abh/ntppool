@@ -1,0 +1,696 @@
+/**
+ * Custom component styles for NTP Pool Project
+ * Comprehensive conversion from original CSS files: main.css, content.css, fonts.css
+ */
+
+// CSS Variables and Bootstrap Configuration
+:root {
+    --bs-nav-link-color: #3885b4;
+    --bs-link-color: #3885b4;
+}
+
+// Base body styles
+body {
+    color: #222;
+    font-size: 15px;
+    font-family: merriweather, "Georgia", serif;
+    font-weight: 400;
+}
+
+// Links and headings
+a {
+    color: #3885B4;
+}
+
+h1, h2, h3, h4, h5 {
+    color: #454545;
+}
+
+// Header styles
+#hd {
+    min-height: 10px;
+
+    h1 {
+        display: none;
+    }
+
+    p.develwarning {
+        padding: 3px;
+        margin-bottom: 10px;
+        text-align: center;
+        font-size: 88%;
+        border: 1px solid #f00;
+        border-top: 0;
+        background-color: #fafafa;
+    }
+}
+
+// Sidebar styles
+#sidebar {
+    padding: 0 10px 0 10px;
+
+    h1 a {
+        display: block;
+        height: 138px;
+        background: no-repeat url(@/assets/images/logo-2019@x2.png);
+        background-size: 120px 150px;
+        background-position: center center;
+        background-repeat: no-repeat;
+        text-indent: -9000px;
+        margin: auto;
+        margin-bottom: 15px;
+    }
+
+    h3 {
+        font-family: 'Economica', sans-serif;
+        font-size: 144%;
+        padding: 3px 0;
+        margin-bottom: 2px;
+    }
+
+    .manage-sidebar {
+        padding: .6rem .75rem .5reml .5rem;
+    }
+}
+
+// Navigation icons
+#nav .feather {
+    width: 30px;
+    height: 30px;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+}
+
+// Module styles
+.mod {
+    margin-bottom: 15px;
+    font-size: 114%;
+
+    h3 {
+        font-family: 'Economica', sans-serif;
+        font-size: 144%;
+        padding: 3px 0;
+        margin-bottom: 2px;
+    }
+}
+
+// Activity and list styles
+#activity ul {
+    margin: 0;
+}
+
+#translations ul,
+#quickstart ul {
+    padding: 0;
+    margin: 0 0 0 15px;
+    list-style: none;
+}
+
+// Navigation styling with Economica font
+ul#nav li {
+    font-size: 30px;
+    font-family: 'Economica', sans-serif;
+    font-variant: small-caps;
+    font-weight: 700;
+    list-style: none;
+
+    a {
+        float: left;
+        display: block;
+        height: 40px;
+        color: #5A595B;
+        padding: 10px 10px 10px 40px;
+        margin-right: 20px;
+        text-decoration: none;
+
+        &:hover {
+            color: #3885B4;
+        }
+    }
+}
+
+// Main content area headers with Bree Serif
+#mainbar h1,
+h2,
+h3,
+h4 {
+    margin: 15px 0 0 0;
+    font-family: 'Bree Serif', serif;
+}
+
+// Server area map backgrounds
+#servers .area {
+    .africa-img {
+        background: no-repeat url(@/assets/images/maps/wrld-af.svg);
+    }
+
+    .antarctica-img {
+        background: no-repeat url(@/assets/images/maps/wrld-an.svg);
+    }
+
+    .north-america-img {
+        background: no-repeat url(@/assets/images/maps/wrld-na.svg);
+    }
+
+    .south-america-img {
+        background: no-repeat url(@/assets/images/maps/wrld-sa.svg);
+    }
+
+    .europe-img {
+        background: no-repeat url(@/assets/images/maps/wrld-eu.svg);
+    }
+
+    .asia-img {
+        background: no-repeat url(@/assets/images/maps/wrld-as.svg);
+    }
+
+    .oceania-img {
+        background: no-repeat url(@/assets/images/maps/wrld-oc.svg);
+    }
+
+    .global-img {
+        background: no-repeat url(@/assets/images/maps/wrld.svg);
+    }
+}
+
+// Homepage tagline styling
+div#tagline {
+    font-size: 122%;
+    font-style: italic;
+    text-align: right;
+    margin: 0;
+    padding: 0;
+    float: right;
+}
+
+// Server area layout styling
+#servers .area {
+    clear: both;
+    padding: 4px 0;
+    font-size: 115%;
+    list-style: none;
+
+    .location {
+        display: block;
+        width: 125px;
+        height: 40px;
+        float: left;
+        font-size: 100%;
+
+        a {
+            text-decoration: none;
+
+            &:hover {
+                border-bottom: 1px solid #7EC6EC;
+            }
+        }
+    }
+
+    .location-img {
+        display: block;
+        width: 50px;
+        height: 40px;
+        float: left;
+        font-size: 100%;
+        filter: invert(.35);
+    }
+
+    .all-servers {
+        font-weight: bold;
+        margin-top: 5px;
+    }
+}
+
+#servers .count {
+    margin: 10px;
+}
+
+// Code and pre styling
+pre,
+tt,
+code {
+    color: #002D62;
+    font-family: source-code-pro, "source-code-pro-1", "source-code-pro-2", monospace;
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 18px;
+}
+
+pre.code {
+    background-color: #eee;
+    padding: 10px;
+    margin: 5px 0;
+}
+
+// Utility classes
+.clearboth {
+    clear: both;
+}
+
+a.up {
+    display: block;
+    text-align: right;
+    font-variant: small-caps;
+}
+
+// Other missing styles from content.css
+#quickstart li {
+    margin-bottom: 10px;
+}
+
+.graph-desc {
+    display: none;
+    color: #777;
+    margin-top: 5px;
+}
+
+.server-id {
+    font-size: 60%;
+}
+
+// Active Servers box on homepage
+#activity {
+    float: right;
+    padding: 10px;
+    border: 1px solid #ddd;
+    margin: 0 0 10px 10px;
+
+    h3 {
+        margin: 0;
+    }
+
+    ul {
+        padding-inline-start: 0px;
+    }
+
+    .date {
+        display: block;
+        font-size: 92%;
+        text-align: right;
+        clear: both;
+        margin-top: 40px;
+    }
+}
+
+// Italic text styling
+em {
+    font-style: italic;
+}
+
+// Footer styles
+#ft {
+    text-align: right;
+    margin-right: 10px;
+    font-size: 88%;
+
+    .color-dot {
+        -moz-border-radius: 99px;
+        -webkit-border-radius: 99px;
+        border-radius: 99px;
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        margin-right: 5px;
+
+        &.critical {
+            background-color: #e74c3c;
+        }
+
+        &.major {
+            background-color: #e67e22;
+        }
+
+        &.minor {
+            background-color: #f1c40f;
+        }
+
+        &.none {
+            background-color: #2ecc71;
+        }
+    }
+}
+
+// Utility classes
+.hidden {
+    visibility: hidden;
+    display: none;
+}
+
+.visible {
+    display: block;
+}
+
+// HTMX Integration styles
+.htmx-indicator {
+    opacity: 0;
+}
+
+.htmx-request .htmx-indicator {
+    opacity: 1;
+    transition: opacity 200ms ease-in;
+}
+
+.htmx-request.htmx-indicator {
+    opacity: 1;
+    transition: opacity 200ms ease-in;
+}
+
+// News section styles
+ul#news {
+    li {
+        padding-top: 5px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #ccc;
+        min-height: 29px;
+
+        &.last {
+            border: 0;
+        }
+
+        div.date {
+            float: left;
+            font-size: 122%;
+            color: #3885B4;
+            padding: 3px 5px;
+            margin: 0 7px 5px 0;
+        }
+
+        ul li {
+            border: 0;
+            list-style-type: disc;
+            margin-left: 25px;
+        }
+    }
+
+    h4 {
+        padding-bottom: 5px;
+    }
+}
+
+// Use page styles
+.block span.hook {
+    font-weight: bold;
+}
+
+p.thanks {
+    font-style: italic;
+    font-weight: bold;
+}
+
+// Admin/manage styles
+#admin {
+    .profile {
+        padding: 10px;
+        border-bottom: 1px solid #ccc;
+        margin-bottom: 5px;
+    }
+
+    .value span {
+        font-size: 107%;
+    }
+
+    .server_desc {
+        font-size: 88%;
+    }
+}
+
+// User profile styles
+#userprofile .server {
+    border-bottom: 1px dotted #bbb;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+// Login form styles
+#login-form {
+    padding-bottom: 30px;
+    padding-top: 20px;
+
+    input.gotcha {
+        display: none;
+    }
+}
+
+// Table styles
+table.servertable {
+    width: 100%;
+    margin: 5px 0;
+}
+
+tr.deleted_server {
+    text-decoration: line-through;
+}
+
+// Graph and miscellaneous styles
+.graph_explanation {
+    display: none;
+    width: 400px;
+    margin-left: 30px;
+    margin-top: 10px;
+    padding: 9px;
+    border: 1px dotted #999;
+}
+
+dt {
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+p.develwarning {
+    border: 1px dotted #555555;
+    background: #DDDDDD;
+    padding: 15px;
+    width: 750px;
+    margin: 0 10px 10px 10px;
+}
+
+// Vendor and DNS info styles
+#vendor_list {
+    border: 1px dotted #999;
+    text-align: right;
+    margin: auto;
+    width: 250px;
+
+    li {
+        background: red;
+    }
+}
+
+#vendor_content {
+    float: left;
+}
+
+#dnsinfo td {
+    padding: 8px;
+}
+
+// Server history styles
+span.s_his {
+    font-family: source-code-pro, monospace;
+
+    &_ok {
+        color: green;
+        font-size: 80%;
+    }
+
+    &_tol {
+        color: yellow;
+    }
+
+    &_big {
+        color: #ffa500;
+    }
+
+    &_down {
+        color: red;
+    }
+}
+
+// Error and status styles
+span.error {
+    color: red;
+}
+
+div.error {
+    color: red;
+}
+
+span.deletion {
+    color: red;
+}
+
+// SVG Graph styles
+.total_score {
+    fill: none;
+    stroke: blue;
+    stroke-width: 2px;
+}
+
+.zone_graph {
+    .registered_count {
+        fill: none;
+        stroke: #00cccc;
+        stroke-width: 1px;
+    }
+
+    .active_count {
+        fill: none;
+        stroke: #006600;
+        stroke-width: 2px;
+    }
+
+    .inactive_count {
+        fill: none;
+        stroke: #dd9000;
+        stroke-width: 1px;
+    }
+
+    .y line {
+        stroke: #ddd;
+        shape-rendering: crispEdges;
+        stroke-dasharray: 2, 2, 2, 2;
+    }
+
+    .v6 {
+        stroke-dasharray: 2, 3, 2, 3;
+    }
+}
+
+.graph {
+    font-size: 90%;
+
+    rect {
+        fill: none;
+        stroke: black;
+        shape-rendering: crispEdges;
+    }
+
+    .x line,
+    .y line {
+        stroke: #ccc;
+        shape-rendering: crispEdges;
+    }
+
+    .y_score line {
+        stroke: #ddd;
+        shape-rendering: crispEdges;
+        stroke-dasharray: 2, 2, 2, 2;
+    }
+}
+
+// Bootstrap table overrides
+.table-success {
+    background-color: var(--bs-table-bg, #d1e7dd) !important;
+}
+
+.table-info {
+    background-color: var(--bs-table-bg, #cff4fc) !important;
+}
+
+.table-light {
+    background-color: var(--bs-table-bg, #f8f9fa) !important;
+}
+
+.table-secondary {
+    background-color: var(--bs-table-bg, #e2e3e5) !important;
+}
+
+table.table-hover tbody tr:hover td,
+table.table-hover tbody tr:hover th {
+    background-color: rgba(0, 0, 0, .075) !important;
+}
+
+table.table td,
+table.table th {
+    padding: .35rem !important;
+}
+
+// Form and interface styles
+img.atom-logo {
+    vertical-align: middle;
+    margin-right: 3px;
+}
+
+#account-form {
+    .form-group {
+        margin-top: 14px;
+    }
+
+    .form-label {
+        font-weight: bold;
+    }
+}
+
+#monitor-form .form-floating {
+    margin-top: 5px;
+}
+
+#manage-sidebar {
+    .account-name {
+        white-space: normal;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .logout-item {
+        overflow-y: auto;
+        overflow-x: hidden;
+        word-wrap: break-word;
+    }
+}
+
+// Additional UI elements
+p.serverurls {
+    font-size: 0.8em;
+}
+
+#zone_counts td {
+    padding-right: 8px;
+    vertical-align: text-top;
+}
+
+em.beta {
+    color: #888;
+}
+
+#add_server {
+    margin-bottom: 20px;
+
+    &_form div.server_info {
+        margin-top: 10px;
+    }
+}
+
+.log-border {
+    border-top: solid gray 1px;
+}
+
+.log-changes {
+    line-height: 15px;
+    padding: 0;
+    margin: 0;
+}
+
+.btn-inline {
+    display: inline-block;
+}
+
+ul.product-details {
+    margin-bottom: 1em;
+
+    li.continue {
+        list-style-type: none;
+    }
+}
+
+div.product-header {
+    margin-bottom: 0.5em;
+    margin-top: 1em;
+}
+
+div.product-group .btn {
+    margin: 3px;
+}

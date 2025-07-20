@@ -522,7 +522,7 @@ my $vite_manifest_mtime;
 sub _load_vite_manifest {
     my $self = shift;
     my $manifest_file =
-      ($ENV{CBROOTLOCAL} || '.') . '/docs/shared/static/js/dist/.vite/manifest.json';
+      ($ENV{CBROOTLOCAL} || '.') . '/docs/shared/static/build/.vite/manifest.json';
 
     unless (-f $manifest_file) {
         warn "Vite manifest not found: $manifest_file";
@@ -563,33 +563,45 @@ sub static_url {
     my $file = shift;
 
     # Handle vite-bundled files
-    if ($file =~ m!^/js/dist/(.+)\.js$!) {
+    if ($file =~ m!^/build/(.+)\.(js|css)$!) {
         my $entry_name = $1;
+        my $extension = $2;
         my $manifest   = $self->_load_vite_manifest();
+        my $found_entry;
 
-        # Find entry with matching name and isEntry: true
-        for my $entry_key (keys %$manifest) {
-            my $entry = $manifest->{$entry_key};
-            if ($entry->{name} && $entry->{name} eq $entry_name && $entry->{isEntry}) {
-
-                # We found the vite manifest entry, construct the result with static base
-                my $vite_file = "/js/dist/" . $entry->{file};
-
-                # Get the static base from configuration and combine with vite filename
-                my $static_base = eval { $self->__static->static_base($self->site) };
-                if ($@ || !$static_base) {
-                    warn "Failed to get static_base for site "
-                      . ($self->site || 'unknown') . ": $@"
-                      if $@;
-                    $static_base = '/static';    # Default fallback
+        if ($extension eq 'js') {
+            # For JS files, find entry with matching name and isEntry: true
+            for my $entry_key (keys %$manifest) {
+                my $entry = $manifest->{$entry_key};
+                if ($entry->{name} && $entry->{name} eq $entry_name && $entry->{isEntry}) {
+                    $found_entry = $entry;
+                    last;
                 }
-                my $result = $static_base . $vite_file;
-                return $result;
             }
+        } elsif ($extension eq 'css') {
+            # For CSS files, direct lookup by key
+            my $lookup_key = "$entry_name.$extension";
+            $found_entry = $manifest->{$lookup_key};
+        }
+
+        if ($found_entry) {
+            # We found the vite manifest entry, construct the result with static base
+            my $vite_file = "/build/" . $found_entry->{file};
+
+            # Get the static base from configuration and combine with vite filename
+            my $static_base = eval { $self->__static->static_base($self->site) };
+            if ($@ || !$static_base) {
+                warn "Failed to get static_base for site "
+                  . ($self->site || 'unknown') . ": $@"
+                  if $@;
+                $static_base = '/static';    # Default fallback
+            }
+            my $result = $static_base . $vite_file;
+            return $result;
         }
 
         # Fallback to original filename if not found in manifest
-        warn "Vite manifest entry not found for: $entry_name";
+        warn "Vite manifest entry not found for: $entry_name.$extension";
     }
 
     # Use parent class method for all other files

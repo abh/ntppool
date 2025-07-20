@@ -3,23 +3,18 @@
  * Includes analytics and chart initialization for NTP Pool
  */
 
+// Import Bootstrap CSS (SCSS will be processed by Vite)
+import './styles/bootstrap.scss';
+
 
 import {
   registerAllComponents,
   ensureWebComponentsSupport,
   CHART_TAG_NAMES
-} from '@/components/index.js';
-import { querySelector, showLegacyMessage, initializeGraphExplanation } from '@/utils/dom-utils.js';
+} from '@/components/index';
+import { querySelector, showLegacyMessage, initializeGraphExplanation } from '@/utils/dom-utils';
 
 
-// Global namespace
-declare global {
-  interface Window {
-    NP?: {
-      svg_graphs?: boolean;
-    };
-  }
-}
 
 /**
  * Initialize Web Components for charts
@@ -85,13 +80,13 @@ if (document.readyState === 'loading') {
 
 
 // Load analytics
-import './analytics.js';
+import './analytics';
 
 // Load status page integration
-import { initializeStatusPage } from './status-page.js';
+import { initializeStatusPage } from './status-page';
 
 // Load HTMX conditionally
-import { initializeHTMX } from './htmx-loader.js';
+import { initializeHTMX } from './htmx-loader';
 
 // Load Bootstrap components conditionally
-import { initializeBootstrap } from './bootstrap-loader.js';
+import { initializeBootstrap } from './bootstrap-loader';

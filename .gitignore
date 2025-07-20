@@ -30,6 +30,7 @@ node_modules
 
 # Vite/Node build artifacts
 dist/
+build/
 node_modules/.installed
 docs/shared/static/js/*.bundle.*
 docs/shared/static/js/chunks/
