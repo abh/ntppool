@@ -4,5 +4,8 @@
 [% END  %]
 </span>
 [% IF error %]
-<div class="error">[% error | html %]</div>
+<div class="alert alert-warning">
+    [% error | html %]
+    [% IF trace_id %]<br><small>Trace ID: [% trace_id | html %]</small>[% END %]
+</div>
 [% END %]

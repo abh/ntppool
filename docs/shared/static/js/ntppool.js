@@ -7,21 +7,6 @@ if (!NP) var NP = {};
 
     "use strict";
 
-    NP.netspeed_updated = function (server_id, data) {
-        $('#netspeed_' + server_id).fadeIn(400);
-        $('#netspeed_' + server_id).html(data.netspeed);
-        $('#zones_' + server_id).html(data.zones);
-    };
-
-    NP.update_netspeed = function (server_id, netspeed, auth_token) {
-        var pars = { "netspeed": netspeed, "server": server_id, "auth_token": auth_token };
-        $('#netspeed_' + server_id).fadeOut(50);
-        jQuery.getJSON('/manage/server/update/netspeed', pars,
-            function (data, textStatus) {
-                NP.netspeed_updated(server_id, data);
-            }
-        );
-    };
 
 
 
