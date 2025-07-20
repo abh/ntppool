@@ -1,0 +1,17 @@
+<span id="zone_list"
+      data-server-ip="[% server.ip %]"
+      data-zones="[% zones %]">
+[% FOR zone IN zones.split('\s+') %]
+<a href="/zone/[% zone | uri %]">[% zone | html %]</a>
+[% END %]
+[% IF server.server_verification.verified_on %]
+&nbsp;&check;
+[% END %]
+</span>
+[% IF manage_site AND combust.user.is_staff %]
+   <button id="server_edit_zones"
+           hx-get="/manage/admin/zones/edit?server=[% server.ip | uri %]"
+           hx-target="#zone_list"
+           hx-swap="outerHTML"
+           class="btn btn-sm btn-outline-primary">Edit</button>
+[% END %]

@@ -519,3 +519,18 @@ div.product-header {
 div.product-group .btn {
   margin: 3px;
 }
+
+/* Fix hostname edit form font size flash when inside h3 heading */
+h3 .hostname-edit-form input[type="text"] {
+  width: 250px !important;
+  font-size: 1rem !important;
+  font-weight: normal !important;
+  font-family: merriweather, "Georgia", serif !important;
+  line-height: normal !important;
+}
+
+/* Fix button font inside h3 heading to match other buttons */
+h3 .btn {
+  font-weight: normal !important;
+  font-family: merriweather, "Georgia", serif !important;
+}

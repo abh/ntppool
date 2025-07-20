@@ -22,11 +22,29 @@ IP <input type="text" name="ip">
 
 [% page.title = "Stats for %1" | l(server.ip) %]
 
+[% IF manage_site AND combust.user.is_staff %]
+<input type="hidden" name="auth_token" value="[% combust.auth_token %]">
+<style>
+.editable-zones {
+    cursor: pointer;
+    border-bottom: 1px dashed #999;
+}
+.editable-zones:hover {
+    background-color: #f0f0f0;
+}
+.zone-edit-form, .hostname-edit-form {
+    display: inline-block;
+}
+</style>
+[% END %]
+
+[% IF manage_site AND combust.user.is_staff %]
+[% PROCESS "tpl/admin/hostname_view.html" server = server FILTER collapse %]
+[% ELSE %]
 <h3>[% server.ip %]
-  [% IF server.hostname OR (manage_site AND combust.user.is_staff) %]
-      / <span id="server_hostname">[% server.hostname || 'add hostname' %]</span>
-  [% END %]
+  [% IF server.hostname %]/ [% server.hostname | html %][% END %]
 </h3>
+[% END %]
 
 
 <p>
@@ -41,22 +59,26 @@ Account: <a href="[% server.account.public_url | html %]"
 [% END %]
 <span id="zones">
 [% "Zones:" | l %]
-<span id="zone_list" data-server-ip="[% server.ip %]"
-   data-zones="[% zone_names = [];
-               FOR zone = server.zones_display;
-                   zone_names.push(zone.name);
-               END;
-               zone_names.join(" ")
-   %]">
-[% FOR zone = server.zones_display %]
-<a href="[% combust.www_url(zone.url) %]">[% zone.name %]</a>
-[% END  %]
-[% IF server.server_verification.verified_on %]
-&nbsp;&check;
-[% END %]
-</span>
 [% IF manage_site AND combust.user.is_staff %]
-   <button id="server_edit_zones">Edit</button>
+    [% zone_names = [];
+       FOR zone = server.zones_display;
+           zone_names.push(zone.name);
+       END;
+       PROCESS "tpl/admin/zone_view.html"
+       server = server,
+       zones = zone_names.join(" "),
+       manage_site = manage_site
+       FILTER collapse;
+    %]
+[% ELSE %]
+    <span id="zone_list">
+    [% FOR zone = server.zones_display %]
+    <a href="[% combust.www_url(zone.url) %]">[% zone.name %]</a>
+    [% END  %]
+    [% IF server.server_verification.verified_on %]
+    &nbsp;&check;
+    [% END %]
+    </span>
 [% END %]
 </span>
 <br>
@@ -136,7 +158,6 @@ permyriad of the overall "netspeed" for countries configured for the server.
 
 [% UNLESS manage_site %]
 <a id="graph_explanation_link"
-   onclick="$('#graph_explanation_box').show()"
    href="/scores/[% server.ip %]?graph_explanation=1#graph_explanation">[% "What do the graphs mean?" | l %]</a>
 [% END %]
 
@@ -146,14 +167,6 @@ permyriad of the overall "netspeed" for countries configured for the server.
 </p>
 
 
-[% UNLESS manage_site %]
-[% page.js_final = BLOCK %]
-  [% page.js_final %]
-  <script>
-    var link = $('#graph_explanation_link');
-    if (link) link.attr({ "href": "#graph_explanation" });
-  </script>
-[% END %]
 
 <a name="graph_explanation"></a>
 
@@ -170,8 +183,3 @@ permyriad of the overall "netspeed" for countries configured for the server.
  %]
 <script src="[% combust.static_url("/cdn/libs/es5-shim/1/es5-shim.min.js") %]"></script>
 <![endif]-->
-
-[% IF manage_site %]
-[% page.js.push(combust.static_group("admin.js")) %]
-<script>NP.token='[% combust.auth_token %]';</script>
-[% END %]

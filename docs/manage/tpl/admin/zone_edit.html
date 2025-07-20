@@ -1,0 +1,24 @@
+<form id="zone_list"
+      hx-post="/manage/admin/zones/save?server=[% server.ip | uri %]"
+      hx-target="this"
+      hx-swap="outerHTML"
+      hx-indicator="#zone-saving"
+      hx-include="[name='auth_token']"
+      class="zone-edit-form d-inline">
+    <input type="hidden" name="auth_token" value="[% combust.auth_token %]">
+    <input type="text"
+           name="zones"
+           value="[% zones | html %]"
+           class="form-control form-control-sm d-inline-block"
+           style="width: 300px;"
+           placeholder="us uk europe @">
+    <button type="submit" class="btn btn-sm btn-primary">Save</button>
+    <button type="button"
+            class="btn btn-sm btn-secondary"
+            hx-get="/manage/admin/zones/edit?server=[% server.ip | uri %]&cancel=1"
+            hx-target="#zone_list"
+            hx-swap="outerHTML">Cancel</button>
+    <span id="zone-saving" class="htmx-indicator">
+        <small>Saving...</small>
+    </span>
+</form>

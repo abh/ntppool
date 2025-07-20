@@ -16,11 +16,7 @@
         <ol>
             [% FOR server IN account.servers %]
             <li[% IF server.deletion_on %] class="text-muted"[% END %]><a href="/scores/[% server.ip | html %]"[% IF server.deletion_on %] class="text-muted"[% END %]>
-                    [% IF query %]
-                        [% server.ip | html | replace(query, '<b>' _ query _ '</b>') %]
-                    [% ELSE %]
-                        [% server.ip | html %]
-                    [% END %]
+                    [% IF server.ip_highlighted %][% server.ip_highlighted %][% ELSE %][% server.ip | html %][% END %]
                 </a> ([% server.score %], [% server.netspeed_human | html %])
                 [% IF server.deletion_on %]<span class="badge badge-warning">[% server.deletion_on | html %]</span>[% END %]
                 [% IF server.zones && server.zones.size %]

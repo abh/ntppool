@@ -501,6 +501,12 @@ sub manage_dispatch {
         elsif ($self->request->uri =~ m{/manage/admin/search/?$}) {
             return $self->staff_search;
         }
+        elsif ($self->request->uri =~ m{/manage/admin/zones/(edit|save)/?$}) {
+            return $self->staff_zone_edit;
+        }
+        elsif ($self->request->uri =~ m{/manage/admin/hostname/(edit|save)/?$}) {
+            return $self->staff_hostname_edit;
+        }
     }
 
     if ($self->request->uri eq "/" or $self->request->uri =~ m{^/manage/?$}) {
@@ -549,6 +555,18 @@ sub staff_search {
 
     my $results = $api->search();
 
+    # Add highlighting to IP addresses (similar to old jQuery code)
+    if ($results && $results->{accounts} && $q) {
+        for my $account (@{$results->{accounts}}) {
+            for my $server (@{$account->{servers} || []}) {
+                my $ip = $server->{ip};
+                # Simple case-insensitive replacement
+                $ip =~ s/(\Q$q\E)/<b>$1<\/b>/gi;
+                $server->{ip_highlighted} = $ip;
+            }
+        }
+    }
+
     # Pass results to template
     $self->tpl_param('results' => $results);
     $self->tpl_param('query' => $q);
@@ -560,6 +578,138 @@ sub staff_search {
 
     # For non-HTMX requests, return the full page
     return OK, $self->evaluate_template('tpl/staff.html');
+}
+
+sub staff_zone_edit {
+    my $self = shift;
+
+    # Disable caching for admin endpoints
+    $self->cache_control('private, no-cache');
+
+    # Check staff access
+    unless ($self->user && $self->user->is_staff) {
+        return 403, "Access denied";
+    }
+
+    my $server_ip = $self->req_param('server') || '';
+    return 400, "Server IP required" unless $server_ip;
+
+    my $server = NP::Model->server->find_server($server_ip);
+    return 404, "Server not found" unless $server;
+
+    # Determine if this is edit or save
+    my $is_save = $self->request->uri =~ m{/save/?$};
+
+    if ($is_save && $self->request->method eq 'post') {
+        # Save zones
+        my $zones_value = $self->req_param('zones') || '';
+
+        # Call the existing API method
+        require NTPPool::API::Staff;
+        my $api = NTPPool::API::Staff->new(
+            args => {
+                user => $self->user,
+                params => {
+                    id => 'zone_list',
+                    server => $server_ip,
+                    value => $zones_value,
+                    auth_token => $self->auth_token,
+                }
+            }
+        );
+
+        my $result = $api->edit_server();
+
+        # Return view state after save
+        $self->tpl_param('server' => $server);
+        $self->tpl_param('zones' => join(' ', @$result));
+        $self->tpl_param('manage_site' => 1);
+        return OK, $self->evaluate_template('tpl/admin/zone_view.html');
+    }
+    else {
+        # Check if this is a cancel request
+        if ($self->req_param('cancel')) {
+            # Return to view state
+            my @zone_names = map { $_->name } $server->zones_display;
+            $self->tpl_param('server' => $server);
+            $self->tpl_param('zones' => join(' ', @zone_names));
+            $self->tpl_param('manage_site' => 1);
+            return OK, $self->evaluate_template('tpl/admin/zone_view.html');
+        }
+
+        # Show edit form
+        my @zone_names = map { $_->name } $server->zones_display;
+        $self->tpl_param('server' => $server);
+        $self->tpl_param('zones' => join(' ', @zone_names));
+        return OK, $self->evaluate_template('tpl/admin/zone_edit.html');
+    }
+}
+
+sub staff_hostname_edit {
+    my $self = shift;
+
+    # Disable caching for admin endpoints
+    $self->cache_control('private, no-cache');
+
+    # Check staff access
+    unless ($self->user && $self->user->is_staff) {
+        return 403, "Access denied";
+    }
+
+    my $server_ip = $self->req_param('server') || '';
+    return 400, "Server IP required" unless $server_ip;
+
+    my $server = NP::Model->server->find_server($server_ip);
+    return 404, "Server not found" unless $server;
+
+    # Determine if this is edit or save
+    my $is_save = $self->request->uri =~ m{/save/?$};
+
+    if ($is_save && $self->request->method eq 'post') {
+        # Save hostname
+        my $hostname_value = $self->req_param('hostname') || '';
+
+        # Call the existing API method
+        require NTPPool::API::Staff;
+        my $api = NTPPool::API::Staff->new(
+            args => {
+                user => $self->user,
+                params => {
+                    id => 'hostname',
+                    server => $server_ip,
+                    value => $hostname_value,
+                    auth_token => $self->auth_token,
+                }
+            }
+        );
+
+        my $result = $api->edit_server();
+
+        # Debug logging
+        warn "Hostname save result: " . Data::Dump::pp($result);
+
+        # Update the server object with the returned hostname
+        if ($result && ref($result) eq 'HASH' && exists $result->{hostname}) {
+            $server->hostname($result->{hostname});
+        }
+
+        # Return view state after save
+        $self->tpl_param('server' => $server);
+        $self->tpl_param('error' => $result->{error}) if $result->{error};
+        return OK, $self->evaluate_template('tpl/admin/hostname_view.html');
+    }
+    else {
+        # Check if this is a cancel request
+        if ($self->req_param('cancel')) {
+            # Return to view state
+            $self->tpl_param('server' => $server);
+            return OK, $self->evaluate_template('tpl/admin/hostname_view.html');
+        }
+
+        # Show edit form
+        $self->tpl_param('server' => $server);
+        return OK, $self->evaluate_template('tpl/admin/hostname_edit.html');
+    }
 }
 
 sub account_monitor_count {

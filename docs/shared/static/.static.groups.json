@@ -20,14 +20,5 @@
           "cdn/libs/htmx/2.0.5/htmx.min.js",
           "js/ntppool.js"
       ]
-  },
-  "admin.js": {
-      "files": [
-          "cdn/libs/hogan/3/hogan.min.js",
-          "cdn/libs/underscore/1.8/underscore-min.js",
-          "cdn/libs/jquery-plugins/jeditable/1.7/jquery.jeditable.min.js",
-          "js/admin-templates.js",
-          "js/admin.js"
-      ]
   }
 }
