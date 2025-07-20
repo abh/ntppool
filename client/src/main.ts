@@ -66,6 +66,11 @@ function checkAndInitialize(): void {
   // Initialize graph explanation functionality
   initializeGraphExplanation();
 
+  // Initialize HTMX conditionally
+  initializeHTMX().catch(error => {
+    console.error('Failed to initialize HTMX:', error);
+  });
+
   // Initialize Bootstrap components conditionally
   initializeBootstrap();
 }
@@ -82,11 +87,11 @@ if (document.readyState === 'loading') {
 // Load analytics
 import './analytics.js';
 
-// Load HTMX analytics tracking
-import './htmx-analytics.js';
-
 // Load status page integration
 import { initializeStatusPage } from './status-page.js';
+
+// Load HTMX conditionally
+import { initializeHTMX } from './htmx-loader.js';
 
 // Load Bootstrap components conditionally
 import { initializeBootstrap } from './bootstrap-loader.js';
