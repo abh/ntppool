@@ -5,6 +5,8 @@
 <meta name="trace-id" content="[% trace_id | html %]">
 [% END %]
 
+<meta name="plausible-domain" content="[% combust.analytics_hostname %]">
+
 [%- IF page.canonical %]
 <link rel="canonical" href="[% page.canonical | html %]">
 [% END -%]

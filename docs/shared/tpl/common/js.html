@@ -1,4 +1,11 @@
-[%
+<script
+  src="[% combust.static_url("/js/dist/app.js") %]"
+  type="module"
+></script>
+
+[%-
+
+# legacy scripts
 
 page.js.unshift(combust.static_group("common.js"));
 
@@ -37,5 +44,3 @@ show_js(page.js);
 %]
 
 [% page.js_final %]
-
-<script defer data-domain="[% combust.analytics_hostname %]" src="https://st.ntppool.org/js/script.js"></script>

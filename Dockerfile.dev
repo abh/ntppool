@@ -36,7 +36,6 @@ USER ntppool
 RUN rm -f Makefile MYMETA.yml MYMETA.json && \
   perl Makefile.PL && \
   make js-build && \
-  make templates && \
   mkdir -p tmp logs
 
 RUN git config --global --add safe.directory /ntppool

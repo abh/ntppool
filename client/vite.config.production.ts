@@ -28,7 +28,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         // Main entry point
-        graphs: resolve(__dirname, 'src/main.ts'),
+        app: resolve(__dirname, 'src/main.ts'),
       },
       output: {
         // Output format
@@ -39,9 +39,10 @@ export default defineConfig({
         assetFileNames: '[name]-v[hash][extname]',
         inlineDynamicImports: false,
         // Manual chunks - only separate D3 vendor
-        manualChunks: {
-          // D3.js as a separate chunk
-          'd3-vendor': ['d3']
+        manualChunks(id) {
+          if (id.includes('node_modules/d3')) {
+            return 'd3-vendor';
+          }
         }
       },
       // External dependencies that should not be bundled
@@ -83,5 +84,11 @@ export default defineConfig({
     alias: {
       '@': resolve(__dirname, 'src')
     }
+  },
+
+  // Optimization
+  optimizeDeps: {
+    // Include dependencies that have dynamic imports
+    include: ['d3']
   }
 });

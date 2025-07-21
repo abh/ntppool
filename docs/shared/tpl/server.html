@@ -171,8 +171,6 @@ permyriad of the overall "netspeed" for countries configured for the server.
 <script src="[% combust.static_url("/cdn/libs/es5-shim/1/es5-shim.min.js") %]"></script>
 <![endif]-->
 
-[% page.js.push("module:dist/graphs.js") %]
-
 [% IF manage_site %]
 [% page.js.push(combust.static_group("admin.js")) %]
 <script>NP.token='[% combust.auth_token %]';</script>

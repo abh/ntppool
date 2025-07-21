@@ -25,8 +25,8 @@ export default defineConfig({
     // Rollup options
     rollupOptions: {
       input: {
-        // Main entry point
-        graphs: resolve(__dirname, 'src/main.ts'),
+        // Main app entry point (includes analytics and charts)
+        app: resolve(__dirname, 'src/main.ts'),
       },
       output: {
         // Output format
@@ -37,9 +37,10 @@ export default defineConfig({
         assetFileNames: '[name]-v[hash][extname]',
         inlineDynamicImports: false,
         // Manual chunks - only separate D3 vendor
-        manualChunks: {
-          // D3.js as a separate chunk for caching
-          'd3-vendor': ['d3']
+        manualChunks(id) {
+          if (id.includes('node_modules/d3')) {
+            return 'd3-vendor';
+          }
         }
       }
     },
@@ -48,7 +49,7 @@ export default defineConfig({
     modulePreload: false,
 
     // Minification options
-    minify: 'terser',
+    minify: false,
     terserOptions: {
       compress: {
         drop_console: false, // Keep console for development

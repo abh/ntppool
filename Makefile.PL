@@ -86,11 +86,11 @@ js-type-check: js-deps
 js-dev: js-deps
 	cd $(CLIENT_DIR) && $(NPM) run dev
 
-js-build: js-deps js-type-check templates
+js-build: js-deps js-type-check
 	cd $(CLIENT_DIR) && $(NPM) run build:dev
 	@echo "TypeScript bundles built to docs/shared/static/js/"
 
-js-build-prod: js-deps js-type-check templates
+js-build-prod: js-deps js-type-check
 	cd $(CLIENT_DIR) && $(NPM) run build
 	@echo "TypeScript production bundles built to docs/shared/static/js/"
 
@@ -99,12 +99,6 @@ js-clean:
 	rm -rf $(NODE_MODULES)
 
 js: js-build
-
-# Legacy templates target (kept for compatibility)
-templates: js-deps
-	cd $(CLIENT_DIR) && test -d node_modules/hogan.js && \
-		./node_modules/hogan.js/bin/hulk ../docs/manage/tpl/client/*.html > ../docs/shared/static/js/admin-templates.js || \
-		echo "Hogan.js not available, skipping template compilation"
 
 testcover:
 	cover -delete

@@ -140,6 +140,25 @@ export function clearContainer(container: Element): void {
 }
 
 /**
+ * Show legacy browser message
+ */
+export function showLegacyMessage(container: Element | null): void {
+  if (!container) return;
+
+  container.innerHTML = `
+    <div class="alert alert-warning">
+      <p>Please upgrade to a modern browser that supports Web Components to see the charts.</p>
+      <p>Recommended browsers:
+        <a href="https://www.google.com/chrome/">Chrome</a>,
+        <a href="https://www.mozilla.org/firefox">Firefox</a>,
+        <a href="https://www.apple.com/safari/">Safari</a>, or
+        <a href="https://www.microsoft.com/edge">Edge</a>
+      </p>
+    </div>
+  `;
+}
+
+/**
  * Format numbers with proper localization
  */
 export function formatNumber(value: number, precision = 0): string {

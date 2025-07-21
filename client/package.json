@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "d3": "^7.9.0",
-    "hogan.js": "^3.0.2"
+    "hogan.js": "^3.0.2",
+    "plausible-client": "^1.1.0"
   }
 }
