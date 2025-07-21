@@ -1237,6 +1237,9 @@ select id, account_id, type,
 from monitors
 where tls_name not like '%.system';
 
+#148
+update monitors set is_current=null where is_current=0;
+
 #todo
 
 
