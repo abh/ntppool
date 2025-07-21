@@ -7,16 +7,26 @@
  * Register all NTP Pool chart components
  * Call this function to register all components globally
  */
-export function registerAllComponents(): void {
+// Define chart loaders - Vite can statically analyze these
+const chartLoaders = {
+  'ntp-server-chart': () => import('./server-chart.js'),
+  'ntp-zone-chart': () => import('./zone-chart.js')
+};
+
+// Export chart tag names for reuse
+export const CHART_TAG_NAMES = Object.keys(chartLoaders);
+
+export async function registerAllComponents(): Promise<void> {
   // Only load components that are actually present on the page
+  const promises: Promise<any>[] = [];
 
-  if (document.querySelector('ntp-server-chart') && !customElements.get('ntp-server-chart')) {
-    import('./server-chart.js');
+  for (const [tagName, loader] of Object.entries(chartLoaders)) {
+    if (document.querySelector(tagName) && !customElements.get(tagName)) {
+      promises.push(loader());
+    }
   }
 
-  if (document.querySelector('ntp-zone-chart') && !customElements.get('ntp-zone-chart')) {
-    import('./zone-chart.js');
-  }
+  await Promise.all(promises);
 }
 
 /**

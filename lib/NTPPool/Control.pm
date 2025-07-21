@@ -501,6 +501,7 @@ my $vite_manifest;
 my $vite_manifest_mtime;
 
 sub _load_vite_manifest {
+    my $self = shift;
     my $manifest_file =
       ($ENV{CBROOTLOCAL} || '.') . '/docs/shared/static/js/dist/.vite/manifest.json';
 
@@ -512,9 +513,9 @@ sub _load_vite_manifest {
     my $file_mtime = (stat($manifest_file))[9];
 
     # In development, check if file has changed
-    my $is_development = ($ENV{CBCONFIG} || '') eq 'devel';
+    my $is_development = $self->deployment_mode eq 'devel';
     if ($is_development) {
-        if ($vite_manifest && $vite_manifest_mtime && $file_mtime <= $vite_manifest_mtime)
+        if ($vite_manifest && $vite_manifest_mtime && $file_mtime == $vite_manifest_mtime)
         {
             return $vite_manifest;
         }
