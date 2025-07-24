@@ -42,18 +42,17 @@ export function createServerChart(
     ...options
   } as Required<ServerChartOptions>;
 
-  // Process history data with type safety - filter out points with missing offset data
-  const history: ServerHistoryPoint[] = data.history
-    .filter(d => d.offset != null)
-    .map(d => ({
-      ...d,
-      date: parseTimestamp(d.ts),
-      offset: parseFloat(d.offset.toString())
-    }));
+  // Process history data with type safety - convert all entries
+  const history: ServerHistoryPoint[] = data.history.map(d => ({
+    ...d,
+    date: parseTimestamp(d.ts),
+    offset: d.offset != null ? parseFloat(d.offset.toString()) : 0
+  }));
 
-  // Calculate offset bounds
-  let yOffsetMax = d3.max(history, d => d.offset) ?? 0;
-  let yOffsetMin = d3.min(history, d => d.offset) ?? 0;
+  // Calculate offset bounds only from entries with valid offset data (include offset = 0, exclude null)
+  const validOffsetHistory = history.filter(d => d.offset != null);
+  let yOffsetMax = d3.max(validOffsetHistory, d => d.offset!) ?? 0;
+  let yOffsetMin = d3.min(validOffsetHistory, d => d.offset!) ?? 0;
 
   // Clamp offset values to reasonable bounds
   if (yOffsetMax > THRESHOLDS.offset.max) yOffsetMax = THRESHOLDS.offset.max;
@@ -272,11 +271,13 @@ function drawDataPoints(
   yOffsetScale: PowerScale,
   yScoreScale: PowerScale
 ): void {
-  const monitorData = history.filter(d => d.monitor_id !== null);
+  // Filter data separately for scores and offsets
+  const scoreData = history.filter(d => d.monitor_id !== null);
+  const offsetData = history.filter(d => d.monitor_id !== null && d.offset != null);
 
-  // Draw score points
+  // Draw score points (all monitor data, regardless of offset)
   g.selectAll<SVGCircleElement, ServerHistoryPoint>('circle.scores')
-    .data(monitorData)
+    .data(scoreData)
     .enter().append('circle')
     .attr('class', 'scores monitor-data')
     .attr('r', 2)
@@ -290,9 +291,9 @@ function drawDataPoints(
       fadeOtherMonitors(g, null, 1);
     });
 
-  // Draw offset points
+  // Draw offset points (only data with valid offset values)
   g.selectAll<SVGCircleElement, ServerHistoryPoint>('circle.offsets')
-    .data(monitorData)
+    .data(offsetData)
     .enter().append('circle')
     .attr('class', 'offsets monitor-data')
     .attr('r', 1.5)
