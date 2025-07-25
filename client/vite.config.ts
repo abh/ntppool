@@ -22,6 +22,9 @@ export default defineConfig({
 
     manifest: true,
 
+    // our CSP policy doesn't allow data: in the css files
+    assetsInlineLimit: 0,
+
     // CSS code splitting
     cssCodeSplit: false,
 
