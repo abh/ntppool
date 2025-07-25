@@ -163,7 +163,12 @@ function drawGrid(
   yOffsetMin: number
 ): void {
   // Draw X-axis grid and labels
-  const xTicks = CHART_DEFAULTS.ticks.x;
+  // Reduce tick count to prevent overlapping when showing longer timestamps
+  const domain = xScale.domain();
+  const timeRange = (domain[0] && domain[1]) ? domain[1].getTime() - domain[0].getTime() : 24 * 60 * 60 * 1000;
+  const oneDay = 24 * 60 * 60 * 1000;
+  const xTicks = timeRange <= oneDay ? 8 : 6; // Fewer ticks for longer ranges
+
   const xAxisGroup = g.selectAll<SVGGElement, Date>('g.x-axis')
     .data(xScale.ticks(xTicks))
     .enter().append('g')
@@ -182,8 +187,17 @@ function drawGrid(
     .attr('y', height + 3)
     .attr('dy', '.71em')
     .attr('text-anchor', 'middle')
-    .attr('font-size', '12px')
-    .text(xScale.tickFormat(xTicks));
+    .attr('font-size', '11px')
+    // .attr('transform', d => `rotate(-45, ${xScale(d)}, ${height + 3})`)
+    .text(d => {
+      if (timeRange <= oneDay) {
+        // For time ranges within a day, show time in 24-hour UTC format
+        return d3.utcFormat('%H:%M')(d);
+      } else {
+        // For longer ranges, show date and time in 24-hour UTC format
+        return d3.utcFormat('%b %d %H:%M')(d);
+      }
+    });
 
   // Draw Y-axis grid and labels for offset
   const yOffsetTicks = yOffsetScale.ticks(8);
@@ -284,10 +298,10 @@ function drawDataPoints(
     .attr('cx', d => xScale(d.date))
     .attr('cy', d => yScoreScale(d.score))
     .attr('fill', d => getScoreColor(d.step))
-    .on('mouseover', function(_event: MouseEvent, d: ServerHistoryPoint) {
+    .on('mouseover', function (_event: MouseEvent, d: ServerHistoryPoint) {
       fadeOtherMonitors(g, d.monitor_id, 0.2);
     })
-    .on('mouseout', function() {
+    .on('mouseout', function () {
       fadeOtherMonitors(g, null, 1);
     });
 
@@ -298,12 +312,12 @@ function drawDataPoints(
     .attr('class', 'offsets monitor-data')
     .attr('r', 1.5)
     .attr('cx', d => xScale(d.date))
-    .attr('cy', d => yOffsetScale(d.offset))
-    .attr('fill', d => getOffsetColor(d.offset))
-    .on('mouseover', function(_event: MouseEvent, d: ServerHistoryPoint) {
+    .attr('cy', d => yOffsetScale(d.offset!))
+    .attr('fill', d => getOffsetColor(d.offset!))
+    .on('mouseover', function (_event: MouseEvent, d: ServerHistoryPoint) {
       fadeOtherMonitors(g, d.monitor_id, 0.25);
     })
-    .on('mouseout', function() {
+    .on('mouseout', function () {
       fadeOtherMonitors(g, null, 1);
     });
 }
@@ -438,14 +452,14 @@ function createLegend(
   // Add hover interactions
   const rows = table.querySelectorAll<HTMLTableRowElement>('tr[data-monitor-id]');
   rows.forEach(row => {
-    row.addEventListener('mouseenter', function() {
+    row.addEventListener('mouseenter', function () {
       const monitorId = this.dataset['monitorId'];
       if (monitorId) {
         fadeOtherMonitors(chartGroup, parseInt(monitorId, 10), 0.25);
       }
     });
 
-    row.addEventListener('mouseleave', function() {
+    row.addEventListener('mouseleave', function () {
       fadeOtherMonitors(chartGroup, null, 1);
     });
   });

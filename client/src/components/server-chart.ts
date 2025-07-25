@@ -100,7 +100,7 @@ export class ServerChartComponent extends BaseChartComponent {
     if (!serverIp) {
       throw new Error('Server IP is required');
     }
-    return `/scores/${serverIp}/json?monitor=*&limit=5000&source=c`;
+    return `/scores/${serverIp}/json?monitor=*&limit=6500&source=c`;
   }
 
   protected validateAttributes(): boolean {
