@@ -183,7 +183,7 @@ function drawGrid(
     .attr('dy', '.71em')
     .attr('text-anchor', 'middle')
     .attr('font-size', '12px')
-    .text(d => d3.timeFormat('%b %d')(d));
+    .text(xScale.tickFormat(xTicks));
 
   // Draw Y-axis grid and labels for offset
   const yOffsetTicks = yOffsetScale.ticks(8);
