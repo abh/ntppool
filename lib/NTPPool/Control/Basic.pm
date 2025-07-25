@@ -17,8 +17,9 @@ sub render {
         return NOT_FOUND;
     }
 
-    if ($self->request->path =~ m!^/static/(js|css)!) {
+    if ($self->request->path =~ m!^/static/(js|css|build)!) {
         $self->request->header_out('Access-Control-Allow-Origin' => '*');
+        $self->request->header_out('Vary', 'Origin');
     }
 
     if ($self->request->path =~ m!^/manage! and $self->site ne 'manage') {
