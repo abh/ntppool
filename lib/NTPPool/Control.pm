@@ -479,7 +479,7 @@ sub post_process {
         [   'NEL' =>
               '{"report_to":"default","max_age":31536000,"include_subdomains":true}'
         ],
-        [   'Content-Security-Policy-Report-Only' => join(
+        [   'Content-Security-Policy' => join(
                 " ",
                 qq[default-src 'none'; frame-ancestors 'none';],
                 qq[connect-src 'self' www.ntppool.org st.ntppool.org status.ntppool.org 8ll7xvh0qt1p.statuspage.io;],
