@@ -695,6 +695,16 @@ div.product-group .btn {
     margin: 3px;
 }
 
+// Override Bootstrap's automatic color contrast calculation for btn-primary
+// Bootstrap calculates that #3885B4 background needs black text for accessibility,
+// but design requires white text for visual consistency
+.btn-primary {
+    --bs-btn-color: #ffffff !important;
+    --bs-btn-hover-color: #ffffff !important;
+    --bs-btn-active-color: #ffffff !important;
+    --bs-btn-disabled-color: #ffffff !important;
+}
+
 // Server Chart Legend Styles
 .legend-table {
     width: 100%;

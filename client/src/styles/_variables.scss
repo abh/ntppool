@@ -18,6 +18,8 @@ $link-decoration: none;
 // Component-specific variables
 $nav-link-color: #3885B4;
 
+// Note: We override btn-primary color in _components.scss after Bootstrap loads
+
 // Custom CSS custom properties (for compatibility with existing styles)
 :root {
     --bs-nav-link-color: #{$link-color};
