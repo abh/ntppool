@@ -281,24 +281,39 @@ export function getElementDimensions(
 }
 
 /**
- * Sort monitors by status and type
+ * Sort monitors by status, then type (score first), then score (desc), then avg_rtt (asc), then name (asc)
  */
-export function sortMonitors<T extends { status: string; type: string; score_ts?: number }>(
+export function sortMonitors<T extends { status: string; type: string; score: number; avg_rtt?: number; name: string }>(
   monitors: T[]
 ): T[] {
   return [...monitors].sort((a, b) => {
     const aStatus = MONITOR_STATUS[a.status] ?? { order: 999 };
     const bStatus = MONITOR_STATUS[b.status] ?? { order: 999 };
 
+    // Primary sort: status
     if (aStatus.order !== bStatus.order) {
       return aStatus.order - bStatus.order;
     }
 
+    // Secondary sort: type (score type first)
     if (a.type !== b.type) {
       return b.type.localeCompare(a.type); // Descending order: "score" before "monitor"
     }
 
-    return (a.score_ts ?? 0) - (b.score_ts ?? 0);
+    // Tertiary sort: score (descending)
+    if (a.score !== b.score) {
+      return b.score - a.score;
+    }
+
+    // Quaternary sort: avg_rtt (ascending, handle undefined)
+    const aRtt = a.avg_rtt ?? Number.MAX_SAFE_INTEGER;
+    const bRtt = b.avg_rtt ?? Number.MAX_SAFE_INTEGER;
+    if (aRtt !== bRtt) {
+      return aRtt - bRtt;
+    }
+
+    // Fallback sort: name (ascending)
+    return a.name.localeCompare(b.name);
   });
 }
 
