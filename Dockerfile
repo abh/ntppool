@@ -1,4 +1,4 @@
-FROM harbor.ntppool.org/ntppool/base-os:3.22.1
+FROM harbor.ntppool.org/ntppool/base-os:3.22.1-1
 USER root
 
 ENV BUILD 20241215
@@ -8,7 +8,6 @@ RUN apk --no-cache add gomplate alpine-base perl-file-slurper nodejs npm
 RUN cpanm -v https://tmp.askask.com/2024/12/Net-Async-HTTP-Server-0.14bis4.tar.gz
 
 ENV CBCONFIG=
-ENV HULK /usr/local/bin/hulk
 
 WORKDIR /ntppool
 VOLUME /ntppool/data
@@ -21,7 +20,7 @@ RUN rm -fr docs/ntppool/_syndicate && \
   ln -s /ntppool/data/syndicate docs/ntppool/_syndicate && \
   chown ntppool data/syndicate
 
-# because quay.io sets timestamps to 1980 for some reason ...
+# make sure all our assets have recent timestamps
 RUN find ./docs -type f -print0 | xargs -0 touch
 
 RUN perl Makefile.PL && \

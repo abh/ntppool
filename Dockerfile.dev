@@ -1,15 +1,13 @@
-FROM harbor.ntppool.org/ntppool/base-os:3.22.1
+FROM harbor.ntppool.org/ntppool/base-os:3.22.1-1
 #FROM harbor.ntppool.org/ntppool/base-os:latest
 USER root
 
 ENV BUILD 20241215
-RUN cpanm Crypt::Passphrase::Argon2 File::Slurper Template::Plugin::DateTime
 RUN cpanm -v https://tmp.askask.com/2024/12/Net-Async-HTTP-Server-0.14bis4.tar.gz
 
 RUN apk --no-cache add alpine-base nodejs npm
 
 ENV CBCONFIG=
-ENV HULK /usr/bin/hulk
 
 WORKDIR /ntppool
 
@@ -24,9 +22,6 @@ RUN rm -fr docs/ntppool/_syndicate && \
     chown -R ntppool:ntppool data docs/ntppool/_syndicate
 
 ADD --chown=ntppool . /ntppool
-
-# because quay.io sets timestamps to 1980 for some reason ...
-RUN find ./docs -type f -print0 | xargs -0 touch
 
 # Ensure ntppool user owns the entire workdir for development
 RUN chown -R ntppool:ntppool /ntppool
