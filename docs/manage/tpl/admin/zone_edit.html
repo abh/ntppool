@@ -1,6 +1,6 @@
 <form id="zone_list"
       hx-post="/manage/admin/zones/save?server=[% server.ip | uri %]"
-      hx-target="this"
+      hx-target="#zone_list"
       hx-swap="outerHTML"
       hx-indicator="#zone-saving"
       hx-include="[name='auth_token']"
