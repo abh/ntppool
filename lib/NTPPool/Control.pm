@@ -474,7 +474,9 @@ sub surrogate_key {
     # If called without parameters, return space-separated key=value pairs
     unless (@_) {
         return '' unless $self->{_surrogate_keys} && %{$self->{_surrogate_keys}};
-        return join(' ', map { "$_=$self->{_surrogate_keys}->{$_}" } sort keys %{$self->{_surrogate_keys}});
+        return join(' ',
+            map {"$_=$self->{_surrogate_keys}->{$_}"}
+            sort keys %{$self->{_surrogate_keys}});
     }
 
     # Accept key=value pairs
@@ -483,6 +485,7 @@ sub surrogate_key {
 
     for my $key (keys %pairs) {
         my $value = $pairs{$key};
+
         # Basic validation - keys and values should not contain spaces or special chars
         next if $key =~ /[=\s]/ || $value =~ /[=\s]/;
         $self->{_surrogate_keys}->{$key} = $value;
@@ -496,6 +499,16 @@ sub post_process {
 
     my $cspdomains = "st.ntppool.org st.pimg.net news.ntppool.org";
 
+    # If on manage site, add web hostname to CSP connect-src
+    my $web_hostname = '';
+    if ($self->site->name eq 'manage') {
+        if (my $ntppool_site = $config->site->{ntppool}) {
+            if (my $servername = $ntppool_site->{servername}) {
+                $web_hostname = " $servername";
+            }
+        }
+    }
+
     my @headers = (
 
         # report-uri.com headers
@@ -508,7 +521,7 @@ sub post_process {
         [   'Content-Security-Policy' => join(
                 " ",
                 qq[default-src 'none'; frame-ancestors 'none';],
-                qq[connect-src 'self' www.ntppool.org st.ntppool.org status.ntppool.org 8ll7xvh0qt1p.statuspage.io;],
+                qq[connect-src 'self' www.ntppool.org st.ntppool.org status.ntppool.org 8ll7xvh0qt1p.statuspage.io${web_hostname};],
                 qq[font-src fonts.gstatic.com;],
                 qq[form-action 'self' mailform.ntppool.org checkout.stripe.com;],
                 qq[img-src 'self' data: $cspdomains *.mapper.ntppool.org;],
@@ -595,26 +608,31 @@ sub static_url {
     # Handle vite-bundled files
     if ($file =~ m!^/build/(.+)\.(js|css)$!) {
         my $entry_name = $1;
-        my $extension = $2;
+        my $extension  = $2;
         my $manifest   = $self->_load_vite_manifest();
         my $found_entry;
 
         if ($extension eq 'js') {
+
             # For JS files, find entry with matching name and isEntry: true
             for my $entry_key (keys %$manifest) {
                 my $entry = $manifest->{$entry_key};
-                if ($entry->{name} && $entry->{name} eq $entry_name && $entry->{isEntry}) {
+                if ($entry->{name} && $entry->{name} eq $entry_name && $entry->{isEntry})
+                {
                     $found_entry = $entry;
                     last;
                 }
             }
-        } elsif ($extension eq 'css') {
+        }
+        elsif ($extension eq 'css') {
+
             # For CSS files, direct lookup by key
             my $lookup_key = "$entry_name.$extension";
             $found_entry = $manifest->{$lookup_key};
         }
 
         if ($found_entry) {
+
             # We found the vite manifest entry, construct the result with static base
             my $vite_file = "/build/" . $found_entry->{file};
 
