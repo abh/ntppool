@@ -295,27 +295,16 @@ export function getElementDimensions(
     };
   }
 
-  const htmlElement = element as HTMLElement;
+  // Priority: defaults from web component attributes first, then emergency fallback
+  // The container element (div) doesn't have width/height attributes - those are on the web component
+  const calculatedWidth = defaults.width ?? CHART_DEFAULTS.dimensions.defaultWidth;
+  const calculatedHeight = defaults.height ?? CHART_DEFAULTS.dimensions.defaultHeight;
 
-  // Simple priority: HTML attributes first, then defaults, then emergency fallback
-  const attrWidth = parseInt(htmlElement.getAttribute('width') ?? '0', 10);
-  const attrHeight = parseInt(htmlElement.getAttribute('height') ?? '0', 10);
-
-  const calculatedWidth = attrWidth ||
-                         defaults.width ||
-                         CHART_DEFAULTS.dimensions.defaultWidth;
-
-  const calculatedHeight = attrHeight ||
-                          defaults.height ||
-                          CHART_DEFAULTS.dimensions.defaultHeight;
-
-  console.log('📏 getElementDimensions Simplified:', {
-    element: htmlElement.tagName,
-    attrWidth,
-    attrHeight,
+  console.log('📏 getElementDimensions Fixed:', {
+    element: (element as HTMLElement).tagName,
     calculatedWidth,
     calculatedHeight,
-    source: attrWidth ? 'HTML attributes' : defaults.width ? 'options' : 'fallback'
+    source: defaults.width ? 'web component attributes' : 'fallback'
   });
 
   return {

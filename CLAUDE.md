@@ -128,20 +128,66 @@ Use TodoWrite/TodoRead tools extensively for:
 **Implementation Pattern**:
 Send single messages with multiple tool invocations rather than sequential requests
 
-### HTMX and Frontend Integration Patterns
+### Frontend Development Guidelines
 
-**CSP Compliance (CRITICAL)**:
-- NEVER use inline styles (`style="..."`) - use Bootstrap utility classes instead
-- NEVER use inline JavaScript (`onclick="..."`) - use external functions and event handlers
-- NEVER use inline `<script>` tags - put JavaScript in external files
+#### **Critical: Content Security Policy (CSP) Compliance**
+**ABSOLUTE RULE - NO EXCEPTIONS:**
+- **NEVER create inline styles** (e.g., `style="background-color: red;"` or `element.style.backgroundColor = 'red'`)
+- **NEVER create inline JavaScript** (e.g., `onclick="doSomething()"` or inline `<script>` tags)
+- **NEVER use `document.createElement('style')` or dynamic style injection**
+- **ALL CSS must be in external .scss files in `client/src/styles/`**
+- **ALL JavaScript must be in external .ts/.js files in `client/src/`**
 
-**HTMX Best Practices**:
+CSP policies WILL block any inline styles or scripts, causing features to break silently. This rule is non-negotiable for security and functionality.
+
+#### **CSS and SCSS Architecture**
+- **Main stylesheet**: `client/src/styles/_components.scss` - contains all custom component styles
+- **Bootstrap integration**: `client/src/styles/bootstrap.scss` - imports and configures Bootstrap
+- **Variables**: `client/src/styles/_variables.scss` - CSS custom properties and SCSS variables
+- **Build process**: Vite processes SCSS files and outputs to `docs/shared/static/build/`
+
+**CSS Organization Rules**:
+- Keep all styling in external SCSS files, never in TypeScript/JavaScript
+- Use Bootstrap utility classes where possible (`d-none`, `d-block`, `text-center`, etc.)
+- Group related styles together with clear section comments
+- Use SCSS nesting sparingly - prefer flat, specific selectors for maintainability
+
+#### **TypeScript/JavaScript Architecture**
+- **Main entry**: `client/src/main.ts` - application initialization and Bootstrap imports
+- **Components**: `client/src/components/` - Web Components for charts and interactive elements
+- **Charts**: `client/src/charts/` - D3.js chart implementations
+- **Utils**: `client/src/utils/` - shared utility functions
+- **Types**: `client/src/types/` - TypeScript type definitions
+
+**Code Organization Rules**:
+- Never embed CSS strings in TypeScript files
+- Use external event handlers, not inline event attributes
+- Web Components should inherit styles from page CSS (not Shadow DOM)
+- Keep functions focused and avoid over-engineering with design patterns
+
+#### **Common Anti-Patterns to Avoid**
+❌ **Over-Engineering**: Don't create complex class hierarchies, strategy patterns, or factories for simple tasks
+❌ **Inline Styles**: Never use `style=""` attributes or `element.style.property = value`
+❌ **CSS in JS**: Don't embed CSS template literals in TypeScript files
+❌ **Shadow DOM by default**: Use `inherit-styles="true"` for Web Components
+
+✅ **Preferred Patterns**: Simple functions, external CSS files, Bootstrap utilities, inherited styles
+
+#### **HTMX Integration Patterns**
 - Use `hx-target` and `hx-swap` for dynamic content updates
 - Implement proper error handling with `hx-on` attributes
 - Add comprehensive debugging to JavaScript error handlers
-- Use Bootstrap classes (`d-none`, `d-block`) instead of inline styles for show/hide
+- Use Bootstrap classes instead of inline styles for show/hide behavior
 - Use compact success indicators (badges) instead of large alerts for HTMX updates
 - Implement proper cancel/back flows in forms
+
+#### **Refactoring Guidelines**
+When refactoring frontend code:
+1. **Start minimal** - make the smallest change that achieves the goal
+2. **Preserve working structure** - don't rewrite code that already works well
+3. **Measure success by code reduction** - fewer lines is usually better
+4. **Avoid architectural complexity** - simple functions over design patterns
+5. **CSP compliance first** - move CSS to external files before any other changes
 
 ### API Integration and Cross-Language Compatibility
 

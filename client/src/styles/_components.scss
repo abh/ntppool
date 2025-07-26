@@ -733,17 +733,45 @@ div.product-group .btn {
         font-weight: normal !important;
     }
 
-    .column-gap {
-        width: 4%;
+    // Standard 2-column layout (Active/Testing)
+    .monitor-name {
+        min-width: 120px;
+        max-width: 200px;
+        width: 40%;
     }
 
+    .monitor-score {
+        min-width: 40px;
+        max-width: 80px;
+        width: 15%;
+        text-align: right;
+    }
+
+    .monitor-rtt {
+        min-width: 50px;
+        max-width: 80px;
+        width: 15%;
+        text-align: left;
+    }
+
+    // 3-column layout (Candidate)
     .monitor-name-3col {
-        width: 30%;
+        min-width: 100px;
+        max-width: 150px;
+        width: 20%;
     }
 
     .monitor-score-3col {
-        width: 10%;
+        min-width: 30px;
+        max-width: 50px;
+        width: 8%;
         text-align: right;
+    }
+
+    .column-gap {
+        min-width: 10px;
+        max-width: 20px;
+        width: 3%;
     }
 
     .status-header {
@@ -765,20 +793,51 @@ div.product-group .btn {
     }
 }
 
-// Chart container styles to avoid inline CSS
-.legend-container {
-    width: 50%;
+// Chart container styles to avoid inline CSS and maintain proper SVG sizing
+.chart-container {
+    // Prevent container from expanding beyond SVG's intended dimensions
+    display: inline-block;
+    max-width: max-content;
 
-    // Common padding values for chart containers
-    &.padding-20 { margin-left: 20px; }
-    &.padding-30 { margin-left: 30px; }
-    &.padding-40 { margin-left: 40px; }
-    &.padding-50 { margin-left: 50px; }
-    &.padding-60 { margin-left: 60px; }
-    &.padding-70 { margin-left: 70px; }
-    &.padding-80 { margin-left: 80px; }
-    &.padding-90 { margin-left: 90px; }
-    &.padding-100 { margin-left: 100px; }
+    svg {
+        // Ensure SVG respects its width/height attributes and doesn't scale up
+        max-width: none !important;
+        width: attr(width px, auto);
+        height: attr(height px, auto);
+    }
+}
+
+.legend-container {
+    // Allow natural sizing to match chart width, up to chart maximum (640px)
+    display: inline-block;
+    max-width: 640px;  // Allow full chart width instead of limiting to content
+    width: 100%;       // Take available width up to max-width
+
+    // Add spacing above legend (about one line height)
+    margin-top: 1.2em;
+
+    // Remove unwanted Bootstrap styling - clean appearance
+    border: none !important;
+    background: none !important;
+    padding: 0 !important;
+    margin-bottom: 0 !important;
+    margin-right: 0 !important;
+
+    // Remove left padding - legend starts at chart edge
+    margin-left: 0 !important;
+
+    // Override all padding classes to remove left margin
+    &.padding-20,
+    &.padding-30,
+    &.padding-40,
+    &.padding-50,
+    &.padding-60,
+    &.padding-70,
+    &.padding-80,
+    &.padding-90,
+    &.padding-100 {
+        margin-left: 0 !important;
+    }
 }
 
 .legend-spacer {
