@@ -34,12 +34,12 @@ export const COLORS: ChartColors = {
   offset: {
     good: 'green',
     warning: 'orange',
-    error: 'red'
+    error: 'hotpink'
   },
   score: {
     good: 'steelblue',
     warning: 'orange',
-    error: 'red'
+    error: 'darkslateblue'
   },
   lines: {
     registered: '#1f77b4',
@@ -55,7 +55,7 @@ export const COLORS: ChartColors = {
 export const THRESHOLDS: ChartThresholds = {
   offset: {
     good: 0.05,
-    warning: 0.1,
+    warning: 0.2,
     max: 2,
     min: -2
   },

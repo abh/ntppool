@@ -384,7 +384,7 @@ function drawTotalScoreLine(
  * Get color for score point based on step value
  */
 function getScoreColor(step: number): string {
-  if (step < -1) return COLORS.score.error;
+  if (step < -2) return COLORS.score.error;
   if (step < 0) return COLORS.score.warning;
   return COLORS.score.good;
 }
