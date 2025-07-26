@@ -485,7 +485,7 @@ sub post_process {
                 qq[connect-src 'self' www.ntppool.org st.ntppool.org status.ntppool.org 8ll7xvh0qt1p.statuspage.io;],
                 qq[font-src fonts.gstatic.com;],
                 qq[form-action 'self' mailform.ntppool.org checkout.stripe.com;],
-                qq[img-src 'self' $cspdomains *.mapper.ntppool.org;],
+                qq[img-src 'self' data: $cspdomains *.mapper.ntppool.org;],
                 qq[script-src 'self' 'unsafe-eval' 'unsafe-inline' cdn.statuspage.io $cspdomains www.mapper.ntppool.org js.stripe.com;],
                 qq[style-src 'self' fonts.googleapis.com fonts.gstatic.com $cspdomains;],
 
