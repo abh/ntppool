@@ -48,7 +48,7 @@ export const COLORS: ChartColors = {
     totalScore: '#d62728'
   },
   grid: '#e0e0e0',
-  zeroLine: 'black'
+  zeroLine: '#666'
 };
 
 // Threshold values for chart display
@@ -295,7 +295,7 @@ export function sortMonitors<T extends { status: string; type: string; score_ts?
     }
 
     if (a.type !== b.type) {
-      return a.type.localeCompare(b.type);
+      return b.type.localeCompare(a.type); // Descending order: "score" before "monitor"
     }
 
     return (a.score_ts ?? 0) - (b.score_ts ?? 0);

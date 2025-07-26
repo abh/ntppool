@@ -8,7 +8,7 @@ export interface ServerHistoryPoint {
   /** Parsed Date object (added by client) */
   date: Date;
   /** Time offset in seconds */
-  offset: number;
+  offset: number | null;
   /** Score step value */
   step: number;
   /** Server score */

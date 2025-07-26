@@ -46,7 +46,7 @@ export function createServerChart(
   const history: ServerHistoryPoint[] = data.history.map(d => ({
     ...d,
     date: parseTimestamp(d.ts),
-    offset: d.offset != null ? parseFloat(d.offset.toString()) : 0
+    offset: d.offset != null ? parseFloat(d.offset.toString()) : null
   }));
 
   // Calculate offset bounds only from entries with valid offset data (include offset = 0, exclude null)
@@ -265,7 +265,7 @@ function drawGrid(
     .attr('y1', yOffsetScale(0))
     .attr('y2', yOffsetScale(0))
     .attr('stroke', COLORS.zeroLine)
-    .attr('stroke-width', 2);
+    .attr('stroke-width', 1);
 
   // Draw chart border
   g.append('rect')
@@ -294,15 +294,17 @@ function drawDataPoints(
     .data(scoreData)
     .enter().append('circle')
     .attr('class', 'scores monitor-data')
-    .attr('r', 2)
+    .attr('r', 1.5) // Circle radius for score data points
     .attr('cx', d => xScale(d.date))
     .attr('cy', d => yScoreScale(d.score))
     .attr('fill', d => getScoreColor(d.step))
     .on('mouseover', function (_event: MouseEvent, d: ServerHistoryPoint) {
       fadeOtherMonitors(g, d.monitor_id, 0.2);
+      highlightTableCells(d.monitor_id, true);
     })
     .on('mouseout', function () {
       fadeOtherMonitors(g, null, 1);
+      highlightTableCells(null, false);
     });
 
   // Draw offset points (only data with valid offset values)
@@ -310,15 +312,17 @@ function drawDataPoints(
     .data(offsetData)
     .enter().append('circle')
     .attr('class', 'offsets monitor-data')
-    .attr('r', 1.5)
+    .attr('r', 1) // Circle radius for offset data points
     .attr('cx', d => xScale(d.date))
     .attr('cy', d => yOffsetScale(d.offset!))
     .attr('fill', d => getOffsetColor(d.offset!))
     .on('mouseover', function (_event: MouseEvent, d: ServerHistoryPoint) {
       fadeOtherMonitors(g, d.monitor_id, 0.25);
+      highlightTableCells(d.monitor_id, true);
     })
     .on('mouseout', function () {
       fadeOtherMonitors(g, null, 1);
+      highlightTableCells(null, false);
     });
 }
 
@@ -368,7 +372,7 @@ function getOffsetColor(offset: number): string {
 }
 
 /**
- * Create interactive legend table
+ * Create interactive legend with multi-column layout
  */
 function createLegend(
   legendContainer: Element,
@@ -380,94 +384,376 @@ function createLegend(
   htmlContainer.style.width = '50%';
   htmlContainer.style.marginLeft = `${CHART_DEFAULTS.padding.horizontal}px`;
 
-  // Sort monitors
+  // CSS styles are now in /src/styles/_components.scss
+
+  // Sort monitors and group by status
   const sortedMonitors = sortMonitors(monitors);
+  const statusGroups = groupMonitorsByStatus(sortedMonitors);
 
-  // Create table
-  const table = document.createElement('table');
-  table.className = 'table table-hover table-sm small';
-
-  const tbody = document.createElement('tbody');
-  let currentStatus = '';
-
-  sortedMonitors.forEach(monitor => {
-    // Add status header row if status changed
-    if (currentStatus !== monitor.status) {
-      const statusConfig = MONITOR_STATUS[monitor.status];
-      if (statusConfig) {
-        const headerRow = document.createElement('tr');
-        headerRow.className = statusConfig.class;
-
-        const headerCell = document.createElement('th');
-        headerCell.textContent = statusConfig.label;
-        headerRow.appendChild(headerCell);
-
-        const scoreCell = document.createElement('td');
-        scoreCell.textContent = 'Score';
-        headerRow.appendChild(scoreCell);
-
-        tbody.appendChild(headerRow);
-        currentStatus = monitor.status;
-      }
-    }
-
-    // Add monitor row
-    const row = document.createElement('tr');
-    row.dataset['monitorId'] = monitor.id.toString();
-
-    let name = monitor.name;
-    let rowClass = 'table-light';
-    let textClass = '';
-
-    if (monitor.type === 'score') {
-      if (monitor.name === 'recentmedian') {
-        textClass = 'fw-bold';
-        name = 'overall';
-      } else {
-        rowClass = 'table-secondary';
-      }
-      if (monitor.name === 'every') {
-        name = 'legacy';
-      }
-      name += ' score';
-    }
-
-    row.className = rowClass;
-
-    const nameCell = document.createElement('td');
-    nameCell.textContent = name;
-    nameCell.className = textClass;
-    row.appendChild(nameCell);
-
-    const scoreCell = document.createElement('td');
-    scoreCell.textContent = monitor.score.toString();
-    scoreCell.className = textClass;
-    row.appendChild(scoreCell);
-
-    tbody.appendChild(row);
-  });
-
-  table.appendChild(tbody);
-
-  // Add hover interactions
-  const rows = table.querySelectorAll<HTMLTableRowElement>('tr[data-monitor-id]');
-  rows.forEach(row => {
-    row.addEventListener('mouseenter', function () {
-      const monitorId = this.dataset['monitorId'];
-      if (monitorId) {
-        fadeOtherMonitors(chartGroup, parseInt(monitorId, 10), 0.25);
-      }
-    });
-
-    row.addEventListener('mouseleave', function () {
-      fadeOtherMonitors(chartGroup, null, 1);
-    });
-  });
-
-  // Clear and append table to legend container
+  // Clear container
   legendContainer.innerHTML = '';
-  legendContainer.appendChild(table);
+
+  // Create single table with multi-column layout
+  createSingleTableLegend(legendContainer, statusGroups, chartGroup);
 }
+
+/**
+ * Group monitors by status
+ */
+function groupMonitorsByStatus(monitors: Monitor[]): Record<string, Monitor[]> {
+  const groups: Record<string, Monitor[]> = {};
+  monitors.forEach(monitor => {
+    if (!groups[monitor.status]) {
+      groups[monitor.status] = [];
+    }
+    groups[monitor.status]!.push(monitor);
+  });
+  return groups;
+}
+
+/**
+ * Create separate tables for priority and other statuses
+ */
+function createSingleTableLegend(
+  container: Element,
+  statusGroups: Record<string, Monitor[]>,
+  chartGroup: GSelection
+): void {
+  // Process statuses in priority order: Active, Testing first, then others
+  const priorityStatuses = ['active', 'testing'];
+  const sortedStatuses = Object.keys(statusGroups).sort((a, b) => {
+    const aConfig = MONITOR_STATUS[a] ?? { order: 999 };
+    const bConfig = MONITOR_STATUS[b] ?? { order: 999 };
+    return aConfig.order - bConfig.order;
+  });
+
+  // Separate priority and other statuses
+  const priorityGroups: Record<string, Monitor[]> = {};
+  const otherGroups: Record<string, Monitor[]> = {};
+
+  sortedStatuses.forEach(status => {
+    if (priorityStatuses.includes(status) && statusGroups[status]) {
+      priorityGroups[status] = statusGroups[status];
+    } else if (statusGroups[status]) {
+      otherGroups[status] = statusGroups[status];
+    }
+  });
+
+  // Create priority table (Active | Testing) with RTT
+  if (Object.keys(priorityGroups).length > 0) {
+    const priorityTable = createTable('priority-table');
+    const priorityTbody = document.createElement('tbody');
+    createTableSection(priorityTbody, priorityGroups, chartGroup, true);
+    priorityTable.appendChild(priorityTbody);
+    addTableEventListeners(priorityTable, chartGroup);
+    container.appendChild(priorityTable);
+  }
+
+  // Add spacing between tables if both exist
+  if (Object.keys(priorityGroups).length > 0 && Object.keys(otherGroups).length > 0) {
+    const spacer = document.createElement('div');
+    spacer.style.height = '0.75rem';
+    container.appendChild(spacer);
+  }
+
+  // Create other statuses table (3-column layout)
+  if (Object.keys(otherGroups).length > 0) {
+    const otherTable = createTable('other-statuses-table');
+    const otherTbody = document.createElement('tbody');
+    createTableSection(otherTbody, otherGroups, chartGroup, false);
+    otherTable.appendChild(otherTbody);
+    addTableEventListeners(otherTable, chartGroup);
+    container.appendChild(otherTable);
+  }
+}
+
+/**
+ * Create a table element with standard classes
+ */
+function createTable(additionalClass: string): HTMLTableElement {
+  const table = document.createElement('table');
+  table.className = `table table-sm small legend-table ${additionalClass}`;
+  return table;
+}
+
+/**
+ * Add event delegation listeners to a table
+ */
+function addTableEventListeners(table: HTMLTableElement, chartGroup: GSelection): void {
+  table.addEventListener('mouseenter', function(e) {
+    const target = e.target as Element;
+
+    // Check if we're hovering over a monitor cell (has data-monitor-id)
+    if (target instanceof HTMLElement && target.dataset['monitorId']) {
+      const monitorId = parseInt(target.dataset['monitorId'], 10);
+
+      // Find ALL cells in the table with the same monitor ID
+      const monitorCells = table.querySelectorAll(`[data-monitor-id="${monitorId}"]`);
+      monitorCells.forEach(cell => cell.classList.add('monitor-cell-hover'));
+
+      // Fade other monitors in the chart
+      fadeOtherMonitors(chartGroup, monitorId, 0.25);
+    }
+  }, true);
+
+  table.addEventListener('mouseleave', function(e) {
+    const target = e.target as Element;
+
+    // Check if we're leaving a monitor cell
+    if (target instanceof HTMLElement && target.dataset['monitorId']) {
+      // Remove highlight from all monitor cells in the table
+      const allCells = table.querySelectorAll('.monitor-cell-hover');
+      allCells.forEach(cell => cell.classList.remove('monitor-cell-hover'));
+
+      // Reset chart highlighting
+      fadeOtherMonitors(chartGroup, null, 1);
+    }
+  }, true);
+}
+
+
+/**
+ * Create a section of the table with monitors arranged in columns
+ */
+function createTableSection(
+  tbody: HTMLElement,
+  statusGroups: Record<string, Monitor[]>,
+  _chartGroup: GSelection, // Used in nested functions but not directly here
+  isPrioritySection: boolean
+): void {
+  // Get statuses in proper sorted order, not arbitrary Object.keys order
+  const statuses = Object.keys(statusGroups).sort((a, b) => {
+    const aConfig = MONITOR_STATUS[a] ?? { order: 999 };
+    const bConfig = MONITOR_STATUS[b] ?? { order: 999 };
+    return aConfig.order - bConfig.order;
+  });
+
+  if (isPrioritySection) {
+    // Priority section: Active in column 1, Testing in column 2
+    const activeMonitors = statusGroups['active'] || [];
+    const testingMonitors = statusGroups['testing'] || [];
+    const maxRows = Math.max(activeMonitors.length, testingMonitors.length);
+
+    // Add headers
+    if (activeMonitors.length > 0 || testingMonitors.length > 0) {
+      const headerRow = document.createElement('tr');
+
+      // Active header (Name | Score | RTT)
+      const activeHeader = document.createElement('th');
+      activeHeader.className = `status-header ${MONITOR_STATUS['active']?.class || ''}`;
+      activeHeader.textContent = MONITOR_STATUS['active']?.label || 'Active';
+      activeHeader.colSpan = 3;
+      headerRow.appendChild(activeHeader);
+
+      // Gap
+      const gapHeader = document.createElement('th');
+      gapHeader.className = 'column-gap empty-cell';
+      headerRow.appendChild(gapHeader);
+
+      // Testing header (Name | Score | RTT)
+      const testingHeader = document.createElement('th');
+      testingHeader.className = `status-header ${MONITOR_STATUS['testing']?.class || ''}`;
+      testingHeader.textContent = MONITOR_STATUS['testing']?.label || 'Testing';
+      testingHeader.colSpan = 3;
+      headerRow.appendChild(testingHeader);
+
+      tbody.appendChild(headerRow);
+    }
+
+    // Add monitor rows
+    for (let i = 0; i < maxRows; i++) {
+      const row = document.createElement('tr');
+
+      // Column 1: Active monitor (Name | Score | RTT)
+      if (i < activeMonitors.length) {
+        const monitor = activeMonitors[i]!;
+        const monitorRow = createMonitorRow(monitor, true); // true for includeRtt
+        // Extract cells from the created row and add to current row
+        while (monitorRow.firstChild) {
+          row.appendChild(monitorRow.firstChild);
+        }
+      } else {
+        // Empty cells (Name | Score | RTT)
+        row.appendChild(createEmptyCell());
+        row.appendChild(createEmptyCell());
+        row.appendChild(createEmptyCell());
+      }
+
+      // Gap
+      row.appendChild(createEmptyCell('column-gap'));
+
+      // Column 2: Testing monitor (Name | Score | RTT)
+      if (i < testingMonitors.length) {
+        const monitor = testingMonitors[i]!;
+        const monitorRow = createMonitorRow(monitor, true); // true for includeRtt
+        // Extract cells from the created row and add to current row
+        while (monitorRow.firstChild) {
+          row.appendChild(monitorRow.firstChild);
+        }
+      } else {
+        // Empty cells (Name | Score | RTT)
+        row.appendChild(createEmptyCell());
+        row.appendChild(createEmptyCell());
+        row.appendChild(createEmptyCell());
+      }
+
+      tbody.appendChild(row);
+    }
+  } else {
+    // Other statuses section: Process in the order from the original status groups
+    // The statusGroups should already be ordered properly since we separated them
+    // from the sortedStatuses array
+    statuses.forEach(status => {
+      const monitors = statusGroups[status] || [];
+      const statusConfig = MONITOR_STATUS[status];
+
+      if (!statusConfig || monitors.length === 0) return;
+
+      // Add status header spanning all columns
+      // Calculate colspan based on maximum monitors in any row (up to 3)
+      const maxMonitorsInRow = Math.min(monitors.length, 3);
+      const headerColspan = maxMonitorsInRow === 1 ? 2 :
+                           maxMonitorsInRow === 2 ? 5 : // Name|Score|Gap|Name|Score
+                           8; // Name|Score|Gap|Name|Score|Gap|Name|Score
+
+      const headerRow = document.createElement('tr');
+      const headerCell = document.createElement('th');
+      headerCell.className = `status-header ${statusConfig.class}`;
+      headerCell.textContent = statusConfig.label;
+      headerCell.colSpan = headerColspan;
+      headerRow.appendChild(headerCell);
+      tbody.appendChild(headerRow);
+
+      // Add monitors in three-column layout
+      for (let i = 0; i < monitors.length; i += 3) {
+        const row = document.createElement('tr');
+
+        // Column 1: First monitor
+        const monitor1 = monitors[i]!;
+        const monitorRow1 = createMonitorRow(monitor1, false, true); // false for no RTT, true for 3-col
+        while (monitorRow1.firstChild) {
+          row.appendChild(monitorRow1.firstChild);
+        }
+
+        // Gap after first column
+        row.appendChild(createEmptyCell('column-gap'));
+
+        // Column 2: Second monitor (if exists)
+        if (i + 1 < monitors.length) {
+          const monitor2 = monitors[i + 1]!;
+          const monitorRow2 = createMonitorRow(monitor2, false, true);
+          while (monitorRow2.firstChild) {
+            row.appendChild(monitorRow2.firstChild);
+          }
+        } else {
+          // Empty cells if no second monitor
+          row.appendChild(createEmptyCell());
+          row.appendChild(createEmptyCell());
+        }
+
+        // Gap after second column (only if there's a third monitor)
+        if (i + 2 < monitors.length) {
+          row.appendChild(createEmptyCell('column-gap'));
+
+          // Column 3: Third monitor
+          const monitor3 = monitors[i + 2]!;
+          const monitorRow3 = createMonitorRow(monitor3, false, true);
+          while (monitorRow3.firstChild) {
+            row.appendChild(monitorRow3.firstChild);
+          }
+        }
+
+        tbody.appendChild(row);
+      }
+    });
+  }
+}
+
+/**
+ * Create a simple table cell with content and class
+ */
+function createCell(content: string, className: string): HTMLElement {
+  const cell = document.createElement('td');
+  cell.className = className;
+  cell.textContent = content;
+  return cell;
+}
+
+/**
+ * Get display name for a monitor (handles special cases)
+ */
+function getMonitorDisplayName(monitor: Monitor): string {
+  if (monitor.type === 'score') {
+    if (monitor.name === 'recentmedian') {
+      return 'overall';
+    }
+    if (monitor.name === 'every') {
+      return 'legacy';
+    }
+    return `${monitor.name} score`;
+  }
+  return monitor.name;
+}
+
+/**
+ * Create a complete monitor row (no event listeners - handled by delegation)
+ */
+function createMonitorRow(monitor: Monitor, includeRtt: boolean, threeColumn = false): HTMLElement {
+  const row = document.createElement('tr');
+  // Only set row-level monitor ID for single-monitor rows (like priority section)
+  if (!threeColumn) {
+    row.dataset['monitorId'] = monitor.id.toString();
+  }
+
+  const displayName = getMonitorDisplayName(monitor);
+  const nameClass = threeColumn ? 'monitor-name-3col' : 'monitor-name';
+  const scoreClass = threeColumn ? 'monitor-score-3col' : 'monitor-score';
+
+  // Apply special formatting for score monitors
+  let textClass = '';
+  if (monitor.type === 'score' && monitor.name === 'recentmedian') {
+    textClass = ' fw-bold';
+  }
+
+  // Add cells: Name | Score | RTT (if applicable)
+  const nameCell = createCell(displayName, nameClass + textClass);
+  const scoreCell = createCell(monitor.score.toString(), scoreClass + textClass);
+
+  // Add monitor ID to individual cells for precise hover targeting
+  nameCell.dataset['monitorId'] = monitor.id.toString();
+  scoreCell.dataset['monitorId'] = monitor.id.toString();
+
+  row.appendChild(nameCell);
+  row.appendChild(scoreCell);
+
+  if (includeRtt) {
+    let rttContent = '';
+    if ((monitor.status === 'active' || monitor.status === 'testing') && monitor.avg_rtt !== undefined) {
+      rttContent = `${monitor.avg_rtt.toFixed(1)}ms`;
+    }
+    const rttCell = createCell(rttContent, 'monitor-rtt');
+    // Add inline styles as fallback to ensure styling works
+    rttCell.style.fontSize = '0.7rem';
+    rttCell.style.color = '#495057';
+    rttCell.style.fontWeight = 'normal';
+    // Add monitor ID to RTT cell for precise hover targeting
+    rttCell.dataset['monitorId'] = monitor.id.toString();
+    row.appendChild(rttCell);
+  }
+
+  return row;
+}
+
+
+/**
+ * Create an empty table cell
+ */
+function createEmptyCell(className?: string): HTMLElement {
+  const cell = document.createElement('td');
+  cell.className = `empty-cell ${className || ''}`;
+  return cell;
+}
+
 
 /**
  * Fade monitors except the specified one
@@ -484,6 +770,21 @@ function fadeOtherMonitors(
       if (monitorId === null) return 1;
       return d.monitor_id === monitorId ? 1 : opacity;
     });
+}
+
+/**
+ * Highlight table cells for the specified monitor
+ */
+function highlightTableCells(monitorId: number | null, highlight: boolean): void {
+  if (highlight && monitorId !== null) {
+    // Find all table cells with matching monitor ID
+    const monitorCells = document.querySelectorAll(`[data-monitor-id="${monitorId}"]`);
+    monitorCells.forEach(cell => cell.classList.add('monitor-cell-hover'));
+  } else {
+    // Remove highlight from all table cells
+    const allHighlighted = document.querySelectorAll('.monitor-cell-hover');
+    allHighlighted.forEach(cell => cell.classList.remove('monitor-cell-hover'));
+  }
 }
 
 // Export for backward compatibility with global function

@@ -694,3 +694,73 @@ div.product-header {
 div.product-group .btn {
     margin: 3px;
 }
+
+// Server Chart Legend Styles
+.legend-table {
+    width: 100%;
+    margin-bottom: 0;
+
+    td {
+        padding: 0.05rem 0.3rem;
+        border: none;
+        font-size: 0.8rem;
+        vertical-align: top;
+    }
+
+    th {
+        padding: 0.2rem 0.5rem;
+        border: none;
+        font-size: 0.85rem;
+        font-weight: 600;
+        height: 1.8rem;
+    }
+
+    .monitor-name {
+        width: 40%;
+    }
+
+    .monitor-score {
+        width: 8%;
+        text-align: right;
+    }
+
+    tbody tr td.monitor-rtt {
+        width: 8% !important;
+        text-align: left !important;
+        font-size: 0.7rem !important;
+        color: #495057 !important;
+        padding-left: 0.2rem !important;
+        font-weight: normal !important;
+    }
+
+    .column-gap {
+        width: 4%;
+    }
+
+    .monitor-name-3col {
+        width: 30%;
+    }
+
+    .monitor-score-3col {
+        width: 10%;
+        text-align: right;
+    }
+
+    .status-header {
+        text-align: left;
+    }
+
+    .empty-cell {
+        padding: 0;
+        border: none;
+    }
+
+    tbody tr:hover td,
+    tbody tr:hover th {
+        background-color: transparent !important;
+    }
+
+    &.table tbody tr td.monitor-cell-hover {
+        --bs-table-accent-bg: rgba(0, 0, 0, 0.075) !important;
+    }
+}
