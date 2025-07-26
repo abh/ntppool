@@ -163,6 +163,9 @@ sub init {
     $self->tpl_param('pool_domain' => Combust::Config->new->site->{ntppool}->{pool_domain}
           || 'pool.ntp.org');
 
+    # Add default surrogate key for environment
+    $self->surrogate_key(env => $self->deployment_mode);
+
     $span->end();
     return OK;
 }
@@ -465,6 +468,29 @@ sub plausible_props {
     return encode_json($self->{_plausible_props});
 }
 
+sub surrogate_key {
+    my $self = shift;
+
+    # If called without parameters, return space-separated key=value pairs
+    unless (@_) {
+        return '' unless $self->{_surrogate_keys} && %{$self->{_surrogate_keys}};
+        return join(' ', map { "$_=$self->{_surrogate_keys}->{$_}" } sort keys %{$self->{_surrogate_keys}});
+    }
+
+    # Accept key=value pairs
+    my %pairs = @_;
+    $self->{_surrogate_keys} ||= {};
+
+    for my $key (keys %pairs) {
+        my $value = $pairs{$key};
+        # Basic validation - keys and values should not contain spaces or special chars
+        next if $key =~ /[=\s]/ || $value =~ /[=\s]/;
+        $self->{_surrogate_keys}->{$key} = $value;
+    }
+
+    return;
+}
+
 sub post_process {
     my $self = shift;
 
@@ -510,6 +536,10 @@ sub post_process {
     if (my $cache = $self->cache_control) {
         my $req = $self->request;
         $req->header_out('Cache-Control', $cache);
+    }
+
+    if (my $surrogate_keys = $self->surrogate_key) {
+        $self->request->header_out('Surrogate-Key', $surrogate_keys);
     }
 
     return OK;
