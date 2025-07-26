@@ -39,6 +39,7 @@ export function createServerChart(
     responsive: true,
     width: undefined,
     height: undefined,
+    showOnlyActiveTesting: false,
     ...options
   } as Required<ServerChartOptions>;
 
@@ -145,7 +146,7 @@ export function createServerChart(
 
   // Create legend if specified
   if (config.legend) {
-    createLegend(config.legend, data.monitors, g);
+    createLegend(config.legend, data.monitors, g, config.showOnlyActiveTesting);
   }
 }
 
@@ -377,7 +378,8 @@ function getOffsetColor(offset: number): string {
 function createLegend(
   legendContainer: Element,
   monitors: Monitor[],
-  chartGroup: GSelection
+  chartGroup: GSelection,
+  showOnlyActiveTesting = false
 ): void {
   // Apply styles to container
   const htmlContainer = legendContainer as HTMLElement;
@@ -386,8 +388,16 @@ function createLegend(
 
   // CSS styles are now in /src/styles/_components.scss
 
+  // Filter monitors if showOnlyActiveTesting is enabled
+  let filteredMonitors = monitors;
+  if (showOnlyActiveTesting) {
+    filteredMonitors = monitors.filter(monitor =>
+      monitor.status === 'active' || monitor.status === 'testing'
+    );
+  }
+
   // Sort monitors and group by status
-  const sortedMonitors = sortMonitors(monitors);
+  const sortedMonitors = sortMonitors(filteredMonitors);
   const statusGroups = groupMonitorsByStatus(sortedMonitors);
 
   // Clear container

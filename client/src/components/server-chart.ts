@@ -15,7 +15,7 @@ export class ServerChartComponent extends BaseChartComponent {
   private legendContainer?: HTMLDivElement;
 
   static override get observedAttributes(): string[] {
-    return [...super.observedAttributes, 'server-ip', 'show-legend'];
+    return [...super.observedAttributes, 'server-ip', 'show-legend', 'show-legend-only'];
   }
 
   constructor() {
@@ -63,6 +63,14 @@ export class ServerChartComponent extends BaseChartComponent {
         this.render();
       }
     }
+
+    // Handle legend filter changes
+    if (name === 'show-legend-only' && oldValue !== newValue) {
+      // Re-render if we have data and legend is visible
+      if (this.data && this.shouldShowLegend()) {
+        this.render();
+      }
+    }
   }
 
   /**
@@ -91,6 +99,20 @@ export class ServerChartComponent extends BaseChartComponent {
    */
   setShowLegend(show: boolean): void {
     this.setAttribute('show-legend', show.toString());
+  }
+
+  /**
+   * Check if legend should show only active and testing monitors
+   */
+  shouldShowLegendOnly(): boolean {
+    return this.getAttribute('show-legend-only') === 'true';
+  }
+
+  /**
+   * Toggle legend filter to show only active and testing monitors
+   */
+  setShowLegendOnly(show: boolean): void {
+    this.setAttribute('show-legend-only', show.toString());
   }
 
   // Protected methods (implementation of abstract methods)
@@ -147,7 +169,8 @@ export class ServerChartComponent extends BaseChartComponent {
         showTooltips: true,
         responsive: true,
         width: this.options.width,
-        height: this.options.height
+        height: this.options.height,
+        showOnlyActiveTesting: this.shouldShowLegendOnly()
       });
 
       // Update container dimensions

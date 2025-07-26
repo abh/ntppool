@@ -80,6 +80,7 @@ export interface ServerChartOptions {
   responsive?: boolean;
   width?: number;
   height?: number;
+  showOnlyActiveTesting?: boolean;
 }
 
 export interface ZoneChartOptions {
