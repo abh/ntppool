@@ -24,14 +24,16 @@ export interface ChartComponentOptions {
  * Abstract base class for chart web components
  */
 export abstract class BaseChartComponent extends HTMLElement {
-  protected shadow?: ShadowRoot;
   protected chartContainer: HTMLDivElement;
-  protected styleElement?: HTMLStyleElement;
   protected isLoading = false;
   protected hasError = false;
   protected data: any = null;
   protected resizeObserver: ResizeObserver | undefined;
-  protected useShadowDOM: boolean;
+
+  // Shadow DOM infrastructure kept as stubs for future reusable component use
+  protected shadow?: ShadowRoot; // Unused - kept for future Shadow DOM implementation
+  protected styleElement?: HTMLStyleElement; // Unused - kept for future Shadow DOM implementation
+  protected useShadowDOM: boolean; // Always false in current usage
 
   // Default options (dimensions set by HTML attributes)
   protected options: Required<ChartComponentOptions> = {
@@ -45,26 +47,14 @@ export abstract class BaseChartComponent extends HTMLElement {
   constructor() {
     super();
 
-    // Determine if we should use shadow DOM or inherit styles
-    this.useShadowDOM = !this.shouldInheritStyles();
+    // Currently always inherit styles from page CSS (inherit-styles="true" in all templates)
+    // Shadow DOM infrastructure kept as minimal stubs for future reusable component use
+    this.useShadowDOM = false; // Always false in current usage
 
-    // Create base structure
+    // Create base structure - always use direct DOM attachment
     this.chartContainer = document.createElement('div');
     this.chartContainer.className = 'chart-container';
-
-    if (this.useShadowDOM) {
-      // Create shadow DOM for encapsulation
-      this.shadow = this.attachShadow({ mode: 'open' });
-
-      this.styleElement = document.createElement('style');
-      this.styleElement.textContent = this.getBaseStyles();
-
-      this.shadow.appendChild(this.styleElement);
-      this.shadow.appendChild(this.chartContainer);
-    } else {
-      // No shadow DOM - styles will be inherited from page
-      this.appendChild(this.chartContainer);
-    }
+    this.appendChild(this.chartContainer);
 
     // Set up resize handling
     this.setupResizeObserver();
@@ -108,11 +98,10 @@ export abstract class BaseChartComponent extends HTMLElement {
         this.safeRender();
       }
 
-      // Update styles if inherit-styles changes
+      // Inherit-styles attribute kept for future Shadow DOM support
       if (name === 'inherit-styles') {
-        if (this.useShadowDOM) {
-          this.updateStyles();
-        }
+        // Currently always inherit styles, attribute changes have no effect
+        // This branch kept as stub for future Shadow DOM implementation
       }
     }
   }
@@ -173,9 +162,10 @@ export abstract class BaseChartComponent extends HTMLElement {
 
   /**
    * Check if styles should be inherited from the page
+   * Currently always true, but kept for future reusable component use
    */
   shouldInheritStyles(): boolean {
-    return this.getAttribute('inherit-styles') === 'true';
+    return this.getAttribute('inherit-styles') !== 'false'; // Default to true
   }
 
   // Abstract methods to be implemented by subclasses
@@ -223,10 +213,6 @@ export abstract class BaseChartComponent extends HTMLElement {
     }));
   }
 
-  /**
-   * Get component-specific CSS styles
-   */
-  protected abstract getComponentStyles(): string;
 
   // Protected helper methods
 
@@ -324,138 +310,31 @@ export abstract class BaseChartComponent extends HTMLElement {
 
   /**
    * Get base CSS styles for all chart components
+   * Currently unused - stub for future Shadow DOM support
    */
   protected getBaseStyles(): string {
-    if (!this.useShadowDOM) {
-      // When not using shadow DOM, return minimal styles
-      // Most styling will be inherited from the page
-      return `
-        .chart-container {
-          width: 100%;
-          height: 100%;
-          position: relative;
-          min-height: 200px;
-        }
-
-        .chart-loading {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 2rem;
-          color: #666;
-        }
-
-        .chart-loading .spinner {
-          width: 1rem;
-          height: 1rem;
-          border: 2px solid #e5e7eb;
-          border-top: 2px solid #3b82f6;
-          border-radius: 50%;
-          animation: chart-spinner-spin 1s linear infinite;
-          margin-right: 0.5rem;
-        }
-
-        @keyframes chart-spinner-spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-
-        ${this.getComponentStyles()}
-      `;
-    }
-
-    // Shadow DOM styles
-    return `
-      :host {
-        display: block;
-        width: 100%;
-        min-height: 200px;
-        position: relative;
-        font-family: system-ui, -apple-system, sans-serif;
-      }
-
-      .chart-container {
-        width: 100%;
-        height: 100%;
-        position: relative;
-      }
-
-      .chart-loading {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 2rem;
-        color: #666;
-      }
-
-      .chart-loading .spinner {
-        width: 1rem;
-        height: 1rem;
-        border: 2px solid #e5e7eb;
-        border-top: 2px solid #3b82f6;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-        margin-right: 0.5rem;
-      }
-
-      .alert {
-        padding: 0.75rem 1rem;
-        border: 1px solid transparent;
-        border-radius: 0.375rem;
-        margin: 1rem 0;
-      }
-
-      .alert-warning {
-        color: #92400e;
-        background-color: #fef3c7;
-        border-color: #f59e0b;
-      }
-
-      @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-
-      /* Responsive behavior */
-      @container (max-width: 480px) {
-        :host {
-          min-height: 180px;
-        }
-      }
-
-      ${this.getInheritedStyles()}
-      ${this.getComponentStyles()}
-    `;
+    // All styles are inherited from page CSS (see _components.scss)
+    // This method kept as stub for future Shadow DOM implementation
+    return '';
   }
 
   /**
    * Update styles when component styles change
+   * Currently unused - stub for future Shadow DOM support
    */
   protected updateStyles(): void {
-    if (this.useShadowDOM && this.styleElement) {
-      this.styleElement.textContent = this.getBaseStyles();
-    }
+    // All styles are inherited from page CSS
+    // This method kept as stub for future Shadow DOM implementation
   }
 
   /**
    * Extract and return inherited page styles when inherit-styles="true"
+   * Currently unused - stub for future Shadow DOM support
    */
   protected getInheritedStyles(): string {
-    // When not using shadow DOM, styles are inherited naturally
-    // Only return styles when using shadow DOM with inheritance
-    if (!this.useShadowDOM || !this.shouldInheritStyles()) {
-      return '';
-    }
-
-    // Simplified inheritance - just basic fallback styles for shadow DOM
-    return `
-      /* Basic inherited styles for shadow DOM with inheritance */
-      :host {
-        font-size: inherit;
-        font-family: inherit;
-        color: inherit;
-      }
-    `;
+    // All styles are inherited from page CSS
+    // This method kept as stub for future Shadow DOM implementation
+    return '';
   }
 
 }

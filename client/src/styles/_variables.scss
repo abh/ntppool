@@ -12,6 +12,9 @@ $font-weight-base: 400;
 $primary: #3885B4;
 $link-color: #3885B4;
 
+// Remove link underlines globally
+$link-decoration: none;
+
 // Component-specific variables
 $nav-link-color: #3885B4;
 

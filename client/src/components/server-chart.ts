@@ -142,23 +142,6 @@ export class ServerChartComponent extends BaseChartComponent {
     this.clearChart();
 
     try {
-      console.log('🎯 Web Component Render Debug v2.1:', {
-        serverIp: this.getServerIp(),
-        options: this.options,
-        chartContainer: this.chartContainer,
-        containerDimensions: {
-          offsetWidth: this.chartContainer.offsetWidth,
-          offsetHeight: this.chartContainer.offsetHeight,
-          clientWidth: this.chartContainer.clientWidth,
-          clientHeight: this.chartContainer.clientHeight
-        },
-        webComponentAttributes: {
-          width: this.getAttribute('width'),
-          height: this.getAttribute('height'),
-          serverIp: this.getAttribute('server-ip'),
-          showLegend: this.getAttribute('show-legend')
-        }
-      });
 
       // Get legend element for the chart function
       const legendElement = this.shouldShowLegend() && this.legendContainer ? this.legendContainer : null;
@@ -183,92 +166,6 @@ export class ServerChartComponent extends BaseChartComponent {
     }
   }
 
-  protected getComponentStyles(): string {
-    const baseStyles = `
-      /* Server chart specific styles */
-      .chart-container {
-        background: white;
-        border-radius: 4px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      }
-
-      .legend-container {
-        margin-top: 1rem;
-        padding: 0.75rem;
-        background: #f9fafb;
-        border-radius: 4px;
-        border: 1px solid #e5e7eb;
-      }
-
-      .legend-container table {
-        width: 100%;
-        font-size: 0.875rem;
-      }
-
-      .legend-container th,
-      .legend-container td {
-        padding: 0.25rem 0.5rem;
-        text-align: left;
-      }
-
-      .legend-container tr:hover {
-        background-color: rgba(59, 130, 246, 0.05);
-      }
-
-      /* SVG chart styling */
-      .chart-container svg {
-        width: 100%;
-        height: auto;
-        max-width: 100%;
-      }
-
-      /* Responsive adjustments */
-      @container (max-width: 600px) {
-        .legend-container {
-          margin-top: 0.5rem;
-          padding: 0.5rem;
-        }
-
-        .legend-container table {
-          font-size: 0.75rem;
-        }
-      }
-    `;
-
-    const fallbackStyles = this.useShadowDOM && !this.shouldInheritStyles() ? `
-      /* Fallback styles when using shadow DOM without inheritance */
-      .legend-container table {
-        border-collapse: collapse;
-      }
-
-      .legend-container th,
-      .legend-container td {
-        border-bottom: 1px solid #e5e7eb;
-      }
-
-      .legend-container .table-success {
-        background-color: rgba(16, 185, 129, 0.1);
-      }
-
-      .legend-container .table-info {
-        background-color: rgba(59, 130, 246, 0.1);
-      }
-
-      .legend-container .table-secondary {
-        background-color: rgba(107, 114, 128, 0.1);
-      }
-
-      .legend-container .table-danger {
-        background-color: rgba(239, 68, 68, 0.1);
-      }
-
-      .legend-container .fw-bold {
-        font-weight: 600;
-      }
-    ` : '';
-
-    return baseStyles + fallbackStyles;
-  }
 
   // Private helper methods
 
@@ -278,20 +175,13 @@ export class ServerChartComponent extends BaseChartComponent {
     this.legendContainer = document.createElement('div');
     this.legendContainer.className = 'legend-container';
 
-    if (this.useShadowDOM && this.shadow) {
-      this.shadow.appendChild(this.legendContainer);
-    } else {
-      this.appendChild(this.legendContainer);
-    }
+    // Always use direct DOM attachment (inherit-styles="true" in all templates)
+    this.appendChild(this.legendContainer);
   }
 
   private removeLegendContainer(): void {
     if (this.legendContainer) {
-      if (this.useShadowDOM && this.shadow) {
-        this.shadow.removeChild(this.legendContainer);
-      } else {
-        this.removeChild(this.legendContainer);
-      }
+      this.removeChild(this.legendContainer);
       delete this.legendContainer;
     }
   }
@@ -303,34 +193,6 @@ export class ServerChartComponent extends BaseChartComponent {
       const totalWidth = this.options.width + (45 * 2);   // Chart width + horizontal padding
       const totalHeight = this.options.height + (19 * 2); // Chart height + vertical padding
 
-      console.log('🖼️ Web Component SVG Update Debug:', {
-        options: this.options,
-        totalWidth,
-        totalHeight,
-        currentSvgAttributes: {
-          width: svg.getAttribute('width'),
-          height: svg.getAttribute('height'),
-          viewBox: svg.getAttribute('viewBox'),
-          styleWidth: svg.style.width,
-          styleHeight: svg.style.height
-        },
-        containerDimensions: {
-          offsetWidth: this.chartContainer.offsetWidth,
-          offsetHeight: this.chartContainer.offsetHeight
-        },
-        webComponentDimensions: {
-          offsetWidth: this.offsetWidth,
-          offsetHeight: this.offsetHeight,
-          clientWidth: this.clientWidth,
-          clientHeight: this.clientHeight,
-          scrollWidth: this.scrollWidth,
-          scrollHeight: this.scrollHeight
-        },
-        computedStyles: {
-          webComponent: window.getComputedStyle(this),
-          chartContainer: window.getComputedStyle(this.chartContainer)
-        }
-      });
 
       // Set specific dimensions to avoid scaling issues
       svg.setAttribute('width', totalWidth.toString());
@@ -342,15 +204,6 @@ export class ServerChartComponent extends BaseChartComponent {
       svg.setAttribute('width', totalWidth.toString());
       svg.setAttribute('height', totalHeight.toString());
 
-      console.log('🖼️ After SVG Update:', {
-        finalSvgAttributes: {
-          width: svg.getAttribute('width'),
-          height: svg.getAttribute('height'),
-          viewBox: svg.getAttribute('viewBox'),
-          styleWidth: svg.style.width,
-          styleHeight: svg.style.height
-        }
-      });
     }
   }
 }

@@ -811,3 +811,204 @@ div.product-group .btn {
     width: var(--chart-width, 100%);
     height: var(--chart-height, auto);
 }
+
+// Chart Web Component Styles (moved from TypeScript files)
+.chart-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    min-height: 200px;
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+    svg {
+        width: 100%;
+        height: auto;
+        max-width: 100%;
+
+        .line {
+            fill: none;
+            stroke-width: 2;
+
+            &.registered_count {
+                stroke: #1f77b4;
+            }
+
+            &.active_count {
+                stroke: #2ca02c;
+            }
+
+            &.inactive_count {
+                stroke: #ff7f0e;
+            }
+
+            &.v6 {
+                stroke-dasharray: 5,5;
+            }
+        }
+
+        .legend {
+            font-size: 12px;
+
+            .legend-item:hover {
+                opacity: 0.8;
+            }
+        }
+
+        .x-axis line,
+        .y-axis line {
+            stroke: #e0e0e0;
+            stroke-dasharray: 2,2;
+        }
+
+        .x-axis text,
+        .y-axis text {
+            fill: #6b7280;
+            font-size: 12px;
+        }
+    }
+}
+
+.chart-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    color: #666;
+
+    .spinner {
+        width: 1rem;
+        height: 1rem;
+        border: 2px solid #e5e7eb;
+        border-top: 2px solid #3b82f6;
+        border-radius: 50%;
+        animation: chart-spinner-spin 1s linear infinite;
+        margin-right: 0.5rem;
+    }
+}
+
+@keyframes chart-spinner-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+// Zone Chart Specific Styles
+.zone-info {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    color: #6b7280;
+    border: 1px solid #e5e7eb;
+    pointer-events: none;
+}
+
+.ip-version-toggle {
+    margin-top: 0.5rem;
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+
+    .version-button {
+        padding: 0.25rem 0.75rem;
+        border: 1px solid #d1d5db;
+        background: white;
+        border-radius: 4px;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &:hover {
+            background: #f3f4f6;
+        }
+
+        &.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+    }
+}
+
+// Server Chart Legend Container
+.legend-container {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: #f9fafb;
+    border-radius: 4px;
+    border: 1px solid #e5e7eb;
+
+    table {
+        width: 100%;
+        font-size: 0.875rem;
+        border-collapse: collapse;
+
+        th,
+        td {
+            padding: 0.25rem 0.5rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        tr:hover {
+            background-color: rgba(59, 130, 246, 0.05);
+        }
+
+        .table-success {
+            background-color: rgba(16, 185, 129, 0.1);
+        }
+
+        .table-info {
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+
+        .table-secondary {
+            background-color: rgba(107, 114, 128, 0.1);
+        }
+
+        .table-danger {
+            background-color: rgba(239, 68, 68, 0.1);
+        }
+
+        .fw-bold {
+            font-weight: 600;
+        }
+    }
+}
+
+// Chart responsive adjustments
+@container (max-width: 480px) {
+    .chart-container {
+        min-height: 180px;
+    }
+}
+
+@container (max-width: 600px) {
+    .zone-info {
+        position: static;
+        margin-bottom: 0.5rem;
+        text-align: center;
+    }
+
+    .ip-version-toggle {
+        margin-top: 0.25rem;
+
+        .version-button {
+            font-size: 0.75rem;
+            padding: 0.1875rem 0.5rem;
+        }
+    }
+
+    .legend-container {
+        margin-top: 0.5rem;
+        padding: 0.5rem;
+
+        table {
+            font-size: 0.75rem;
+        }
+    }
+}
