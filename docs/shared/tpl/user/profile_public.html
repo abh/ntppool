@@ -42,8 +42,7 @@ Zones: [% FOR zone = server.zones_display %] <a href="[% zone.url %]">[% zone.na
   <br>
 </noscript>
 
-<div class="graph" data-server-ip="[% server.ip %]" data-width="480" data-height="100"></div>
-<div class="graph-legend"></div>
+<ntp-server-chart server-ip="[% server.ip %]" show-legend="true" width="500" height="140" inherit-styles="true"></ntp-server-chart>
 
 </div>
 [% END %]
