@@ -172,7 +172,7 @@ function drawGrid(
   const domain = xScale.domain();
   const timeRange = (domain[0] && domain[1]) ? domain[1].getTime() - domain[0].getTime() : 24 * 60 * 60 * 1000;
   const oneDay = 24 * 60 * 60 * 1000;
-  const xTicks = timeRange <= oneDay ? 8 : 6; // Fewer ticks for longer ranges
+  const xTicks = timeRange <= oneDay ? 7 : 5; // Fewer ticks for longer ranges
 
   const xAxisGroup = g.selectAll<SVGGElement, Date>('g.x-axis')
     .data(xScale.ticks(xTicks))
