@@ -339,7 +339,7 @@ export function initializeGraphExplanation(): void {
     e.preventDefault();
     const box = querySelector('#graph_explanation_box');
     if (box) {
-      (box as HTMLElement).style.display = 'block';
+      (box as HTMLElement).classList.add('tooltip-box-visible');
     }
     // Navigate to fragment
     window.location.hash = 'graph_explanation';

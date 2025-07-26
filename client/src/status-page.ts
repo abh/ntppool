@@ -61,7 +61,7 @@ function updateStatusIndicator(statusData: StatusPageResponse): void {
 function hideStatusIndicator(): void {
   const statusLink = document.querySelector('a[href="https://status.ntppool.org/"]') as HTMLElement;
   if (statusLink) {
-    statusLink.style.display = 'none';
+    statusLink.classList.add('status-link-hidden');
   }
 }
 

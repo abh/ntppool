@@ -291,8 +291,8 @@ export class ZoneChartComponent extends BaseChartComponent {
       });
 
       // Use fixed dimensions from HTML attributes instead of responsive 100%
-      svg.style.width = `${this.options.width}px`;
-      svg.style.height = `${this.options.height}px`;
+      svg.setAttribute('width', this.options.width.toString());
+      svg.setAttribute('height', this.options.height.toString());
       svg.setAttribute('viewBox', `0 0 ${this.options.width} ${this.options.height}`);
       svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
 

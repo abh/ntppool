@@ -764,3 +764,50 @@ div.product-group .btn {
         --bs-table-accent-bg: rgba(0, 0, 0, 0.075) !important;
     }
 }
+
+// Chart container styles to avoid inline CSS
+.legend-container {
+    width: 50%;
+
+    // Common padding values for chart containers
+    &.padding-20 { margin-left: 20px; }
+    &.padding-30 { margin-left: 30px; }
+    &.padding-40 { margin-left: 40px; }
+    &.padding-50 { margin-left: 50px; }
+    &.padding-60 { margin-left: 60px; }
+    &.padding-70 { margin-left: 70px; }
+    &.padding-80 { margin-left: 80px; }
+    &.padding-90 { margin-left: 90px; }
+    &.padding-100 { margin-left: 100px; }
+}
+
+.legend-spacer {
+    height: 0.75rem;
+}
+
+.graph-desc-visible {
+    display: block;
+}
+
+// RTT cell fallback styles (for CSP compliance)
+.monitor-rtt-fallback {
+    font-size: 0.7rem;
+    color: #495057;
+    font-weight: normal;
+}
+
+// Chart status link hidden
+.status-link-hidden {
+    display: none;
+}
+
+// Chart tooltip box visible
+.tooltip-box-visible {
+    display: block;
+}
+
+// SVG dimension utilities (CSP compliant)
+.chart-svg {
+    width: var(--chart-width, 100%);
+    height: var(--chart-height, auto);
+}

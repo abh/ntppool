@@ -61,7 +61,7 @@ export function createServerChart(
 
   // Show graph description if element exists
   const graphDesc = document.querySelector('.graph_desc') as HTMLElement | null;
-  if (graphDesc) graphDesc.style.display = 'block';
+  if (graphDesc) graphDesc.classList.add('graph-desc-visible');
 
   // Get dimensions from HTML attributes (via options) or container
   const dimensions = getElementDimensions(container, options);
@@ -373,6 +373,16 @@ function getOffsetColor(offset: number): string {
 }
 
 /**
+ * Get the appropriate padding CSS class based on pixel value
+ */
+function getPaddingClass(paddingValue: number): string {
+  // Round to nearest 10 and clamp to available classes
+  const rounded = Math.round(paddingValue / 10) * 10;
+  const clamped = Math.max(20, Math.min(100, rounded));
+  return `padding-${clamped}`;
+}
+
+/**
  * Create interactive legend with multi-column layout
  */
 function createLegend(
@@ -383,8 +393,8 @@ function createLegend(
 ): void {
   // Apply styles to container
   const htmlContainer = legendContainer as HTMLElement;
-  htmlContainer.style.width = '50%';
-  htmlContainer.style.marginLeft = `${CHART_DEFAULTS.padding.horizontal}px`;
+  htmlContainer.classList.add('legend-container');
+  htmlContainer.classList.add(getPaddingClass(CHART_DEFAULTS.padding.horizontal));
 
   // CSS styles are now in /src/styles/_components.scss
 
@@ -462,7 +472,7 @@ function createSingleTableLegend(
   // Add spacing between tables if both exist
   if (Object.keys(priorityGroups).length > 0 && Object.keys(otherGroups).length > 0) {
     const spacer = document.createElement('div');
-    spacer.style.height = '0.75rem';
+    spacer.classList.add('legend-spacer');
     container.appendChild(spacer);
   }
 
@@ -741,11 +751,7 @@ function createMonitorRow(monitor: Monitor, includeRtt: boolean, threeColumn = f
     if ((monitor.status === 'active' || monitor.status === 'testing') && monitor.avg_rtt !== undefined) {
       rttContent = `${monitor.avg_rtt.toFixed(1)}ms`;
     }
-    const rttCell = createCell(rttContent, 'monitor-rtt');
-    // Add inline styles as fallback to ensure styling works
-    rttCell.style.fontSize = '0.7rem';
-    rttCell.style.color = '#495057';
-    rttCell.style.fontWeight = 'normal';
+    const rttCell = createCell(rttContent, 'monitor-rtt monitor-rtt-fallback');
     // Add monitor ID to RTT cell for precise hover targeting
     rttCell.dataset['monitorId'] = monitor.id.toString();
     row.appendChild(rttCell);

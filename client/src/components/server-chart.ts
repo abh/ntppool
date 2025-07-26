@@ -339,8 +339,8 @@ export class ServerChartComponent extends BaseChartComponent {
       svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
 
       // Set CSS dimensions to match exactly
-      svg.style.width = `${totalWidth}px`;
-      svg.style.height = `${totalHeight}px`;
+      svg.setAttribute('width', totalWidth.toString());
+      svg.setAttribute('height', totalHeight.toString());
 
       console.log('🖼️ After SVG Update:', {
         finalSvgAttributes: {
