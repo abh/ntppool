@@ -13,7 +13,8 @@ import {
   createSvgContainer,
   addAccessibilityLabels,
   MONITOR_STATUS,
-  sortMonitors
+  sortMonitors,
+  clearContainer
 } from '@/utils/chart-utils.js';
 import type {
   ServerScoreHistoryResponse,
@@ -131,10 +132,13 @@ export function createServerChart(
     `Time series chart showing NTP server offset and score measurements over time`
   );
 
+  // Pre-process chart data for efficient rendering
+  const processedData = processChartData(history);
+
   // Draw chart elements
   drawGrid(g, xScale, yOffsetScale, yScoreScale, innerWidth, innerHeight, yOffsetMax, yOffsetMin);
-  drawDataPoints(g, history, xScale, yOffsetScale, yScoreScale);
-  drawTotalScoreLine(g, history, xScale, yScoreScale);
+  drawDataPoints(g, processedData, xScale, yOffsetScale, yScoreScale);
+  drawTotalScoreLine(g, processedData, xScale, yScoreScale);
 
   // Add chart title
   g.append('text')
@@ -277,22 +281,47 @@ function drawGrid(
 }
 
 /**
+ * Pre-process chart data for efficient rendering
+ */
+interface ProcessedChartData {
+  scorePoints: ServerHistoryPoint[];
+  offsetPoints: ServerHistoryPoint[];
+  totalScorePoints: ServerHistoryPoint[];
+}
+
+function processChartData(history: ServerHistoryPoint[]): ProcessedChartData {
+  const scorePoints: ServerHistoryPoint[] = [];
+  const offsetPoints: ServerHistoryPoint[] = [];
+  const totalScorePoints: ServerHistoryPoint[] = [];
+
+  for (const point of history) {
+    if (point.monitor_id === null) {
+      totalScorePoints.push(point);
+    } else {
+      scorePoints.push(point);
+      if (point.offset != null) {
+        offsetPoints.push(point);
+      }
+    }
+  }
+
+  return { scorePoints, offsetPoints, totalScorePoints };
+}
+
+/**
  * Draw score and offset data points
  */
 function drawDataPoints(
   g: GSelection,
-  history: ServerHistoryPoint[],
+  processedData: ProcessedChartData,
   xScale: TimeScale,
   yOffsetScale: PowerScale,
   yScoreScale: PowerScale
 ): void {
-  // Filter data separately for scores and offsets
-  const scoreData = history.filter(d => d.monitor_id !== null);
-  const offsetData = history.filter(d => d.monitor_id !== null && d.offset != null);
 
   // Draw score points (all monitor data, regardless of offset)
   g.selectAll<SVGCircleElement, ServerHistoryPoint>('circle.scores')
-    .data(scoreData)
+    .data(processedData.scorePoints)
     .enter().append('circle')
     .attr('class', 'scores monitor-data')
     .attr('r', 1.5) // Circle radius for score data points
@@ -310,7 +339,7 @@ function drawDataPoints(
 
   // Draw offset points (only data with valid offset values)
   g.selectAll<SVGCircleElement, ServerHistoryPoint>('circle.offsets')
-    .data(offsetData)
+    .data(processedData.offsetPoints)
     .enter().append('circle')
     .attr('class', 'offsets monitor-data')
     .attr('r', 1) // Circle radius for offset data points
@@ -332,15 +361,13 @@ function drawDataPoints(
  */
 function drawTotalScoreLine(
   g: GSelection,
-  history: ServerHistoryPoint[],
+  processedData: ProcessedChartData,
   xScale: TimeScale,
   yScoreScale: PowerScale
 ): void {
-  const totalScoreData = history.filter(d => d.monitor_id === null);
-
-  if (totalScoreData.length > 0) {
+  if (processedData.totalScorePoints.length > 0) {
     g.append('path')
-      .datum(totalScoreData)
+      .datum(processedData.totalScorePoints)
       .attr('class', 'line total-score')
       .attr('fill', 'none')
       .attr('stroke', COLORS.lines.totalScore)
@@ -411,7 +438,7 @@ function createLegend(
   const statusGroups = groupMonitorsByStatus(sortedMonitors);
 
   // Clear container
-  legendContainer.innerHTML = '';
+  clearContainer(legendContainer);
 
   // Create single table with multi-column layout
   createSingleTableLegend(legendContainer, statusGroups, chartGroup);

@@ -30,7 +30,7 @@ export abstract class BaseChartComponent extends HTMLElement {
   protected isLoading = false;
   protected hasError = false;
   protected data: any = null;
-  protected resizeObserver?: ResizeObserver;
+  protected resizeObserver: ResizeObserver | undefined;
   protected useShadowDOM: boolean;
 
   // Default options (dimensions set by HTML attributes)
@@ -105,7 +105,7 @@ export abstract class BaseChartComponent extends HTMLElement {
 
       // Reload chart if dimensions change
       if ((name === 'width' || name === 'height') && this.data) {
-        this.render();
+        this.safeRender();
       }
 
       // Update styles if inherit-styles changes
@@ -133,7 +133,7 @@ export abstract class BaseChartComponent extends HTMLElement {
 
       if (result.success && result.data) {
         this.data = result.data;
-        this.render();
+        this.safeRender();
         this.dispatchEvent(new CustomEvent('chart-loaded', {
           detail: { data: this.data }
         }));
@@ -194,6 +194,34 @@ export abstract class BaseChartComponent extends HTMLElement {
    * Render the chart with current data
    */
   protected abstract render(): void;
+
+  /**
+   * Safe render wrapper with error boundary
+   */
+  protected safeRender(): void {
+    try {
+      this.render();
+    } catch (error) {
+      this.handleRenderError(error);
+    }
+  }
+
+  /**
+   * Handle render errors with user-friendly messaging
+   */
+  private handleRenderError(error: unknown): void {
+    console.error('Chart render error:', error);
+
+    const errorMessage = error instanceof Error ? error.message : 'Chart rendering failed';
+    this.showErrorState(`Rendering error: ${errorMessage}`);
+
+    this.dispatchEvent(new CustomEvent('chart-render-error', {
+      detail: {
+        error: errorMessage,
+        originalError: error
+      }
+    }));
+  }
 
   /**
    * Get component-specific CSS styles
@@ -270,7 +298,7 @@ export abstract class BaseChartComponent extends HTMLElement {
     if (typeof ResizeObserver !== 'undefined') {
       this.resizeObserver = new ResizeObserver(debounce(() => {
         if (this.data && !this.isLoading) {
-          this.render();
+          this.safeRender();
         }
       }, 250));
 
@@ -284,7 +312,14 @@ export abstract class BaseChartComponent extends HTMLElement {
   protected cleanup(): void {
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
+      this.resizeObserver = undefined;
     }
+
+    // Clean up other resources
+    this.data = null;
+    this.isLoading = false;
+    this.hasError = false;
+    this.clearChart();
   }
 
   /**

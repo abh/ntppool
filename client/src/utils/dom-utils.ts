@@ -109,25 +109,49 @@ export function querySelectorAll<T extends Element = Element>(
  * Show loading state in container
  */
 export function showLoading(container: Element, message = 'Loading chart...'): void {
-  container.innerHTML = `
-    <div class="chart-loading" role="status" aria-live="polite">
-      <div class="spinner-border spinner-border-sm" role="status">
-        <span class="visually-hidden">${message}</span>
-      </div>
-      <span class="ms-2">${message}</span>
-    </div>
-  `;
+  clearContainer(container);
+
+  const loadingDiv = document.createElement('div');
+  loadingDiv.className = 'chart-loading';
+  loadingDiv.setAttribute('role', 'status');
+  loadingDiv.setAttribute('aria-live', 'polite');
+
+  const spinner = document.createElement('div');
+  spinner.className = 'spinner-border spinner-border-sm';
+  spinner.setAttribute('role', 'status');
+
+  const hiddenSpan = document.createElement('span');
+  hiddenSpan.className = 'visually-hidden';
+  hiddenSpan.textContent = message;
+
+  const messageSpan = document.createElement('span');
+  messageSpan.className = 'ms-2';
+  messageSpan.textContent = message;
+
+  spinner.appendChild(hiddenSpan);
+  loadingDiv.appendChild(spinner);
+  loadingDiv.appendChild(messageSpan);
+  container.appendChild(loadingDiv);
 }
 
 /**
  * Show error state in container
  */
 export function showError(container: Element, message = 'Error loading chart data'): void {
-  container.innerHTML = `
-    <div class="alert alert-warning" role="alert">
-      <strong>Error:</strong> ${message}
-    </div>
-  `;
+  clearContainer(container);
+
+  const alertDiv = document.createElement('div');
+  alertDiv.className = 'alert alert-warning';
+  alertDiv.setAttribute('role', 'alert');
+
+  const strongElement = document.createElement('strong');
+  strongElement.textContent = 'Error:';
+
+  const messageText = document.createTextNode(' ' + message);
+
+  alertDiv.appendChild(strongElement);
+  alertDiv.appendChild(messageText);
+  container.appendChild(alertDiv);
 }
 
 /**
@@ -145,17 +169,38 @@ export function clearContainer(container: Element): void {
 export function showLegacyMessage(container: Element | null): void {
   if (!container) return;
 
-  container.innerHTML = `
-    <div class="alert alert-warning">
-      <p>Please upgrade to a modern browser that supports Web Components to see the charts.</p>
-      <p>Recommended browsers:
-        <a href="https://www.google.com/chrome/">Chrome</a>,
-        <a href="https://www.mozilla.org/firefox">Firefox</a>,
-        <a href="https://www.apple.com/safari/">Safari</a>, or
-        <a href="https://www.microsoft.com/edge">Edge</a>
-      </p>
-    </div>
-  `;
+  clearContainer(container);
+
+  const alertDiv = document.createElement('div');
+  alertDiv.className = 'alert alert-warning';
+
+  const firstParagraph = document.createElement('p');
+  firstParagraph.textContent = 'Please upgrade to a modern browser that supports Web Components to see the charts.';
+
+  const secondParagraph = document.createElement('p');
+  secondParagraph.appendChild(document.createTextNode('Recommended browsers: '));
+
+  const browsers = [
+    { text: 'Chrome', url: 'https://www.google.com/chrome/' },
+    { text: 'Firefox', url: 'https://www.mozilla.org/firefox' },
+    { text: 'Safari', url: 'https://www.apple.com/safari/' },
+    { text: 'Edge', url: 'https://www.microsoft.com/edge' }
+  ];
+
+  browsers.forEach((browser, index) => {
+    if (index > 0) {
+      secondParagraph.appendChild(document.createTextNode(index === browsers.length - 1 ? ', or ' : ', '));
+    }
+
+    const link = document.createElement('a');
+    link.href = browser.url;
+    link.textContent = browser.text;
+    secondParagraph.appendChild(link);
+  });
+
+  alertDiv.appendChild(firstParagraph);
+  alertDiv.appendChild(secondParagraph);
+  container.appendChild(alertDiv);
 }
 
 /**
