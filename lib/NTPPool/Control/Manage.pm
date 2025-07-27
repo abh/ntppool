@@ -534,6 +534,7 @@ sub staff_search {
     }
 
     my $q = $self->req_param('q') || '';
+    my $include_deleted = $self->req_param('include_deleted') || '';
 
     # If no query, return empty result
     unless ($q) {
@@ -541,28 +542,51 @@ sub staff_search {
         return OK, $self->evaluate_template('tpl/admin/search_results.html');
     }
 
-    # Call the existing API method to get search results
-    require NTPPool::API::Staff;
-    my $api = NTPPool::API::Staff->new(
-        args => {
-            user => $self->user,
-            params => {
-                q => $q,
-                auth_token => $self->auth_token,
-            }
-        }
+    # Call the new internal API search endpoint
+    my $data = int_api(
+        'get',
+        'search',
+        {   q    => $q,
+            user => $self->plain_cookie($self->user_cookie_name),
+            include_deleted => $include_deleted ? 'true' : 'false',
+        },
+        $self->_get_request_context()
     );
 
-    my $results = $api->search();
+    my $results = {};
+    if ($data->{code} == 200) {
+        $results = $data->{data} || {};
+    }
+    elsif ($data->{code} == 404) {
+        # No results found - return empty results
+        $results = {accounts => []};
+    }
+    else {
+        # API error - log and return empty results for degraded experience
+        warn "Staff search API error: " . ($data->{status_line} || 'unknown error');
+        $results = {
+            accounts => [],
+            error    => 'Search temporarily unavailable',
+            trace_id => $data->{trace_id}
+        };
+    }
 
     # Add highlighting to IP addresses (similar to old jQuery code)
     if ($results && $results->{accounts} && $q) {
         for my $account (@{$results->{accounts}}) {
+            # Highlight server IPs
             for my $server (@{$account->{servers} || []}) {
                 my $ip = $server->{ip};
                 # Simple case-insensitive replacement
                 $ip =~ s/(\Q$q\E)/<b>$1<\/b>/gi;
                 $server->{ip_highlighted} = $ip;
+            }
+            # Highlight monitor IPs
+            for my $monitor (@{$account->{monitors} || []}) {
+                my $ip = $monitor->{ip};
+                # Simple case-insensitive replacement
+                $ip =~ s/(\Q$q\E)/<b>$1<\/b>/gi;
+                $monitor->{ip_highlighted} = $ip;
             }
         }
     }

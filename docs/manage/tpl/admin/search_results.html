@@ -1,4 +1,9 @@
-[% IF results.accounts && results.accounts.size %]
+[% IF results.error %]
+<div class="alert alert-warning">
+    <strong>[% results.error | html %]</strong>
+    <br><small>Trace ID: [% results.trace_id || trace_id | html %]</small>
+</div>
+[% ELSIF results.accounts && results.accounts.size %]
 <ul>
     [% FOR account IN results.accounts %]
     <li>[% account.name | html %]
