@@ -21,6 +21,7 @@ use OpenTelemetry -all;
 use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
 use experimental             qw( defer );
 use Syntax::Keyword::Dynamically;
+use Combust::Util ();
 
 sub ua { return $NP::UA::ua }
 
@@ -315,7 +316,8 @@ sub handle_login {
         my $email =
           Email::Stuffer->from(NP::Email::address("sender"))
           ->reply_to(NP::Email::address("support"))
-          ->subject("NTP Pool user deletion cancelled")->text_body($msg);
+          ->subject("NTP Pool user deletion cancelled")
+          ->text_body($msg);
 
         $email->to($user->email);
         NP::Email::sendmail($email);
@@ -535,14 +537,14 @@ sub staff_search {
         return 403, "Access denied";
     }
 
-    my $q = $self->req_param('q') || '';
+    my $q               = $self->req_param('q')               || '';
     my $include_deleted = $self->req_param('include_deleted') || '';
 
     # Add telemetry attributes for search parameters
     my $span = OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
-    $span->set_attribute("search.query", $q);
+    $span->set_attribute("search.query",           $q);
     $span->set_attribute("search.include_deleted", $include_deleted ? 1 : 0);
-    $span->set_attribute("search.query_empty", $q ? 0 : 1);
+    $span->set_attribute("search.query_empty",     $q               ? 0 : 1);
 
     # If no query, return empty result
     unless ($q) {
@@ -552,10 +554,9 @@ sub staff_search {
 
     # Call the new internal API search endpoint
     my $data = int_api(
-        'get',
-        'search',
-        {   q    => $q,
-            user => $self->plain_cookie($self->user_cookie_name),
+        'get', 'search',
+        {   q               => $q,
+            user            => $self->plain_cookie($self->user_cookie_name),
             include_deleted => $include_deleted ? 'true' : 'false',
         },
         $self->_get_request_context()
@@ -566,6 +567,7 @@ sub staff_search {
         $results = $data->{data} || {};
     }
     elsif ($data->{code} == 404) {
+
         # No results found - return empty results
         $results = {accounts => []};
     }
@@ -579,22 +581,28 @@ sub staff_search {
         };
     }
 
-    # Add highlighting to IP addresses (similar to old jQuery code)
+    # Add highlighting to IP addresses and hostnames (similar to old jQuery code)
     if ($results && $results->{accounts} && $q) {
         for my $account (@{$results->{accounts}}) {
-            # Highlight server IPs
+
+            # Highlight server IPs and hostnames
             for my $server (@{$account->{servers} || []}) {
-                my $ip = $server->{ip};
-                # Simple case-insensitive replacement
-                $ip =~ s/(\Q$q\E)/<b>$1<\/b>/gi;
-                $server->{ip_highlighted} = $ip;
+                for my $field (qw(ip hostname)) {
+                    if ($server->{$field} && $server->{$field} =~ /\Q$q\E/i) {
+                        my $escaped = Combust::Util::escape_html($server->{$field});
+                        $server->{"${field}_highlighted"} = "<b>$escaped</b>";
+                    }
+                }
             }
-            # Highlight monitor IPs
+
+            # Highlight monitor IPs and hostnames
             for my $monitor (@{$account->{monitors} || []}) {
-                my $ip = $monitor->{ip};
-                # Simple case-insensitive replacement
-                $ip =~ s/(\Q$q\E)/<b>$1<\/b>/gi;
-                $monitor->{ip_highlighted} = $ip;
+                for my $field (qw(ip hostname)) {
+                    if ($monitor->{$field} && $monitor->{$field} =~ /\Q$q\E/i) {
+                        my $escaped = Combust::Util::escape_html($monitor->{$field});
+                        $monitor->{"${field}_highlighted"} = "<b>$escaped</b>";
+                    }
+                }
             }
         }
     }
@@ -602,29 +610,30 @@ sub staff_search {
     # Add telemetry attributes for search results
     if ($results && $results->{accounts}) {
         my $account_count = scalar @{$results->{accounts}};
-        my $server_count = 0;
+        my $server_count  = 0;
         my $monitor_count = 0;
 
         for my $account (@{$results->{accounts}}) {
-            $server_count += scalar @{$account->{servers} || []};
+            $server_count  += scalar @{$account->{servers}  || []};
             $monitor_count += scalar @{$account->{monitors} || []};
         }
 
-        $span->set_attribute("search.results.accounts", $account_count);
-        $span->set_attribute("search.results.servers", $server_count);
-        $span->set_attribute("search.results.monitors", $monitor_count);
+        $span->set_attribute("search.results.accounts",    $account_count);
+        $span->set_attribute("search.results.servers",     $server_count);
+        $span->set_attribute("search.results.monitors",    $monitor_count);
         $span->set_attribute("search.results.has_results", $account_count > 0 ? 1 : 0);
-    } else {
-        $span->set_attribute("search.results.accounts", 0);
-        $span->set_attribute("search.results.servers", 0);
-        $span->set_attribute("search.results.monitors", 0);
+    }
+    else {
+        $span->set_attribute("search.results.accounts",    0);
+        $span->set_attribute("search.results.servers",     0);
+        $span->set_attribute("search.results.monitors",    0);
         $span->set_attribute("search.results.has_results", 0);
     }
     $span->set_attribute("search.api_code", $data->{code} || 0);
 
     # Pass results to template
     $self->tpl_param('results' => $results);
-    $self->tpl_param('query' => $q);
+    $self->tpl_param('query'   => $q);
 
     # Return HTML fragment for HTMX
     if ($self->is_htmx) {
@@ -657,6 +666,7 @@ sub staff_zone_edit {
     my $is_save = $self->request->uri =~ m{/save/?$};
 
     if ($is_save && $self->request->method eq 'post') {
+
         # Save zones
         my $zones_value = $self->req_param('zones') || '';
 
@@ -664,11 +674,11 @@ sub staff_zone_edit {
         require NTPPool::API::Staff;
         my $api = NTPPool::API::Staff->new(
             args => {
-                user => $self->user,
+                user   => $self->user,
                 params => {
-                    id => 'zone_list',
-                    server => $server_ip,
-                    value => $zones_value,
+                    id         => 'zone_list',
+                    server     => $server_ip,
+                    value      => $zones_value,
                     auth_token => $self->auth_token,
                 }
             }
@@ -677,18 +687,19 @@ sub staff_zone_edit {
         my $result = $api->edit_server();
 
         # Return view state after save
-        $self->tpl_param('server' => $server);
-        $self->tpl_param('zones' => join(' ', @$result));
+        $self->tpl_param('server'      => $server);
+        $self->tpl_param('zones'       => join(' ', @$result));
         $self->tpl_param('manage_site' => 1);
         return OK, $self->evaluate_template('tpl/admin/zone_view.html');
     }
     else {
         # Check if this is a cancel request
         if ($self->req_param('cancel')) {
+
             # Return to view state
             my @zone_names = map { $_->name } $server->zones_display;
-            $self->tpl_param('server' => $server);
-            $self->tpl_param('zones' => join(' ', @zone_names));
+            $self->tpl_param('server'      => $server);
+            $self->tpl_param('zones'       => join(' ', @zone_names));
             $self->tpl_param('manage_site' => 1);
             return OK, $self->evaluate_template('tpl/admin/zone_view.html');
         }
@@ -696,7 +707,7 @@ sub staff_zone_edit {
         # Show edit form
         my @zone_names = map { $_->name } $server->zones_display;
         $self->tpl_param('server' => $server);
-        $self->tpl_param('zones' => join(' ', @zone_names));
+        $self->tpl_param('zones'  => join(' ', @zone_names));
         return OK, $self->evaluate_template('tpl/admin/zone_edit.html');
     }
 }
@@ -723,6 +734,7 @@ sub staff_hostname_edit {
     my $is_save = $self->request->uri =~ m{/save/?$};
 
     if ($is_save && $self->request->method eq 'post') {
+
         # Save hostname
         my $hostname_value = $self->req_param('hostname') || '';
 
@@ -730,11 +742,11 @@ sub staff_hostname_edit {
         require NTPPool::API::Staff;
         my $api = NTPPool::API::Staff->new(
             args => {
-                user => $self->user,
+                user   => $self->user,
                 params => {
-                    id => 'hostname',
-                    server => $server_ip,
-                    value => $hostname_value,
+                    id         => 'hostname',
+                    server     => $server_ip,
+                    value      => $hostname_value,
                     auth_token => $self->auth_token,
                 }
             }
@@ -752,12 +764,13 @@ sub staff_hostname_edit {
 
         # Return view state after save
         $self->tpl_param('server' => $server);
-        $self->tpl_param('error' => $result->{error}) if $result->{error};
+        $self->tpl_param('error'  => $result->{error}) if $result->{error};
         return OK, $self->evaluate_template('tpl/admin/hostname_view.html');
     }
     else {
         # Check if this is a cancel request
         if ($self->req_param('cancel')) {
+
             # Return to view state
             $self->tpl_param('server' => $server);
             return OK, $self->evaluate_template('tpl/admin/hostname_view.html');
