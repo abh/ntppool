@@ -90,3 +90,6 @@ import { initializeHTMX } from './htmx-loader';
 
 // Load Bootstrap components conditionally
 import { initializeBootstrap } from './bootstrap-loader';
+
+// Load mobile navigation
+import './mobile-nav';

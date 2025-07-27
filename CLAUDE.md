@@ -170,8 +170,10 @@ CSP policies WILL block any inline styles or scripts, causing features to break 
 ❌ **Inline Styles**: Never use `style=""` attributes or `element.style.property = value`
 ❌ **CSS in JS**: Don't embed CSS template literals in TypeScript files
 ❌ **Shadow DOM by default**: Use `inherit-styles="true"` for Web Components
+❌ Don't use <span>&times;</span> for a "close box".
 
-✅ **Preferred Patterns**: Simple functions, external CSS files, Bootstrap utilities, inherited styles
+✅ **Preferred Patterns**: Simple functions, external CSS files, Bootstrap components, inherited styles.
+✅ Use playwright to verify site behavior and layout.
 
 #### **HTMX Integration Patterns**
 - Use `hx-target` and `hx-swap` for dynamic content updates
