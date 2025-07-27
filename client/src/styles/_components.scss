@@ -611,6 +611,12 @@ table.table-hover tbody tr:hover th {
     background-color: rgba(0, 0, 0, .075) !important;
 }
 
+// Override table hover for legend tables - only highlight specific monitor cells
+.legend-table tbody tr:hover td,
+.legend-table tbody tr:hover th {
+    background-color: transparent !important;
+}
+
 table.table td,
 table.table th {
     padding: .35rem !important;
@@ -794,7 +800,7 @@ div.product-group .btn {
     }
 
     &.table tbody tr td.monitor-cell-hover {
-        --bs-table-accent-bg: rgba(0, 0, 0, 0.075) !important;
+        background-color: rgba(0, 0, 0, 0.075) !important;
     }
 }
 
@@ -1020,7 +1026,7 @@ div.product-group .btn {
         }
 
         tr:hover {
-            background-color: rgba(59, 130, 246, 0.05);
+            background-color: transparent !important;
         }
 
         .table-success {
