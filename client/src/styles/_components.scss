@@ -140,6 +140,48 @@ ul#nav {
     }
 }
 
+// Mobile responsive navigation
+@media (max-width: 768px) {
+    ul#nav {
+        // Allow wrapping on mobile
+        flex-wrap: wrap !important;
+
+        li {
+            font-size: 14px;
+
+            a {
+                height: 24px;
+                padding: 4px 8px 4px 0;
+                margin-right: 15px;
+            }
+        }
+
+        .feather {
+            width: 20px;
+            height: 20px;
+        }
+    }
+}
+
+@media (max-width: 480px) {
+    ul#nav {
+        li {
+            font-size: 12px;
+
+            a {
+                height: 20px;
+                padding: 3px 6px 3px 0;
+                margin-right: 10px;
+            }
+        }
+
+        .feather {
+            width: 16px;
+            height: 16px;
+        }
+    }
+}
+
 // Main content area headers with Bree Serif
 #mainbar h1,
 h2,
