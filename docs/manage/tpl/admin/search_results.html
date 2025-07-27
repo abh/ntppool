@@ -24,7 +24,7 @@
                 [% IF server.hostname %]
                     [% IF server.hostname_highlighted %][% server.hostname_highlighted %][% ELSE %][% server.hostname | html %][% END %] /
                 [% END %]
-                <a href="/scores/[% server.ip | html %]"[% IF server.deletion_on %] class="text-muted"[% END %]>
+                <a href="[% combust.manage_url('/scores/' _ server.ip, { a => account.account_token }) %]"[% IF server.deletion_on %] class="text-muted"[% END %]>
                     [% IF server.ip_highlighted %][% server.ip_highlighted %][% ELSE %][% server.ip | html %][% END %]
                 </a> ([% server.score %], [% server.netspeed_human | html %])
                 [% IF server.deletion_on %]<span class="badge badge-warning">[% server.deletion_on | html %]</span>[% END %]
