@@ -1083,3 +1083,77 @@ div.product-group .btn {
         }
     }
 }
+
+// Developer Mode Styles
+.developer-menu {
+    margin-top: 1rem;
+    animation: slideDown 0.3s ease-in-out;
+
+    .card {
+        box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+        border-width: 2px;
+    }
+
+    .card-header {
+        font-size: 0.875rem;
+        padding: 0.5rem 0.75rem;
+
+        strong {
+            font-weight: 600;
+        }
+    }
+
+    .card-body {
+        padding: 0.75rem;
+        background-color: #fefefe;
+    }
+
+    .form-label {
+        font-weight: 500;
+        color: #495057;
+        margin-bottom: 0.25rem;
+    }
+
+    .form-select-sm,
+    .form-check-input {
+        font-size: 0.875rem;
+    }
+
+    .form-check {
+        padding-left: 1.25em;
+    }
+
+    .form-check-label {
+        color: #6c757d;
+        font-weight: 400;
+    }
+
+    // Animation for smooth appearance
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+}
+
+// Responsive adjustments for developer menu
+@media (max-width: 768px) {
+    .developer-menu {
+        .row {
+            margin: 0;
+        }
+
+        .col-md-6 {
+            padding: 0 0.5rem;
+        }
+
+        .card-body {
+            padding: 0.5rem;
+        }
+    }
+}

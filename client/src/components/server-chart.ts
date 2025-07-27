@@ -13,6 +13,8 @@ import type { ServerScoreHistoryResponse } from '@/types/index.js';
  */
 export class ServerChartComponent extends BaseChartComponent {
   private legendContainer?: HTMLDivElement;
+  private developerMenu?: HTMLDivElement;
+  private isDeveloperMode = false;
 
   static override get observedAttributes(): string[] {
     return [...super.observedAttributes, 'server-ip', 'show-legend', 'show-legend-only'];
@@ -36,6 +38,9 @@ export class ServerChartComponent extends BaseChartComponent {
     }
 
     super.connectedCallback();
+
+    // Set up developer mode keypress handler
+    this.setupDeveloperMode();
   }
 
   override attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void {
@@ -146,6 +151,10 @@ export class ServerChartComponent extends BaseChartComponent {
       // Get legend element for the chart function
       const legendElement = this.shouldShowLegend() && this.legendContainer ? this.legendContainer : null;
 
+      // Get developer settings
+      const devSettings = this.getDeveloperSettings();
+
+
       // Create the D3 chart with explicit dimensions
       createServerChart(this.chartContainer, this.data as ServerScoreHistoryResponse, {
         legend: legendElement,
@@ -153,7 +162,11 @@ export class ServerChartComponent extends BaseChartComponent {
         responsive: true,
         width: this.options.width,
         height: this.options.height,
-        showOnlyActiveTesting: this.shouldShowLegendOnly()
+        showOnlyActiveTesting: this.shouldShowLegendOnly(),
+        developerMode: this.isDeveloperMode,
+        dateFormat: devSettings.dateFormat,
+        compactHours: devSettings.compactHours,
+        showYearOnFirstTick: devSettings.showYear
       });
 
       // Update container dimensions
@@ -205,6 +218,185 @@ export class ServerChartComponent extends BaseChartComponent {
       svg.setAttribute('height', totalHeight.toString());
 
     }
+  }
+
+  /**
+   * Set up developer mode functionality
+   */
+  private setupDeveloperMode(): void {
+    // Add keypress listener to document for global access
+    document.addEventListener('keydown', (event) => {
+      // Ctrl+Shift+D to toggle developer mode
+      if (event.ctrlKey && event.shiftKey && event.key === 'D') {
+        event.preventDefault();
+        this.toggleDeveloperMode();
+      }
+    });
+  }
+
+  /**
+   * Toggle developer mode on/off
+   */
+  private toggleDeveloperMode(): void {
+    this.isDeveloperMode = !this.isDeveloperMode;
+
+    if (this.isDeveloperMode) {
+      this.createDeveloperMenu();
+    } else {
+      this.removeDeveloperMenu();
+    }
+  }
+
+  /**
+   * Create developer menu UI
+   */
+  private createDeveloperMenu(): void {
+    if (this.developerMenu) return;
+
+    this.developerMenu = document.createElement('div');
+    this.developerMenu.className = 'developer-menu';
+    this.developerMenu.innerHTML = `
+      <div class="card border-warning">
+        <div class="card-header bg-warning text-dark">
+          <small><strong>🔧 Developer Mode</strong> (Ctrl+Shift+D to toggle)</small>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group mb-2">
+                <label class="form-label small">Date Format:</label>
+                <select class="form-select form-select-sm" id="dateFormatSelect">
+                  <option value="default">Default (%H:%M / %b %d %H:%M)</option>
+                  <option value="iso">ISO Format (%Y-%m-%dT%H:%M)</option>
+                  <option value="year-first">Year First (%Y-%m-%d %H:%M)</option>
+                  <option value="verbose">Verbose (%A, %B %d, %Y %H:%M)</option>
+                  <option value="compact">Compact (%m/%d %H:%M)</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="compactHoursCheck">
+                <label class="form-check-label small" for="compactHoursCheck">
+                  Compact hours (6h vs 06:00)
+                </label>
+              </div>
+              <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="showYearCheck">
+                <label class="form-check-label small" for="showYearCheck">
+                  Show year on first tick
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Append after chart container
+    this.appendChild(this.developerMenu);
+
+    // Set up event listeners
+    this.setupDeveloperMenuEvents();
+
+    // Load saved preferences
+    this.loadDeveloperPreferences();
+  }
+
+  /**
+   * Set up developer menu event listeners
+   */
+  private setupDeveloperMenuEvents(): void {
+    if (!this.developerMenu) return;
+
+    const dateFormatSelect = this.developerMenu.querySelector('#dateFormatSelect') as HTMLSelectElement;
+    const compactHoursCheck = this.developerMenu.querySelector('#compactHoursCheck') as HTMLInputElement;
+    const showYearCheck = this.developerMenu.querySelector('#showYearCheck') as HTMLInputElement;
+
+    if (dateFormatSelect) {
+      dateFormatSelect.addEventListener('change', () => {
+        this.updateDeveloperSettings();
+      });
+    }
+
+    if (compactHoursCheck) {
+      compactHoursCheck.addEventListener('change', () => {
+        this.updateDeveloperSettings();
+      });
+    }
+
+    if (showYearCheck) {
+      showYearCheck.addEventListener('change', () => {
+        this.updateDeveloperSettings();
+      });
+    }
+  }
+
+  /**
+   * Update developer settings and re-render chart
+   */
+  private updateDeveloperSettings(): void {
+    if (!this.developerMenu) return;
+
+    const dateFormatSelect = this.developerMenu.querySelector('#dateFormatSelect') as HTMLSelectElement;
+    const compactHoursCheck = this.developerMenu.querySelector('#compactHoursCheck') as HTMLInputElement;
+    const showYearCheck = this.developerMenu.querySelector('#showYearCheck') as HTMLInputElement;
+
+    // Store settings in localStorage for persistence
+    const newDateFormat = dateFormatSelect?.value || 'default';
+    const newCompactHours = compactHoursCheck?.checked ? 'true' : 'false';
+    const newShowYear = showYearCheck?.checked ? 'true' : 'false';
+
+    localStorage.setItem('ntppool-dev-dateFormat', newDateFormat);
+    localStorage.setItem('ntppool-dev-compactHours', newCompactHours);
+    localStorage.setItem('ntppool-dev-showYear', newShowYear);
+
+    // Re-render chart with new settings
+    this.render();
+  }
+
+  /**
+   * Remove developer menu
+   */
+  private removeDeveloperMenu(): void {
+    if (this.developerMenu) {
+      this.removeChild(this.developerMenu);
+      delete this.developerMenu;
+    }
+  }
+
+  /**
+   * Load saved developer preferences into the menu
+   */
+  private loadDeveloperPreferences(): void {
+    if (!this.developerMenu) return;
+
+    const settings = this.getDeveloperSettings();
+
+    const dateFormatSelect = this.developerMenu.querySelector('#dateFormatSelect') as HTMLSelectElement;
+    const compactHoursCheck = this.developerMenu.querySelector('#compactHoursCheck') as HTMLInputElement;
+    const showYearCheck = this.developerMenu.querySelector('#showYearCheck') as HTMLInputElement;
+
+    if (dateFormatSelect) {
+      dateFormatSelect.value = settings.dateFormat;
+    }
+    if (compactHoursCheck) {
+      compactHoursCheck.checked = settings.compactHours;
+    }
+    if (showYearCheck) {
+      showYearCheck.checked = settings.showYear;
+    }
+  }
+
+  /**
+   * Get current developer settings
+   */
+  private getDeveloperSettings() {
+    return {
+      dateFormat: localStorage.getItem('ntppool-dev-dateFormat') || 'default',
+      compactHours: localStorage.getItem('ntppool-dev-compactHours') === 'true',
+      showYear: localStorage.getItem('ntppool-dev-showYear') === 'true'
+    };
   }
 }
 

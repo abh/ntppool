@@ -81,6 +81,10 @@ export interface ServerChartOptions {
   width?: number;
   height?: number;
   showOnlyActiveTesting?: boolean;
+  developerMode?: boolean;
+  dateFormat?: string;
+  compactHours?: boolean;
+  showYearOnFirstTick?: boolean;
 }
 
 export interface ZoneChartOptions {
