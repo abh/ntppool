@@ -52,6 +52,7 @@ sub _map_api_error_code {
 
 sub manage_dispatch {
     my $self = shift;
+    $self->set_span_name("manage.monitors");
 
     $self->cache_control('private, max-age=0, no-cache');
 

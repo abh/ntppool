@@ -521,12 +521,14 @@ sub manage_dispatch {
 
 sub show_staff {
     my $self = shift;
+    $self->set_span_name("manage.admin");
     $self->tpl_params->{page}->{is_admin} = 1;
     return OK, $self->evaluate_template('tpl/staff.html');
 }
 
 sub staff_search {
     my $self = shift;
+    $self->set_span_name("manage.admin.search");
 
     # Check staff access
     unless ($self->user && $self->user->is_staff) {
@@ -535,6 +537,12 @@ sub staff_search {
 
     my $q = $self->req_param('q') || '';
     my $include_deleted = $self->req_param('include_deleted') || '';
+
+    # Add telemetry attributes for search parameters
+    my $span = OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
+    $span->set_attribute("search.query", $q);
+    $span->set_attribute("search.include_deleted", $include_deleted ? 1 : 0);
+    $span->set_attribute("search.query_empty", $q ? 0 : 1);
 
     # If no query, return empty result
     unless ($q) {
@@ -591,6 +599,29 @@ sub staff_search {
         }
     }
 
+    # Add telemetry attributes for search results
+    if ($results && $results->{accounts}) {
+        my $account_count = scalar @{$results->{accounts}};
+        my $server_count = 0;
+        my $monitor_count = 0;
+
+        for my $account (@{$results->{accounts}}) {
+            $server_count += scalar @{$account->{servers} || []};
+            $monitor_count += scalar @{$account->{monitors} || []};
+        }
+
+        $span->set_attribute("search.results.accounts", $account_count);
+        $span->set_attribute("search.results.servers", $server_count);
+        $span->set_attribute("search.results.monitors", $monitor_count);
+        $span->set_attribute("search.results.has_results", $account_count > 0 ? 1 : 0);
+    } else {
+        $span->set_attribute("search.results.accounts", 0);
+        $span->set_attribute("search.results.servers", 0);
+        $span->set_attribute("search.results.monitors", 0);
+        $span->set_attribute("search.results.has_results", 0);
+    }
+    $span->set_attribute("search.api_code", $data->{code} || 0);
+
     # Pass results to template
     $self->tpl_param('results' => $results);
     $self->tpl_param('query' => $q);
@@ -606,6 +637,7 @@ sub staff_search {
 
 sub staff_zone_edit {
     my $self = shift;
+    $self->set_span_name("manage.admin.zone_edit");
 
     # Disable caching for admin endpoints
     $self->cache_control('private, no-cache');
@@ -671,6 +703,7 @@ sub staff_zone_edit {
 
 sub staff_hostname_edit {
     my $self = shift;
+    $self->set_span_name("manage.admin.hostname_edit");
 
     # Disable caching for admin endpoints
     $self->cache_control('private, no-cache');

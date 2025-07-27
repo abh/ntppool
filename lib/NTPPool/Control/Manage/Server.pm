@@ -174,7 +174,8 @@ sub handle_add {
             my $msg = $self->evaluate_template('tpl/manage/add_email.txt');
             my $email =
               Email::Stuffer->from(NP::Email::address("sender"))
-              ->to(NP::Email::address("notifications"))->reply_to($self->user->email)
+              ->to(NP::Email::address("notifications"))
+              ->reply_to($self->user->email)
               ->text_body($msg);
 
             my $subject =
@@ -541,6 +542,16 @@ sub handle_verify {
     return NOT_FOUND unless $verification;
     my $server = $verification->server;
     return 403 unless $server->account->can_edit($self->user);
+
+    # If no account parameter, redirect with server's account to set proper context
+    unless ($self->req_param('a')) {
+        return $self->redirect(
+            $self->manage_url(
+                "/manage/server/verify/$token",
+                {a => $server->account->id_token}
+            )
+        );
+    }
 
     # if verified already, redirect to server on manage page
     if ($verification->verified_on) {
