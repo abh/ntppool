@@ -110,24 +110,32 @@ h1, h2, h3, h4, h5 {
 }
 
 // Navigation styling with Economica font
-ul#nav li {
-    font-size: 30px;
-    font-family: 'Economica', sans-serif;
-    font-variant: small-caps;
-    font-weight: 700;
+ul#nav {
+    // Work with Bootstrap 5's flexbox nav
+    flex-wrap: nowrap !important;
+    justify-content: flex-start !important;
+    padding-left: 0 !important;
+    margin-bottom: 0 !important;
     list-style: none;
 
-    a {
-        float: left;
-        display: block;
-        height: 40px;
-        color: #5A595B;
-        padding: 10px 10px 10px 40px;
-        margin-right: 20px;
-        text-decoration: none;
+    li {
+        font-size: 30px;
+        font-family: 'Economica', sans-serif;
+        font-variant: small-caps;
+        font-weight: 700;
+        list-style: none;
 
-        &:hover {
-            color: #3885B4;
+        a {
+            display: block;
+            height: 40px;
+            color: #5A595B;
+            padding: 10px 10px 10px 0;
+            margin-right: 20px;
+            text-decoration: none;
+
+            &:hover {
+                color: #3885B4;
+            }
         }
     }
 }
@@ -714,7 +722,7 @@ div.product-group .btn {
         padding: 0.05rem 0.3rem;
         border: none;
         font-size: 0.8rem;
-        vertical-align: top;
+        vertical-align: bottom;
     }
 
     th {
@@ -726,25 +734,6 @@ div.product-group .btn {
     }
 
     .monitor-name {
-        width: 40%;
-    }
-
-    .monitor-score {
-        width: 8%;
-        text-align: right;
-    }
-
-    tbody tr td.monitor-rtt {
-        width: 8% !important;
-        text-align: left !important;
-        font-size: 0.7rem !important;
-        color: #495057 !important;
-        padding-left: 0.2rem !important;
-        font-weight: normal !important;
-    }
-
-    // Standard 2-column layout (Active/Testing)
-    .monitor-name {
         min-width: 120px;
         max-width: 200px;
         width: 40%;
@@ -753,16 +742,22 @@ div.product-group .btn {
     .monitor-score {
         min-width: 40px;
         max-width: 80px;
-        width: 15%;
+        width: 8%;
         text-align: right;
     }
 
-    .monitor-rtt {
+    tbody tr td.monitor-rtt {
         min-width: 50px;
         max-width: 80px;
-        width: 15%;
-        text-align: left;
+        width: 8% !important;
+        text-align: right !important;
+        font-size: 0.7rem !important;
+        color: #495057 !important;
+        padding-left: 0.2rem !important;
+        font-weight: normal !important;
     }
+
+
 
     // 3-column layout (Candidate)
     .monitor-name-3col {
@@ -808,6 +803,7 @@ div.product-group .btn {
     // Prevent container from expanding beyond SVG's intended dimensions
     display: inline-block;
     max-width: max-content;
+    margin-bottom: 0.2rem;
 
     svg {
         // Ensure SVG respects its width/height attributes and doesn't scale up
