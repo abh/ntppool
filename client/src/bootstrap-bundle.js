@@ -1,14 +1,15 @@
 /**
  * Custom Bootstrap Bundle - Only includes components we actually use
- * This reduces bundle size from 90KB to ~7KB
+ * This reduces bundle size significantly
  */
 
 // Import only the components we need
 import Dropdown from 'bootstrap/js/src/dropdown';
 import Alert from 'bootstrap/js/src/alert';
+import Collapse from 'bootstrap/js/src/collapse';
 
 // Export for potential programmatic use
-export { Dropdown, Alert };
+export { Dropdown, Alert, Collapse };
 
 /**
  * Initialize Bootstrap components when DOM is ready
@@ -45,6 +46,14 @@ function initializeComponents() {
   if (oldAlerts.length > 0) {
     console.log(`Migrated ${oldAlerts.length} Bootstrap 4 alert(s) to Bootstrap 5`);
   }
+
+  // Initialize all collapse elements
+  const collapses = document.querySelectorAll('[data-bs-toggle="collapse"]');
+  collapses.forEach(element => new Collapse(element.getAttribute('data-bs-target') || element.getAttribute('href')));
+
+  if (collapses.length > 0) {
+    console.log(`Initialized ${collapses.length} Bootstrap collapse(s)`);
+  }
 }
 
 // Initialize when DOM is ready
@@ -78,5 +87,9 @@ document.addEventListener('htmx:afterSwap', (event) => {
           new Alert(alertElement);
         }
       });
+
+    // Initialize collapse elements in new content
+    target.querySelectorAll('[data-bs-toggle="collapse"]')
+      .forEach(element => new Collapse(element.getAttribute('data-bs-target') || element.getAttribute('href')));
   }
 });

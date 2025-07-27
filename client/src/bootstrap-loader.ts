@@ -1,5 +1,5 @@
 /**
- * Simple Bootstrap loader - loads custom bundle with only Alert and Dropdown
+ * Simple Bootstrap loader - loads custom bundle with Alert, Dropdown, and Collapse
  *
  * This replaces the complex component detection logic with a simple,
  * maintainable approach that loads a pre-configured bundle.
@@ -11,10 +11,12 @@
 function hasBootstrapComponents(): boolean {
   return !!(
     document.querySelector('[data-bs-toggle="dropdown"]') ||
+    document.querySelector('[data-bs-toggle="collapse"]') ||
     document.querySelector('.alert-dismissible') ||
     document.querySelector('[data-dismiss="alert"]') ||
     document.querySelector('.dropdown-toggle') ||
-    document.querySelector('.dropdown-menu')
+    document.querySelector('.dropdown-menu') ||
+    document.querySelector('.collapse')
   );
 }
 
@@ -28,7 +30,7 @@ export async function initializeBootstrap(): Promise<void> {
   }
 
   try {
-    // Load our custom bundle (only ~7KB with Dropdown + Alert)
+    // Load our custom bundle (includes Dropdown + Alert + Collapse)
     // @ts-ignore - This is a plain JS file with our custom Bootstrap bundle
     await import('./bootstrap-bundle.js');
     console.log('Bootstrap custom bundle loaded successfully');

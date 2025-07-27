@@ -311,6 +311,84 @@ a.up {
     margin-bottom: 10px;
 }
 
+// CSS-only mobile translations collapse
+#translations {
+    .translations-checkbox {
+        display: none;
+    }
+
+    .translations-label {
+        color: #454545;
+        text-decoration: none;
+        padding: 0;
+        border: none;
+        background: none;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 114%;
+        font-weight: normal;
+        margin-bottom: 2px;
+        cursor: pointer;
+
+        &:hover {
+            color: #3885B4;
+        }
+
+        .translations-globe {
+            flex-shrink: 0;
+            min-width: 18px;
+            width: 18px;
+            height: 18px;
+        }
+
+        .translations-text {
+            font-size: inherit;
+        }
+
+        .translations-chevron {
+            transition: transform 0.3s ease;
+            flex-shrink: 0;
+            min-width: 12px;
+        }
+    }
+
+    // Mobile behavior: collapsed by default, expanded when checked
+    @media (max-width: 767px) {
+        .translations-list {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .translations-checkbox:checked + .translations-header .translations-label .translations-chevron {
+            transform: rotate(180deg);
+        }
+
+        .translations-checkbox:checked ~ .translations-list {
+            max-height: 2000px; // Large enough to accommodate all languages
+        }
+    }
+
+    // Very small screens: align globe with list text
+    @media (max-width: 575px) {
+        .translations-label {
+            padding-left: 15px; // Match the margin from #translations ul
+        }
+    }
+
+    // Desktop behavior: always visible
+    @media (min-width: 768px) {
+        .translations-list {
+            display: block;
+        }
+
+        .translations-label {
+            display: none;
+        }
+    }
+}
+
 .graph-desc {
     display: none;
     color: #777;
