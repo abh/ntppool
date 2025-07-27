@@ -160,111 +160,51 @@ export function createServerChart(
 }
 
 /**
- * Create date formatter based on options
+ * Create simplified date formatter for chart x-axis
  */
 function createDateFormatter(
-  dateFormat: string,
   compactHours: boolean,
-  showYearOnFirstTick: boolean,
   timeRange: number,
   isFirstTickOfDate = false
 ): (date: Date) => string {
   const oneDay = 24 * 60 * 60 * 1000;
 
-
   return (date: Date) => {
-    // Handle compact hours format (e.g., "6h" instead of "06:00")
-    if (compactHours && date.getUTCMinutes() === 0) {
-      const hour = date.getUTCHours();
-      const hourStr = `${hour}h`;
-
-      // Add year/date if needed
-      if (showYearOnFirstTick && isFirstTickOfDate) {
-        return `${d3.utcFormat('%Y-%m-%d')(date)} ${hourStr}`;
-      } else if (timeRange > oneDay) {
-        return `${d3.utcFormat('%b %d')(date)} ${hourStr}`;
+    if (timeRange <= oneDay) {
+      // Single day: use compact hour format for zero minutes if enabled
+      if (compactHours && date.getUTCMinutes() === 0) {
+        return `${date.getUTCHours()}h`;
       }
-      return hourStr;
+      return d3.utcFormat('%H:%M')(date);
     }
 
-    // Handle different date format presets
-    switch (dateFormat) {
-      case 'iso':
-        if (timeRange <= oneDay) {
-          return d3.utcFormat('%H:%M')(date);
-        }
-        return showYearOnFirstTick && isFirstTickOfDate
-          ? d3.utcFormat('%Y-%m-%dT%H:%M')(date)
-          : d3.utcFormat('%m-%dT%H:%M')(date);
-
-      case 'year-first':
-        if (timeRange <= oneDay) {
-          return d3.utcFormat('%H:%M')(date);
-        }
-        return showYearOnFirstTick && isFirstTickOfDate
-          ? d3.utcFormat('%Y-%m-%d %H:%M')(date)
-          : d3.utcFormat('%m-%d %H:%M')(date);
-
-      case 'verbose':
-        if (timeRange <= oneDay) {
-          return d3.utcFormat('%H:%M')(date);
-        }
-        return showYearOnFirstTick && isFirstTickOfDate
-          ? d3.utcFormat('%A, %B %d, %Y %H:%M')(date)
-          : d3.utcFormat('%A, %B %d %H:%M')(date);
-
-      case 'compact':
-        if (timeRange <= oneDay) {
-          return d3.utcFormat('%H:%M')(date);
-        }
-        return showYearOnFirstTick && isFirstTickOfDate
-          ? d3.utcFormat('%Y/%m/%d %H:%M')(date)
-          : d3.utcFormat('%m/%d %H:%M')(date);
-
-      default: // 'default'
-        if (timeRange <= oneDay) {
-          // For single day ranges, use compact hour format for zero minutes
-          if (date.getUTCMinutes() === 0) {
-            return `${date.getUTCHours()}h`;
-          }
-          return d3.utcFormat('%H:%M')(date);
-        }
-
-        // Multi-day ranges: show date only once per day
-        if (isFirstTickOfDate) {
-          // First time showing this date
-          if (date.getUTCHours() === 0 && date.getUTCMinutes() === 0) {
-            // At midnight - show just the date
-            return d3.utcFormat('%Y-%m-%d')(date);
-          } else {
-            // Not at midnight - show date + time
-            if (date.getUTCMinutes() === 0) {
-              return d3.utcFormat('%Y-%m-%d')(date) + ` ${date.getUTCHours()}h`;
-            } else {
-              return d3.utcFormat('%Y-%m-%d %H:%M')(date);
-            }
-          }
+    // Multi-day ranges: show date only once per day
+    if (isFirstTickOfDate) {
+      // First time showing this date
+      if (date.getUTCHours() === 0 && date.getUTCMinutes() === 0) {
+        // At midnight - show just the date
+        return d3.utcFormat('%Y-%m-%d')(date);
+      } else {
+        // Not at midnight - show date + time
+        if (compactHours && date.getUTCMinutes() === 0) {
+          return d3.utcFormat('%Y-%m-%d')(date) + ` ${date.getUTCHours()}h`;
         } else {
-          // Already showed date for this day, just show time
-          if (date.getUTCMinutes() === 0) {
-            // At zero minutes - show compact hour format
-            return `${date.getUTCHours()}h`;
-          } else {
-            // Not at zero minutes - show hour:minute
-            return d3.utcFormat('%H:%M')(date);
-          }
+          return d3.utcFormat('%Y-%m-%d %H:%M')(date);
         }
+      }
+    } else {
+      // Already showed date for this day, just show time
+      if (compactHours && date.getUTCMinutes() === 0) {
+        // At zero minutes - show compact hour format if enabled
+        return `${date.getUTCHours()}h`;
+      } else {
+        // Not at zero minutes or compact hours disabled - show hour:minute
+        return d3.utcFormat('%H:%M')(date);
+      }
     }
   };
 }
 
-/**
- * Check if date crosses year boundary compared to previous date
- */
-function crossesYearBoundary(currentDate: Date, previousDate: Date | null): boolean {
-  if (!previousDate) return false;
-  return currentDate.getUTCFullYear() !== previousDate.getUTCFullYear();
-}
 
 /**
  * Draw grid lines and axes
@@ -300,49 +240,8 @@ function drawGrid(
     .attr('stroke', COLORS.grid)
     .attr('stroke-dasharray', '2,2');
 
-  // Get the tick dates for formatting
-  const tickDates = xScale.ticks(xTicks);
-  let previousDate: Date | null = null;
-
-  // Pre-create formatters for efficiency
-  // For default format, track which dates we've already shown
+  // Track which dates we've already shown for multi-day ranges
   const shownDates = new Set<string>();
-
-  const formatters = tickDates.map((d, i) => {
-    const isFirstTick = i === 0;
-    const crossesYear = crossesYearBoundary(d, previousDate);
-    const shouldShowYear = config.showYearOnFirstTick && (isFirstTick || crossesYear);
-
-    // For default format, check if this is the first time we're showing this date
-    let isFirstTickOfDate = false;
-    if (config.dateFormat === 'default' && timeRange > 24 * 60 * 60 * 1000) {
-      const dateKey = `${d.getUTCFullYear()}-${d.getUTCMonth()}-${d.getUTCDate()}`;
-      isFirstTickOfDate = !shownDates.has(dateKey);
-      if (isFirstTickOfDate) {
-        shownDates.add(dateKey);
-      }
-    } else {
-      // For other formats, use the old logic
-      isFirstTickOfDate = i === 0 || (previousDate !== null &&
-        (d.getUTCDate() !== previousDate.getUTCDate() ||
-         d.getUTCMonth() !== previousDate.getUTCMonth() ||
-         d.getUTCFullYear() !== previousDate.getUTCFullYear()));
-    }
-
-    const formatter = createDateFormatter(
-      config.dateFormat,
-      config.compactHours,
-      shouldShowYear,
-      timeRange,
-      isFirstTickOfDate
-    );
-
-    previousDate = d;
-    return formatter;
-  });
-
-  // Reset previousDate for the actual text rendering
-  previousDate = null;
 
   xAxisGroup.append('text')
     .attr('x', d => xScale(d))
@@ -351,13 +250,19 @@ function drawGrid(
     .attr('text-anchor', 'middle')
     .attr('font-size', '11px')
     // .attr('transform', d => `rotate(-45, ${xScale(d)}, ${height + 3})`)
-    .text((d, i) => {
-      const formatter = formatters[i];
-      if (!formatter) {
-        return '';
+    .text(d => {
+      // For multi-day ranges, check if this is the first time showing this date
+      let isFirstTickOfDate = false;
+      if (timeRange > oneDay) {
+        const dateKey = `${d.getUTCFullYear()}-${d.getUTCMonth()}-${d.getUTCDate()}`;
+        isFirstTickOfDate = !shownDates.has(dateKey);
+        if (isFirstTickOfDate) {
+          shownDates.add(dateKey);
+        }
       }
-      const result = formatter(d);
-      return result;
+
+      const formatter = createDateFormatter(config.compactHours, timeRange, isFirstTickOfDate);
+      return formatter(d);
     });
 
   // Draw Y-axis grid and labels for offset

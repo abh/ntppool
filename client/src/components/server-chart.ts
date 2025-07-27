@@ -164,9 +164,7 @@ export class ServerChartComponent extends BaseChartComponent {
         height: this.options.height,
         showOnlyActiveTesting: this.shouldShowLegendOnly(),
         developerMode: this.isDeveloperMode,
-        dateFormat: devSettings.dateFormat,
-        compactHours: devSettings.compactHours,
-        showYearOnFirstTick: devSettings.showYear
+        compactHours: devSettings.compactHours
       });
 
       // Update container dimensions
@@ -261,33 +259,12 @@ export class ServerChartComponent extends BaseChartComponent {
           <small><strong>🔧 Developer Mode</strong> (Ctrl+Shift+D to toggle)</small>
         </div>
         <div class="card-body">
-          <div class="row">
-            <div class="col-md-6">
-              <div class="form-group mb-2">
-                <label class="form-label small">Date Format:</label>
-                <select class="form-select form-select-sm" id="dateFormatSelect">
-                  <option value="default">Default (%H:%M / %b %d %H:%M)</option>
-                  <option value="iso">ISO Format (%Y-%m-%dT%H:%M)</option>
-                  <option value="year-first">Year First (%Y-%m-%d %H:%M)</option>
-                  <option value="verbose">Verbose (%A, %B %d, %Y %H:%M)</option>
-                  <option value="compact">Compact (%m/%d %H:%M)</option>
-                </select>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="form-check mb-2">
-                <input class="form-check-input" type="checkbox" id="compactHoursCheck">
-                <label class="form-check-label small" for="compactHoursCheck">
-                  Compact hours (6h vs 06:00)
-                </label>
-              </div>
-              <div class="form-check mb-2">
-                <input class="form-check-input" type="checkbox" id="showYearCheck">
-                <label class="form-check-label small" for="showYearCheck">
-                  Show year on first tick
-                </label>
-              </div>
-            </div>
+          <p class="text-muted small mb-2">Future chart customization options will appear here.</p>
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" id="compactHoursCheck">
+            <label class="form-check-label small" for="compactHoursCheck">
+              Compact hours (6h vs 06:00)
+            </label>
           </div>
         </div>
       </div>
@@ -309,24 +286,10 @@ export class ServerChartComponent extends BaseChartComponent {
   private setupDeveloperMenuEvents(): void {
     if (!this.developerMenu) return;
 
-    const dateFormatSelect = this.developerMenu.querySelector('#dateFormatSelect') as HTMLSelectElement;
     const compactHoursCheck = this.developerMenu.querySelector('#compactHoursCheck') as HTMLInputElement;
-    const showYearCheck = this.developerMenu.querySelector('#showYearCheck') as HTMLInputElement;
-
-    if (dateFormatSelect) {
-      dateFormatSelect.addEventListener('change', () => {
-        this.updateDeveloperSettings();
-      });
-    }
 
     if (compactHoursCheck) {
       compactHoursCheck.addEventListener('change', () => {
-        this.updateDeveloperSettings();
-      });
-    }
-
-    if (showYearCheck) {
-      showYearCheck.addEventListener('change', () => {
         this.updateDeveloperSettings();
       });
     }
@@ -338,18 +301,12 @@ export class ServerChartComponent extends BaseChartComponent {
   private updateDeveloperSettings(): void {
     if (!this.developerMenu) return;
 
-    const dateFormatSelect = this.developerMenu.querySelector('#dateFormatSelect') as HTMLSelectElement;
     const compactHoursCheck = this.developerMenu.querySelector('#compactHoursCheck') as HTMLInputElement;
-    const showYearCheck = this.developerMenu.querySelector('#showYearCheck') as HTMLInputElement;
 
     // Store settings in localStorage for persistence
-    const newDateFormat = dateFormatSelect?.value || 'default';
     const newCompactHours = compactHoursCheck?.checked ? 'true' : 'false';
-    const newShowYear = showYearCheck?.checked ? 'true' : 'false';
 
-    localStorage.setItem('ntppool-dev-dateFormat', newDateFormat);
     localStorage.setItem('ntppool-dev-compactHours', newCompactHours);
-    localStorage.setItem('ntppool-dev-showYear', newShowYear);
 
     // Re-render chart with new settings
     this.render();
@@ -373,18 +330,10 @@ export class ServerChartComponent extends BaseChartComponent {
 
     const settings = this.getDeveloperSettings();
 
-    const dateFormatSelect = this.developerMenu.querySelector('#dateFormatSelect') as HTMLSelectElement;
     const compactHoursCheck = this.developerMenu.querySelector('#compactHoursCheck') as HTMLInputElement;
-    const showYearCheck = this.developerMenu.querySelector('#showYearCheck') as HTMLInputElement;
 
-    if (dateFormatSelect) {
-      dateFormatSelect.value = settings.dateFormat;
-    }
     if (compactHoursCheck) {
       compactHoursCheck.checked = settings.compactHours;
-    }
-    if (showYearCheck) {
-      showYearCheck.checked = settings.showYear;
     }
   }
 
@@ -393,9 +342,7 @@ export class ServerChartComponent extends BaseChartComponent {
    */
   private getDeveloperSettings() {
     return {
-      dateFormat: localStorage.getItem('ntppool-dev-dateFormat') || 'default',
-      compactHours: localStorage.getItem('ntppool-dev-compactHours') === 'true',
-      showYear: localStorage.getItem('ntppool-dev-showYear') === 'true'
+      compactHours: localStorage.getItem('ntppool-dev-compactHours') === 'true'
     };
   }
 }
