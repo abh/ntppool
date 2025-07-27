@@ -10,14 +10,7 @@
 <div class="container">
 	<div id="hd" class="row">
 		<h1>pool.ntp.org</h1>
-		[% IF combust.deployment_mode != 'prod' %]
-		<p class="develwarning">Note: This is a development/test version of
-		the NTP Pool system!  For the real site with real data, go to <a
-		href="https://www.ntppool.org/">www.ntppool.org</a>.  Discussion and
-		bug reports for the beta/test site here, see <a
-		href="https://community.ntppool.org/c/dev">NTP Pool development</a>.
-		</p>
-		[% END %]
+		[% PROCESS "tpl/common/development_notice.html" %]
 
 	</div>
 	<div class="row">
