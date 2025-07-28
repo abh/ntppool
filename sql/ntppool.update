@@ -1240,6 +1240,20 @@ where tls_name not like '%.system';
 #148
 update monitors set is_current=null where is_current=0;
 
+#149
+-- OIDC token issuing service
+CREATE TABLE oidc_public_keys (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    kid VARCHAR(255) NOT NULL UNIQUE,     -- Key ID from certificate
+    public_key TEXT NOT NULL,             -- PEM-encoded ECC public key
+    algorithm VARCHAR(20) NOT NULL,       -- ES384 for P-384
+    created_at TIMESTAMP NOT NULL,
+    expires_at TIMESTAMP NULL,            -- When to remove from JWKS (key expiry + 24h)
+    active BOOLEAN NOT NULL DEFAULT TRUE, -- Whether currently signing with this key
+    INDEX idx_kid (kid),
+    INDEX idx_active_expires (active, expires_at)
+);
+
 #todo
 
 

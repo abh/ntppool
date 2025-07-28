@@ -762,6 +762,48 @@ __PACKAGE__->make_manager_methods('monitor_registrations');
 eval { require NP::Model::MonitorRegistration }
   or $@ !~ m:^Can't locate NP/Model/MonitorRegistration.pm: and die $@;
 
+{ package NP::Model::OidcPublicKey;
+
+use strict;
+
+use base qw(NP::Model::_Object);
+
+__PACKAGE__->meta->setup(
+  table   => 'oidc_public_keys',
+
+  columns => [
+    id         => { type => 'bigserial', not_null => 1 },
+    kid        => { type => 'varchar', length => 255, not_null => 1 },
+    public_key => { type => 'text', length => 65535, not_null => 1 },
+    algorithm  => { type => 'varchar', length => 20, not_null => 1 },
+    created_at => { type => 'timestamp', not_null => 1 },
+    expires_at => { type => 'timestamp' },
+    active     => { type => 'integer', default => 1, not_null => 1 },
+  ],
+
+  primary_key_columns => [ 'id' ],
+
+  unique_key => [ 'kid' ],
+);
+
+push @table_classes, __PACKAGE__;
+}
+
+{ package NP::Model::OidcPublicKey::Manager;
+
+use strict;
+
+our @ISA = qw(Combust::RoseDB::Manager);
+
+sub object_class { 'NP::Model::OidcPublicKey' }
+
+__PACKAGE__->make_manager_methods('oidc_public_keies');
+}
+
+# Allow user defined methods to be added
+eval { require NP::Model::OidcPublicKey }
+  or $@ !~ m:^Can't locate NP/Model/OidcPublicKey.pm: and die $@;
+
 { package NP::Model::SchemaRevision;
 
 use strict;
@@ -1087,7 +1129,7 @@ __PACKAGE__->meta->setup(
     score_ts                   => { type => 'datetime' },
     score_raw                  => { type => 'scalar', default => '0', length => 64, not_null => 1 },
     stratum                    => { type => 'integer' },
-    status                     => { type => 'enum', check_in => [ 'new', 'candidate', 'testing', 'active' ], default => 'new', not_null => 1 },
+    status                     => { type => 'enum', check_in => [ 'candidate', 'testing', 'active' ], default => 'candidate', not_null => 1 },
     queue_ts                   => { type => 'datetime' },
     created_on                 => { type => 'datetime', default => 'now', not_null => 1 },
     modified_on                => { type => 'timestamp', not_null => 1 },
@@ -2014,6 +2056,7 @@ eval { require NP::Model::ZoneServerCount }
   sub log_score { our $log_score ||= bless [], 'NP::Model::LogScore::Manager' }
   sub monitor { our $monitor ||= bless [], 'NP::Model::Monitor::Manager' }
   sub monitor_registration { our $monitor_registration ||= bless [], 'NP::Model::MonitorRegistration::Manager' }
+  sub oidc_public_key { our $oidc_public_key ||= bless [], 'NP::Model::OidcPublicKey::Manager' }
   sub schema_revision { our $schema_revision ||= bless [], 'NP::Model::SchemaRevision::Manager' }
   sub scorer_statu { our $scorer_statu ||= bless [], 'NP::Model::ScorerStatu::Manager' }
   sub server { our $server ||= bless [], 'NP::Model::Server::Manager' }
