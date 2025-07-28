@@ -1,17 +1,17 @@
-<form id="zone_list"
-      hx-post="/manage/admin/zones/save?server=[% server.ip | uri %]"
-      hx-target="#zone_list"
-      hx-swap="outerHTML"
-      hx-indicator="#zone-saving"
-      hx-include="[name='auth_token']"
-      class="zone-edit-form d-inline">
+<form id="zone_list" class="zone-edit-form d-inline">
     <input type="hidden" name="auth_token" value="[% combust.auth_token %]">
     <input type="text"
            name="zones"
            value="[% zones | html %]"
            class="form-control form-control-sm d-inline-block zone-input-width"
            placeholder="us uk europe @">
-    <button type="submit" class="btn btn-sm btn-primary">Save</button>
+    <button type="button"
+            class="btn btn-sm btn-primary"
+            hx-post="/manage/admin/zones/save?server=[% server.ip | uri %]"
+            hx-target="#zone_list"
+            hx-swap="outerHTML"
+            hx-indicator="#zone-saving"
+            hx-include="[name='auth_token'], [name='zones']">Save</button>
     <button type="button"
             class="btn btn-sm btn-secondary"
             hx-get="/manage/admin/zones/edit?server=[% server.ip | uri %]&cancel=1"
