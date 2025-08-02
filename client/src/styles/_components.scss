@@ -751,6 +751,13 @@ body.mobile-nav-open {
             display: none;
         }
     }
+
+    // Tablet/intermediate sizes: reduce header font size to match sidebar scale
+    @media (min-width: $breakpoint-desktop-min) and (max-width: $breakpoint-tablet-max) {
+        .translations-header {
+            font-size: 114%; // Match the .mod font-size instead of h3 144%
+        }
+    }
 }
 
 .graph-desc {
