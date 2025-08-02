@@ -141,7 +141,7 @@ ul#nav {
 }
 
 // Mobile responsive navigation
-@media (max-width: 768px) {
+@media (max-width: $breakpoint-mobile-max) {
     ul#nav {
         // Allow wrapping on mobile
         flex-wrap: wrap !important;
@@ -662,7 +662,7 @@ a.up {
 body.mobile-nav-open {
     overflow: hidden;
 
-    @media (min-width: 768px) {
+    @media (min-width: $breakpoint-desktop-min) {
         overflow: auto; // Reset on desktop
     }
 }
@@ -714,7 +714,7 @@ body.mobile-nav-open {
     }
 
     // Mobile behavior: collapsed by default, expanded when checked
-    @media (max-width: 767px) {
+    @media (max-width: $breakpoint-mobile-max) {
         .translations-list {
             max-height: 0;
             overflow: hidden;
@@ -742,7 +742,7 @@ body.mobile-nav-open {
     }
 
     // Desktop behavior: always visible
-    @media (min-width: 768px) {
+    @media (min-width: $breakpoint-desktop-min) {
         .translations-list {
             display: block;
         }
@@ -1626,7 +1626,7 @@ div.product-group .btn {
 }
 
 // Responsive adjustments for developer menu
-@media (max-width: 768px) {
+@media (max-width: $breakpoint-mobile-max) {
     .developer-menu {
         .row {
             margin: 0;

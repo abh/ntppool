@@ -15,6 +15,10 @@ $link-color: #3885B4;
 // Remove link underlines globally
 $link-decoration: none;
 
+// Breakpoints (consistent with Bootstrap md breakpoint)
+$breakpoint-mobile-max: 767px;
+$breakpoint-desktop-min: 768px;
+
 // Component-specific variables
 $nav-link-color: #3885B4;
 

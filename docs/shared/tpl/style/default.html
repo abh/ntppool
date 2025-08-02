@@ -34,7 +34,7 @@
 			</div>
 			<nav class="mobile-nav-body">
 				[% PROCESS tpl/navigation_topbar.html %]
-				[% PROCESS tpl/navigation_sidebar.html %]
+				[% sidebar_context = '-mobile'; PROCESS tpl/navigation_sidebar.html %]
 			</nav>
 		</div>
 	</div>
@@ -43,13 +43,15 @@
 		<!-- Desktop sidebar - hidden on mobile -->
 		<div id="sidebar" class="col-md-3 d-none d-md-block">
 			<h1><a href="[% combust.www_url("/") %]">NTP Pool Project</a></h1>
-			[% PROCESS tpl/navigation_sidebar.html %]
+			<div id="navigation-container">
+				[% sidebar_context = '-desktop'; PROCESS tpl/navigation_sidebar.html %]
+			</div>
 		</div>
 
 		<!-- Main content - full width on mobile, 9/12 on desktop -->
 		<div id="mainbar" class="col-12 col-md-9">
 			<!-- Top navigation only shown on desktop -->
-			<div class="d-none d-md-block">
+			<div class="d-none d-md-block" id="topbar-navigation">
 				[% PROCESS tpl/navigation_topbar.html %]
 			</div>
 			<br class="clearboth">
