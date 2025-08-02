@@ -390,12 +390,18 @@ function drawDataPoints(
     .attr('cy', d => yScoreScale(d.score))
     .attr('fill', d => getScoreColor(d.step))
     .on('mouseover', function (_event: MouseEvent, d: ServerHistoryPoint) {
+      const startTime = performance.now();
+      console.log('🎨 Score point mouseover:', { monitorId: d.monitor_id, timestamp: startTime });
       fadeOtherMonitors(g, d.monitor_id, 0.2);
       highlightTableCells(d.monitor_id, true);
+      console.log('🎨 Score point mouseover complete:', { duration: performance.now() - startTime });
     })
     .on('mouseout', function () {
+      const startTime = performance.now();
+      console.log('🎨 Score point mouseout:', { timestamp: startTime });
       fadeOtherMonitors(g, null, 1);
       highlightTableCells(null, false);
+      console.log('🎨 Score point mouseout complete:', { duration: performance.now() - startTime });
     });
 
   // Draw offset points (only data with valid offset values)
@@ -408,12 +414,18 @@ function drawDataPoints(
     .attr('cy', d => yOffsetScale(d.offset!))
     .attr('fill', d => getOffsetColor(d.offset!))
     .on('mouseover', function (_event: MouseEvent, d: ServerHistoryPoint) {
+      const startTime = performance.now();
+      console.log('📊 Offset point mouseover:', { monitorId: d.monitor_id, timestamp: startTime });
       fadeOtherMonitors(g, d.monitor_id, 0.25);
       highlightTableCells(d.monitor_id, true);
+      console.log('📊 Offset point mouseover complete:', { duration: performance.now() - startTime });
     })
     .on('mouseout', function () {
+      const startTime = performance.now();
+      console.log('📊 Offset point mouseout:', { timestamp: startTime });
       fadeOtherMonitors(g, null, 1);
       highlightTableCells(null, false);
+      console.log('📊 Offset point mouseout complete:', { duration: performance.now() - startTime });
     });
 }
 
@@ -589,32 +601,50 @@ function createTable(additionalClass: string): HTMLTableElement {
  */
 function addTableEventListeners(table: HTMLTableElement, chartGroup: GSelection): void {
   table.addEventListener('mouseenter', function (e) {
+    const startTime = performance.now();
     const target = e.target as Element;
 
     // Check if we're hovering over a monitor cell (has data-monitor-id)
     if (target instanceof HTMLElement && target.dataset['monitorId']) {
       const monitorId = parseInt(target.dataset['monitorId'], 10);
+      console.log('🏓 Table mouseenter:', { monitorId, timestamp: startTime });
 
       // Find ALL cells in the table with the same monitor ID
       const monitorCells = table.querySelectorAll(`[data-monitor-id="${monitorId}"]`);
+      console.log('🏓 Table DOM query found cells:', monitorCells.length);
       monitorCells.forEach(cell => cell.classList.add('monitor-cell-hover'));
 
       // Fade other monitors in the chart
       fadeOtherMonitors(chartGroup, monitorId, 0.25);
+
+      console.log('🏓 Table mouseenter complete:', {
+        monitorId,
+        duration: performance.now() - startTime
+      });
     }
   }, true);
 
   table.addEventListener('mouseleave', function (e) {
+    const startTime = performance.now();
     const target = e.target as Element;
 
     // Check if we're leaving a monitor cell
     if (target instanceof HTMLElement && target.dataset['monitorId']) {
+      const monitorId = parseInt(target.dataset['monitorId'], 10);
+      console.log('🏓 Table mouseleave:', { monitorId, timestamp: startTime });
+
       // Remove highlight from all monitor cells in the table
       const allCells = table.querySelectorAll('.monitor-cell-hover');
+      console.log('🏓 Table DOM query found highlighted cells:', allCells.length);
       allCells.forEach(cell => cell.classList.remove('monitor-cell-hover'));
 
       // Reset chart highlighting
       fadeOtherMonitors(chartGroup, null, 1);
+
+      console.log('🏓 Table mouseleave complete:', {
+        monitorId,
+        duration: performance.now() - startTime
+      });
     }
   }, true);
 }
@@ -867,28 +897,67 @@ function fadeOtherMonitors(
   monitorId: number | null,
   opacity: number
 ): void {
-  chartGroup.selectAll<SVGElement, ServerHistoryPoint>('.monitor-data')
+  const startTime = performance.now();
+  const selection = chartGroup.selectAll<SVGElement, ServerHistoryPoint>('.monitor-data');
+  const elementCount = selection.size();
+
+  console.log('🎯 fadeOtherMonitors start:', {
+    monitorId,
+    opacity,
+    elementCount,
+    timestamp: startTime
+  });
+
+  // Use a single transition and log completion only once
+  const transition = selection
     .transition()
     .duration(200)
     .style('opacity', d => {
       if (monitorId === null) return 1;
       return d.monitor_id === monitorId ? 1 : opacity;
     });
+
+  // Log completion only once by using transition.end() promise
+  transition.end().then(() => {
+    const endTime = performance.now();
+    console.log('🎯 fadeOtherMonitors end:', {
+      monitorId,
+      elementCount,
+      duration: endTime - startTime,
+      timestamp: endTime
+    });
+  }).catch(() => {
+    // Transition was interrupted, which is normal during rapid mouse movement
+    console.log('🎯 fadeOtherMonitors interrupted:', { monitorId, elementCount });
+  });
 }
 
 /**
  * Highlight table cells for the specified monitor
  */
 function highlightTableCells(monitorId: number | null, highlight: boolean): void {
+  const startTime = performance.now();
+  console.log('📋 highlightTableCells start:', { monitorId, highlight, timestamp: startTime });
+
   if (highlight && monitorId !== null) {
     // Find all table cells with matching monitor ID
     const monitorCells = document.querySelectorAll(`[data-monitor-id="${monitorId}"]`);
+    console.log('📋 DOM query found cells:', monitorCells.length);
     monitorCells.forEach(cell => cell.classList.add('monitor-cell-hover'));
   } else {
     // Remove highlight from all table cells
     const allHighlighted = document.querySelectorAll('.monitor-cell-hover');
+    console.log('📋 DOM query found highlighted cells:', allHighlighted.length);
     allHighlighted.forEach(cell => cell.classList.remove('monitor-cell-hover'));
   }
+
+  const endTime = performance.now();
+  console.log('📋 highlightTableCells end:', {
+    monitorId,
+    highlight,
+    duration: endTime - startTime,
+    timestamp: endTime
+  });
 }
 
 // Export for backward compatibility with global function
