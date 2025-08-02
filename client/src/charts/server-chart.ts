@@ -908,27 +908,19 @@ function fadeOtherMonitors(
     timestamp: startTime
   });
 
-  // Use a single transition and log completion only once
-  const transition = selection
-    .transition()
-    .duration(200)
-    .style('opacity', d => {
-      if (monitorId === null) return 1;
-      return d.monitor_id === monitorId ? 1 : opacity;
-    });
+  // Apply opacity changes immediately without transitions
+  selection.style('opacity', d => {
+    if (monitorId === null) return 1;
+    return d.monitor_id === monitorId ? 1 : opacity;
+  });
 
-  // Log completion only once by using transition.end() promise
-  transition.end().then(() => {
-    const endTime = performance.now();
-    console.log('🎯 fadeOtherMonitors end:', {
-      monitorId,
-      elementCount,
-      duration: endTime - startTime,
-      timestamp: endTime
-    });
-  }).catch(() => {
-    // Transition was interrupted, which is normal during rapid mouse movement
-    console.log('🎯 fadeOtherMonitors interrupted:', { monitorId, elementCount });
+  // Log completion immediately since there's no transition
+  const endTime = performance.now();
+  console.log('🎯 fadeOtherMonitors end:', {
+    monitorId,
+    elementCount,
+    duration: endTime - startTime,
+    timestamp: endTime
   });
 }
 
