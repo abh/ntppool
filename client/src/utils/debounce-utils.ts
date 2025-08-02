@@ -3,6 +3,8 @@
  * Reduces event frequency during rapid mouse movement while maintaining responsiveness
  */
 
+export const DEFAULT_HOVER_DEBOUNCE_DELAY = 40;
+
 export interface DebounceState {
   timeoutId: number | null;
   lastMonitorId: number | null;
@@ -22,7 +24,7 @@ export interface DebouncedFunction {
 /**
  * Create a debouncer for mouse hover events with state tracking
  */
-export function createHoverDebouncer(delay: number = 75): DebouncedFunction {
+export function createHoverDebouncer(delay: number = DEFAULT_HOVER_DEBOUNCE_DELAY): DebouncedFunction {
   const state: DebounceState = {
     timeoutId: null,
     lastMonitorId: null,

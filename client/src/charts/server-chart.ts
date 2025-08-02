@@ -16,7 +16,7 @@ import {
   sortMonitors,
   clearContainer
 } from '@/utils/chart-utils.js';
-import { createHoverDebouncer, globalHoverState } from '@/utils/debounce-utils.js';
+import { createHoverDebouncer, globalHoverState, DEFAULT_HOVER_DEBOUNCE_DELAY } from '@/utils/debounce-utils.js';
 import type {
   ServerScoreHistoryResponse,
   ServerHistoryPoint,
@@ -381,7 +381,7 @@ function drawDataPoints(
   yScoreScale: PowerScale
 ): void {
   // Create debouncers for chart point interactions
-  const chartHoverDebouncer = createHoverDebouncer(75);
+  const chartHoverDebouncer = createHoverDebouncer(DEFAULT_HOVER_DEBOUNCE_DELAY);
 
   // Draw score points (all monitor data, regardless of offset)
   g.selectAll<SVGCircleElement, ServerHistoryPoint>('circle.scores')
@@ -399,7 +399,7 @@ function drawDataPoints(
       // Use debouncer for hover actions
       chartHoverDebouncer.debounce(() => {
         console.log('🎨 Score point executing debounced action:', { monitorId: d.monitor_id });
-        fadeOtherMonitors(g, d.monitor_id, 0.2);
+        fadeOtherMonitors(g, d.monitor_id, 0.05);
         highlightTableCells(d.monitor_id, true);
         globalHoverState.setHover(d.monitor_id, 'chart');
       }, d.monitor_id);
@@ -433,7 +433,7 @@ function drawDataPoints(
       // Use debouncer for hover actions
       chartHoverDebouncer.debounce(() => {
         console.log('📊 Offset point executing debounced action:', { monitorId: d.monitor_id });
-        fadeOtherMonitors(g, d.monitor_id, 0.25);
+        fadeOtherMonitors(g, d.monitor_id, 0.12);
         highlightTableCells(d.monitor_id, true);
         globalHoverState.setHover(d.monitor_id, 'chart');
       }, d.monitor_id);
@@ -563,7 +563,7 @@ function createSingleTableLegend(
   chartGroup: GSelection
 ): void {
   // Create ONE shared debouncer for the entire legend system
-  const sharedLegendDebouncer = createHoverDebouncer(75);
+  const sharedLegendDebouncer = createHoverDebouncer(DEFAULT_HOVER_DEBOUNCE_DELAY);
 
   // Process statuses in priority order: Active, Testing first, then others
   const priorityStatuses = ['active', 'testing'];
@@ -641,7 +641,7 @@ function setTargetMonitor(targetId: number | null, chartGroup: GSelection, table
     targetCells.forEach(cell => cell.classList.add('monitor-cell-hover'));
 
     // Update chart
-    fadeOtherMonitors(chartGroup, targetId, 0.25);
+    fadeOtherMonitors(chartGroup, targetId, 0.15);
     globalHoverState.setHover(targetId, 'table');
   } else {
     // Clear all (no filter state)
@@ -963,6 +963,16 @@ function fadeOtherMonitors(
   selection.style('opacity', d => {
     if (monitorId === null) return 1;
     return d.monitor_id === monitorId ? 1 : opacity;
+  });
+
+  // For score points, also change color to gray when dimmed
+  const scorePoints = chartGroup.selectAll<SVGElement, ServerHistoryPoint>('.scores.monitor-data');
+  scorePoints.style('fill', d => {
+    if (monitorId === null) {
+      // Restore original color
+      return getScoreColor(d.step);
+    }
+    return d.monitor_id === monitorId ? getScoreColor(d.step) : '#888888';
   });
 
   // Log completion immediately since there's no transition
