@@ -242,12 +242,12 @@ div#tagline {
     padding: 4px 0;
     font-size: 115%;
     list-style: none;
+    display: flex;
+    align-items: center;
 
     .location {
         display: block;
         width: 125px;
-        height: 40px;
-        float: left;
         font-size: 100%;
 
         a {
@@ -263,7 +263,6 @@ div#tagline {
         display: block;
         width: 50px;
         height: 40px;
-        float: left;
         font-size: 100%;
         filter: invert(.35);
     }
@@ -275,7 +274,8 @@ div#tagline {
 }
 
 #servers .count {
-    margin: 10px;
+    margin-left: auto;
+    margin-right: 10px;
 }
 
 // Code and pre styling
@@ -793,6 +793,55 @@ body.mobile-nav-open {
         margin-top: 40px;
     }
 }
+
+// Mobile responsive styles for Active Servers box
+@media (max-width: $breakpoint-mobile-max) {
+    #activity {
+        float: right;
+        padding: 6px;
+        margin: 0 0 15px 10px;
+        width: auto;
+        max-width: 45%;
+        box-sizing: border-box;
+
+        h3 {
+            font-size: 110%;
+            margin-bottom: 8px;
+        }
+
+        span.date {
+            display: none !important; // Hide date on mobile
+        }
+    }
+
+    .date {
+        display: none;
+    }
+
+    #servers .area {
+        padding: 2px 0;
+        font-size: 95%;
+
+        .location {
+            width: 80px;
+            height: auto; // Allow height to adjust for wrapped text
+            font-size: 90%;
+            line-height: 1.0; // Very tight line spacing for wrapped text
+            margin-bottom: 4px; // Add spacing between location items
+        }
+
+        .location-img {
+            width: 35px;
+            height: 28px;
+        }
+    }
+
+    #servers .count {
+        margin: 6px;
+        font-size: 90%;
+    }
+}
+
 
 // Italic text styling
 em {
