@@ -7,9 +7,19 @@
 import Dropdown from 'bootstrap/js/src/dropdown';
 import Alert from 'bootstrap/js/src/alert';
 import Collapse from 'bootstrap/js/src/collapse';
+import Popover from 'bootstrap/js/src/popover';
 
 // Export for potential programmatic use
-export { Dropdown, Alert, Collapse };
+export { Dropdown, Alert, Collapse, Popover };
+
+// Make Bootstrap components available globally for manual initialization
+if (typeof window !== 'undefined') {
+  window.bootstrap = window.bootstrap || {};
+  window.bootstrap.Dropdown = Dropdown;
+  window.bootstrap.Alert = Alert;
+  window.bootstrap.Collapse = Collapse;
+  window.bootstrap.Popover = Popover;
+}
 
 /**
  * Initialize Bootstrap components when DOM is ready
@@ -54,6 +64,14 @@ function initializeComponents() {
   if (collapses.length > 0) {
     console.log(`Initialized ${collapses.length} Bootstrap collapse(s)`);
   }
+
+  // Initialize all popovers
+  const popovers = document.querySelectorAll('[data-bs-toggle="popover"]');
+  popovers.forEach(element => new Popover(element));
+
+  if (popovers.length > 0) {
+    console.log(`Initialized ${popovers.length} Bootstrap popover(s)`);
+  }
 }
 
 // Initialize when DOM is ready
@@ -91,5 +109,9 @@ document.addEventListener('htmx:afterSwap', (event) => {
     // Initialize collapse elements in new content
     target.querySelectorAll('[data-bs-toggle="collapse"]')
       .forEach(element => new Collapse(element.getAttribute('data-bs-target') || element.getAttribute('href')));
+
+    // Initialize popovers in new content
+    target.querySelectorAll('[data-bs-toggle="popover"]')
+      .forEach(element => new Popover(element));
   }
 });

@@ -159,6 +159,18 @@ export function createServerChart(
   // Create legend if specified
   if (config.legend) {
     createLegend(config.legend, data.monitors, g, sharedDebouncer, config.showOnlyActiveTesting);
+
+    // Dispatch event to trigger Bootstrap initialization for any new popovers
+    const popovers = config.legend.querySelectorAll('[data-bs-toggle="popover"]');
+    if (popovers.length > 0) {
+      document.dispatchEvent(new CustomEvent('chart-popovers-created', {
+        detail: {
+          count: popovers.length,
+          container: config.legend,
+          popovers: Array.from(popovers)
+        }
+      }));
+    }
   }
 }
 
@@ -934,6 +946,16 @@ function createMonitorRow(monitor: Monitor, includeRtt: boolean, threeColumn = f
   // Add monitor ID to individual cells for precise hover targeting
   nameCell.dataset['monitorId'] = monitor.id.toString();
   scoreCell.dataset['monitorId'] = monitor.id.toString();
+
+  // Add popover with RTT data for monitors in "other statuses" table (3-column layout without RTT column)
+  if (threeColumn && !includeRtt && monitor.avg_rtt !== undefined) {
+    nameCell.setAttribute('data-bs-toggle', 'popover');
+    nameCell.setAttribute('data-bs-trigger', 'hover');
+    nameCell.setAttribute('data-bs-placement', 'top');
+    nameCell.setAttribute('data-bs-content', `RTT: ${monitor.avg_rtt.toFixed(1)}ms`);
+    // Remove title attribute to prevent native tooltip conflicts
+    // Keep normal cursor (no special cursor styling)
+  }
 
   row.appendChild(nameCell);
   row.appendChild(scoreCell);
