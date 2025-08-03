@@ -8,9 +8,10 @@ import Dropdown from 'bootstrap/js/src/dropdown';
 import Alert from 'bootstrap/js/src/alert';
 import Collapse from 'bootstrap/js/src/collapse';
 import Popover from 'bootstrap/js/src/popover';
+import Modal from 'bootstrap/js/src/modal';
 
 // Export for potential programmatic use
-export { Dropdown, Alert, Collapse, Popover };
+export { Dropdown, Alert, Collapse, Popover, Modal };
 
 // Make Bootstrap components available globally for manual initialization
 if (typeof window !== 'undefined') {
@@ -19,6 +20,7 @@ if (typeof window !== 'undefined') {
   window.bootstrap.Alert = Alert;
   window.bootstrap.Collapse = Collapse;
   window.bootstrap.Popover = Popover;
+  window.bootstrap.Modal = Modal;
 }
 
 /**

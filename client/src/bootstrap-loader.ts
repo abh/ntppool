@@ -13,6 +13,7 @@ declare global {
       Alert?: any;
       Collapse?: any;
       Popover?: any;
+      Modal?: any;
     };
   }
 }

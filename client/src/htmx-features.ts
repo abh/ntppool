@@ -318,6 +318,7 @@ function extractErrorDetails(xhr: XMLHttpRequest): ErrorDetails {
   return { message, traceid };
 }
 
+
 /**
  * Initialize all HTMX enhanced features
  */
