@@ -1,5 +1,41 @@
 [%# Reusable metrics display components %]
 
+[%# Define metric types for DRY iteration %]
+[% BLOCK define_metric_types %]
+  [% metric_types = [
+    { key = 'ok', label = 'ok', always_show = 1 },
+    { key = 'timeout', label = 'timeout', always_show = 0 },
+    { key = 'offset', label = 'offset', always_show = 0 },
+    { key = 'signature_validation', label = 'signature', always_show = 0 },
+    { key = 'batch_out_of_order', label = 'batch', always_show = 0 }
+  ] %]
+  [% time_periods = [
+    { key = 'metrics_1h', label = '1 hour' },
+    { key = 'metrics_24h', label = '24 hours' }
+  ] %]
+[% END %]
+
+[%# Format metric breakdown components with conditional display %]
+[% BLOCK format_metric_components %]
+  [% PROCESS define_metric_types %]
+  ([%
+    components = [];
+    FOREACH type IN metric_types;
+      value = period_data.${type.key} || 0;
+      IF type.always_show || value > 0;
+        components.push(value.format('%.1f') _ ' ' _ type.label);
+      END;
+    END;
+    components.join(', ');
+  %])
+[% END %]
+
+[%# Format single time period with total and breakdown %]
+[% BLOCK format_time_period %]
+  <strong>[% period.label %]:</strong> [% (period_data.total || 0) | format('%.1f') %] tests/min
+  [% PROCESS format_metric_components %]
+[% END %]
+
 [%# Display account totals - works for both regular and admin views %]
 [% BLOCK account_totals %]
   [% totals = metrics.data.account_totals || (metrics.data.accounts.item(mon.Account.IDToken)) %]
@@ -53,15 +89,18 @@
 [% BLOCK metrics_breakdown %]
   [% IF detailed %]
     [% IF metrics_1h.total %]
-      [%# Detailed breakdown format %]
-      <strong>1 hour:</strong> [% (metrics_1h.total || 0) | format('%.1f') %] tests/min
-      ([% (metrics_1h.ok || 0) | format('%.1f') %] ok,
-      [% (metrics_1h.timeout || 0) | format('%.1f') %] timeout,
-      [% (metrics_1h.offset || 0) | format('%.1f') %] offset)<br>
-      <strong>24 hours:</strong> [% (metrics_24h.total || 0) | format('%.1f') %] tests/min
-      ([% (metrics_24h.ok || 0) | format('%.1f') %] ok,
-      [% (metrics_24h.timeout || 0) | format('%.1f') %] timeout,
-      [% (metrics_24h.offset || 0) | format('%.1f') %] offset)
+      [%# Detailed breakdown format using loops %]
+      [% PROCESS define_metric_types %]
+      [%
+        periods = [
+          { data = metrics_1h, label = '1 hour' },
+          { data = metrics_24h, label = '24 hours' }
+        ];
+        FOREACH period IN periods;
+          PROCESS format_time_period period = { label = period.label } period_data = period.data;
+          IF !loop.last; '<br>'; END;
+        END;
+      %]
     [% ELSE %]
       [%# Simple numeric format %]
       <strong>1 hour:</strong> [% (metrics_1h || 0) | format('%.1f') %] tests/min<br>
