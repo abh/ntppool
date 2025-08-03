@@ -33,6 +33,11 @@ function handleAutoRedirect(element: HTMLElement): void {
     return;
   }
 
+  // Check if this element already has a countdown to prevent duplicates
+  if (element.querySelector('#countdown')) {
+    return;
+  }
+
   // Create countdown display
   const countdownElement = createCountdownDisplay(countdown);
   element.appendChild(countdownElement);
@@ -116,7 +121,9 @@ function isMonitorError(event: HTMXEvent): boolean {
     element.closest('[data-monitor-config]') ||
     element.closest('[data-monitor-delete]') ||
     element.matches('form[action*="monitor"]') ||
-    element.closest('form[action*="monitor"]')
+    element.closest('form[action*="monitor"]') ||
+    // Any HTMX request targeting monitor endpoints
+    (element.getAttribute('hx-get') || element.getAttribute('hx-post') || '').includes('monitor')
   );
 }
 
@@ -137,11 +144,48 @@ function handleMonitorConfigError(event: HTMXEvent): void {
   const isDeleteForm = element.hasAttribute('data-monitor-delete') ||
                        element.closest('[data-monitor-delete]');
 
+  // Check if this is a modal loading error
+  const isModalError = element.getAttribute('hx-target') === '#modal-container';
+
   if (isDeleteForm) {
     handleMonitorDeletionError(xhr);
+  } else if (isModalError) {
+    handleMonitorModalError(xhr);
   } else {
     handleLegacyMonitorConfigError(xhr);
   }
+}
+
+/**
+ * Handle modal loading errors (e.g., confirm-delete modal)
+ */
+function handleMonitorModalError(xhr: XMLHttpRequest): void {
+  const modalContainer = document.getElementById('modal-container');
+
+  if (!modalContainer) {
+    console.error('Modal container element (#modal-container) not found');
+    return;
+  }
+
+  // Extract error message and trace ID
+  const { message, traceid } = extractErrorDetails(xhr);
+
+  // Create error display HTML
+  let errorHtml = `<div class="alert alert-danger" role="alert">
+    <strong>Error:</strong> Unable to load confirmation dialog. ${escapeHtml(message)}`;
+
+  if (traceid && traceid !== 'Not available') {
+    errorHtml += `<br><small>Trace ID: ${escapeHtml(traceid)} (please include this if contacting support)</small>`;
+  }
+
+  errorHtml += `<br><small>Please try again or contact support if the problem persists.</small>`;
+  errorHtml += '</div>';
+
+  // Display error in the modal container
+  modalContainer.innerHTML = errorHtml;
+
+  // Log for debugging
+  console.log('Modal loading error handled:', { message, traceid });
 }
 
 /**
@@ -216,11 +260,39 @@ function handleMonitorNetworkError(event: HTMXEvent): void {
   const isDeleteForm = element.hasAttribute('data-monitor-delete') ||
                        element.closest('[data-monitor-delete]');
 
+  // Check if this is a modal loading error
+  const isModalError = element.getAttribute('hx-target') === '#modal-container';
+
   if (isDeleteForm) {
     handleMonitorDeletionNetworkError();
+  } else if (isModalError) {
+    handleMonitorModalNetworkError();
   } else {
     handleLegacyMonitorNetworkError();
   }
+}
+
+/**
+ * Handle network errors for modal loading
+ */
+function handleMonitorModalNetworkError(): void {
+  const modalContainer = document.getElementById('modal-container');
+
+  if (!modalContainer) {
+    console.error('Modal container element (#modal-container) not found');
+    return;
+  }
+
+  // Create network error display HTML
+  const errorHtml = `<div class="alert alert-warning" role="alert">
+    <strong>Service Error:</strong> Unable to load confirmation dialog. Please try again or contact support if the problem persists.
+  </div>`;
+
+  // Display error in the modal container
+  modalContainer.innerHTML = errorHtml;
+
+  // Log for debugging
+  console.log('Modal loading network error handled');
 }
 
 /**
