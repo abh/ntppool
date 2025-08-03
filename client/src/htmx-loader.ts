@@ -59,6 +59,32 @@ function setupHTMXHandlers() {
 }
 
 /**
+ * Load HTMX with retry logic for Firefox compatibility
+ */
+async function loadHTMXWithRetry(maxRetries = 3, delay = 100): Promise<any> {
+  const isFirefox = navigator.userAgent.includes('Firefox');
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      // Add small delay for Firefox to handle module loading
+      if (isFirefox && attempt > 1) {
+        await new Promise(resolve => setTimeout(resolve, delay * attempt));
+      }
+
+      const htmx = await import('htmx.org');
+      return htmx;
+    } catch (error) {
+      if (attempt === maxRetries) {
+        throw new Error(`HTMX import failed after ${maxRetries} attempts: ${error}`);
+      }
+
+      // Progressive delay for retries
+      await new Promise(resolve => setTimeout(resolve, delay * attempt));
+    }
+  }
+}
+
+/**
  * Load and initialize HTMX conditionally
  */
 export async function initializeHTMX(): Promise<void> {
@@ -74,8 +100,8 @@ export async function initializeHTMX(): Promise<void> {
     // Configure HTMX before loading
     configureHTMX();
 
-    // Dynamically import HTMX
-    const htmx = await import('htmx.org');
+    // Dynamically import HTMX with retry logic
+    const htmx = await loadHTMXWithRetry();
 
     // Make HTMX globally available (required for proper functionality)
     (window as any).htmx = htmx.default;
@@ -91,9 +117,54 @@ export async function initializeHTMX(): Promise<void> {
 
     console.log('HTMX initialized successfully with enhanced features');
 
+    // Firefox-specific fix: Force HTMX to reprocess forms after DOM is fully ready
+    const isFirefox = navigator.userAgent.includes('Firefox');
+    if (isFirefox) {
+      ensureDOMReadyThenFix();
+    }
+
   } catch (error) {
     console.error('Failed to load HTMX:', error);
     throw error;
+  }
+}
+
+/**
+ * Ensure DOM is fully ready before applying Firefox fix
+ */
+function ensureDOMReadyThenFix(): void {
+  if (document.readyState === 'loading') {
+    // DOM is still loading, wait for DOMContentLoaded
+    document.addEventListener('DOMContentLoaded', verifyHTMXFunctionality);
+  } else if (document.readyState === 'interactive') {
+    // DOM is ready but resources may still be loading, use a small delay
+    setTimeout(verifyHTMXFunctionality, 50);
+  } else {
+    // DOM and resources are fully loaded
+    verifyHTMXFunctionality();
+  }
+}
+
+/**
+ * Firefox-specific fix: Force HTMX to reprocess forms to ensure proper event binding
+ */
+function verifyHTMXFunctionality(): void {
+  const htmx = (window as any).htmx;
+  if (!htmx) {
+    console.error('HTMX not available for Firefox fix');
+    return;
+  }
+
+  // Firefox-specific: Force HTMX to process forms again
+  // This ensures HTMX properly attaches to forms that may have been missed during initial load
+  const formsWithHX = document.querySelectorAll('form[hx-post], form[hx-get]');
+  if (formsWithHX.length > 0) {
+    try {
+      htmx.process(document.body);
+      console.log('Firefox compatibility: HTMX reprocessed forms successfully');
+    } catch (error) {
+      console.error('Firefox compatibility: Failed to reprocess forms:', error);
+    }
   }
 }
 

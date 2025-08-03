@@ -319,6 +319,7 @@ function extractErrorDetails(xhr: XMLHttpRequest): ErrorDetails {
 }
 
 
+
 /**
  * Initialize all HTMX enhanced features
  */
