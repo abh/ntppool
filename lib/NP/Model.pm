@@ -1129,7 +1129,7 @@ __PACKAGE__->meta->setup(
     score_ts                   => { type => 'datetime' },
     score_raw                  => { type => 'scalar', default => '0', length => 64, not_null => 1 },
     stratum                    => { type => 'integer' },
-    status                     => { type => 'enum', check_in => [ 'candidate', 'testing', 'active' ], default => 'candidate', not_null => 1 },
+    status                     => { type => 'enum', check_in => [ 'candidate', 'testing', 'active', 'paused' ], default => 'candidate', not_null => 1 },
     queue_ts                   => { type => 'datetime' },
     created_on                 => { type => 'datetime', default => 'now', not_null => 1 },
     modified_on                => { type => 'timestamp', not_null => 1 },

@@ -1254,6 +1254,18 @@ CREATE TABLE oidc_public_keys (
     INDEX idx_active_expires (active, expires_at)
 );
 
+#150
+-- Add 'paused' state to server_scores.status enum
+ALTER TABLE server_scores
+MODIFY COLUMN status enum('candidate','testing','active','paused') NOT NULL DEFAULT 'candidate';
+
+#151
+-- Add paused status constraint resolution columns for unchangeable constraints
+ALTER TABLE server_scores
+ADD COLUMN last_constraint_check datetime DEFAULT NULL,
+ADD COLUMN pause_reason varchar(20) DEFAULT NULL,
+ADD INDEX idx_paused_monitors (status, last_constraint_check, pause_reason);
+
 #todo
 
 
