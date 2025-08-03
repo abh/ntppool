@@ -4,6 +4,21 @@
     <br><small>Trace ID: [% results.trace_id || trace_id | html %]</small>
 </div>
 [% ELSIF results.accounts && results.accounts.size %]
+[% IF results.filter_context && (results.filter_context.show_monitors_only || results.filter_context.show_zone_servers_only) %]
+<div class="mb-3">
+    <div class="form-check">
+        <input class="form-check-input" type="checkbox" id="showAllResults">
+        <label class="form-check-label" for="showAllResults">
+            Show all results
+            [% IF results.filter_context.show_monitors_only %]
+                (showing monitors only by default for "monitors:" search)
+            [% ELSIF results.filter_context.show_zone_servers_only %]
+                (showing [% results.filter_context.zone_name | html %] zone servers only by default)
+            [% END %]
+        </label>
+    </div>
+</div>
+[% END %]
 <ul>
     [% FOR account IN results.accounts %]
     <li>[% account.name | html %]
@@ -11,17 +26,24 @@
         <a href="/manage/account?a=[% account.account_token | html %]">account</a>[% IF combust.user.is_monitor_admin && account.monitors && account.monitors.size %],
         <a href="/manage/monitors?a=[% account.account_token | html %]">monitors</a>[% END %])
         <br>
+[% SET users_class = '' %]
+[% IF results.filter_context.show_monitors_only %]
+    [% SET users_class = 'search-result-secondary' %]
+[% ELSIF results.filter_context.show_zone_servers_only %]
+    [% SET users_class = 'search-result-secondary' %]
+[% END %]
         [% IF account.users && account.users.size %]
-        <ol>
+        <ol[% IF users_class %] class="[% users_class %]"[% END %]>
             [% FOR user IN account.users %]
             <li>[% user.name | html %], [% user.username | html %], [% user.email | html %]</li>
             [% END %]
         </ol>
         [% END %]
+[% SET servers_class = results.filter_context.show_monitors_only ? 'search-result-secondary' : '' %]
         [% IF account.servers && account.servers.size %]
-        <ol>
+        <ol[% IF servers_class %] class="[% servers_class %]"[% END %]>
             [% FOR server IN account.servers %]
-            <li[% IF server.deletion_on %] class="text-muted"[% END %]>
+            <li[% IF server.css_classes %] class="[% server.css_classes %]"[% END %]>
                 [% IF server.hostname %]
                     [% IF server.hostname_highlighted %][% server.hostname_highlighted %][% ELSE %][% server.hostname | html %][% END %] /
                 [% END %]
@@ -34,6 +56,23 @@
                         [% zone | html %]
                     [% END %]
                 [% END %]
+            </li>
+            [% END %]
+        </ol>
+        [% END %]
+[% SET monitors_class = '' %]
+[% IF results.filter_context.show_zone_servers_only %]
+    [% SET monitors_class = 'search-result-secondary' %]
+[% END %]
+        [% IF combust.user.is_monitor_admin && account.monitors && account.monitors.size %]
+        <ol[% IF monitors_class %] class="[% monitors_class %]"[% END %]>
+            [% FOR monitor IN account.monitors %]
+            <li>
+                <a href="/manage/monitors?a=[% account.account_token | html %]&monitor_id=[% monitor.id | html %]">
+                    [% IF monitor.tls_name %][% monitor.tls_name | html %][% ELSE %]Monitor [% monitor.id | html %][% END %]
+                </a>
+                ([% monitor.ip | html %], [% monitor.location | html %], [% monitor.status | html %])
+                [% IF monitor.created_on %]<span class="text-muted">[% monitor.created_on | html %]</span>[% END %]
             </li>
             [% END %]
         </ol>

@@ -93,3 +93,6 @@ import { initializeBootstrap } from './bootstrap-loader';
 
 // Load mobile navigation
 import './mobile-nav';
+
+// Load search results filter
+import './search-results-filter';

@@ -607,6 +607,31 @@ sub staff_search {
         }
     }
 
+    # Add CSS classes for relevance filtering
+    if ($results && $results->{accounts} && $results->{filter_context}) {
+        my $filter_context = $results->{filter_context};
+
+        for my $account (@{$results->{accounts}}) {
+            # Compute CSS classes for servers
+            for my $server (@{$account->{servers} || []}) {
+                my @css_classes = ();
+
+                # Add deletion styling
+                push @css_classes, 'text-muted' if $server->{deletion_on};
+
+                # Add relevance filtering for zone searches
+                if ($filter_context->{show_zone_servers_only}) {
+                    my $zone_name = $filter_context->{zone_name};
+                    my $is_in_zone = grep { $_ eq $zone_name } @{$server->{zones} || []};
+                    push @css_classes, 'search-result-secondary' unless $is_in_zone;
+                }
+
+                # Set computed CSS classes
+                $server->{css_classes} = join(' ', @css_classes) if @css_classes;
+            }
+        }
+    }
+
     # Add telemetry attributes for search results
     if ($results && $results->{accounts}) {
         my $account_count = scalar @{$results->{accounts}};

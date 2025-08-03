@@ -1727,6 +1727,18 @@ div.product-group .btn {
     }
 }
 
+// Search Results Relevance Filtering
+.search-result-secondary {
+    display: none;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.search-result-secondary.show-all {
+    display: block;
+    opacity: 1;
+}
+
 // Responsive adjustments for developer menu
 @media (max-width: $breakpoint-mobile-max) {
     .developer-menu {
