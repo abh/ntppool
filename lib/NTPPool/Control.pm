@@ -538,6 +538,10 @@ sub post_process {
         ['X-Frame-Options'        => 'deny'],
         ['Referrer-Policy'        => 'origin-when-cross-origin'],
 
+        # HTMX CORS support
+        ['Access-Control-Allow-Headers' => 'HX-Request'],
+        ['Access-Control-Expose-Headers' => 'HX-Redirect'],
+
         # ntppool version / build
         ['X-NPV' => $version->current_release . " (" . $version->hostname . ")"],
     );
