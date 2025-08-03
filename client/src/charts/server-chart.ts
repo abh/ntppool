@@ -16,7 +16,7 @@ import {
   sortMonitors,
   clearContainer
 } from '@/utils/chart-utils.js';
-import { createHoverDebouncer, globalHoverState, DEFAULT_HOVER_DEBOUNCE_DELAY } from '@/utils/debounce-utils.js';
+import { createHoverDebouncer, DEFAULT_HOVER_DEBOUNCE_DELAY } from '@/utils/debounce-utils.js';
 import type {
   ServerScoreHistoryResponse,
   ServerHistoryPoint,
@@ -50,6 +50,8 @@ export function createServerChart(
     ...options
   } as Required<ServerChartOptions>;
 
+  // Create shared debouncer for ALL chart interactions (prevents race conditions)
+  const sharedDebouncer = createHoverDebouncer(DEFAULT_HOVER_DEBOUNCE_DELAY);
 
   // Process history data with type safety - convert all entries
   const history: ServerHistoryPoint[] = data.history.map(d => ({
@@ -144,7 +146,7 @@ export function createServerChart(
 
   // Draw chart elements
   drawGrid(g, xScale, yOffsetScale, yScoreScale, innerWidth, innerHeight, yOffsetMax, yOffsetMin, config);
-  drawDataPoints(g, processedData, xScale, yOffsetScale, yScoreScale);
+  drawDataPoints(g, processedData, xScale, yOffsetScale, yScoreScale, sharedDebouncer);
   drawTotalScoreLine(g, processedData, xScale, yScoreScale);
 
   // Add chart title
@@ -157,7 +159,7 @@ export function createServerChart(
 
   // Create legend if specified
   if (config.legend) {
-    createLegend(config.legend, data.monitors, g, config.showOnlyActiveTesting);
+    createLegend(config.legend, data.monitors, g, sharedDebouncer, config.showOnlyActiveTesting);
   }
 }
 
@@ -379,10 +381,9 @@ function drawDataPoints(
   processedData: ProcessedChartData,
   xScale: TimeScale,
   yOffsetScale: PowerScale,
-  yScoreScale: PowerScale
+  yScoreScale: PowerScale,
+  sharedDebouncer: ReturnType<typeof createHoverDebouncer>
 ): void {
-  // Create debouncers for chart point interactions
-  const chartHoverDebouncer = createHoverDebouncer(DEFAULT_HOVER_DEBOUNCE_DELAY);
 
   // Draw score points (all monitor data, regardless of offset)
   g.selectAll<SVGCircleElement, ServerHistoryPoint>('circle.scores')
@@ -397,24 +398,22 @@ function drawDataPoints(
       const startTime = performance.now();
       console.log('🎨 Score point mouseover (debounced):', { monitorId: d.monitor_id, timestamp: startTime });
 
-      // Use debouncer for hover actions
-      chartHoverDebouncer.debounce(() => {
+      // Use shared debouncer for hover actions
+      sharedDebouncer.debounce(() => {
         console.log('🎨 Score point executing debounced action:', { monitorId: d.monitor_id });
         fadeOtherMonitors(g, d.monitor_id, 0.05);
-        highlightTableCells(d.monitor_id, true);
-        globalHoverState.setHover(d.monitor_id, 'chart');
+        highlightTableCellsGlobally(d.monitor_id, true);
       }, d.monitor_id);
     })
     .on('mouseout', function () {
       const startTime = performance.now();
       console.log('🎨 Score point mouseout (debounced):', { timestamp: startTime });
 
-      // Use debouncer for mouseout to allow smooth transitions
-      chartHoverDebouncer.debounce(() => {
+      // Use shared debouncer for mouseout to allow smooth transitions
+      sharedDebouncer.debounce(() => {
         console.log('🎨 Score point executing mouseout action');
         fadeOtherMonitors(g, null, 1);
-        highlightTableCells(null, false);
-        globalHoverState.setHover(null, 'chart');
+        highlightTableCellsGlobally(null, false);
       }, null);
     });
 
@@ -431,24 +430,22 @@ function drawDataPoints(
       const startTime = performance.now();
       console.log('📊 Offset point mouseover (debounced):', { monitorId: d.monitor_id, timestamp: startTime });
 
-      // Use debouncer for hover actions
-      chartHoverDebouncer.debounce(() => {
+      // Use shared debouncer for hover actions
+      sharedDebouncer.debounce(() => {
         console.log('📊 Offset point executing debounced action:', { monitorId: d.monitor_id });
         fadeOtherMonitors(g, d.monitor_id, 0.12);
-        highlightTableCells(d.monitor_id, true);
-        globalHoverState.setHover(d.monitor_id, 'chart');
+        highlightTableCellsGlobally(d.monitor_id, true);
       }, d.monitor_id);
     })
     .on('mouseout', function () {
       const startTime = performance.now();
       console.log('📊 Offset point mouseout (debounced):', { timestamp: startTime });
 
-      // Use debouncer for mouseout to allow smooth transitions
-      chartHoverDebouncer.debounce(() => {
+      // Use shared debouncer for mouseout to allow smooth transitions
+      sharedDebouncer.debounce(() => {
         console.log('📊 Offset point executing mouseout action');
         fadeOtherMonitors(g, null, 1);
-        highlightTableCells(null, false);
-        globalHoverState.setHover(null, 'chart');
+        highlightTableCellsGlobally(null, false);
       }, null);
     });
 }
@@ -513,6 +510,7 @@ function createLegend(
   legendContainer: Element,
   monitors: Monitor[],
   chartGroup: GSelection,
+  sharedDebouncer: ReturnType<typeof createHoverDebouncer>,
   showOnlyActiveTesting = false
 ): void {
   // Store monitor status map on chartGroup for use by fadeOtherMonitors
@@ -545,7 +543,7 @@ function createLegend(
   clearContainer(legendContainer);
 
   // Create single table with multi-column layout
-  createSingleTableLegend(legendContainer, statusGroups, chartGroup);
+  createSingleTableLegend(legendContainer, statusGroups, chartGroup, sharedDebouncer);
 }
 
 /**
@@ -568,10 +566,9 @@ function groupMonitorsByStatus(monitors: Monitor[]): Record<string, Monitor[]> {
 function createSingleTableLegend(
   container: Element,
   statusGroups: Record<string, Monitor[]>,
-  chartGroup: GSelection
+  chartGroup: GSelection,
+  sharedDebouncer: ReturnType<typeof createHoverDebouncer>
 ): void {
-  // Create ONE shared debouncer for the entire legend system
-  const sharedLegendDebouncer = createHoverDebouncer(DEFAULT_HOVER_DEBOUNCE_DELAY);
 
   // Process statuses in priority order: Active, Testing first, then others
   const priorityStatuses = ['active', 'testing'];
@@ -599,7 +596,7 @@ function createSingleTableLegend(
     const priorityTbody = document.createElement('tbody');
     createTableSection(priorityTbody, priorityGroups, chartGroup, true);
     priorityTable.appendChild(priorityTbody);
-    addTableEventListeners(priorityTable, chartGroup, sharedLegendDebouncer);
+    addTableEventListeners(priorityTable, chartGroup, sharedDebouncer);
     container.appendChild(priorityTable);
   }
 
@@ -616,7 +613,7 @@ function createSingleTableLegend(
     const otherTbody = document.createElement('tbody');
     createTableSection(otherTbody, otherGroups, chartGroup, false);
     otherTable.appendChild(otherTbody);
-    addTableEventListeners(otherTable, chartGroup, sharedLegendDebouncer);
+    addTableEventListeners(otherTable, chartGroup, sharedDebouncer);
     container.appendChild(otherTable);
   }
 }
@@ -631,75 +628,51 @@ function createTable(additionalClass: string): HTMLTableElement {
 }
 
 /**
- * Unified function to set target monitor state (highlight specific or clear all)
- * This eliminates competing clear/highlight operations that cause stuck cells
+ * Unified state management function - handles both monitor and status filtering
+ * Eliminates race conditions by using single state clearing logic
  */
-function setTargetMonitor(targetId: number | null, chartGroup: GSelection, table: HTMLTableElement): void {
+function setState(
+  target: number | string | null,
+  type: 'monitor' | 'status',
+  chartGroup: GSelection,
+  table: HTMLTableElement
+): void {
   const startTime = performance.now();
+  console.log('🎯 setState:', { target, type, timestamp: startTime });
 
   // Always clear existing highlights first (atomic operation)
   const allHighlighted = table.querySelectorAll('.monitor-cell-hover');
-  console.log('🎯 setTargetMonitor: clearing existing highlights:', allHighlighted.length);
   allHighlighted.forEach(cell => cell.classList.remove('monitor-cell-hover'));
 
-  if (targetId !== null) {
-    // Highlight specific monitor
-    const targetCells = table.querySelectorAll(`[data-monitor-id="${targetId}"]`);
-    console.log('🎯 setTargetMonitor: highlighting target monitor', targetId, 'cells:', targetCells.length);
-    targetCells.forEach(cell => cell.classList.add('monitor-cell-hover'));
-
-    // Update chart
-    fadeOtherMonitors(chartGroup, targetId, 0.15);
-    globalHoverState.setHover(targetId, 'table');
+  if (target !== null) {
+    if (type === 'monitor') {
+      // Highlight specific monitor
+      const targetCells = table.querySelectorAll(`[data-monitor-id="${target}"]`);
+      targetCells.forEach(cell => cell.classList.add('monitor-cell-hover'));
+      fadeOtherMonitors(chartGroup, target as number, 0.15);
+    } else if (type === 'status') {
+      // Highlight all monitors with the target status
+      const monitorStatusMap = (chartGroup.node() as ChartGroupElement | null)?.__monitorStatusMap;
+      if (monitorStatusMap) {
+        const monitorCells = table.querySelectorAll('[data-monitor-id]');
+        monitorCells.forEach(cell => {
+          const monitorId = parseInt((cell as HTMLElement).dataset['monitorId']!, 10);
+          const monitorStatus = monitorStatusMap.get(monitorId);
+          if (monitorStatus === target) {
+            cell.classList.add('monitor-cell-hover');
+          }
+        });
+        fadeOtherMonitors(chartGroup, target as string, 0.15, 'status');
+      }
+    }
   } else {
-    // Clear all (no filter state)
-    console.log('🎯 setTargetMonitor: clearing all filters');
+    // Clear all filters
     fadeOtherMonitors(chartGroup, null, 1);
-    globalHoverState.setHover(null, 'table');
   }
 
-  console.log('🎯 setTargetMonitor complete:', {
-    targetId,
-    duration: performance.now() - startTime
-  });
-}
-
-/**
- * Unified function to set target status state (highlight status group or clear all)
- */
-function setTargetStatus(targetStatus: string | null, chartGroup: GSelection, table: HTMLTableElement): void {
-  const startTime = performance.now();
-  console.log('🎯 setTargetStatus start:', { targetStatus, timestamp: startTime });
-
-  // Get monitor status map from chartGroup
-  const monitorStatusMap = (chartGroup.node() as ChartGroupElement | null)?.__monitorStatusMap;
-
-  if (!monitorStatusMap) {
-    console.log('🎯 setTargetStatus: no monitor status map available');
-    return;
-  }
-
-  // Clear all existing monitor highlighting first
-  const allMonitorCells = table.querySelectorAll('[data-monitor-id]');
-  allMonitorCells.forEach(cell => cell.classList.remove('monitor-cell-hover'));
-
-  if (targetStatus !== null) {
-    // Highlight all monitors with the target status
-    console.log('🎯 setTargetStatus: highlighting status', targetStatus);
-    highlightTableCellsByStatus(table, targetStatus, true, monitorStatusMap);
-
-    // Update chart with status-based filtering
-    fadeOtherMonitors(chartGroup, targetStatus, 0.15, 'status');
-    globalHoverState.setHover(null, 'table'); // Status hover is different from monitor hover
-  } else {
-    // Clear all (no filter state)
-    console.log('🎯 setTargetStatus: clearing all filters');
-    fadeOtherMonitors(chartGroup, null, 1);
-    globalHoverState.setHover(null, 'table');
-  }
-
-  console.log('🎯 setTargetStatus complete:', {
-    targetStatus,
+  console.log('🎯 setState complete:', {
+    target,
+    type,
     duration: performance.now() - startTime
   });
 }
@@ -725,8 +698,8 @@ function addTableEventListeners(
       // Use unified debounced state management for status
       sharedDebouncer.debounce(() => {
         console.log('🏓 Status header executing debounced mouseenter:', { status });
-        setTargetStatus(status, chartGroup, table);
-      }, null); // Use null for status-based operations
+        setState(status, 'status', chartGroup, table);
+      }, `status:${status}`); // Use unique identifier for status operations
     }
     // Check if we're hovering over a monitor cell (has data-monitor-id)
     else if (target instanceof HTMLElement && target.dataset['monitorId']) {
@@ -736,8 +709,8 @@ function addTableEventListeners(
       // Use unified debounced state management
       sharedDebouncer.debounce(() => {
         console.log('🏓 Table executing debounced mouseenter:', { monitorId });
-        setTargetMonitor(monitorId, chartGroup, table);
-      }, monitorId);
+        setState(monitorId, 'monitor', chartGroup, table);
+      }, `monitor:${monitorId}`); // Use unique identifier for monitor operations
     }
   }, true);
 
@@ -754,11 +727,11 @@ function addTableEventListeners(
       sharedDebouncer.debounce(() => {
         console.log('🏓 Table executing debounced mouseleave:', { identifier });
         if (target.classList.contains('status-header')) {
-          setTargetStatus(null, chartGroup, table);
+          setState(null, 'status', chartGroup, table);
         } else {
-          setTargetMonitor(null, chartGroup, table);
+          setState(null, 'monitor', chartGroup, table);
         }
-      }, null);
+      }, 'clear'); // Use unique identifier for clear operations
     }
   }, true);
 }
@@ -1078,72 +1051,17 @@ function fadeOtherMonitors(
 }
 
 /**
- * Highlight table cells for monitors with the specified status
+ * Simple global table cell highlighting for chart interactions
+ * Only called by chart points, not by table event handlers
  */
-function highlightTableCellsByStatus(
-  table: HTMLTableElement,
-  status: string,
-  highlight: boolean,
-  monitorStatusMap: Map<number, string>
-): void {
-  const startTime = performance.now();
-  console.log('📋 highlightTableCellsByStatus start:', { status, highlight, timestamp: startTime });
-
-  // Find all monitor cells and check their status
-  const monitorCells = table.querySelectorAll('[data-monitor-id]');
-  let matchingCells = 0;
-
-  monitorCells.forEach(cell => {
-    const monitorId = parseInt((cell as HTMLElement).dataset['monitorId']!, 10);
-    const monitorStatus = monitorStatusMap.get(monitorId);
-
-    if (monitorStatus === status) {
-      if (highlight) {
-        cell.classList.add('monitor-cell-hover');
-      } else {
-        cell.classList.remove('monitor-cell-hover');
-      }
-      matchingCells++;
-    }
-  });
-
-  const endTime = performance.now();
-  console.log('📋 highlightTableCellsByStatus end:', {
-    status,
-    highlight,
-    totalCells: monitorCells.length,
-    matchingCells,
-    duration: endTime - startTime,
-    timestamp: endTime
-  });
-}
-
-/**
- * Highlight table cells for the specified monitor
- */
-function highlightTableCells(monitorId: number | null, highlight: boolean): void {
-  const startTime = performance.now();
-  console.log('📋 highlightTableCells start:', { monitorId, highlight, timestamp: startTime });
-
+function highlightTableCellsGlobally(monitorId: number | null, highlight: boolean): void {
   if (highlight && monitorId !== null) {
-    // Find all table cells with matching monitor ID
     const monitorCells = document.querySelectorAll(`[data-monitor-id="${monitorId}"]`);
-    console.log('📋 DOM query found cells:', monitorCells.length);
     monitorCells.forEach(cell => cell.classList.add('monitor-cell-hover'));
   } else {
-    // Remove highlight from all table cells
     const allHighlighted = document.querySelectorAll('.monitor-cell-hover');
-    console.log('📋 DOM query found highlighted cells:', allHighlighted.length);
     allHighlighted.forEach(cell => cell.classList.remove('monitor-cell-hover'));
   }
-
-  const endTime = performance.now();
-  console.log('📋 highlightTableCells end:', {
-    monitorId,
-    highlight,
-    duration: endTime - startTime,
-    timestamp: endTime
-  });
 }
 
 // Export for backward compatibility with global function

@@ -3,20 +3,20 @@
  * Reduces event frequency during rapid mouse movement while maintaining responsiveness
  */
 
-export const DEFAULT_HOVER_DEBOUNCE_DELAY = 40;
+export const DEFAULT_HOVER_DEBOUNCE_DELAY = 60;
 
 export interface DebounceState {
   timeoutId: number | null;
-  lastMonitorId: number | null;
+  lastMonitorId: string | number | null;
   isPending: boolean;
   eventCount: number;
 }
 
 export interface DebouncedFunction {
-  debounce: (callback: () => void, monitorId?: number | null) => void;
+  debounce: (callback: () => void, monitorId?: string | number | null) => void;
   cancel: () => void;
   isHovering: () => boolean;
-  getCurrentMonitorId: () => number | null;
+  getCurrentMonitorId: () => string | number | null;
   getEventCount: () => number;
   reset: () => void;
 }
@@ -32,7 +32,7 @@ export function createHoverDebouncer(delay: number = DEFAULT_HOVER_DEBOUNCE_DELA
     eventCount: 0
   };
 
-  const debounce = (callback: () => void, monitorId?: number | null): void => {
+  const debounce = (callback: () => void, monitorId?: string | number | null): void => {
     const startTime = performance.now();
     state.eventCount++;
 
@@ -94,7 +94,7 @@ export function createHoverDebouncer(delay: number = DEFAULT_HOVER_DEBOUNCE_DELA
 
   const isHovering = (): boolean => state.isPending;
 
-  const getCurrentMonitorId = (): number | null => state.lastMonitorId;
+  const getCurrentMonitorId = (): string | number | null => state.lastMonitorId;
 
   const getEventCount = (): number => state.eventCount;
 
