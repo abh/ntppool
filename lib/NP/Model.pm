@@ -1135,6 +1135,8 @@ __PACKAGE__->meta->setup(
     modified_on                => { type => 'timestamp', not_null => 1 },
     constraint_violation_type  => { type => 'varchar', length => 50 },
     constraint_violation_since => { type => 'datetime' },
+    last_constraint_check      => { type => 'datetime' },
+    pause_reason               => { type => 'varchar', length => 20 },
   ],
 
   primary_key_columns => [ 'id' ],
