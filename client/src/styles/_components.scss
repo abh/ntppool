@@ -1131,11 +1131,11 @@ span.deletion {
 
 // Bootstrap table overrides
 .table-success {
-    background-color: var(--bs-table-bg, #d1e7dd) !important;
+    background-color: $status-active-base !important;
 }
 
 .table-info {
-    background-color: var(--bs-table-bg, #cff4fc) !important;
+    background-color: $status-testing-base !important;
 }
 
 .table-light {
@@ -1143,7 +1143,7 @@ span.deletion {
 }
 
 .table-secondary {
-    background-color: var(--bs-table-bg, #e2e3e5) !important;
+    background-color: $status-candidate-base !important;
 }
 
 table.table-hover tbody tr:hover td,
@@ -1151,10 +1151,36 @@ table.table-hover tbody tr:hover th {
     background-color: rgba(0, 0, 0, .075) !important;
 }
 
-// Override table hover for legend tables - only highlight specific monitor cells
-.legend-table tbody tr:hover td,
-.legend-table tbody tr:hover th {
+// Status header hover effects - richer versions of base colors
+.legend-table .status-header.table-success:hover {
+    background-color: $status-active-hover !important;
+}
+
+.legend-table .status-header.table-info:hover {
+    background-color: $status-testing-hover !important;
+}
+
+.legend-table .status-header.table-secondary:hover {
+    background-color: $status-candidate-hover !important;
+}
+
+// Keep existing behavior for non-header cells
+.legend-table tbody tr:hover td:not(.status-header),
+.legend-table tbody tr:hover th:not(.status-header) {
     background-color: transparent !important;
+}
+
+// Ensure non-hovered status headers maintain their base colors
+.legend-table .status-header.table-success:not(:hover) {
+    background-color: $status-active-base !important;
+}
+
+.legend-table .status-header.table-info:not(:hover) {
+    background-color: $status-testing-base !important;
+}
+
+.legend-table .status-header.table-secondary:not(:hover) {
+    background-color: $status-candidate-base !important;
 }
 
 table.table td,
@@ -1327,6 +1353,14 @@ div.product-group .btn {
 
     .status-header {
         text-align: left;
+
+        &:hover {
+            // Intensify existing Bootstrap table colors on hover
+            &.table-success { background-color: $status-active-hover !important; }
+            &.table-info { background-color: $status-testing-hover !important; }
+            &.table-secondary { background-color: $status-candidate-hover !important; }
+            &.table-danger { background-color: rgba(220, 53, 69, 0.25) !important; }
+        }
     }
 
     .empty-cell {
@@ -1341,6 +1375,18 @@ div.product-group .btn {
 
     &.table tbody tr td.monitor-cell-hover {
         background-color: rgba(0, 0, 0, 0.075) !important;
+    }
+
+    // Prevent row hover effects when status header is hovered
+    tbody tr:has(.status-header:hover) td:not(.status-header),
+    tbody tr:has(.status-header:hover) th:not(.status-header) {
+        background-color: transparent !important;
+    }
+
+    // More specific override for Bootstrap table hover on status header rows
+    &.table-hover tbody tr:has(.status-header:hover) td:not(.status-header),
+    &.table-hover tbody tr:has(.status-header:hover) th:not(.status-header) {
+        background-color: transparent !important;
     }
 }
 
@@ -1570,15 +1616,15 @@ div.product-group .btn {
         }
 
         .table-success {
-            background-color: rgba(16, 185, 129, 0.1);
+            background-color: $status-active-base;
         }
 
         .table-info {
-            background-color: rgba(59, 130, 246, 0.1);
+            background-color: $status-testing-base;
         }
 
         .table-secondary {
-            background-color: rgba(107, 114, 128, 0.1);
+            background-color: $status-candidate-base;
         }
 
         .table-danger {

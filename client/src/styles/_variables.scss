@@ -12,6 +12,14 @@ $font-weight-base: 400;
 $primary: #3885B4;
 $link-color: #3885B4;
 
+// Status colors - base and hover variants
+$status-active-base: rgba(16, 185, 129, 0.2);      // Light green (table-success)
+$status-active-hover: rgba(16, 185, 129, 0.5);     // Richer green for hover
+$status-testing-base: rgba(59, 130, 246, 0.2);     // Light blue (table-info)
+$status-testing-hover: rgba(59, 130, 246, 0.5);    // Richer blue for hover
+$status-candidate-base: rgba(107, 114, 128, 0.2);  // Light gray (table-secondary)
+$status-candidate-hover: rgba(107, 114, 128, 0.5); // Richer gray for hover
+
 // Remove link underlines globally
 $link-decoration: none;
 
