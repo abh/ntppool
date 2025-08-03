@@ -45,7 +45,6 @@ export function createServerChart(
     showOnlyActiveTesting: false,
     developerMode: false,
     dateFormat: 'default',
-    compactHours: false,
     showYearOnFirstTick: false,
     ...options
   } as Required<ServerChartOptions>;
@@ -145,7 +144,7 @@ export function createServerChart(
   const processedData = processChartData(history);
 
   // Draw chart elements
-  drawGrid(g, xScale, yOffsetScale, yScoreScale, innerWidth, innerHeight, yOffsetMax, yOffsetMin, config);
+  drawGrid(g, xScale, yOffsetScale, yScoreScale, innerWidth, innerHeight, yOffsetMax, yOffsetMin);
   drawDataPoints(g, processedData, xScale, yOffsetScale, yScoreScale, sharedDebouncer);
   drawTotalScoreLine(g, processedData, xScale, yScoreScale);
 
@@ -167,7 +166,6 @@ export function createServerChart(
  * Create simplified date formatter for chart x-axis
  */
 function createDateFormatter(
-  compactHours: boolean,
   timeRange: number,
   isFirstTickOfDate = false
 ): (date: Date) => string {
@@ -175,10 +173,7 @@ function createDateFormatter(
 
   return (date: Date) => {
     if (timeRange <= oneDay) {
-      // Single day: use compact hour format for zero minutes if enabled
-      if (compactHours && date.getUTCMinutes() === 0) {
-        return `${date.getUTCHours()}h`;
-      }
+      // Single day: show hour:minute format
       return d3.utcFormat('%H:%M')(date);
     }
 
@@ -190,21 +185,11 @@ function createDateFormatter(
         return d3.utcFormat('%Y-%m-%d')(date);
       } else {
         // Not at midnight - show date + time
-        if (compactHours && date.getUTCMinutes() === 0) {
-          return d3.utcFormat('%Y-%m-%d')(date) + ` ${date.getUTCHours()}h`;
-        } else {
-          return d3.utcFormat('%Y-%m-%d %H:%M')(date);
-        }
+        return d3.utcFormat('%Y-%m-%d %H:%M')(date);
       }
     } else {
       // Already showed date for this day, just show time
-      if (compactHours && date.getUTCMinutes() === 0) {
-        // At zero minutes - show compact hour format if enabled
-        return `${date.getUTCHours()}h`;
-      } else {
-        // Not at zero minutes or compact hours disabled - show hour:minute
-        return d3.utcFormat('%H:%M')(date);
-      }
+      return d3.utcFormat('%H:%M')(date);
     }
   };
 }
@@ -221,8 +206,7 @@ function drawGrid(
   width: number,
   height: number,
   yOffsetMax: number,
-  yOffsetMin: number,
-  config: Required<ServerChartOptions>
+  yOffsetMin: number
 ): void {
   // Draw X-axis grid and labels
   // Reduce tick count to prevent overlapping when showing longer timestamps
@@ -265,7 +249,7 @@ function drawGrid(
         }
       }
 
-      const formatter = createDateFormatter(config.compactHours, timeRange, isFirstTickOfDate);
+      const formatter = createDateFormatter(timeRange, isFirstTickOfDate);
       return formatter(d);
     });
 

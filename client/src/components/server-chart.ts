@@ -127,7 +127,8 @@ export class ServerChartComponent extends BaseChartComponent {
     if (!serverIp) {
       throw new Error('Server IP is required');
     }
-    return `/scores/${serverIp}/json?monitor=*&limit=6500&source=c`;
+    const devSettings = this.getDeveloperSettings();
+    return `/scores/${serverIp}/json?monitor=*&limit=${devSettings.dataPoints}&source=c`;
   }
 
   protected validateAttributes(): boolean {
@@ -151,10 +152,6 @@ export class ServerChartComponent extends BaseChartComponent {
       // Get legend element for the chart function
       const legendElement = this.shouldShowLegend() && this.legendContainer ? this.legendContainer : null;
 
-      // Get developer settings
-      const devSettings = this.getDeveloperSettings();
-
-
       // Create the D3 chart with explicit dimensions
       createServerChart(this.chartContainer, this.data as ServerScoreHistoryResponse, {
         legend: legendElement,
@@ -163,8 +160,7 @@ export class ServerChartComponent extends BaseChartComponent {
         width: this.options.width,
         height: this.options.height,
         showOnlyActiveTesting: this.shouldShowLegendOnly(),
-        developerMode: this.isDeveloperMode,
-        compactHours: devSettings.compactHours
+        developerMode: this.isDeveloperMode
       });
 
       // Update container dimensions
@@ -259,12 +255,19 @@ export class ServerChartComponent extends BaseChartComponent {
           <small><strong>🔧 Developer Mode</strong> (Ctrl+Shift+D to toggle)</small>
         </div>
         <div class="card-body">
-          <p class="text-muted small mb-2">Future chart customization options will appear here.</p>
-          <div class="form-check mb-2">
-            <input class="form-check-input" type="checkbox" id="compactHoursCheck">
-            <label class="form-check-label small" for="compactHoursCheck">
-              Compact hours (6h vs 06:00)
-            </label>
+          <p class="text-muted small mb-2">Chart configuration options</p>
+          <div class="mb-2">
+            <label class="form-label small" for="dataPointsSelect">Data Points:</label>
+            <select class="form-select form-select-sm" id="dataPointsSelect">
+              <option value="1000">1,000</option>
+              <option value="3000">3,000</option>
+              <option value="6500" selected>6,500 (default)</option>
+              <option value="9000">9,000</option>
+              <option value="12000">12,000</option>
+              <option value="20000">20,000</option>
+              <option value="30000">30,000</option>
+              <option value="50000">50,000</option>
+            </select>
           </div>
         </div>
       </div>
@@ -286,10 +289,10 @@ export class ServerChartComponent extends BaseChartComponent {
   private setupDeveloperMenuEvents(): void {
     if (!this.developerMenu) return;
 
-    const compactHoursCheck = this.developerMenu.querySelector('#compactHoursCheck') as HTMLInputElement;
+    const dataPointsSelect = this.developerMenu.querySelector('#dataPointsSelect') as HTMLSelectElement;
 
-    if (compactHoursCheck) {
-      compactHoursCheck.addEventListener('change', () => {
+    if (dataPointsSelect) {
+      dataPointsSelect.addEventListener('change', () => {
         this.updateDeveloperSettings();
       });
     }
@@ -301,15 +304,18 @@ export class ServerChartComponent extends BaseChartComponent {
   private updateDeveloperSettings(): void {
     if (!this.developerMenu) return;
 
-    const compactHoursCheck = this.developerMenu.querySelector('#compactHoursCheck') as HTMLInputElement;
+    const dataPointsSelect = this.developerMenu.querySelector('#dataPointsSelect') as HTMLSelectElement;
 
     // Store settings in localStorage for persistence
-    const newCompactHours = compactHoursCheck?.checked ? 'true' : 'false';
+    const newDataPoints = dataPointsSelect?.value || '6500';
 
-    localStorage.setItem('ntppool-dev-compactHours', newCompactHours);
+    localStorage.setItem('ntppool-dev-ex1-dataPoints', newDataPoints);
 
-    // Re-render chart with new settings
-    this.render();
+    // Clean up invalid ntppool-dev- entries (keep only valid experiments)
+    this.cleanupInvalidDevSettings();
+
+    // Refresh chart data with new limit
+    this.refresh();
   }
 
   /**
@@ -330,10 +336,10 @@ export class ServerChartComponent extends BaseChartComponent {
 
     const settings = this.getDeveloperSettings();
 
-    const compactHoursCheck = this.developerMenu.querySelector('#compactHoursCheck') as HTMLInputElement;
+    const dataPointsSelect = this.developerMenu.querySelector('#dataPointsSelect') as HTMLSelectElement;
 
-    if (compactHoursCheck) {
-      compactHoursCheck.checked = settings.compactHours;
+    if (dataPointsSelect) {
+      dataPointsSelect.value = settings.dataPoints.toString();
     }
   }
 
@@ -342,8 +348,37 @@ export class ServerChartComponent extends BaseChartComponent {
    */
   private getDeveloperSettings() {
     return {
-      compactHours: localStorage.getItem('ntppool-dev-compactHours') === 'true'
+      dataPoints: parseInt(localStorage.getItem('ntppool-dev-ex1-dataPoints') || '6500', 10)
     };
+  }
+
+  /**
+   * Clean up invalid ntppool-dev- localStorage entries
+   * Only keeps entries with valid experiment prefixes (currently only 'ex1')
+   */
+  private cleanupInvalidDevSettings(): void {
+    const validExperiments = ['ex1'];
+    const keysToRemove: string[] = [];
+
+    // Check all localStorage keys
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('ntppool-dev-')) {
+        // Check if it's a valid experiment key
+        const isValid = validExperiments.some(exp =>
+          key.startsWith(`ntppool-dev-${exp}-`)
+        );
+
+        if (!isValid) {
+          keysToRemove.push(key);
+        }
+      }
+    }
+
+    // Remove invalid keys
+    keysToRemove.forEach(key => {
+      localStorage.removeItem(key);
+    });
   }
 }
 
