@@ -7,6 +7,9 @@ use JSON::XS   ();
 use Data::Dump ();
 use HTTP::Request;
 use URI;
+use OpenTelemetry::Trace;
+use OpenTelemetry::Context;
+use OpenTelemetry::Constants qw( SPAN_STATUS_ERROR );
 
 use Exporter 'import';
 our @EXPORT_OK = qw(
@@ -134,6 +137,18 @@ sub _int_api {
     $r{code}        ||= $res->code;
     $r{status_line} ||= $res->status_line;
     $r{trace_id}    ||= $res->header('TraceID');
+
+    # Mark OpenTelemetry span as error for HTTP 4xx/5xx responses
+    if ($res->code >= 400) {
+        my $span = OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
+        if ($span) {
+            $span->set_status(SPAN_STATUS_ERROR, "Internal API error: " . $res->status_line);
+            $span->set_attribute("api.function", $function);
+            $span->set_attribute("api.method", $method);
+            $span->set_attribute("api.status_code", $res->code);
+            $span->set_attribute("api.trace_id", $r{trace_id}) if $r{trace_id};
+        }
+    }
 
     warn "Data: ", Data::Dump::pp(\%r);
 
