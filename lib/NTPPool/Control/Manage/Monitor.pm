@@ -395,17 +395,20 @@ sub render_delete_monitor {
         return $self->redirect($self->manage_url('/manage/monitors/'));
     }
     else {
-        # Error case - log details, show generic message
+        # Error case - log details, show actual API error message
         warn "Failed to delete monitor $name: " . ($data->{error} || 'Unknown error');
 
+        # Use actual API error message or provide fallback
+        my $error_msg = $data->{error} || 'Unable to delete monitor - please try again or contact support';
+
         if ($self->is_htmx) {
-            $self->tpl_param('error',    'Unable to delete monitor');
+            $self->tpl_param('error',    $error_msg);
             $self->tpl_param('trace_id', $data->{trace_id}) if $data->{trace_id};
             return OK, $self->evaluate_template('tpl/monitors/delete_error.html');
         }
 
         # For non-HTMX, render the monitor page with error
-        $self->tpl_param('error',    'Unable to delete monitor');
+        $self->tpl_param('error',    $error_msg);
         $self->tpl_param('trace_id', $data->{trace_id}) if $data->{trace_id};
 
         # Call render_monitor to show the page with error

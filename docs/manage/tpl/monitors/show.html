@@ -37,8 +37,7 @@
                   hx-confirm="Are you sure you want to delete this monitor? This action cannot be undone."
                   hx-target="#delete-result"
                   hx-swap="innerHTML"
-                  hx-on::response-error="this.querySelector('#delete-result').innerHTML = '&lt;div class=&quot;alert alert-danger&quot;&gt;Unable to delete monitor. Please try again.&lt;/div&gt;'"
-                  hx-on::network-error="this.querySelector('#delete-result').innerHTML = '&lt;div class=&quot;alert alert-danger&quot;&gt;Network error. Please check your connection and try again.&lt;/div&gt;'">
+                  data-monitor-delete="true">
                 <input type="hidden" name="auth_token" value="[% combust.auth_token %]">
                 <input type="hidden" name="name" value="[% mon.TLSName | html %]">
                 <input type="hidden" name="id" value="[% mon.IDToken | html %]">
