@@ -8,7 +8,8 @@
     [% FOR account IN results.accounts %]
     <li>[% account.name | html %]
         (<a href="/manage/servers?a=[% account.account_token | html %]">servers</a>,
-        <a href="/manage/account?a=[% account.account_token | html %]">account</a>)
+        <a href="/manage/account?a=[% account.account_token | html %]">account</a>[% IF combust.user.is_monitor_admin && account.monitors && account.monitors.size %],
+        <a href="/manage/monitors?a=[% account.account_token | html %]">monitors</a>[% END %])
         <br>
         [% IF account.users && account.users.size %]
         <ol>
