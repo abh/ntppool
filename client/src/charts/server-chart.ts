@@ -24,7 +24,8 @@ import type {
   ServerChartOptions,
   TimeScale,
   PowerScale,
-  GSelection
+  GSelection,
+  ChartGroupElement
 } from '@/types/index.js';
 
 /**
@@ -514,6 +515,13 @@ function createLegend(
   chartGroup: GSelection,
   showOnlyActiveTesting = false
 ): void {
+  // Store monitor status map on chartGroup for use by fadeOtherMonitors
+  const monitorStatusMap = new Map(monitors.map(m => [m.id, m.status]));
+  const chartGroupElement = chartGroup.node() as ChartGroupElement | null;
+  if (chartGroupElement) {
+    chartGroupElement.__monitorStatusMap = monitorStatusMap;
+  }
+
   // Apply styles to container
   const htmlContainer = legendContainer as HTMLElement;
   htmlContainer.classList.add('legend-container');
@@ -657,6 +665,46 @@ function setTargetMonitor(targetId: number | null, chartGroup: GSelection, table
 }
 
 /**
+ * Unified function to set target status state (highlight status group or clear all)
+ */
+function setTargetStatus(targetStatus: string | null, chartGroup: GSelection, table: HTMLTableElement): void {
+  const startTime = performance.now();
+  console.log('🎯 setTargetStatus start:', { targetStatus, timestamp: startTime });
+
+  // Get monitor status map from chartGroup
+  const monitorStatusMap = (chartGroup.node() as ChartGroupElement | null)?.__monitorStatusMap;
+
+  if (!monitorStatusMap) {
+    console.log('🎯 setTargetStatus: no monitor status map available');
+    return;
+  }
+
+  // Clear all existing monitor highlighting first
+  const allMonitorCells = table.querySelectorAll('[data-monitor-id]');
+  allMonitorCells.forEach(cell => cell.classList.remove('monitor-cell-hover'));
+
+  if (targetStatus !== null) {
+    // Highlight all monitors with the target status
+    console.log('🎯 setTargetStatus: highlighting status', targetStatus);
+    highlightTableCellsByStatus(table, targetStatus, true, monitorStatusMap);
+
+    // Update chart with status-based filtering
+    fadeOtherMonitors(chartGroup, targetStatus, 0.15, 'status');
+    globalHoverState.setHover(null, 'table'); // Status hover is different from monitor hover
+  } else {
+    // Clear all (no filter state)
+    console.log('🎯 setTargetStatus: clearing all filters');
+    fadeOtherMonitors(chartGroup, null, 1);
+    globalHoverState.setHover(null, 'table');
+  }
+
+  console.log('🎯 setTargetStatus complete:', {
+    targetStatus,
+    duration: performance.now() - startTime
+  });
+}
+
+/**
  * Add event delegation listeners to a table with shared debouncing
  */
 function addTableEventListeners(
@@ -669,8 +717,19 @@ function addTableEventListeners(
     const startTime = performance.now();
     const target = e.target as Element;
 
+    // Check for status header hover
+    if (target instanceof HTMLElement && target.classList.contains('status-header') && target.dataset['monitorStatus']) {
+      const status = target.dataset['monitorStatus'];
+      console.log('🏓 Status header mouseenter (debounced):', { status, timestamp: startTime });
+
+      // Use unified debounced state management for status
+      sharedDebouncer.debounce(() => {
+        console.log('🏓 Status header executing debounced mouseenter:', { status });
+        setTargetStatus(status, chartGroup, table);
+      }, null); // Use null for status-based operations
+    }
     // Check if we're hovering over a monitor cell (has data-monitor-id)
-    if (target instanceof HTMLElement && target.dataset['monitorId']) {
+    else if (target instanceof HTMLElement && target.dataset['monitorId']) {
       const monitorId = parseInt(target.dataset['monitorId'], 10);
       console.log('🏓 Table mouseenter (debounced):', { monitorId, timestamp: startTime });
 
@@ -686,15 +745,19 @@ function addTableEventListeners(
     const startTime = performance.now();
     const target = e.target as Element;
 
-    // Check if we're leaving a monitor cell
-    if (target instanceof HTMLElement && target.dataset['monitorId']) {
-      const monitorId = parseInt(target.dataset['monitorId'], 10);
-      console.log('🏓 Table mouseleave (debounced):', { monitorId, timestamp: startTime });
+    // Check if we're leaving a status header or monitor cell
+    if (target instanceof HTMLElement && (target.classList.contains('status-header') || target.dataset['monitorId'])) {
+      const identifier = target.dataset['monitorId'] || target.dataset['monitorStatus'];
+      console.log('🏓 Table mouseleave (debounced):', { identifier, timestamp: startTime });
 
       // Use unified debounced state management (KEY FIX: no more immediate clearing)
       sharedDebouncer.debounce(() => {
-        console.log('🏓 Table executing debounced mouseleave:', { monitorId });
-        setTargetMonitor(null, chartGroup, table);
+        console.log('🏓 Table executing debounced mouseleave:', { identifier });
+        if (target.classList.contains('status-header')) {
+          setTargetStatus(null, chartGroup, table);
+        } else {
+          setTargetMonitor(null, chartGroup, table);
+        }
       }, null);
     }
   }, true);
@@ -732,6 +795,7 @@ function createTableSection(
       activeHeader.className = `status-header ${MONITOR_STATUS['active']?.class || ''}`;
       activeHeader.textContent = MONITOR_STATUS['active']?.label || 'Active';
       activeHeader.colSpan = 3;
+      activeHeader.dataset['monitorStatus'] = 'active';
       headerRow.appendChild(activeHeader);
 
       // Gap
@@ -744,6 +808,7 @@ function createTableSection(
       testingHeader.className = `status-header ${MONITOR_STATUS['testing']?.class || ''}`;
       testingHeader.textContent = MONITOR_STATUS['testing']?.label || 'Testing';
       testingHeader.colSpan = 3;
+      testingHeader.dataset['monitorStatus'] = 'testing';
       headerRow.appendChild(testingHeader);
 
       tbody.appendChild(headerRow);
@@ -810,6 +875,7 @@ function createTableSection(
       headerCell.className = `status-header ${statusConfig.class}`;
       headerCell.textContent = statusConfig.label;
       headerCell.colSpan = headerColspan;
+      headerCell.dataset['monitorStatus'] = status;
       headerRow.appendChild(headerCell);
       tbody.appendChild(headerRow);
 
@@ -941,45 +1007,112 @@ function createEmptyCell(className?: string): HTMLElement {
 
 
 /**
- * Fade monitors except the specified one
+ * Fade monitors except the specified one or status group
  */
 function fadeOtherMonitors(
   chartGroup: GSelection,
-  monitorId: number | null,
-  opacity: number
+  targetIdentifier: number | string | null,
+  opacity: number,
+  filterType: 'monitor' | 'status' = 'monitor'
 ): void {
   const startTime = performance.now();
   const selection = chartGroup.selectAll<SVGElement, ServerHistoryPoint>('.monitor-data');
   const elementCount = selection.size();
 
   console.log('🎯 fadeOtherMonitors start:', {
-    monitorId,
+    targetIdentifier,
+    filterType,
     opacity,
     elementCount,
     timestamp: startTime
   });
 
+  // Get monitor status map from chartGroup if available
+  const monitorStatusMap = (chartGroup.node() as ChartGroupElement | null)?.__monitorStatusMap;
+
   // Apply opacity changes immediately without transitions
   selection.style('opacity', d => {
-    if (monitorId === null) return 1;
-    return d.monitor_id === monitorId ? 1 : opacity;
+    if (targetIdentifier === null) return 1;
+
+    if (filterType === 'status' && monitorStatusMap && d.monitor_id !== null) {
+      // Status-based filtering using Map lookup
+      const monitorStatus = monitorStatusMap.get(d.monitor_id);
+      return monitorStatus === targetIdentifier ? 1 : opacity;
+    } else if (filterType === 'monitor') {
+      // Monitor ID-based filtering (existing logic)
+      return d.monitor_id === targetIdentifier ? 1 : opacity;
+    } else {
+      // Fallback: data points without monitor_id or no status map
+      return opacity;
+    }
   });
 
   // For score points, also change color to gray when dimmed
   const scorePoints = chartGroup.selectAll<SVGElement, ServerHistoryPoint>('.scores.monitor-data');
   scorePoints.style('fill', d => {
-    if (monitorId === null) {
+    if (targetIdentifier === null) {
       // Restore original color
       return getScoreColor(d.step);
     }
-    return d.monitor_id === monitorId ? getScoreColor(d.step) : '#888888';
+
+    let isTarget = false;
+    if (filterType === 'status' && monitorStatusMap && d.monitor_id !== null) {
+      const monitorStatus = monitorStatusMap.get(d.monitor_id);
+      isTarget = monitorStatus === targetIdentifier;
+    } else if (filterType === 'monitor') {
+      isTarget = d.monitor_id === targetIdentifier;
+    }
+
+    return isTarget ? getScoreColor(d.step) : '#888888';
   });
 
   // Log completion immediately since there's no transition
   const endTime = performance.now();
   console.log('🎯 fadeOtherMonitors end:', {
-    monitorId,
+    targetIdentifier,
+    filterType,
     elementCount,
+    duration: endTime - startTime,
+    timestamp: endTime
+  });
+}
+
+/**
+ * Highlight table cells for monitors with the specified status
+ */
+function highlightTableCellsByStatus(
+  table: HTMLTableElement,
+  status: string,
+  highlight: boolean,
+  monitorStatusMap: Map<number, string>
+): void {
+  const startTime = performance.now();
+  console.log('📋 highlightTableCellsByStatus start:', { status, highlight, timestamp: startTime });
+
+  // Find all monitor cells and check their status
+  const monitorCells = table.querySelectorAll('[data-monitor-id]');
+  let matchingCells = 0;
+
+  monitorCells.forEach(cell => {
+    const monitorId = parseInt((cell as HTMLElement).dataset['monitorId']!, 10);
+    const monitorStatus = monitorStatusMap.get(monitorId);
+
+    if (monitorStatus === status) {
+      if (highlight) {
+        cell.classList.add('monitor-cell-hover');
+      } else {
+        cell.classList.remove('monitor-cell-hover');
+      }
+      matchingCells++;
+    }
+  });
+
+  const endTime = performance.now();
+  console.log('📋 highlightTableCellsByStatus end:', {
+    status,
+    highlight,
+    totalCells: monitorCells.length,
+    matchingCells,
     duration: endTime - startTime,
     timestamp: endTime
   });

@@ -103,6 +103,13 @@ export type SvgSelection = d3.Selection<SVGSVGElement, unknown, null, undefined>
 export type GSelection = d3.Selection<SVGGElement, unknown, null, undefined>;
 
 /**
+ * Extended SVG group element with custom chart data
+ */
+export interface ChartGroupElement extends SVGGElement {
+  __monitorStatusMap?: Map<number, string>;
+}
+
+/**
  * Chart creation result
  */
 export interface ChartElements {
