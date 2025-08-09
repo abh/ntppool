@@ -422,3 +422,8 @@ Located in `t/` directory:
 - `t/Alert.t`
 - `t/LogScore.t`
 - `t/Zone.t`
+
+## Git Workflow and Commit Guidelines
+
+### Commit Message Conventions
+- **CRITICAL**: never use `git commit --no-verify` unless EXPLICITLY requested. We almost always fail commits because of trailing whitespace left in the files.

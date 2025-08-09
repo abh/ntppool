@@ -3,6 +3,38 @@
  * Comprehensive conversion from original CSS files: main.css, content.css, fonts.css
  */
 
+// HTMX Loading Indicators
+.htmx-indicator {
+    display: none;
+}
+
+.htmx-request .htmx-indicator {
+    display: inline-block;
+}
+
+.htmx-request.htmx-indicator {
+    display: inline-block;
+}
+
+// Accessibility: Provide static loading text for users with reduced motion
+@media (prefers-reduced-motion: reduce) {
+    .htmx-indicator .spinner-border {
+        display: none !important;
+    }
+
+    .htmx-indicator::after {
+        content: "Loading...";
+        font-size: 0.875rem;
+        color: currentColor;  // Use the button's text color for better contrast
+        font-weight: normal;
+    }
+
+    // Ensure proper contrast on danger buttons when loading
+    .btn-outline-danger .htmx-indicator::after {
+        color: white;
+    }
+}
+
 // CSS Variables and Bootstrap Configuration
 :root {
     --bs-nav-link-color: #3885b4;
