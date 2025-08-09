@@ -93,7 +93,9 @@ sub manage_dispatch {
         return $self->render_admin_status();
     }
 
+    warn "DEBUG: All URIs being checked - actual URI: '" . $self->request->uri . "'";
     if ($self->request->uri =~ m!^/manage/monitors/monitor/confirm-delete$!) {
+        warn "DEBUG: confirm-delete route matched, URI: " . $self->request->uri;
         return $self->render_confirm_delete();
     }
 
@@ -112,21 +114,15 @@ sub manage_dispatch {
     return NOT_FOUND;
 }
 
-sub render_monitor {
+sub _fetch_monitor_details {
     my $self = shift;
+    my $name = shift;
 
-    my $span = NP::Tracing->tracer->create_span(
-        name => "monitor.render_monitor",
-        kind => SPAN_KIND_SERVER,
-    );
-    dynamically otel_current_context = otel_context_with_span($span);
-    defer { $span->end(); };
-
-    my $name = $self->req_param('name');
     unless ($name) {
-        warn "no name provided to render_monitor";
-        return NOT_FOUND;
+        warn "no name provided to _fetch_monitor_details";
+        return undef, NOT_FOUND;
     }
+
     my $data = int_api(
         'get',
         'monitor/manage/monitor',
@@ -138,8 +134,26 @@ sub render_monitor {
     );
 
     if ($data->{code} != 200) {
-        return $self->_map_api_error_code($data, "render_monitor for $name");
+        my $code = $self->_map_api_error_code($data, "fetch_monitor_details for $name");
+        return undef, $code;
     }
+
+    return $data, undef;
+}
+
+sub render_monitor {
+    my $self = shift;
+
+    my $span = NP::Tracing->tracer->create_span(
+        name => "monitor.render_monitor",
+        kind => SPAN_KIND_SERVER,
+    );
+    dynamically otel_current_context = otel_context_with_span($span);
+    defer { $span->end(); };
+
+    my $name = $self->req_param('name');
+    my ($data, $error_code) = $self->_fetch_monitor_details($name);
+    return $error_code if $error_code;
 
     my @monitor = _monitor_list($data->{data}->{Monitors} || {});
     $self->tpl_param('mon',  $monitor[0]);
@@ -367,21 +381,12 @@ sub render_confirm_delete {
         return NOT_FOUND;
     }
 
-    # Get monitor details for display
-    my $data = int_api(
-        'get',
-        'monitor',
-        {   name => $name,
-            user => $self->plain_cookie($self->user_cookie_name),
-            a    => $self->current_account->id_token,
-        },
-        $self->_get_request_context()
-    );
+    # Get monitor details for display using shared method
+    my ($data, $error_code) = $self->_fetch_monitor_details($name);
+    return $error_code if $error_code;
 
-    my $code = $self->_map_api_error_code($data, "confirm_delete for monitor $name");
-    return $code if $code != 200;
-
-    $self->tpl_param('monitor', $data->{data});
+    my @monitor = _monitor_list($data->{data}->{Monitors} || {});
+    $self->tpl_param('monitor', $monitor[0]);
     return OK, $self->evaluate_template('tpl/monitors/confirm_delete_modal.html');
 }
 

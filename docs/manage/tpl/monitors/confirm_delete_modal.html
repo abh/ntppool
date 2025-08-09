@@ -7,7 +7,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p>Are you sure you want to delete monitor <strong>[% monitor.name | html %]</strong>?</p>
+                <p>Are you sure you want to delete monitor <strong>[% monitor.Name | html %]</strong>?</p>
                 <p class="text-muted">This action cannot be undone.</p>
             </div>
             <div class="modal-footer">
@@ -17,8 +17,8 @@
                       hx-target="#delete-result"
                       hx-swap="innerHTML">
                     <input type="hidden" name="auth_token" value="[% combust.auth_token %]">
-                    <input type="hidden" name="name" value="[% monitor.tls_name | html %]">
-                    <input type="hidden" name="id" value="[% monitor.id_token | html %]">
+                    <input type="hidden" name="name" value="[% monitor.TLSName | html %]">
+                    <input type="hidden" name="id" value="[% monitor.IDToken | html %]">
                     <button type="submit" class="btn btn-danger">Delete Monitor</button>
                 </form>
             </div>
@@ -27,7 +27,26 @@
 </div>
 
 <script>
-// Show the modal when loaded via HTMX
-const modal = new bootstrap.Modal(document.getElementById('delete-modal'));
-modal.show();
+// Show the modal when loaded via HTMX (use function scope to avoid variable conflicts)
+(function() {
+    const modalElement = document.getElementById('delete-modal');
+
+    // Clean up any existing modal with this ID first
+    const existingModal = bootstrap.Modal.getInstance(modalElement);
+    if (existingModal) {
+        existingModal.dispose();
+    }
+
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
+
+    // Clean up modal when dismissed to prevent conflicts on subsequent loads
+    modalElement.addEventListener('hidden.bs.modal', function () {
+        // Dispose of Bootstrap modal instance to clean up event listeners
+        modal.dispose();
+
+        // Remove the modal element from DOM after disposal
+        modalElement.remove();
+    });
+})();
 </script>

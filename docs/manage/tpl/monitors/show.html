@@ -36,8 +36,12 @@
             <button hx-get="/manage/monitors/monitor/confirm-delete?name=[% mon.TLSName | uri %]&id=[% mon.IDToken | uri %]"
                     hx-target="#modal-container"
                     hx-swap="innerHTML"
+                    hx-indicator="#delete-loading"
                     class="btn btn-outline-danger btn-sm">
                 Delete Monitor
+                <div id="delete-loading" class="htmx-indicator spinner-border spinner-border-sm ms-2" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
             </button>
 
             <div id="delete-result" class="mt-2"></div>
