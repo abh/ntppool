@@ -489,6 +489,47 @@ sub _edit_monitor {
     return $mon;
 }
 
+sub _format_metrics_breakdown {
+    my ($self, $period_data) = @_;
+    return '' unless $period_data && ref $period_data eq 'HASH';
+
+    my @metric_types = (
+        { key => 'ok', label => 'ok' },
+        { key => 'timeout', label => 'timeout' },
+        { key => 'offset', label => 'offset' },
+        { key => 'signature_validation', label => 'signature' },
+        { key => 'batch_out_of_order', label => 'batch' }
+    );
+
+    my @components;
+    my @non_ok_components;
+    my $ok_value = 0;
+    my $ok_component = '';
+
+    for my $type (@metric_types) {
+        my $value = $period_data->{$type->{key}};
+        next unless defined $value && $value > 0;
+
+        my $formatted_value = $value > 1 ? sprintf('%.1f', $value) : sprintf('%.2f', $value);
+        my $component_text = "$formatted_value $type->{label}";
+
+        if ($type->{key} eq 'ok') {
+            $ok_value = $value;
+            $ok_component = $component_text;
+        } else {
+            push @non_ok_components, $component_text;
+        }
+    }
+
+    # Only show 'ok' if there are other components to show
+    if (@non_ok_components && $ok_value > 0) {
+        push @components, $ok_component;
+    }
+    push @components, @non_ok_components;
+
+    return @components ? '(' . join(', ', @components) . ')' : '';
+}
+
 sub monitor_metrics {
     my $self   = shift;
     my %params = @_;
@@ -541,6 +582,32 @@ sub monitor_metrics {
 
         # The API returns data.data.monitors, so we need to extract the inner data
         my $metrics_data = $data->{data}->{data} || $data->{data};
+
+        # Add formatted breakdown strings to monitor data
+        if ($metrics_data->{monitors}) {
+            for my $monitor_name (keys %{$metrics_data->{monitors}}) {
+                my $monitor = $metrics_data->{monitors}->{$monitor_name};
+                if ($monitor->{tests_per_minute_1h}) {
+                    $monitor->{breakdown_1h} = $self->_format_metrics_breakdown($monitor->{tests_per_minute_1h});
+                }
+                if ($monitor->{tests_per_minute_24h}) {
+                    $monitor->{breakdown_24h} = $self->_format_metrics_breakdown($monitor->{tests_per_minute_24h});
+                }
+            }
+        }
+
+        # Add formatted breakdown for account totals
+        if ($metrics_data->{account_totals}) {
+            if ($metrics_data->{account_totals}->{tests_per_minute_1h}) {
+                $metrics_data->{account_totals}->{breakdown_1h} =
+                    $self->_format_metrics_breakdown($metrics_data->{account_totals}->{tests_per_minute_1h});
+            }
+            if ($metrics_data->{account_totals}->{tests_per_minute_24h}) {
+                $metrics_data->{account_totals}->{breakdown_24h} =
+                    $self->_format_metrics_breakdown($metrics_data->{account_totals}->{tests_per_minute_24h});
+            }
+        }
+
         return $self->{$cache_key} = {
             success => 1,
             data    => $metrics_data
