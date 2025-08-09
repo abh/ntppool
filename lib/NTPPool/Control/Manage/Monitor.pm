@@ -93,6 +93,10 @@ sub manage_dispatch {
         return $self->render_admin_status();
     }
 
+    if ($self->request->uri =~ m!^/manage/monitors/monitor/confirm-delete$!) {
+        return $self->render_confirm_delete();
+    }
+
     if ($self->request->uri =~ m!^/manage/monitors/monitor/delete$!) {
         return $self->render_delete_monitor();
     }
@@ -347,6 +351,38 @@ sub render_admin_status {
       $self->manage_url('/manage/monitors/monitor', {name => $self->req_param('name')});
     return $self->redirect($redirect);
 
+}
+
+sub render_confirm_delete {
+    my $self = shift;
+
+    # Only allow GET requests for confirmation dialog
+    return 405 unless $self->request->method eq 'get';
+
+    my $name = $self->req_param('name');
+    my $id   = $self->req_param('id');
+
+    unless ($name && $id) {
+        warn "Missing required parameters for delete confirmation: name=$name, id=$id";
+        return NOT_FOUND;
+    }
+
+    # Get monitor details for display
+    my $data = int_api(
+        'get',
+        'monitor',
+        {   name => $name,
+            user => $self->plain_cookie($self->user_cookie_name),
+            a    => $self->current_account->id_token,
+        },
+        $self->_get_request_context()
+    );
+
+    my $code = $self->_map_api_error_code($data, "confirm_delete for monitor $name");
+    return $code if $code != 200;
+
+    $self->tpl_param('monitor', $data->{data});
+    return OK, $self->evaluate_template('tpl/monitors/confirm_delete_modal.html');
 }
 
 sub render_delete_monitor {

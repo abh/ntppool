@@ -1,0 +1,33 @@
+<!-- Delete Confirmation Modal (HTMX Fragment) -->
+<div class="modal fade" id="delete-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Monitor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete monitor <strong>[% monitor.name | html %]</strong>?</p>
+                <p class="text-muted">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form class="d-inline"
+                      hx-post="/manage/monitors/monitor/delete?a=[% combust.current_account.id_token %]"
+                      hx-target="#delete-result"
+                      hx-swap="innerHTML">
+                    <input type="hidden" name="auth_token" value="[% combust.auth_token %]">
+                    <input type="hidden" name="name" value="[% monitor.tls_name | html %]">
+                    <input type="hidden" name="id" value="[% monitor.id_token | html %]">
+                    <button type="submit" class="btn btn-danger">Delete Monitor</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Show the modal when loaded via HTMX
+const modal = new bootstrap.Modal(document.getElementById('delete-modal'));
+modal.show();
+</script>
