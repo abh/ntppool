@@ -29,15 +29,12 @@
             [% IF mon.CombinedStatus OR mon.CombinedLastSeen %]
 
             <li class="list-group-item">
-                [% IF mon.CombinedStatus %]
-                <span class="badge rounded-pill text-bg-[% mon.StatusColor | html %]">
-                    Status [% mon.Status | html %]</span>
-                [% END %]
-                [% IF mon.CombinedLastSeen %]
-                <span class="badge rounded-pill text-bg-[% mon.LastSeenStatus.Class %]">
-                    Connection [% mon.LastSeenStatus.Text | html %]
-                </span>
-                [% END %]
+                [% INCLUDE tpl/monitors/info_details.html,
+                mon = mon,
+                show_status = mon.CombinedStatus,
+                show_connection = mon.CombinedLastSeen,
+                show_client_version = 0,
+                %]
             </li>
 
             [% END %]
