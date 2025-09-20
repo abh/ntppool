@@ -61,6 +61,9 @@ function checkAndInitialize(): void {
   // Initialize graph explanation functionality
   initializeGraphExplanation();
 
+  // Initialize WebForm.dev integration
+  initializeWebForm();
+
   // Initialize HTMX conditionally
   initializeHTMX().catch(error => {
     console.error('Failed to initialize HTMX:', error);
@@ -96,3 +99,6 @@ import './mobile-nav';
 
 // Load search results filter
 import './search-results-filter';
+
+// Load WebForm.dev integration
+import { initializeWebForm } from './webform';

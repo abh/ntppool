@@ -521,12 +521,12 @@ sub post_process {
         [   'Content-Security-Policy' => join(
                 " ",
                 qq[default-src 'none'; frame-ancestors 'none';],
-                qq[connect-src 'self' www.ntppool.org st.ntppool.org status.ntppool.org 8ll7xvh0qt1p.statuspage.io${web_hostname};],
+                qq[connect-src 'self' www.ntppool.org st.ntppool.org status.ntppool.org 8ll7xvh0qt1p.statuspage.io send.webform.dev${web_hostname};],
                 qq[font-src fonts.gstatic.com;],
-                qq[form-action 'self' mailform.ntppool.org checkout.stripe.com;],
+                qq[form-action 'self' send.webform.dev checkout.stripe.com;],
                 qq[img-src 'self' data: $cspdomains *.mapper.ntppool.org;],
-                qq[script-src 'self' 'unsafe-eval' 'unsafe-inline' cdn.statuspage.io $cspdomains www.mapper.ntppool.org js.stripe.com;],
-                qq[style-src 'self' fonts.googleapis.com fonts.gstatic.com $cspdomains;],
+                qq[script-src 'self' 'unsafe-eval' 'unsafe-inline' cdn.statuspage.io $cspdomains www.mapper.ntppool.org js.stripe.com send.webform.dev;],
+                qq[style-src 'self' fonts.googleapis.com fonts.gstatic.com send.webform.dev $cspdomains;],
 
                 # qq[child-src 'self' js.stripe.com;],
                 qq[report-uri https://ntppool.report-uri.com/r/t/csp/wizard],
