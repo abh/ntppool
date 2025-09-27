@@ -109,8 +109,6 @@ sub current_account {
         return $self->{_current_account} = $accounts->[0];
     }
 
-    warn "did not find an account for the user?!! -- user id ", $self->user->id;
-
     return $self->{_current_account} = undef;
 }
 
@@ -204,7 +202,6 @@ sub handle_login {
 
     my ($userdata, $error) = $self->_get_auth0_user($code);
     if ($error) {
-        warn "Auth0 error: ", Data::Dump::pp(\$error) if $error;
         $span->set_status(SPAN_STATUS_ERROR, "auth0 user error: $error");
         $span->end();
     }
@@ -231,9 +228,7 @@ sub handle_login {
         $identity->data(encode_json($userdata));
     }
     else {
-        warn "Didn't find identity in the database";
         if (!$email) {
-            warn "email not verified";
             $span->end();
             return $self->login("Email not verified");
         }
@@ -263,7 +258,6 @@ sub handle_login {
         for my $email (@emails) {
             my ($email_user) = NP::Model->user->fetch(email => $email);
             if ($email_user) {
-                warn "Found email user in the database";
                 $user = $email_user;
                 last;
             }
@@ -316,8 +310,7 @@ sub handle_login {
         my $email =
           Email::Stuffer->from(NP::Email::address("sender"))
           ->reply_to(NP::Email::address("support"))
-          ->subject("NTP Pool user deletion cancelled")
-          ->text_body($msg);
+          ->subject("NTP Pool user deletion cancelled")->text_body($msg);
 
         $email->to($user->email);
         NP::Email::sendmail($email);
@@ -438,8 +431,6 @@ sub _get_auth0_user {
     $jwt_data or return undef, "Could not decode user data";
 
     my $user = $jwt_data;
-
-    warn "jwt user data: ", pp($user);
 
     return $user, undef;
 
@@ -573,7 +564,6 @@ sub staff_search {
     }
     else {
         # API error - log and return empty results for degraded experience
-        warn "Staff search API error: " . ($data->{status_line} || 'unknown error');
         $results = {
             accounts => [],
             error    => 'Search temporarily unavailable',
@@ -612,6 +602,7 @@ sub staff_search {
         my $filter_context = $results->{filter_context};
 
         for my $account (@{$results->{accounts}}) {
+
             # Compute CSS classes for servers
             for my $server (@{$account->{servers} || []}) {
                 my @css_classes = ();
@@ -621,7 +612,7 @@ sub staff_search {
 
                 # Add relevance filtering for zone searches
                 if ($filter_context->{show_zone_servers_only}) {
-                    my $zone_name = $filter_context->{zone_name};
+                    my $zone_name  = $filter_context->{zone_name};
                     my $is_in_zone = grep { $_ eq $zone_name } @{$server->{zones} || []};
                     push @css_classes, 'search-result-secondary' unless $is_in_zone;
                 }
@@ -780,7 +771,6 @@ sub staff_hostname_edit {
         my $result = $api->edit_server();
 
         # Debug logging
-        warn "Hostname save result: " . Data::Dump::pp($result);
 
         # Update the server object with the returned hostname
         if ($result && ref($result) eq 'HASH' && exists $result->{hostname}) {
@@ -864,8 +854,6 @@ sub monitor_eligibility {
     else {
 
         # API error - log and return safe defaults for degraded experience
-        warn "Monitor eligibility API error: "
-          . ($data->{status_line} || 'unknown error');
         return $self->{_monitor_eligibility} = {
             enabled       => 0,
             can_register  => 0,
@@ -880,21 +868,16 @@ sub account_monitor_config {
 
     # Use passed account or fall back to current_account
     $account ||= $self->current_account;
-    warn "DEBUG: account_monitor_config called, account: "
-      . ($account ? $account->id : 'NONE');
 
     # Create a cache key that includes the account ID
     my $cache_key = '_account_monitor_config_' . ($account ? $account->id : 'none');
-    warn "DEBUG: Cache key: $cache_key";
 
     if (exists $self->{$cache_key}) {
-        warn "DEBUG: Returning cached config";
         return $self->{$cache_key};
     }
 
     # Default values if account not available
     unless ($account) {
-        warn "DEBUG: No account available, returning defaults";
         return $self->{$cache_key} = {
             monitor_enabled     => 0,
             monitor_limit       => 3,
@@ -904,29 +887,23 @@ sub account_monitor_config {
 
     # Parse account flags from database-loaded account object
     my $config = {};
-    warn "DEBUG: Account flags raw: " . ($account->flags || 'NULL');
 
     if ($account->flags) {
 
         # Check if flags is already a hash reference or a JSON string
         if (ref($account->flags) eq 'HASH') {
-            warn "DEBUG: Account flags is already a hash reference";
             $config = $account->flags;
         }
         else {
-            warn "DEBUG: Account flags is a string, trying to parse as JSON";
             eval { $config = decode_json($account->flags); };
             if ($@) {
-                warn "Could not parse account flags for account " . $account->id . ": $@";
                 $config = {};
             }
             else {
-                warn "DEBUG: Parsed config: " . Data::Dump::pp($config);
             }
         }
     }
     else {
-        warn "DEBUG: Account has no flags set";
     }
 
     # Set defaults and user-friendly values
@@ -936,12 +913,9 @@ sub account_monitor_config {
         monitors_per_server => $config->{monitors_per_server_limit} || 1,
     };
 
-    warn "DEBUG: Before special case handling: " . Data::Dump::pp($monitor_config);
-
     # Handle special case where monitor_limit is 0 (use default)
     $monitor_config->{monitor_limit} = 3 if $monitor_config->{monitor_limit} == 0;
 
-    warn "DEBUG: Final monitor config: " . Data::Dump::pp($monitor_config);
     return $self->{$cache_key} = $monitor_config;
 }
 
