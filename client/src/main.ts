@@ -64,7 +64,7 @@ function checkAndInitialize(): void {
   // Initialize WebForm.dev integration
   initializeWebForm();
 
-  // Initialize HTMX conditionally
+  // Initialize HTMX
   initializeHTMX().catch(error => {
     console.error('Failed to initialize HTMX:', error);
   });
