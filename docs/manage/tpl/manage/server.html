@@ -70,14 +70,15 @@
         <span id="netspeed-loading-[% server.id %]" class="htmx-indicator">
             <small>Updating...</small>
         </span>
-        [% IF error %]
-        <div class="text-danger mt-2">
-            <small>[% error | html %]</small>
-        </div>
-        [% END %]
         <noscript>
             <input type="submit" name="Update" value="Update">
         </noscript>
+        [% IF error %]
+        <div class="alert alert-warning mt-2">
+            [% error | html %]
+            [% IF trace_id %]<br><small class="mt-2 d-block">Trace ID: [% trace_id | html %]</small>[% END %]
+        </div>
+        [% END %]
 
         <br>
         [% IF server.deletion_on %]

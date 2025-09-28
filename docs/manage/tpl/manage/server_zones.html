@@ -3,9 +3,3 @@
 <a href="[% combust.www_url(zone.url) %]">[% zone.name %]</a>
 [% END  %]
 </span>
-[% IF error %]
-<div class="alert alert-warning">
-    [% error | html %]
-    [% IF trace_id %]<br><small>Trace ID: [% trace_id | html %]</small>[% END %]
-</div>
-[% END %]

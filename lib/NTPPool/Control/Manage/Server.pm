@@ -486,7 +486,8 @@ sub handle_update_netspeed {
 
             # Conflict - don't show trace ID
             $self->tpl_param('error',
-                     $api_response->{message}
+                     ($api_response->{data} && $api_response->{data}->{message})
+                  || $api_response->{message}
                   || $api_response->{error}
                   || 'Conflict updating netspeed');
             return OK, $self->evaluate_template('tpl/manage/server.html');
