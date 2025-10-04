@@ -16,6 +16,7 @@ use Math::Random::Secure qw(irand);
 use URI::URL             ();
 use NP::UA;
 use NP::IntAPI qw(int_api);
+use NP::CAPI::Account qw(get_account_status);
 use OpenTelemetry::Trace;
 use OpenTelemetry -all;
 use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
@@ -826,41 +827,35 @@ sub monitor_eligibility {
         };
     }
 
-    my $data = int_api(
-        'get',
-        'monitor/manage/eligibility',
-        {   a    => $self->current_account->id_token,
-            user => $self->plain_cookie($self->user_cookie_name),
-        },
-        $self->_get_request_context()
+    # Call new ConnectRPC AccountService.GetAccountStatus
+    my $result = get_account_status(
+        auth    => $self->plain_cookie($self->user_cookie_name),
+        account => $self->current_account->id_token,
+        context => $self->_get_request_context(),
     );
 
-    if ($data->{code} == 200) {
-        return $self->{_monitor_eligibility} = $data->{data}
-          || {enabled       => 0,
-              can_register  => 0,
-              monitor_count => 0,
-          };
+    # Handle successful response
+    if ($result->{data}) {
+        return $self->{_monitor_eligibility} = $result->{data};
     }
-    elsif ($data->{code} == 404) {
 
-        # Account not found - return safe defaults
-        return $self->{_monitor_eligibility} = {
-            enabled       => 0,
-            can_register  => 0,
-            monitor_count => 0,
-        };
-    }
-    else {
+    # Handle errors - return safe defaults for degraded experience
+    if ($result->{error}) {
+        warn "ConnectRPC GetAccountStatus error: $result->{error} (code: $result->{connect_code})";
 
-        # API error - log and return safe defaults for degraded experience
-        return $self->{_monitor_eligibility} = {
-            enabled       => 0,
-            can_register  => 0,
-            monitor_count => 0,
-            error         => 'api_unavailable'
-        };
+        # Log detailed error for debugging
+        if ($result->{trace_id}) {
+            warn "  Trace ID: $result->{trace_id}";
+        }
     }
+
+    # Return safe defaults
+    return $self->{_monitor_eligibility} = {
+        enabled       => 0,
+        can_register  => 0,
+        monitor_count => 0,
+        error         => $result->{connect_code} || 'api_unavailable',
+    };
 }
 
 sub account_monitor_config {
