@@ -9,6 +9,9 @@ User-Agent: *
 Disallow: /dns.html
 Disallow: /monitor/
 
+User-Agent: AhrefsBot
+Crawl-Delay: 10
+
 User-agent: PetalBot
 Disallow: /
 
