@@ -109,8 +109,8 @@ export class ZoneChartComponent extends BaseChartComponent {
     if (!zone) return false;
 
     // Basic zone name validation
-    // Allow alphanumeric, hyphens, and dots for zone names
-    const zoneRegex = /^[a-zA-Z0-9.-]+$/;
+    // Allow alphanumeric, hyphens, dots, and @ for zone names
+    const zoneRegex = /^[a-zA-Z0-9.@-]+$/;
     return zoneRegex.test(zone) && zone.length > 0 && zone.length < 100;
   }
 
