@@ -195,7 +195,9 @@ sub connect_rpc {
 
     # Debug logging (controlled by environment variable)
     if ($ENV{CAPI_DEBUG}) {
-        warn "calling connect rpc: $url\n";
+        warn "CAPI: calling connect rpc: $url\n";
+        warn "CAPI: auth = " . ($auth // 'UNDEF') . "\n";
+        warn "CAPI: account = " . ($account // 'UNDEF') . "\n";
     }
 
     # Build HTTP request
@@ -217,6 +219,14 @@ sub connect_rpc {
     # Encode request as JSON
     my $json_body = $json->encode($request);
     $req->content($json_body);
+
+    # Debug: Log outgoing headers
+    if ($ENV{CAPI_DEBUG}) {
+        warn "CAPI: Request headers:\n";
+        for my $h ($req->headers->header_field_names) {
+            warn "  $h: " . $req->header($h) . "\n";
+        }
+    }
 
     # Make request with error handling
     my $ua = ua($context);
