@@ -22,6 +22,7 @@ use experimental qw( defer );
 
 use NP::I18N;
 use NP::Version;
+use NP::CAPI::Zone qw(list_zones);
 
 my $version = NP::Version->new;
 my $config  = Combust::Config->new;
@@ -400,17 +401,16 @@ sub system_feature {
 }
 
 sub count_by_continent {
-    my $self   = shift;
-    my $global = NP::Model->zone->fetch(name => '@');
-    unless ($global) {
-        warn "zones appear not to be setup, run ./bin/populate_zones!";
-        return;
+    my $self = shift;
+
+    my $result = list_zones();
+
+    if ($result->{error}) {
+        warn "Failed to fetch zones from API: $result->{error} (TraceID: $result->{trace_id})";
+        return [];
     }
-    my @zones = sort { $a->description cmp $b->description } $global->zones;
-    push @zones, $global;
-    my $total = NP::Model->zone->fetch(name => '.');
-    push @zones, $total;
-    \@zones;
+
+    return $result->{data}->{zones} || [];
 }
 
 sub is_htmx {

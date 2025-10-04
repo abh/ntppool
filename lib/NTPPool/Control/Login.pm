@@ -10,6 +10,9 @@ use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_
 use experimental             qw( defer );
 use Syntax::Keyword::Dynamically;
 
+my $api_base = $ENV{'api-internal'} || 'http://api-internal';
+$api_base =~ s{/$}{};
+
 sub user_cookie_name {
     return 'npuid';
 }
@@ -149,7 +152,7 @@ sub logout {
         my ($lookup) = ($session_token =~ m/_(\d+)$/);
 
         if ($lookup) {
-            my $resp = $self->ua->delete("http://api-internal/int/session/" . $lookup);
+            my $resp = $self->ua->delete("$api_base/int/session/" . $lookup);
             if ($resp->is_success) {
                 warn "session deleted";
             }
@@ -177,7 +180,7 @@ sub _here_url {
 
 sub setup_session {
     my ($self, $user_id) = @_;
-    my $resp = $self->ua->post("http://api-internal/int/session", {user_id => $user_id});
+    my $resp = $self->ua->post("$api_base/int/session", {user_id => $user_id});
     if ($resp->is_success) {
         my $data = decode_json($resp->decoded_content());
         unless ($data->{session_token}) {
