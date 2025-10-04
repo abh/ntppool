@@ -115,6 +115,11 @@ Account selection token. Sent as C<X-Account> header.
 
 Request context hashref with C<x_forwarded_for> field for client IP tracking.
 
+=item prefix (optional)
+
+URL prefix for the API endpoint. Defaults to C</int/rpc> for internal ConnectRPC API.
+Use empty string C<''> for no prefix, or provide a custom prefix like C</api>.
+
 =back
 
 B<Returns:>
@@ -187,25 +192,47 @@ sub connect_rpc {
     my $auth    = delete $args{auth};
     my $account = delete $args{account};
     my $context = delete $args{context};
+    my $http_method = delete $args{http_method} // 'POST';  # Allow GET for side-effect free RPCs
+    my $prefix = delete $args{prefix} // '/int/rpc';  # Default to internal RPC API prefix
 
     my %result;
 
-    # Construct ConnectRPC URL: /service.name/MethodName
-    my $url = "${api_base}/${service}/${method}";
+    # Construct ConnectRPC URL: /int/rpc/service.name/MethodName (or custom prefix)
+    my $url = "${api_base}${prefix}/${service}/${method}";
+
+    # For GET requests, encode the request message in query parameters
+    if ($http_method eq 'GET') {
+        my $message_json = $json->encode($request);
+        require URI::Escape;
+        my $encoded_message = URI::Escape::uri_escape($message_json);
+        # Connect protocol requires connect=v1 for GET requests
+        $url .= "?connect=v1&encoding=json&message=${encoded_message}";
+    }
 
     # Debug logging (controlled by environment variable)
     if ($ENV{CAPI_DEBUG}) {
         warn "CAPI: calling connect rpc: $url\n";
+        warn "CAPI: http_method = $http_method\n";
         warn "CAPI: auth = " . ($auth // 'UNDEF') . "\n";
         warn "CAPI: account = " . (defined $account ? "'$account'" : 'UNDEF') . "\n";
         warn "CAPI: account is " . ($account ? "TRUTHY" : "FALSY") . " in boolean context\n";
     }
 
     # Build HTTP request
-    my $req = HTTP::Request->new('POST', $url);
+    my $req = HTTP::Request->new($http_method, $url);
 
-    # Set headers
-    $req->header('Content-Type' => 'application/json');
+    # Set headers based on HTTP method
+    if ($http_method eq 'GET') {
+        # For GET requests, set Accept header for ConnectRPC
+        # Note: curl uses Accept: */* and it works, but application/json is more specific
+        $req->header('Accept' => '*/*');
+    } else {
+        # For POST requests, set Content-Type
+        $req->header('Content-Type' => 'application/json');
+    }
+
+    # Note: Accept-Encoding is set globally in NP::UA
+    # We don't need to set it per-request
 
     # Authentication header
     if ($auth) {
@@ -221,16 +248,19 @@ sub connect_rpc {
         warn "CAPI: NOT setting X-Account header (account param is " . (defined $account ? "defined but falsy: '$account'" : "undefined") . ")\n" if $ENV{CAPI_DEBUG};
     }
 
-    # Encode request as JSON
-    my $json_body = $json->encode($request);
-    $req->content($json_body);
+    # Encode request as JSON and set body (only for POST requests)
+    if ($http_method ne 'GET') {
+        my $json_body = $json->encode($request);
+        $req->content($json_body);
+    }
 
-    # Debug: Log outgoing headers
+    # Debug: Log outgoing headers (always log for troubleshooting)
     if ($ENV{CAPI_DEBUG}) {
         warn "CAPI: Request headers:\n";
         for my $h ($req->headers->header_field_names) {
             warn "  $h: " . $req->header($h) . "\n";
         }
+        warn "CAPI: Full URL: $url\n";
     }
 
     # Make request with error handling
@@ -246,9 +276,17 @@ sub connect_rpc {
         };
     }
 
+    # Decode compressed response (gzip, deflate, etc.)
+    # This decompresses the content and removes Content-Encoding header
+    $res->decode();
+
     if ($ENV{CAPI_DEBUG}) {
         warn $res->status_line, "\n";
-        warn $res->decoded_content, "\n";
+        warn "Response headers (after decode):\n";
+        warn "  Content-Type: ", $res->header('Content-Type') || 'none', "\n";
+        warn "  Content-Encoding: ", $res->header('Content-Encoding') || 'none', "\n";
+        warn "  Content-Length: ", $res->header('Content-Length') || 'none', "\n";
+        warn substr($res->content, 0, 200), "...\n";
     }
 
     # Parse response
@@ -304,7 +342,9 @@ sub _parse_connect_response {
         return %result;
     }
 
-    my $content = $res->decoded_content;
+    # Get content - already decompressed by $res->decode() call above
+    # Use content() not decoded_content() after calling decode()
+    my $content = $res->content;
     my $data = eval { $json->decode($content) };
 
     if ($@) {

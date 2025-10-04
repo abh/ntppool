@@ -35,6 +35,65 @@ Auto-generated ConnectRPC client for ntppool.account.v1.AccountService.
 This module provides Perl wrappers for calling AccountService RPC methods
 over HTTP using the ConnectRPC protocol.
 
+=head1 RESPONSE FORMAT
+
+All methods return a hashref with the following structure:
+
+=over 4
+
+=item * B<code> (int)
+
+HTTP status code (e.g., 200 for success, 401 for unauthenticated, 403 for permission denied, 500 for internal errors).
+
+=item * B<status_line> (string)
+
+HTTP status text (e.g., "200 OK", "401 Unauthorized").
+
+=item * B<connect_code> (string or undef)
+
+ConnectRPC error code if the request failed. Possible values include:
+
+    - unauthenticated: No valid authentication provided
+    - permission_denied: User lacks required permissions
+    - invalid_argument: Request validation failed
+    - not_found: Requested resource not found
+    - internal: Server-side error occurred
+    - unavailable: Service temporarily unavailable
+
+Will be C<undef> for successful requests.
+
+=item * B<data> (hashref or undef)
+
+Response data on success. Contains method-specific fields with the actual response payload.
+The structure and available fields vary by method - see each method's documentation below for
+the complete list of response fields, their types, and descriptions.
+
+Will be C<undef> if an error occurred.
+
+=item * B<error> (string or undef)
+
+Human-readable error message if the request failed. Will be C<undef> for successful requests.
+
+=item * B<trace_id> (string)
+
+OpenTelemetry trace ID for request tracing and debugging. Include this when reporting issues.
+
+=back
+
+=head2 Error Handling Example
+
+    my $result = some_method(...);
+
+    if ($result->{error}) {
+        warn "Request failed: $result->{error}";
+        warn "ConnectRPC code: $result->{connect_code}" if $result->{connect_code};
+        warn "Trace ID: $result->{trace_id}";
+        return;
+    }
+
+    # Success - use $result->{data}
+    my $data = $result->{data};
+
 =head1 METHODS
 
 
@@ -60,18 +119,18 @@ Hashref with structure:
         status_line  => "200 OK",    # HTTP status text
         connect_code => undef,       # ConnectRPC error code (or undef)
         data         => {            # Response data
-            enabled => ...,      # bool - enabled indicates if the account has access to monitor features.
+            enabled => ...,  # bool - enabled indicates if the account has access to monitor features.
  True if: account has existing monitors, has verified servers for required duration,
  or has the monitor_enabled flag set.
-            can_register => ...,      # bool - can_register indicates if the account can register new monitors.
+            can_register => ...,  # bool - can_register indicates if the account can register new monitors.
  True if: enabled is true, account hasn't reached monitor limit,
  global limit not reached, and registration not disabled.
-            global_limit_reached => ...,      # bool - global_limit_reached indicates if new monitor registration is blocked
+            global_limit_reached => ...,  # bool - global_limit_reached indicates if new monitor registration is blocked
  system-wide due to capacity limits. Only present when true.
-            server_months => ...,      # int - server_months is the number of months servers must be verified
+            server_months => ...,  # int - server_months is the number of months servers must be verified
  before an account becomes eligible for monitors.
-            monitor_count => ...,      # int - monitor_count is the current number of active monitors for this account.
-            monitor_limit => ...,      # int - monitor_limit is the maximum number of monitors this account can have.
+            monitor_count => ...,  # int - monitor_count is the current number of active monitors for this account.
+            monitor_limit => ...,  # int - monitor_limit is the maximum number of monitors this account can have.
  Default is 3, but can be customized per account.
         },
         error        => undef,       # Error message (if any)
@@ -106,9 +165,9 @@ sub get_account_status {
     my %request = ();
 
     return connect_rpc(
-        service => 'ntppool.account.v1.AccountService',
-        method  => 'GetAccountStatus',
-        request => \%request,
+        service     => 'ntppool.account.v1.AccountService',
+        method      => 'GetAccountStatus',
+        request     => \%request,
         %args  # Pass through auth, account, context
     );
 }

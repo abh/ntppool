@@ -24,4 +24,11 @@ our $ua = LWP::UserAgent->new(
 );
 $ua->env_proxy;
 
+# Enable automatic decompression - requires Compress::Zlib
+# This allows decoded_content() to automatically decompress gzip responses
+use HTTP::Message ();
+if (my $encoding = HTTP::Message::decodable()) {
+    $ua->default_header('Accept-Encoding' => $encoding);
+}
+
 1;
