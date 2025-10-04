@@ -11,6 +11,7 @@ our @EXPORT_OK = qw(mock_capi_success mock_capi_error MockUA MockResponse);
     package TestHelper::MockUA;
 
     our $MOCK_RESPONSE;
+    our $LAST_REQUEST;
 
     sub new {
         my $class = shift;
@@ -19,6 +20,7 @@ our @EXPORT_OK = qw(mock_capi_success mock_capi_error MockUA MockResponse);
 
     sub request {
         my ($self, $req) = @_;
+        $LAST_REQUEST = $req;  # Capture request for test inspection
         return $MOCK_RESPONSE if $MOCK_RESPONSE;
         die "No mock response configured";
     }

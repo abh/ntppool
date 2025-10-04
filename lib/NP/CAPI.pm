@@ -197,7 +197,8 @@ sub connect_rpc {
     if ($ENV{CAPI_DEBUG}) {
         warn "CAPI: calling connect rpc: $url\n";
         warn "CAPI: auth = " . ($auth // 'UNDEF') . "\n";
-        warn "CAPI: account = " . ($account // 'UNDEF') . "\n";
+        warn "CAPI: account = " . (defined $account ? "'$account'" : 'UNDEF') . "\n";
+        warn "CAPI: account is " . ($account ? "TRUTHY" : "FALSY") . " in boolean context\n";
     }
 
     # Build HTTP request
@@ -209,11 +210,15 @@ sub connect_rpc {
     # Authentication header
     if ($auth) {
         $req->header('Authorization' => "Bearer $auth");
+        warn "CAPI: Set Authorization header\n" if $ENV{CAPI_DEBUG};
     }
 
     # Account selection header
     if ($account) {
         $req->header('X-Account' => $account);
+        warn "CAPI: Set X-Account header to: $account\n" if $ENV{CAPI_DEBUG};
+    } else {
+        warn "CAPI: NOT setting X-Account header (account param is " . (defined $account ? "defined but falsy: '$account'" : "undefined") . ")\n" if $ENV{CAPI_DEBUG};
     }
 
     # Encode request as JSON
