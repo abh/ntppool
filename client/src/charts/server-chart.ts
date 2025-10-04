@@ -156,8 +156,8 @@ export function createServerChart(
     .attr('font-size', '14px')
     .text(`Offset and scores for ${data.server.ip}`);
 
-  // Create legend if specified
-  if (config.legend) {
+  // Create legend if specified and monitors data is available
+  if (config.legend && data.monitors && data.monitors.length > 0) {
     createLegend(config.legend, data.monitors, g, sharedDebouncer, config.showOnlyActiveTesting);
 
     // Dispatch event to trigger Bootstrap initialization for any new popovers

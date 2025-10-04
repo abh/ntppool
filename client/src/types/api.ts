@@ -68,8 +68,8 @@ export interface ServerScoreHistoryResponse {
   server: Server;
   /** Historical data points */
   history: Omit<ServerHistoryPoint, 'date'>[];
-  /** Available monitors */
-  monitors: Monitor[];
+  /** Available monitors (null when no monitoring data available) */
+  monitors: Monitor[] | null;
 }
 
 /**
