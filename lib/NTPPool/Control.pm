@@ -22,6 +22,7 @@ use experimental qw( defer );
 
 use NP::I18N;
 use NP::Version;
+use NP::Settings;
 use NP::CAPI::Zone qw(list_zones);
 
 my $version = NP::Version->new;
@@ -381,16 +382,12 @@ sub system_setting {
     my $self = shift;
     my $name = shift;
 
-    my $k = "_system_setting_$name";
-
-    return $self->{$k} if $self->{$k};
-
-    my $settings = NP::Model->system_setting->fetch(key => $name);
-    if (!$settings) {
-        return undef;
+    # Request-scoped cache for all settings
+    unless ($self->{_system_settings}) {
+        $self->{_system_settings} = NP::Settings->get_all_settings() || {};
     }
-    $settings = $settings->value;
-    return $self->{$k} = $settings;
+
+    return $self->{_system_settings}{$name};
 }
 
 sub system_feature {

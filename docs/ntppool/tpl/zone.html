@@ -6,7 +6,7 @@
 <div class="block">
 	<h1>[% zone.description %] [% IF zone.dns %] &#8212; [% zone.fqdn %][% END %]</h1>
 
-	[% IF zone.dns and !zone.children and zone.server_count < 50 %]
+	[% IF zone.dns and !zone.children and zone.serverCounts.total < 50 %]
 	<p>
 	We need more servers in this country.  If you have a server
 	with a static IP, please consider <a href="/join.html">joining
@@ -14,13 +14,13 @@
 	</p>
 	[% END %]
 
-	[% max_zone_number = zone.sub_zone_count - 1; %]
+	[% max_zone_number = zone.subZoneCount - 1; %]
 
-	[% IF zone.dns and zone.parent.dns and zone.server_count >= 6 %]
+	[% IF zone.dns and zone.parents.0.dns and zone.serverCounts.total >= 6 %]
 	<p>
 	To use this specific pool zone, add the following to your ntp.conf file:
 
-	[% IF zone.server_count >= 20  %]
+	[% IF zone.serverCounts.total >= 20  %]
 
 	<pre>[% FOR i = [0..max_zone_number] %]
 	   server [% i %].[% zone.fqdn %][%- END %]</pre>
@@ -28,20 +28,20 @@
 	[% ELSE # server count >= 6 and < 20  %]
 
 	<pre>
-	[%- i = zone.random_subzone_ids(1) %]
+	[%- i = combust.random_subzone_ids(1) %]
 	   server [% i %].[% zone.fqdn %]
-	[%- FOR i = zone.parent.random_subzone_ids(2) %]
-	   server [% i %].[% zone.parent.fqdn %][%- END %]</pre>
+	[%- FOR i = combust.random_subzone_ids(2) %]
+	   server [% i %].[% zone.parents.0.fqdn %][%- END %]</pre>
 
 	[% END  # server_count >= 20 %]
 
 	</p>
-	[% ELSIF (zone.parent.dns)  %]
+	[% ELSIF (zone.parents.0.dns)  %]
 	<p>
 
-	[% parent = zone.parent;
-	   IF (parent.server_count < 10 AND parent.parent.in_dns);
-	     parent = parent.parent;
+	[% parent = zone.parents.0;
+	   IF (parent.serverCount < 10 AND zone.parents.1 AND zone.parents.1.dns);
+	     parent = zone.parents.1;
 	   END;
 	%]
 
@@ -68,7 +68,7 @@
         <tr>
 
         [% FOR ip_version = [ "v4", "v6" ];
-            server_count = zone.server_count(ip_version);
+            server_count = ip_version == 'v4' ? zone.serverCounts.ipv4 : zone.serverCounts.ipv6;
 
          %]
 
@@ -81,7 +81,7 @@
 
 	<p>
 	[% FOR days = [1,7,14,60,180,365,1095,2190];
-	   st = zone.stats_days_ago(days, ip_version);
+	   st = combust.get_zone_stats(zone.historicalStats, days, ip_version);
 	   NEXT UNLESS st;
 	   diff = server_count - st.count_active;
 	   color = diff > 0 ? 'text-success' : 'text-warning';
@@ -97,54 +97,19 @@
         [% END %]
         </tr></table>
 
-	[% IF zone.parent %]
+	[% IF zone.parents.0 %]
 	<p>
-	See all zones in <a href="[% zone.parent.url %]">[% zone.parent.description %]</a>.
+	See all zones in <a href="[% zone.parents.0.url %]">[% zone.parents.0.description %]</a>.
 	</p>
 	[% END %]
-
-	[% IF is_logged_in;
-	     IF show_servers;
-	 %]
-	<a href="[% zone.url %]">Don't show servers</a>
-	[%   ELSE %]
-	<a href="[% zone.url %]?show_servers=1">Show servers</a> (only available by request from server admins)
-	[%   END;
-	  END;
-	%]
 
 	[% IF zone.children %]
 	<p>
 	[% FOR child = zone.children %]
-	<a href="[% child.url %][% show_servers ? '?show_servers=1' : '' %]">[% child.description %]</a> &#8212; [% child.fqdn %] ([% child.server_count %])<br />
+	<a href="[% child.url %]">[% child.description %]</a> &#8212; [% child.fqdn %][% IF child.serverCount %] ([% child.serverCount %])[% END %]<br />
 
 	[% END %]
 	</p>
-	[% END %]
-
-	[% IF servers %]
-	<p>
-	<table class="servertable">
-	[% FOR server = servers %]
-	<tr [% server.deleted ? 'class="deleted_server"' : '' %]>
-	<!-- <td>[% server.id %]</td> -->
-	<td>
-          <a href="/scores/[% server.ip %]">[% server.ip %]</a>
-        </td>
-	<td>[% server.hostname %]</td>
-	<td>[% server.score %]</td>
-	<td>[% server.stratum %]</td>
-	<td>[% server.netspeed %]</td>
-	<td>[% server.admin.username %]</td>
-	<td>pool: [% server.in_pool ? 'yes' : 'no'%]</td>
-	<td>
-	[% FOR szone = server.zones_display %]
-	<a href="[% szone.url %]">[% szone.name %]</a>
-	[% END  %]
-	</td>
-	</tr>
-	[% END %]
-	</table>
 	[% END %]
 
         <ntp-zone-chart zone="[% zone.name %]" show-both-versions="true" width="540" height="275" inherit-styles="true"></ntp-zone-chart>

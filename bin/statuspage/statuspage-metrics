@@ -4,6 +4,7 @@ eval 'exec $CBROOT/bin/perl $0 ${1+"$@"}'
 use strict;
 use warnings;
 use LWP::UserAgent;
+use NP::Settings;
 use NP::Model;
 use DateTime;
 use DateTime::Format::MySQL;
@@ -15,12 +16,11 @@ my $verbose = (-t STDIN or -d "/run/secrets/kubernetes.io");
 
 my $dbh = NP::Model->dbh;
 
-my $settings = NP::Model->system_setting->fetch(key => 'statuspage');
+my $settings = NP::Settings->get_setting('statuspage');
 if (!$settings) {
     warn "no statuspage settings available\n";
     exit 2;
 }
-$settings = $settings->value;
 
 my $api_key   = $settings->{api_key}           or die "no statuspage api_key";
 my $page_id   = $settings->{page_id}           or die "no statuspage page_id";

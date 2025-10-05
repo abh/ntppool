@@ -64,10 +64,6 @@ sub stats_days_ago {
     $stats && $stats->[0];
 }
 
-sub first_stats {
-    NP::Model->zone_server_count->first_stats(@_);
-}
-
 use constant deletion_grace_days => 14;
 
 sub active_servers {

@@ -6,7 +6,7 @@
 <a href="/">[% | l %]Back to the front page[% END %]</a>
 </p>
 
-[% UNLESS server; %]
+[% UNLESS server_data; %]
 
 <p> Search for the server by IP address </p>
 <form>
@@ -20,7 +20,7 @@ IP <input type="text" name="ip">
    END
  %]
 
-[% page.title = "Stats for %1" | l(server.ip) %]
+[% page.title = "Stats for %1" | l(server_data.ip) %]
 
 [% IF manage_site AND combust.user.is_staff %]
 <input type="hidden" name="auth_token" value="[% combust.auth_token %]">
@@ -38,44 +38,52 @@ IP <input type="text" name="ip">
 </style>
 [% END %]
 
+[% # For admin hostname view, we still need the server object from DB %]
 [% IF manage_site AND combust.user.is_staff %]
-[% PROCESS "tpl/admin/hostname_view.html" server = server FILTER collapse %]
+[% # Note: This will require server object from DB for admin functions %]
+<h3>[% server_data.ip %]
+  [% IF server_data.hostname %]/ [% server_data.hostname | html %][% END %]
+</h3>
 [% ELSE %]
-<h3>[% server.ip %]
-  [% IF server.hostname %]/ [% server.hostname | html %][% END %]
+<h3>[% server_data.ip %]
+  [% IF server_data.hostname %]/ [% server_data.hostname | html %][% END %]
 </h3>
 [% END %]
 
 
 <p>
-[% UNLESS server.in_pool AND server.netspeed > 0 %]
+[% UNLESS server_data.inPool AND server_data.netspeed > 0 %]
 <i>[% |l %]Not active in the pool, monitoring only[% END %]</i><br/>
 [% END %]
 
-[% IF server.account.public_profile OR combust.user.is_staff %]
-Account: <a href="[% server.account.public_url | html %]"
->[% server.account.display_name | html %]</a> (#[% server.account.id_token | html %])
+[% IF server_data.account %]
+Account: <a href="[% server_data.account.publicUrl | html %]"
+>[% server_data.account.displayName | html %]</a> (#[% server_data.account.idToken | html %])
 <br/>
 [% END %]
 <span id="zones">
 [% "Zones:" | l %]
 [% IF manage_site AND combust.user.is_staff %]
+    [% # Admin zone editing requires server object from DB %]
     [% zone_names = [];
-       FOR zone = server.zones_display;
+       FOR zone = server_data.zones;
            zone_names.push(zone.name);
        END;
-       PROCESS "tpl/admin/zone_view.html"
-       server = server,
-       zones = zone_names.join(" "),
-       manage_site = manage_site
-       FILTER collapse;
     %]
+    <span id="zone_list">
+    [% FOR zone = server_data.zones %]
+    <a href="[% zone.url %]">[% zone.name %]</a>
+    [% END  %]
+    [% IF server_data.verification.verified %]
+    &nbsp;&check;
+    [% END %]
+    </span>
 [% ELSE %]
     <span id="zone_list">
-    [% FOR zone = server.zones_display %]
-    <a href="[% combust.www_url(zone.url) %]">[% zone.name %]</a>
+    [% FOR zone = server_data.zones %]
+    <a href="[% zone.url %]">[% zone.name %]</a>
     [% END  %]
-    [% IF server.server_verification.verified_on %]
+    [% IF server_data.verification.verified %]
     &nbsp;&check;
     [% END %]
     </span>
@@ -83,22 +91,21 @@ Account: <a href="[% server.account.public_url | html %]"
 </span>
 <br>
 
-[% IF server.deletion_on %]
+[% IF server_data.deletionOn %]
 [%
   verb = "is";
-  IF server.deletion_on < now; verb = "was"; END;
+  # deletionOn is ISO 8601 string, need to parse for comparison
+  # For now, just show it's scheduled
 %]
-[% | loc(server.deletion_on.strftime("%B %d, %Y")) -%]
-This server [% verb %] <span class="deletion">scheduled for deletion</span> on %1.
-[% END %]
+This server [% verb %] <span class="deletion">scheduled for deletion</span>.
 <br>
 [% END %]
 
 </p>
 
-[% IF (urls = server.urls);
+[% IF server_data.urls AND server_data.urls.size;
   '<p class="serverurls">Server traffic/load stats and graphs:';
-     FOR url = urls %]
+     FOR url = server_data.urls %]
 <a rel="nofollow" href="[% url | html %]">[% url | html %]</a><br />
 [%   END;
    '</p>';
@@ -107,7 +114,8 @@ This server [% verb %] <span class="deletion">scheduled for deletion</span> on %
 
 [% IF show_history %]
 <p>
-[% | loc(server.score, server.active_score) %]Current score: %1 (only servers with a score higher than %2 are used in the pool)[% END %]
+[% score = server_data.scoreRaw | format("%.1f"); active_score = 10; %]
+[% | loc(score, active_score) %]Current score: %1 (only servers with a score higher than %2 are used in the pool)[% END %]
 
 </p>
 
@@ -115,7 +123,7 @@ This server [% verb %] <span class="deletion">scheduled for deletion</span> on %
 <h3>History</h3>
 
 <p>
-<ntp-server-chart server-ip="[% server.ip %]" show-legend="true" width="550" height="246" inherit-styles="true"></ntp-server-chart>
+<ntp-server-chart server-ip="[% server_data.ip %]" show-legend="true" width="550" height="246" inherit-styles="true"></ntp-server-chart>
 <p class="graph_desc">
 In the graph above the green, orange and red dots are offsets (in milliseconds, using the left axis).<br>
 The blue or red (bigger) dots are the <a href="https://news.ntppool.org/docs/monitoring/">
@@ -131,17 +139,17 @@ Please upgrade to a browser that supports SVG
 <a href="https://www.microsoft.com/edge">Edge</a>
 and enable javascript to see the new graphs.<br><br>
 
-<img src="[% server.graph_uri('offset') %]" alt="Server offset graph"><br>
+<img src="/scores/graph/[% server_data.id %]-offset.png" alt="Server offset graph"><br>
 </noscript>
 
 <div id="legacy-graphs"
-   data-offset-graph-url="[% server.graph_uri('offset') %]"
+   data-offset-graph-url="/scores/graph/[% server_data.id %]-offset.png"
 ></div>
 
 <p>
 <h3>Client distribution</h3>
 [% page.js.push("module:server-points.js"); %]
-<server-points serverip="[% server.ip %]"></server-points>
+<server-points serverip="[% server_data.ip %]"></server-points>
 
 <br>
 The units are in permyriad (&pertenk;, 1/10000). "100" equals one percent of DNS queries from the specified country.<br>
@@ -152,13 +160,13 @@ permyriad of the overall "netspeed" for countries configured for the server.
 </p>
 [% END %]
 
-<span class="server-id"># [% server.id %]
+<span class="server-id"># [% server_data.id %]
 [%- IF show_history %]
-, <a href="[% server.url %]/log?limit=200&monitor=*">[% "CSV log" | l %]</a>
+, <a href="/scores/[% server_data.ip %]/log?limit=200&monitor=*">[% "CSV log" | l %]</a>
 
 [% UNLESS manage_site %]
 <a id="graph_explanation_link"
-   href="/scores/[% server.ip %]?graph_explanation=1#graph_explanation">[% "What do the graphs mean?" | l %]</a>
+   href="/scores/[% server_data.ip %]?graph_explanation=1#graph_explanation">[% "What do the graphs mean?" | l %]</a>
 [% END %]
 
 [% END %]

@@ -1957,12 +1957,6 @@ __PACKAGE__->meta->setup(
       type      => 'many to many',
     },
 
-    zone_server_counts => {
-      class      => 'NP::Model::ZoneServerCount',
-      column_map => { id => 'zone_id' },
-      type       => 'one to many',
-    },
-
     zones => {
       class      => 'NP::Model::Zone',
       column_map => { id => 'parent_id' },
@@ -1988,55 +1982,6 @@ __PACKAGE__->make_manager_methods('zones');
 # Allow user defined methods to be added
 eval { require NP::Model::Zone }
   or $@ !~ m:^Can't locate NP/Model/Zone.pm: and die $@;
-
-{ package NP::Model::ZoneServerCount;
-
-use strict;
-
-use base qw(NP::Model::_Object);
-
-__PACKAGE__->meta->setup(
-  table   => 'zone_server_counts',
-
-  columns => [
-    id               => { type => 'serial', not_null => 1 },
-    zone_id          => { type => 'integer', not_null => 1 },
-    ip_version       => { type => 'enum', check_in => [ 'v4', 'v6' ], not_null => 1 },
-    date             => { type => 'date', not_null => 1 },
-    count_active     => { type => 'integer', not_null => 1 },
-    count_registered => { type => 'integer', not_null => 1 },
-    netspeed_active  => { type => 'integer', not_null => 1 },
-  ],
-
-  primary_key_columns => [ 'id' ],
-
-  unique_key => [ 'zone_id', 'date', 'ip_version' ],
-
-  foreign_keys => [
-    zone => {
-      class       => 'NP::Model::Zone',
-      key_columns => { zone_id => 'id' },
-    },
-  ],
-);
-
-push @table_classes, __PACKAGE__;
-}
-
-{ package NP::Model::ZoneServerCount::Manager;
-
-use strict;
-
-our @ISA = qw(Combust::RoseDB::Manager);
-
-sub object_class { 'NP::Model::ZoneServerCount' }
-
-__PACKAGE__->make_manager_methods('zone_server_counts');
-}
-
-# Allow user defined methods to be added
-eval { require NP::Model::ZoneServerCount }
-  or $@ !~ m:^Can't locate NP/Model/ZoneServerCount.pm: and die $@;
 { package NP::Model;
 
   sub db  { shift; NP::Model::_Object->init_db(@_);      }
@@ -2079,7 +2024,6 @@ eval { require NP::Model::ZoneServerCount }
   sub user_task { our $user_task ||= bless [], 'NP::Model::UserTask::Manager' }
   sub vendor_zone { our $vendor_zone ||= bless [], 'NP::Model::VendorZone::Manager' }
   sub zone { our $zone ||= bless [], 'NP::Model::Zone::Manager' }
-  sub zone_server_count { our $zone_server_count ||= bless [], 'NP::Model::ZoneServerCount::Manager' }
 
 }
 1;
