@@ -29,6 +29,7 @@ Settings are fetched once and cached at the process level.
 =cut
 
 my $_cache;
+my $_cache_time;
 
 =head2 get_setting($key)
 
@@ -56,7 +57,10 @@ Warnings are emitted on errors including trace IDs for debugging.
 sub get_all_settings {
     my ($class) = @_;
 
-    return $_cache if $_cache;
+    # Return cached settings if they exist and are less than 2 minutes old
+    if ($_cache && $_cache_time && (time() - $_cache_time) < 120) {
+        return $_cache;
+    }
 
     my $result = get_settings();
 
@@ -77,6 +81,7 @@ sub get_all_settings {
     }
 
     $_cache = \%settings;
+    $_cache_time = time();
     return $_cache;
 }
 
@@ -89,6 +94,7 @@ processes that need to refresh settings.
 
 sub clear_cache {
     $_cache = undef;
+    $_cache_time = undef;
 }
 
 1;
@@ -97,9 +103,9 @@ __END__
 
 =head1 CACHING
 
-Settings are cached at the process level after the first fetch. For
-long-running processes, you may want to periodically call C<clear_cache()>
-to refresh settings.
+Settings are cached at the process level after the first fetch and automatically
+refreshed every 2 minutes. You can manually clear the cache by calling
+C<clear_cache()> if needed.
 
 For web request-scoped caching, see L<NTPPool::Control/system_setting>.
 
