@@ -106,7 +106,7 @@
 	[% IF zone.children %]
 	<p>
 	[% FOR child = zone.children %]
-	<a href="[% child.url %]">[% child.description %]</a> &#8212; [% child.fqdn %] ([% child.serverCount %])<br />
+	<a href="[% child.url %]">[% child.description %]</a> &#8212; [% child.fqdn %][% IF child.serverCount %] ([% child.serverCount %])[% END %]<br />
 
 	[% END %]
 	</p>

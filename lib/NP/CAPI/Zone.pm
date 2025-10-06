@@ -213,6 +213,8 @@ B<Arguments:>
         account => $account_token,   # Optional: Account selection token
         context => $request_context, # Optional: Request context for X-Forwarded-For
         name => $value,       # string - name is the zone identifier (e.g., "na", "us", "@", ".")
+        basic_only => $value,       # bool - basic_only when true returns only basic zone information (name, description, dns, parents)
+ without fetching server counts, children, or historical statistics
     );
 
 B<Returns:>
@@ -232,7 +234,8 @@ Hashref with structure:
                 fqdn => ...,  # string - fqdn is the fully qualified domain name (e.g., "na.pool.ntp.org")
                 dns => ...,  # bool - dns indicates whether this zone has a DNS entry
                 sub_zone_count => ...,  # int - sub_zone_count is always 4 (constant)
-                parent => ...,  # hashref (ZoneReference) - parent is the parent zone (if this zone has a parent)
+                parents => ...,  # arrayref[hashref (ZoneReference)] - parents contains all parent zones ordered from immediate parent to root
+ Example: for zone "us.ca", parents would be ["us", "na", "@"]
                 children => ...,  # arrayref[hashref (ZoneReference)] - children are the child zones of this zone
                 server_counts => ...,  # hashref (ServerCounts) - server_counts contains the current active server counts by IP version
                 historical_stats => ...,  # arrayref[hashref (HistoricalStats)] - historical_stats contains historical statistics for both IP versions
@@ -282,6 +285,7 @@ sub get_zone {
     # Extract request fields from args
     my %request = ();
     $request{'name'} = delete $args{'name'} if exists $args{'name'};
+    $request{'basic_only'} = delete $args{'basic_only'} if exists $args{'basic_only'};
 
     return connect_rpc(
         service     => 'ntppool.zone.v1.ZoneService',

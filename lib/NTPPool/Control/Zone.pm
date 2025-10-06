@@ -112,18 +112,6 @@ sub render {
 
     $self->tpl_param('zone' => $zone);
 
-    # Fetch parent zone if it exists (to get parent.parent)
-    if ($zone->{parent}) {
-        my $parent_result = get_zone(
-            name    => $zone->{parent}{name},
-            context => $self->_get_request_context(),
-        );
-
-        if (!$parent_result->{error}) {
-            $self->tpl_param('parent_zone' => $parent_result->{data}{zone});
-        }
-    }
-
     $self->cache_control('s-maxage=900, max-age=1800');
 
     return OK, $self->evaluate_template('tpl/zone.html');
