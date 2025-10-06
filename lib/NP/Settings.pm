@@ -72,11 +72,21 @@ sub get_all_settings {
 
     my %settings;
     for my $setting (@{$result->{data}{settings}}) {
-        my $value = eval { decode_json($setting->{value}) };
-        if ($@) {
-            warn "Failed to decode JSON for setting '$setting->{key}': $@\n";
-            next;
+        my $raw_value = $setting->{value};
+        my $value;
+
+        # Only decode if it looks like JSON (starts with { or [)
+        if ($raw_value =~ /^\s*[\{\[]/) {
+            $value = eval { decode_json($raw_value) };
+            if ($@) {
+                warn "Failed to decode JSON for setting '$setting->{key}': $@\n";
+                next;
+            }
+        } else {
+            # Plain string value
+            $value = $raw_value;
         }
+
         $settings{$setting->{key}} = $value;
     }
 
