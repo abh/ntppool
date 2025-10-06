@@ -5,7 +5,7 @@ use strict;
 use warnings;
 use v5.14;
 use LWP::UserAgent;
-use NP::Model;
+use NP::Settings;
 use URI::URL;
 use URI::QueryParam;
 use JSON qw(decode_json);
@@ -24,12 +24,11 @@ my $start = (($now - ($now % $interval)) - ($minutes * 60));
 
 my $ua = LWP::UserAgent->new(timeout => 15);
 
-my $settings = NP::Model->system_setting->fetch(key => 'statuspage');
+my $settings = NP::Settings->get_setting('statuspage');
 if (!$settings) {
     warn "no statuspage settings available\n";
     exit 2;
 }
-$settings = $settings->value;
 
 my $api_key       = $settings->{api_key} or die "no statuspage api_key";
 my $page_id       = $settings->{page_id} or die "no statuspage page_id";

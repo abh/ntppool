@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use Combust::Config;
 use List::Util qw(shuffle);
+use NP::Settings;
 use NP::Model;
 
 my $config     = Combust::Config->new;
@@ -11,8 +12,7 @@ my $config_ntp = $config->site->{ntppool};
 use constant default_ttl => 150;
 
 sub ttl {
-    my $settings = NP::Model->system_setting->fetch(key => 'dns_settings');
-    $settings = $settings && $settings->value();
+    my $settings = NP::Settings->get_setting('dns_settings');
     $settings or return default_ttl;
     my $ttl = $settings->{ttl} + 0 or return default_ttl;
     $ttl = default_ttl if $ttl <= 0;
