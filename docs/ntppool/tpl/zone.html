@@ -16,7 +16,7 @@
 
 	[% max_zone_number = zone.subZoneCount - 1; %]
 
-	[% IF zone.dns and zone.parent.dns and zone.serverCounts.total >= 6 %]
+	[% IF zone.dns and zone.parents.0.dns and zone.serverCounts.total >= 6 %]
 	<p>
 	To use this specific pool zone, add the following to your ntp.conf file:
 
@@ -31,17 +31,17 @@
 	[%- i = combust.random_subzone_ids(1) %]
 	   server [% i %].[% zone.fqdn %]
 	[%- FOR i = combust.random_subzone_ids(2) %]
-	   server [% i %].[% zone.parent.fqdn %][%- END %]</pre>
+	   server [% i %].[% zone.parents.0.fqdn %][%- END %]</pre>
 
 	[% END  # server_count >= 20 %]
 
 	</p>
-	[% ELSIF (zone.parent.dns)  %]
+	[% ELSIF (zone.parents.0.dns)  %]
 	<p>
 
-	[% parent = zone.parent;
-	   IF (parent.serverCount < 10 AND parent_zone.parent.dns);
-	     parent = parent_zone.parent;
+	[% parent = zone.parents.0;
+	   IF (parent.serverCount < 10 AND zone.parents.1 AND zone.parents.1.dns);
+	     parent = zone.parents.1;
 	   END;
 	%]
 
@@ -97,9 +97,9 @@
         [% END %]
         </tr></table>
 
-	[% IF zone.parent %]
+	[% IF zone.parents.0 %]
 	<p>
-	See all zones in <a href="[% zone.parent.url %]">[% zone.parent.description %]</a>.
+	See all zones in <a href="[% zone.parents.0.url %]">[% zone.parents.0.description %]</a>.
 	</p>
 	[% END %]
 
