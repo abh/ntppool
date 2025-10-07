@@ -2,6 +2,11 @@ package NP::DB::Scaffold;
 use strict;
 use base qw(Combust::RoseDB::Scaffold);
 
+# Tables excluded from model generation (migrated to CAPI or not needed)
+my @excluded_tables = qw(
+    log_scores_archive_status
+);
+
 sub db_model_class {
     my ($self, $db) = @_;
     die "unknown database [$db]" unless $db eq 'ntppool';
@@ -38,7 +43,7 @@ sub filter_tables {    # Return 0 to exclude a table
     my $db    = shift;
     my $table = shift;
 
-    return 0 if $table =~ m/ log_scores_archive_status /ix;
+    return 0 if grep { $_ eq $table } @excluded_tables;
     return $self->SUPER::filter_tables($db, $table);
 }
 
