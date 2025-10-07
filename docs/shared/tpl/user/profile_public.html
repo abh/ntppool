@@ -1,32 +1,30 @@
-[% page.title = (account.organization_name || account.name || account.id_token) _ "'s pool servers" %]
+[% page.title = account_data.display_name _ "'s pool servers" %]
 
 <div id="userprofile" class="block">
 
 <h3>[% page.title %]</h3>
 
-[% UNLESS account.public_profile %]
+[% UNLESS account_data.public_profile %]
 <p><i>This profile is not public.</i></p>
 [% END %]
 
-[% servers = account.servers %]
-
-[% IF !servers %]
+[% IF !servers || servers.size == 0 %]
 <p>No active servers</p>
 [% END %]
 
 [% FOR server = servers %]
 <div class="server">
 [% IF server.hostname %]Hostname: <b>[% server.hostname | html %]</b><br />[% END %]
-IP: <b><a href="[% server.url %]">[% server.ip | html %]</a></b>
-[% IF server.server_verification.verified_on %]
+IP: <b><a href="/scores/[% server.ip | html %]">[% server.ip | html %]</a></b>
+[% IF server.verification.verified_on %]
 &nbsp;&check;
 [% END %]
 <br />
 [% UNLESS server.in_pool %]
 <i>[% |l %]Not active in the pool, monitoring only[% END %]</i><br/>
 [% END %]
-Current score: <b>[% server.score %]</b><br />
-Zones: [% FOR zone = server.zones_display %] <a href="[% zone.url %]">[% zone.name %]</a>[% END  %]<br/>
+Current score: <b>[% server.score_raw %]</b><br />
+Zones: [% FOR zone = server.zones %] <a href="[% zone.url %]">[% zone.name %]</a>[% END  %]<br/>
 [% IF server.urls;
   '<p class="serverurls">Server traffic/load stats and graphs:';
      FOR url = server.urls %]

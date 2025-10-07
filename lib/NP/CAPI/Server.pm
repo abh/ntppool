@@ -10,6 +10,7 @@ use Exporter 'import';
 
 our @EXPORT_OK = qw(
     get_server
+    get_account_servers
 );
 
 =head1 NAME
@@ -18,11 +19,20 @@ NP::CAPI::Server - ConnectRPC client for ServerService
 
 =head1 SYNOPSIS
 
-    use NP::CAPI::Server qw(get_server);
+    use NP::CAPI::Server qw(get_server get_account_servers);
     # GetServer returns detailed information about a specific server.
 Authentication is handled by middleware - if authenticated, additional
 data may be returned based on ownership and account settings.
     my $result = get_server(
+        auth    => $user_token,
+        account => $account_token,
+        context => $request_context,
+    );
+
+    # GetAccountServers returns all servers for an account by url_slug.
+Access control: public_profile=true OR authenticated user owns account OR user is staff.
+Returns 404 if account not found or not visible.
+    my $result = get_account_servers(
         auth    => $user_token,
         account => $account_token,
         context => $request_context,
@@ -188,6 +198,117 @@ sub get_server {
     return connect_rpc(
         service     => 'ntppool.server.v1.ServerService',
         method      => 'GetServer',
+        request     => \%request,
+        http_method => 'GET',  # Side-effect free, use GET
+        %args  # Pass through auth, account, context
+    );
+}
+
+
+=head2 get_account_servers
+
+GetAccountServers returns all servers for an account by url_slug.
+Access control: public_profile=true OR authenticated user owns account OR user is staff.
+Returns 404 if account not found or not visible.
+
+B<Arguments:>
+
+    my $result = get_account_servers(
+        auth    => $user_token,      # Optional: User/session authentication token
+        account => $account_token,   # Optional: Account selection token
+        context => $request_context, # Optional: Request context for X-Forwarded-For
+        url_slug => $value,       # string - url_slug is the account's URL-friendly identifier (e.g., "fancytime")
+    );
+
+B<Returns:>
+
+Hashref with structure:
+
+    {
+        code         => 200,         # HTTP status code
+        status_line  => "200 OK",    # HTTP status text
+        connect_code => undef,       # ConnectRPC error code (or undef)
+        data         => {            # Response data
+            account => {
+                id_token => ...,  # string - id_token is the public account identifier
+                display_name => ...,  # string - display_name is the account's display name
+                public_url => ...,  # string - public_url is the URL to the account's public profile page
+                public_profile => ...,  # bool - public_profile indicates if the account profile is publicly visible
+            },  # hashref (AccountInfo) - account contains the account information
+            servers => [
+            {
+                id => ...,  # int - id is the database ID of the server
+                ip => ...,  # string - ip is the IP address (IPv4 or IPv6)
+                hostname => ...,  # string - hostname is the DNS hostname (may be empty)
+                ip_version => ...,  # int - ip_version is 4 or 6
+                stratum => ...,  # int - stratum is the NTP stratum level
+                in_pool => ...,  # bool - in_pool indicates if the server is active in the pool
+                netspeed => ...,  # int - netspeed is the configured network speed weight
+                score_raw => ...,  # number - score_raw is the current raw score
+                deletion_on => ...,  # string - deletion_on is when the server is/was scheduled for deletion (ISO 8601)
+ Empty if not scheduled for deletion
+                account => ...,  # hashref (AccountInfo) - account contains account information (conditionally included)
+ Included if: account.public_profile=true OR authenticated user owns server OR user is staff
+                zones => ...,  # hashref (ZoneReference) - zones this server is assigned to (excludes root '.' zone)
+                verification => ...,  # hashref (ServerVerification) - verification contains verification status
+                urls => ...,  # string - urls are server-provided traffic/stats URLs
+            },
+            # ... more items
+        ],  # arrayref[hashref (Server)] - servers contains all active servers for this account
+        },
+        error        => undef,       # Error message (if any)
+        trace_id     => "...",       # OpenTelemetry trace ID
+    }
+
+B<Response Data Structure:>
+
+The C<data> field contains:
+
+=over 4
+
+=item * B<account> (hashref (AccountInfo))
+
+account contains the account information
+
+
+=item * B<servers> (arrayref[hashref (Server)])
+
+servers contains all active servers for this account
+
+
+=back
+
+B<ConnectRPC Error Codes:>
+
+    unauthenticated, permission_denied, internal, invalid_argument, etc.
+
+B<Example:>
+
+    my $result = get_account_servers(
+        auth    => $self->plain_cookie($self->user_cookie_name),
+        account => $self->current_account->id_token,
+        context => $self->_get_request_context(),
+    );
+
+    if ($result->{error}) {
+        warn "Error: $result->{error}";
+    } else {
+        my $data = $result->{data};
+        # Use response fields...
+    }
+
+=cut
+
+sub get_account_servers {
+    my %args = @_;
+
+    # Extract request fields from args
+    my %request = ();
+    $request{'url_slug'} = delete $args{'url_slug'} if exists $args{'url_slug'};
+
+    return connect_rpc(
+        service     => 'ntppool.server.v1.ServerService',
+        method      => 'GetAccountServers',
         request     => \%request,
         http_method => 'GET',  # Side-effect free, use GET
         %args  # Pass through auth, account, context

@@ -3,6 +3,7 @@ use strict;
 use parent qw(NTPPool::Control);
 use NP::Model;
 use Combust::Constant qw(OK);
+use NP::CAPI::Server qw(get_account_servers);
 
 sub uri_username {
     my $self = shift;
@@ -28,6 +29,33 @@ sub profile_account {
     my $account = NP::Model->account->fetch(url_slug => $account_name);
     $self->{_profile_account} = $account;
     return ($account, $extra);
+}
+
+sub account_data {
+    my $self       = shift;
+    my $url_slug   = shift;
+
+    # Cache the account data per request
+    my $cache_key = "_account_data_$url_slug";
+    return $self->{$cache_key} if exists $self->{$cache_key};
+
+    # Get auth if user is logged in
+    my $auth    = $self->user ? $self->plain_cookie($self->user_cookie_name) : undef;
+    my $context = $self->_get_request_context();
+
+    my $result = get_account_servers(
+        url_slug => $url_slug,
+        auth     => $auth,
+        context  => $context,
+    );
+
+    return $self->{$cache_key} = $result;
+}
+
+sub _get_request_context {
+    my $self            = shift;
+    my $x_forwarded_for = $self->request->header_in('X-Forwarded-For');
+    return $x_forwarded_for ? {x_forwarded_for => $x_forwarded_for} : undef;
 }
 
 sub render {
@@ -63,42 +91,45 @@ sub profile_visible {
 sub render_account {
     my $self = shift;
 
-    my ($account, $extra) = $self->profile_account;
+    my ($account_slug, $extra) = ($self->request->uri =~ m!^/a/([^/]+)(?:/([^/]+))?!);
 
-    unless ($account) {
+    unless ($account_slug) {
         $self->cache_control('max-age=60');
         return 404;
     }
 
-    unless ($self->profile_visible($account)) {
+    # Fetch account data from CAPI
+    my $account_result = $self->account_data($account_slug);
+
+    if ($account_result->{error} || !$account_result->{data}) {
+        warn "Failed to fetch account data: " . ($account_result->{error} || 'no data');
         $self->cache_control('max-age=60');
         return 404;
     }
+
+    my $account_data = $account_result->{data}{account};
+    my $servers = $account_result->{data}{servers} || [];
 
     my $req_json = ($extra && $extra eq 'json');
 
     if ($req_json) {
         $self->cache_control('max-age=240');
-        my @servers = map {
-            +{  ip       => $_->ip,
-                hostname => $_->hostname,
-                score    => $_->score_raw,
-                zones    => [map { $_->name } $_->zones_display],
-                history  => $_->url + "/json",
+        my @servers_json = map {
+            +{  ip       => $_->{ip},
+                hostname => $_->{hostname} || '',
+                score    => $_->{score_raw},
+                zones    => [map { $_->{name} } @{$_->{zones} || []}],
+                history  => "/scores/$_->{ip}/json",
             }
-        } $account->servers;
+        } @$servers;
 
         return 200,
           JSON::XS->new->utf8->encode(
               {   account => {
-                      url  => $account->public_url,
-                      name => (
-                             $account->organization_name
-                          || $account->name
-                          || $account->id_token
-                      ),
+                      url  => $account_data->{public_url},
+                      name => $account_data->{display_name},
                   },
-                  servers => \@servers
+                  servers => \@servers_json
               },
           ),
           "application/json; charset=utf-8";
@@ -106,7 +137,8 @@ sub render_account {
 
     $self->cache_control('max-age=300');
 
-    $self->tpl_param('account', $account);
+    $self->tpl_param('account_data', $account_data);
+    $self->tpl_param('servers',      $servers);
     return OK, $self->evaluate_template('tpl/user/profile_public.html');
 }
 
