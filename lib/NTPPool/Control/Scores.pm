@@ -110,10 +110,10 @@ sub render {
 
             # Hide history sections if server was deleted more than 6 months ago
             my $show_history = 1;
-            if ($server_data->{deletion_on}) {
+            if ($server_data->{deletionOn}) {
                 $self->tpl_param('now' => DateTime->now());
                 my $deletion_date =
-                  DateTime::Format::ISO8601->parse_datetime($server_data->{deletion_on});
+                  DateTime::Format::ISO8601->parse_datetime($server_data->{deletionOn});
                 my $six_months_ago = DateTime->now->subtract(months => 6);
                 $show_history = 0 if $deletion_date < $six_months_ago;
             }
