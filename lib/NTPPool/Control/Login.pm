@@ -9,12 +9,19 @@ use OpenTelemetry -all;
 use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
 use experimental             qw( defer );
 use Syntax::Keyword::Dynamically;
+use NP::CAPI::Account qw(validate_session delete_session);
 
 my $api_base = $ENV{'api-internal'} || 'http://api-internal';
 $api_base =~ s{/$}{};
 
 sub user_cookie_name {
     return 'npuid';
+}
+
+sub _get_request_context {
+    my $self            = shift;
+    my $x_forwarded_for = $self->request->header_in('X-Forwarded-For');
+    return $x_forwarded_for ? {x_forwarded_for => $x_forwarded_for} : undef;
 }
 
 sub login {
@@ -61,63 +68,58 @@ sub user {
       or $self->cookie($self->user_cookie_name);
 
     my $uid;
+    my $user;
 
     if (my $session_cookie = $self->plain_cookie($self->user_cookie_name)) {
-        if (my ($session_key, $checksum) =
-            ($session_cookie =~ m!^nps_([^_]+)_(\d+)(?:;\d+)?$!))
-        {
-            my $sessions = NP::Model->user_session->get_objects(
-                query   => [token_lookup => $checksum],
-                sort_by => 'last_seen desc',
-            );
-            for my $session (@$sessions) {
-                my $ok = $crypt->verify_password($session_key, $session->token_hashed);
-                if ($ok) {
-                    $uid = $session->user_id;
-                    if (  !$session->last_seen
-                        or $session->last_seen < DateTime->now->subtract(hours => 4))
-                    {
-                        # set the cookie again to update the expires time
-                        $session_cookie =~ s/;.*//;    # remove timestamp
-                        $self->_set_session_cookie($session_cookie);
-                        $session->last_seen(DateTime->now);
-                        $session->update;
-                    }
-                    last;
-                }
+        # Validate session using the Go API instead of database
+        my $result = validate_session(
+            session_token => $session_cookie,
+            context       => $self->_get_request_context(),
+        );
+
+        if ($result->{code} == 200 && $result->{data} && $result->{data}->{valid}) {
+            my $user_data = $result->{data};
+            $uid = $user_data->{user_id};
+
+            # Load the user object from database using the validated user_id
+            # TODO: In future, construct user object directly from API data
+            # to eliminate database dependency completely
+            if ($self->bc_user_class->can('find')) {
+                # DBIx::Class
+                $user = $self->bc_user_class->find($uid);
             }
+            elsif ($self->bc_user_class->can('fetch')) {
+                # RDBO with combust helpers
+                $user = $self->bc_user_class->fetch(id => $uid);
+            }
+        }
+        else {
+            # Session validation failed - clear cookies
+            warn "Session validation failed: ", ($result->{error} || 'invalid session');
         }
     }
     else {
-
         # legacy cookie session support; delete some months after release
         $uid = $self->cookie($self->user_cookie_name);
-        warn "legacy session cookie" if $uid;
+        if ($uid) {
+            warn "legacy session cookie";
+            # Load user from database for legacy cookies
+            if ($self->bc_user_class->can('find')) {
+                $user = $self->bc_user_class->find($uid);
+            }
+            elsif ($self->bc_user_class->can('fetch')) {
+                $user = $self->bc_user_class->fetch(id => $uid);
+            }
+        }
     }
 
-    unless ($uid) {
+    unless ($uid && $user) {
         $self->cookie($self->user_cookie_name, '0');
         $self->plain_cookie($self->user_cookie_name, '', {expires => -1});
         return;
     }
 
-    my $user;
-    if ($self->bc_user_class->can('find')) {
-
-        # DBIx::Class
-        $user = $self->bc_user_class->find($uid);
-    }
-    elsif ($self->bc_user_class->can('fetch')) {
-
-        # RDBO with combust helpers
-        $user = $self->bc_user_class->fetch(id => $uid);
-    }
-
-    return $self->{_user} = $user if $user;
-
-    $self->cookie($self->user_cookie_name, '0');
-    $self->plain_cookie($self->user_cookie_name, '', {expires => -1});
-    return;
+    return $self->{_user} = $user;
 }
 
 sub is_logged_in {
@@ -146,16 +148,16 @@ sub logout {
     if ($session_token) {
         $self->plain_cookie($self->user_cookie_name, '', {expires => -1});
 
-        # todo: check if there's a current user first to validate
-        # the token before deleting it?
+        # Delete session via ConnectRPC
+        my $result = delete_session(
+            session_token => $session_token,
+            context       => $self->_get_request_context(),
+        );
 
-        my ($lookup) = ($session_token =~ m/_(\d+)$/);
-
-        if ($lookup) {
-            my $resp = $self->ua->delete("$api_base/int/session/" . $lookup);
-            if ($resp->is_success) {
-                warn "session deleted";
-            }
+        if ($result->{error}) {
+            warn "Failed to delete session: $result->{error}";
+        } elsif ($result->{data} && $result->{data}->{deleted}) {
+            warn "session deleted";
         }
     }
 
@@ -203,12 +205,16 @@ sub setup_session {
 
 sub _set_session_cookie {
     my ($self, $session_token) = @_;
+    warn "AUTH0 DEBUG: _set_session_cookie called with token: ", ($session_token || 'UNDEF');
+    my $cookie_value = $session_token . ";" . time;
+    warn "AUTH0 DEBUG: setting cookie '", $self->user_cookie_name, "' = ", $cookie_value;
     $self->plain_cookie(
         $self->user_cookie_name,
-        $session_token . ";" . time,    # timestamp to make it unique when set again
+        $cookie_value,    # timestamp to make it unique when set again
         {   expires  => time + (90 * 86400),
             samesite => "Lax",
         }
     );
+    warn "AUTH0 DEBUG: cookie set complete";
 }
 1;

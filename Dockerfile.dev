@@ -4,6 +4,7 @@ USER root
 
 ENV BUILD 20241215
 RUN cpanm -v https://tmp.askask.com/2024/12/Net-Async-HTTP-Server-0.14bis4.tar.gz
+RUN cpanm DateTime::Format::ISO8601
 
 RUN apk --no-cache add alpine-base nodejs npm
 
