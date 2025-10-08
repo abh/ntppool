@@ -8,15 +8,12 @@ use Socket6;
 use JSON::XS   qw(encode_json decode_json);
 use Data::Dump qw(pp);
 use Net::DNS;
-use Crypt::JWT           qw(decode_jwt);
-use LWP::UserAgent       qw();
-use Mozilla::CA          qw();
 use Math::BaseCalc       qw();
 use Math::Random::Secure qw(irand);
 use URI::URL             ();
 use NP::UA;
-use NP::IntAPI qw(int_api);
-use NP::CAPI::Account qw(get_account_status);
+use NP::IntAPI        qw(int_api);
+use NP::CAPI::Account qw(get_account_status process_auth0_login);
 use OpenTelemetry::Trace;
 use OpenTelemetry -all;
 use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
@@ -148,10 +145,14 @@ sub render {
     if ($self->request->uri =~ m!^/manage/login!) {
         $self->set_span_name("manage.login");
         if ($self->req_param('code')) {
+            warn "AUTH0 DEBUG: calling handle_login with code";
             $self->handle_login();
+            warn "AUTH0 DEBUG: handle_login returned";
         }
+        warn "AUTH0 DEBUG: checking user, user = ", ($self->user ? $self->user->id : 'UNDEF');
         if ($self->user) {
             my $r = $self->req_param('r') || '/manage';
+            warn "AUTH0 DEBUG: user is logged in, redirecting to: $r";
             return $self->redirect($r);
         }
 
@@ -159,6 +160,7 @@ sub render {
         # and frustratingly loop. It's added so the Auth0 config can have
         # a "default login url" that redirects to the login server /authorize
         # url and we can only have so many .../login urls, right?
+        warn "AUTH0 DEBUG: no user, redirecting to login_url";
         return $self->redirect($self->login_url);
     }
 
@@ -186,165 +188,78 @@ sub handle_login {
         kind => SPAN_KIND_SERVER,
     );
     dynamically otel_current_context = otel_context_with_span($span);
+    defer { $span->end(); };
 
     my $code = $self->req_param('code');
     unless ($code) {
         $span->set_status(SPAN_STATUS_ERROR, "missing code parameter");
-        $span->end;
         return;
     }
 
     my $state = $self->req_param('state');
     unless ($state && $state eq $self->cookie('login_state')) {
         $span->set_status(SPAN_STATUS_ERROR, "invalid state parameter");
-        $span->end;
         return;
     }
 
-    my ($userdata, $error) = $self->_get_auth0_user($code);
-    if ($error) {
-        $span->set_status(SPAN_STATUS_ERROR, "auth0 user error: $error");
-        $span->end();
-    }
+    # Call ConnectRPC API to process Auth0 login
+    my $result = NP::CAPI::Account::process_auth0_login(
+        authorization_code => $code,
+        state              => $state,
+        redirect_uri       => $self->callback_url,
+        client_site        => "" . $self->site,   # Force to string: 'manage', 'www', etc.
+        context            => $self->_get_request_context(),
+    );
 
-    my ($identity, $user);
+    warn "AUTH0 DEBUG: result = ", Data::Dumper::Dumper($result);
 
-    #$userdata = {
-    #   map { ($userdata->{$_} ? ($_ => $userdata->{$_}) : () }
-    #   qw( sub iat sid iss exp aud user_id identities
-    #       email emails email_verified name app_metadata picture
-    #       created_at updated_at)
-    #};
+    if ($result->{error}) {
+        $span->set_status(SPAN_STATUS_ERROR, "auth0 login failed: " . $result->{error});
 
-    # check if profile exists for any of the identities
-    my $identity_id = $userdata->{sub};
-    my $identity    = NP::Model->user_identity->fetch(profile_id => $identity_id);
-
-    my $email = $userdata->{email_verified} && $userdata->{email};
-
-    my ($provider) = ($identity_id =~ m/^(.*)\|/);
-
-    if ($identity) {
-        $identity->provider($provider) if $provider;
-        $identity->data(encode_json($userdata));
-    }
-    else {
-        if (!$email) {
-            $span->end();
-            return $self->login("Email not verified");
-        }
-        $identity = NP::Model->user_identity->create(
-            profile_id => $identity_id,
-            email      => $email,
-            data       => encode_json($userdata),
-            provider   => $provider,
-            created_on => 'now',
-        );
-
-        # look for an account with a verified email address we
-        # can recognize.
-        my %uniq;
-        my @emails =
-          map { $_->{profileData}->{email} }
-          grep {
-              my $p = $_->{profileData};
-              my $ok =
-                 $p
-              && $p->{email}
-              && $p->{email_verified}
-              && !$uniq{$p->{email}}++;
-              $ok;
-          } ({profileData => $userdata}, @{$userdata->{identities}});
-
-        for my $email (@emails) {
-            my ($email_user) = NP::Model->user->fetch(email => $email);
-            if ($email_user) {
-                $user = $email_user;
-                last;
-            }
-        }
-    }
-
-    # we do this outside the identity check just in case for
-    # some reason we have an identity without a user
-    # associated.
-    $user = $user || $identity->user;
-    if (!$user) {
-        my $username = join "", map { $base36->to_base(irand) } (undef) x 3;
-        $user = NP::Model->user->create(
-            email    => $identity->email,
-            name     => $userdata->{name},
-            username => $username,
-        );
-        $user->save;
-    }
-    if ($identity->user_id != $user->id) {
-        $identity->user_id($user->id);
-    }
-
-    if ($user->deletion_on) {
-
-        my $db  = NP::Model->db;
-        my $txn = $db->begin_scoped_work;
-
-        $user->deletion_on(undef);
-        $user->save;
-
-        NP::Model->user_task->delete_user_tasks(
-            where => [
-                task    => 'delete',
-                user_id => $user->id,
-                status  => '',
-            ],
-        );
-
-        $db->commit or die "could not undelete user";
-
-        my $param = {
-            user     => $user,
-            trace_id => $span->context->hex_trace_id,
-        };
-
-        my $msg = Combust::Template->new->process('tpl/user/user_deletion_cancelled.txt',
-            $param, {site => 'manage', config => $self->config});
-
-        my $email =
-          Email::Stuffer->from(NP::Email::address("sender"))
-          ->reply_to(NP::Email::address("support"))
-          ->subject("NTP Pool user deletion cancelled")->text_body($msg);
-
-        $email->to($user->email);
-        NP::Email::sendmail($email);
-    }
-
-    $identity->save;
-
-    my $session_result = $self->setup_session($user->id);
-    unless ($session_result->{success}) {
-        $span->set_status(SPAN_STATUS_ERROR,
-            "session creation failed: " . $session_result->{error});
-        $span->end();
+        # ConnectRPC errors are automatically structured by CAPI layer:
+        # $result->{error} - error message (user-friendly)
+        # $result->{code}  - ConnectRPC error code (e.g., 'unauthenticated', 'internal')
 
         # Set error details for user display
         $self->cache_control('private, max-age=0, no-cache');
-        $self->tpl_param('error',    $session_result->{error});
-        $self->tpl_param('trace_id', $span->context->hex_trace_id);
+        $self->tpl_param('error',    $result->{error});
+        $self->tpl_param('trace_id', $result->{trace_id} || $span->context->hex_trace_id);
 
         return SERVER_ERROR;
     }
 
-    # clear legacy cookie information
+    my $data = $result->{data};
+
+    warn "AUTH0 DEBUG: data = ", Data::Dumper::Dumper($data);
+    warn "AUTH0 DEBUG: session_token = ", ($data->{session_token} || 'UNDEF');
+
+    # Set session cookie
+    $self->_set_session_cookie($data->{session_token});
+
+    # Clear legacy cookie information
     $self->cookie($self->user_cookie_name, '');
 
-    # xss for manage page
+    # XSS token for manage page
     $self->cookie("xs", join("", map { $base36->to_base(irand) } (undef) x 6));
 
-    $span->end();
-
-    # done with this, don't keep it around
+    # Clear login state
     $self->cookie('login_state', '');
 
+    # Load user object for request
+    # Since we now have a session cookie, the user() method will work
+    my $user = NP::Model->user->fetch(id => $data->{user_id});
     $self->user($user);
+
+    warn "AUTH0 DEBUG: set user, user_id = ", ($user ? $user->id : 'UNDEF');
+    warn "AUTH0 DEBUG: self->user returns = ", ($self->user ? $self->user->id : 'UNDEF');
+
+    # Show message if deletion was cancelled
+    if ($data->{deletion_cancelled}) {
+        return $self->login("Your account deletion has been cancelled.");
+    }
+
+    warn "AUTH0 DEBUG: handle_login returning normally";
+    return;    # Will redirect via parent handler
 }
 
 sub _auth0_config {
@@ -366,75 +281,6 @@ sub _auth0_config {
     $self->{_auth0_config} = [$auth0_domain, $auth0_client, $auth0_secret];
 
     return @{$self->{_auth0_config}};
-}
-
-sub _get_auth0_user {
-    my ($self, $code) = @_;
-
-    # https://auth0.com/docs/protocols#3-getting-the-access-token
-
-    my ($auth0_domain, $auth0_client, $auth0_secret) = $self->_auth0_config();
-
-    my $url = URI->new("https://${auth0_domain}/oauth/token");
-
-    # https://auth0.com/docs/secure/tokens/access-tokens/get-access-tokens
-    my %form = (
-        'code'          => $self->req_param('code'),
-        'client_id'     => $auth0_client,
-        'redirect_uri'  => $self->callback_url,
-        'client_secret' => $auth0_secret,
-
-        'grant_type' => 'authorization_code',
-        'scope'      => 'openid profile name email preferred_username',
-
-        # 'grant_type' => 'client_credentials',
-        'audience' => 'api-dev',
-    );
-    my $resp = $self->ua->post($url, \%form);
-
-    # warn "token request: ", pp(\%form);
-
-    # use Data::Dump qw(pp);
-
-    unless ($resp->is_success) {
-        warn "token fetch error", pp($resp);
-        return undef, "Could not fetch oauth token";
-    }
-
-    my $data = decode_json($resp->decoded_content())
-      or return undef, "Could not decode token data";
-
-    # warn "token data: ", pp($data);
-
-#$resp =
-#  $self->ua->get("https://${auth0_domain}/userinfo/?access_token=" . $data->{access_token});
-#$resp->is_success or return undef, "Could not fetch user data";
-
-    my $cache = Combust::Cache->new();
-
-    my $jwt_keys = $cache->fetch(id => "auth0_jwks");
-    if ($jwt_keys) {
-        $jwt_keys = $jwt_keys->{data};
-    }
-    else {
-        my $resp = ua()->get("https://${auth0_domain}/.well-known/jwks.json");
-        unless ($resp->is_success) {
-            return undef, "could not fetch jwks";
-        }
-        $jwt_keys = $resp->decoded_content;
-        $cache->store(data => $jwt_keys, expires => 60 * 60 * 4);
-    }
-
-    my $jwt_data = decode_jwt(token => $data->{id_token}, kid_keys => $jwt_keys);
-
-    # warn "jwt: ", pp($jwt_data);
-
-    $jwt_data or return undef, "Could not decode user data";
-
-    my $user = $jwt_data;
-
-    return $user, undef;
-
 }
 
 sub callback_url {
@@ -841,7 +687,8 @@ sub monitor_eligibility {
 
     # Handle errors - return safe defaults for degraded experience
     if ($result->{error}) {
-        warn "ConnectRPC GetAccountStatus error: $result->{error} (code: $result->{connect_code})";
+        warn
+          "ConnectRPC GetAccountStatus error: $result->{error} (code: $result->{connect_code})";
 
         # Log detailed error for debugging
         if ($result->{trace_id}) {
