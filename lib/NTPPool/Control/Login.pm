@@ -205,9 +205,7 @@ sub setup_session {
 
 sub _set_session_cookie {
     my ($self, $session_token) = @_;
-    warn "AUTH0 DEBUG: _set_session_cookie called with token: ", ($session_token || 'UNDEF');
     my $cookie_value = $session_token . ";" . time;
-    warn "AUTH0 DEBUG: setting cookie '", $self->user_cookie_name, "' = ", $cookie_value;
     $self->plain_cookie(
         $self->user_cookie_name,
         $cookie_value,    # timestamp to make it unique when set again
@@ -215,6 +213,5 @@ sub _set_session_cookie {
             samesite => "Lax",
         }
     );
-    warn "AUTH0 DEBUG: cookie set complete";
 }
 1;

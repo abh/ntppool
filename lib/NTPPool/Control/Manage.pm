@@ -145,14 +145,10 @@ sub render {
     if ($self->request->uri =~ m!^/manage/login!) {
         $self->set_span_name("manage.login");
         if ($self->req_param('code')) {
-            warn "AUTH0 DEBUG: calling handle_login with code";
             $self->handle_login();
-            warn "AUTH0 DEBUG: handle_login returned";
         }
-        warn "AUTH0 DEBUG: checking user, user = ", ($self->user ? $self->user->id : 'UNDEF');
         if ($self->user) {
             my $r = $self->req_param('r') || '/manage';
-            warn "AUTH0 DEBUG: user is logged in, redirecting to: $r";
             return $self->redirect($r);
         }
 
@@ -160,7 +156,6 @@ sub render {
         # and frustratingly loop. It's added so the Auth0 config can have
         # a "default login url" that redirects to the login server /authorize
         # url and we can only have so many .../login urls, right?
-        warn "AUTH0 DEBUG: no user, redirecting to login_url";
         return $self->redirect($self->login_url);
     }
 
@@ -211,8 +206,6 @@ sub handle_login {
         context            => $self->_get_request_context(),
     );
 
-    warn "AUTH0 DEBUG: result = ", Data::Dumper::Dumper($result);
-
     if ($result->{error}) {
         $span->set_status(SPAN_STATUS_ERROR, "auth0 login failed: " . $result->{error});
 
@@ -229,9 +222,6 @@ sub handle_login {
     }
 
     my $data = $result->{data};
-
-    warn "AUTH0 DEBUG: data = ", Data::Dumper::Dumper($data);
-    warn "AUTH0 DEBUG: session_token = ", ($data->{session_token} || 'UNDEF');
 
     # Set session cookie
     $self->_set_session_cookie($data->{session_token});
@@ -250,15 +240,11 @@ sub handle_login {
     my $user = NP::Model->user->fetch(id => $data->{user_id});
     $self->user($user);
 
-    warn "AUTH0 DEBUG: set user, user_id = ", ($user ? $user->id : 'UNDEF');
-    warn "AUTH0 DEBUG: self->user returns = ", ($self->user ? $self->user->id : 'UNDEF');
-
     # Show message if deletion was cancelled
     if ($data->{deletion_cancelled}) {
         return $self->login("Your account deletion has been cancelled.");
     }
 
-    warn "AUTH0 DEBUG: handle_login returning normally";
     return;    # Will redirect via parent handler
 }
 
