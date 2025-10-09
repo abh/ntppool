@@ -97,8 +97,29 @@ sub can_view {
 sub can_add_servers {
     my $self = shift;
 
+    my $account_token = $self->id_token;
+    unless ($account_token) {
+        my $account_id = $self->id || 'undef';
+        warn "can_add_servers: account has no id_token, account_id=$account_id";
+
+        # Add span information for observability
+        my $span = otel_current_context->span;
+        if ($span) {
+            $span->set_status(SPAN_STATUS_ERROR, "Account missing id_token");
+            $span->set_attribute("account.id", $account_id) if $account_id ne 'undef';
+            $span->set_attribute("account.id_token.missing", 1);
+            $span->add_event("account_token_missing", {
+                "account.id" => $account_id,
+                "message" => "Account object has no id_token for verification"
+            });
+        }
+
+        # Fail safely - don't allow adding servers if we can't verify
+        return 0;
+    }
+
     my $result = get_account_server_verification_status(
-        account => $self->id_token,
+        account => $account_token,
     );
 
     # Return 0 on API error (don't allow adding servers)
