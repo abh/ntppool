@@ -9,7 +9,10 @@ use Math::Random::Secure qw(irand);
 use Combust::Template;
 use NP::Email  ();
 use NP::IntAPI qw(int_api);
-use NP::CAPI::Account qw(get_account_users get_user_accounts get_account_invites);
+use NP::CAPI::Account qw(
+    get_account_users get_user_accounts get_account_invites
+    create_account update_account remove_user_from_account create_user_task
+);
 use JSON::XS   qw(encode_json decode_json);
 use Data::Dump qw(pp);
 use OpenTelemetry::Trace;
@@ -99,22 +102,15 @@ sub _create_account_via_api {
 
     $name ||= $self->user->name || 'My Account';
 
-    my $data = int_api(
-        'post',
-        'account/create',
-        {
-            user => $self->plain_cookie($self->user_cookie_name),
-            data => $json->encode({
-                name             => $name,
-                initial_user_ids => [0 + $self->user->id],
-            }),
-        },
-        $self->_get_request_context()
+    my $data = create_account(
+        auth    => $self->plain_cookie($self->user_cookie_name),
+        context => $self->_get_request_context(),
+        name    => $name,
     );
 
-    if ($data->{code} != 200) {
-        warn "Failed to create account via API: " . ($data->{error} || 'unknown error');
-        warn "Trace ID: " . ($data->{trace_id} || 'none') if $data->{trace_id};
+    if ($data->{error}) {
+        warn "Failed to create account via API: " . $data->{error};
+        warn "Trace ID: " . $data->{trace_id} if $data->{trace_id};
         return undef;
     }
 
@@ -122,7 +118,7 @@ sub _create_account_via_api {
     my $account = NP::Model->account->fetch(id => $data->{data}{account_id});
     unless ($account) {
         warn "Failed to reload account after creation, id=" . $data->{data}{account_id};
-        warn "Trace ID: " . ($data->{trace_id} || 'none');
+        warn "Trace ID: " . $data->{trace_id};
         die "Account creation failed - could not reload account";
     }
 
@@ -234,20 +230,16 @@ sub remove_user_from_account {
     return $self->render_users($account)
       unless $user;
 
-    my $data = int_api(
-        'delete',
-        'account/remove-user',
-        {
-            user       => $self->plain_cookie($self->user_cookie_name),
-            a          => $account->id_token,
-            user_token => $user->id_token,  # Use id_token, not numeric ID
-        },
-        $self->_get_request_context()
+    my $data = remove_user_from_account(
+        auth       => $self->plain_cookie($self->user_cookie_name),
+        account    => $account->id_token,
+        context    => $self->_get_request_context(),
+        user_token => $user->id_token,
     );
 
-    if ($data->{code} != 200) {
-        warn "Failed to remove user from account via API: " . ($data->{error} || 'unknown error');
-        warn "Trace ID: " . ($data->{trace_id} || 'none') if $data->{trace_id};
+    if ($data->{error}) {
+        warn "Failed to remove user from account via API: " . $data->{error};
+        warn "Trace ID: " . $data->{trace_id} if $data->{trace_id};
         $self->tpl_param('error', 'Failed to remove user. Please try again.');
         return $self->render_users($account);
     }
@@ -513,23 +505,19 @@ sub render_account_edit {
     }
 
     if (%update_data) {
-        my $data = int_api(
-            'patch',
-            'account/update',
-            {
-                user => $self->plain_cookie($self->user_cookie_name),
-                a    => $account->id_token,
-                data => $json->encode(\%update_data),
-            },
-            $self->_get_request_context()
+        my $data = update_account(
+            auth    => $self->plain_cookie($self->user_cookie_name),
+            account => $account->id_token,
+            context => $self->_get_request_context(),
+            %update_data,
         );
 
-        if ($data->{code} != 200) {
-            warn "Failed to update account via API: " . ($data->{error} || 'unknown error');
-            warn "Trace ID: " . ($data->{trace_id} || 'none') if $data->{trace_id};
+        if ($data->{error}) {
+            warn "Failed to update account via API: " . $data->{error};
+            warn "Trace ID: " . $data->{trace_id} if $data->{trace_id};
 
             # Extract user-friendly error message if available
-            my $error_msg = $data->{message} || 'Failed to update account. Please try again.';
+            my $error_msg = $data->{error} || 'Failed to update account. Please try again.';
             $self->tpl_param('error', $error_msg);
             return $self->render_account_form($account);
         }
@@ -595,22 +583,16 @@ sub render_download {
     }
     else {
         if ($self->request->method eq 'post') {
-            my $data = int_api(
-                'post',
-                'user/task/create',
-                {
-                    user => $self->plain_cookie($self->user_cookie_name),
-                    data => $json->encode({
-                        task_type => 'download',
-                        status    => '',
-                    }),
-                },
-                $self->_get_request_context()
+            my $data = create_user_task(
+                auth      => $self->plain_cookie($self->user_cookie_name),
+                context   => $self->_get_request_context(),
+                task_type => 'download',
+                status    => '',
             );
 
-            if ($data->{code} != 200) {
-                warn "Failed to create download task via API: " . ($data->{error} || 'unknown error');
-                warn "Trace ID: " . ($data->{trace_id} || 'none') if $data->{trace_id};
+            if ($data->{error}) {
+                warn "Failed to create download task via API: " . $data->{error};
+                warn "Trace ID: " . $data->{trace_id} if $data->{trace_id};
                 $self->tpl_param('error', 'Failed to create download request. Please try again.');
                 return OK, $self->evaluate_template('tpl/user/download.html');
             }
@@ -686,23 +668,17 @@ sub render_user_delete {
 
         # Create delete task via API (after transaction commit)
         my $execute_on_unix = DateTime->now()->add(days => 7)->epoch;
-        my $data = int_api(
-            'post',
-            'user/task/create',
-            {
-                user => $self->plain_cookie($self->user_cookie_name),
-                data => $json->encode({
-                    task_type => 'delete',
-                    status    => '',
-                    execute_on_unix => 0 + $execute_on_unix,
-                }),
-            },
-            $self->_get_request_context()
+        my $data = create_user_task(
+            auth            => $self->plain_cookie($self->user_cookie_name),
+            context         => $self->_get_request_context(),
+            task_type       => 'delete',
+            status          => '',
+            execute_on_unix => $execute_on_unix,
         );
 
-        if ($data->{code} != 200) {
-            warn "Failed to create delete task via API: " . ($data->{error} || 'unknown error');
-            warn "Trace ID: " . ($data->{trace_id} || 'none') if $data->{trace_id};
+        if ($data->{error}) {
+            warn "Failed to create delete task via API: " . $data->{error};
+            warn "Trace ID: " . $data->{trace_id} if $data->{trace_id};
             # Don't fail the deletion, just log the error
             # The user is already marked for deletion
         }

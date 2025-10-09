@@ -236,7 +236,8 @@ When refactoring frontend code:
 ### Core Structure
 - **Web Controllers**: `lib/NTPPool/Control.pm` and `lib/NTPPool/Control/*`
 - **Web Framework**: `combust/lib/Combust/` (internal framework)
-- **API Interface**: `lib/NP/IntAPI.pm` (for internal API calls)
+- **API Interface (Legacy)**: `lib/NP/IntAPI.pm` (old REST API - being phased out)
+- **API Interface (Current)**: `lib/NP/CAPI/*.pm` (new ConnectRPC APIs - use for all new code)
 - **Database Models**: `lib/NP/Model.pm` and `lib/NP/Model/*` (Rose::DB based)
 - **Main Templates**: `docs/ntppool/` (website templates)
 - **Management Interface**: `docs/manage/` (admin interface templates)
@@ -245,21 +246,40 @@ When refactoring frontend code:
 
 ### Key Components
 - Controllers are built on Combust framework patterns
-- New database functionality should use API calls via `lib/NP/IntAPI.pm`
+- New database functionality should use ConnectRPC API calls via `lib/NP/CAPI/*.pm`
 - Database models use Rose::DB but prefer API calls for new features
 - Supports dozens of languages with translations in `i18n/` and `docs/ntppool/`
 
 ## Architecture Guidelines
 
 ### Database and API
+
+**IMPORTANT - API Migration in Progress:**
+- **NEW CODE**: Use `NP::CAPI` modules (ConnectRPC) for all new integrations
+- **OLD CODE**: Many existing calls use `int_api()` (REST endpoints) - these are being migrated
+- If you find yourself writing `int_api()` calls, you're almost certainly doing it wrong
+- Check `lib/NP/CAPI/*.pm` for available ConnectRPC methods before creating new API integrations
+
 - **New database operations**: Implement as API calls to the internal API service, not direct database access
-- **API Integration**: Use `lib/NP/IntAPI.pm` for communication with the separate API service
+- **API Integration (Legacy)**: `lib/NP/IntAPI.pm` uses old REST endpoints - avoid in new code
+- **API Integration (Current)**: `lib/NP/CAPI/*.pm` uses ConnectRPC - use for all new code
 - **Database Models**: Built on Rose::DB, but prefer API calls for new features
 
-### Internal API Integration Patterns
+### Legacy REST API Patterns (int_api) - FOR REFERENCE ONLY
+
+**⚠️ DO NOT USE FOR NEW CODE ⚠️**
+
+This section documents the old REST API approach using `int_api()` from `NP::IntAPI`.
+These patterns are being phased out in favor of ConnectRPC APIs in `NP::CAPI/*.pm`.
+
+This documentation is retained only for:
+- Understanding existing code that hasn't been migrated yet
+- Identifying code that needs to be updated to use ConnectRPC
+
+**For new code, see the ConnectRPC API Patterns section below.**
 
 **Authentication and Account Context**:
-- Use `int_api()` function from `NP::IntAPI` for internal API calls
+- Use `int_api()` function from `NP::IntAPI` for internal API calls (LEGACY)
 - **ALWAYS use `user` parameter**: Pass user cookie via `$self->plain_cookie($self->user_cookie_name)`
 - **Account context via `a` parameter**: Pass account token via `$self->current_account->id_token`
 
@@ -304,6 +324,83 @@ my $data = int_api('get', 'endpoint', {
 - Extract and display trace IDs from response headers for debugging
 - Always provide fallback behavior when API is unavailable
 - Use structured error responses with success flags
+
+### ConnectRPC API Patterns (NP::CAPI) - USE FOR NEW CODE
+
+**Authentication and Context**:
+- ConnectRPC APIs are in `lib/NP/CAPI/*.pm` (e.g., `NP::CAPI::Account`)
+- Import specific functions: `use NP::CAPI::Account qw(create_account update_account);`
+- Pass authentication and context via named parameters
+
+**Common Parameters**:
+- `auth`: User session token via `$self->plain_cookie($self->user_cookie_name)`
+- `account`: Account token via `$self->current_account->id_token` (when needed)
+- `context`: Request context via `$self->_get_request_context()` (for IP forwarding)
+
+**Response Format**:
+All ConnectRPC methods return a hashref:
+```perl
+{
+    code         => 200,                    # HTTP status code
+    status_line  => "200 OK",              # HTTP status text
+    connect_code => undef,                  # ConnectRPC error code (if error)
+    data         => { ... },                # Response data (if success)
+    error        => undef,                  # Error message (if error)
+    trace_id     => "...",                  # OpenTelemetry trace ID
+}
+```
+
+**Example - Create Account**:
+```perl
+use NP::CAPI::Account qw(create_account);
+
+my $result = create_account(
+    auth    => $self->plain_cookie($self->user_cookie_name),
+    context => $self->_get_request_context(),
+    name    => $account_name,
+);
+
+if ($result->{error}) {
+    warn "Failed to create account: " . $result->{error};
+    warn "Trace ID: " . $result->{trace_id};
+    return undef;
+}
+
+my $account_id = $result->{data}{account_id};
+my $account = NP::Model->account->fetch(id => $account_id);
+```
+
+**Example - Update Account**:
+```perl
+use NP::CAPI::Account qw(update_account);
+
+my $result = update_account(
+    auth             => $self->plain_cookie($self->user_cookie_name),
+    account          => $account->id_token,
+    context          => $self->_get_request_context(),
+    name             => $new_name,              # Optional fields
+    organization_name => $org_name,             # Only send what's changing
+    public_profile   => JSON::XS::true,         # Use JSON::XS booleans
+);
+
+if ($result->{error}) {
+    warn "Update failed: " . $result->{error};
+    return $result->{error};
+}
+
+# Reload model to get updated values
+$account = NP::Model->account->fetch(id => $account->id);
+```
+
+**Available APIs**:
+- `NP::CAPI::Account` - Account management, user tasks, sessions
+- (More to be added as migration continues)
+
+**Error Handling**:
+- Always check `$result->{error}` first
+- Log trace IDs for debugging: `$result->{trace_id}`
+- Reload models after mutations to get fresh data
+- Return user-friendly error messages from `$result->{error}` or `$result->{data}{message}`
 
 ### API-Driven Feature Integration Patterns
 
