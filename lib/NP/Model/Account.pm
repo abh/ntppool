@@ -1,10 +1,14 @@
 package NP::Model::Account;
 use strict;
-use Math::BaseCalc       qw();
-use Math::Random::Secure qw(irand);
+use Math::BaseCalc              qw();
+use Math::Random::Secure        qw(irand);
 use NP::Model::TokenID;
-use base            qw(NP::Model::TokenID);
-use Combust::Config ();
+use base                        qw(NP::Model::TokenID);
+use Combust::Config             ();
+use NP::CAPI::Account           qw(get_account_server_verification_status get_accounts_to_notify);
+use OpenTelemetry::Trace;
+use OpenTelemetry               -all;
+use OpenTelemetry::Constants    qw( SPAN_STATUS_ERROR );
 
 sub BAD_SERVER_THRESHOLD {-15}
 
@@ -93,31 +97,27 @@ sub can_view {
 sub can_add_servers {
     my $self = shift;
 
-    my $counts = NP::Model->dbh->selectall_arrayref(
-        q[select ISNULL(sv.verified_on) v, count(*) from accounts a
-          inner join servers s
-          on s.account_id=a.id
-          left outer join server_verifications sv
-          on sv.server_id=s.id
-          where a.id=?
-          and s.deletion_on is null
-          group by v;
-        ],
-        undef,
-        $self->id,
+    my $result = get_account_server_verification_status(
+        account => $self->id_token,
     );
 
+    # Return 0 on API error (don't allow adding servers)
+    if ($result->{error}) {
+        my $span = otel_current_context->span;
+        $span->set_status(SPAN_STATUS_ERROR, $result->{error});
+        $span->record_exception($result->{error});
+        warn "Failed to get server verification status: " . $result->{error};
+        warn "Trace ID: " . ($result->{trace_id} || 'none');
+        return 0;
+    }
+
+    my $data = $result->{data};
+
     # allow adding servers if none are there
-    return 1 unless $counts && @$counts;
-
-    #warn Data::Dump::pp("account: ", $self->id(), $counts);
-
-    # might be undef
-    my ($verified)     = (map { $_->[1] } grep { $_->[0] == 0 } @$counts);
-    my ($not_verified) = (map { $_->[1] } grep { $_->[0] == 1 } @$counts);
+    return 1 unless ($data->{verified_count} || $data->{unverified_count});
 
     # todo: make this an account flag
-    if ($not_verified && $not_verified >= 2) {
+    if ($data->{unverified_count} && $data->{unverified_count} >= 2) {
         return 0;
     }
 
@@ -187,32 +187,29 @@ sub servers {
 
 package NP::Model::Account::Manager;
 use strict;
+use NP::CAPI::Account qw(get_accounts_to_notify);
+use OpenTelemetry -all;
+use OpenTelemetry::Constants qw( SPAN_STATUS_ERROR );
 
 sub accounts_to_notify {
     my $class = shift;
-    my $ids   = NP::Model->dbh->selectcol_arrayref(
-        qq[SELECT distinct a.id as account_id
-           FROM
-             servers s
-             LEFT JOIN accounts a ON(s.account_id=a.id)
-             LEFT JOIN server_alerts sa ON(sa.server_id=s.id)
-           WHERE
-             s.score_raw <= ?
-              AND s.in_pool = 1
-              AND (s.deletion_on IS NULL
-                   OR s.deletion_on > DATE_ADD(NOW(), INTERVAL ? DAY)
-                  )
-              AND (sa.last_email_time IS NULL
-                   OR (DATE_SUB(NOW(), INTERVAL 14 DAY) > sa.last_email_time
-                       AND (sa.last_score+10) >= s.score_raw
-                      )
-                  )
-          ORDER BY a.id
-        ],
-        undef,
-        NP::Model::Account->BAD_SERVER_THRESHOLD,
-        NP::Model::Zone->deletion_grace_days + 2,
+
+    my $result = get_accounts_to_notify(
+        score_threshold   => NP::Model::Account->BAD_SERVER_THRESHOLD,
+        grace_period_days => NP::Model::Zone->deletion_grace_days + 2,
     );
+
+    # Return empty on API error
+    if ($result->{error}) {
+        my $span = otel_current_context->span;
+        $span->set_status(SPAN_STATUS_ERROR, $result->{error});
+        $span->record_exception($result->{error});
+        warn "Failed to get accounts to notify: " . $result->{error};
+        warn "Trace ID: " . ($result->{trace_id} || 'none');
+        return;
+    }
+
+    my $ids = $result->{data}{account_ids};
     return unless $ids and @$ids;
 
     warn "some server doesn't have an account" if grep { not defined $_ } @$ids;

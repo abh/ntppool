@@ -9,6 +9,7 @@ use Math::Random::Secure qw(irand);
 use Combust::Template;
 use NP::Email  ();
 use NP::IntAPI qw(int_api);
+use NP::CAPI::Account qw(get_account_users get_user_accounts get_account_invites);
 use JSON::XS   qw(encode_json decode_json);
 use Data::Dump qw(pp);
 use OpenTelemetry::Trace;
@@ -23,6 +24,74 @@ sub _get_request_context {
     my $self            = shift;
     my $x_forwarded_for = $self->request->header_in('X-Forwarded-For');
     return $x_forwarded_for ? {x_forwarded_for => $x_forwarded_for} : undef;
+}
+
+sub _account_users_via_api {
+    my ($self, $account) = @_;
+    my $cache_key = '_account_users_' . $account->id;
+    return $self->{$cache_key} if exists $self->{$cache_key};
+
+    my $result = get_account_users(account => $account->id_token);
+    return $self->{$cache_key} = [] if $result->{error};
+
+    # Convert API response to NP::Model::User objects
+    my @users;
+    for my $user_data (@{$result->{data}{users} || []}) {
+        my $user = NP::Model->user->fetch(id => $user_data->{user_id});
+        push @users, $user if $user;
+    }
+    return $self->{$cache_key} = \@users;
+}
+
+sub _user_accounts_via_api {
+    my ($self, $user) = @_;
+    my $cache_key = '_user_accounts_' . $user->id;
+    return $self->{$cache_key} if exists $self->{$cache_key};
+
+    my $result = get_user_accounts();
+    return $self->{$cache_key} = [] if $result->{error};
+
+    # Convert API response to NP::Model::Account objects
+    my @accounts;
+    for my $account_data (@{$result->{data}{accounts} || []}) {
+        my $account = NP::Model->account->fetch(id => $account_data->{account_id});
+        push @accounts, $account if $account;
+    }
+    return $self->{$cache_key} = \@accounts;
+}
+
+sub _account_invites_via_api {
+    my ($self, $account) = @_;
+    my $cache_key = '_account_invites_' . $account->id;
+    return $self->{$cache_key} if exists $self->{$cache_key};
+
+    my $result = get_account_invites(account => $account->id_token, for_user => 0);
+    return $self->{$cache_key} = [] if $result->{error};
+
+    # Convert API response to NP::Model::AccountInvite objects
+    my @invites;
+    for my $invite_data (@{$result->{data}{invites} || []}) {
+        my $invite = NP::Model->account_invite->fetch(id => $invite_data->{invite_id});
+        push @invites, $invite if $invite;
+    }
+    return $self->{$cache_key} = \@invites;
+}
+
+sub _user_invites_via_api {
+    my ($self, $user) = @_;
+    my $cache_key = '_user_invites_' . $user->id;
+    return $self->{$cache_key} if exists $self->{$cache_key};
+
+    my $result = get_account_invites(for_user => 1);
+    return $self->{$cache_key} = [] if $result->{error};
+
+    # Convert API response to NP::Model::AccountInvite objects
+    my @invites;
+    for my $invite_data (@{$result->{data}{invites} || []}) {
+        my $invite = NP::Model->account_invite->fetch(id => $invite_data->{invite_id});
+        push @invites, $invite if $invite;
+    }
+    return $self->{$cache_key} = \@invites;
 }
 
 sub _create_account_via_api {
@@ -89,7 +158,7 @@ sub manage_dispatch {
 
     unless ($account) {
 
-        my $invites = $self->user->pending_invites;
+        my $invites = $self->_user_invites_via_api($self->user);
         if ($invites && @$invites) {
             warn "has no account and there are pending invites...";
             return $self->redirect("/manage/account/invites/");
@@ -160,7 +229,7 @@ sub manage_dispatch {
 
 sub remove_user_from_account {
     my ($self, $account, $user_id) = @_;
-    my $users = $account->users;
+    my $users = $self->_account_users_via_api($account);
     my ($user) = grep { $_->id == $user_id } @$users;
     return $self->render_users($account)
       unless $user;
@@ -341,7 +410,7 @@ sub render_user_invitations {
     my $invite = shift;
 
     my $user    = $self->user;
-    my $invites = $user->pending_invites;
+    my $invites = $self->_user_invites_via_api($user);
     if ($invite and !grep { $_->id == $invite->id } @$invites) {
         push @$invites, $invite;
     }
@@ -355,16 +424,11 @@ sub render_user_invitations {
 sub render_users {
     my ($self, $account) = @_;
 
-    my $invites = NP::Model->account_invite->get_account_invites(
-        query => [
-            status     => {ne => 'accepted'},
-            account_id => $account->id,
-        ],
-        sort_by => 'created_on desc'
-    );
+    my $invites = $self->_account_invites_via_api($account);
+    my $users   = $self->_account_users_via_api($account);
 
     $self->tpl_param('invites', $invites);
-    $self->tpl_param('users',   scalar $account->users);
+    $self->tpl_param('users',   $users);
 
     if ($self->user->is_staff) {
         my $logs = NP::Model->log->get_objects(
@@ -579,9 +643,11 @@ sub render_user_delete {
     # todo:
     # - check there are no active servers on the account
     # - or that there are an alternate user
-    for my $a ($user->accounts) {
-        my @users = grep { $_->id != $user->id && not $_->deletion_on } @{$a->users};
-        next if @users;
+    my $accounts = $self->_user_accounts_via_api($user);
+    for my $a (@$accounts) {
+        my $users = $self->_account_users_via_api($a);
+        my @other_users = grep { $_->id != $user->id && not $_->deletion_on } @$users;
+        next if @other_users;
         for my $s ($a->servers) {
             unless ($s->deletion_on) {
                 warn "account has active servers";

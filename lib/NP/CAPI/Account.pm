@@ -17,6 +17,11 @@ our @EXPORT_OK = qw(
     update_account
     remove_user_from_account
     create_user_task
+    get_account_server_verification_status
+    get_accounts_to_notify
+    get_account_users
+    get_user_accounts
+    get_account_invites
 );
 
 =head1 NAME
@@ -25,7 +30,7 @@ NP::CAPI::Account - ConnectRPC client for AccountService
 
 =head1 SYNOPSIS
 
-    use NP::CAPI::Account qw(get_account_status process_auth0_login validate_session delete_session create_account update_account remove_user_from_account create_user_task);
+    use NP::CAPI::Account qw(get_account_status process_auth0_login validate_session delete_session create_account update_account remove_user_from_account create_user_task get_account_server_verification_status get_accounts_to_notify get_account_users get_user_accounts get_account_invites);
     # GetAccountStatus returns the current monitor eligibility and status for an account.
 Authentication is handled by middleware - the account is extracted from the session context.
     my $result = get_account_status(
@@ -94,6 +99,50 @@ Authorization: User must have edit access and cannot remove themselves.
 Authentication: Required via session middleware (sessions.GetUser).
 Authorization: User can only create tasks for themselves.
     my $result = create_user_task(
+        auth    => $user_token,
+        account => $account_token,
+        context => $request_context,
+    );
+
+    # GetAccountServerVerificationStatus returns server verification counts for an account.
+Used to determine if account can add new servers (blocks if 2+ unverified servers).
+Authentication: Required via session middleware (sessions.GetAccount).
+    my $result = get_account_server_verification_status(
+        auth    => $user_token,
+        account => $account_token,
+        context => $request_context,
+    );
+
+    # GetAccountsToNotify returns account IDs that need server alert notifications.
+Finds accounts with servers scoring below threshold that haven't been notified recently.
+Authentication: Admin only.
+    my $result = get_accounts_to_notify(
+        auth    => $user_token,
+        account => $account_token,
+        context => $request_context,
+    );
+
+    # GetAccountUsers returns the list of users in an account.
+Authentication: Required via session middleware (sessions.GetAccount).
+Authorization: User must have access to the account.
+    my $result = get_account_users(
+        auth    => $user_token,
+        account => $account_token,
+        context => $request_context,
+    );
+
+    # GetUserAccounts returns the list of accounts for the authenticated user.
+Authentication: Required via session middleware (sessions.GetUser).
+    my $result = get_user_accounts(
+        auth    => $user_token,
+        account => $account_token,
+        context => $request_context,
+    );
+
+    # GetAccountInvites returns pending invites for an account or user.
+Authentication: Required via session middleware.
+Authorization: Can view invites sent to you or for accounts you manage.
+    my $result = get_account_invites(
         auth    => $user_token,
         account => $account_token,
         context => $request_context,
@@ -755,6 +804,422 @@ sub create_user_task {
     return connect_rpc(
         service     => 'ntppool.account.v1.AccountService',
         method      => 'CreateUserTask',
+        request     => \%request,
+        %args  # Pass through auth, account, context
+    );
+}
+
+
+=head2 get_account_server_verification_status
+
+GetAccountServerVerificationStatus returns server verification counts for an account.
+Used to determine if account can add new servers (blocks if 2+ unverified servers).
+Authentication: Required via session middleware (sessions.GetAccount).
+
+B<Arguments:>
+
+    my $result = get_account_server_verification_status(
+        auth    => $user_token,      # Optional: User/session authentication token
+        account => $account_token,   # Optional: Account selection token
+        context => $request_context, # Optional: Request context for X-Forwarded-For
+    );
+
+B<Returns:>
+
+Hashref with structure:
+
+    {
+        code         => 200,         # HTTP status code
+        status_line  => "200 OK",    # HTTP status text
+        connect_code => undef,       # ConnectRPC error code (or undef)
+        data         => {            # Response data
+            verified_count => ...,  # int - verified_count is the number of servers with verified_on set
+            unverified_count => ...,  # int - unverified_count is the number of servers without verified_on
+        },
+        error        => undef,       # Error message (if any)
+        trace_id     => "...",       # OpenTelemetry trace ID
+    }
+
+B<ConnectRPC Error Codes:>
+
+    unauthenticated, permission_denied, internal, invalid_argument, etc.
+
+B<Example:>
+
+    my $result = get_account_server_verification_status(
+        auth    => $self->plain_cookie($self->user_cookie_name),
+        account => $self->current_account->id_token,
+        context => $self->_get_request_context(),
+    );
+
+    if ($result->{error}) {
+        warn "Error: $result->{error}";
+    } else {
+        my $data = $result->{data};
+        # Use response fields...
+    }
+
+=cut
+
+sub get_account_server_verification_status {
+    my %args = @_;
+
+    # Extract request fields from args
+    my %request = ();
+
+    return connect_rpc(
+        service     => 'ntppool.account.v1.AccountService',
+        method      => 'GetAccountServerVerificationStatus',
+        request     => \%request,
+        %args  # Pass through auth, account, context
+    );
+}
+
+
+=head2 get_accounts_to_notify
+
+GetAccountsToNotify returns account IDs that need server alert notifications.
+Finds accounts with servers scoring below threshold that haven't been notified recently.
+Authentication: Admin only.
+
+B<Arguments:>
+
+    my $result = get_accounts_to_notify(
+        auth    => $user_token,      # Optional: User/session authentication token
+        account => $account_token,   # Optional: Account selection token
+        context => $request_context, # Optional: Request context for X-Forwarded-For
+        score_threshold => $value,       # int - score_threshold is the score below which servers trigger notifications (default: -10)
+        grace_period_days => $value,       # int - grace_period_days is how many days after deletion_on to still notify (default: 14)
+    );
+
+B<Returns:>
+
+Hashref with structure:
+
+    {
+        code         => 200,         # HTTP status code
+        status_line  => "200 OK",    # HTTP status text
+        connect_code => undef,       # ConnectRPC error code (or undef)
+        data         => {            # Response data
+            account_ids => [...]  # arrayref[int],  # arrayref[int] - account_ids is the list of account IDs with servers needing alerts
+        },
+        error        => undef,       # Error message (if any)
+        trace_id     => "...",       # OpenTelemetry trace ID
+    }
+
+B<Response Data Structure:>
+
+The C<data> field contains:
+
+=over 4
+
+=item * B<account_ids> (arrayref[int])
+
+account_ids is the list of account IDs with servers needing alerts
+
+
+=back
+
+B<ConnectRPC Error Codes:>
+
+    unauthenticated, permission_denied, internal, invalid_argument, etc.
+
+B<Example:>
+
+    my $result = get_accounts_to_notify(
+        auth    => $self->plain_cookie($self->user_cookie_name),
+        account => $self->current_account->id_token,
+        context => $self->_get_request_context(),
+    );
+
+    if ($result->{error}) {
+        warn "Error: $result->{error}";
+    } else {
+        my $data = $result->{data};
+        # Use response fields...
+    }
+
+=cut
+
+sub get_accounts_to_notify {
+    my %args = @_;
+
+    # Extract request fields from args
+    my %request = ();
+    $request{'score_threshold'} = delete $args{'score_threshold'} if exists $args{'score_threshold'};
+    $request{'grace_period_days'} = delete $args{'grace_period_days'} if exists $args{'grace_period_days'};
+
+    return connect_rpc(
+        service     => 'ntppool.account.v1.AccountService',
+        method      => 'GetAccountsToNotify',
+        request     => \%request,
+        %args  # Pass through auth, account, context
+    );
+}
+
+
+=head2 get_account_users
+
+GetAccountUsers returns the list of users in an account.
+Authentication: Required via session middleware (sessions.GetAccount).
+Authorization: User must have access to the account.
+
+B<Arguments:>
+
+    my $result = get_account_users(
+        auth    => $user_token,      # Optional: User/session authentication token
+        account => $account_token,   # Optional: Account selection token
+        context => $request_context, # Optional: Request context for X-Forwarded-For
+    );
+
+B<Returns:>
+
+Hashref with structure:
+
+    {
+        code         => 200,         # HTTP status code
+        status_line  => "200 OK",    # HTTP status text
+        connect_code => undef,       # ConnectRPC error code (or undef)
+        data         => {            # Response data
+            users => [
+            {
+                user_id => ...,  # int - user_id is the numeric ID of the user
+                user_token => ...,  # string - user_token is the id_token for the user
+                email => ...,  # string - email is the user's email address
+                username => ...,  # string - username is the user's username
+                public_profile => ...,  # bool - public_profile indicates if the user profile is public
+                deletion_on => ...,  # string - deletion_on is when the user is scheduled for deletion (if set)
+            },
+            # ... more items
+        ],  # arrayref[hashref (AccountUser)] - users is the list of users in the account
+        },
+        error        => undef,       # Error message (if any)
+        trace_id     => "...",       # OpenTelemetry trace ID
+    }
+
+B<Response Data Structure:>
+
+The C<data> field contains:
+
+=over 4
+
+=item * B<users> (arrayref[hashref (AccountUser)])
+
+users is the list of users in the account
+
+
+=back
+
+B<ConnectRPC Error Codes:>
+
+    unauthenticated, permission_denied, internal, invalid_argument, etc.
+
+B<Example:>
+
+    my $result = get_account_users(
+        auth    => $self->plain_cookie($self->user_cookie_name),
+        account => $self->current_account->id_token,
+        context => $self->_get_request_context(),
+    );
+
+    if ($result->{error}) {
+        warn "Error: $result->{error}";
+    } else {
+        my $data = $result->{data};
+        # Use response fields...
+    }
+
+=cut
+
+sub get_account_users {
+    my %args = @_;
+
+    # Extract request fields from args
+    my %request = ();
+
+    return connect_rpc(
+        service     => 'ntppool.account.v1.AccountService',
+        method      => 'GetAccountUsers',
+        request     => \%request,
+        %args  # Pass through auth, account, context
+    );
+}
+
+
+=head2 get_user_accounts
+
+GetUserAccounts returns the list of accounts for the authenticated user.
+Authentication: Required via session middleware (sessions.GetUser).
+
+B<Arguments:>
+
+    my $result = get_user_accounts(
+        auth    => $user_token,      # Optional: User/session authentication token
+        account => $account_token,   # Optional: Account selection token
+        context => $request_context, # Optional: Request context for X-Forwarded-For
+    );
+
+B<Returns:>
+
+Hashref with structure:
+
+    {
+        code         => 200,         # HTTP status code
+        status_line  => "200 OK",    # HTTP status text
+        connect_code => undef,       # ConnectRPC error code (or undef)
+        data         => {            # Response data
+            accounts => [
+            {
+                account_id => ...,  # int - account_id is the numeric ID of the account
+                account_token => ...,  # string - account_token is the id_token for the account
+                name => ...,  # string - name is the account name
+                organization_name => ...,  # string - organization_name is the organization name (if set)
+                organization_url => ...,  # string - organization_url is the organization URL (if set)
+                public_profile => ...,  # bool - public_profile indicates if the account profile is public
+                url_slug => ...,  # string - url_slug is the URL slug for the account (if set)
+            },
+            # ... more items
+        ],  # arrayref[hashref (UserAccount)] - accounts is the list of accounts the user belongs to
+        },
+        error        => undef,       # Error message (if any)
+        trace_id     => "...",       # OpenTelemetry trace ID
+    }
+
+B<Response Data Structure:>
+
+The C<data> field contains:
+
+=over 4
+
+=item * B<accounts> (arrayref[hashref (UserAccount)])
+
+accounts is the list of accounts the user belongs to
+
+
+=back
+
+B<ConnectRPC Error Codes:>
+
+    unauthenticated, permission_denied, internal, invalid_argument, etc.
+
+B<Example:>
+
+    my $result = get_user_accounts(
+        auth    => $self->plain_cookie($self->user_cookie_name),
+        account => $self->current_account->id_token,
+        context => $self->_get_request_context(),
+    );
+
+    if ($result->{error}) {
+        warn "Error: $result->{error}";
+    } else {
+        my $data = $result->{data};
+        # Use response fields...
+    }
+
+=cut
+
+sub get_user_accounts {
+    my %args = @_;
+
+    # Extract request fields from args
+    my %request = ();
+
+    return connect_rpc(
+        service     => 'ntppool.account.v1.AccountService',
+        method      => 'GetUserAccounts',
+        request     => \%request,
+        %args  # Pass through auth, account, context
+    );
+}
+
+
+=head2 get_account_invites
+
+GetAccountInvites returns pending invites for an account or user.
+Authentication: Required via session middleware.
+Authorization: Can view invites sent to you or for accounts you manage.
+
+B<Arguments:>
+
+    my $result = get_account_invites(
+        auth    => $user_token,      # Optional: User/session authentication token
+        account => $account_token,   # Optional: Account selection token
+        context => $request_context, # Optional: Request context for X-Forwarded-For
+        for_user => $value,       # bool - for_user when true, returns invites sent to the authenticated user
+ When false (default), returns invites for the authenticated account
+    );
+
+B<Returns:>
+
+Hashref with structure:
+
+    {
+        code         => 200,         # HTTP status code
+        status_line  => "200 OK",    # HTTP status text
+        connect_code => undef,       # ConnectRPC error code (or undef)
+        data         => {            # Response data
+            invites => [
+            {
+                invite_id => ...,  # int - invite_id is the numeric ID of the invite
+                account_id => ...,  # int - account_id is the ID of the account being invited to
+                email => ...,  # string - email is the email address invited
+                status => ...,  # string - status is the invite status (pending, accepted, expired)
+                code => ...,  # string - code is the invitation code (only for pending invites)
+                expires_on => ...,  # string - expires_on is when the invite expires
+                created_on => ...,  # string - created_on is when the invite was created
+            },
+            # ... more items
+        ],  # arrayref[hashref (AccountInvite)] - invites is the list of account invitations
+        },
+        error        => undef,       # Error message (if any)
+        trace_id     => "...",       # OpenTelemetry trace ID
+    }
+
+B<Response Data Structure:>
+
+The C<data> field contains:
+
+=over 4
+
+=item * B<invites> (arrayref[hashref (AccountInvite)])
+
+invites is the list of account invitations
+
+
+=back
+
+B<ConnectRPC Error Codes:>
+
+    unauthenticated, permission_denied, internal, invalid_argument, etc.
+
+B<Example:>
+
+    my $result = get_account_invites(
+        auth    => $self->plain_cookie($self->user_cookie_name),
+        account => $self->current_account->id_token,
+        context => $self->_get_request_context(),
+    );
+
+    if ($result->{error}) {
+        warn "Error: $result->{error}";
+    } else {
+        my $data = $result->{data};
+        # Use response fields...
+    }
+
+=cut
+
+sub get_account_invites {
+    my %args = @_;
+
+    # Extract request fields from args
+    my %request = ();
+    $request{'for_user'} = delete $args{'for_user'} if exists $args{'for_user'};
+
+    return connect_rpc(
+        service     => 'ntppool.account.v1.AccountService',
+        method      => 'GetAccountInvites',
         request     => \%request,
         %args  # Pass through auth, account, context
     );

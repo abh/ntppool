@@ -302,7 +302,8 @@ sub connect_rpc {
         eval {
             my $span = OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
             if ($span) {
-                $span->set_status(SPAN_STATUS_ERROR, "ConnectRPC error: " . $result{error});
+                $span->set_status(SPAN_STATUS_ERROR, $result{error});
+                $span->record_exception($result{error});
                 $span->set_attribute("rpc.system", "connect");
                 $span->set_attribute("rpc.service", $service);
                 $span->set_attribute("rpc.method", $method);
@@ -311,6 +312,9 @@ sub connect_rpc {
                 $span->set_attribute("api.trace_id", $result{trace_id}) if $result{trace_id};
             }
         };
+        # Also log the error with trace ID
+        warn "ConnectRPC error: " . $result{error};
+        warn "Trace ID: " . ($result{trace_id} || 'none');
     }
 
     if ($ENV{CAPI_DEBUG}) {
