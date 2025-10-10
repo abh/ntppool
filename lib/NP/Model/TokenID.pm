@@ -92,9 +92,12 @@ sub token_id {
 sub id_token {
     my $self = shift;
     if (my $token = shift) {
-        return $self->_id_token($token);
+        # Setter: store directly in {id_token}
+        $self->{id_token} = $token;
+        return $token;
     }
-    return $self->_id_token || $self->id_token_generated;
+    # Getter: return stored value or generate from ID
+    return $self->{id_token} || $self->id_token_generated;
 }
 
 sub id_token_generated {
