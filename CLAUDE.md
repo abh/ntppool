@@ -254,6 +254,46 @@ When refactoring frontend code:
 
 ### Database and API
 
+**CRITICAL - PostgreSQL Migration in Progress:**
+
+Read [../go/ntp/api/plans/postgres.md](../go/ntp/api/plans/postgres.md) for complete migration strategy.
+
+**Architecture Goal**: This Perl codebase is becoming a **thin web controller layer with NO direct database access**. All data operations go through Go APIs.
+
+**During Migration (Current State):**
+- **Split-Brain Scenario**: Go API writes to PostgreSQL, Perl ORM (`NP::Model`) reads from MySQL
+- **NEVER Use `NP::Model->fetch()` After API Calls**: Data written by Go won't exist in MySQL
+- **API Responses Must Be Complete**: Don't rely on database reloads for "fresh" data
+
+**Migration Rules for AI Agents:**
+1. ✅ **DO**: Use API response data directly without database access
+2. ✅ **DO**: Work with IDs and tokens from API responses
+3. ✅ **DO**: Request complete data from APIs (not minimal responses)
+4. ❌ **DON'T**: Add `NP::Model->fetch()` calls after API operations
+5. ❌ **DON'T**: Reload objects to "refresh" data after API calls
+6. ❌ **DON'T**: Query MySQL database for data that was just created/updated in PostgreSQL
+
+**Example Anti-Pattern (WRONG):**
+```perl
+# API returns minimal data
+my $result = create_account(name => "Test");
+my $account_id = $result->{data}{account_id};
+
+# This FAILS - trying to reload from MySQL but data is in PostgreSQL
+my $account = NP::Model->account->fetch(id => $account_id);  # Returns undef!
+```
+
+**Correct Pattern:**
+```perl
+# API returns complete account data
+my $result = create_account(name => "Test");
+my $account_data = $result->{data}{account};  # Full account object
+
+# Use data directly from API response
+my $account_name = $account_data->{name};
+my $account_token = $account_data->{account_token};
+```
+
 **IMPORTANT - API Migration in Progress:**
 - **NEW CODE**: Use `NP::CAPI` modules (ConnectRPC) for all new integrations
 - **OLD CODE**: Many existing calls use `int_api()` (REST endpoints) - these are being migrated
@@ -263,7 +303,7 @@ When refactoring frontend code:
 - **New database operations**: Implement as API calls to the internal API service, not direct database access
 - **API Integration (Legacy)**: `lib/NP/IntAPI.pm` uses old REST endpoints - avoid in new code
 - **API Integration (Current)**: `lib/NP/CAPI/*.pm` uses ConnectRPC - use for all new code
-- **Database Models**: Built on Rose::DB, but prefer API calls for new features
+- **Database Models**: Built on Rose::DB, but prefer API calls for new features and NEVER reload after API operations
 
 ### Legacy REST API Patterns (int_api) - FOR REFERENCE ONLY
 
