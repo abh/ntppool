@@ -11,7 +11,7 @@ use NP::Email  ();
 use NP::IntAPI qw(int_api);
 use NP::CAPI::Account qw(
     get_account_users get_user_accounts get_account_invites
-    create_account update_account remove_user_from_account create_user_task
+    create_account get_account update_account remove_user_from_account create_user_task
 );
 use JSON::XS   qw(encode_json decode_json);
 use Data::Dump qw(pp);
@@ -97,6 +97,27 @@ sub _user_invites_via_api {
     return $self->{$cache_key} = \@invites;
 }
 
+sub _account_from_api_response {
+    my ($self, $account_obj) = @_;
+
+    # Create account object from API response with all fields
+    # Note: Cannot reload from database during Postgres migration as Perl ORM reads from MySQL
+    # The API writes to Postgres, but NP::Model reads from MySQL
+    # CRITICAL: Use all fields from the API response to populate the object
+    return bless {
+        id                => $account_obj->{account_id},
+        id_token          => $account_obj->{account_token},
+        name              => $account_obj->{name},
+        organization_name => $account_obj->{organization_name},
+        organization_url  => $account_obj->{organization_url},
+        url_slug          => $account_obj->{url_slug},
+        flags             => $account_obj->{flags},
+        public_profile    => $account_obj->{public_profile} ? 1 : 0,
+        created_on        => $account_obj->{created_on},
+        modified_on       => $account_obj->{modified_on},
+    }, 'NP::Model::Account';
+}
+
 sub _create_account_via_api {
     my ($self, $name) = @_;
 
@@ -114,15 +135,7 @@ sub _create_account_via_api {
         return undef;
     }
 
-    # Reload account from database with new ID
-    my $account = NP::Model->account->fetch(id => $data->{data}{account_id});
-    unless ($account) {
-        warn "Failed to reload account after creation, id=" . $data->{data}{account_id};
-        warn "Trace ID: " . $data->{trace_id};
-        die "Account creation failed - could not reload account";
-    }
-
-    return $account;
+    return $self->_account_from_api_response($data->{data}{account});
 }
 
 sub manage_dispatch {
@@ -471,21 +484,38 @@ sub render_account_edit {
     my $self = shift;
 
     my $account_token = $self->req_param('a');
-    my $account_id    = NP::Model::Account->token_id($account_token);
-    my $account = $account_id ? NP::Model->account->fetch(id => $account_id) : undef;
 
+    # Handle creating a new account
     if ($account_token eq 'new') {
-        $account = $self->_create_account_via_api($self->req_param('name'));
+        my $account = $self->_create_account_via_api($self->req_param('name'));
         unless ($account) {
             $self->tpl_param('error', 'Failed to create account. Please try again.');
-            return $self->render_account_form($account);
+            return $self->render_account_form(undef);
         }
+        return $self->render_account_form($account);
     }
 
-    return 404 unless $account;
-    return 403 unless $account->can_edit($self->user) or $account_token eq 'new';
+    # During PostgreSQL migration, we can't decode tokens or fetch from MySQL
+    # Instead, we'll get the account from the API after updates
+    return 404 unless $account_token;
 
-    my $old = $account->get_data_hash;
+    # Get account from API to populate the form before updates
+    my $result = get_account(
+        auth    => $self->plain_cookie($self->user_cookie_name),
+        account => $account_token,
+        context => $self->_get_request_context(),
+    );
+
+    if ($result->{error}) {
+        warn "Failed to get account via API: " . $result->{error};
+        warn "Trace ID: " . $result->{trace_id} if $result->{trace_id};
+        return 404;
+    }
+
+    my $account_obj = $result->{data}{account};
+    my $account = $self->_account_from_api_response($account_obj);
+
+    my $old = {%$account};  # Shallow copy for logging
 
     my %update_data = ();
     for my $f (qw(name organization_name organization_url url_slug)) {
@@ -522,12 +552,9 @@ sub render_account_edit {
             return $self->render_account_form($account);
         }
 
-        # Reload account to get updated values
-        $account = NP::Model->account->fetch(id => $account->id);
-        unless ($account) {
-            warn "Failed to reload account after update, id=" . $account->id;
-            die "Account update failed - could not reload account";
-        }
+        # Use the updated account returned by the API (no need for second call)
+        $account_obj = $data->{data}{account};
+        $account = $self->_account_from_api_response($account_obj);
 
         NP::Model::Log->log_changes($self->user, "account", "update account",
             $account, $old);
