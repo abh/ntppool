@@ -6,6 +6,7 @@ use base qw(Combust::RoseDB::Scaffold);
 my @excluded_tables = qw(
     log_scores_archive_status
     user_sessions
+    user_privileges
 );
 
 sub db_model_class {

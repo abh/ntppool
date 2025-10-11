@@ -9,6 +9,10 @@ use Math::Random::Secure qw(irand);
 use Combust::Template;
 use NP::Email  ();
 use NP::IntAPI qw(int_api);
+use NP::CAPI::Account qw(
+    get_account_users get_user_accounts get_account_invites
+    create_account update_account remove_user_from_account create_user_task
+);
 use JSON::XS   qw(encode_json decode_json);
 use Data::Dump qw(pp);
 use OpenTelemetry::Trace;
@@ -23,6 +27,102 @@ sub _get_request_context {
     my $self            = shift;
     my $x_forwarded_for = $self->request->header_in('X-Forwarded-For');
     return $x_forwarded_for ? {x_forwarded_for => $x_forwarded_for} : undef;
+}
+
+sub _account_users_via_api {
+    my ($self, $account) = @_;
+    my $cache_key = '_account_users_' . $account->id;
+    return $self->{$cache_key} if exists $self->{$cache_key};
+
+    my $result = get_account_users(account => $account->id_token);
+    return $self->{$cache_key} = [] if $result->{error};
+
+    # Convert API response to NP::Model::User objects
+    my @users;
+    for my $user_data (@{$result->{data}{users} || []}) {
+        my $user = NP::Model->user->fetch(id => $user_data->{user_id});
+        push @users, $user if $user;
+    }
+    return $self->{$cache_key} = \@users;
+}
+
+sub _user_accounts_via_api {
+    my ($self, $user) = @_;
+    my $cache_key = '_user_accounts_' . $user->id;
+    return $self->{$cache_key} if exists $self->{$cache_key};
+
+    my $result = get_user_accounts();
+    return $self->{$cache_key} = [] if $result->{error};
+
+    # Convert API response to NP::Model::Account objects
+    my @accounts;
+    for my $account_data (@{$result->{data}{accounts} || []}) {
+        my $account = NP::Model->account->fetch(id => $account_data->{account_id});
+        push @accounts, $account if $account;
+    }
+    return $self->{$cache_key} = \@accounts;
+}
+
+sub _account_invites_via_api {
+    my ($self, $account) = @_;
+    my $cache_key = '_account_invites_' . $account->id;
+    return $self->{$cache_key} if exists $self->{$cache_key};
+
+    my $result = get_account_invites(account => $account->id_token, for_user => 0);
+    return $self->{$cache_key} = [] if $result->{error};
+
+    # Convert API response to NP::Model::AccountInvite objects
+    my @invites;
+    for my $invite_data (@{$result->{data}{invites} || []}) {
+        my $invite = NP::Model->account_invite->fetch(id => $invite_data->{invite_id});
+        push @invites, $invite if $invite;
+    }
+    return $self->{$cache_key} = \@invites;
+}
+
+sub _user_invites_via_api {
+    my ($self, $user) = @_;
+    my $cache_key = '_user_invites_' . $user->id;
+    return $self->{$cache_key} if exists $self->{$cache_key};
+
+    my $result = get_account_invites(for_user => 1);
+    return $self->{$cache_key} = [] if $result->{error};
+
+    # Convert API response to NP::Model::AccountInvite objects
+    my @invites;
+    for my $invite_data (@{$result->{data}{invites} || []}) {
+        my $invite = NP::Model->account_invite->fetch(id => $invite_data->{invite_id});
+        push @invites, $invite if $invite;
+    }
+    return $self->{$cache_key} = \@invites;
+}
+
+sub _create_account_via_api {
+    my ($self, $name) = @_;
+
+    $name ||= $self->user->name || 'My Account';
+
+    my $data = create_account(
+        auth    => $self->plain_cookie($self->user_cookie_name),
+        context => $self->_get_request_context(),
+        name    => $name,
+    );
+
+    if ($data->{error}) {
+        warn "Failed to create account via API: " . $data->{error};
+        warn "Trace ID: " . $data->{trace_id} if $data->{trace_id};
+        return undef;
+    }
+
+    # Reload account from database with new ID
+    my $account = NP::Model->account->fetch(id => $data->{data}{account_id});
+    unless ($account) {
+        warn "Failed to reload account after creation, id=" . $data->{data}{account_id};
+        warn "Trace ID: " . $data->{trace_id};
+        die "Account creation failed - could not reload account";
+    }
+
+    return $account;
 }
 
 sub manage_dispatch {
@@ -42,23 +142,31 @@ sub manage_dispatch {
     # don't want to look for a default account
     if (($self->req_param('a') || '') eq 'new') {
         return 403 unless $self->check_auth_token;
-        $account = NP::Model->account->create(users => [$self->user]);
+
+        $account = $self->_create_account_via_api();
+        unless ($account) {
+            $self->tpl_param('error', 'Failed to create account. Please try again.');
+            return $self->redirect("/manage/");
+        }
     }
 
     $account = $self->current_account unless $account;
 
     unless ($account) {
 
-        my $invites = $self->user->pending_invites;
+        my $invites = $self->_user_invites_via_api($self->user);
         if ($invites && @$invites) {
             warn "has no account and there are pending invites...";
             return $self->redirect("/manage/account/invites/");
         }
 
-        $account = NP::Model->account->create(users => [$self->user]);
-        $account->name($self->user->name);
+        $account = $self->_create_account_via_api();
+        unless ($account) {
+            $self->tpl_param('error', 'Failed to create account. Please try again.');
+            return $self->redirect("/manage/");
+        }
+
         NP::Model::Log->log_changes($self->user, "account", "account created", $account);
-        $account->save();
     }
 
     # check access
@@ -117,17 +225,30 @@ sub manage_dispatch {
 
 sub remove_user_from_account {
     my ($self, $account, $user_id) = @_;
-    my $users = $account->users;
+    my $users = $self->_account_users_via_api($account);
     my ($user) = grep { $_->id == $user_id } @$users;
     return $self->render_users($account)
       unless $user;
 
+    my $data = remove_user_from_account(
+        auth       => $self->plain_cookie($self->user_cookie_name),
+        account    => $account->id_token,
+        context    => $self->_get_request_context(),
+        user_token => $user->id_token,
+    );
+
+    if ($data->{error}) {
+        warn "Failed to remove user from account via API: " . $data->{error};
+        warn "Trace ID: " . $data->{trace_id} if $data->{trace_id};
+        $self->tpl_param('error', 'Failed to remove user. Please try again.');
+        return $self->render_users($account);
+    }
+
     NP::Model::Log->log_changes($self->user, "account-users",
         sprintf("Removed user %s (%d)", $user->email, $user->id), $account,);
 
-    @$users = grep { $_->id != $user_id } @$users;
-    $account->users($users);
-    $account->save();
+    # Reload account after successful removal
+    $account = NP::Model->account->fetch(id => $account->id);
 
     my $param = {
         account      => $account,
@@ -281,7 +402,7 @@ sub render_user_invitations {
     my $invite = shift;
 
     my $user    = $self->user;
-    my $invites = $user->pending_invites;
+    my $invites = $self->_user_invites_via_api($user);
     if ($invite and !grep { $_->id == $invite->id } @$invites) {
         push @$invites, $invite;
     }
@@ -295,16 +416,11 @@ sub render_user_invitations {
 sub render_users {
     my ($self, $account) = @_;
 
-    my $invites = NP::Model->account_invite->get_account_invites(
-        query => [
-            status     => {ne => 'accepted'},
-            account_id => $account->id,
-        ],
-        sort_by => 'created_on desc'
-    );
+    my $invites = $self->_account_invites_via_api($account);
+    my $users   = $self->_account_users_via_api($account);
 
     $self->tpl_param('invites', $invites);
-    $self->tpl_param('users',   scalar $account->users);
+    $self->tpl_param('users',   $users);
 
     if ($self->user->is_staff) {
         my $logs = NP::Model->log->get_objects(
@@ -359,7 +475,11 @@ sub render_account_edit {
     my $account = $account_id ? NP::Model->account->fetch(id => $account_id) : undef;
 
     if ($account_token eq 'new') {
-        $account = NP::Model->account->create(users => [$self->user]);
+        $account = $self->_create_account_via_api($self->req_param('name'));
+        unless ($account) {
+            $self->tpl_param('error', 'Failed to create account. Please try again.');
+            return $self->render_account_form($account);
+        }
     }
 
     return 404 unless $account;
@@ -367,30 +487,47 @@ sub render_account_edit {
 
     my $old = $account->get_data_hash;
 
-    my %args = (public_profile => $self->req_param('public_profile') ? 1 : 0,);
-
-    my $changed = 0;
-
-    for my $f (qw(name organization_name organization_url url_slug public_profile)) {
-        my $v = defined $args{$f} ? $args{$f} : $self->req_param($f);
-        $v //= '';
+    my %update_data = ();
+    for my $f (qw(name organization_name organization_url url_slug)) {
+        my $v = $self->req_param($f) // '';
         $v =~ s/^\s+//;
         $v =~ s/\s+$//;
         $v = undef if ($f eq 'url_slug' and $v eq '');
-        if ($v ne $account->$f()) {
-            $changed = 1;
-            $account->$f($v);
+        if (defined($v) && $v ne ($account->$f() // '')) {
+            $update_data{$f} = $v;
         }
     }
 
-    unless ($account->validate) {
-        my $errors = $account->validation_errors;
-        $self->tpl_param('errors', $errors);
-        return $self->render_account_form($account);
+    # Handle boolean separately
+    my $public_profile = $self->req_param('public_profile') ? JSON::XS::true : JSON::XS::false;
+    if ($public_profile != ($account->public_profile ? JSON::XS::true : JSON::XS::false)) {
+        $update_data{public_profile} = $public_profile;
     }
 
-    if ($changed) {
-        $account->save(changes_only => 1);
+    if (%update_data) {
+        my $data = update_account(
+            auth    => $self->plain_cookie($self->user_cookie_name),
+            account => $account->id_token,
+            context => $self->_get_request_context(),
+            %update_data,
+        );
+
+        if ($data->{error}) {
+            warn "Failed to update account via API: " . $data->{error};
+            warn "Trace ID: " . $data->{trace_id} if $data->{trace_id};
+
+            # Extract user-friendly error message if available
+            my $error_msg = $data->{error} || 'Failed to update account. Please try again.';
+            $self->tpl_param('error', $error_msg);
+            return $self->render_account_form($account);
+        }
+
+        # Reload account to get updated values
+        $account = NP::Model->account->fetch(id => $account->id);
+        unless ($account) {
+            warn "Failed to reload account after update, id=" . $account->id;
+            die "Account update failed - could not reload account";
+        }
 
         NP::Model::Log->log_changes($self->user, "account", "update account",
             $account, $old);
@@ -446,12 +583,19 @@ sub render_download {
     }
     else {
         if ($self->request->method eq 'post') {
-            my $task = NP::Model->user_task->create(
-                user   => $user->id,
-                task   => 'download',
-                status => '',
+            my $data = create_user_task(
+                auth      => $self->plain_cookie($self->user_cookie_name),
+                context   => $self->_get_request_context(),
+                task_type => 'download',
+                status    => '',
             );
-            $task->save;
+
+            if ($data->{error}) {
+                warn "Failed to create download task via API: " . $data->{error};
+                warn "Trace ID: " . $data->{trace_id} if $data->{trace_id};
+                $self->tpl_param('error', 'Failed to create download request. Please try again.');
+                return OK, $self->evaluate_template('tpl/user/download.html');
+            }
 
             # to a GET request so reloading the page works
             return $self->redirect($self->manage_url('/manage/account/download'));
@@ -481,9 +625,11 @@ sub render_user_delete {
     # todo:
     # - check there are no active servers on the account
     # - or that there are an alternate user
-    for my $a ($user->accounts) {
-        my @users = grep { $_->id != $user->id && not $_->deletion_on } @{$a->users};
-        next if @users;
+    my $accounts = $self->_user_accounts_via_api($user);
+    for my $a (@$accounts) {
+        my $users = $self->_account_users_via_api($a);
+        my @other_users = grep { $_->id != $user->id && not $_->deletion_on } @$users;
+        next if @other_users;
         for my $s ($a->servers) {
             unless ($s->deletion_on) {
                 warn "account has active servers";
@@ -518,15 +664,24 @@ sub render_user_delete {
         $user->deletion_on('now');
         $user->save;
 
-        my $task = NP::Model->user_task->create(
-            user       => $user->id,
-            task       => 'delete',
-            status     => '',
-            execute_on => DateTime->now()->add(days => 7),
-        );
-        $task->save;
-
         $db->commit or die "could not mark user deleted";
+
+        # Create delete task via API (after transaction commit)
+        my $execute_on_unix = DateTime->now()->add(days => 7)->epoch;
+        my $data = create_user_task(
+            auth            => $self->plain_cookie($self->user_cookie_name),
+            context         => $self->_get_request_context(),
+            task_type       => 'delete',
+            status          => '',
+            execute_on_unix => $execute_on_unix,
+        );
+
+        if ($data->{error}) {
+            warn "Failed to create delete task via API: " . $data->{error};
+            warn "Trace ID: " . $data->{trace_id} if $data->{trace_id};
+            # Don't fail the deletion, just log the error
+            # The user is already marked for deletion
+        }
 
         my $param = {
             user     => $user,
