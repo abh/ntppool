@@ -22,6 +22,7 @@ our @EXPORT_OK = qw(
     get_account_users
     get_user_accounts
     get_account_invites
+    get_account
 );
 
 =head1 NAME
@@ -30,7 +31,7 @@ NP::CAPI::Account - ConnectRPC client for AccountService
 
 =head1 SYNOPSIS
 
-    use NP::CAPI::Account qw(get_account_status process_auth0_login validate_session delete_session create_account update_account remove_user_from_account create_user_task get_account_server_verification_status get_accounts_to_notify get_account_users get_user_accounts get_account_invites);
+    use NP::CAPI::Account qw(get_account_status process_auth0_login validate_session delete_session create_account update_account remove_user_from_account create_user_task get_account_server_verification_status get_accounts_to_notify get_account_users get_user_accounts get_account_invites get_account);
     # GetAccountStatus returns the current monitor eligibility and status for an account.
 Authentication is handled by middleware - the account is extracted from the session context.
     my $result = get_account_status(
@@ -143,6 +144,15 @@ Authentication: Required via session middleware (sessions.GetUser).
 Authentication: Required via session middleware.
 Authorization: Can view invites sent to you or for accounts you manage.
     my $result = get_account_invites(
+        auth    => $user_token,
+        account => $account_token,
+        context => $request_context,
+    );
+
+    # GetAccount returns full account information.
+Authentication: Required via session middleware (sessions.GetAccount).
+Authorization: User must have access to the account.
+    my $result = get_account(
         auth    => $user_token,
         account => $account_token,
         context => $request_context,
@@ -550,12 +560,35 @@ Hashref with structure:
         status_line  => "200 OK",    # HTTP status text
         connect_code => undef,       # ConnectRPC error code (or undef)
         data         => {            # Response data
-            account_id => ...,  # int - account_id is the numeric ID of the created account
-            account_token => ...,  # string - account_token is the id_token for the account
+            account => {
+                account_id => ...,  # int - account_id is the numeric ID of the account
+                account_token => ...,  # string - account_token is the id_token for the account
+                name => ...,  # string - name is the account name
+                organization_name => ...,  # string - organization_name is the organization name (if set)
+                organization_url => ...,  # string - organization_url is the organization URL (if set)
+                public_profile => ...,  # bool - public_profile indicates if the account profile is public
+                url_slug => ...,  # string - url_slug is the URL slug for the account (if set)
+                flags => ...,  # string - flags is the JSON flags configuration for the account
+                created_on => ...,  # string - created_on is when the account was created (RFC3339 format)
+                modified_on => ...,  # string - modified_on is when the account was last modified (RFC3339 format)
+            },  # hashref (Account) - account is the complete account object
         },
         error        => undef,       # Error message (if any)
         trace_id     => "...",       # OpenTelemetry trace ID
     }
+
+B<Response Data Structure:>
+
+The C<data> field contains:
+
+=over 4
+
+=item * B<account> (hashref (Account))
+
+account is the complete account object
+
+
+=back
 
 B<ConnectRPC Error Codes:>
 
@@ -624,10 +657,40 @@ Hashref with structure:
         connect_code => undef,       # ConnectRPC error code (or undef)
         data         => {            # Response data
             success => ...,  # bool - success indicates if the update was successful
+            account => {
+                account_id => ...,  # int - account_id is the numeric ID of the account
+                account_token => ...,  # string - account_token is the id_token for the account
+                name => ...,  # string - name is the account name
+                organization_name => ...,  # string - organization_name is the organization name (if set)
+                organization_url => ...,  # string - organization_url is the organization URL (if set)
+                public_profile => ...,  # bool - public_profile indicates if the account profile is public
+                url_slug => ...,  # string - url_slug is the URL slug for the account (if set)
+                flags => ...,  # string - flags is the JSON flags configuration for the account
+                created_on => ...,  # string - created_on is when the account was created (RFC3339 format)
+                modified_on => ...,  # string - modified_on is when the account was last modified (RFC3339 format)
+            },  # hashref (Account) - account is the updated account object
         },
         error        => undef,       # Error message (if any)
         trace_id     => "...",       # OpenTelemetry trace ID
     }
+
+B<Response Data Structure:>
+
+The C<data> field contains:
+
+=over 4
+
+=item * B<success> (bool)
+
+success indicates if the update was successful
+
+
+=item * B<account> (hashref (Account))
+
+account is the updated account object
+
+
+=back
 
 B<ConnectRPC Error Codes:>
 
@@ -1220,6 +1283,95 @@ sub get_account_invites {
     return connect_rpc(
         service     => 'ntppool.account.v1.AccountService',
         method      => 'GetAccountInvites',
+        request     => \%request,
+        %args  # Pass through auth, account, context
+    );
+}
+
+
+=head2 get_account
+
+GetAccount returns full account information.
+Authentication: Required via session middleware (sessions.GetAccount).
+Authorization: User must have access to the account.
+
+B<Arguments:>
+
+    my $result = get_account(
+        auth    => $user_token,      # Optional: User/session authentication token
+        account => $account_token,   # Optional: Account selection token
+        context => $request_context, # Optional: Request context for X-Forwarded-For
+    );
+
+B<Returns:>
+
+Hashref with structure:
+
+    {
+        code         => 200,         # HTTP status code
+        status_line  => "200 OK",    # HTTP status text
+        connect_code => undef,       # ConnectRPC error code (or undef)
+        data         => {            # Response data
+            account => {
+                account_id => ...,  # int - account_id is the numeric ID of the account
+                account_token => ...,  # string - account_token is the id_token for the account
+                name => ...,  # string - name is the account name
+                organization_name => ...,  # string - organization_name is the organization name (if set)
+                organization_url => ...,  # string - organization_url is the organization URL (if set)
+                public_profile => ...,  # bool - public_profile indicates if the account profile is public
+                url_slug => ...,  # string - url_slug is the URL slug for the account (if set)
+                flags => ...,  # string - flags is the JSON flags configuration for the account
+                created_on => ...,  # string - created_on is when the account was created (RFC3339 format)
+                modified_on => ...,  # string - modified_on is when the account was last modified (RFC3339 format)
+            },  # hashref (Account) - account is the complete account object
+        },
+        error        => undef,       # Error message (if any)
+        trace_id     => "...",       # OpenTelemetry trace ID
+    }
+
+B<Response Data Structure:>
+
+The C<data> field contains:
+
+=over 4
+
+=item * B<account> (hashref (Account))
+
+account is the complete account object
+
+
+=back
+
+B<ConnectRPC Error Codes:>
+
+    unauthenticated, permission_denied, internal, invalid_argument, etc.
+
+B<Example:>
+
+    my $result = get_account(
+        auth    => $self->plain_cookie($self->user_cookie_name),
+        account => $self->current_account->id_token,
+        context => $self->_get_request_context(),
+    );
+
+    if ($result->{error}) {
+        warn "Error: $result->{error}";
+    } else {
+        my $data = $result->{data};
+        # Use response fields...
+    }
+
+=cut
+
+sub get_account {
+    my %args = @_;
+
+    # Extract request fields from args
+    my %request = ();
+
+    return connect_rpc(
+        service     => 'ntppool.account.v1.AccountService',
+        method      => 'GetAccount',
         request     => \%request,
         %args  # Pass through auth, account, context
     );
