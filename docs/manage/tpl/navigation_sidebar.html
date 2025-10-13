@@ -26,7 +26,7 @@
             <b>[% account.account_id ? account.name : "New account" | html %]</b>
         </a>
         <div class="dropdown-menu">
-            [% FOR a = combust.user_accounts_api %]
+            [% FOR a = user_accounts_api %]
             <a class="dropdown-item [% account.account_id == a.account_id ? 'active' : '' %]"
                 href="[% combust.current_url(a => a.account_token) | html %]">[% a.name | html %]</a>
             [% END %]
