@@ -100,11 +100,15 @@ sub current_account {
     # 2. Resolve account_token (if provided) or use default
     # 3. Check permissions
     # 4. Return account context + permissions
-    my $result = validate_session(
+    my $account_token = $self->req_param('a');
+    my %params = (
         session_token => $session_token,
-        account_token => $self->req_param('a'),           # Optional ?a= parameter
         context       => $self->_get_request_context(),
     );
+    # Only include account_token if defined (avoid undef causing parameter shift)
+    $params{account_token} = $account_token if defined $account_token;
+
+    my $result = validate_session(%params);
 
     # Handle errors (invalid session, inaccessible account, etc.)
     if ($result->{error}) {
