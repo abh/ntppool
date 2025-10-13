@@ -23,6 +23,8 @@ our @EXPORT_OK = qw(
     get_user_accounts
     get_account_invites
     get_account
+    can_delete_account
+    check_user_deletion_eligibility
 );
 
 =head1 NAME
@@ -31,7 +33,7 @@ NP::CAPI::Account - ConnectRPC client for AccountService
 
 =head1 SYNOPSIS
 
-    use NP::CAPI::Account qw(get_account_status process_auth0_login validate_session delete_session create_account update_account remove_user_from_account create_user_task get_account_server_verification_status get_accounts_to_notify get_account_users get_user_accounts get_account_invites get_account);
+    use NP::CAPI::Account qw(get_account_status process_auth0_login validate_session delete_session create_account update_account remove_user_from_account create_user_task get_account_server_verification_status get_accounts_to_notify get_account_users get_user_accounts get_account_invites get_account can_delete_account check_user_deletion_eligibility);
     # GetAccountStatus returns the current monitor eligibility and status for an account.
 Authentication is handled by middleware - the account is extracted from the session context.
     my $result = get_account_status(
@@ -153,6 +155,25 @@ Authorization: Can view invites sent to you or for accounts you manage.
 Authentication: Required via session middleware (sessions.GetAccount).
 Authorization: User must have access to the account.
     my $result = get_account(
+        auth    => $user_token,
+        account => $account_token,
+        context => $request_context,
+    );
+
+    # CanDeleteAccount checks if an account can be deleted.
+Authentication: Required via session middleware.
+Authorization: User must have access to the account being checked.
+    my $result = can_delete_account(
+        auth    => $user_token,
+        account => $account_token,
+        context => $request_context,
+    );
+
+    # CheckUserDeletionEligibility checks if a user can be deleted.
+Validates all accounts owned solely by the user and returns blocker details.
+Authentication: Required via session middleware.
+Authorization: User must be the target user or staff.
+    my $result = check_user_deletion_eligibility(
         auth    => $user_token,
         account => $account_token,
         context => $request_context,
@@ -404,6 +425,10 @@ B<Arguments:>
         session_token => $value,       # string - session_token is the session token from the npuid cookie.
  Format: "nps_{key}_{checksum}" or "nps_{key}_{checksum};{timestamp}"
  Required.
+        account_token => $value,       # string - account_token optionally specifies which account to use (from ?a= parameter)
+ If provided, validates user has access to this account
+ If omitted, returns user's default account (first account in user's list)
+ Returns error if account_token specified but user lacks access
     );
 
 B<Returns:>
@@ -424,10 +449,84 @@ Hashref with structure:
  Only present when valid is true.
             user_token => ...,  # string - user_token is the user's id_token for identification.
  Only present when valid is true.
+            account => {
+                account_id => ...,  # int - Core database fields
+                account_token => ...,  # string
+                name => ...,  # string
+                organization_name => ...,  # string
+                organization_url => ...,  # string
+                url_slug => ...,  # string
+                public_profile => ...,  # bool
+                flags => ...,  # string
+                created_on => ...,  # string
+                modified_on => ...,  # string
+                url => ...,  # string - Computed fields (always included)
+                public_url => ...,  # string
+                display_name => ...,  # string
+            },  # hashref (AccountContext) - account is the current account context (specified or default)
+ Omitted if user has no accounts or account is inaccessible
+            permissions => {
+                can_edit => ...,  # bool - can_edit: User is in account or is staff
+                can_view => ...,  # bool - can_view: User is in account, is staff, or is monitor admin
+                can_add_servers => ...,  # bool - can_add_servers: Checks server verification status
+ - Allow if no servers yet
+ - Block if 2+ unverified servers
+ - Otherwise allow
+            },  # hashref (AccountPermissions) - permissions for the authenticated user on this account
+ Only present if account is present
         },
         error        => undef,       # Error message (if any)
         trace_id     => "...",       # OpenTelemetry trace ID
     }
+
+B<Response Data Structure:>
+
+The C<data> field contains:
+
+=over 4
+
+=item * B<valid> (bool)
+
+valid indicates if the session token is valid and active.
+
+
+=item * B<user_id> (int)
+
+user_id is the numeric ID of the authenticated user.
+ Only present when valid is true.
+
+
+=item * B<email> (string)
+
+email is the user's email address.
+ Only present when valid is true.
+
+
+=item * B<username> (string)
+
+username is the user's username.
+ Only present when valid is true.
+
+
+=item * B<user_token> (string)
+
+user_token is the user's id_token for identification.
+ Only present when valid is true.
+
+
+=item * B<account> (hashref (AccountContext))
+
+account is the current account context (specified or default)
+ Omitted if user has no accounts or account is inaccessible
+
+
+=item * B<permissions> (hashref (AccountPermissions))
+
+permissions for the authenticated user on this account
+ Only present if account is present
+
+
+=back
 
 B<ConnectRPC Error Codes:>
 
@@ -451,11 +550,19 @@ B<Example:>
 =cut
 
 sub validate_session {
+    # Validate even number of arguments
+    if (@_ % 2 != 0) {
+        warn "validate_session called with odd number of arguments (" . scalar(@_) . " args)";
+        warn "Arguments: " . join(", ", map { defined($_) ? "'$_'" : 'undef' } @_);
+        die "validate_session requires key-value pairs (even number of arguments)";
+    }
+
     my %args = @_;
 
     # Extract request fields from args
     my %request = ();
     $request{'session_token'} = delete $args{'session_token'} if exists $args{'session_token'};
+    $request{'account_token'} = delete $args{'account_token'} if exists $args{'account_token'};
 
     return connect_rpc(
         service     => 'ntppool.account.v1.AccountService',
@@ -1301,6 +1408,15 @@ B<Arguments:>
         auth    => $user_token,      # Optional: User/session authentication token
         account => $account_token,   # Optional: Account selection token
         context => $request_context, # Optional: Request context for X-Forwarded-For
+        mode => $value,       # string (enum: AccountDataMode) - mode determines what data to include (defaults to BASIC)
+        include_permissions => $value,       # bool - Custom flags for fine-grained control (override mode defaults)
+        include_users => $value,       # bool
+        include_subscriptions => $value,       # bool
+        include_monitor_config => $value,       # bool
+        include_servers_summary => $value,       # bool
+        include_servers => $value,       # bool
+        include_vendor_zones => $value,       # bool
+        include_monitors => $value,       # bool
     );
 
 B<Returns:>
@@ -1313,17 +1429,99 @@ Hashref with structure:
         connect_code => undef,       # ConnectRPC error code (or undef)
         data         => {            # Response data
             account => {
-                account_id => ...,  # int - account_id is the numeric ID of the account
-                account_token => ...,  # string - account_token is the id_token for the account
-                name => ...,  # string - name is the account name
-                organization_name => ...,  # string - organization_name is the organization name (if set)
-                organization_url => ...,  # string - organization_url is the organization URL (if set)
-                public_profile => ...,  # bool - public_profile indicates if the account profile is public
-                url_slug => ...,  # string - url_slug is the URL slug for the account (if set)
-                flags => ...,  # string - flags is the JSON flags configuration for the account
-                created_on => ...,  # string - created_on is when the account was created (RFC3339 format)
-                modified_on => ...,  # string - modified_on is when the account was last modified (RFC3339 format)
-            },  # hashref (Account) - account is the complete account object
+                account_id => ...,  # int - Core database fields
+                account_token => ...,  # string
+                name => ...,  # string
+                organization_name => ...,  # string
+                organization_url => ...,  # string
+                url_slug => ...,  # string
+                public_profile => ...,  # bool
+                flags => ...,  # string
+                created_on => ...,  # string
+                modified_on => ...,  # string
+                url => ...,  # string - Computed fields (always included)
+                public_url => ...,  # string
+                display_name => ...,  # string
+            },  # hashref (AccountContext) - Core account with computed fields (always included)
+            permissions => {
+                can_edit => ...,  # bool - can_edit: User is in account or is staff
+                can_view => ...,  # bool - can_view: User is in account, is staff, or is monitor admin
+                can_add_servers => ...,  # bool - can_add_servers: Checks server verification status
+ - Allow if no servers yet
+ - Block if 2+ unverified servers
+ - Otherwise allow
+            },  # hashref (AccountPermissions) - Optional fields (based on mode or custom flags)
+            users => [
+            {
+                user_id => ...,  # int - user_id is the numeric ID of the user
+                user_token => ...,  # string - user_token is the id_token for the user
+                email => ...,  # string - email is the user's email address
+                username => ...,  # string - username is the user's username
+                public_profile => ...,  # bool - public_profile indicates if the user profile is public
+                deletion_on => ...,  # string - deletion_on is when the user is scheduled for deletion (if set)
+            },
+            # ... more items
+        ],  # arrayref[hashref (AccountUser)]
+            subscriptions => [
+            {
+                subscription_id => ...,  # int
+                stripe_subscription_id => ...,  # string
+                status => ...,  # string
+                live_subscription => ...,  # bool
+                created_on => ...,  # string
+                canceled_at => ...,  # string
+            },
+            # ... more items
+        ],  # arrayref[hashref (AccountSubscription)]
+            monitor_config => {
+                monitor_enabled => ...,  # bool
+                monitor_limit => ...,  # int
+                monitors_per_server_limit => ...,  # int
+            },  # hashref (MonitorConfig)
+            servers_summary => {
+                total_servers => ...,  # int
+                active_servers => ...,  # int
+                deleted_servers => ...,  # int
+                bad_servers => ...,  # int
+            },  # hashref (ServersSummary)
+            servers => [
+            {
+                id => ...,  # int
+                ip => ...,  # string
+                hostname => ...,  # string
+                ip_version => ...,  # int
+                stratum => ...,  # int
+                in_pool => ...,  # bool
+                netspeed => ...,  # int
+                score_raw => ...,  # number
+                deletion_on => ...,  # string
+                verified => ...,  # bool
+                verified_on => ...,  # string
+                zones => ...,  # string
+                urls => ...,  # string
+                created_on => ...,  # string
+                modified_on => ...,  # string
+            },
+            # ... more items
+        ],  # arrayref[hashref (ServerDetail)]
+            vendor_zones => [
+            {
+                vendor_zone_id => ...,  # int
+                zone_name => ...,  # string
+                status => ...,  # string
+            },
+            # ... more items
+        ],  # arrayref[hashref (VendorZone)]
+            monitors => [
+            {
+                monitor_id => ...,  # int
+                ip => ...,  # string
+                hostname => ...,  # string
+                status => ...,  # string
+                created_on => ...,  # string
+            },
+            # ... more items
+        ],  # arrayref[hashref (Monitor)]
         },
         error        => undef,       # Error message (if any)
         trace_id     => "...",       # OpenTelemetry trace ID
@@ -1335,9 +1533,35 @@ The C<data> field contains:
 
 =over 4
 
-=item * B<account> (hashref (Account))
+=item * B<account> (hashref (AccountContext))
 
-account is the complete account object
+Core account with computed fields (always included)
+
+
+=item * B<permissions> (hashref (AccountPermissions))
+
+Optional fields (based on mode or custom flags)
+
+
+=item * B<users> (arrayref[hashref (AccountUser)])
+
+
+=item * B<subscriptions> (arrayref[hashref (AccountSubscription)])
+
+
+=item * B<monitor_config> (hashref (MonitorConfig))
+
+
+=item * B<servers_summary> (hashref (ServersSummary))
+
+
+=item * B<servers> (arrayref[hashref (ServerDetail)])
+
+
+=item * B<vendor_zones> (arrayref[hashref (VendorZone)])
+
+
+=item * B<monitors> (arrayref[hashref (Monitor)])
 
 
 =back
@@ -1368,10 +1592,224 @@ sub get_account {
 
     # Extract request fields from args
     my %request = ();
+    $request{'mode'} = delete $args{'mode'} if exists $args{'mode'};
+    $request{'include_permissions'} = delete $args{'include_permissions'} if exists $args{'include_permissions'};
+    $request{'include_users'} = delete $args{'include_users'} if exists $args{'include_users'};
+    $request{'include_subscriptions'} = delete $args{'include_subscriptions'} if exists $args{'include_subscriptions'};
+    $request{'include_monitor_config'} = delete $args{'include_monitor_config'} if exists $args{'include_monitor_config'};
+    $request{'include_servers_summary'} = delete $args{'include_servers_summary'} if exists $args{'include_servers_summary'};
+    $request{'include_servers'} = delete $args{'include_servers'} if exists $args{'include_servers'};
+    $request{'include_vendor_zones'} = delete $args{'include_vendor_zones'} if exists $args{'include_vendor_zones'};
+    $request{'include_monitors'} = delete $args{'include_monitors'} if exists $args{'include_monitors'};
 
     return connect_rpc(
         service     => 'ntppool.account.v1.AccountService',
         method      => 'GetAccount',
+        request     => \%request,
+        %args  # Pass through auth, account, context
+    );
+}
+
+
+=head2 can_delete_account
+
+CanDeleteAccount checks if an account can be deleted.
+Authentication: Required via session middleware.
+Authorization: User must have access to the account being checked.
+
+B<Arguments:>
+
+    my $result = can_delete_account(
+        auth    => $user_token,      # Optional: User/session authentication token
+        account => $account_token,   # Optional: Account selection token
+        context => $request_context, # Optional: Request context for X-Forwarded-For
+        account_token => $value,       # string - account_token optionally specifies which account to check
+ If omitted, checks the authenticated user's current account
+    );
+
+B<Returns:>
+
+Hashref with structure:
+
+    {
+        code         => 200,         # HTTP status code
+        status_line  => "200 OK",    # HTTP status text
+        connect_code => undef,       # ConnectRPC error code (or undef)
+        data         => {            # Response data
+            can_delete => ...,  # bool - can_delete indicates if the account can be deleted
+            blockers => [...]  # arrayref[string],  # arrayref[string] - blockers lists reasons why deletion is blocked (empty if can_delete is true)
+ User-friendly messages suitable for UI display
+            details => {
+                active_servers_count => ...,  # int - active_servers_count is the number of servers not scheduled for deletion
+                vendor_zones_count => ...,  # int - vendor_zones_count is the number of vendor zones (any status)
+                active_monitors_count => ...,  # int - active_monitors_count is the number of monitors with status != 'deleted'
+                has_other_users => ...,  # bool - has_other_users indicates if account has other non-deleted users
+            },  # hashref (DeletionBlockDetails) - details provides structured information about deletion blockers
+        },
+        error        => undef,       # Error message (if any)
+        trace_id     => "...",       # OpenTelemetry trace ID
+    }
+
+B<Response Data Structure:>
+
+The C<data> field contains:
+
+=over 4
+
+=item * B<can_delete> (bool)
+
+can_delete indicates if the account can be deleted
+
+
+=item * B<blockers> (arrayref[string])
+
+blockers lists reasons why deletion is blocked (empty if can_delete is true)
+ User-friendly messages suitable for UI display
+
+
+=item * B<details> (hashref (DeletionBlockDetails))
+
+details provides structured information about deletion blockers
+
+
+=back
+
+B<ConnectRPC Error Codes:>
+
+    unauthenticated, permission_denied, internal, invalid_argument, etc.
+
+B<Example:>
+
+    my $result = can_delete_account(
+        auth    => $self->plain_cookie($self->user_cookie_name),
+        account => $self->current_account->id_token,
+        context => $self->_get_request_context(),
+    );
+
+    if ($result->{error}) {
+        warn "Error: $result->{error}";
+    } else {
+        my $data = $result->{data};
+        # Use response fields...
+    }
+
+=cut
+
+sub can_delete_account {
+    my %args = @_;
+
+    # Extract request fields from args
+    my %request = ();
+    $request{'account_token'} = delete $args{'account_token'} if exists $args{'account_token'};
+
+    return connect_rpc(
+        service     => 'ntppool.account.v1.AccountService',
+        method      => 'CanDeleteAccount',
+        request     => \%request,
+        %args  # Pass through auth, account, context
+    );
+}
+
+
+=head2 check_user_deletion_eligibility
+
+CheckUserDeletionEligibility checks if a user can be deleted.
+Validates all accounts owned solely by the user and returns blocker details.
+Authentication: Required via session middleware.
+Authorization: User must be the target user or staff.
+
+B<Arguments:>
+
+    my $result = check_user_deletion_eligibility(
+        auth    => $user_token,      # Optional: User/session authentication token
+        account => $account_token,   # Optional: Account selection token
+        context => $request_context, # Optional: Request context for X-Forwarded-For
+        user_token => $value,       # string - user_token optionally specifies which user to check
+ If omitted, checks the authenticated user
+    );
+
+B<Returns:>
+
+Hashref with structure:
+
+    {
+        code         => 200,         # HTTP status code
+        status_line  => "200 OK",    # HTTP status text
+        connect_code => undef,       # ConnectRPC error code (or undef)
+        data         => {            # Response data
+            can_delete => ...,  # bool - can_delete indicates if the user can be deleted
+            blockers => [...]  # arrayref[string],  # arrayref[string] - blockers lists user-friendly messages for UI display
+            affected_accounts => [
+            {
+                account_id => ...,  # int
+                account_token => ...,  # string
+                account_name => ...,  # string
+                user_is_sole_owner => ...,  # bool - True if user is the only non-deleted user on this account
+                active_servers_count => ...,  # int - Blocker details (only populated if user_is_sole_owner = true)
+                vendor_zones_count => ...,  # int
+                active_monitors_count => ...,  # int
+            },
+            # ... more items
+        ],  # arrayref[hashref (AccountDeletionStatus)] - affected_accounts lists all accounts where user is sole owner
+        },
+        error        => undef,       # Error message (if any)
+        trace_id     => "...",       # OpenTelemetry trace ID
+    }
+
+B<Response Data Structure:>
+
+The C<data> field contains:
+
+=over 4
+
+=item * B<can_delete> (bool)
+
+can_delete indicates if the user can be deleted
+
+
+=item * B<blockers> (arrayref[string])
+
+blockers lists user-friendly messages for UI display
+
+
+=item * B<affected_accounts> (arrayref[hashref (AccountDeletionStatus)])
+
+affected_accounts lists all accounts where user is sole owner
+
+
+=back
+
+B<ConnectRPC Error Codes:>
+
+    unauthenticated, permission_denied, internal, invalid_argument, etc.
+
+B<Example:>
+
+    my $result = check_user_deletion_eligibility(
+        auth    => $self->plain_cookie($self->user_cookie_name),
+        account => $self->current_account->id_token,
+        context => $self->_get_request_context(),
+    );
+
+    if ($result->{error}) {
+        warn "Error: $result->{error}";
+    } else {
+        my $data = $result->{data};
+        # Use response fields...
+    }
+
+=cut
+
+sub check_user_deletion_eligibility {
+    my %args = @_;
+
+    # Extract request fields from args
+    my %request = ();
+    $request{'user_token'} = delete $args{'user_token'} if exists $args{'user_token'};
+
+    return connect_rpc(
+        service     => 'ntppool.account.v1.AccountService',
+        method      => 'CheckUserDeletionEligibility',
         request     => \%request,
         %args  # Pass through auth, account, context
     );

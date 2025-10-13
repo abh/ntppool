@@ -181,7 +181,8 @@ sub manage_dispatch {
             return $self->redirect("/manage/");
         }
 
-        NP::Model::Log->log_changes($self->user, "account", "account created", $account);
+        # Note: Logging moved to Go API (CreateAccount service)
+        # During PostgreSQL migration, cannot log to MySQL with account_id that only exists in PostgreSQL
     }
 
     # check access
@@ -260,8 +261,8 @@ sub remove_user_from_account {
         return $self->render_users($account);
     }
 
-    NP::Model::Log->log_changes($self->user, "account-users",
-        sprintf("Removed user %s (%d)", $user->{email}, $user->{user_id}), $account,);
+    # Note: Logging moved to Go API (RemoveUserFromAccount service)
+    # During PostgreSQL migration, cannot log to MySQL with account_id that only exists in PostgreSQL
 
     # Note: No need to reload during PostgreSQL migration
     # Account data already in hashref from API
@@ -332,8 +333,8 @@ sub handle_invitation {
     $invite->account->save
       or return $self->render_invite_error("Error saving database update");
 
-    NP::Model::Log->log_changes($user, "account-users", "Accepted invitation to account",
-        $invite->account);
+    # Note: Logging moved to Go API (accept invitation endpoint - to be implemented)
+    # During PostgreSQL migration, cannot log to MySQL with account_id that only exists in PostgreSQL
     $db->commit or return $self->render_invite_error("database commit error");
 
     # we accepted an invite for a new user that didn't have a account yet, so
@@ -394,8 +395,8 @@ sub render_users_invite {
     }
     $invite->save;
 
-    NP::Model::Log->log_changes($self->user, "invitation",
-        "Sending invitation to ${email_address}", $account,);
+    # Note: Logging moved to Go API (send invitation endpoint - to be implemented)
+    # During PostgreSQL migration, cannot log to MySQL with account_id that only exists in PostgreSQL
 
     my $param = {invite => $invite};
 
@@ -573,8 +574,8 @@ sub render_account_edit {
         $account_obj = $data->{data}{account};
         $account     = $self->_account_from_api_response($account_obj);
 
-        NP::Model::Log->log_changes($self->user, "account", "update account",
-            $account, $old);
+        # Note: Logging moved to Go API (UpdateAccount service)
+        # During PostgreSQL migration, cannot log to MySQL with account_id that only exists in PostgreSQL
     }
 
     return $self->render_account_form($account);
