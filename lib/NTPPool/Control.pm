@@ -361,7 +361,7 @@ sub manage_url {
     my $args = shift || {};
     if ($self->user and !$args->{a}) {
         my $account = $self->can('current_account') && $self->current_account;
-        $args->{a} = $account->id_token() if $account;
+        $args->{a} = $account->{account_token} if $account;
     }
 
     return $self->_url('manage', $url, $args);

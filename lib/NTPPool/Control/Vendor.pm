@@ -406,7 +406,7 @@ sub render_subscription {
     my $self = shift;
 
     my $account = $self->current_account;
-    return FORBIDDEN unless $account && $account->can_edit($self->user);
+    return FORBIDDEN unless $account && $account->{_permissions}{can_edit};
 
     my $id = $self->_get_id;
     my $vz = $id && NP::Model->vendor_zone->fetch(id => $id);
@@ -520,7 +520,7 @@ sub render_billing {
     my $self = shift;
 
     my $account = $self->current_account;
-    return FORBIDDEN unless $account && $account->can_edit($self->user);
+    return FORBIDDEN unless $account && $account->{_permissions}{can_edit};
 
     my $return_url = $self->manage_url('/manage/vendor', {a => $account->id_token});
 

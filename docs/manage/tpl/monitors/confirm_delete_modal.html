@@ -13,7 +13,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <form class="d-inline"
-                      hx-post="/manage/monitors/monitor/delete?a=[% combust.current_account.id_token %]"
+                      hx-post="/manage/monitors/monitor/delete?a=[% combust.current_account.account_token %]"
                       hx-target="#delete-result"
                       hx-swap="innerHTML">
                     <input type="hidden" name="auth_token" value="[% combust.auth_token %]">

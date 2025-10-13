@@ -8,8 +8,8 @@
 
 [% last_account_id = 0 %]
 [% FOR vz = pending_zones %]
-[% IF last_account_id != vz.account.id;
-   last_account_id = vz.account.id
+[% IF last_account_id != vz.account.account_id;
+   last_account_id = vz.account.account_id
 %]
 
 

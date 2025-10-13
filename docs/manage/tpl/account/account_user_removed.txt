@@ -6,7 +6,7 @@ This is to let you know that the user [% user_removed.email %]
 has been removed from the account team for
 
    [% account.name %]
-   (account id #[% account.id_token %])
+   (account id #[% account.account_token %])
 
 If this was in error or otherwise unexpected, please let us
 know by replying to this email.
@@ -14,5 +14,5 @@ know by replying to this email.
 
 NTP Pool team
 
--- 
+--
 [% config.base_url('ntppool') %]/

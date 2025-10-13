@@ -1,6 +1,6 @@
 <div id="monitor-config-display" class="card">
     <div class="card-body">
-        <form hx-post="/manage/account/monitor-config?a=[% account.id_token %]"
+        <form hx-post="/manage/account/monitor-config?a=[% account.account_token %]"
               hx-target="#monitor-config-display"
               hx-swap="outerHTML"
               hx-on="htmx:responseError: showMonitorConfigError(event)">
@@ -99,7 +99,7 @@
                     <i class="fa fa-save"></i> Save Changes
                 </button>
                 <button type="button" class="btn btn-secondary btn-sm ml-2"
-                        hx-get="/manage/account/monitor-config?a=[% account.id_token %]"
+                        hx-get="/manage/account/monitor-config?a=[% account.account_token %]"
                         hx-target="#monitor-config-display"
                         hx-swap="outerHTML"
                         hx-headers='{"X-Requested-With": "XMLHttpRequest", "X-Cancel": "true"}'>

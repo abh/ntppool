@@ -5,8 +5,8 @@
 
     <h3>Account information</h3>
 
-    <form id="account-form" action="/manage/account?a=[% account.id_token %]" method="post" accept-charset="utf-8">
-        <input type="hidden" name="a" value="[% account.id ? account.id_token : 'new' %]" />
+    <form id="account-form" action="/manage/account?a=[% account.account_token %]" method="post" accept-charset="utf-8">
+        <input type="hidden" name="a" value="[% account.account_id ? account.account_token : 'new' %]" />
         <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
         <div class="form-group">
             <label id="name-help" class="form-label" for="name">Account name</label>
@@ -99,7 +99,7 @@
     <br>
 -->
 
-                <p><input type="submit" class="btn btn-primary" value="[% account.id ? 'Update' : 'Create' %]"></p>
+                <p><input type="submit" class="btn btn-primary" value="[% account.account_id ? 'Update' : 'Create' %]"></p>
         </form>
 
         [% INCLUDE tpl/account/monitor_config_section.html %]

@@ -6,7 +6,7 @@
 <div class="block">
 	<h1>[% zone.description %] [% IF zone.dns %] &#8212; [% zone.fqdn %][% END %]</h1>
 
-	[% IF zone.dns and !zone.children and zone.serverCounts.total < 50 %]
+	[% IF zone.dns and !zone.children and (zone.serverCounts.total || 0) < 50 %]
 	<p>
 	We need more servers in this country.  If you have a server
 	with a static IP, please consider <a href="/join.html">joining
@@ -16,11 +16,11 @@
 
 	[% max_zone_number = zone.subZoneCount - 1; %]
 
-	[% IF zone.dns and zone.parents.0.dns and zone.serverCounts.total >= 6 %]
+	[% IF zone.dns and zone.parents.0.dns and (zone.serverCounts.total || 0) >= 6 %]
 	<p>
 	To use this specific pool zone, add the following to your ntp.conf file:
 
-	[% IF zone.serverCounts.total >= 20  %]
+	[% IF (zone.serverCounts.total || 0) >= 20  %]
 
 	<pre>[% FOR i = [0..max_zone_number] %]
 	   server [% i %].[% zone.fqdn %][%- END %]</pre>
@@ -40,7 +40,7 @@
 	<p>
 
 	[% parent = zone.parents.0;
-	   IF (parent.serverCount < 10 AND zone.parents.1 AND zone.parents.1.dns);
+	   IF ((parent.serverCount || 0) < 10 AND zone.parents.1 AND zone.parents.1.dns);
 	     parent = zone.parents.1;
 	   END;
 	%]
