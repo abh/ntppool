@@ -13,7 +13,7 @@ use Math::Random::Secure qw(irand);
 use URI::URL             ();
 use NP::UA;
 use NP::IntAPI        qw(int_api);
-use NP::CAPI::Account qw(get_account_status process_auth0_login validate_session);
+use NP::CAPI::Account qw(get_account_status process_auth0_login validate_session get_user_accounts);
 use OpenTelemetry::Trace;
 use OpenTelemetry -all;
 use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
@@ -71,6 +71,11 @@ sub init {
             if (my $a = $self->current_account) {
                 $self->plausible_props("account" => $a->{account_token});
             }
+
+            # Fetch user accounts via API for navigation sidebar
+            # During PostgreSQL migration, accounts created via API won't appear in MySQL
+            # so we fetch them directly from the API
+            $self->tpl_param('user_accounts_api' => $self->user_accounts_via_api());
         }
 
         if ($self->user->deletion_on and $self->request->uri ne "/manage/logout") {
@@ -766,6 +771,32 @@ sub account_monitor_config {
     $monitor_config->{monitor_limit} = 3 if $monitor_config->{monitor_limit} == 0;
 
     return $self->{$cache_key} = $monitor_config;
+}
+
+sub user_accounts_via_api {
+    my $self = shift;
+
+    # Return cached accounts if already loaded
+    return $self->{_user_accounts} if exists $self->{_user_accounts};
+
+    # Return empty array if no user
+    return $self->{_user_accounts} = [] unless $self->user;
+
+    # Call GetUserAccounts API
+    my $result = get_user_accounts(
+        auth    => $self->plain_cookie($self->user_cookie_name),
+        context => $self->_get_request_context(),
+    );
+
+    # Handle errors - return empty array for graceful degradation
+    if ($result->{error}) {
+        warn "GetUserAccounts error: " . $result->{error};
+        warn "Trace ID: " . $result->{trace_id} if $result->{trace_id};
+        return $self->{_user_accounts} = [];
+    }
+
+    # Return account list from API
+    return $self->{_user_accounts} = $result->{data}{accounts} || [];
 }
 
 1;

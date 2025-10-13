@@ -26,9 +26,9 @@
             <b>[% account.account_id ? account.name : "New account" | html %]</b>
         </a>
         <div class="dropdown-menu">
-            [% FOR a = combust.user.accounts %]
-            <a class="dropdown-item [% account.account_id == a.id ? 'active' : '' %]"
-                href="[% combust.current_url(a => a.id_token) | html %]">[% a.name | html %]</a>
+            [% FOR a = combust.user_accounts_api %]
+            <a class="dropdown-item [% account.account_id == a.account_id ? 'active' : '' %]"
+                href="[% combust.current_url(a => a.account_token) | html %]">[% a.name | html %]</a>
             [% END %]
             <div class="dropdown-divider"></div>
             <div class="d-flex justify-content-between">
