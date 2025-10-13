@@ -1,6 +1,6 @@
 [% PROCESS tpl/monitors/metrics.html %]
 [% BLOCK status_form %]
-          <form class="monitor-form" action="/manage/monitors/monitor/status?a=[% account.id_token %]&name=[% monitor.TLSName | html %]" method="post" accept-charset="utf-8">
+          <form class="monitor-form" action="/manage/monitors/monitor/status?a=[% account.account_token %]&name=[% monitor.TLSName | html %]" method="post" accept-charset="utf-8">
           <input type="hidden" name="auth_token" value="[% combust.auth_token %]">
           <input type="hidden" name="id" value="[% mon.IDToken | html %]">
           <input type="hidden" name="name" value="[% mon.TLSName | html %]">

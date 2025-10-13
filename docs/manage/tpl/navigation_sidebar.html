@@ -23,11 +23,11 @@
     <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle account-name" data-bs-toggle="dropdown"  href="#" role="button"
             aria-haspopup="true" aria-expanded="false">
-            <b>[% account.id ? account.name : "New account" | html %]</b>
+            <b>[% account.account_id ? account.name : "New account" | html %]</b>
         </a>
         <div class="dropdown-menu">
             [% FOR a = combust.user.accounts %]
-            <a class="dropdown-item [% account.id == a.id ? 'active' : '' %]"
+            <a class="dropdown-item [% account.account_id == a.id ? 'active' : '' %]"
                 href="[% combust.current_url(a => a.id_token) | html %]">[% a.name | html %]</a>
             [% END %]
             <div class="dropdown-divider"></div>

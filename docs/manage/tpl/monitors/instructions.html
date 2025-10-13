@@ -51,7 +51,7 @@
             <pre><code>sudo journalctl -u ntppool-agent@\* -f</code></pre>
 
             <p><strong>Step 5:</strong> Setup the agent (in another terminal window on the same server)</p>
-            <pre><code>sudo -u ntpmon ntppool-agent setup -e [% combust.deployment_mode %] -a [% combust.current_account.id_token %]</code></pre>
+            <pre><code>sudo -u ntpmon ntppool-agent setup -e [% combust.deployment_mode %] -a [% combust.current_account.account_token %]</code></pre>
 
             <p><strong>Step 6:</strong> Open the provided link from the setup process to authenticate the agent to your account</p>
         </div>

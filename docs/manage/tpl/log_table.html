@@ -15,7 +15,7 @@
         [% FOR log IN logs %]
         <tr class="log-border">
             <td>[% log.created_on %]</td>
-            <td>[% log.account.id_token | html %]</td>
+            <td>[% log.account.account_token | html %]</td>
             <td>[% log.user.email | html %]</td>
             <td>[% log.server.ip | html %]</td>
             <td>[% log.type | html %]</td>

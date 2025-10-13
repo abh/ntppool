@@ -13,7 +13,7 @@ use Math::Random::Secure qw(irand);
 use URI::URL             ();
 use NP::UA;
 use NP::IntAPI        qw(int_api);
-use NP::CAPI::Account qw(get_account_status process_auth0_login);
+use NP::CAPI::Account qw(get_account_status process_auth0_login validate_session);
 use OpenTelemetry::Trace;
 use OpenTelemetry -all;
 use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
@@ -54,10 +54,10 @@ sub init {
 
         if (my $account = $self->current_account) {
             $self->tpl_param('account' => $account);
-            $span->set_attribute("account.id",       $account->id);
-            $span->set_attribute("account.id_token", $account->id_token);
+            $span->set_attribute("account.id",       $account->{account_id});
+            $span->set_attribute("account.id_token", $account->{account_token});
 
-            $self->request->env->{REMOTE_USER} .= '|' . $account->id_token;
+            $self->request->env->{REMOTE_USER} .= '|' . $account->{account_token};
         }
 
         if (my $user = $self->user) {
@@ -69,7 +69,7 @@ sub init {
 
             $self->plausible_props("user" => $user->id_token);
             if (my $a = $self->current_account) {
-                $self->plausible_props("account" => $a->id_token);
+                $self->plausible_props("account" => $a->{account_token});
             }
         }
 
@@ -85,29 +85,45 @@ sub init {
 sub current_account {
     my $self = shift;
 
+    # Return cached account if already loaded
     if (exists $self->{_current_account}) {
         return $self->{_current_account};
     }
 
-    if (my $account_token = $self->req_param('a')) {
-        my $account_id = NP::Model::Account->token_id($account_token);
-        my $account = $account_id ? NP::Model->account->fetch(id => $account_id) : undef;
-        if ($account) {
-            return $self->{_current_account} = $account
-              if $account->can_view($self->user);
-        }
-    }
+    # Get session cookie
+    my $session_token = $self->plain_cookie($self->user_cookie_name);
+    return $self->{_current_account} = undef unless $session_token;
 
-    my ($accounts) = NP::Model->account->get_accounts(
-        require_objects => ['users'],
-        query           => ['users.id' => $self->user->id]
+    # Call ValidateSession with optional account token
+    # Go API will:
+    # 1. Validate session
+    # 2. Resolve account_token (if provided) or use default
+    # 3. Check permissions
+    # 4. Return account context + permissions
+    my $result = validate_session(
+        session_token => $session_token,
+        account_token => $self->req_param('a'),           # Optional ?a= parameter
+        context       => $self->_get_request_context(),
     );
 
-    if ($accounts && @$accounts) {
-        return $self->{_current_account} = $accounts->[0];
+    # Handle errors (invalid session, inaccessible account, etc.)
+    if ($result->{error}) {
+        warn "ValidateSession error: " . $result->{error};
+        warn "Trace ID: " . $result->{trace_id} if $result->{trace_id};
+        return $self->{_current_account} = undef;
     }
 
-    return $self->{_current_account} = undef;
+    my $data = $result->{data};
+
+    # Session valid but user has no accounts
+    return $self->{_current_account} = undef unless $data->{account};
+
+    # Return account as plain hashref
+    # Store permissions in _permissions key for template access
+    my $account = $data->{account};
+    $account->{_permissions} = $data->{permissions} if $data->{permissions};
+
+    return $self->{_current_account} = $account;
 }
 
 sub current_url {
@@ -166,9 +182,9 @@ sub render {
         my $account_param = $self->req_param('a');
         if (    $account_param
             and $account
-            and $account_param ne $account->id_token)
+            and $account_param ne $account->{account_token})
         {
-            return $self->redirect($self->current_url({a => $account->id_token}));
+            return $self->redirect($self->current_url({a => $account->{account_token}}));
         }
     }
 
@@ -338,7 +354,7 @@ sub manage_dispatch {
     if ($self->request->uri eq "/" or $self->request->uri =~ m{^/manage/?$}) {
         my $account  = $self->current_account;
         my $redirect = URI->new('/manage/servers');
-        $redirect->query_param(a => $account->id_token) if $account;
+        $redirect->query_param(a => $account->{account_token}) if $account;
         return $self->redirect($redirect);
     }
 
@@ -640,7 +656,7 @@ sub account_monitor_count {
 
     my $monitor_count =
       NP::Model->monitor->get_objects_count(
-          query => [account_id => $self->current_account->id]);
+          query => [account_id => $self->current_account->{account_id}]);
 
     return $self->{_account_monitor_count} = $monitor_count;
 }
@@ -662,7 +678,7 @@ sub monitor_eligibility {
     # Call new ConnectRPC AccountService.GetAccountStatus
     my $result = get_account_status(
         auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->id_token,
+        account => $self->current_account->{account_token},
         context => $self->_get_request_context(),
     );
 
@@ -698,7 +714,8 @@ sub account_monitor_config {
     $account ||= $self->current_account;
 
     # Create a cache key that includes the account ID
-    my $cache_key = '_account_monitor_config_' . ($account ? $account->id : 'none');
+    my $cache_key =
+      '_account_monitor_config_' . ($account ? $account->{account_id} : 'none');
 
     if (exists $self->{$cache_key}) {
         return $self->{$cache_key};
@@ -713,17 +730,17 @@ sub account_monitor_config {
         };
     }
 
-    # Parse account flags from database-loaded account object
+    # Parse account flags from API-provided account hashref
     my $config = {};
 
-    if ($account->flags) {
+    if ($account->{flags}) {
 
         # Check if flags is already a hash reference or a JSON string
-        if (ref($account->flags) eq 'HASH') {
-            $config = $account->flags;
+        if (ref($account->{flags}) eq 'HASH') {
+            $config = $account->{flags};
         }
         else {
-            eval { $config = decode_json($account->flags); };
+            eval { $config = decode_json($account->{flags}); };
             if ($@) {
                 $config = {};
             }

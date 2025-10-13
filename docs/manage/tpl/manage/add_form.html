@@ -24,7 +24,7 @@
         [% END %]
         </p>
     <form action="/manage/server/add#add" method="post">
-    <input type="hidden" name="a" value="[% account.id_token %]">
+    <input type="hidden" name="a" value="[% account.account_token %]">
     <fieldset>
     <input type="text" class="text" name="host" value="[% host | html %]">
     <input type="hidden" name="auth_token" value="[% combust.auth_token %]">

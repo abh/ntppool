@@ -16,7 +16,7 @@
 
 <form method="post" action="/manage/server/add" id="add_server_form">
     <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
-    <input type="hidden" name="a" value="[% account.id_token %]">
+    <input type="hidden" name="a" value="[% account.account_token %]">
 
     [% FOR server = servers %]
 

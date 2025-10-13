@@ -7,11 +7,12 @@ use Combust::Constant    qw(OK NOT_FOUND);
 use Math::BaseCalc       ();
 use Math::Random::Secure qw(irand);
 use Combust::Template;
-use NP::Email  ();
-use NP::IntAPI qw(int_api);
+use NP::Email         ();
+use NP::IntAPI        qw(int_api);
 use NP::CAPI::Account qw(
     get_account_users get_user_accounts get_account_invites
     create_account get_account update_account remove_user_from_account create_user_task
+    check_user_deletion_eligibility
 );
 use JSON::XS   qw(encode_json decode_json);
 use Data::Dump qw(pp);
@@ -31,19 +32,19 @@ sub _get_request_context {
 
 sub _account_users_via_api {
     my ($self, $account) = @_;
-    my $cache_key = '_account_users_' . $account->id;
+    my $cache_key = '_account_users_' . $account->{account_id};
     return $self->{$cache_key} if exists $self->{$cache_key};
 
-    my $result = get_account_users(account => $account->id_token);
+    my $result = get_account_users(
+        auth    => $self->plain_cookie($self->user_cookie_name),
+        account => $account->{account_token},
+        context => $self->_get_request_context(),
+    );
+
     return $self->{$cache_key} = [] if $result->{error};
 
-    # Convert API response to NP::Model::User objects
-    my @users;
-    for my $user_data (@{$result->{data}{users} || []}) {
-        my $user = NP::Model->user->fetch(id => $user_data->{user_id});
-        push @users, $user if $user;
-    }
-    return $self->{$cache_key} = \@users;
+    # ✅ GOOD: Return API hashrefs directly (no ORM objects!)
+    return $self->{$cache_key} = $result->{data}{users} || [];
 }
 
 sub _user_accounts_via_api {
@@ -51,33 +52,33 @@ sub _user_accounts_via_api {
     my $cache_key = '_user_accounts_' . $user->id;
     return $self->{$cache_key} if exists $self->{$cache_key};
 
-    my $result = get_user_accounts();
+    my $result = get_user_accounts(
+        auth    => $self->plain_cookie($self->user_cookie_name),
+        context => $self->_get_request_context(),
+    );
+
     return $self->{$cache_key} = [] if $result->{error};
 
-    # Convert API response to NP::Model::Account objects
-    my @accounts;
-    for my $account_data (@{$result->{data}{accounts} || []}) {
-        my $account = NP::Model->account->fetch(id => $account_data->{account_id});
-        push @accounts, $account if $account;
-    }
-    return $self->{$cache_key} = \@accounts;
+    # ✅ GOOD: Return API hashrefs directly (no ORM objects!)
+    return $self->{$cache_key} = $result->{data}{accounts} || [];
 }
 
 sub _account_invites_via_api {
     my ($self, $account) = @_;
-    my $cache_key = '_account_invites_' . $account->id;
+    my $cache_key = '_account_invites_' . $account->{account_id};
     return $self->{$cache_key} if exists $self->{$cache_key};
 
-    my $result = get_account_invites(account => $account->id_token, for_user => 0);
+    my $result = get_account_invites(
+        auth     => $self->plain_cookie($self->user_cookie_name),
+        account  => $account->{account_token},
+        context  => $self->_get_request_context(),
+        for_user => JSON::XS::false,
+    );
+
     return $self->{$cache_key} = [] if $result->{error};
 
-    # Convert API response to NP::Model::AccountInvite objects
-    my @invites;
-    for my $invite_data (@{$result->{data}{invites} || []}) {
-        my $invite = NP::Model->account_invite->fetch(id => $invite_data->{invite_id});
-        push @invites, $invite if $invite;
-    }
-    return $self->{$cache_key} = \@invites;
+    # ✅ GOOD: Return API hashrefs directly (no ORM objects!)
+    return $self->{$cache_key} = $result->{data}{invites} || [];
 }
 
 sub _user_invites_via_api {
@@ -85,25 +86,25 @@ sub _user_invites_via_api {
     my $cache_key = '_user_invites_' . $user->id;
     return $self->{$cache_key} if exists $self->{$cache_key};
 
-    my $result = get_account_invites(for_user => 1);
+    my $result = get_account_invites(
+        auth     => $self->plain_cookie($self->user_cookie_name),
+        context  => $self->_get_request_context(),
+        for_user => JSON::XS::true,
+    );
+
     return $self->{$cache_key} = [] if $result->{error};
 
-    # Convert API response to NP::Model::AccountInvite objects
-    my @invites;
-    for my $invite_data (@{$result->{data}{invites} || []}) {
-        my $invite = NP::Model->account_invite->fetch(id => $invite_data->{invite_id});
-        push @invites, $invite if $invite;
-    }
-    return $self->{$cache_key} = \@invites;
+    # ✅ GOOD: Return API hashrefs directly (no ORM objects!)
+    return $self->{$cache_key} = $result->{data}{invites} || [];
 }
 
 sub _account_from_api_response {
     my ($self, $account_obj) = @_;
 
-    # Create account object from API response with all fields
-    # Note: Cannot reload from database during Postgres migration as Perl ORM reads from MySQL
-    # The API writes to Postgres, but NP::Model reads from MySQL
-    # CRITICAL: Use all fields from the API response to populate the object
+# Create account object from API response with all fields
+# Note: Cannot reload from database during Postgres migration as Perl ORM reads from MySQL
+# The API writes to Postgres, but NP::Model reads from MySQL
+# CRITICAL: Use all fields from the API response to populate the object
     return bless {
         id                => $account_obj->{account_id},
         id_token          => $account_obj->{account_token},
@@ -115,7 +116,8 @@ sub _account_from_api_response {
         public_profile    => $account_obj->{public_profile} ? 1 : 0,
         created_on        => $account_obj->{created_on},
         modified_on       => $account_obj->{modified_on},
-    }, 'NP::Model::Account';
+      },
+      'NP::Model::Account';
 }
 
 sub _create_account_via_api {
@@ -183,9 +185,10 @@ sub manage_dispatch {
     }
 
     # check access
+    # Note: Account hashrefs from current_account() include _permissions
     return $self->redirect("/manage/")
-      unless ($account->id == 0
-          or $account->can_edit($self->user));
+      unless ($account->{account_id} == 0
+          or $account->{_permissions}{can_edit});
 
     if ($self->request->method eq 'post') {
         return 403 unless $self->check_auth_token;
@@ -213,7 +216,7 @@ sub manage_dispatch {
         }
     }
     elsif ($self->request->uri =~ m!^/manage/account/team$!) {
-        if ($self->request->method eq 'post' and $account->can_edit($self->user)) {
+        if ($self->request->method eq 'post' and $account->{_permissions}{can_edit}) {
             return $self->render_users_invite($account, $self->req_param('invite_email'))
               if $self->req_param('invite_email');
 
@@ -239,15 +242,15 @@ sub manage_dispatch {
 sub remove_user_from_account {
     my ($self, $account, $user_id) = @_;
     my $users = $self->_account_users_via_api($account);
-    my ($user) = grep { $_->id == $user_id } @$users;
+    my ($user) = grep { $_->{user_id} == $user_id } @$users;
     return $self->render_users($account)
       unless $user;
 
     my $data = remove_user_from_account(
         auth       => $self->plain_cookie($self->user_cookie_name),
-        account    => $account->id_token,
+        account    => $account->{account_token},
         context    => $self->_get_request_context(),
-        user_token => $user->id_token,
+        user_token => $user->{user_token},
     );
 
     if ($data->{error}) {
@@ -258,10 +261,10 @@ sub remove_user_from_account {
     }
 
     NP::Model::Log->log_changes($self->user, "account-users",
-        sprintf("Removed user %s (%d)", $user->email, $user->id), $account,);
+        sprintf("Removed user %s (%d)", $user->{email}, $user->{user_id}), $account,);
 
-    # Reload account after successful removal
-    $account = NP::Model->account->fetch(id => $account->id);
+    # Note: No need to reload during PostgreSQL migration
+    # Account data already in hashref from API
 
     my $param = {
         account      => $account,
@@ -276,10 +279,10 @@ sub remove_user_from_account {
       ->reply_to(NP::Email::address("support"))->subject("NTP Pool account change")
       ->text_body($msg);
 
-    $email->to($user->email);
-    my @cc = grep { $_->id != $user_id } @$users;
+    $email->to($user->{email});
+    my @cc = grep { $_->{user_id} != $user_id } @$users;
     if (@cc) {
-        $email->cc(map { $_->email } @cc);
+        $email->cc(map { $_->{email} } @cc);
     }
 
     NP::Email::sendmail($email);
@@ -356,11 +359,15 @@ sub render_users_invite {
 
     my %errors = ();
 
-    if (grep { lc $_->email eq lc $email_address } $account->users) {
+    # Get users and invites via API helper methods (now return hashrefs)
+    my $users   = $self->_account_users_via_api($account);
+    my $invites = $self->_account_invites_via_api($account);
+
+    if (grep { lc $_->{email} eq lc $email_address } @$users) {
         $errors{invite_email} = "User is already on this account";
     }
 
-    if (scalar(grep { $_->status eq 'pending' } $account->invites) >= 5) {
+    if (scalar(grep { $_->{status} eq 'pending' } @$invites) >= 5) {
         $errors{invite_email} = 'Too many recent account invitations';
     }
 
@@ -416,7 +423,12 @@ sub render_user_invitations {
 
     my $user    = $self->user;
     my $invites = $self->_user_invites_via_api($user);
-    if ($invite and !grep { $_->id == $invite->id } @$invites) {
+
+    # Note: $invite here is still an ORM object from the invitation flow
+    # Only compare if it's an ORM object (has ->id method)
+    if ($invite && ref($invite) !~ /HASH/ && !grep { $_->{invite_id} == $invite->id }
+        @$invites)
+    {
         push @$invites, $invite;
     }
 
@@ -455,8 +467,9 @@ sub render_account_form {
 
     # Set monitor config for admin users
     if ($self->user->is_monitor_admin && $account) {
-        warn "DEBUG: Setting monitor config for admin user, account ID: " . $account->id;
-        warn "DEBUG: Account flags: " . ($account->flags || 'NULL');
+        warn "DEBUG: Setting monitor config for admin user, account ID: "
+          . $account->{account_id};
+        warn "DEBUG: Account flags: " . ($account->{flags} || 'NULL');
         my $config = $self->account_monitor_config($account);
         warn "DEBUG: Monitor config data: " . Data::Dump::pp($config);
         $self->tpl_param('monitor_config', $config);
@@ -513,9 +526,9 @@ sub render_account_edit {
     }
 
     my $account_obj = $result->{data}{account};
-    my $account = $self->_account_from_api_response($account_obj);
+    my $account     = $self->_account_from_api_response($account_obj);
 
-    my $old = {%$account};  # Shallow copy for logging
+    my $old = {%$account};    # Shallow copy for logging
 
     my %update_data = ();
     for my $f (qw(name organization_name organization_url url_slug)) {
@@ -523,21 +536,24 @@ sub render_account_edit {
         $v =~ s/^\s+//;
         $v =~ s/\s+$//;
         $v = undef if ($f eq 'url_slug' and $v eq '');
-        if (defined($v) && $v ne ($account->$f() // '')) {
+        if (defined($v) && $v ne ($account->{$f} // '')) {
             $update_data{$f} = $v;
         }
     }
 
     # Handle boolean separately
-    my $public_profile = $self->req_param('public_profile') ? JSON::XS::true : JSON::XS::false;
-    if ($public_profile != ($account->public_profile ? JSON::XS::true : JSON::XS::false)) {
+    my $public_profile =
+      $self->req_param('public_profile') ? JSON::XS::true : JSON::XS::false;
+    if ($public_profile
+        != ($account->{public_profile} ? JSON::XS::true : JSON::XS::false))
+    {
         $update_data{public_profile} = $public_profile;
     }
 
     if (%update_data) {
         my $data = update_account(
             auth    => $self->plain_cookie($self->user_cookie_name),
-            account => $account->id_token,
+            account => $account->{account_token},
             context => $self->_get_request_context(),
             %update_data,
         );
@@ -547,14 +563,15 @@ sub render_account_edit {
             warn "Trace ID: " . $data->{trace_id} if $data->{trace_id};
 
             # Extract user-friendly error message if available
-            my $error_msg = $data->{error} || 'Failed to update account. Please try again.';
+            my $error_msg =
+              $data->{error} || 'Failed to update account. Please try again.';
             $self->tpl_param('error', $error_msg);
             return $self->render_account_form($account);
         }
 
         # Use the updated account returned by the API (no need for second call)
         $account_obj = $data->{data}{account};
-        $account = $self->_account_from_api_response($account_obj);
+        $account     = $self->_account_from_api_response($account_obj);
 
         NP::Model::Log->log_changes($self->user, "account", "update account",
             $account, $old);
@@ -620,7 +637,8 @@ sub render_download {
             if ($data->{error}) {
                 warn "Failed to create download task via API: " . $data->{error};
                 warn "Trace ID: " . $data->{trace_id} if $data->{trace_id};
-                $self->tpl_param('error', 'Failed to create download request. Please try again.');
+                $self->tpl_param('error',
+                    'Failed to create download request. Please try again.');
                 return OK, $self->evaluate_template('tpl/user/download.html');
             }
 
@@ -641,47 +659,32 @@ sub render_user_delete {
     );
     dynamically otel_current_context = otel_context_with_span($span);
 
-    # todo:
-    #   if u= parameter, get user from id_token
-    #   and check it's the current user; or an admin
-
     $self->tpl_param('user', $user);
 
-    my $delete_ok = 1;
+    # Check deletion eligibility using new consolidated API
+    # Single API call replaces multiple queries and ORM iterations
+    my $result = check_user_deletion_eligibility(
+        auth    => $self->plain_cookie($self->user_cookie_name),
+        context => $self->_get_request_context(),
+    );
 
-    # todo:
-    # - check there are no active servers on the account
-    # - or that there are an alternate user
-    my $accounts = $self->_user_accounts_via_api($user);
-    for my $a (@$accounts) {
-        my $users = $self->_account_users_via_api($a);
-        my @other_users = grep { $_->id != $user->id && not $_->deletion_on } @$users;
-        next if @other_users;
-        for my $s ($a->servers) {
-            unless ($s->deletion_on) {
-                warn "account has active servers";
-                $delete_ok = 0;
-                last;
-            }
-        }
-        for my $v ($a->vendor_zones) {
-            warn "account has vendor zones";
-            $delete_ok = 0;
-            last;
-        }
-        for my $m ($a->monitors) {
-            unless ($m->status eq 'deleted') {
-                warn "account has monitors";
-                $delete_ok = 0;
-                last;
-            }
-        }
+    if ($result->{error}) {
+        warn "CheckUserDeletionEligibility error: " . $result->{error};
+        warn "Trace ID: " . $result->{trace_id} if $result->{trace_id};
+        $self->tpl_param('delete_available', 0);
+        $self->tpl_param('delete_blockers',
+            ["Error checking deletion eligibility: " . $result->{error}]);
+        return OK, $self->evaluate_template('tpl/user/delete_confirmation.html');
     }
 
-    $self->tpl_param('delete_available', $delete_ok);
+    my $eligibility = $result->{data};
+
+    $self->tpl_param('delete_available', $eligibility->{can_delete});
+    $self->tpl_param('delete_blockers',  $eligibility->{blockers})
+      if @{$eligibility->{blockers} || []};
 
     return OK, $self->evaluate_template('tpl/user/delete_confirmation.html')
-      unless $delete_ok;
+      unless $eligibility->{can_delete};
 
     if ($self->request->method eq 'post') {
 
@@ -695,7 +698,7 @@ sub render_user_delete {
 
         # Create delete task via API (after transaction commit)
         my $execute_on_unix = DateTime->now()->add(days => 7)->epoch;
-        my $data = create_user_task(
+        my $data            = create_user_task(
             auth            => $self->plain_cookie($self->user_cookie_name),
             context         => $self->_get_request_context(),
             task_type       => 'delete',
@@ -706,6 +709,7 @@ sub render_user_delete {
         if ($data->{error}) {
             warn "Failed to create delete task via API: " . $data->{error};
             warn "Trace ID: " . $data->{trace_id} if $data->{trace_id};
+
             # Don't fail the deletion, just log the error
             # The user is already marked for deletion
         }
@@ -735,7 +739,7 @@ sub render_user_delete {
 sub render_monitor_config_form {
     my ($self, $account) = @_;
 
-    warn "DEBUG: render_monitor_config_form called for account " . $account->id;
+    warn "DEBUG: render_monitor_config_form called for account " . $account->{account_id};
 
     # Check if this is a cancel request
     if ($self->request->header('X-Cancel')) {
@@ -798,7 +802,7 @@ sub render_monitor_config_update {
     my $data = int_api(
         'patch',
         'monitor/admin/account-config',
-        {   a    => $account->id_token,
+        {   a    => $account->{account_token},
             user => $self->plain_cookie($self->user_cookie_name),
             data => $json_data,
         },
@@ -809,16 +813,12 @@ sub render_monitor_config_update {
     if ($data->{code} == 200) {
 
         # Success - refresh account data and clear cache
-        my $cache_key = '_account_monitor_config_' . $account->id;
+        my $cache_key = '_account_monitor_config_' . $account->{account_id};
         delete $self->{$cache_key};
 
-        # Reload account from database to get updated flags
-        $updated_account = NP::Model->account->fetch(id => $account->id);
-        if ($updated_account) {
-
-            # Update the cached account
-            $self->{_current_account} = $updated_account;
-        }
+        # Note: During PostgreSQL migration, can't reload from MySQL
+        # Use the account hashref as-is
+        $updated_account = $account;
 
         $self->tpl_param('success', 'Monitor configuration updated successfully');
     }
