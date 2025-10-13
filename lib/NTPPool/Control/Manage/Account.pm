@@ -451,7 +451,7 @@ sub render_users {
     if ($self->user->is_staff) {
         my $logs = NP::Model->log->get_objects(
             query => [
-                account_id => [$self->current_account->id],
+                account_id => [$self->current_account->{account_id}],
                 type       => ['invitation', 'account-users']
             ],
             sort_by => "created_on desc",
@@ -485,7 +485,7 @@ sub render_account_form {
     # todo: how do you end up here without an account?
     if ($self->user->is_staff && $self->current_account) {
         my $logs = NP::Model->log->get_objects(
-            query   => [account_id => [$self->current_account->id],],
+            query   => [account_id => [$self->current_account->{account_id}],],
             sort_by => "created_on desc",
         );
         $self->tpl_param('logs', $logs);
