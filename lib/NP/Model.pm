@@ -953,12 +953,6 @@ __PACKAGE__->meta->setup(
       with_column_triggers => '0',
     },
 
-    server_notes => {
-      class      => 'NP::Model::ServerNote',
-      column_map => { id => 'server_id' },
-      type       => 'one to many',
-    },
-
     server_scores => {
       class      => 'NP::Model::ServerScore',
       column_map => { id => 'server_id' },
@@ -1064,54 +1058,6 @@ __PACKAGE__->make_manager_methods('server_alerts');
 # Allow user defined methods to be added
 eval { require NP::Model::ServerAlert }
   or $@ !~ m:^Can't locate NP/Model/ServerAlert.pm: and die $@;
-
-{ package NP::Model::ServerNote;
-
-use strict;
-
-use base qw(NP::Model::_Object);
-
-__PACKAGE__->meta->setup(
-  table   => 'server_notes',
-
-  columns => [
-    id          => { type => 'serial', not_null => 1 },
-    server_id   => { type => 'integer', not_null => 1 },
-    name        => { type => 'varchar', default => '', length => 255, not_null => 1 },
-    note        => { type => 'text', length => 65535, not_null => 1 },
-    created_on  => { type => 'datetime', default => 'now', not_null => 1 },
-    modified_on => { type => 'timestamp', not_null => 1 },
-  ],
-
-  primary_key_columns => [ 'id' ],
-
-  unique_key => [ 'server_id', 'name' ],
-
-  foreign_keys => [
-    server => {
-      class       => 'NP::Model::Server',
-      key_columns => { server_id => 'id' },
-    },
-  ],
-);
-
-push @table_classes, __PACKAGE__;
-}
-
-{ package NP::Model::ServerNote::Manager;
-
-use strict;
-
-our @ISA = qw(Combust::RoseDB::Manager);
-
-sub object_class { 'NP::Model::ServerNote' }
-
-__PACKAGE__->make_manager_methods('server_notes');
-}
-
-# Allow user defined methods to be added
-eval { require NP::Model::ServerNote }
-  or $@ !~ m:^Can't locate NP/Model/ServerNote.pm: and die $@;
 
 { package NP::Model::ServerScore;
 
@@ -2008,7 +1954,6 @@ eval { require NP::Model::Zone }
   sub scorer_statu { our $scorer_statu ||= bless [], 'NP::Model::ScorerStatu::Manager' }
   sub server { our $server ||= bless [], 'NP::Model::Server::Manager' }
   sub server_alert { our $server_alert ||= bless [], 'NP::Model::ServerAlert::Manager' }
-  sub server_note { our $server_note ||= bless [], 'NP::Model::ServerNote::Manager' }
   sub server_score { our $server_score ||= bless [], 'NP::Model::ServerScore::Manager' }
   sub server_url { our $server_url ||= bless [], 'NP::Model::ServerUrl::Manager' }
   sub server_verification { our $server_verification ||= bless [], 'NP::Model::ServerVerification::Manager' }
