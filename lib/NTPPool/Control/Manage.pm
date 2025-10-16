@@ -30,6 +30,42 @@ sub _get_request_context {
     return $x_forwarded_for ? {x_forwarded_for => $x_forwarded_for} : undef;
 }
 
+=head2 _handle_capi_error
+
+Handle API errors by setting template parameters and returning HTTP status codes.
+
+    my $http_code = $self->_handle_capi_error($result);
+    return $http_code if $http_code != 200;
+
+Returns HTTP status code (200 for success, or Combust constant for errors).
+
+Note: Does not log errors (NP::CAPI already logs all errors with trace IDs).
+
+=cut
+
+sub _handle_capi_error {
+    my ($self, $result) = @_;
+
+    my $code = $result->{code};
+    return $code if $code >= 200 && $code < 300;
+
+    $self->cache_control('private, max-age=0, no-cache');
+    $self->tpl_param('error', $result->{error}) unless $self->tpl_param('error');
+    $self->tpl_param('code',  $code);
+
+    if ($code == 404) {
+        return NOT_FOUND;
+    }
+    elsif ($code >= 400 && $code < 500) {
+        return $code;
+    }
+    elsif ($code >= 500) {
+        return SERVER_ERROR;
+    }
+
+    return NOT_FOUND;    # fallback
+}
+
 my $base36 = Math::BaseCalc->new(digits => ['a' .. 'k', 'm' .. 'z', 2 .. 9]);
 
 sub init {
@@ -256,17 +292,8 @@ sub handle_login {
 
     if ($result->{error}) {
         $span->set_status(SPAN_STATUS_ERROR, "auth0 login failed: " . $result->{error});
-
-        # ConnectRPC errors are automatically structured by CAPI layer:
-        # $result->{error} - error message (user-friendly)
-        # $result->{code}  - ConnectRPC error code (e.g., 'unauthenticated', 'internal')
-
-        # Set error details for user display
-        $self->cache_control('private, max-age=0, no-cache');
-        $self->tpl_param('error',    $result->{error});
-        $self->tpl_param('trace_id', $result->{trace_id} || $span->context->hex_trace_id);
-
-        return SERVER_ERROR;
+        $self->_handle_capi_error($result);
+        return SERVER_ERROR;  # Always return server error for login failures (security)
     }
 
     my $data = $result->{data};

@@ -296,6 +296,8 @@ sub connect_rpc {
     $result{code}        ||= $res->code;
     $result{status_line} ||= $res->status_line;
     $result{trace_id}    ||= $res->header('TraceID');
+    $result{service}     = $service;
+    $result{method}      = $method;
 
     # Mark OpenTelemetry span as error for ConnectRPC errors
     if ($result{error} && $NP::CAPI::OTEL_AVAILABLE) {
