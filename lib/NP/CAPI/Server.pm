@@ -221,7 +221,10 @@ B<Arguments:>
         auth    => $user_token,      # Optional: User/session authentication token
         account => $account_token,   # Optional: Account selection token
         context => $request_context, # Optional: Request context for X-Forwarded-For
+        id_token => $value,       # string - id_token is the account's public identifier token (e.g., "21wase0")
+ Used for authenticated access with access control. Optional if url_slug is provided.
         url_slug => $value,       # string - url_slug is the account's URL-friendly identifier (e.g., "fancytime")
+ Used for public profile access. Optional if id_token is provided.
     );
 
 B<Returns:>
@@ -311,6 +314,7 @@ sub get_account_servers {
 
     # Extract request fields from args
     my %request = ();
+    $request{'id_token'} = delete $args{'id_token'} if exists $args{'id_token'};
     $request{'url_slug'} = delete $args{'url_slug'} if exists $args{'url_slug'};
 
     return connect_rpc(

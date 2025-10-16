@@ -18,6 +18,7 @@ use Math::BaseCalc       qw();
 use Math::Random::Secure qw(irand);
 use NP::NTP;
 use NP::IntAPI qw(int_api);
+use NP::CAPI::Server qw(get_account_servers);
 use OpenTelemetry -all;
 use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
 use experimental             qw( defer );
@@ -77,16 +78,36 @@ sub show_manage {
     my $span = NP::Tracing->tracer->create_span(name => "show_manage",);
     dynamically otel_current_context = otel_context_with_span($span);
 
-    my $servers = $self->current_account->servers;
+    my $account = $self->current_account;
+    unless ($account) {
+        return OK, $self->evaluate_template('tpl/manage.html');
+    }
+
+    # Fetch servers via ConnectRPC API
+    my $result = get_account_servers(
+        auth     => $self->plain_cookie($self->user_cookie_name),
+        account  => $account->{account_token},
+        context  => $self->_get_request_context(),
+        id_token => $account->{account_token},
+    );
+
+    # CAPI layer already logged error, just handle degraded state
+    my $servers;
+    if ($result->{error}) {
+        $self->tpl_param('error', 'Failed to load servers');
+        $servers = [];
+    } else {
+        $servers = $result->{data}{servers} || [];
+    }
     $self->tpl_param('servers', $servers);
 
-    my @server_ids = map { $_->id } @$servers;
+    my @server_ids = map { $_->{id} } @$servers;
 
     if ($self->user_is_staff) {
         my $logs = NP::Model->log->get_objects(
             query => [
                 or => [
-                    account_id => [$self->current_account->id],
+                    account_id => [$account->{account_id}],
                     (@server_ids ? (server_id => \@server_ids) : ()),
                 ],
             ],
