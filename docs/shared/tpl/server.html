@@ -52,13 +52,13 @@ IP <input type="text" name="ip">
 
 
 <p>
-[% UNLESS server_data.inPool AND server_data.netspeed > 0 %]
+[% UNLESS server_data.in_pool AND server_data.netspeed > 0 %]
 <i>[% |l %]Not active in the pool, monitoring only[% END %]</i><br/>
 [% END %]
 
 [% IF server_data.account %]
-Account: <a href="[% server_data.account.publicUrl | html %]"
->[% server_data.account.displayName | html %]</a> (#[% server_data.account.idToken | html %])
+Account: <a href="[% server_data.account.public_url | html %]"
+>[% server_data.account.display_name | html %]</a> (#[% server_data.account.id_token | html %])
 <br/>
 [% END %]
 <span id="zones">
@@ -91,10 +91,10 @@ Account: <a href="[% server_data.account.publicUrl | html %]"
 </span>
 <br>
 
-[% IF server_data.deletionOn %]
+[% IF server_data.deletion_on %]
 [%
   verb = "is";
-  # deletionOn is ISO 8601 string, need to parse for comparison
+  # deletion_on is ISO 8601 string, need to parse for comparison
   # For now, just show it's scheduled
 %]
 This server [% verb %] <span class="deletion">scheduled for deletion</span>.
@@ -114,7 +114,7 @@ This server [% verb %] <span class="deletion">scheduled for deletion</span>.
 
 [% IF show_history %]
 <p>
-[% score = server_data.scoreRaw | format("%.1f"); active_score = 10; %]
+[% score = server_data.score_raw | format("%.1f"); active_score = 10; %]
 [% | loc(score, active_score) %]Current score: %1 (only servers with a score higher than %2 are used in the pool)[% END %]
 
 </p>
