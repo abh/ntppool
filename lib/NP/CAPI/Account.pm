@@ -6,7 +6,7 @@ package NP::CAPI::Account;
 use strict;
 use warnings;
 use NP::CAPI qw(connect_rpc);
-use Carp     qw(cluck);
+use NP::CAPI::Util qw(validate_key_value_args);
 use Exporter 'import';
 
 our @EXPORT_OK = qw(
@@ -249,26 +249,6 @@ OpenTelemetry trace ID for request tracing and debugging. Include this when repo
 
 =head1 METHODS
 
-# Internal helper to validate key-value pair arguments
-sub _validate_key_value_args {
-    my ($method_name, @args) = @_;
-
-    if (@args % 2 != 0) {
-        warn "$method_name called with odd number of arguments (" . scalar(@args) . " args)";
-        warn "Arguments: " . join(", ", map { defined($_) ? "'$_'" : 'undef' } @args);
-        cluck "$method_name requires key-value pairs (even number of arguments)";
-        return {
-            code         => 400,
-            status_line  => "400 Bad Request",
-            connect_code => "invalid_argument",
-            data         => undef,
-            error        => "Invalid call: odd number of arguments to $method_name",
-            trace_id     => "",
-        };
-    }
-    return undef;  # Validation passed
-}
-
 
 =head2 get_account_status
 
@@ -332,7 +312,7 @@ B<Example:>
 =cut
 
 sub get_account_status {
-    my $validation_error = _validate_key_value_args('get_account_status', @_);
+    my $validation_error = validate_key_value_args('get_account_status', @_);
     return $validation_error if $validation_error;
 
     my %args = @_;
@@ -341,12 +321,13 @@ sub get_account_status {
     my %request = ();
 
     return connect_rpc(
-        service => 'ntppool.account.v1.AccountService',
-        method  => 'GetAccountStatus',
-        request => \%request,
-        %args    # Pass through auth, account, context
+        service     => 'ntppool.account.v1.AccountService',
+        method      => 'GetAccountStatus',
+        request     => \%request,
+        %args  # Pass through auth, account, context
     );
 }
+
 
 =head2 process_auth0_login
 
@@ -415,27 +396,26 @@ B<Example:>
 =cut
 
 sub process_auth0_login {
-    my $validation_error = _validate_key_value_args('process_auth0_login', @_);
+    my $validation_error = validate_key_value_args('process_auth0_login', @_);
     return $validation_error if $validation_error;
 
     my %args = @_;
 
     # Extract request fields from args
     my %request = ();
-    $request{'authorization_code'} = delete $args{'authorization_code'}
-      if exists $args{'authorization_code'};
-    $request{'state'}        = delete $args{'state'} if exists $args{'state'};
-    $request{'redirect_uri'} = delete $args{'redirect_uri'}
-      if exists $args{'redirect_uri'};
+    $request{'authorization_code'} = delete $args{'authorization_code'} if exists $args{'authorization_code'};
+    $request{'state'} = delete $args{'state'} if exists $args{'state'};
+    $request{'redirect_uri'} = delete $args{'redirect_uri'} if exists $args{'redirect_uri'};
     $request{'client_site'} = delete $args{'client_site'} if exists $args{'client_site'};
 
     return connect_rpc(
-        service => 'ntppool.account.v1.AccountService',
-        method  => 'ProcessAuth0Login',
-        request => \%request,
-        %args    # Pass through auth, account, context
+        service     => 'ntppool.account.v1.AccountService',
+        method      => 'ProcessAuth0Login',
+        request     => \%request,
+        %args  # Pass through auth, account, context
     );
 }
+
 
 =head2 validate_session
 
@@ -589,25 +569,24 @@ B<Example:>
 =cut
 
 sub validate_session {
-    my $validation_error = _validate_key_value_args('validate_session', @_);
+    my $validation_error = validate_key_value_args('validate_session', @_);
     return $validation_error if $validation_error;
 
     my %args = @_;
 
     # Extract request fields from args
     my %request = ();
-    $request{'session_token'} = delete $args{'session_token'}
-      if exists $args{'session_token'};
-    $request{'account_token'} = delete $args{'account_token'}
-      if exists $args{'account_token'};
+    $request{'session_token'} = delete $args{'session_token'} if exists $args{'session_token'};
+    $request{'account_token'} = delete $args{'account_token'} if exists $args{'account_token'};
 
     return connect_rpc(
-        service => 'ntppool.account.v1.AccountService',
-        method  => 'ValidateSession',
-        request => \%request,
-        %args    # Pass through auth, account, context
+        service     => 'ntppool.account.v1.AccountService',
+        method      => 'ValidateSession',
+        request     => \%request,
+        %args  # Pass through auth, account, context
     );
 }
+
 
 =head2 delete_session
 
@@ -664,23 +643,23 @@ B<Example:>
 =cut
 
 sub delete_session {
-    my $validation_error = _validate_key_value_args('delete_session', @_);
+    my $validation_error = validate_key_value_args('delete_session', @_);
     return $validation_error if $validation_error;
 
     my %args = @_;
 
     # Extract request fields from args
     my %request = ();
-    $request{'session_token'} = delete $args{'session_token'}
-      if exists $args{'session_token'};
+    $request{'session_token'} = delete $args{'session_token'} if exists $args{'session_token'};
 
     return connect_rpc(
-        service => 'ntppool.account.v1.AccountService',
-        method  => 'DeleteSession',
-        request => \%request,
-        %args    # Pass through auth, account, context
+        service     => 'ntppool.account.v1.AccountService',
+        method      => 'DeleteSession',
+        request     => \%request,
+        %args  # Pass through auth, account, context
     );
 }
+
 
 =head2 create_account
 
@@ -758,7 +737,7 @@ B<Example:>
 =cut
 
 sub create_account {
-    my $validation_error = _validate_key_value_args('create_account', @_);
+    my $validation_error = validate_key_value_args('create_account', @_);
     return $validation_error if $validation_error;
 
     my %args = @_;
@@ -768,12 +747,13 @@ sub create_account {
     $request{'name'} = delete $args{'name'} if exists $args{'name'};
 
     return connect_rpc(
-        service => 'ntppool.account.v1.AccountService',
-        method  => 'CreateAccount',
-        request => \%request,
-        %args    # Pass through auth, account, context
+        service     => 'ntppool.account.v1.AccountService',
+        method      => 'CreateAccount',
+        request     => \%request,
+        %args  # Pass through auth, account, context
     );
 }
+
 
 =head2 update_account
 
@@ -862,29 +842,27 @@ B<Example:>
 =cut
 
 sub update_account {
-    my $validation_error = _validate_key_value_args('update_account', @_);
+    my $validation_error = validate_key_value_args('update_account', @_);
     return $validation_error if $validation_error;
 
     my %args = @_;
 
     # Extract request fields from args
     my %request = ();
-    $request{'name'}              = delete $args{'name'} if exists $args{'name'};
-    $request{'organization_name'} = delete $args{'organization_name'}
-      if exists $args{'organization_name'};
-    $request{'organization_url'} = delete $args{'organization_url'}
-      if exists $args{'organization_url'};
-    $request{'url_slug'}       = delete $args{'url_slug'} if exists $args{'url_slug'};
-    $request{'public_profile'} = delete $args{'public_profile'}
-      if exists $args{'public_profile'};
+    $request{'name'} = delete $args{'name'} if exists $args{'name'};
+    $request{'organization_name'} = delete $args{'organization_name'} if exists $args{'organization_name'};
+    $request{'organization_url'} = delete $args{'organization_url'} if exists $args{'organization_url'};
+    $request{'url_slug'} = delete $args{'url_slug'} if exists $args{'url_slug'};
+    $request{'public_profile'} = delete $args{'public_profile'} if exists $args{'public_profile'};
 
     return connect_rpc(
-        service => 'ntppool.account.v1.AccountService',
-        method  => 'UpdateAccount',
-        request => \%request,
-        %args    # Pass through auth, account, context
+        service     => 'ntppool.account.v1.AccountService',
+        method      => 'UpdateAccount',
+        request     => \%request,
+        %args  # Pass through auth, account, context
     );
 }
+
 
 =head2 remove_user_from_account
 
@@ -938,7 +916,7 @@ B<Example:>
 =cut
 
 sub remove_user_from_account {
-    my $validation_error = _validate_key_value_args('remove_user_from_account', @_);
+    my $validation_error = validate_key_value_args('remove_user_from_account', @_);
     return $validation_error if $validation_error;
 
     my %args = @_;
@@ -948,12 +926,13 @@ sub remove_user_from_account {
     $request{'user_token'} = delete $args{'user_token'} if exists $args{'user_token'};
 
     return connect_rpc(
-        service => 'ntppool.account.v1.AccountService',
-        method  => 'RemoveUserFromAccount',
-        request => \%request,
-        %args    # Pass through auth, account, context
+        service     => 'ntppool.account.v1.AccountService',
+        method      => 'RemoveUserFromAccount',
+        request     => \%request,
+        %args  # Pass through auth, account, context
     );
 }
+
 
 =head2 create_user_task
 
@@ -1011,25 +990,25 @@ B<Example:>
 =cut
 
 sub create_user_task {
-    my $validation_error = _validate_key_value_args('create_user_task', @_);
+    my $validation_error = validate_key_value_args('create_user_task', @_);
     return $validation_error if $validation_error;
 
     my %args = @_;
 
     # Extract request fields from args
     my %request = ();
-    $request{'task_type'}       = delete $args{'task_type'} if exists $args{'task_type'};
-    $request{'status'}          = delete $args{'status'}    if exists $args{'status'};
-    $request{'execute_on_unix'} = delete $args{'execute_on_unix'}
-      if exists $args{'execute_on_unix'};
+    $request{'task_type'} = delete $args{'task_type'} if exists $args{'task_type'};
+    $request{'status'} = delete $args{'status'} if exists $args{'status'};
+    $request{'execute_on_unix'} = delete $args{'execute_on_unix'} if exists $args{'execute_on_unix'};
 
     return connect_rpc(
-        service => 'ntppool.account.v1.AccountService',
-        method  => 'CreateUserTask',
-        request => \%request,
-        %args    # Pass through auth, account, context
+        service     => 'ntppool.account.v1.AccountService',
+        method      => 'CreateUserTask',
+        request     => \%request,
+        %args  # Pass through auth, account, context
     );
 }
+
 
 =head2 get_account_server_verification_status
 
@@ -1083,8 +1062,7 @@ B<Example:>
 =cut
 
 sub get_account_server_verification_status {
-    my $validation_error =
-      _validate_key_value_args('get_account_server_verification_status', @_);
+    my $validation_error = validate_key_value_args('get_account_server_verification_status', @_);
     return $validation_error if $validation_error;
 
     my %args = @_;
@@ -1093,12 +1071,13 @@ sub get_account_server_verification_status {
     my %request = ();
 
     return connect_rpc(
-        service => 'ntppool.account.v1.AccountService',
-        method  => 'GetAccountServerVerificationStatus',
-        request => \%request,
-        %args    # Pass through auth, account, context
+        service     => 'ntppool.account.v1.AccountService',
+        method      => 'GetAccountServerVerificationStatus',
+        request     => \%request,
+        %args  # Pass through auth, account, context
     );
 }
+
 
 =head2 get_accounts_to_notify
 
@@ -1166,25 +1145,24 @@ B<Example:>
 =cut
 
 sub get_accounts_to_notify {
-    my $validation_error = _validate_key_value_args('get_accounts_to_notify', @_);
+    my $validation_error = validate_key_value_args('get_accounts_to_notify', @_);
     return $validation_error if $validation_error;
 
     my %args = @_;
 
     # Extract request fields from args
     my %request = ();
-    $request{'score_threshold'} = delete $args{'score_threshold'}
-      if exists $args{'score_threshold'};
-    $request{'grace_period_days'} = delete $args{'grace_period_days'}
-      if exists $args{'grace_period_days'};
+    $request{'score_threshold'} = delete $args{'score_threshold'} if exists $args{'score_threshold'};
+    $request{'grace_period_days'} = delete $args{'grace_period_days'} if exists $args{'grace_period_days'};
 
     return connect_rpc(
-        service => 'ntppool.account.v1.AccountService',
-        method  => 'GetAccountsToNotify',
-        request => \%request,
-        %args    # Pass through auth, account, context
+        service     => 'ntppool.account.v1.AccountService',
+        method      => 'GetAccountsToNotify',
+        request     => \%request,
+        %args  # Pass through auth, account, context
     );
 }
+
 
 =head2 get_account_users
 
@@ -1260,7 +1238,7 @@ B<Example:>
 =cut
 
 sub get_account_users {
-    my $validation_error = _validate_key_value_args('get_account_users', @_);
+    my $validation_error = validate_key_value_args('get_account_users', @_);
     return $validation_error if $validation_error;
 
     my %args = @_;
@@ -1269,12 +1247,13 @@ sub get_account_users {
     my %request = ();
 
     return connect_rpc(
-        service => 'ntppool.account.v1.AccountService',
-        method  => 'GetAccountUsers',
-        request => \%request,
-        %args    # Pass through auth, account, context
+        service     => 'ntppool.account.v1.AccountService',
+        method      => 'GetAccountUsers',
+        request     => \%request,
+        %args  # Pass through auth, account, context
     );
 }
+
 
 =head2 get_user_accounts
 
@@ -1350,7 +1329,7 @@ B<Example:>
 =cut
 
 sub get_user_accounts {
-    my $validation_error = _validate_key_value_args('get_user_accounts', @_);
+    my $validation_error = validate_key_value_args('get_user_accounts', @_);
     return $validation_error if $validation_error;
 
     my %args = @_;
@@ -1359,12 +1338,13 @@ sub get_user_accounts {
     my %request = ();
 
     return connect_rpc(
-        service => 'ntppool.account.v1.AccountService',
-        method  => 'GetUserAccounts',
-        request => \%request,
-        %args    # Pass through auth, account, context
+        service     => 'ntppool.account.v1.AccountService',
+        method      => 'GetUserAccounts',
+        request     => \%request,
+        %args  # Pass through auth, account, context
     );
 }
+
 
 =head2 get_account_invites
 
@@ -1443,7 +1423,7 @@ B<Example:>
 =cut
 
 sub get_account_invites {
-    my $validation_error = _validate_key_value_args('get_account_invites', @_);
+    my $validation_error = validate_key_value_args('get_account_invites', @_);
     return $validation_error if $validation_error;
 
     my %args = @_;
@@ -1453,12 +1433,13 @@ sub get_account_invites {
     $request{'for_user'} = delete $args{'for_user'} if exists $args{'for_user'};
 
     return connect_rpc(
-        service => 'ntppool.account.v1.AccountService',
-        method  => 'GetAccountInvites',
-        request => \%request,
-        %args    # Pass through auth, account, context
+        service     => 'ntppool.account.v1.AccountService',
+        method      => 'GetAccountInvites',
+        request     => \%request,
+        %args  # Pass through auth, account, context
     );
 }
+
 
 =head2 get_account
 
@@ -1652,38 +1633,31 @@ B<Example:>
 =cut
 
 sub get_account {
-    my $validation_error = _validate_key_value_args('get_account', @_);
+    my $validation_error = validate_key_value_args('get_account', @_);
     return $validation_error if $validation_error;
 
     my %args = @_;
 
     # Extract request fields from args
     my %request = ();
-    $request{'mode'}                = delete $args{'mode'} if exists $args{'mode'};
-    $request{'include_permissions'} = delete $args{'include_permissions'}
-      if exists $args{'include_permissions'};
-    $request{'include_users'} = delete $args{'include_users'}
-      if exists $args{'include_users'};
-    $request{'include_subscriptions'} = delete $args{'include_subscriptions'}
-      if exists $args{'include_subscriptions'};
-    $request{'include_monitor_config'} = delete $args{'include_monitor_config'}
-      if exists $args{'include_monitor_config'};
-    $request{'include_servers_summary'} = delete $args{'include_servers_summary'}
-      if exists $args{'include_servers_summary'};
-    $request{'include_servers'} = delete $args{'include_servers'}
-      if exists $args{'include_servers'};
-    $request{'include_vendor_zones'} = delete $args{'include_vendor_zones'}
-      if exists $args{'include_vendor_zones'};
-    $request{'include_monitors'} = delete $args{'include_monitors'}
-      if exists $args{'include_monitors'};
+    $request{'mode'} = delete $args{'mode'} if exists $args{'mode'};
+    $request{'include_permissions'} = delete $args{'include_permissions'} if exists $args{'include_permissions'};
+    $request{'include_users'} = delete $args{'include_users'} if exists $args{'include_users'};
+    $request{'include_subscriptions'} = delete $args{'include_subscriptions'} if exists $args{'include_subscriptions'};
+    $request{'include_monitor_config'} = delete $args{'include_monitor_config'} if exists $args{'include_monitor_config'};
+    $request{'include_servers_summary'} = delete $args{'include_servers_summary'} if exists $args{'include_servers_summary'};
+    $request{'include_servers'} = delete $args{'include_servers'} if exists $args{'include_servers'};
+    $request{'include_vendor_zones'} = delete $args{'include_vendor_zones'} if exists $args{'include_vendor_zones'};
+    $request{'include_monitors'} = delete $args{'include_monitors'} if exists $args{'include_monitors'};
 
     return connect_rpc(
-        service => 'ntppool.account.v1.AccountService',
-        method  => 'GetAccount',
-        request => \%request,
-        %args    # Pass through auth, account, context
+        service     => 'ntppool.account.v1.AccountService',
+        method      => 'GetAccount',
+        request     => \%request,
+        %args  # Pass through auth, account, context
     );
 }
+
 
 =head2 can_delete_account
 
@@ -1770,23 +1744,23 @@ B<Example:>
 =cut
 
 sub can_delete_account {
-    my $validation_error = _validate_key_value_args('can_delete_account', @_);
+    my $validation_error = validate_key_value_args('can_delete_account', @_);
     return $validation_error if $validation_error;
 
     my %args = @_;
 
     # Extract request fields from args
     my %request = ();
-    $request{'account_token'} = delete $args{'account_token'}
-      if exists $args{'account_token'};
+    $request{'account_token'} = delete $args{'account_token'} if exists $args{'account_token'};
 
     return connect_rpc(
-        service => 'ntppool.account.v1.AccountService',
-        method  => 'CanDeleteAccount',
-        request => \%request,
-        %args    # Pass through auth, account, context
+        service     => 'ntppool.account.v1.AccountService',
+        method      => 'CanDeleteAccount',
+        request     => \%request,
+        %args  # Pass through auth, account, context
     );
 }
+
 
 =head2 check_user_deletion_eligibility
 
@@ -1878,8 +1852,7 @@ B<Example:>
 =cut
 
 sub check_user_deletion_eligibility {
-    my $validation_error =
-      _validate_key_value_args('check_user_deletion_eligibility', @_);
+    my $validation_error = validate_key_value_args('check_user_deletion_eligibility', @_);
     return $validation_error if $validation_error;
 
     my %args = @_;
@@ -1889,12 +1862,14 @@ sub check_user_deletion_eligibility {
     $request{'user_token'} = delete $args{'user_token'} if exists $args{'user_token'};
 
     return connect_rpc(
-        service => 'ntppool.account.v1.AccountService',
-        method  => 'CheckUserDeletionEligibility',
-        request => \%request,
-        %args    # Pass through auth, account, context
+        service     => 'ntppool.account.v1.AccountService',
+        method      => 'CheckUserDeletionEligibility',
+        request     => \%request,
+        %args  # Pass through auth, account, context
     );
 }
+
+
 
 1;
 
