@@ -45,25 +45,6 @@ sub random_subzone_ids {
     return keys %ids;
 }
 
-sub stats_days_ago {
-    my ($self, $days_ago, $ip_version) = @_;
-    my $ip_version_sql = $self->_ip_version_sql($ip_version, "zsc");
-
-    #local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
-
-    my $stats = NP::Model->zone_server_count->get_objects_from_sql(
-        args => [$self->id, $days_ago],
-        sql  => qq[SELECT *
-                    FROM zone_server_counts zsc
-                    WHERE
-                      zone_id = ?
-                      $ip_version_sql
-                      AND date = DATE_SUB(CURDATE(), INTERVAL ? DAY)
-                    ]
-    );
-    $stats && $stats->[0];
-}
-
 use constant deletion_grace_days => 14;
 
 sub active_servers {

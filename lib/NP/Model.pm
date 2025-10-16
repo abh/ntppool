@@ -1502,19 +1502,6 @@ __PACKAGE__->meta->setup(
       type       => 'one to many',
     },
 
-    user_privilege => {
-      class                => 'NP::Model::UserPrivilege',
-      column_map           => { id => 'user_id' },
-      type                 => 'one to one',
-      with_column_triggers => '0',
-    },
-
-    user_sessions => {
-      class      => 'NP::Model::UserSession',
-      column_map => { id => 'user_id' },
-      type       => 'one to many',
-    },
-
     user_tasks => {
       class      => 'NP::Model::UserTask',
       column_map => { id => 'user_id' },
@@ -1641,99 +1628,6 @@ __PACKAGE__->make_manager_methods('user_identities');
 # Allow user defined methods to be added
 eval { require NP::Model::UserIdentity }
   or $@ !~ m:^Can't locate NP/Model/UserIdentity.pm: and die $@;
-
-{ package NP::Model::UserPrivilege;
-
-use strict;
-
-use base qw(NP::Model::_Object);
-
-__PACKAGE__->meta->setup(
-  table   => 'user_privileges',
-
-  columns => [
-    user_id         => { type => 'integer', not_null => 1 },
-    see_all_servers => { type => 'integer', default => '0', not_null => 1 },
-    vendor_admin    => { type => 'integer', default => '0', not_null => 1 },
-    equipment_admin => { type => 'integer', default => '0', not_null => 1 },
-    support_staff   => { type => 'integer', default => '0', not_null => 1 },
-    monitor_admin   => { type => 'integer', default => '0', not_null => 1 },
-  ],
-
-  primary_key_columns => [ 'user_id' ],
-
-  foreign_keys => [
-    user => {
-      class       => 'NP::Model::User',
-      key_columns => { user_id => 'id' },
-      rel_type    => 'one to one',
-    },
-  ],
-);
-
-push @table_classes, __PACKAGE__;
-}
-
-{ package NP::Model::UserPrivilege::Manager;
-
-use strict;
-
-our @ISA = qw(Combust::RoseDB::Manager);
-
-sub object_class { 'NP::Model::UserPrivilege' }
-
-__PACKAGE__->make_manager_methods('user_privileges');
-}
-
-# Allow user defined methods to be added
-eval { require NP::Model::UserPrivilege }
-  or $@ !~ m:^Can't locate NP/Model/UserPrivilege.pm: and die $@;
-
-{ package NP::Model::UserSession;
-
-use strict;
-
-use base qw(NP::Model::_Object);
-
-__PACKAGE__->meta->setup(
-  table   => 'user_sessions',
-
-  columns => [
-    id           => { type => 'serial', not_null => 1 },
-    user_id      => { type => 'integer', not_null => 1 },
-    token_lookup => { type => 'varchar', length => 16, not_null => 1 },
-    token_hashed => { type => 'varchar', length => 256, not_null => 1 },
-    last_seen    => { type => 'datetime' },
-    created_on   => { type => 'datetime', default => 'CURRENT_TIMESTAMP', not_null => 1 },
-  ],
-
-  primary_key_columns => [ 'id' ],
-
-  foreign_keys => [
-    user => {
-      class       => 'NP::Model::User',
-      key_columns => { user_id => 'id' },
-    },
-  ],
-);
-
-push @table_classes, __PACKAGE__;
-}
-
-{ package NP::Model::UserSession::Manager;
-
-use strict;
-
-our @ISA = qw(Combust::RoseDB::Manager);
-
-sub object_class { 'NP::Model::UserSession' }
-
-__PACKAGE__->make_manager_methods('user_sessions');
-}
-
-# Allow user defined methods to be added
-eval { require NP::Model::UserSession }
-  or $@ !~ m:^Can't locate NP/Model/UserSession.pm: and die $@;
 
 { package NP::Model::UserTask;
 
@@ -1964,8 +1858,6 @@ eval { require NP::Model::Zone }
   sub user { our $user ||= bless [], 'NP::Model::User::Manager' }
   sub user_equipment_application { our $user_equipment_application ||= bless [], 'NP::Model::UserEquipmentApplication::Manager' }
   sub user_identity { our $user_identity ||= bless [], 'NP::Model::UserIdentity::Manager' }
-  sub user_privilege { our $user_privilege ||= bless [], 'NP::Model::UserPrivilege::Manager' }
-  sub user_session { our $user_session ||= bless [], 'NP::Model::UserSession::Manager' }
   sub user_task { our $user_task ||= bless [], 'NP::Model::UserTask::Manager' }
   sub vendor_zone { our $vendor_zone ||= bless [], 'NP::Model::VendorZone::Manager' }
   sub zone { our $zone ||= bless [], 'NP::Model::Zone::Manager' }
