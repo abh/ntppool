@@ -8,7 +8,7 @@ use Combust::Constant qw(OK);
 sub profile_visible {
     my $self    = shift;
     my $account = shift;
-    return $account->public_profile || $self->user->is_staff;
+    return $account->public_profile || $self->user_is_staff;
 }
 
 1;

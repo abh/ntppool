@@ -12,8 +12,9 @@ use Math::BaseCalc       qw();
 use Math::Random::Secure qw(irand);
 use URI::URL             ();
 use NP::UA;
-use NP::IntAPI        qw(int_api);
-use NP::CAPI::Account qw(get_account_status process_auth0_login validate_session get_user_accounts);
+use NP::IntAPI qw(int_api);
+use NP::CAPI::Account
+  qw(get_account_status process_auth0_login validate_session get_user_accounts);
 use OpenTelemetry::Trace;
 use OpenTelemetry -all;
 use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
@@ -61,7 +62,7 @@ sub init {
         }
 
         if (my $user = $self->user) {
-            $span->set_attribute("user.is_staff", $user->is_staff);
+            $span->set_attribute("user.is_staff", $self->user_is_staff);
             $span->set_attribute("user.email",    $user->email);
             $span->set_attribute("user.username", $user->username);
             $span->set_attribute("user.id",       $user->id);
@@ -106,10 +107,11 @@ sub current_account {
     # 3. Check permissions
     # 4. Return account context + permissions
     my $account_token = $self->req_param('a');
-    my %params = (
+    my %params        = (
         session_token => $session_token,
         context       => $self->_get_request_context(),
     );
+
     # Only include account_token if defined (avoid undef causing parameter shift)
     $params{account_token} = $account_token if defined $account_token;
 
@@ -124,6 +126,9 @@ sub current_account {
 
     my $data = $result->{data};
 
+    # Cache user privileges from session
+    $self->{_user_privileges} = $data->{privileges} || {};
+
     # Session valid but user has no accounts
     return $self->{_current_account} = undef unless $data->{account};
 
@@ -133,6 +138,24 @@ sub current_account {
     $account->{_permissions} = $data->{permissions} if $data->{permissions};
 
     return $self->{_current_account} = $account;
+}
+
+sub user_is_staff {
+    my $self = shift;
+    $self->current_account();    # Ensure session data is loaded
+    return $self->{_user_privileges}{support_staff} || 0;
+}
+
+sub user_is_monitor_admin {
+    my $self = shift;
+    $self->current_account();    # Ensure session data is loaded
+    return $self->{_user_privileges}{monitor_admin} || 0;
+}
+
+sub user_is_vendor_admin {
+    my $self = shift;
+    $self->current_account();    # Ensure session data is loaded
+    return $self->{_user_privileges}{vendor_admin} || 0;
 }
 
 sub current_url {
@@ -345,7 +368,7 @@ sub manage_dispatch {
 
     # .../servers and .../account have their own handlers
 
-    if ($self->user->is_staff) {
+    if ($self->user_is_staff) {
         if ($self->request->uri =~ m{/manage/admin/?$}) {
             return $self->show_staff;
         }
@@ -382,7 +405,7 @@ sub staff_search {
     $self->set_span_name("manage.admin.search");
 
     # Check staff access
-    unless ($self->user && $self->user->is_staff) {
+    unless ($self->user && $self->user_is_staff) {
         return 403, "Access denied";
     }
 
@@ -526,7 +549,7 @@ sub staff_zone_edit {
     $self->cache_control('private, no-cache');
 
     # Check staff access
-    unless ($self->user && $self->user->is_staff) {
+    unless ($self->user && $self->user_is_staff) {
         return 403, "Access denied";
     }
 
@@ -594,7 +617,7 @@ sub staff_hostname_edit {
     $self->cache_control('private, no-cache');
 
     # Check staff access
-    unless ($self->user && $self->user->is_staff) {
+    unless ($self->user && $self->user_is_staff) {
         return 403, "Access denied";
     }
 

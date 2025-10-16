@@ -82,7 +82,7 @@ sub show_manage {
 
     my @server_ids = map { $_->id } @$servers;
 
-    if ($self->user->is_staff) {
+    if ($self->user_is_staff) {
         my $logs = NP::Model->log->get_objects(
             query => [
                 or => [
@@ -657,7 +657,7 @@ sub handle_move {
     $self->tpl_param('errors', $errors);
 
     my $accounts;
-    if ($self->user->is_staff) {
+    if ($self->user_is_staff) {
 
         # get all accounts available to any user in this account
         my ($account_users) = NP::Model->user->get_users(

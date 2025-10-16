@@ -7,7 +7,9 @@ use Net::IP;
 sub edit_server {
     my $self = shift;
 
-    return {error => 'No access'} unless $self->user && $self->user->is_staff;
+    # Access control is handled by the calling controller
+    # (staff_zone_edit and staff_hostname_edit check user_is_staff before calling)
+    return {error => 'No access'} unless $self->user;
 
     my ($field, $server_ip) = $self->_required_param(qw(id server));
     my $value = $self->_optional_param('value') || '';
@@ -36,8 +38,8 @@ sub edit_server {
         return [map { $_->name } $server->zones_display];
     }
     elsif ($field eq 'hostname') {
-        my $hostname  = $value;
-        my $error = "";
+        my $hostname = $value;
+        my $error    = "";
 
         # Allow clearing the hostname (setting to empty string)
         if (!$hostname || $hostname eq '') {
@@ -49,8 +51,9 @@ sub edit_server {
         else {
             # Validate that hostname resolves to server IP
             my $server_ip = Net::IP->new($server->ip);
-            my $res   = Net::DNS::Resolver->new(defnames => 0);
-            my $reply = $res->query($hostname, $server->ip_version eq 'v4' ? 'A' : 'AAAA');
+            my $res       = Net::DNS::Resolver->new(defnames => 0);
+            my $reply =
+              $res->query($hostname, $server->ip_version eq 'v4' ? 'A' : 'AAAA');
 
             my $found = 0;
 
@@ -62,7 +65,10 @@ sub edit_server {
             }
 
             if ($found) {
-                warn "Setting hostname to: " . lc($hostname) . " for server ID: " . $server->id;
+                warn "Setting hostname to: "
+                  . lc($hostname)
+                  . " for server ID: "
+                  . $server->id;
                 $server->hostname(lc $hostname);
                 $server->save;
                 warn "After save, server hostname is: " . ($server->hostname || 'undef');

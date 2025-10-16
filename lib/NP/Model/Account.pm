@@ -1,14 +1,14 @@
 package NP::Model::Account;
 use strict;
-use Math::BaseCalc              qw();
-use Math::Random::Secure        qw(irand);
+use Math::BaseCalc       qw();
+use Math::Random::Secure qw(irand);
 use NP::Model::TokenID;
-use base                        qw(NP::Model::TokenID);
-use Combust::Config             ();
-use NP::CAPI::Account           qw(get_account_server_verification_status get_accounts_to_notify);
+use base              qw(NP::Model::TokenID);
+use Combust::Config   ();
+use NP::CAPI::Account qw(get_account_server_verification_status get_accounts_to_notify);
 use OpenTelemetry::Trace;
-use OpenTelemetry               -all;
-use OpenTelemetry::Constants    qw( SPAN_STATUS_ERROR );
+use OpenTelemetry -all;
+use OpenTelemetry::Constants qw( SPAN_STATUS_ERROR );
 
 sub BAD_SERVER_THRESHOLD {-15}
 
@@ -80,17 +80,21 @@ sub validation_errors {
 }
 
 sub can_edit {
-    my ($self, $user) = @_;
+    my ($self, $user, $controller) = @_;
     return 0 unless $user;
-    return 1 if $user->privileges->support_staff;
+
+    # Check controller-level privileges if controller is provided
+    return 1 if $controller && $controller->user_is_staff;
     return 1 if grep { $_->id == $user->id } $self->users;
     return 0;
 }
 
 sub can_view {
-    my ($self, $user) = @_;
-    return 1 if $self->can_edit($user);
-    return 1 if $user->is_monitor_admin;
+    my ($self, $user, $controller) = @_;
+    return 1 if $self->can_edit($user, $controller);
+
+    # Check controller-level privileges if controller is provided
+    return 1 if $controller && $controller->user_is_monitor_admin;
     return 0;
 }
 
@@ -108,19 +112,19 @@ sub can_add_servers {
             $span->set_status(SPAN_STATUS_ERROR, "Account missing id_token");
             $span->set_attribute("account.id", $account_id) if $account_id ne 'undef';
             $span->set_attribute("account.id_token.missing", 1);
-            $span->add_event("account_token_missing", {
-                "account.id" => $account_id,
-                "message" => "Account object has no id_token for verification"
-            });
+            $span->add_event(
+                "account_token_missing",
+                {   "account.id" => $account_id,
+                    "message"    => "Account object has no id_token for verification"
+                }
+            );
         }
 
         # Fail safely - don't allow adding servers if we can't verify
         return 0;
     }
 
-    my $result = get_account_server_verification_status(
-        account => $account_token,
-    );
+    my $result = get_account_server_verification_status(account => $account_token,);
 
     # Return 0 on API error (don't allow adding servers)
     if ($result->{error}) {

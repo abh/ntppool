@@ -181,8 +181,8 @@ sub manage_dispatch {
             return $self->redirect("/manage/");
         }
 
-        # Note: Logging moved to Go API (CreateAccount service)
-        # During PostgreSQL migration, cannot log to MySQL with account_id that only exists in PostgreSQL
+# Note: Logging moved to Go API (CreateAccount service)
+# During PostgreSQL migration, cannot log to MySQL with account_id that only exists in PostgreSQL
     }
 
     # check access
@@ -203,7 +203,7 @@ sub manage_dispatch {
     elsif ($self->request->uri =~ m!^/manage/account/monitor-config$!) {
         warn "DEBUG: monitor-config route hit, method: " . $self->request->method;
         warn "DEBUG: request URI: " . $self->request->uri;
-        return 403 unless $self->user->is_monitor_admin;
+        return 403 unless $self->user_is_monitor_admin;
         if ($self->request->method eq 'post') {
             warn
               "DEBUG: Handling POST request for monitor config update (will use PATCH to API)";
@@ -223,7 +223,7 @@ sub manage_dispatch {
 
             my $delete_user_id = $self->req_param('user_id');
             if ($delete_user_id
-                and ($self->user->is_staff or $self->user->id != $delete_user_id))
+                and ($self->user_is_staff or $self->user->id != $delete_user_id))
             {
                 return $self->remove_user_from_account($account, $delete_user_id);
             }
@@ -261,8 +261,8 @@ sub remove_user_from_account {
         return $self->render_users($account);
     }
 
-    # Note: Logging moved to Go API (RemoveUserFromAccount service)
-    # During PostgreSQL migration, cannot log to MySQL with account_id that only exists in PostgreSQL
+# Note: Logging moved to Go API (RemoveUserFromAccount service)
+# During PostgreSQL migration, cannot log to MySQL with account_id that only exists in PostgreSQL
 
     # Note: No need to reload during PostgreSQL migration
     # Account data already in hashref from API
@@ -277,7 +277,8 @@ sub remove_user_from_account {
 
     my $email =
       Email::Stuffer->from(NP::Email::address("sender"))
-      ->reply_to(NP::Email::address("support"))->subject("NTP Pool account change")
+      ->reply_to(NP::Email::address("support"))
+      ->subject("NTP Pool account change")
       ->text_body($msg);
 
     $email->to($user->{email});
@@ -333,8 +334,8 @@ sub handle_invitation {
     $invite->account->save
       or return $self->render_invite_error("Error saving database update");
 
-    # Note: Logging moved to Go API (accept invitation endpoint - to be implemented)
-    # During PostgreSQL migration, cannot log to MySQL with account_id that only exists in PostgreSQL
+# Note: Logging moved to Go API (accept invitation endpoint - to be implemented)
+# During PostgreSQL migration, cannot log to MySQL with account_id that only exists in PostgreSQL
     $db->commit or return $self->render_invite_error("database commit error");
 
     # we accepted an invite for a new user that didn't have a account yet, so
@@ -395,8 +396,8 @@ sub render_users_invite {
     }
     $invite->save;
 
-    # Note: Logging moved to Go API (send invitation endpoint - to be implemented)
-    # During PostgreSQL migration, cannot log to MySQL with account_id that only exists in PostgreSQL
+# Note: Logging moved to Go API (send invitation endpoint - to be implemented)
+# During PostgreSQL migration, cannot log to MySQL with account_id that only exists in PostgreSQL
 
     my $param = {invite => $invite};
 
@@ -409,8 +410,10 @@ sub render_users_invite {
     # for the sender?
 
     my $email =
-      Email::Stuffer->from(NP::Email::address("sender"))->to($email_address)
-      ->reply_to(NP::Email::address("support"))->subject("NTP Pool account invitation")
+      Email::Stuffer->from(NP::Email::address("sender"))
+      ->to($email_address)
+      ->reply_to(NP::Email::address("support"))
+      ->subject("NTP Pool account invitation")
       ->text_body($msg);
 
     NP::Email::sendmail($email);
@@ -448,7 +451,7 @@ sub render_users {
     $self->tpl_param('invites', $invites);
     $self->tpl_param('users',   $users);
 
-    if ($self->user->is_staff) {
+    if ($self->user_is_staff) {
         my $logs = NP::Model->log->get_objects(
             query => [
                 account_id => [$self->current_account->{account_id}],
@@ -467,7 +470,7 @@ sub render_account_form {
     $self->tpl_param('account', $account);
 
     # Set monitor config for admin users
-    if ($self->user->is_monitor_admin && $account) {
+    if ($self->user_is_monitor_admin && $account) {
         warn "DEBUG: Setting monitor config for admin user, account ID: "
           . $account->{account_id};
         warn "DEBUG: Account flags: " . ($account->{flags} || 'NULL');
@@ -477,13 +480,13 @@ sub render_account_form {
     }
     else {
         warn "DEBUG: NOT setting monitor config - is_monitor_admin: "
-          . ($self->user->is_monitor_admin || 0)
+          . ($self->user_is_monitor_admin || 0)
           . ", has account: "
           . (defined $account ? 'yes' : 'no');
     }
 
     # todo: how do you end up here without an account?
-    if ($self->user->is_staff && $self->current_account) {
+    if ($self->user_is_staff && $self->current_account) {
         my $logs = NP::Model->log->get_objects(
             query   => [account_id => [$self->current_account->{account_id}],],
             sort_by => "created_on desc",
@@ -574,8 +577,8 @@ sub render_account_edit {
         $account_obj = $data->{data}{account};
         $account     = $self->_account_from_api_response($account_obj);
 
-        # Note: Logging moved to Go API (UpdateAccount service)
-        # During PostgreSQL migration, cannot log to MySQL with account_id that only exists in PostgreSQL
+# Note: Logging moved to Go API (UpdateAccount service)
+# During PostgreSQL migration, cannot log to MySQL with account_id that only exists in PostgreSQL
     }
 
     return $self->render_account_form($account);
@@ -726,7 +729,8 @@ sub render_user_delete {
         my $email =
           Email::Stuffer->from(NP::Email::address("sender"))
           ->reply_to(NP::Email::address("support"))
-          ->subject("NTP Pool user deletion scheduled")->text_body($msg);
+          ->subject("NTP Pool user deletion scheduled")
+          ->text_body($msg);
 
         $email->to($user->email);
         NP::Email::sendmail($email);
