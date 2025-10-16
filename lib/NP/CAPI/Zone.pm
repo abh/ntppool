@@ -6,6 +6,7 @@ package NP::CAPI::Zone;
 use strict;
 use warnings;
 use NP::CAPI qw(connect_rpc);
+use Carp qw(cluck);
 use Exporter 'import';
 
 our @EXPORT_OK = qw(
@@ -107,6 +108,26 @@ OpenTelemetry trace ID for request tracing and debugging. Include this when repo
 
 =head1 METHODS
 
+# Internal helper to validate key-value pair arguments
+sub _validate_key_value_args {
+    my ($method_name, @args) = @_;
+
+    if (@args % 2 != 0) {
+        warn "$method_name called with odd number of arguments (" . scalar(@args) . " args)";
+        warn "Arguments: " . join(", ", map { defined($_) ? "'$_'" : 'undef' } @args);
+        cluck "$method_name requires key-value pairs (even number of arguments)";
+        return {
+            code         => 400,
+            status_line  => "400 Bad Request",
+            connect_code => "invalid_argument",
+            data         => undef,
+            error        => "Invalid call: odd number of arguments to $method_name",
+            trace_id     => "",
+        };
+    }
+    return undef;  # Validation passed
+}
+
 
 =head2 list_zones
 
@@ -184,6 +205,9 @@ B<Example:>
 =cut
 
 sub list_zones {
+    my $validation_error = _validate_key_value_args('list_zones', @_);
+    return $validation_error if $validation_error;
+
     my %args = @_;
 
     # Extract request fields from args
@@ -280,6 +304,9 @@ B<Example:>
 =cut
 
 sub get_zone {
+    my $validation_error = _validate_key_value_args('get_zone', @_);
+    return $validation_error if $validation_error;
+
     my %args = @_;
 
     # Extract request fields from args
