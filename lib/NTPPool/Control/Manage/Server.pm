@@ -19,6 +19,7 @@ use Math::Random::Secure qw(irand);
 use NP::NTP;
 use NP::IntAPI qw(int_api);
 use NP::CAPI::Server qw(get_account_servers);
+use NP::CAPI::ServerManagement qw(add_server_precheck add_server);
 use OpenTelemetry -all;
 use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
 use experimental             qw( defer );
@@ -145,32 +146,69 @@ sub handle_add {
 
     my @servers;
 
-    my @ips = $self->_get_server_ips($host);
+    # Pass raw user input (hostname or IP) directly to API
+    # DNS resolution happens in Go API (not Perl)
+    my $precheck_result = add_server_precheck(
+        auth    => $self->plain_cookie($self->user_cookie_name),
+        account => $account->{account_token},
+        context => $self->_get_request_context(),
+        inputs  => [$host],  # Go API handles DNS resolution
+    );
 
-    for my $ip (@ips) {
-        my $server = $self->get_server_info($ip);
-        next unless $server;
-        unless (Net::IP->new($host)) {
-            $server->{hostname} = $host;
-            $server->{account}  = $account;
+    # Handle API errors
+    if ($precheck_result->{error}) {
+        $self->tpl_param('error', $precheck_result->{error});
+        return OK, $self->evaluate_template('tpl/manage/add_form.html');
+    }
+
+    # Transform API results to template format
+    for my $result (@{$precheck_result->{data}{results}}) {
+        my %server = (
+            ip         => $result->{ip},
+            ip_version => $result->{ip_version},
+        );
+
+        # Use hostname from API response (DNS-verified)
+        if ($result->{hostname}) {
+            $server{hostname} = $result->{hostname};
         }
-        push @servers, $server;
+
+        # Handle errors and already-exists cases
+        if ($result->{error}) {
+            $server{error} = $result->{error};
+            if ($result->{already_exists}) {
+                $server{listed} = $result->{already_exists_same_account};
+            }
+        }
+
+        # Build zones array from API response
+        if ($result->{zones} && @{$result->{zones}}) {
+            # API returns zones as hashrefs with name, description, url, dns
+            # Template expects similar structure - just pass through
+            $server{zones} = $result->{zones};
+            $server{country_zone} = $result->{zones}[0];  # First zone is country
+        }
+
+        # Store detected country for fallback zone logic
+        $server{geoip_country} = $result->{detected_country} if $result->{detected_country};
+
+        push @servers, \%server;
     }
 
     if (!@servers) {
         return OK, $self->evaluate_template('tpl/manage/add_form.html');
     }
 
+    # Handle data_missing for servers without zones
     for my $server (@servers) {
         if (!$server->{country_zone}) {
             $server->{data_missing} ||= 'Country not specified'
               if !$server->{error} and $self->req_param('yes');
-            next;
         }
-        push my @zones, $server->{country_zone};
-        unshift @zones, $zones[0]->parent while ($zones[0]->parent);
-        $server->{zones} = \@zones;
     }
+
+    # Store precheck token for the confirmation step
+    $self->tpl_param('precheck_token', $precheck_result->{data}{precheck_token});
 
     my $allow_submit = grep { !$_->{error} } @servers;
     my $data_missing = grep { $_->{data_missing} } @servers;
@@ -229,30 +267,8 @@ sub handle_add {
     return OK, $self->evaluate_template('tpl/manage/add.html');
 }
 
-sub _get_server_ips {
-    my ($self, $host) = @_;
-
-    if (my $ip = Net::IP->new($host)) {
-        return ($ip->short);
-    }
-
-    my $res = Net::DNS::Resolver->new(domain => "", defnames => 0);
-    my @ips;
-    for my $type (qw(A AAAA)) {
-        my $query = $res->query($host, $type);
-        if ($query) {
-            for my $rr ($query->answer) {
-                next unless $rr->type eq "A" or $rr->type eq "AAAA";
-                push @ips, $rr->address;
-            }
-        }
-        else {
-            warn "query failed: ", join(" ", $host, $type, $res->errorstring), "\n";
-        }
-    }
-    warn "GOT IPS: ", join ", ", @ips;
-    return @ips;
-}
+# _get_server_ips removed - DNS resolution now handled by Go API
+# See add_server_precheck which accepts hostname/IP inputs
 
 sub _add_server {
     my ($self, $server) = @_;
@@ -262,67 +278,98 @@ sub _add_server {
     $self->tpl_param('scores_url',
         $self->config->base_url('ntppool') . '/scores/' . $server->{ip});
 
-    my $s;
+    # Build server data for API
+    my %server_to_add = (
+        ip => $server->{ip},
+    );
 
-    my $db  = NP::Model->db;
-    my $txn = $db->begin_scoped_work;
-
-    if ($s = NP::Model->server->fetch(ip => $server->{ip})) {
-        $s->setup_server;
-    }
-    else {
-        # the model calls setup_server
-        $s = NP::Model->server->create(ip => $server->{ip});
+    # Get fallback zone if user explicitly selected one
+    if (my $zone_name = $self->req_param('explicit_zone_' . $server->{ip})) {
+        $server_to_add{fallback_zone} = $zone_name;
     }
 
-    $s->hostname($server->{hostname} || '');
-    $s->ip_version($server->{ip_version});
-    $s->admin($self->user);
-    $s->account($server->{account});
-    $s->account($self->current_account);
-    $s->in_pool(1);
-    $s->deleted(0);
-    $s->deletion_on(undef);
-    $s->netspeed_target(10000);
-    $s->netspeed(10000);
-    $s->zones([]);
+    # Get precheck token from form (passed from add.html)
+    my $precheck_token = $self->req_param('precheck_token');
 
-    if (my $v = $s->server_verification) {
+    # Call add_server API
+    my $result = add_server(
+        auth           => $self->plain_cookie($self->user_cookie_name),
+        account        => $self->current_account->{account_token},
+        context        => $self->_get_request_context(),
+        servers        => [\%server_to_add],
+        precheck_token => $precheck_token,
+        batch_comment  => $comment,  # API handles audit logging
+    );
 
-        # move verification to history table
-        my %d = ();
-        for my $k (
-            qw(server_id user_id user_ip indirect_ip verified_on created_on modified_on)
-          )
-        {
-            $d{$k} = $v->$k;
-        }
-        my $h = NP::Model->server_verifications_history->create(%d);
-        $h->save;
-        $v->delete;
+    # Handle API errors
+    if ($result->{error}) {
+        warn "Failed to add server: " . $result->{error};
+        warn "Trace ID: " . $result->{trace_id};
+        # Return blessed object with error info for template compatibility
+        return bless {
+            error      => $result->{error},
+            trace_id   => $result->{trace_id},
+            ip         => $server->{ip},
+            _is_api_object => 1,
+        }, 'NTPPool::Control::Manage::Server::APIServer';
     }
 
-    $s->join_zone($_) for @{$server->{zones}};
-    if (my $zone_name = $self->req_param('explicit_zone_' . $s->ip)) {
-        warn "user picked [$zone_name]";
-        my $explicit_zone = NP::Model->zone->get_zones(query => [name => $zone_name]);
-        $explicit_zone = $explicit_zone->[0];
-        while ($explicit_zone) {
-            $s->join_zone($explicit_zone);
-            $explicit_zone = $explicit_zone && $explicit_zone->parent;
-        }
+    # Get the server from API response
+    my $api_result = $result->{data}{results}[0];
+    if (!$api_result->{success}) {
+        warn "Server add failed: " . ($api_result->{error} || 'Unknown error');
+        return bless {
+            error => $api_result->{error} || 'Failed to add server',
+            ip    => $server->{ip},
+            _is_api_object => 1,
+        }, 'NTPPool::Control::Manage::Server::APIServer';
     }
 
-    NP::Model::Log->log_changes($self->user, "server-create",
-        "Server added." . ($comment =~ m/\S/ ? "\n\n$comment" : ""), $s,);
+    # Use server data directly from API response (no database reload)
+    my $server_data = $api_result->{server};
 
-    #local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
-    $s->save(cascade => 1);
-
-    $db->commit;
-
-    return $s;
+    # Return API server data with compatibility methods for template
+    # The API returns complete server object, use it directly
+    return bless {
+        %$server_data,
+        _is_api_object => 1,
+    }, 'NTPPool::Control::Manage::Server::APIServer';
 }
+
+# Compatibility wrapper for API server objects
+package NTPPool::Control::Manage::Server::APIServer;
+
+sub id {
+    my $self = shift;
+    return $self->{id};
+}
+
+sub ip {
+    my $self = shift;
+    return $self->{ip};
+}
+
+sub hostname {
+    my $self = shift;
+    return $self->{hostname} || '';
+}
+
+sub manage_url {
+    my $self = shift;
+    return "/manage/server?server=" . $self->{ip};
+}
+
+sub error {
+    my $self = shift;
+    return $self->{error} || '';
+}
+
+sub trace_id {
+    my $self = shift;
+    return $self->{trace_id} || '';
+}
+
+package NTPPool::Control::Manage::Server;
 
 sub get_server_info {
     my ($self, $ip) = @_;
