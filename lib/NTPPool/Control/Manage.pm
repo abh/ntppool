@@ -98,7 +98,7 @@ sub init {
         }
 
         if (my $user = $self->user) {
-            $span->set_attribute("user.is_staff", $self->user_is_staff);
+            $span->set_attribute("user.is_staff", $self->user_is_staff ? 1 : 0);
             $span->set_attribute("user.email",    $user->email);
             $span->set_attribute("user.username", $user->username);
             $span->set_attribute("user.id",       $user->id);
