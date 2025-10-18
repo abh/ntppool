@@ -13,26 +13,9 @@ sub insert {
     $self->insert_token_id();
 }
 
-sub is_staff {
-    my $self       = shift;
-    my $privileges = $self->privileges;
-    return $privileges->support_staff;
-}
-
-sub is_monitor_admin {
-    my $self       = shift;
-    my $privileges = $self->privileges;
-    return $privileges->monitor_admin;
-}
-
 sub who {
     my $self = shift;
     $self->username || $self->email;
-}
-
-sub privileges {
-    my $self = shift;
-    $self->user_privilege(@_) || $self->user_privilege({user_id => $self->id})->save;
 }
 
 sub pending_invites {

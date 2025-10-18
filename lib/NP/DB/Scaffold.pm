@@ -5,9 +5,10 @@ use base qw(Combust::RoseDB::Scaffold);
 # Tables excluded from model generation (migrated to CAPI or not needed)
 my @excluded_tables = qw(
     log_scores_archive_status
-    user_sessions
-    user_privileges
     server_notes
+    user_privileges
+    user_sessions
+    zone_server_counts
 );
 
 sub db_model_class {

@@ -6,6 +6,7 @@ package NP::CAPI::Server;
 use strict;
 use warnings;
 use NP::CAPI qw(connect_rpc);
+use NP::CAPI::Util qw(validate_key_value_args);
 use Exporter 'import';
 
 our @EXPORT_OK = qw(
@@ -189,6 +190,9 @@ B<Example:>
 =cut
 
 sub get_server {
+    my $validation_error = validate_key_value_args('get_server', @_);
+    return $validation_error if $validation_error;
+
     my %args = @_;
 
     # Extract request fields from args
@@ -217,7 +221,10 @@ B<Arguments:>
         auth    => $user_token,      # Optional: User/session authentication token
         account => $account_token,   # Optional: Account selection token
         context => $request_context, # Optional: Request context for X-Forwarded-For
+        id_token => $value,       # string - id_token is the account's public identifier token (e.g., "21wase0")
+ Used for authenticated access with access control. Optional if url_slug is provided.
         url_slug => $value,       # string - url_slug is the account's URL-friendly identifier (e.g., "fancytime")
+ Used for public profile access. Optional if id_token is provided.
     );
 
 B<Returns:>
@@ -300,10 +307,14 @@ B<Example:>
 =cut
 
 sub get_account_servers {
+    my $validation_error = validate_key_value_args('get_account_servers', @_);
+    return $validation_error if $validation_error;
+
     my %args = @_;
 
     # Extract request fields from args
     my %request = ();
+    $request{'id_token'} = delete $args{'id_token'} if exists $args{'id_token'};
     $request{'url_slug'} = delete $args{'url_slug'} if exists $args{'url_slug'};
 
     return connect_rpc(

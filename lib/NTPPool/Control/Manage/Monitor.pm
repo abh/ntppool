@@ -22,33 +22,6 @@ sub _get_request_context {
     return $x_forwarded_for ? {x_forwarded_for => $x_forwarded_for} : undef;
 }
 
-sub _map_api_error_code {
-    my ($self, $data, $context) = @_;
-
-    my $api_code = $data->{code};
-    return $api_code if $api_code == 200;
-
-    $self->cache_control('private, max-age=0, no-cache');
-    $self->tpl_param('error', $data->{error}) unless $self->tpl_param('error');
-    $self->tpl_param('code',  $api_code);
-
-    if ($api_code == 401) {
-        warn "API unauthorized access in $context: user "
-          . ($self->user ? $self->user->username : 'none');
-        return 401;
-    }
-    elsif ($api_code == 404) {
-        return NOT_FOUND;
-    }
-    elsif ($api_code >= 400 && $api_code < 500) {
-        return FORBIDDEN;
-    }
-    elsif ($api_code >= 500) {
-        return SERVER_ERROR;
-    }
-
-    return NOT_FOUND;    # fallback
-}
 
 sub manage_dispatch {
     my $self = shift;
@@ -133,8 +106,8 @@ sub _fetch_monitor_details {
         $self->_get_request_context()
     );
 
-    if ($data->{code} != 200) {
-        my $code = $self->_map_api_error_code($data, "fetch_monitor_details for $name");
+    if ($data->{code} >= 300) {
+        my $code = $self->_handle_capi_error($data);
         return undef, $code;
     }
 
@@ -281,8 +254,8 @@ sub render_monitors {
         $self->_get_request_context()
     );
 
-    if ($data->{code} >= 400) {
-        return $self->_map_api_error_code($data, "render_monitors");
+    if ($data->{code} >= 300) {
+        return $self->_handle_capi_error($data);
     }
 
     my @monitors = _monitor_list($data->{data}->{Monitors} || {});
@@ -315,8 +288,8 @@ sub render_admin_list {
         $self->_get_request_context()
     );
 
-    if ($data->{code} >= 400) {
-        return $self->_map_api_error_code($data, "render_admin_list");
+    if ($data->{code} >= 300) {
+        return $self->_handle_capi_error($data);
     }
 
     my @monitors = _monitor_list($data->{data}->{Monitors} || {});
@@ -352,8 +325,8 @@ sub render_admin_status {
         },
         $self->_get_request_context()
     );
-    if ($data->{code} >= 400) {
-        return $self->_map_api_error_code($data, "render_admin_status");
+    if ($data->{code} >= 300) {
+        return $self->_handle_capi_error($data);
     }
 
     # no content, monitor was deleted
@@ -436,10 +409,7 @@ sub render_delete_monitor {
         return $self->redirect($self->manage_url('/manage/monitors/'));
     }
     else {
-        # Error case - log details, show actual API error message
-        warn "Failed to delete monitor $name: " . ($data->{error} || 'Unknown error');
-
-        # Use actual API error message or provide fallback
+        # Error case - use actual API error message
         my $error_msg = $data->{error} || 'Unable to delete monitor - please try again or contact support';
 
         if ($self->is_htmx) {

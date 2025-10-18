@@ -21,16 +21,6 @@ sub profile_user {
     $self->{_profile_user} = $user;
 }
 
-sub profile_account {
-    my $self = shift;
-    return $self->{_profile_account} if $self->{_profile_account};
-    my ($account_name, $extra) = ($self->request->uri =~ m!^/a/([^/]+)(?:/([^/]+))?!);
-    return unless $account_name;
-    my $account = NP::Model->account->fetch(url_slug => $account_name);
-    $self->{_profile_account} = $account;
-    return ($account, $extra);
-}
-
 sub account_data {
     my $self       = shift;
     my $url_slug   = shift;

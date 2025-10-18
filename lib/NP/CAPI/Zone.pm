@@ -6,6 +6,7 @@ package NP::CAPI::Zone;
 use strict;
 use warnings;
 use NP::CAPI qw(connect_rpc);
+use NP::CAPI::Util qw(validate_key_value_args);
 use Exporter 'import';
 
 our @EXPORT_OK = qw(
@@ -184,6 +185,9 @@ B<Example:>
 =cut
 
 sub list_zones {
+    my $validation_error = validate_key_value_args('list_zones', @_);
+    return $validation_error if $validation_error;
+
     my %args = @_;
 
     # Extract request fields from args
@@ -280,6 +284,9 @@ B<Example:>
 =cut
 
 sub get_zone {
+    my $validation_error = validate_key_value_args('get_zone', @_);
+    return $validation_error if $validation_error;
+
     my %args = @_;
 
     # Extract request fields from args

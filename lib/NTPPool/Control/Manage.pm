@@ -12,8 +12,9 @@ use Math::BaseCalc       qw();
 use Math::Random::Secure qw(irand);
 use URI::URL             ();
 use NP::UA;
-use NP::IntAPI        qw(int_api);
-use NP::CAPI::Account qw(get_account_status process_auth0_login validate_session get_user_accounts);
+use NP::IntAPI qw(int_api);
+use NP::CAPI::Account
+  qw(get_account_status process_auth0_login validate_session get_user_accounts);
 use OpenTelemetry::Trace;
 use OpenTelemetry -all;
 use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
@@ -27,6 +28,42 @@ sub _get_request_context {
     my $self            = shift;
     my $x_forwarded_for = $self->request->header_in('X-Forwarded-For');
     return $x_forwarded_for ? {x_forwarded_for => $x_forwarded_for} : undef;
+}
+
+=head2 _handle_capi_error
+
+Handle API errors by setting template parameters and returning HTTP status codes.
+
+    my $http_code = $self->_handle_capi_error($result);
+    return $http_code if $http_code != 200;
+
+Returns HTTP status code (200 for success, or Combust constant for errors).
+
+Note: Does not log errors (NP::CAPI already logs all errors with trace IDs).
+
+=cut
+
+sub _handle_capi_error {
+    my ($self, $result) = @_;
+
+    my $code = $result->{code};
+    return $code if $code >= 200 && $code < 300;
+
+    $self->cache_control('private, max-age=0, no-cache');
+    $self->tpl_param('error', $result->{error}) unless $self->tpl_param('error');
+    $self->tpl_param('code',  $code);
+
+    if ($code == 404) {
+        return NOT_FOUND;
+    }
+    elsif ($code >= 400 && $code < 500) {
+        return $code;
+    }
+    elsif ($code >= 500) {
+        return SERVER_ERROR;
+    }
+
+    return NOT_FOUND;    # fallback
 }
 
 my $base36 = Math::BaseCalc->new(digits => ['a' .. 'k', 'm' .. 'z', 2 .. 9]);
@@ -61,7 +98,7 @@ sub init {
         }
 
         if (my $user = $self->user) {
-            $span->set_attribute("user.is_staff", $user->is_staff);
+            $span->set_attribute("user.is_staff", $self->user_is_staff ? 1 : 0);
             $span->set_attribute("user.email",    $user->email);
             $span->set_attribute("user.username", $user->username);
             $span->set_attribute("user.id",       $user->id);
@@ -106,10 +143,11 @@ sub current_account {
     # 3. Check permissions
     # 4. Return account context + permissions
     my $account_token = $self->req_param('a');
-    my %params = (
+    my %params        = (
         session_token => $session_token,
         context       => $self->_get_request_context(),
     );
+
     # Only include account_token if defined (avoid undef causing parameter shift)
     $params{account_token} = $account_token if defined $account_token;
 
@@ -124,6 +162,9 @@ sub current_account {
 
     my $data = $result->{data};
 
+    # Cache user privileges from session
+    $self->{_user_privileges} = $data->{privileges} || {};
+
     # Session valid but user has no accounts
     return $self->{_current_account} = undef unless $data->{account};
 
@@ -133,6 +174,24 @@ sub current_account {
     $account->{_permissions} = $data->{permissions} if $data->{permissions};
 
     return $self->{_current_account} = $account;
+}
+
+sub user_is_staff {
+    my $self = shift;
+    $self->current_account();    # Ensure session data is loaded
+    return $self->{_user_privileges}{support_staff} || 0;
+}
+
+sub user_is_monitor_admin {
+    my $self = shift;
+    $self->current_account();    # Ensure session data is loaded
+    return $self->{_user_privileges}{monitor_admin} || 0;
+}
+
+sub user_is_vendor_admin {
+    my $self = shift;
+    $self->current_account();    # Ensure session data is loaded
+    return $self->{_user_privileges}{vendor_admin} || 0;
 }
 
 sub current_url {
@@ -233,17 +292,8 @@ sub handle_login {
 
     if ($result->{error}) {
         $span->set_status(SPAN_STATUS_ERROR, "auth0 login failed: " . $result->{error});
-
-        # ConnectRPC errors are automatically structured by CAPI layer:
-        # $result->{error} - error message (user-friendly)
-        # $result->{code}  - ConnectRPC error code (e.g., 'unauthenticated', 'internal')
-
-        # Set error details for user display
-        $self->cache_control('private, max-age=0, no-cache');
-        $self->tpl_param('error',    $result->{error});
-        $self->tpl_param('trace_id', $result->{trace_id} || $span->context->hex_trace_id);
-
-        return SERVER_ERROR;
+        $self->_handle_capi_error($result);
+        return SERVER_ERROR;  # Always return server error for login failures (security)
     }
 
     my $data = $result->{data};
@@ -345,7 +395,7 @@ sub manage_dispatch {
 
     # .../servers and .../account have their own handlers
 
-    if ($self->user->is_staff) {
+    if ($self->user_is_staff) {
         if ($self->request->uri =~ m{/manage/admin/?$}) {
             return $self->show_staff;
         }
@@ -382,7 +432,7 @@ sub staff_search {
     $self->set_span_name("manage.admin.search");
 
     # Check staff access
-    unless ($self->user && $self->user->is_staff) {
+    unless ($self->user && $self->user_is_staff) {
         return 403, "Access denied";
     }
 
@@ -526,7 +576,7 @@ sub staff_zone_edit {
     $self->cache_control('private, no-cache');
 
     # Check staff access
-    unless ($self->user && $self->user->is_staff) {
+    unless ($self->user && $self->user_is_staff) {
         return 403, "Access denied";
     }
 
@@ -594,7 +644,7 @@ sub staff_hostname_edit {
     $self->cache_control('private, no-cache');
 
     # Check staff access
-    unless ($self->user && $self->user->is_staff) {
+    unless ($self->user && $self->user_is_staff) {
         return 403, "Access denied";
     }
 

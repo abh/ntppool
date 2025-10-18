@@ -273,6 +273,68 @@ Read [../go/ntp/api/plans/postgres.md](../go/ntp/api/plans/postgres.md) for comp
 5. ❌ **DON'T**: Reload objects to "refresh" data after API calls
 6. ❌ **DON'T**: Query MySQL database for data that was just created/updated in PostgreSQL
 
+### API Design Principles
+
+**The Go API Should Do the Work, Not Perl:**
+
+When migrating Perl code to use APIs, move logic to the Go API layer. Perl should be a thin presentation layer that displays data, not a computation layer.
+
+**❌ WRONG - Perl Does Multiple API Calls:**
+```perl
+# DON'T: Orchestrate multiple API calls in Perl
+my $server_result = create_server($ip);
+my $server_id = $server_result->{data}{server_id};
+
+my $monitors = get_monitors_for_ip_version($ip_version);
+for my $monitor (@$monitors) {
+    create_server_score($server_id, $monitor->{id});
+}
+
+setup_review_schedule($server_id);
+```
+
+**✅ RIGHT - Single API Call Does Everything:**
+```perl
+# DO: Make one API call that handles the complete operation
+my $result = add_server(
+    auth => $self->plain_cookie($self->user_cookie_name),
+    ip => $ip,
+    hostname => $hostname,
+);
+# Server is fully set up with scores and review schedule
+my $server = $result->{data}{server};
+```
+
+**❌ WRONG - Perl Does Calculations:**
+```perl
+# DON'T: Process API data in Perl
+my $zones_result = list_zones();
+my @zones = grep { $_->{dns} } @{$zones_result->{data}{zones}};
+@zones = sort { $a->{name} cmp $b->{name} } @zones;
+for my $zone (@zones) {
+    $zone->{display} = "$zone->{description} ($zone->{server_count} servers)";
+}
+```
+
+**✅ RIGHT - API Returns Ready-to-Display Data:**
+```perl
+# DO: Request pre-processed, display-ready data from API
+my $result = list_zones(
+    dns_only => JSON::XS::true,
+    sort_by => 'name',
+);
+# Zones are filtered, sorted, and have display_name field ready
+my $zones = $result->{data}{zones};
+# Template uses: [% zone.display_name %]
+```
+
+**When Migrating Code:**
+1. **Identify the User Operation**: What is the user trying to accomplish?
+2. **Move All Related Logic to Go**: Don't split logic between Perl and Go
+3. **Return Complete Data**: Include all fields Perl will need for display
+4. **Pre-format Display Strings**: Don't make Perl concatenate or calculate
+5. **Single API Call**: One user action = one API call
+
 **Example Anti-Pattern (WRONG):**
 ```perl
 # API returns minimal data

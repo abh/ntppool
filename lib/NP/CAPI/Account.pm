@@ -6,6 +6,7 @@ package NP::CAPI::Account;
 use strict;
 use warnings;
 use NP::CAPI qw(connect_rpc);
+use NP::CAPI::Util qw(validate_key_value_args);
 use Exporter 'import';
 
 our @EXPORT_OK = qw(
@@ -311,6 +312,9 @@ B<Example:>
 =cut
 
 sub get_account_status {
+    my $validation_error = validate_key_value_args('get_account_status', @_);
+    return $validation_error if $validation_error;
+
     my %args = @_;
 
     # Extract request fields from args
@@ -392,6 +396,9 @@ B<Example:>
 =cut
 
 sub process_auth0_login {
+    my $validation_error = validate_key_value_args('process_auth0_login', @_);
+    return $validation_error if $validation_error;
+
     my %args = @_;
 
     # Extract request fields from args
@@ -474,6 +481,12 @@ Hashref with structure:
  - Otherwise allow
             },  # hashref (AccountPermissions) - permissions for the authenticated user on this account
  Only present if account is present
+            privileges => {
+                support_staff => ...,  # bool - support_staff allows access to admin endpoints like /manage/admin
+                monitor_admin => ...,  # bool - monitor_admin allows cross-account monitor access and management
+                vendor_admin => ...,  # bool - vendor_admin allows vendor zone management
+            },  # hashref (UserPrivileges) - privileges contains the user's global privilege flags
+ Only present when valid is true
         },
         error        => undef,       # Error message (if any)
         trace_id     => "...",       # OpenTelemetry trace ID
@@ -526,6 +539,12 @@ permissions for the authenticated user on this account
  Only present if account is present
 
 
+=item * B<privileges> (hashref (UserPrivileges))
+
+privileges contains the user's global privilege flags
+ Only present when valid is true
+
+
 =back
 
 B<ConnectRPC Error Codes:>
@@ -550,12 +569,8 @@ B<Example:>
 =cut
 
 sub validate_session {
-    # Validate even number of arguments
-    if (@_ % 2 != 0) {
-        warn "validate_session called with odd number of arguments (" . scalar(@_) . " args)";
-        warn "Arguments: " . join(", ", map { defined($_) ? "'$_'" : 'undef' } @_);
-        die "validate_session requires key-value pairs (even number of arguments)";
-    }
+    my $validation_error = validate_key_value_args('validate_session', @_);
+    return $validation_error if $validation_error;
 
     my %args = @_;
 
@@ -628,6 +643,9 @@ B<Example:>
 =cut
 
 sub delete_session {
+    my $validation_error = validate_key_value_args('delete_session', @_);
+    return $validation_error if $validation_error;
+
     my %args = @_;
 
     # Extract request fields from args
@@ -719,6 +737,9 @@ B<Example:>
 =cut
 
 sub create_account {
+    my $validation_error = validate_key_value_args('create_account', @_);
+    return $validation_error if $validation_error;
+
     my %args = @_;
 
     # Extract request fields from args
@@ -821,6 +842,9 @@ B<Example:>
 =cut
 
 sub update_account {
+    my $validation_error = validate_key_value_args('update_account', @_);
+    return $validation_error if $validation_error;
+
     my %args = @_;
 
     # Extract request fields from args
@@ -892,6 +916,9 @@ B<Example:>
 =cut
 
 sub remove_user_from_account {
+    my $validation_error = validate_key_value_args('remove_user_from_account', @_);
+    return $validation_error if $validation_error;
+
     my %args = @_;
 
     # Extract request fields from args
@@ -963,6 +990,9 @@ B<Example:>
 =cut
 
 sub create_user_task {
+    my $validation_error = validate_key_value_args('create_user_task', @_);
+    return $validation_error if $validation_error;
+
     my %args = @_;
 
     # Extract request fields from args
@@ -1032,6 +1062,9 @@ B<Example:>
 =cut
 
 sub get_account_server_verification_status {
+    my $validation_error = validate_key_value_args('get_account_server_verification_status', @_);
+    return $validation_error if $validation_error;
+
     my %args = @_;
 
     # Extract request fields from args
@@ -1112,6 +1145,9 @@ B<Example:>
 =cut
 
 sub get_accounts_to_notify {
+    my $validation_error = validate_key_value_args('get_accounts_to_notify', @_);
+    return $validation_error if $validation_error;
+
     my %args = @_;
 
     # Extract request fields from args
@@ -1202,6 +1238,9 @@ B<Example:>
 =cut
 
 sub get_account_users {
+    my $validation_error = validate_key_value_args('get_account_users', @_);
+    return $validation_error if $validation_error;
+
     my %args = @_;
 
     # Extract request fields from args
@@ -1290,6 +1329,9 @@ B<Example:>
 =cut
 
 sub get_user_accounts {
+    my $validation_error = validate_key_value_args('get_user_accounts', @_);
+    return $validation_error if $validation_error;
+
     my %args = @_;
 
     # Extract request fields from args
@@ -1381,6 +1423,9 @@ B<Example:>
 =cut
 
 sub get_account_invites {
+    my $validation_error = validate_key_value_args('get_account_invites', @_);
+    return $validation_error if $validation_error;
+
     my %args = @_;
 
     # Extract request fields from args
@@ -1588,6 +1633,9 @@ B<Example:>
 =cut
 
 sub get_account {
+    my $validation_error = validate_key_value_args('get_account', @_);
+    return $validation_error if $validation_error;
+
     my %args = @_;
 
     # Extract request fields from args
@@ -1696,6 +1744,9 @@ B<Example:>
 =cut
 
 sub can_delete_account {
+    my $validation_error = validate_key_value_args('can_delete_account', @_);
+    return $validation_error if $validation_error;
+
     my %args = @_;
 
     # Extract request fields from args
@@ -1801,6 +1852,9 @@ B<Example:>
 =cut
 
 sub check_user_deletion_eligibility {
+    my $validation_error = validate_key_value_args('check_user_deletion_eligibility', @_);
+    return $validation_error if $validation_error;
+
     my %args = @_;
 
     # Extract request fields from args
