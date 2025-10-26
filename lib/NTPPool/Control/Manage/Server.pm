@@ -14,11 +14,10 @@ use Socket            qw(inet_ntoa);
 use Socket6;
 use JSON::XS qw(encode_json decode_json);
 use Net::DNS;
-use Math::BaseCalc       qw();
-use Math::Random::Secure qw(irand);
-use NP::NTP;
-use NP::IntAPI qw(int_api);
-use NP::CAPI::Server qw(get_account_servers);
+use Math::BaseCalc             qw();
+use Math::Random::Secure       qw(irand);
+use NP::IntAPI                 qw(int_api);
+use NP::CAPI::Server           qw(get_account_servers);
 use NP::CAPI::ServerManagement qw(add_server_precheck add_server);
 use OpenTelemetry -all;
 use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
@@ -97,7 +96,8 @@ sub show_manage {
     if ($result->{error}) {
         $self->tpl_param('error', 'Failed to load servers');
         $servers = [];
-    } else {
+    }
+    else {
         $servers = $result->{data}{servers} || [];
     }
     $self->tpl_param('servers', $servers);
@@ -105,15 +105,11 @@ sub show_manage {
     my @server_ids = map { $_->{id} } @$servers;
 
     if ($self->user_is_staff) {
-        my $logs = NP::Model->log->get_objects(
-            query => [
-                or => [
-                    account_id => [$account->{account_id}],
-                    (@server_ids ? (server_id => \@server_ids) : ()),
-                ],
-            ],
+
+      # Use new AuditService API (eliminates N+1 query problem: ~150 queries → ~5 queries)
+        my $logs = $self->get_account_logs_via_api(
+            account => $account,
             limit   => 50,
-            sort_by => "created_on desc",
         );
         $self->tpl_param('logs', $logs);
     }
@@ -152,7 +148,7 @@ sub handle_add {
         auth    => $self->plain_cookie($self->user_cookie_name),
         account => $account->{account_token},
         context => $self->_get_request_context(),
-        inputs  => [$host],  # Go API handles DNS resolution
+        inputs  => [$host],    # Go API handles DNS resolution
     );
 
     # Handle API errors
@@ -183,14 +179,24 @@ sub handle_add {
 
         # Build zones array from API response
         if ($result->{zones} && @{$result->{zones}}) {
+
             # API returns zones as hashrefs with name, description, url, dns
             # Template expects similar structure - just pass through
             $server{zones} = $result->{zones};
-            $server{country_zone} = $result->{zones}[0];  # First zone is country
+
+          # Find country zone (2-letter code, not root or subdivisions)
+          # Zones are ordered child → parent (e.g., ["us-ca", "us", "north-america", "@"])
+            for my $zone (@{$result->{zones}}) {
+                if (length($zone->{name}) == 2) {
+                    $server{country_zone} = $zone;
+                    last;
+                }
+            }
         }
 
         # Store detected country for fallback zone logic
-        $server{geoip_country} = $result->{detected_country} if $result->{detected_country};
+        $server{geoip_country} = $result->{detected_country}
+          if $result->{detected_country};
 
         push @servers, \%server;
     }
@@ -279,9 +285,7 @@ sub _add_server {
         $self->config->base_url('ntppool') . '/scores/' . $server->{ip});
 
     # Build server data for API
-    my %server_to_add = (
-        ip => $server->{ip},
-    );
+    my %server_to_add = (ip => $server->{ip},);
 
     # Get fallback zone if user explicitly selected one
     if (my $zone_name = $self->req_param('explicit_zone_' . $server->{ip})) {
@@ -298,20 +302,22 @@ sub _add_server {
         context        => $self->_get_request_context(),
         servers        => [\%server_to_add],
         precheck_token => $precheck_token,
-        batch_comment  => $comment,  # API handles audit logging
+        batch_comment  => $comment,    # API handles audit logging
     );
 
     # Handle API errors
     if ($result->{error}) {
         warn "Failed to add server: " . $result->{error};
         warn "Trace ID: " . $result->{trace_id};
+
         # Return blessed object with error info for template compatibility
         return bless {
-            error      => $result->{error},
-            trace_id   => $result->{trace_id},
-            ip         => $server->{ip},
+            error          => $result->{error},
+            trace_id       => $result->{trace_id},
+            ip             => $server->{ip},
             _is_api_object => 1,
-        }, 'NTPPool::Control::Manage::Server::APIServer';
+          },
+          'NTPPool::Control::Manage::Server::APIServer';
     }
 
     # Get the server from API response
@@ -319,10 +325,11 @@ sub _add_server {
     if (!$api_result->{success}) {
         warn "Server add failed: " . ($api_result->{error} || 'Unknown error');
         return bless {
-            error => $api_result->{error} || 'Failed to add server',
-            ip    => $server->{ip},
+            error          => $api_result->{error} || 'Failed to add server',
+            ip             => $server->{ip},
             _is_api_object => 1,
-        }, 'NTPPool::Control::Manage::Server::APIServer';
+          },
+          'NTPPool::Control::Manage::Server::APIServer';
     }
 
     # Use server data directly from API response (no database reload)
@@ -330,10 +337,8 @@ sub _add_server {
 
     # Return API server data with compatibility methods for template
     # The API returns complete server object, use it directly
-    return bless {
-        %$server_data,
-        _is_api_object => 1,
-    }, 'NTPPool::Control::Manage::Server::APIServer';
+    return bless {%$server_data, _is_api_object => 1,},
+      'NTPPool::Control::Manage::Server::APIServer';
 }
 
 # Compatibility wrapper for API server objects
@@ -370,98 +375,6 @@ sub trace_id {
 }
 
 package NTPPool::Control::Manage::Server;
-
-sub get_server_info {
-    my ($self, $ip) = @_;
-
-    warn "getting server info for $ip";
-
-    my %server;
-
-    my $span =
-      NP::Tracing->tracer->create_span(name => "manage.servers.get_server_info",);
-    dynamically otel_current_context = otel_context_with_span($span);
-    defer {
-        if (my $err = $server{error}) {
-            $err =~ s/\n$//;
-            $span->set_attribute("server.error", $err);
-        }
-        $span->end();
-    };
-
-    $ip = Net::IP->new($ip);
-
-    $server{ip}         = $ip->short;
-    $server{ip_version} = 'v' . $ip->version;
-
-    $span->set_attribute("server.ip", $ip->short);
-
-    {
-        my $type = $ip->iptype;
-        if ($type and $type !~ m/^(PUBLIC|GLOBAL-UNICAST)/) {
-            $server{error} = "Bad IP address: $type";
-            return \%server;
-        }
-    }
-
-    if (my $s = NP::Model->server->fetch(ip => $server{ip})) {
-        my $other =
-          $s->account_id eq $self->current_account->id
-          ? ""
-          : "Please email us for help.";
-        unless ($s->deleted or $s->deletion_on) {
-            $server{listed} = 1 unless $other;
-            $server{error}  = "$server{ip} is already registered in the pool. $other\n";
-            return \%server;
-        }
-    }
-
-    my @ntp = NP::NTP::info($ip->short);
-
-    my $ntp_ok = 0;
-
-    for my $check (@ntp) {
-        next if $check->{error};
-
-        my $ntp = $check->{NTP} or next;
-
-        unless (defined $ntp->{Stratum}) {
-            $ntp->{error} = "Didn't get an NTP response from $server{ip}\n";
-        }
-
-        unless ($ntp->{Stratum} > 0 and $ntp->{Stratum} < 6) {
-            $ntp->{error} =
-              "Invalid stratum response from ${ip} (Your server is in stratum $ntp->{Stratum}).  Is your server configured properly? Is public access allowed?  If you just restarted your ntpd, then it might still be stabilizing the timesources - try again in 10-20 minutes.\n";
-        }
-
-        unless ($ntp->{error}) {
-            $ntp_ok = 1;
-            $server{ntp} = $ntp;
-        }
-    }
-
-    unless ($ntp_ok) {
-        ($server{error}) = map { $_->{error} } grep { $_->{error} } @ntp;
-    }
-
-    if ($server{error}) {
-        warn "Error: $server{error}";
-        return \%server;
-    }
-
-    my $geoip = $ENV{geoip_service} || 'geoip';
-    my $res   = $self->ua->get("http://${geoip}/api/country?ip=$server{ip}");
-    $server{geoip_country} = $res->decoded_content if $res->is_success;
-
-    my $country = $self->req_param('explicit_zone_' . $server{ip})
-      || $server{geoip_country};
-
-    $country = 'UK' if $country eq 'GB';
-    warn "Country: $country\n";
-    $server{country_zone} = $country && NP::Model->zone->fetch(name => $country);
-
-    return \%server;
-}
 
 sub req_server {
     my $self      = shift;
