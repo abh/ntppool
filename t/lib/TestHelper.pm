@@ -41,8 +41,10 @@ our @EXPORT_OK = qw(mock_capi_success mock_capi_error MockUA MockResponse);
     sub status_line { $_[0]->{status_line} }
     sub content_type { $_[0]->{content_type} || 'application/json' }
     sub decoded_content { $_[0]->{content} }
+    sub content { $_[0]->{content} }
     sub header { $_[0]->{headers}{$_[1]} }
     sub is_success { $_[0]->code >= 200 && $_[0]->code < 300 }
+    sub decode { 1 }  # No-op for testing (content is already decoded)
 }
 
 sub mock_capi_success {
