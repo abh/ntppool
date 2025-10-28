@@ -14,6 +14,8 @@ use NP::CAPI::Account qw(
     create_account get_account update_account remove_user_from_account create_user_task
     check_user_deletion_eligibility
 );
+use NP::CAPI::User qw(schedule_user_deletion);
+use DateTime;
 use JSON::XS   qw(encode_json decode_json);
 use Data::Dump qw(pp);
 use OpenTelemetry::Trace;
@@ -692,22 +694,31 @@ sub render_user_delete {
 
     if ($self->request->method eq 'post') {
 
-        my $db  = NP::Model->db;
-        my $txn = $db->begin_scoped_work;
+        # Schedule deletion 7 days from now (minimum allowed by API)
+        my $deletion_time = DateTime->now->add(days => 7);
 
-        $user->deletion_on('now');
-        $user->save;
+        my $result = schedule_user_deletion(
+            auth => $self->plain_cookie($self->user_cookie_name),
+            deletion_on_unix => $deletion_time->epoch,
+            context => $self->_get_request_context(),
+        );
 
-        $db->commit or die "could not mark user deleted";
+        if ($result->{error}) {
+            warn "Failed to schedule user deletion: " . $result->{error};
+            warn "Trace ID: " . $result->{trace_id} if $result->{trace_id};
+            return $self->render_error("Failed to schedule account deletion. Please try again.");
+        }
 
-        # Create delete task via API (after transaction commit)
-        my $execute_on_unix = DateTime->now()->add(days => 7)->epoch;
-        my $data            = create_user_task(
+        # Use the updated user data from API response
+        my $updated_user = $result->{data}{user};
+
+        # Create delete task via API (using same deletion time)
+        my $data = create_user_task(
             auth            => $self->plain_cookie($self->user_cookie_name),
             context         => $self->_get_request_context(),
             task_type       => 'delete',
             status          => '',
-            execute_on_unix => $execute_on_unix,
+            execute_on_unix => $deletion_time->epoch,
         );
 
         if ($data->{error}) {
@@ -719,7 +730,7 @@ sub render_user_delete {
         }
 
         my $param = {
-            user     => $user,
+            user     => $updated_user,
             trace_id => $span->context->hex_trace_id,
         };
 
@@ -732,7 +743,7 @@ sub render_user_delete {
           ->subject("NTP Pool user deletion scheduled")
           ->text_body($msg);
 
-        $email->to($user->email);
+        $email->to($updated_user->{email});
         NP::Email::sendmail($email);
 
         return $self->redirect($self->manage_url('/manage/logout'));
