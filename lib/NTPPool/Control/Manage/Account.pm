@@ -698,15 +698,16 @@ sub render_user_delete {
         my $deletion_time = DateTime->now->add(days => 7);
 
         my $result = schedule_user_deletion(
-            auth => $self->plain_cookie($self->user_cookie_name),
+            auth             => $self->plain_cookie($self->user_cookie_name),
             deletion_on_unix => $deletion_time->epoch,
-            context => $self->_get_request_context(),
+            context          => $self->_get_request_context(),
         );
 
         if ($result->{error}) {
             warn "Failed to schedule user deletion: " . $result->{error};
             warn "Trace ID: " . $result->{trace_id} if $result->{trace_id};
-            return $self->render_error("Failed to schedule account deletion. Please try again.");
+            return $self->render_error(
+                "Failed to schedule account deletion. Please try again.");
         }
 
         # Use the updated user data from API response
