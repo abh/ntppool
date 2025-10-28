@@ -10,6 +10,7 @@ use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_
 use experimental             qw( defer );
 use Syntax::Keyword::Dynamically;
 use NP::CAPI::Account qw(validate_session delete_session);
+use NP::CAPI::User qw(cancel_user_deletion);
 
 my $api_base = $ENV{'api-internal'} || 'http://api-internal';
 $api_base =~ s{/$}{};
@@ -191,6 +192,24 @@ sub setup_session {
         }
         else {
             $self->_set_session_cookie($data->{session_token});
+
+            # Cancel any scheduled deletion (idempotent - safe even if not scheduled)
+            # This is part of the account recovery flow - logging in cancels deletion
+            # Note: cancel_user_deletion is idempotent and succeeds even if
+            # deletion_on is not set. We call it unconditionally on every
+            # login to ensure account recovery flow works correctly.
+            my $cancel_result = cancel_user_deletion(
+                auth => $self->plain_cookie($self->user_cookie_name),
+                context => $self->_get_request_context(),
+            );
+
+            if ($cancel_result->{error}) {
+                # Log warning but don't fail login
+                warn "Failed to cancel user deletion on login: " . $cancel_result->{error};
+                warn "Trace ID: " . $cancel_result->{trace_id} if $cancel_result->{trace_id};
+                # Continue with login despite cancellation failure
+            }
+
             return {success => 1};
         }
     }
