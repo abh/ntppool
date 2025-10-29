@@ -885,6 +885,10 @@ sub get_account_logs_via_api {
     if ($result->{error}) {
         warn "GetAccountAuditLogs error: " . $result->{error};
         warn "Trace ID: " . $result->{trace_id} if $result->{trace_id};
+
+        # Set error info for staff users to see
+        $self->tpl_param('logs_error',    $result->{error});
+        $self->tpl_param('logs_trace_id', $result->{trace_id}) if $result->{trace_id};
         return [];
     }
 
@@ -894,7 +898,9 @@ sub get_account_logs_via_api {
     # API returns changes as array of {field_name, new_value, old_value}
     # Template expects hash {field_name => [new_value, old_value]}
     for my $log (@$logs) {
-        if ($log->{changes} && @{$log->{changes}}) {
+
+        # Defensive check: ensure changes is an arrayref
+        if ($log->{changes} && ref($log->{changes}) eq 'ARRAY' && @{$log->{changes}}) {
             my %changes_hash;
             for my $change (@{$log->{changes}}) {
                 $changes_hash{$change->{field_name}} =

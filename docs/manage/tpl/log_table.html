@@ -1,3 +1,10 @@
+[% IF logs_error %]
+<div class="alert alert-warning">
+    <strong>Audit logs temporarily unavailable:</strong> [% logs_error | html %]
+    [% IF logs_trace_id %]<br><small>Trace ID: [% logs_trace_id | html %]</small>[% END %]
+</div>
+[% END %]
+
 [% IF !logs; RETURN; END; %]
 
 <div>
