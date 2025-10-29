@@ -186,7 +186,15 @@ sub handle_add {
             # API returns zones as hashrefs with name, description, url, dns
             # Template expects similar structure - just pass through
             $server{zones} = $result->{zones};
-            $server{country_zone} = $result->{zones}[0];  # First zone is country
+
+            # Find country zone (2-letter code, not root or subdivisions)
+            # Zones are ordered child → parent (e.g., ["us-ca", "us", "north-america", "@"])
+            for my $zone (@{$result->{zones}}) {
+                if (length($zone->{name}) == 2) {
+                    $server{country_zone} = $zone;
+                    last;
+                }
+            }
         }
 
         # Store detected country for fallback zone logic
