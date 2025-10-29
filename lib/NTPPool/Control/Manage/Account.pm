@@ -559,7 +559,7 @@ sub render_account_edit {
     if (%update_data) {
         my $data = update_account(
             auth    => $self->plain_cookie($self->user_cookie_name),
-            account => $account->{account_token},
+            account => $account->{id_token},
             context => $self->_get_request_context(),
             %update_data,
         );
