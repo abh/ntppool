@@ -293,7 +293,7 @@ sub handle_login {
     if ($result->{error}) {
         $span->set_status(SPAN_STATUS_ERROR, "auth0 login failed: " . $result->{error});
         $self->_handle_capi_error($result);
-        return SERVER_ERROR;  # Always return server error for login failures (security)
+        return SERVER_ERROR;    # Always return server error for login failures (security)
     }
 
     my $data = $result->{data};
@@ -847,6 +847,67 @@ sub user_accounts_via_api {
 
     # Return account list from API
     return $self->{_user_accounts} = $result->{data}{accounts} || [];
+}
+
+=head2 get_account_logs_via_api
+
+Fetch audit logs via ConnectRPC AuditService API (eliminates N+1 query problem).
+
+    my $logs = $self->get_account_logs_via_api(
+        account => $account,
+        types   => ['invitation', 'server-delete'],  # optional filter
+        limit   => 50,                               # optional (default: 50)
+    );
+
+Returns arrayref of log objects compatible with log_table.html template.
+Returns empty arrayref on error (with warning logged).
+
+=cut
+
+sub get_account_logs_via_api {
+    my $self = shift;
+    my %args = @_;
+
+    my $account = $args{account} || $self->current_account;
+    return [] unless $account;
+
+    # Call AuditService.GetAccountAuditLogs
+    require NP::CAPI::Audit;
+    my $result = NP::CAPI::Audit::get_account_audit_logs(
+        auth    => $self->plain_cookie($self->user_cookie_name),
+        account => $account->{account_token},
+        context => $self->_get_request_context(),
+        ($args{types} ? (types => $args{types}) : ()),
+        ($args{limit} ? (limit => $args{limit}) : ()),
+    );
+
+    # Handle errors - return empty array for graceful degradation
+    if ($result->{error}) {
+        warn "GetAccountAuditLogs error: " . $result->{error};
+        warn "Trace ID: " . $result->{trace_id} if $result->{trace_id};
+        return [];
+    }
+
+    my $logs = $result->{data}{logs} || [];
+
+    # Transform API response to template format
+    # API returns changes as array of {field_name, new_value, old_value}
+    # Template expects hash {field_name => [new_value, old_value]}
+    for my $log (@$logs) {
+        if ($log->{changes} && @{$log->{changes}}) {
+            my %changes_hash;
+            for my $change (@{$log->{changes}}) {
+                $changes_hash{$change->{field_name}} =
+                  [$change->{new_value}, $change->{old_value},];
+            }
+            $log->{changes} = \%changes_hash;
+        }
+        else {
+            $log->{changes} = {};
+        }
+    }
+
+    return $logs;
 }
 
 1;
