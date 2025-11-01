@@ -188,10 +188,10 @@ sub manage_dispatch {
     }
 
     # check access
-    # Note: Account hashrefs from current_account() include _permissions
+    # Note: Account hashrefs from current_account() include permissions
     return $self->redirect("/manage/")
       unless ($account->{account_id} == 0
-          or $account->{_permissions}{can_edit});
+          or $account->{permissions}{can_edit});
 
     if ($self->request->method eq 'post') {
         return 403 unless $self->check_auth_token;
@@ -219,7 +219,7 @@ sub manage_dispatch {
         }
     }
     elsif ($self->request->uri =~ m!^/manage/account/team$!) {
-        if ($self->request->method eq 'post' and $account->{_permissions}{can_edit}) {
+        if ($self->request->method eq 'post' and $account->{permissions}{can_edit}) {
             return $self->render_users_invite($account, $self->req_param('invite_email'))
               if $self->req_param('invite_email');
 
