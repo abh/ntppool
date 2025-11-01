@@ -169,9 +169,9 @@ sub current_account {
     return $self->{_current_account} = undef unless $data->{account};
 
     # Return account as plain hashref
-    # Store permissions in _permissions key for template access
+    # Store permissions for template access
     my $account = $data->{account};
-    $account->{_permissions} = $data->{permissions} if $data->{permissions};
+    $account->{permissions} = $data->{permissions} if $data->{permissions};
 
     return $self->{_current_account} = $account;
 }

@@ -133,7 +133,7 @@ sub handle_add {
     $self->tpl_param('host', $host);
     $span->set_attribute("param.host", $host);
 
-    unless ($account->can_add_servers) {
+    unless ($account->{permissions}{can_add_servers}) {
         $span->set_attribute("request.error", "verify_existing");
         $self->tpl_param('error',
             'Please verify your existing servers before adding more.');
@@ -592,7 +592,7 @@ sub handle_delete {
         if ($self->req_param('cancel_deletion')) {
             return 403 unless $self->check_auth_token;
 
-            unless ($self->current_account->can_add_servers) {
+            unless ($self->current_account->{permissions}{can_add_servers}) {
                 $self->tpl_param('error',
                     'Please verify active servers in the account first.');
                 return OK, $self->evaluate_template('tpl/manage/delete_set.html');
