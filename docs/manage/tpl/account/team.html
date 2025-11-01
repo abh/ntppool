@@ -2,8 +2,8 @@
     <div class="col-md-10">
         <h3>[% account.name | html %] - Account team</h3>
 
-        <form id="account-form" action="/manage/account/team?a=[% account.account_token %]" method="post" accept-charset="utf-8">
-            <input type="hidden" name="a" value="[% account.account_id ? account.account_token : 'new' %]" />
+        <form id="account-form" action="/manage/account/team?a=[% account.id_token %]" method="post" accept-charset="utf-8">
+            <input type="hidden" name="a" value="[% account.account_id ? account.id_token : 'new' %]" />
             <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
 
             <table class="table">
@@ -46,8 +46,8 @@
         </table>
         [% END %]
 
-        <form id="account-form" action="/manage/account/team?a=[% account.account_token %]" method="post" accept-charset="utf-8">
-            <input type="hidden" name="a" value="[% account.account_id ? account.account_token : 'new' %]" />
+        <form id="account-form" action="/manage/account/team?a=[% account.id_token %]" method="post" accept-charset="utf-8">
+            <input type="hidden" name="a" value="[% account.account_id ? account.id_token : 'new' %]" />
             <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
             <div class="form-group">
                 <label id="name-invite_email" class="form-label" for="invite_email">Add user to account team</label>

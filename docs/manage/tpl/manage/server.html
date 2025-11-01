@@ -2,7 +2,7 @@
 <span id="server_[% server.id %]">
     <form method="post" action="/manage/server/update/server">
         <input type="hidden" name="auth_token" value="[% combust.auth_token %]">
-        <input type="hidden" name="a" value="[% combust.current_account.account_token %]">
+        <input type="hidden" name="a" value="[% combust.current_account.id_token %]">
 
         [% IF server.hostname %]Hostname: <b>[% server.hostname | html %]</b><br />[% END %]
         IP: <b><a href="[% combust.www_url(server.url) %]">[% server.ip | html %]</a></b>
@@ -61,7 +61,7 @@
             [% END %]
 
             [% IF !is_verified AND disabled_speeds.size > 0; %]
-                <option disabled>— Verify server to unlock higher speeds —</option>
+                <option disabled>— Verify server to unlock —</option>
                 [% FOR speed IN disabled_speeds; %]
                     <option value="[% speed %]" disabled>[% combust.netspeed_human(speed) %] (verify required)</option>
                 [% END %]

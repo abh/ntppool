@@ -263,7 +263,7 @@ sub render_monitors {
 
     # Fetch metrics for all monitors in this account
     my $metrics =
-      $self->monitor_metrics(account_token => $self->current_account->id_token);
+      $self->monitor_metrics(id_token => $self->current_account->id_token);
     $self->tpl_param('metrics', $metrics);
 
     return OK, $self->evaluate_template('tpl/monitors/list.html');
@@ -510,15 +510,15 @@ sub monitor_metrics {
     };
 
     # Determine the actual parameters and cache key
-    my $actual_account_token;
+    my $actual_id_token;
     my $actual_names;
     my $all_accounts = 0;
 
-    if ($params{account_token}) {
+    if ($params{id_token}) {
 
         # Use 'a' parameter for account token per API specification
-        $api_params->{a} = $params{account_token};
-        $actual_account_token = $params{account_token};
+        $api_params->{a} = $params{id_token};
+        $actual_id_token = $params{id_token};
     }
     elsif ($params{names}) {
         $api_params->{names} = $params{names};
@@ -530,15 +530,15 @@ sub monitor_metrics {
     }
     else {
         # Default to current account using id_token with 'a' parameter
-        $actual_account_token = $self->current_account->id_token;
-        $api_params->{a} = $actual_account_token;
+        $actual_id_token = $self->current_account->id_token;
+        $api_params->{a} = $actual_id_token;
     }
 
     # Request-scoped caching to avoid multiple API calls
     my $cache_key =
         "_monitor_metrics_"
-      . ($actual_account_token || '') . '_'
-      . ($actual_names         || '') . '_'
+      . ($actual_id_token || '') . '_'
+      . ($actual_names    || '') . '_'
       . ($all_accounts ? 'all' : '');
     return $self->{$cache_key} if exists $self->{$cache_key};
 

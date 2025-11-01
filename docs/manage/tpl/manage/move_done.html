@@ -3,9 +3,9 @@
     <h3>Server move completed</h3>
 
     Moved from
-    <a href="[% combust.manage_url('/manage/servers', a => old_account.account_token) %]">[% old_account.name | html %]</a>
+    <a href="[% combust.manage_url('/manage/servers', a => old_account.id_token) %]">[% old_account.name | html %]</a>
     to
-    <a href="[% combust.manage_url('/manage/servers', a => new_account.account_token) %]">[% new_account.name | html %]</a>
+    <a href="[% combust.manage_url('/manage/servers', a => new_account.id_token) %]">[% new_account.name | html %]</a>
 
     <ul>
         [% FOR s = servers_moved %]

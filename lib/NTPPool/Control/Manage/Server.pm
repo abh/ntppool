@@ -86,9 +86,9 @@ sub show_manage {
     # Fetch servers via ConnectRPC API
     my $result = get_account_servers(
         auth     => $self->plain_cookie($self->user_cookie_name),
-        account  => $account->{account_token},
+        account  => $account->{id_token},
         context  => $self->_get_request_context(),
-        id_token => $account->{account_token},
+        id_token => $account->{id_token},
     );
 
     # CAPI layer already logged error, just handle degraded state
@@ -146,7 +146,7 @@ sub handle_add {
     # DNS resolution happens in Go API (not Perl)
     my $precheck_result = add_server_precheck(
         auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $account->{account_token},
+        account => $account->{id_token},
         context => $self->_get_request_context(),
         inputs  => [$host],    # Go API handles DNS resolution
     );
@@ -298,7 +298,7 @@ sub _add_server {
     # Call add_server API
     my $result = add_server(
         auth           => $self->plain_cookie($self->user_cookie_name),
-        account        => $self->current_account->{account_token},
+        account        => $self->current_account->{id_token},
         context        => $self->_get_request_context(),
         servers        => [\%server_to_add],
         precheck_token => $precheck_token,
@@ -699,7 +699,7 @@ sub handle_move {
             for my $server (@servers_to_move) {
                 my $old = $server->get_data_hash();
 
-                warn "changing account to token / id ", $new_account->token_id,
+                warn "changing account to token / id ", $new_account->id_token,
                   $new_account->id;
                 $server->account_id($new_account->id);
 

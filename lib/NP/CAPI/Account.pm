@@ -365,7 +365,7 @@ Hashref with structure:
             session_token => ...,  # string - session_token is the session key to set as the npuid cookie.
  Format: "nps_{key}_{checksum}"
             user_id => ...,  # int - user_id is the numeric ID of the authenticated user.
-            user_token => ...,  # string - user_token is the user's id_token for identification.
+            id_token => ...,  # string - id_token is the user's id_token for identification.
             email => ...,  # string - email is the user's email address from Auth0.
             username => ...,  # string - username is the user's username.
             deletion_cancelled => ...,  # bool - deletion_cancelled indicates if a pending user deletion was cancelled during login.
@@ -432,10 +432,10 @@ B<Arguments:>
         session_token => $value,       # string - session_token is the session token from the npuid cookie.
  Format: "nps_{key}_{checksum}" or "nps_{key}_{checksum};{timestamp}"
  Required.
-        account_token => $value,       # string - account_token optionally specifies which account to use (from ?a= parameter)
+        id_token => $value,       # string - id_token optionally specifies which account to use (from ?a= parameter)
  If provided, validates user has access to this account
  If omitted, returns user's default account (first account in user's list)
- Returns error if account_token specified but user lacks access
+ Returns error if id_token specified but user lacks access
     );
 
 B<Returns:>
@@ -454,11 +454,11 @@ Hashref with structure:
  Only present when valid is true.
             username => ...,  # string - username is the user's username.
  Only present when valid is true.
-            user_token => ...,  # string - user_token is the user's id_token for identification.
+            id_token => ...,  # string - id_token is the user's id_token for identification.
  Only present when valid is true.
             account => {
                 account_id => ...,  # int - Core database fields
-                account_token => ...,  # string
+                id_token => ...,  # string
                 name => ...,  # string
                 organization_name => ...,  # string
                 organization_url => ...,  # string
@@ -521,9 +521,9 @@ username is the user's username.
  Only present when valid is true.
 
 
-=item * B<user_token> (string)
+=item * B<id_token> (string)
 
-user_token is the user's id_token for identification.
+id_token is the user's id_token for identification.
  Only present when valid is true.
 
 
@@ -577,7 +577,7 @@ sub validate_session {
     # Extract request fields from args
     my %request = ();
     $request{'session_token'} = delete $args{'session_token'} if exists $args{'session_token'};
-    $request{'account_token'} = delete $args{'account_token'} if exists $args{'account_token'};
+    $request{'id_token'} = delete $args{'id_token'} if exists $args{'id_token'};
 
     return connect_rpc(
         service     => 'ntppool.account.v1.AccountService',
@@ -687,7 +687,7 @@ Hashref with structure:
         data         => {            # Response data
             account => {
                 account_id => ...,  # int - account_id is the numeric ID of the account
-                account_token => ...,  # string - account_token is the id_token for the account
+                id_token => ...,  # string
                 name => ...,  # string - name is the account name
                 organization_name => ...,  # string - organization_name is the organization name (if set)
                 organization_url => ...,  # string - organization_url is the organization URL (if set)
@@ -787,7 +787,7 @@ Hashref with structure:
             success => ...,  # bool - success indicates if the update was successful
             account => {
                 account_id => ...,  # int - account_id is the numeric ID of the account
-                account_token => ...,  # string - account_token is the id_token for the account
+                id_token => ...,  # string
                 name => ...,  # string - name is the account name
                 organization_name => ...,  # string - organization_name is the organization name (if set)
                 organization_url => ...,  # string - organization_url is the organization URL (if set)
@@ -876,7 +876,7 @@ B<Arguments:>
         auth    => $user_token,      # Optional: User/session authentication token
         account => $account_token,   # Optional: Account selection token
         context => $request_context, # Optional: Request context for X-Forwarded-For
-        user_token => $value,       # string - user_token is the id_token of the user to remove (NOT numeric user_id)
+        id_token => $value,       # string - id_token is the user's id_token (NOT numeric user_id)
     );
 
 B<Returns:>
@@ -923,7 +923,7 @@ sub remove_user_from_account {
 
     # Extract request fields from args
     my %request = ();
-    $request{'user_token'} = delete $args{'user_token'} if exists $args{'user_token'};
+    $request{'id_token'} = delete $args{'id_token'} if exists $args{'id_token'};
 
     return connect_rpc(
         service     => 'ntppool.account.v1.AccountService',
@@ -1190,7 +1190,7 @@ Hashref with structure:
             users => [
             {
                 user_id => ...,  # int - user_id is the numeric ID of the user
-                user_token => ...,  # string - user_token is the id_token for the user
+                id_token => ...,  # string
                 email => ...,  # string - email is the user's email address
                 username => ...,  # string - username is the user's username
                 public_profile => ...,  # bool - public_profile indicates if the user profile is public
@@ -1280,7 +1280,7 @@ Hashref with structure:
             accounts => [
             {
                 account_id => ...,  # int - account_id is the numeric ID of the account
-                account_token => ...,  # string - account_token is the id_token for the account
+                id_token => ...,  # string
                 name => ...,  # string - name is the account name
                 organization_name => ...,  # string - organization_name is the organization name (if set)
                 organization_url => ...,  # string - organization_url is the organization URL (if set)
@@ -1475,7 +1475,7 @@ Hashref with structure:
         data         => {            # Response data
             account => {
                 account_id => ...,  # int - Core database fields
-                account_token => ...,  # string
+                id_token => ...,  # string
                 name => ...,  # string
                 organization_name => ...,  # string
                 organization_url => ...,  # string
@@ -1499,7 +1499,7 @@ Hashref with structure:
             users => [
             {
                 user_id => ...,  # int - user_id is the numeric ID of the user
-                user_token => ...,  # string - user_token is the id_token for the user
+                id_token => ...,  # string
                 email => ...,  # string - email is the user's email address
                 username => ...,  # string - username is the user's username
                 public_profile => ...,  # bool - public_profile indicates if the user profile is public
@@ -1671,7 +1671,7 @@ B<Arguments:>
         auth    => $user_token,      # Optional: User/session authentication token
         account => $account_token,   # Optional: Account selection token
         context => $request_context, # Optional: Request context for X-Forwarded-For
-        account_token => $value,       # string - account_token optionally specifies which account to check
+        id_token => $value,       # string - id_token optionally specifies which account to check
  If omitted, checks the authenticated user's current account
     );
 
@@ -1751,7 +1751,7 @@ sub can_delete_account {
 
     # Extract request fields from args
     my %request = ();
-    $request{'account_token'} = delete $args{'account_token'} if exists $args{'account_token'};
+    $request{'id_token'} = delete $args{'id_token'} if exists $args{'id_token'};
 
     return connect_rpc(
         service     => 'ntppool.account.v1.AccountService',
@@ -1775,7 +1775,7 @@ B<Arguments:>
         auth    => $user_token,      # Optional: User/session authentication token
         account => $account_token,   # Optional: Account selection token
         context => $request_context, # Optional: Request context for X-Forwarded-For
-        user_token => $value,       # string - user_token optionally specifies which user to check
+        id_token => $value,       # string - id_token optionally specifies which user to check
  If omitted, checks the authenticated user
     );
 
@@ -1793,7 +1793,7 @@ Hashref with structure:
             affected_accounts => [
             {
                 account_id => ...,  # int
-                account_token => ...,  # string
+                id_token => ...,  # string
                 account_name => ...,  # string
                 user_is_sole_owner => ...,  # bool - True if user is the only non-deleted user on this account
                 active_servers_count => ...,  # int - Blocker details (only populated if user_is_sole_owner = true)
@@ -1859,7 +1859,7 @@ sub check_user_deletion_eligibility {
 
     # Extract request fields from args
     my %request = ();
-    $request{'user_token'} = delete $args{'user_token'} if exists $args{'user_token'};
+    $request{'id_token'} = delete $args{'id_token'} if exists $args{'id_token'};
 
     return connect_rpc(
         service     => 'ntppool.account.v1.AccountService',

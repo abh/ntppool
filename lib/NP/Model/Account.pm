@@ -101,8 +101,8 @@ sub can_view {
 sub can_add_servers {
     my $self = shift;
 
-    my $account_token = $self->id_token;
-    unless ($account_token) {
+    my $id_token = $self->id_token;
+    unless ($id_token) {
         my $account_id = $self->id || 'undef';
         warn "can_add_servers: account has no id_token, account_id=$account_id";
 
@@ -113,7 +113,7 @@ sub can_add_servers {
             $span->set_attribute("account.id", $account_id) if $account_id ne 'undef';
             $span->set_attribute("account.id_token.missing", 1);
             $span->add_event(
-                "account_token_missing",
+                "id_token_missing",
                 {   "account.id" => $account_id,
                     "message"    => "Account object has no id_token for verification"
                 }
@@ -124,7 +124,7 @@ sub can_add_servers {
         return 0;
     }
 
-    my $result = get_account_server_verification_status(account => $account_token,);
+    my $result = get_account_server_verification_status(account => $id_token,);
 
     # Return 0 on API error (don't allow adding servers)
     if ($result->{error}) {

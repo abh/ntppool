@@ -27,7 +27,7 @@
   [% IF combust.current_account.stripe_customer_id %]
     <form method="post" class="form-inline" action="/manage/vendor/billing">
         <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
-        <input type="hidden" name="a" value="[% combust.current_account.account_token %]">
+        <input type="hidden" name="a" value="[% combust.current_account.id_token %]">
         <input type="submit" class="btn btn-primary btn-sm" value="Update billing information &rarr;" />
     </form>
   [% END %]

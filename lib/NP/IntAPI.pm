@@ -188,14 +188,14 @@ sub _int_api_post {
 sub get_monitoring_registration_data {
     my $validation_token = shift;
     my $user_cookie      = shift;
-    my $account_token    = shift;
+    my $id_token         = shift;
     my $request_context  = shift;
 
     my $data = _int_api_get(
         "monitor/registration/data",
         {   token => $validation_token,
             user  => $user_cookie,
-            a     => $account_token,
+            a     => $id_token,
         },
         $request_context
     );
@@ -205,7 +205,7 @@ sub get_monitoring_registration_data {
 sub accept_monitoring_registration {
     my $validation_token = shift;
     my $user_cookie      = shift;
-    my $account_token    = shift;
+    my $id_token         = shift;
     my $location         = shift;
     my $request_context  = shift;
 
@@ -213,7 +213,7 @@ sub accept_monitoring_registration {
         "monitor/registration/accept",
         {   token    => $validation_token,
             user     => $user_cookie,
-            a        => $account_token,
+            a        => $id_token,
             location => $location,
 
         },
