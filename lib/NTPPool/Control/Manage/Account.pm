@@ -39,7 +39,7 @@ sub _account_users_via_api {
 
     my $result = get_account_users(
         auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $account->{account_token},
+        account => $account->{id_token},
         context => $self->_get_request_context(),
     );
 
@@ -72,7 +72,7 @@ sub _account_invites_via_api {
 
     my $result = get_account_invites(
         auth     => $self->plain_cookie($self->user_cookie_name),
-        account  => $account->{account_token},
+        account  => $account->{id_token},
         context  => $self->_get_request_context(),
         for_user => JSON::XS::false,
     );
@@ -109,7 +109,7 @@ sub _account_from_api_response {
 # CRITICAL: Use all fields from the API response to populate the object
     return bless {
         id                => $account_obj->{account_id},
-        id_token          => $account_obj->{account_token},
+        id_token          => $account_obj->{id_token},
         name              => $account_obj->{name},
         organization_name => $account_obj->{organization_name},
         organization_url  => $account_obj->{organization_url},
@@ -188,10 +188,10 @@ sub manage_dispatch {
     }
 
     # check access
-    # Note: Account hashrefs from current_account() include _permissions
+    # Note: Account hashrefs from current_account() include permissions
     return $self->redirect("/manage/")
       unless ($account->{account_id} == 0
-          or $account->{_permissions}{can_edit});
+          or $account->{permissions}{can_edit});
 
     if ($self->request->method eq 'post') {
         return 403 unless $self->check_auth_token;
@@ -219,7 +219,7 @@ sub manage_dispatch {
         }
     }
     elsif ($self->request->uri =~ m!^/manage/account/team$!) {
-        if ($self->request->method eq 'post' and $account->{_permissions}{can_edit}) {
+        if ($self->request->method eq 'post' and $account->{permissions}{can_edit}) {
             return $self->render_users_invite($account, $self->req_param('invite_email'))
               if $self->req_param('invite_email');
 
@@ -251,9 +251,9 @@ sub remove_user_from_account {
 
     my $data = remove_user_from_account(
         auth       => $self->plain_cookie($self->user_cookie_name),
-        account    => $account->{account_token},
+        account    => $account->{id_token},
         context    => $self->_get_request_context(),
-        user_token => $user->{user_token},
+        id_token   => $user->{id_token},
     );
 
     if ($data->{error}) {
@@ -498,10 +498,10 @@ sub render_account_form {
 sub render_account_edit {
     my $self = shift;
 
-    my $account_token = $self->req_param('a');
+    my $id_token = $self->req_param('a');
 
     # Handle creating a new account
-    if ($account_token eq 'new') {
+    if ($id_token eq 'new') {
         my $account = $self->_create_account_via_api($self->req_param('name'));
         unless ($account) {
             $self->tpl_param('error', 'Failed to create account. Please try again.');
@@ -512,12 +512,12 @@ sub render_account_edit {
 
     # During PostgreSQL migration, we can't decode tokens or fetch from MySQL
     # Instead, we'll get the account from the API after updates
-    return 404 unless $account_token;
+    return 404 unless $id_token;
 
     # Get account from API to populate the form before updates
     my $result = get_account(
         auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $account_token,
+        account => $id_token,
         context => $self->_get_request_context(),
     );
 
@@ -815,7 +815,7 @@ sub render_monitor_config_update {
     my $data = int_api(
         'patch',
         'monitor/admin/account-config',
-        {   a    => $account->{account_token},
+        {   a    => $account->{id_token},
             user => $self->plain_cookie($self->user_cookie_name),
             data => $json_data,
         },

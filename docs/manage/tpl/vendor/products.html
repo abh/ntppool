@@ -101,7 +101,7 @@
 
           <form method="post" class="form-inline btn-inline" action="[% combust.manage_url('/manage/vendor/plan/create_session', id => vz.id_token ) %]">
           <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
-          <input type="hidden" name="a" value="[% combust.current_account.account_token %]">
+          <input type="hidden" name="a" value="[% combust.current_account.id_token %]">
           <input type="hidden" name="product_id" value="[% pr.ID %]">
           <input type="hidden" name="price_id" value="[% plan.ID %]">
           <input type="submit" class="btn btn-primary"
@@ -155,7 +155,7 @@
 
   <form method="post" class="form-inline btn-inline" action="[% combust.manage_url('/manage/vendor/submit', id => vz.id_token ) %]#opensource">
     <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
-    <input type="hidden" name="a" value="[% combust.current_account.account_token %]">
+    <input type="hidden" name="a" value="[% combust.current_account.id_token %]">
     <input type="hidden" name="opensource_request" value="1">
 
     <i>

@@ -5,8 +5,8 @@
 
     <h3>Account information</h3>
 
-    <form id="account-form" action="/manage/account?a=[% account.account_token %]" method="post" accept-charset="utf-8">
-        <input type="hidden" name="a" value="[% account.account_id ? account.account_token : 'new' %]" />
+    <form id="account-form" action="/manage/account?a=[% account.id_token %]" method="post" accept-charset="utf-8">
+        <input type="hidden" name="a" value="[% account.account_id ? account.id_token : 'new' %]" />
         <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
         <div class="form-group">
             <label id="name-help" class="form-label" for="name">Account name</label>

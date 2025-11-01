@@ -26,7 +26,7 @@ NP::CAPI::User - ConnectRPC client for UserService
     # GetUser returns complete user information including accounts and invites.
 
 Authentication: Required via session middleware (sessions.GetUser).
-Authorization: User can view own profile; staff can view any user via user_token parameter.
+Authorization: User can view own profile; staff can view any user via id_token parameter.
 
 Replaces Perl: $user->accounts, $user->pending_invites
     my $result = get_user(
@@ -159,7 +159,7 @@ OpenTelemetry trace ID for request tracing and debugging. Include this when repo
 GetUser returns complete user information including accounts and invites.
 
 Authentication: Required via session middleware (sessions.GetUser).
-Authorization: User can view own profile; staff can view any user via user_token parameter.
+Authorization: User can view own profile; staff can view any user via id_token parameter.
 
 Replaces Perl: $user->accounts, $user->pending_invites
 
@@ -169,7 +169,7 @@ B<Arguments:>
         auth    => $user_token,      # Optional: User/session authentication token
         account => $account_token,   # Optional: Account selection token
         context => $request_context, # Optional: Request context for X-Forwarded-For
-        user_token => $value,       # string - user_token optionally specifies which user to retrieve.
+        id_token => $value,       # string - id_token optionally specifies which user to retrieve.
  If omitted, returns authenticated user's profile.
  If provided, requires staff privileges to access other users.
     );
@@ -185,7 +185,7 @@ Hashref with structure:
         data         => {            # Response data
             user => {
                 user_id => ...,  # int - user_id is the numeric ID of the user
-                user_token => ...,  # string - user_token is the id_token for the user (for URLs and API calls)
+                id_token => ...,  # string
                 email => ...,  # string - email is the user's email address
                 username => ...,  # string - username is the user's username
                 name => ...,  # string - name is the user's display name
@@ -198,7 +198,7 @@ Hashref with structure:
             accounts => [
             {
                 account_id => ...,  # int - account_id is the numeric ID of the account
-                account_token => ...,  # string - account_token is the id_token for the account
+                id_token => ...,  # string
                 name => ...,  # string - name is the account name
                 organization_name => ...,  # string - organization_name is the organization name (if set)
                 url_slug => ...,  # string - url_slug is the URL slug for the account (if set)
@@ -290,7 +290,7 @@ sub get_user {
 
     # Extract request fields from args
     my %request = ();
-    $request{'user_token'} = delete $args{'user_token'} if exists $args{'user_token'};
+    $request{'id_token'} = delete $args{'id_token'} if exists $args{'id_token'};
 
     return connect_rpc(
         service     => 'ntppool.user.v1.UserService',
@@ -341,7 +341,7 @@ Hashref with structure:
             success => ...,  # bool - success indicates if the update was successful
             user => {
                 user_id => ...,  # int - user_id is the numeric ID of the user
-                user_token => ...,  # string - user_token is the id_token for the user (for URLs and API calls)
+                id_token => ...,  # string
                 email => ...,  # string - email is the user's email address
                 username => ...,  # string - username is the user's username
                 name => ...,  # string - name is the user's display name
@@ -451,7 +451,7 @@ Hashref with structure:
             success => ...,  # bool - success indicates if the cancellation was successful
             user => {
                 user_id => ...,  # int - user_id is the numeric ID of the user
-                user_token => ...,  # string - user_token is the id_token for the user (for URLs and API calls)
+                id_token => ...,  # string
                 email => ...,  # string - email is the user's email address
                 username => ...,  # string - username is the user's username
                 name => ...,  # string - name is the user's display name
@@ -559,7 +559,7 @@ Hashref with structure:
             success => ...,  # bool - success indicates if the scheduling was successful
             user => {
                 user_id => ...,  # int - user_id is the numeric ID of the user
-                user_token => ...,  # string - user_token is the id_token for the user (for URLs and API calls)
+                id_token => ...,  # string
                 email => ...,  # string - email is the user's email address
                 username => ...,  # string - username is the user's username
                 name => ...,  # string - name is the user's display name

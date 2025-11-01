@@ -4,7 +4,7 @@
 
 <div class="row">
     <div class="col-md-12">
-        For help or questions, email <a href="mailto:vendors@ntppool.org?subject=Vendor%20DNS%20Zone%20(account%20[% account.account_token %])">vendors@ntppool.org</a>.
+        For help or questions, email <a href="mailto:vendors@ntppool.org?subject=Vendor%20DNS%20Zone%20(account%20[% account.id_token %])">vendors@ntppool.org</a>.
     </div>
 </div>
 
@@ -85,7 +85,7 @@
       <form method="post" class="form-inline btn-inline" action="/manage/vendor/submit">
           <input type="hidden" name="id" value="[% vz.id_token %]" />
           <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
-          <input type="hidden" name="a" value="[% combust.current_account.account_token %]">
+          <input type="hidden" name="a" value="[% combust.current_account.id_token %]">
           <input type="submit" class="btn btn-primary" value="Submit for production &rarr;" />
       </form>
     [% END %]
@@ -95,7 +95,7 @@
     <form method="post" action="/manage/vendor/admin">
         <input type="hidden" name="id" value="[% vz.id_token %]" />
         <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
-        <input type="hidden" name="a" value="[% combust.current_account.account_token %]">
+        <input type="hidden" name="a" value="[% combust.current_account.id_token %]">
         [% IF vz.status == 'Pending' or vz.status == 'Rejected' %]
         <input class="btn btn-success" type="submit" name="status_change" value="Approve" />
         [% END %]

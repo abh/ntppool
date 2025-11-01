@@ -53,7 +53,7 @@
         <form id="monitor-form" action="/manage/monitors/confirm/[% validation_token | html %]" method="post"
             accept-charset="utf-8">
             <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
-            <input type="hidden" name="a" value="[% account.account_token %]" />
+            <input type="hidden" name="a" value="[% account.id_token %]" />
 
             [% IF data.tls_name || data.precheck.monitors.0.tls_name %]
             <div class="form-floating">

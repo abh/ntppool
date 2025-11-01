@@ -2,8 +2,8 @@
     <div class="col-md-10">
         <h3>[% account.name | html %] - Account team</h3>
 
-        <form id="account-form" action="/manage/account/team?a=[% account.account_token %]" method="post" accept-charset="utf-8">
-            <input type="hidden" name="a" value="[% account.account_id ? account.account_token : 'new' %]" />
+        <form id="account-form" action="/manage/account/team?a=[% account.id_token %]" method="post" accept-charset="utf-8">
+            <input type="hidden" name="a" value="[% account.account_id ? account.id_token : 'new' %]" />
             <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
 
             <table class="table">
@@ -11,7 +11,7 @@
                 <tr>
                     <td>[% user.email  | html %]</td>
                     <td>[% IF user.username && user.username != user.email; user.username | html; END %]</td>
-                    [% IF account._permissions.can_edit AND
+                    [% IF account.permissions.can_edit AND
                          (combust.user.is_staff OR combust.user.id != user.user_id) %]
                     <td>
                         <button class="btn btn-outline-warning"
@@ -46,8 +46,8 @@
         </table>
         [% END %]
 
-        <form id="account-form" action="/manage/account/team?a=[% account.account_token %]" method="post" accept-charset="utf-8">
-            <input type="hidden" name="a" value="[% account.account_id ? account.account_token : 'new' %]" />
+        <form id="account-form" action="/manage/account/team?a=[% account.id_token %]" method="post" accept-charset="utf-8">
+            <input type="hidden" name="a" value="[% account.account_id ? account.id_token : 'new' %]" />
             <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
             <div class="form-group">
                 <label id="name-invite_email" class="form-label" for="invite_email">Add user to account team</label>

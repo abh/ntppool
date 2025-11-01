@@ -92,9 +92,9 @@ sub init {
         if (my $account = $self->current_account) {
             $self->tpl_param('account' => $account);
             $span->set_attribute("account.id",       $account->{account_id});
-            $span->set_attribute("account.id_token", $account->{account_token});
+            $span->set_attribute("account.id_token", $account->{id_token});
 
-            $self->request->env->{REMOTE_USER} .= '|' . $account->{account_token};
+            $self->request->env->{REMOTE_USER} .= '|' . $account->{id_token};
         }
 
         if (my $user = $self->user) {
@@ -106,7 +106,7 @@ sub init {
 
             $self->plausible_props("user" => $user->id_token);
             if (my $a = $self->current_account) {
-                $self->plausible_props("account" => $a->{account_token});
+                $self->plausible_props("account" => $a->{id_token});
             }
 
             # Fetch user accounts via API for navigation sidebar
@@ -139,17 +139,17 @@ sub current_account {
     # Call ValidateSession with optional account token
     # Go API will:
     # 1. Validate session
-    # 2. Resolve account_token (if provided) or use default
+    # 2. Resolve id_token (if provided) or use default
     # 3. Check permissions
     # 4. Return account context + permissions
-    my $account_token = $self->req_param('a');
+    my $id_token = $self->req_param('a');
     my %params        = (
         session_token => $session_token,
         context       => $self->_get_request_context(),
     );
 
-    # Only include account_token if defined (avoid undef causing parameter shift)
-    $params{account_token} = $account_token if defined $account_token;
+    # Only include id_token if defined (avoid undef causing parameter shift)
+    $params{id_token} = $id_token if defined $id_token;
 
     my $result = validate_session(%params);
 
@@ -169,9 +169,9 @@ sub current_account {
     return $self->{_current_account} = undef unless $data->{account};
 
     # Return account as plain hashref
-    # Store permissions in _permissions key for template access
+    # Store permissions for template access
     my $account = $data->{account};
-    $account->{_permissions} = $data->{permissions} if $data->{permissions};
+    $account->{permissions} = $data->{permissions} if $data->{permissions};
 
     return $self->{_current_account} = $account;
 }
@@ -250,9 +250,9 @@ sub render {
         my $account_param = $self->req_param('a');
         if (    $account_param
             and $account
-            and $account_param ne $account->{account_token})
+            and $account_param ne $account->{id_token})
         {
-            return $self->redirect($self->current_url({a => $account->{account_token}}));
+            return $self->redirect($self->current_url({a => $account->{id_token}}));
         }
     }
 
@@ -413,7 +413,7 @@ sub manage_dispatch {
     if ($self->request->uri eq "/" or $self->request->uri =~ m{^/manage/?$}) {
         my $account  = $self->current_account;
         my $redirect = URI->new('/manage/servers');
-        $redirect->query_param(a => $account->{account_token}) if $account;
+        $redirect->query_param(a => $account->{id_token}) if $account;
         return $self->redirect($redirect);
     }
 
@@ -737,7 +737,7 @@ sub monitor_eligibility {
     # Call new ConnectRPC AccountService.GetAccountStatus
     my $result = get_account_status(
         auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->{account_token},
+        account => $self->current_account->{id_token},
         context => $self->_get_request_context(),
     );
 
@@ -875,7 +875,7 @@ sub get_account_logs_via_api {
     require NP::CAPI::Audit;
     my $result = NP::CAPI::Audit::get_account_audit_logs(
         auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $account->{account_token},
+        account => $account->{id_token},
         context => $self->_get_request_context(),
         ($args{types} ? (types => $args{types}) : ()),
         ($args{limit} ? (limit => $args{limit}) : ()),
