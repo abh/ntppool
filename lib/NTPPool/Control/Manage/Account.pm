@@ -100,28 +100,6 @@ sub _user_invites_via_api {
     return $self->{$cache_key} = $result->{data}{invites} || [];
 }
 
-sub _account_from_api_response {
-    my ($self, $account_obj) = @_;
-
-# Create account object from API response with all fields
-# Note: Cannot reload from database during Postgres migration as Perl ORM reads from MySQL
-# The API writes to Postgres, but NP::Model reads from MySQL
-# CRITICAL: Use all fields from the API response to populate the object
-    return bless {
-        id                => $account_obj->{account_id},
-        id_token          => $account_obj->{id_token},
-        name              => $account_obj->{name},
-        organization_name => $account_obj->{organization_name},
-        organization_url  => $account_obj->{organization_url},
-        url_slug          => $account_obj->{url_slug},
-        flags             => $account_obj->{flags},
-        public_profile    => $account_obj->{public_profile} ? 1 : 0,
-        created_on        => $account_obj->{created_on},
-        modified_on       => $account_obj->{modified_on},
-      },
-      'NP::Model::Account';
-}
-
 sub _create_account_via_api {
     my ($self, $name) = @_;
 
@@ -139,7 +117,7 @@ sub _create_account_via_api {
         return undef;
     }
 
-    return $self->_account_from_api_response($data->{data}{account});
+    return $data->{data}{account};
 }
 
 sub manage_dispatch {
@@ -528,7 +506,7 @@ sub render_account_edit {
     }
 
     my $account_obj = $result->{data}{account};
-    my $account     = $self->_account_from_api_response($account_obj);
+    my $account     = $account_obj;
 
     my $old = {%$account};    # Shallow copy for logging
 
@@ -573,7 +551,7 @@ sub render_account_edit {
 
         # Use the updated account returned by the API (no need for second call)
         $account_obj = $data->{data}{account};
-        $account     = $self->_account_from_api_response($account_obj);
+        $account     = $account_obj;
 
 # Note: Logging moved to Go API (UpdateAccount service)
 # During PostgreSQL migration, cannot log to MySQL with account_id that only exists in PostgreSQL
