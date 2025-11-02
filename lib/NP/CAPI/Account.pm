@@ -26,6 +26,7 @@ our @EXPORT_OK = qw(
     get_account
     can_delete_account
     check_user_deletion_eligibility
+    get_public_account_by_username
 );
 
 =head1 NAME
@@ -34,7 +35,7 @@ NP::CAPI::Account - ConnectRPC client for AccountService
 
 =head1 SYNOPSIS
 
-    use NP::CAPI::Account qw(get_account_status process_auth0_login validate_session delete_session create_account update_account remove_user_from_account create_user_task get_account_server_verification_status get_accounts_to_notify get_account_users get_user_accounts get_account_invites get_account can_delete_account check_user_deletion_eligibility);
+    use NP::CAPI::Account qw(get_account_status process_auth0_login validate_session delete_session create_account update_account remove_user_from_account create_user_task get_account_server_verification_status get_accounts_to_notify get_account_users get_user_accounts get_account_invites get_account can_delete_account check_user_deletion_eligibility get_public_account_by_username);
     # GetAccountStatus returns the current monitor eligibility and status for an account.
 Authentication is handled by middleware - the account is extracted from the session context.
     my $result = get_account_status(
@@ -175,6 +176,14 @@ Validates all accounts owned solely by the user and returns blocker details.
 Authentication: Required via session middleware.
 Authorization: User must be the target user or staff.
     my $result = check_user_deletion_eligibility(
+        auth    => $user_token,
+        account => $account_token,
+        context => $request_context,
+    );
+
+    # GetPublicAccountByUsername returns public URL for legacy /user/{username} redirects.
+No authentication required.
+    my $result = get_public_account_by_username(
         auth    => $user_token,
         account => $account_token,
         context => $request_context,
@@ -487,6 +496,9 @@ Hashref with structure:
                 vendor_admin => ...,  # bool - vendor_admin allows vendor zone management
             },  # hashref (UserPrivileges) - privileges contains the user's global privilege flags
  Only present when valid is true
+            deletion_on => ...,  # string - deletion_on is the timestamp when the user is scheduled for deletion.
+ RFC3339 format string (e.g., "2025-02-15T10:30:00Z").
+ Only present if the user has scheduled deletion.
         },
         error        => undef,       # Error message (if any)
         trace_id     => "...",       # OpenTelemetry trace ID
@@ -543,6 +555,13 @@ permissions for the authenticated user on this account
 
 privileges contains the user's global privilege flags
  Only present when valid is true
+
+
+=item * B<deletion_on> (string)
+
+deletion_on is the timestamp when the user is scheduled for deletion.
+ RFC3339 format string (e.g., "2025-02-15T10:30:00Z").
+ Only present if the user has scheduled deletion.
 
 
 =back
@@ -1864,6 +1883,76 @@ sub check_user_deletion_eligibility {
     return connect_rpc(
         service     => 'ntppool.account.v1.AccountService',
         method      => 'CheckUserDeletionEligibility',
+        request     => \%request,
+        %args  # Pass through auth, account, context
+    );
+}
+
+
+=head2 get_public_account_by_username
+
+GetPublicAccountByUsername returns public URL for legacy /user/{username} redirects.
+No authentication required.
+
+B<Arguments:>
+
+    my $result = get_public_account_by_username(
+        auth    => $user_token,      # Optional: User/session authentication token
+        account => $account_token,   # Optional: Account selection token
+        context => $request_context, # Optional: Request context for X-Forwarded-For
+        username => $value,       # string - username is the user's username to look up
+    );
+
+B<Returns:>
+
+Hashref with structure:
+
+    {
+        code         => 200,         # HTTP status code
+        status_line  => "200 OK",    # HTTP status text
+        connect_code => undef,       # ConnectRPC error code (or undef)
+        data         => {            # Response data
+            redirect_url => ...,  # string - redirect_url is the public account URL (e.g., "/a/example-slug")
+ Empty string if user/account not public or url_slug not set
+        },
+        error        => undef,       # Error message (if any)
+        trace_id     => "...",       # OpenTelemetry trace ID
+    }
+
+B<ConnectRPC Error Codes:>
+
+    unauthenticated, permission_denied, internal, invalid_argument, etc.
+
+B<Example:>
+
+    my $result = get_public_account_by_username(
+        auth    => $self->plain_cookie($self->user_cookie_name),
+        account => $self->current_account->id_token,
+        context => $self->_get_request_context(),
+    );
+
+    if ($result->{error}) {
+        warn "Error: $result->{error}";
+    } else {
+        my $data = $result->{data};
+        # Use response fields...
+    }
+
+=cut
+
+sub get_public_account_by_username {
+    my $validation_error = validate_key_value_args('get_public_account_by_username', @_);
+    return $validation_error if $validation_error;
+
+    my %args = @_;
+
+    # Extract request fields from args
+    my %request = ();
+    $request{'username'} = delete $args{'username'} if exists $args{'username'};
+
+    return connect_rpc(
+        service     => 'ntppool.account.v1.AccountService',
+        method      => 'GetPublicAccountByUsername',
         request     => \%request,
         %args  # Pass through auth, account, context
     );

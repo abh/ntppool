@@ -46,8 +46,6 @@ sub login {
     return OK, $self->evaluate_template('tpl/login.html');
 }
 
-sub bc_user_class { NP::Model->user }
-
 my $crypt = Crypt::Passphrase->new(
     encoder => {
         module => 'Bcrypt',
@@ -83,40 +81,24 @@ sub user {
             my $user_data = $result->{data};
             $uid = $user_data->{user_id};
 
-            # Load the user object from database using the validated user_id
-            # TODO: In future, construct user object directly from API data
-            # to eliminate database dependency completely
-            if ($self->bc_user_class->can('find')) {
-
-                # DBIx::Class
-                $user = $self->bc_user_class->find($uid);
-            }
-            elsif ($self->bc_user_class->can('fetch')) {
-
-                # RDBO with combust helpers
-                $user = $self->bc_user_class->fetch(id => $uid);
-            }
+            # Return user data as hashref directly from API response
+            # Eliminates database dependency - matches account pattern
+            $user = {
+                user_id    => $user_data->{user_id},
+                id_token   => $user_data->{id_token},
+                email      => $user_data->{email},
+                username   => $user_data->{username} || '',
+                deletion_on => $user_data->{deletion_on} || '',
+                # Privileges for authorization checks
+                privileges => $user_data->{privileges} || {},
+            };
         }
         else {
             # Session validation failed - clear cookies
             warn "Session validation failed: ", ($result->{error} || 'invalid session');
         }
     }
-    else {
-        # legacy cookie session support; delete some months after release
-        $uid = $self->cookie($self->user_cookie_name);
-        if ($uid) {
-            warn "legacy session cookie";
-
-            # Load user from database for legacy cookies
-            if ($self->bc_user_class->can('find')) {
-                $user = $self->bc_user_class->find($uid);
-            }
-            elsif ($self->bc_user_class->can('fetch')) {
-                $user = $self->bc_user_class->fetch(id => $uid);
-            }
-        }
-    }
+    # Legacy cookie support removed - all sessions must use validate_session API
 
     unless ($uid && $user) {
         $self->cookie($self->user_cookie_name, '0');
@@ -130,7 +112,7 @@ sub user {
 sub is_logged_in {
     my $self = shift;
     my $user = $self->user;
-    return 1 if $user and $user->id;
+    return 1 if $user and $user->{user_id};
     return 0;
 }
 

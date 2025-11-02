@@ -106,8 +106,8 @@ sub show_manage {
 
     if ($self->user_is_staff) {
 
-      # Use new AuditService API (eliminates N+1 query problem: ~150 queries → ~5 queries)
-        my $logs = $self->get_account_logs_via_api(
+      # Use AuditService API (eliminates N+1 query problem: ~150 queries → ~5 queries)
+        my $logs = $self->account_logs(
             account => $account,
             limit   => 50,
         );
@@ -240,7 +240,7 @@ sub handle_add {
             my $email =
               Email::Stuffer->from(NP::Email::address("sender"))
               ->to(NP::Email::address("notifications"))
-              ->reply_to($self->user->email)
+              ->reply_to($self->user->{email})
               ->text_body($msg);
 
             my $subject =
@@ -548,7 +548,7 @@ sub handle_verify {
 
         $verification->verified_on(DateTime->now());
         $verification->user_ip($self->request->remote_ip);
-        $verification->user_id($self->user->id);
+        $verification->user_id($self->user->{user_id});
         $verification->token(undef);
         $verification->save();
         $db->commit;
@@ -653,7 +653,7 @@ sub handle_move {
     else {
         ($accounts) = NP::Model->account->get_accounts(
             require_objects => ['users'],
-            query           => ['users.id' => $self->user->id]
+            query           => ['users.id' => $self->user->{user_id}]
         );
     }
     $accounts = [grep { $_->id != $self->current_account->id } @$accounts];

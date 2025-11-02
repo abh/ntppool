@@ -32,7 +32,7 @@ sub _get_request_context {
     return $x_forwarded_for ? {x_forwarded_for => $x_forwarded_for} : undef;
 }
 
-sub _account_users_via_api {
+sub _account_users {
     my ($self, $account) = @_;
     my $cache_key = '_account_users_' . $account->{account_id};
     return $self->{$cache_key} if exists $self->{$cache_key};
@@ -49,9 +49,9 @@ sub _account_users_via_api {
     return $self->{$cache_key} = $result->{data}{users} || [];
 }
 
-sub _user_accounts_via_api {
+sub _user_accounts {
     my ($self, $user) = @_;
-    my $cache_key = '_user_accounts_' . $user->id;
+    my $cache_key = '_user_accounts_' . $user->{user_id};
     return $self->{$cache_key} if exists $self->{$cache_key};
 
     my $result = get_user_accounts(
@@ -65,7 +65,7 @@ sub _user_accounts_via_api {
     return $self->{$cache_key} = $result->{data}{accounts} || [];
 }
 
-sub _account_invites_via_api {
+sub _account_invites {
     my ($self, $account) = @_;
     my $cache_key = '_account_invites_' . $account->{account_id};
     return $self->{$cache_key} if exists $self->{$cache_key};
@@ -83,9 +83,9 @@ sub _account_invites_via_api {
     return $self->{$cache_key} = $result->{data}{invites} || [];
 }
 
-sub _user_invites_via_api {
+sub _user_invites {
     my ($self, $user) = @_;
-    my $cache_key = '_user_invites_' . $user->id;
+    my $cache_key = '_user_invites_' . $user->{user_id};
     return $self->{$cache_key} if exists $self->{$cache_key};
 
     my $result = get_account_invites(
@@ -100,7 +100,7 @@ sub _user_invites_via_api {
     return $self->{$cache_key} = $result->{data}{invites} || [];
 }
 
-sub _create_account_via_api {
+sub _create_account {
     my ($self, $name) = @_;
 
     $name ||= $self->user->name || 'My Account';
@@ -138,7 +138,7 @@ sub manage_dispatch {
     if (($self->req_param('a') || '') eq 'new') {
         return 403 unless $self->check_auth_token;
 
-        $account = $self->_create_account_via_api();
+        $account = $self->_create_account();
         unless ($account) {
             $self->tpl_param('error', 'Failed to create account. Please try again.');
             return $self->redirect("/manage/");
@@ -149,13 +149,13 @@ sub manage_dispatch {
 
     unless ($account) {
 
-        my $invites = $self->_user_invites_via_api($self->user);
+        my $invites = $self->_user_invites($self->user);
         if ($invites && @$invites) {
             warn "has no account and there are pending invites...";
             return $self->redirect("/manage/account/invites/");
         }
 
-        $account = $self->_create_account_via_api();
+        $account = $self->_create_account();
         unless ($account) {
             $self->tpl_param('error', 'Failed to create account. Please try again.');
             return $self->redirect("/manage/");
@@ -203,7 +203,7 @@ sub manage_dispatch {
 
             my $delete_user_id = $self->req_param('user_id');
             if ($delete_user_id
-                and ($self->user_is_staff or $self->user->id != $delete_user_id))
+                and ($self->user_is_staff or $self->user->{user_id} != $delete_user_id))
             {
                 return $self->remove_user_from_account($account, $delete_user_id);
             }
@@ -222,7 +222,7 @@ sub manage_dispatch {
 
 sub remove_user_from_account {
     my ($self, $account, $user_id) = @_;
-    my $users = $self->_account_users_via_api($account);
+    my $users = $self->_account_users($account);
     my ($user) = grep { $_->{user_id} == $user_id } @$users;
     return $self->render_users($account)
       unless $user;
@@ -299,14 +299,14 @@ sub handle_invitation {
     my $db  = NP::Model->db;
     my $txn = $db->begin_scoped_work;
 
-    warn "ADDING ", $self->user->id, " to account ", $invite->account->id;
+    warn "ADDING ", $self->user->{user_id}, " to account ", $invite->account->id;
 
     my $user = $self->user;
 
     $invite->status('accepted');
-    $invite->user($user->id);
+    $invite->user($user->{user_id});
 
-    $invite->account->add_users([$user->id])
+    $invite->account->add_users([$user->{user_id}])
       or return $self->render_invite_error("Error adding user to account");
 
     $invite->save or return $self->render_invite_error("Error saving invite update");
@@ -342,8 +342,8 @@ sub render_users_invite {
     my %errors = ();
 
     # Get users and invites via API helper methods (now return hashrefs)
-    my $users   = $self->_account_users_via_api($account);
-    my $invites = $self->_account_invites_via_api($account);
+    my $users   = $self->_account_users($account);
+    my $invites = $self->_account_invites($account);
 
     if (grep { lc $_->{email} eq lc $email_address } @$users) {
         $errors{invite_email} = "User is already on this account";
@@ -365,7 +365,7 @@ sub render_users_invite {
         account => $account,
         email   => $email_address,
         status  => 'pending',
-        sent_by => $self->user->id,
+        sent_by => $self->user->{user_id},
         code    => $code,
     );
     $invite->expires_on(DateTime->now()->add(hours => 49));
@@ -406,7 +406,7 @@ sub render_user_invitations {
     my $invite = shift;
 
     my $user    = $self->user;
-    my $invites = $self->_user_invites_via_api($user);
+    my $invites = $self->_user_invites($user);
 
     # Note: $invite here is still an ORM object from the invitation flow
     # Only compare if it's an ORM object (has ->id method)
@@ -425,8 +425,8 @@ sub render_user_invitations {
 sub render_users {
     my ($self, $account) = @_;
 
-    my $invites = $self->_account_invites_via_api($account);
-    my $users   = $self->_account_users_via_api($account);
+    my $invites = $self->_account_invites($account);
+    my $users   = $self->_account_users($account);
 
     $self->tpl_param('invites', $invites);
     $self->tpl_param('users',   $users);
@@ -480,7 +480,7 @@ sub render_account_edit {
 
     # Handle creating a new account
     if ($id_token eq 'new') {
-        my $account = $self->_create_account_via_api($self->req_param('name'));
+        my $account = $self->_create_account($self->req_param('name'));
         unless ($account) {
             $self->tpl_param('error', 'Failed to create account. Please try again.');
             return $self->render_account_form(undef);
@@ -573,7 +573,7 @@ sub render_download {
         my $tasks = NP::Model->user_task->get_user_tasks(
             query => [
                 task    => 'download',
-                user_id => $user->id,
+                user_id => $user->{user_id},
                 traceid => $traceid,
             ],
             sort_by => 'created_on desc'
@@ -595,7 +595,7 @@ sub render_download {
     my $requests = NP::Model->user_task->get_user_tasks(
         query => [
             task    => 'download',
-            user_id => $user->id,
+            user_id => $user->{user_id},
         ],
         sort_by => 'created_on desc'
     );
