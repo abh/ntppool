@@ -1,8 +1,8 @@
 package NTPPool::Control::UserProfile;
 use strict;
 use parent qw(NTPPool::Control);
-use NP::Model;
 use Combust::Constant qw(OK);
+use NP::CAPI::Account qw(get_public_account_by_username);
 use NP::CAPI::Server qw(get_account_servers);
 
 sub uri_username {
@@ -11,14 +11,22 @@ sub uri_username {
     $username || '';
 }
 
-sub profile_user {
+sub get_redirect_url {
     my $self = shift;
-    return $self->{_profile_user} if $self->{_profile_user};
+    return $self->{_redirect_url} if exists $self->{_redirect_url};
+
     my $username = $self->uri_username;
-    my $user     = NP::Model->user->get_users(query => [username => $username]);
-    $user                  = $user && $user->[0];
-    $user                  = NP::Model->user->fetch(id => $username) unless $user;
-    $self->{_profile_user} = $user;
+    return $self->{_redirect_url} = undef unless $username;
+
+    my $result = get_public_account_by_username(username => $username);
+
+    if ($result->{error}) {
+        warn "GetPublicAccountByUsername failed for '$username': $result->{error}";
+        return $self->{_redirect_url} = undef;
+    }
+
+    $self->{_redirect_url} = $result->{data}{redirect_url};
+    return $self->{_redirect_url};
 }
 
 sub account_data {
@@ -59,16 +67,9 @@ sub render {
 # legacy urls, redirecting to new account pages when possible
 sub render_user {
     my $self = shift;
-
-    my $user = $self->profile_user;
-    return 404 unless $user and $user->public_profile;
-
-    my $accounts = $user->accounts;
-    my ($account) = sort { $a->id <=> $b->id }
-      grep { $_->public_profile } @$accounts;
-
-    return 404 unless $account;
-    return $self->redirect($account->public_url);
+    my $redirect_url = $self->get_redirect_url;
+    return 404 unless $redirect_url;
+    return $self->redirect($redirect_url);
 }
 
 # overridden in the manage version

@@ -84,7 +84,7 @@ sub init {
 
     if ($self->is_logged_in) {
         $self->request->env->{REMOTE_USER} =
-          $self->user->username . '|' . $self->user->id_token;
+          $self->user->{username} . '|' . $self->user->{id_token};
 
         my $span =
           OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
@@ -99,12 +99,12 @@ sub init {
 
         if (my $user = $self->user) {
             $span->set_attribute("user.is_staff", $self->user_is_staff ? 1 : 0);
-            $span->set_attribute("user.email",    $user->email);
-            $span->set_attribute("user.username", $user->username);
-            $span->set_attribute("user.id",       $user->id);
-            $span->set_attribute("user.id_token", $user->id_token);
+            $span->set_attribute("user.email",    $user->{email});
+            $span->set_attribute("user.username", $user->{username});
+            $span->set_attribute("user.id",       $user->{user_id});
+            $span->set_attribute("user.id_token", $user->{id_token});
 
-            $self->plausible_props("user" => $user->id_token);
+            $self->plausible_props("user" => $user->{id_token});
             if (my $a = $self->current_account) {
                 $self->plausible_props("account" => $a->{id_token});
             }
@@ -112,10 +112,11 @@ sub init {
             # Fetch user accounts via API for navigation sidebar
             # During PostgreSQL migration, accounts created via API won't appear in MySQL
             # so we fetch them directly from the API
-            $self->tpl_param('user_accounts_api' => $self->user_accounts_via_api());
+            $self->tpl_param('user_accounts' => $self->user_accounts());
         }
 
-        if ($self->user->deletion_on and $self->request->uri ne "/manage/logout") {
+        # Redirect users with scheduled deletion to logout page
+        if ($self->user->{deletion_on} and $self->request->uri ne "/manage/logout") {
             return $self->redirect($self->manage_url('/manage/logout'));
         }
 
@@ -310,10 +311,9 @@ sub handle_login {
     # Clear login state
     $self->cookie('login_state', '');
 
-    # Load user object for request
-    # Since we now have a session cookie, the user() method will work
-    my $user = NP::Model->user->fetch(id => $data->{user_id});
-    $self->user($user);
+    # Set user data from API response
+    # On the next request, validate_session will load deletion_on and privileges
+    $self->user($data);
 
     # Show message if deletion was cancelled
     if ($data->{deletion_cancelled}) {
@@ -823,7 +823,7 @@ sub account_monitor_config {
     return $self->{$cache_key} = $monitor_config;
 }
 
-sub user_accounts_via_api {
+sub user_accounts {
     my $self = shift;
 
     # Return cached accounts if already loaded
@@ -849,11 +849,11 @@ sub user_accounts_via_api {
     return $self->{_user_accounts} = $result->{data}{accounts} || [];
 }
 
-=head2 get_account_logs_via_api
+=head2 account_logs
 
 Fetch audit logs via ConnectRPC AuditService API (eliminates N+1 query problem).
 
-    my $logs = $self->get_account_logs_via_api(
+    my $logs = $self->account_logs(
         account => $account,
         types   => ['invitation', 'server-delete'],  # optional filter
         limit   => 50,                               # optional (default: 50)
@@ -864,7 +864,7 @@ Returns empty arrayref on error (with warning logged).
 
 =cut
 
-sub get_account_logs_via_api {
+sub account_logs {
     my $self = shift;
     my %args = @_;
 

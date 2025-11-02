@@ -19,6 +19,7 @@ use Math::Random::Secure       qw(irand);
 use NP::IntAPI                 qw(int_api);
 use NP::CAPI::Server           qw(get_account_servers);
 use NP::CAPI::ServerManagement qw(add_server_precheck add_server);
+use NP::Data::Server           ();
 use OpenTelemetry -all;
 use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
 use experimental             qw( defer );
@@ -106,8 +107,8 @@ sub show_manage {
 
     if ($self->user_is_staff) {
 
-      # Use new AuditService API (eliminates N+1 query problem: ~150 queries → ~5 queries)
-        my $logs = $self->get_account_logs_via_api(
+      # Use AuditService API (eliminates N+1 query problem: ~150 queries → ~5 queries)
+        my $logs = $self->account_logs(
             account => $account,
             limit   => 50,
         );
@@ -240,7 +241,7 @@ sub handle_add {
             my $email =
               Email::Stuffer->from(NP::Email::address("sender"))
               ->to(NP::Email::address("notifications"))
-              ->reply_to($self->user->email)
+              ->reply_to($self->user->{email})
               ->text_body($msg);
 
             my $subject =
@@ -310,26 +311,22 @@ sub _add_server {
         warn "Failed to add server: " . $result->{error};
         warn "Trace ID: " . $result->{trace_id};
 
-        # Return blessed object with error info for template compatibility
-        return bless {
-            error          => $result->{error},
-            trace_id       => $result->{trace_id},
-            ip             => $server->{ip},
-            _is_api_object => 1,
-          },
-          'NTPPool::Control::Manage::Server::APIServer';
+        # Return data object with error info for template compatibility
+        return NP::Data::Server->new(
+            error    => $result->{error},
+            trace_id => $result->{trace_id},
+            ip       => $server->{ip},
+        );
     }
 
     # Get the server from API response
     my $api_result = $result->{data}{results}[0];
     if (!$api_result->{success}) {
         warn "Server add failed: " . ($api_result->{error} || 'Unknown error');
-        return bless {
-            error          => $api_result->{error} || 'Failed to add server',
-            ip             => $server->{ip},
-            _is_api_object => 1,
-          },
-          'NTPPool::Control::Manage::Server::APIServer';
+        return NP::Data::Server->new(
+            error => $api_result->{error} || 'Failed to add server',
+            ip    => $server->{ip},
+        );
     }
 
     # Use server data directly from API response (no database reload)
@@ -337,44 +334,8 @@ sub _add_server {
 
     # Return API server data with compatibility methods for template
     # The API returns complete server object, use it directly
-    return bless {%$server_data, _is_api_object => 1,},
-      'NTPPool::Control::Manage::Server::APIServer';
+    return NP::Data::Server->new(%$server_data);
 }
-
-# Compatibility wrapper for API server objects
-package NTPPool::Control::Manage::Server::APIServer;
-
-sub id {
-    my $self = shift;
-    return $self->{id};
-}
-
-sub ip {
-    my $self = shift;
-    return $self->{ip};
-}
-
-sub hostname {
-    my $self = shift;
-    return $self->{hostname} || '';
-}
-
-sub manage_url {
-    my $self = shift;
-    return "/manage/server?server=" . $self->{ip};
-}
-
-sub error {
-    my $self = shift;
-    return $self->{error} || '';
-}
-
-sub trace_id {
-    my $self = shift;
-    return $self->{trace_id} || '';
-}
-
-package NTPPool::Control::Manage::Server;
 
 sub req_server {
     my $self      = shift;
@@ -548,7 +509,7 @@ sub handle_verify {
 
         $verification->verified_on(DateTime->now());
         $verification->user_ip($self->request->remote_ip);
-        $verification->user_id($self->user->id);
+        $verification->user_id($self->user->{user_id});
         $verification->token(undef);
         $verification->save();
         $db->commit;
@@ -653,7 +614,7 @@ sub handle_move {
     else {
         ($accounts) = NP::Model->account->get_accounts(
             require_objects => ['users'],
-            query           => ['users.id' => $self->user->id]
+            query           => ['users.id' => $self->user->{user_id}]
         );
     }
     $accounts = [grep { $_->id != $self->current_account->id } @$accounts];

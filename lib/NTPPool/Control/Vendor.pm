@@ -96,7 +96,7 @@ sub render_form {
 sub render_zones {
     my $self = shift;
 
-    my $accounts = $self->user->accounts;
+    my $accounts = $self->user_accounts();
     $self->tpl_param('accounts' => $accounts);
 
     if (my @subs = $self->current_account->account_subscriptions) {
@@ -261,7 +261,7 @@ sub render_submit {
     my $email =
       Email::Stuffer->from(NP::Email::address("sender"))
       ->to(NP::Email::address("vendors"))->cc(NP::Email::address("notifications"))
-      ->reply_to($self->user->email)
+      ->reply_to($self->user->{email})
       ->subject("New vendor zone application: " . $vz->zone_name)->text_body($msg);
 
     my $return = NP::Email::sendmail($email->email);
@@ -337,7 +337,7 @@ sub _edit_zone {
 
         $vz = NP::Model->vendor_zone->create(
             zone_name  => $zone_name,
-            user_id    => $self->user->id,
+            user_id    => $self->user->{user_id},
             account_id => $self->current_account->id,
             dns_root   => $dns_root->id,
             (map { $_ => ($self->req_param($_) || '') } @fields)
@@ -464,7 +464,7 @@ sub render_subscription {
 
             unless ($vz->account->stripe_customer_id) {
                 my $customer = NP::Stripe::create_customer(
-                    email       => $self->user->email,
+                    email       => $self->user->{email},
                     name        => $account->name,
                     description => $account->organization_name,
 
@@ -486,7 +486,7 @@ sub render_subscription {
                 account_id  => $account->id_token,
 
                 customer_id => $account->stripe_customer_id,
-                email       => $self->user->email,
+                email       => $self->user->{email},
 
                 return_url => $return_url,
             );
