@@ -311,10 +311,9 @@ sub handle_login {
     # Clear login state
     $self->cookie('login_state', '');
 
-    # Load user object for request
-    # Since we now have a session cookie, the user() method will work
-    my $user = NP::Model->user->fetch(id => $data->{user_id});
-    $self->user($user);
+    # Set user data from API response
+    # On the next request, validate_session will load deletion_on and privileges
+    $self->user($data);
 
     # Show message if deletion was cancelled
     if ($data->{deletion_cancelled}) {
