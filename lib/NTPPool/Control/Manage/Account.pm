@@ -2,17 +2,13 @@ package NTPPool::Control::Manage::Account;
 use strict;
 use NTPPool::Control::Manage;
 use base qw(NTPPool::Control::Manage);
-use NP::Model;
-use Combust::Constant    qw(OK NOT_FOUND);
-use Math::BaseCalc       ();
-use Math::Random::Secure qw(irand);
-use Combust::Template;
-use NP::Email         ();
+use Combust::Constant qw(OK NOT_FOUND);
 use NP::IntAPI        qw(int_api);
 use NP::CAPI::Account qw(
     get_account_users get_user_accounts get_account_invites
     create_account get_account update_account remove_user_from_account create_user_task
     check_user_deletion_eligibility
+    create_account_invite accept_account_invite resend_account_invite
 );
 use NP::CAPI::User qw(schedule_user_deletion);
 use DateTime;
@@ -279,44 +275,63 @@ sub handle_invitation {
     warn "CODE: $code -- method: ", $self->request->method;
     return 404 unless $code;
 
-    my $invite = NP::Model->account_invite->fetch(code => $code);
-    return 404 unless $invite;
-
-    warn "got invite: ", $invite->id if $invite;
-
-    my $error;
-
-    if ($invite->status ne "pending") {
-        return $self->render_invite_error("Invitation code has been used or expired");
-    }
-
     # on post requests the auth token has already been checked, so if it's
-    # something else we show a confirmation page.
+    # something else we show a confirmation page (GET request).
     if ($self->request->method ne 'post') {
+        # For GET request, we need to fetch the invite to show confirmation page
+        # Use get_account_invites to check if this code exists and get details
+        my $invites_result = get_account_invites(
+            auth     => $self->token,
+            context  => $self->otel_context,
+            for_user => 1,  # Get invites for the current user
+        );
+
+        if ($invites_result->{error}) {
+            return 404;
+        }
+
+        # Find the invite with matching code
+        my $invite = (grep { $_->{code} eq $code } @{$invites_result->{data}{invites} // []})[0];
+        return 404 unless $invite;
+
+        if ($invite->{status} ne "pending") {
+            return $self->render_invite_error("Invitation code has been used or expired");
+        }
+
         return $self->render_user_invitations($invite);
     }
 
-    my $db  = NP::Model->db;
-    my $txn = $db->begin_scoped_work;
+    # POST request - accept the invitation via Go API
+    # The API handles transaction, adding user to account, and logging
+    my $result = accept_account_invite(
+        auth    => $self->token,
+        context => $self->otel_context,
+        code    => $code,
+    );
 
-    warn "ADDING ", $self->user->{user_id}, " to account ", $invite->account->id;
+    if ($result->{error}) {
+        # Map CAPI error codes to user-friendly messages
+        my $code_type = $result->{connect_code} // 'internal';
 
-    my $user = $self->user;
+        if ($code_type eq 'not_found') {
+            return $self->render_invite_error("Invitation not found");
+        }
+        elsif ($code_type eq 'failed_precondition') {
+            return $self->render_invite_error("Invitation code has been used or expired");
+        }
+        elsif ($code_type eq 'permission_denied') {
+            return $self->render_invite_error("This invitation is not for you");
+        }
+        elsif ($code_type eq 'unauthenticated') {
+            return $self->render_invite_error("You must be logged in to accept invitations");
+        }
+        else {
+            return $self->render_invite_error("Error accepting invitation: " . ($result->{error} // 'Unknown error'));
+        }
+    }
 
-    $invite->status('accepted');
-    $invite->user($user->{user_id});
-
-    $invite->account->add_users([$user->{user_id}])
-      or return $self->render_invite_error("Error adding user to account");
-
-    $invite->save or return $self->render_invite_error("Error saving invite update");
-
-    $invite->account->save
-      or return $self->render_invite_error("Error saving database update");
-
-# Note: Logging moved to Go API (accept invitation endpoint - to be implemented)
-# During PostgreSQL migration, cannot log to MySQL with account_id that only exists in PostgreSQL
-    $db->commit or return $self->render_invite_error("database commit error");
+    # Success - user has been added to account
+    my $account_id = $result->{data}{account_id};
 
     # we accepted an invite for a new user that didn't have a account yet, so
     # just 'start over' ...
@@ -324,9 +339,21 @@ sub handle_invitation {
         return $self->redirect($self->manage_url("/manage"));
     }
 
+    # Fetch the account to get its id_token for the redirect
+    my $account_result = get_account(
+        auth    => $self->token,
+        context => $self->otel_context,
+        id      => $account_id,
+    );
+
+    if ($account_result->{error}) {
+        # Fallback to manage page if we can't get account details
+        return $self->redirect($self->manage_url("/manage"));
+    }
+
     # go to the team page for the "new" account
     return $self->redirect(
-        $self->manage_url("/manage/account/team", {a => $invite->account->id_token}));
+        $self->manage_url("/manage/account/team", {a => $account_result->{data}{account}{id_token}}));
 }
 
 sub render_invite_error {
@@ -341,63 +368,41 @@ sub render_users_invite {
 
     my %errors = ();
 
-    # Get users and invites via API helper methods (now return hashrefs)
-    my $users   = $self->_account_users($account);
-    my $invites = $self->_account_invites($account);
+    # Create invitation via Go API
+    # The API handles all validation, email sending, and limits
+    my $result = create_account_invite(
+        auth    => $self->token,
+        account => $account->{id_token},
+        context => $self->otel_context,
+        email   => $email_address,
+    );
 
-    if (grep { lc $_->{email} eq lc $email_address } @$users) {
-        $errors{invite_email} = "User is already on this account";
-    }
+    if ($result->{error}) {
+        # Map CAPI error codes to user-friendly messages
+        my $code = $result->{connect_code} // 'internal';
 
-    if (scalar(grep { $_->{status} eq 'pending' } @$invites) >= 5) {
-        $errors{invite_email} = 'Too many recent account invitations';
-    }
+        if ($code eq 'already_exists') {
+            $errors{invite_email} = "User is already on this account";
+        }
+        elsif ($code eq 'resource_exhausted') {
+            $errors{invite_email} = 'Too many recent account invitations (limit: 5)';
+        }
+        elsif ($code eq 'permission_denied') {
+            $errors{invite_email} = "You don't have permission to invite users to this account";
+        }
+        elsif ($code eq 'invalid_argument') {
+            $errors{invite_email} = "Invalid email address";
+        }
+        else {
+            $errors{invite_email} = "Failed to create invitation: " . ($result->{error} // 'Unknown error');
+        }
 
-    if (%errors) {
         $self->tpl_param(errors => \%errors);
         return $self->render_users($account);
     }
 
-    my $base36 = Math::BaseCalc->new(digits => ['a' .. 'k', 'm' .. 'z', 2 .. 9]);
-    my $code   = join "", map { $base36->to_base(irand) } (undef) x 2;
-
-    my $invite = NP::Model->account_invite->fetch_or_create(
-        account => $account,
-        email   => $email_address,
-        status  => 'pending',
-        sent_by => $self->user->{user_id},
-        code    => $code,
-    );
-    $invite->expires_on(DateTime->now()->add(hours => 49));
-    if ($invite->status ne 'pending') {
-        $invite->status('pending');
-        $invite->code($code);
-        $invite->created_on('now');
-    }
-    $invite->save;
-
-# Note: Logging moved to Go API (send invitation endpoint - to be implemented)
-# During PostgreSQL migration, cannot log to MySQL with account_id that only exists in PostgreSQL
-
-    my $param = {invite => $invite};
-
-    my $tpl = Combust::Template->new;
-    my $msg =
-      $tpl->process('tpl/account_invite.txt', $param,
-          {site => 'manage', config => $self->config});
-
-    # todo: if there's a vendor zone, use the vendor address
-    # for the sender?
-
-    my $email =
-      Email::Stuffer->from(NP::Email::address("sender"))
-      ->to($email_address)
-      ->reply_to(NP::Email::address("support"))
-      ->subject("NTP Pool account invitation")
-      ->text_body($msg);
-
-    NP::Email::sendmail($email);
-
+    # Success - invitation created and email sent by Go API
+    # Note: Logging is handled by Go API (audit log)
     return $self->render_users($account);
 }
 

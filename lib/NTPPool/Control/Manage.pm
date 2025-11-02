@@ -14,7 +14,7 @@ use URI::URL             ();
 use NP::UA;
 use NP::IntAPI qw(int_api);
 use NP::CAPI::Account
-  qw(get_account_status process_auth0_login validate_session get_user_accounts);
+  qw(get_account_status process_auth0_login validate_session get_user_accounts get_account_invites);
 use OpenTelemetry::Trace;
 use OpenTelemetry -all;
 use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
@@ -113,6 +113,7 @@ sub init {
             # During PostgreSQL migration, accounts created via API won't appear in MySQL
             # so we fetch them directly from the API
             $self->tpl_param('user_accounts' => $self->user_accounts());
+            $self->tpl_param('user_invites'  => $self->user_invites());
         }
 
         # Redirect users with scheduled deletion to logout page
@@ -144,7 +145,7 @@ sub current_account {
     # 3. Check permissions
     # 4. Return account context + permissions
     my $id_token = $self->req_param('a');
-    my %params        = (
+    my %params   = (
         session_token => $session_token,
         context       => $self->_get_request_context(),
     );
@@ -193,6 +194,23 @@ sub user_is_vendor_admin {
     my $self = shift;
     $self->current_account();    # Ensure session data is loaded
     return $self->{_user_privileges}{vendor_admin} || 0;
+}
+
+sub reload_server_via_capi {
+    my ($self, $server_ip) = @_;
+
+    my $result = NP::CAPI::Server::get_server(
+        auth => $self->plain_cookie($self->user_cookie_name),
+        ip   => $server_ip,
+    );
+
+    if ($result->{error}) {
+        warn "Failed to reload server via CAPI: " . $result->{error};
+        warn "Trace ID: " . $result->{trace_id} if $result->{trace_id};
+        return undef;
+    }
+
+    return $result->{data};
 }
 
 sub current_url {
@@ -583,8 +601,20 @@ sub staff_zone_edit {
     my $server_ip = $self->req_param('server') || '';
     return 400, "Server IP required" unless $server_ip;
 
-    my $server = NP::Model->server->find_server($server_ip);
-    return 404, "Server not found" unless $server;
+    # Get server via CAPI
+    my $server_result = NP::CAPI::Server::get_server(
+        auth => $self->plain_cookie($self->user_cookie_name),
+        ip   => $server_ip,
+    );
+
+    # Handle CAPI errors
+    if ($server_result->{error}) {
+        warn "GetServer error: " . $server_result->{error};
+        warn "Trace ID: " . $server_result->{trace_id} if $server_result->{trace_id};
+        return 404, "Server not found";
+    }
+
+    my $server = $server_result->{data};
 
     # Determine if this is edit or save
     my $is_save = $self->request->uri =~ m{/save/?$};
@@ -594,25 +624,40 @@ sub staff_zone_edit {
         # Save zones
         my $zones_value = $self->req_param('zones') || '';
 
-        # Call the existing API method
-        require NTPPool::API::Staff;
-        my $api = NTPPool::API::Staff->new(
-            args => {
-                user   => $self->user,
-                params => {
-                    id         => 'zone_list',
-                    server     => $server_ip,
-                    value      => $zones_value,
-                    auth_token => $self->auth_token,
-                }
-            }
+        # Parse zones from user input
+        my @zones = grep { length($_) > 0 }
+          map {s/^\s+|\s+$//gr}
+          split(/[\s,]+/, $zones_value);
+
+        # Call CAPI to update zones
+        my $result = NP::CAPI::ServerManagement::update_server(
+            auth  => $self->plain_cookie($self->user_cookie_name),
+            ip    => $server_ip,
+            zones => \@zones,
         );
 
-        my $result = $api->edit_server();
+        # Handle CAPI errors
+        if ($result->{error}) {
+            $self->tpl_param('error', $result->{error});
+            $self->tpl_param('zones', $zones_value);
+            return OK, $self->evaluate_template('tpl/admin/zone_edit.html');
+        }
+
+        # Reload server to get updated zones using helper
+        my $server_data = $self->reload_server_via_capi($server_ip);
+        if (!$server_data) {
+            $self->tpl_param('error', 'Failed to reload server data');
+            return OK, $self->evaluate_template('tpl/admin/zone_edit.html');
+        }
+
+        my @zone_names =
+          map  { $_->{name} }
+          grep { $_->{name} ne '.' }
+          sort { $a->{name} cmp $b->{name} } @{$server_data->{zones} || []};
 
         # Return view state after save
-        $self->tpl_param('server'      => $server);
-        $self->tpl_param('zones'       => join(' ', @$result));
+        $self->tpl_param('server'      => $server_data);
+        $self->tpl_param('zones'       => join(' ', @zone_names));
         $self->tpl_param('manage_site' => 1);
         return OK, $self->evaluate_template('tpl/admin/zone_view.html');
     }
@@ -621,7 +666,11 @@ sub staff_zone_edit {
         if ($self->req_param('cancel')) {
 
             # Return to view state
-            my @zone_names = map { $_->name } $server->zones_display;
+            # Filter out root zone and extract names
+            my @zone_names =
+              map  { $_->{name} }
+              grep { $_->{name} ne '.' }
+              sort { $a->{name} cmp $b->{name} } @{$server->{zones} || []};
             $self->tpl_param('server'      => $server);
             $self->tpl_param('zones'       => join(' ', @zone_names));
             $self->tpl_param('manage_site' => 1);
@@ -629,7 +678,11 @@ sub staff_zone_edit {
         }
 
         # Show edit form
-        my @zone_names = map { $_->name } $server->zones_display;
+        # Filter out root zone and extract names
+        my @zone_names =
+          map  { $_->{name} }
+          grep { $_->{name} ne '.' }
+          sort { $a->{name} cmp $b->{name} } @{$server->{zones} || []};
         $self->tpl_param('server' => $server);
         $self->tpl_param('zones'  => join(' ', @zone_names));
         return OK, $self->evaluate_template('tpl/admin/zone_edit.html');
@@ -847,6 +900,33 @@ sub user_accounts {
 
     # Return account list from API
     return $self->{_user_accounts} = $result->{data}{accounts} || [];
+}
+
+sub user_invites {
+    my $self = shift;
+
+    # Return cached invites if already loaded
+    return $self->{_user_invites} if exists $self->{_user_invites};
+
+    # Return empty array if no user
+    return $self->{_user_invites} = [] unless $self->user;
+
+    # Call GetAccountInvites API for user
+    my $result = get_account_invites(
+        auth     => $self->plain_cookie($self->user_cookie_name),
+        context  => $self->_get_request_context(),
+        for_user => JSON::XS::true,
+    );
+
+    # Handle errors - return empty array for graceful degradation
+    if ($result->{error}) {
+        warn "GetAccountInvites error: " . $result->{error};
+        warn "Trace ID: " . $result->{trace_id} if $result->{trace_id};
+        return $self->{_user_invites} = [];
+    }
+
+    # Return invite list from API
+    return $self->{_user_invites} = $result->{data}{invites} || [];
 }
 
 =head2 account_logs

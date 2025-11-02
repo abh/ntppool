@@ -23,6 +23,9 @@ our @EXPORT_OK = qw(
     get_account_users
     get_user_accounts
     get_account_invites
+    create_account_invite
+    accept_account_invite
+    resend_account_invite
     get_account
     can_delete_account
     check_user_deletion_eligibility
@@ -35,7 +38,7 @@ NP::CAPI::Account - ConnectRPC client for AccountService
 
 =head1 SYNOPSIS
 
-    use NP::CAPI::Account qw(get_account_status process_auth0_login validate_session delete_session create_account update_account remove_user_from_account create_user_task get_account_server_verification_status get_accounts_to_notify get_account_users get_user_accounts get_account_invites get_account can_delete_account check_user_deletion_eligibility get_public_account_by_username);
+    use NP::CAPI::Account qw(get_account_status process_auth0_login validate_session delete_session create_account update_account remove_user_from_account create_user_task get_account_server_verification_status get_accounts_to_notify get_account_users get_user_accounts get_account_invites create_account_invite accept_account_invite resend_account_invite get_account can_delete_account check_user_deletion_eligibility get_public_account_by_username);
     # GetAccountStatus returns the current monitor eligibility and status for an account.
 Authentication is handled by middleware - the account is extracted from the session context.
     my $result = get_account_status(
@@ -148,6 +151,33 @@ Authentication: Required via session middleware (sessions.GetUser).
 Authentication: Required via session middleware.
 Authorization: Can view invites sent to you or for accounts you manage.
     my $result = get_account_invites(
+        auth    => $user_token,
+        account => $account_token,
+        context => $request_context,
+    );
+
+    # CreateAccountInvite creates a new account invitation.
+Authentication: Required via session middleware (sessions.GetAccount).
+Authorization: User must have edit access to the account.
+    my $result = create_account_invite(
+        auth    => $user_token,
+        account => $account_token,
+        context => $request_context,
+    );
+
+    # AcceptAccountInvite accepts a pending invitation.
+Authentication: Required via session middleware (sessions.GetUser).
+Authorization: Invite must be for authenticated user's email or user_id.
+    my $result = accept_account_invite(
+        auth    => $user_token,
+        account => $account_token,
+        context => $request_context,
+    );
+
+    # ResendAccountInvite resends the invitation email.
+Authentication: Required via session middleware (sessions.GetAccount).
+Authorization: User must have edit access to the account.
+    my $result = resend_account_invite(
         auth    => $user_token,
         account => $account_token,
         context => $request_context,
@@ -1454,6 +1484,219 @@ sub get_account_invites {
     return connect_rpc(
         service     => 'ntppool.account.v1.AccountService',
         method      => 'GetAccountInvites',
+        request     => \%request,
+        %args  # Pass through auth, account, context
+    );
+}
+
+
+=head2 create_account_invite
+
+CreateAccountInvite creates a new account invitation.
+Authentication: Required via session middleware (sessions.GetAccount).
+Authorization: User must have edit access to the account.
+
+B<Arguments:>
+
+    my $result = create_account_invite(
+        auth    => $user_token,      # Optional: User/session authentication token
+        account => $account_token,   # Optional: Account selection token
+        context => $request_context, # Optional: Request context for X-Forwarded-For
+        email => $value,       # string - email is the email address to invite (required)
+    );
+
+B<Returns:>
+
+Hashref with structure:
+
+    {
+        code         => 200,         # HTTP status code
+        status_line  => "200 OK",    # HTTP status text
+        connect_code => undef,       # ConnectRPC error code (or undef)
+        data         => {            # Response data
+            invite_id => ...,  # int - invite_id is the ID of the created invitation
+            code => ...,  # string - code is the invitation code
+            expires_on => ...,  # string - expires_on is when the invitation expires (ISO 8601)
+        },
+        error        => undef,       # Error message (if any)
+        trace_id     => "...",       # OpenTelemetry trace ID
+    }
+
+B<ConnectRPC Error Codes:>
+
+    unauthenticated, permission_denied, internal, invalid_argument, etc.
+
+B<Example:>
+
+    my $result = create_account_invite(
+        auth    => $self->plain_cookie($self->user_cookie_name),
+        account => $self->current_account->id_token,
+        context => $self->_get_request_context(),
+    );
+
+    if ($result->{error}) {
+        warn "Error: $result->{error}";
+    } else {
+        my $data = $result->{data};
+        # Use response fields...
+    }
+
+=cut
+
+sub create_account_invite {
+    my $validation_error = validate_key_value_args('create_account_invite', @_);
+    return $validation_error if $validation_error;
+
+    my %args = @_;
+
+    # Extract request fields from args
+    my %request = ();
+    $request{'email'} = delete $args{'email'} if exists $args{'email'};
+
+    return connect_rpc(
+        service     => 'ntppool.account.v1.AccountService',
+        method      => 'CreateAccountInvite',
+        request     => \%request,
+        %args  # Pass through auth, account, context
+    );
+}
+
+
+=head2 accept_account_invite
+
+AcceptAccountInvite accepts a pending invitation.
+Authentication: Required via session middleware (sessions.GetUser).
+Authorization: Invite must be for authenticated user's email or user_id.
+
+B<Arguments:>
+
+    my $result = accept_account_invite(
+        auth    => $user_token,      # Optional: User/session authentication token
+        account => $account_token,   # Optional: Account selection token
+        context => $request_context, # Optional: Request context for X-Forwarded-For
+        code => $value,       # string - code is the invitation code (required)
+    );
+
+B<Returns:>
+
+Hashref with structure:
+
+    {
+        code         => 200,         # HTTP status code
+        status_line  => "200 OK",    # HTTP status text
+        connect_code => undef,       # ConnectRPC error code (or undef)
+        data         => {            # Response data
+            success => ...,  # bool - success indicates if the invitation was accepted
+            account_id => ...,  # int - account_id is the ID of the account joined
+        },
+        error        => undef,       # Error message (if any)
+        trace_id     => "...",       # OpenTelemetry trace ID
+    }
+
+B<ConnectRPC Error Codes:>
+
+    unauthenticated, permission_denied, internal, invalid_argument, etc.
+
+B<Example:>
+
+    my $result = accept_account_invite(
+        auth    => $self->plain_cookie($self->user_cookie_name),
+        account => $self->current_account->id_token,
+        context => $self->_get_request_context(),
+    );
+
+    if ($result->{error}) {
+        warn "Error: $result->{error}";
+    } else {
+        my $data = $result->{data};
+        # Use response fields...
+    }
+
+=cut
+
+sub accept_account_invite {
+    my $validation_error = validate_key_value_args('accept_account_invite', @_);
+    return $validation_error if $validation_error;
+
+    my %args = @_;
+
+    # Extract request fields from args
+    my %request = ();
+    $request{'code'} = delete $args{'code'} if exists $args{'code'};
+
+    return connect_rpc(
+        service     => 'ntppool.account.v1.AccountService',
+        method      => 'AcceptAccountInvite',
+        request     => \%request,
+        %args  # Pass through auth, account, context
+    );
+}
+
+
+=head2 resend_account_invite
+
+ResendAccountInvite resends the invitation email.
+Authentication: Required via session middleware (sessions.GetAccount).
+Authorization: User must have edit access to the account.
+
+B<Arguments:>
+
+    my $result = resend_account_invite(
+        auth    => $user_token,      # Optional: User/session authentication token
+        account => $account_token,   # Optional: Account selection token
+        context => $request_context, # Optional: Request context for X-Forwarded-For
+        invite_id => $value,       # int - invite_id is the ID of the invitation to resend (required)
+    );
+
+B<Returns:>
+
+Hashref with structure:
+
+    {
+        code         => 200,         # HTTP status code
+        status_line  => "200 OK",    # HTTP status text
+        connect_code => undef,       # ConnectRPC error code (or undef)
+        data         => {            # Response data
+            success => ...,  # bool - success indicates if the email was sent
+        },
+        error        => undef,       # Error message (if any)
+        trace_id     => "...",       # OpenTelemetry trace ID
+    }
+
+B<ConnectRPC Error Codes:>
+
+    unauthenticated, permission_denied, internal, invalid_argument, etc.
+
+B<Example:>
+
+    my $result = resend_account_invite(
+        auth    => $self->plain_cookie($self->user_cookie_name),
+        account => $self->current_account->id_token,
+        context => $self->_get_request_context(),
+    );
+
+    if ($result->{error}) {
+        warn "Error: $result->{error}";
+    } else {
+        my $data = $result->{data};
+        # Use response fields...
+    }
+
+=cut
+
+sub resend_account_invite {
+    my $validation_error = validate_key_value_args('resend_account_invite', @_);
+    return $validation_error if $validation_error;
+
+    my %args = @_;
+
+    # Extract request fields from args
+    my %request = ();
+    $request{'invite_id'} = delete $args{'invite_id'} if exists $args{'invite_id'};
+
+    return connect_rpc(
+        service     => 'ntppool.account.v1.AccountService',
+        method      => 'ResendAccountInvite',
         request     => \%request,
         %args  # Pass through auth, account, context
     );
