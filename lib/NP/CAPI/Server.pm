@@ -138,17 +138,18 @@ Hashref with structure:
                 ip => ...,  # string - ip is the IP address (IPv4 or IPv6)
                 hostname => ...,  # string - hostname is the DNS hostname (may be empty)
                 ip_version => ...,  # int - ip_version is 4 or 6
-                stratum => ...,  # int - stratum is the NTP stratum level
-                in_pool => ...,  # bool - in_pool indicates if the server is active in the pool
-                netspeed => ...,  # int - netspeed is the configured network speed weight
-                score_raw => ...,  # number - score_raw is the current raw score
-                deletion_on => ...,  # string - deletion_on is when the server is/was scheduled for deletion (ISO 8601)
- Empty if not scheduled for deletion
+                url => ...,  # string - url is the relative URL to the server scores page (e.g., "/scores/192.0.2.1")
                 account => ...,  # hashref (AccountInfo) - account contains account information (conditionally included)
  Included if: account.public_profile=true OR authenticated user owns server OR user is staff
                 zones => ...,  # arrayref[hashref (ZoneReference)] - zones this server is assigned to (excludes root '.' zone)
+                stratum => ...,  # int - stratum is the NTP stratum level
+                in_pool => ...,  # bool - in_pool indicates if the server is active in the pool
+                score_raw => ...,  # number - score_raw is the current raw score
+                netspeed => ...,  # int - netspeed is the configured network speed weight
+                user_urls => ...,  # arrayref[string] - user_urls are user-provided traffic/stats URLs
                 verification => ...,  # hashref (ServerVerification) - verification contains verification status
-                urls => ...,  # arrayref[string] - urls are server-provided traffic/stats URLs
+                deletion_on => ...,  # string - deletion_on is when the server is/was scheduled for deletion (ISO 8601)
+ Empty if not scheduled for deletion
             },  # hashref (Server) - server contains the complete server information
         },
         error        => undef,       # Error message (if any)
@@ -176,7 +177,7 @@ B<Example:>
 
     my $result = get_server(
         auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->id_token,
+        account => $self->current_account->{id_token},
         context => $self->_get_request_context(),
     );
 
@@ -248,17 +249,18 @@ Hashref with structure:
                 ip => ...,  # string - ip is the IP address (IPv4 or IPv6)
                 hostname => ...,  # string - hostname is the DNS hostname (may be empty)
                 ip_version => ...,  # int - ip_version is 4 or 6
-                stratum => ...,  # int - stratum is the NTP stratum level
-                in_pool => ...,  # bool - in_pool indicates if the server is active in the pool
-                netspeed => ...,  # int - netspeed is the configured network speed weight
-                score_raw => ...,  # number - score_raw is the current raw score
-                deletion_on => ...,  # string - deletion_on is when the server is/was scheduled for deletion (ISO 8601)
- Empty if not scheduled for deletion
+                url => ...,  # string - url is the relative URL to the server scores page (e.g., "/scores/192.0.2.1")
                 account => ...,  # hashref (AccountInfo) - account contains account information (conditionally included)
  Included if: account.public_profile=true OR authenticated user owns server OR user is staff
                 zones => ...,  # hashref (ZoneReference) - zones this server is assigned to (excludes root '.' zone)
+                stratum => ...,  # int - stratum is the NTP stratum level
+                in_pool => ...,  # bool - in_pool indicates if the server is active in the pool
+                score_raw => ...,  # number - score_raw is the current raw score
+                netspeed => ...,  # int - netspeed is the configured network speed weight
+                user_urls => ...,  # string - user_urls are user-provided traffic/stats URLs
                 verification => ...,  # hashref (ServerVerification) - verification contains verification status
-                urls => ...,  # string - urls are server-provided traffic/stats URLs
+                deletion_on => ...,  # string - deletion_on is when the server is/was scheduled for deletion (ISO 8601)
+ Empty if not scheduled for deletion
             },
             # ... more items
         ],  # arrayref[hashref (Server)] - servers contains all active servers for this account
@@ -293,7 +295,7 @@ B<Example:>
 
     my $result = get_account_servers(
         auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->id_token,
+        account => $self->current_account->{id_token},
         context => $self->_get_request_context(),
     );
 

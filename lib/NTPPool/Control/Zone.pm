@@ -51,19 +51,19 @@ sub get_zone_stats {
     return unless $historical_stats && ref($historical_stats) eq 'ARRAY';
 
     # Find the HistoricalStats for the requested IP version
-    my ($hist) = grep { $_->{ipVersion} eq $ip_version } @$historical_stats;
+    my ($hist) = grep { $_->{ip_version} eq $ip_version } @$historical_stats;
     return unless $hist && $hist->{stats};
 
-    # Find the StatPoint with matching daysAgo
-    my ($stat) = grep { $_->{daysAgo} == $days } @{$hist->{stats}};
+    # Find the StatPoint with matching days_ago
+    my ($stat) = grep { $_->{days_ago} == $days } @{$hist->{stats}};
     return unless $stat;
 
-    # Return undef if countActive is missing (API omits zero values)
-    return unless defined $stat->{countActive};
+    # Return undef if count_active is missing (API omits zero values)
+    return unless defined $stat->{count_active};
 
     # Return hashref compatible with template expectations
     return {
-        count_active => $stat->{countActive},
+        count_active => $stat->{count_active},
         ago          => Time::Duration::ago($days * 86400, 2),  # days to seconds
     };
 }

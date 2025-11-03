@@ -241,7 +241,7 @@ B<Example:>
 
     my $result = add_server_precheck(
         auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->id_token,
+        account => $self->current_account->{id_token},
         context => $self->_get_request_context(),
     );
 
@@ -342,7 +342,7 @@ B<Example:>
 
     my $result = add_server(
         auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->id_token,
+        account => $self->current_account->{id_token},
         context => $self->_get_request_context(),
     );
 
@@ -392,6 +392,7 @@ B<Arguments:>
         hostname => $value,       # string - Fields to update (only provided fields are updated)
         netspeed => $value,       # int
         in_pool => $value,       # bool
+        zones => $value,       # arrayref[string]
     );
 
 B<Returns:>
@@ -409,17 +410,18 @@ Hashref with structure:
                 ip => ...,  # string - ip is the IP address (IPv4 or IPv6)
                 hostname => ...,  # string - hostname is the DNS hostname (may be empty)
                 ip_version => ...,  # int - ip_version is 4 or 6
-                stratum => ...,  # int - stratum is the NTP stratum level
-                in_pool => ...,  # bool - in_pool indicates if the server is active in the pool
-                netspeed => ...,  # int - netspeed is the configured network speed weight
-                score_raw => ...,  # number - score_raw is the current raw score
-                deletion_on => ...,  # string - deletion_on is when the server is/was scheduled for deletion (ISO 8601)
- Empty if not scheduled for deletion
+                url => ...,  # string - url is the relative URL to the server scores page (e.g., "/scores/192.0.2.1")
                 account => ...,  # hashref (AccountInfo) - account contains account information (conditionally included)
  Included if: account.public_profile=true OR authenticated user owns server OR user is staff
                 zones => ...,  # arrayref[hashref (ZoneReference)] - zones this server is assigned to (excludes root '.' zone)
+                stratum => ...,  # int - stratum is the NTP stratum level
+                in_pool => ...,  # bool - in_pool indicates if the server is active in the pool
+                score_raw => ...,  # number - score_raw is the current raw score
+                netspeed => ...,  # int - netspeed is the configured network speed weight
+                user_urls => ...,  # arrayref[string] - user_urls are user-provided traffic/stats URLs
                 verification => ...,  # hashref (ServerVerification) - verification contains verification status
-                urls => ...,  # arrayref[string] - urls are server-provided traffic/stats URLs
+                deletion_on => ...,  # string - deletion_on is when the server is/was scheduled for deletion (ISO 8601)
+ Empty if not scheduled for deletion
             },  # hashref (Server)
         },
         error        => undef,       # Error message (if any)
@@ -448,7 +450,7 @@ B<Example:>
 
     my $result = update_server(
         auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->id_token,
+        account => $self->current_account->{id_token},
         context => $self->_get_request_context(),
     );
 
@@ -473,6 +475,7 @@ sub update_server {
     $request{'hostname'} = delete $args{'hostname'} if exists $args{'hostname'};
     $request{'netspeed'} = delete $args{'netspeed'} if exists $args{'netspeed'};
     $request{'in_pool'} = delete $args{'in_pool'} if exists $args{'in_pool'};
+    $request{'zones'} = delete $args{'zones'} if exists $args{'zones'};
 
     return connect_rpc(
         service     => 'ntppool.server.v1.ServerManagementService',
@@ -524,7 +527,7 @@ B<Example:>
 
     my $result = delete_server(
         auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->id_token,
+        account => $self->current_account->{id_token},
         context => $self->_get_request_context(),
     );
 
@@ -597,7 +600,7 @@ B<Example:>
 
     my $result = start_server_verification(
         auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->id_token,
+        account => $self->current_account->{id_token},
         context => $self->_get_request_context(),
     );
 

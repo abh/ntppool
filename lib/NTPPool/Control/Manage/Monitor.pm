@@ -101,7 +101,7 @@ sub _fetch_monitor_details {
         'monitor/manage/monitor',
         {   name => $name,
             user => $self->plain_cookie($self->user_cookie_name),
-            a    => $self->current_account->id_token,
+            a    => $self->current_account->{id_token},
         },
         $self->_get_request_context()
     );
@@ -161,7 +161,7 @@ sub render_confirm_monitor {
         my $data = NP::IntAPI::get_monitoring_registration_data(
             $validation_token,
             $self->plain_cookie($self->user_cookie_name),
-            $self->current_account->id_token,
+            $self->current_account->{id_token},
             $self->_get_request_context(),
         );
         if ($data->{error}) {
@@ -198,7 +198,7 @@ sub render_confirm_monitor {
     my $data = NP::IntAPI::accept_monitoring_registration(
         $validation_token,
         $self->plain_cookie($self->user_cookie_name),
-        $self->current_account->id_token,
+        $self->current_account->{id_token},
         $self->req_param("location_code"),
         $self->_get_request_context(),
     );
@@ -246,8 +246,8 @@ sub render_monitors {
     my $data = int_api(
         'get',
         'monitor/manage/',
-        {   account_id => $self->current_account->id,
-            a          => $self->current_account->id_token,
+        {   account_id => $self->current_account->{account_id},
+            a          => $self->current_account->{id_token},
 
             user => $self->plain_cookie($self->user_cookie_name),
         },
@@ -263,7 +263,7 @@ sub render_monitors {
 
     # Fetch metrics for all monitors in this account
     my $metrics =
-      $self->monitor_metrics(id_token => $self->current_account->id_token);
+      $self->monitor_metrics(id_token => $self->current_account->{id_token});
     $self->tpl_param('metrics', $metrics);
 
     return OK, $self->evaluate_template('tpl/monitors/list.html');
@@ -317,7 +317,7 @@ sub render_admin_status {
     my $data = int_api(
         'post',
         'monitor/manage/status',
-        {   a      => $self->current_account->id_token,
+        {   a      => $self->current_account->{id_token},
             name   => $self->req_param('name')                     || '',
             id     => $self->req_param('id')                       || '',
             status => $self->req_param('status')                   || '',
@@ -388,7 +388,7 @@ sub render_delete_monitor {
             id     => $id,
             status => 'deleted',
             user   => $self->plain_cookie($self->user_cookie_name),
-            a      => $self->current_account->id_token,
+            a      => $self->current_account->{id_token},
         },
         $self->_get_request_context()
     );
@@ -506,7 +506,7 @@ sub monitor_metrics {
 
     my $api_params = {
         user => $self->plain_cookie($self->user_cookie_name),
-        a    => $self->current_account->id_token,
+        a    => $self->current_account->{id_token},
     };
 
     # Determine the actual parameters and cache key
@@ -530,7 +530,7 @@ sub monitor_metrics {
     }
     else {
         # Default to current account using id_token with 'a' parameter
-        $actual_id_token = $self->current_account->id_token;
+        $actual_id_token = $self->current_account->{id_token};
         $api_params->{a} = $actual_id_token;
     }
 
