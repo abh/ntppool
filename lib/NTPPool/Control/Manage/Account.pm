@@ -1,7 +1,7 @@
 package NTPPool::Control::Manage::Account;
 use strict;
 use NTPPool::Control::Manage;
-use base qw(NTPPool::Control::Manage);
+use base              qw(NTPPool::Control::Manage);
 use Combust::Constant qw(OK NOT_FOUND);
 use NP::IntAPI        qw(int_api);
 use NP::CAPI::Account qw(
@@ -224,10 +224,10 @@ sub remove_user_from_account {
       unless $user;
 
     my $data = remove_user_from_account(
-        auth       => $self->plain_cookie($self->user_cookie_name),
-        account    => $account->{id_token},
-        context    => $self->_get_request_context(),
-        id_token   => $user->{id_token},
+        auth     => $self->plain_cookie($self->user_cookie_name),
+        account  => $account->{id_token},
+        context  => $self->_get_request_context(),
+        id_token => $user->{id_token},
     );
 
     if ($data->{error}) {
@@ -278,12 +278,13 @@ sub handle_invitation {
     # on post requests the auth token has already been checked, so if it's
     # something else we show a confirmation page (GET request).
     if ($self->request->method ne 'post') {
+
         # For GET request, we need to fetch the invite to show confirmation page
         # Use get_account_invites to check if this code exists and get details
         my $invites_result = get_account_invites(
             auth     => $self->token,
             context  => $self->otel_context,
-            for_user => 1,  # Get invites for the current user
+            for_user => 1,                     # Get invites for the current user
         );
 
         if ($invites_result->{error}) {
@@ -291,7 +292,8 @@ sub handle_invitation {
         }
 
         # Find the invite with matching code
-        my $invite = (grep { $_->{code} eq $code } @{$invites_result->{data}{invites} // []})[0];
+        my $invite =
+          (grep { $_->{code} eq $code } @{$invites_result->{data}{invites} // []})[0];
         return 404 unless $invite;
 
         if ($invite->{status} ne "pending") {
@@ -310,6 +312,7 @@ sub handle_invitation {
     );
 
     if ($result->{error}) {
+
         # Map CAPI error codes to user-friendly messages
         my $code_type = $result->{connect_code} // 'internal';
 
@@ -323,10 +326,12 @@ sub handle_invitation {
             return $self->render_invite_error("This invitation is not for you");
         }
         elsif ($code_type eq 'unauthenticated') {
-            return $self->render_invite_error("You must be logged in to accept invitations");
+            return $self->render_invite_error(
+                "You must be logged in to accept invitations");
         }
         else {
-            return $self->render_invite_error("Error accepting invitation: " . ($result->{error} // 'Unknown error'));
+            return $self->render_invite_error(
+                "Error accepting invitation: " . ($result->{error} // 'Unknown error'));
         }
     }
 
@@ -347,13 +352,17 @@ sub handle_invitation {
     );
 
     if ($account_result->{error}) {
+
         # Fallback to manage page if we can't get account details
         return $self->redirect($self->manage_url("/manage"));
     }
 
     # go to the team page for the "new" account
     return $self->redirect(
-        $self->manage_url("/manage/account/team", {a => $account_result->{data}{account}{id_token}}));
+        $self->manage_url(
+            "/manage/account/team", {a => $account_result->{data}{account}{id_token}}
+        )
+    );
 }
 
 sub render_invite_error {
@@ -378,6 +387,7 @@ sub render_users_invite {
     );
 
     if ($result->{error}) {
+
         # Map CAPI error codes to user-friendly messages
         my $code = $result->{connect_code} // 'internal';
 
@@ -388,13 +398,15 @@ sub render_users_invite {
             $errors{invite_email} = 'Too many recent account invitations (limit: 5)';
         }
         elsif ($code eq 'permission_denied') {
-            $errors{invite_email} = "You don't have permission to invite users to this account";
+            $errors{invite_email} =
+              "You don't have permission to invite users to this account";
         }
         elsif ($code eq 'invalid_argument') {
             $errors{invite_email} = "Invalid email address";
         }
         else {
-            $errors{invite_email} = "Failed to create invitation: " . ($result->{error} // 'Unknown error');
+            $errors{invite_email} =
+              "Failed to create invitation: " . ($result->{error} // 'Unknown error');
         }
 
         $self->tpl_param(errors => \%errors);
@@ -439,8 +451,7 @@ sub render_users {
     if ($self->user_is_staff) {
 
       # Use new AuditService API (eliminates N+1 query problem: ~150 queries → ~5 queries)
-        my $logs =
-          $self->get_account_logs_via_api(types => ['invitation', 'account-users'],);
+        my $logs = $self->account_logs(types => ['invitation', 'account-users'],);
         $self->tpl_param('logs', $logs);
     }
 
@@ -471,7 +482,7 @@ sub render_account_form {
     if ($self->user_is_staff && $self->current_account) {
 
       # Use new AuditService API (eliminates N+1 query problem: ~150 queries → ~5 queries)
-        my $logs = $self->get_account_logs_via_api();
+        my $logs = $self->account_logs();
         $self->tpl_param('logs', $logs);
     }
 
