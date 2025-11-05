@@ -392,6 +392,7 @@ B<Arguments:>
         hostname => $value,       # string - Fields to update (only provided fields are updated)
         netspeed => $value,       # int
         in_pool => $value,       # bool
+        zones => $value,       # arrayref[string]
     );
 
 B<Returns:>
@@ -473,6 +474,7 @@ sub update_server {
     $request{'hostname'} = delete $args{'hostname'} if exists $args{'hostname'};
     $request{'netspeed'} = delete $args{'netspeed'} if exists $args{'netspeed'};
     $request{'in_pool'} = delete $args{'in_pool'} if exists $args{'in_pool'};
+    $request{'zones'} = delete $args{'zones'} if exists $args{'zones'};
 
     return connect_rpc(
         service     => 'ntppool.server.v1.ServerManagementService',

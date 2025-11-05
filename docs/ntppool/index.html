@@ -5,7 +5,7 @@
 		<h3 dir="auto">[% 'Active Servers' | l %]</h3>
 		<ul id="servers">
 			[% FOR zone = combust.count_by_continent %]
-                        [% IF zone.serverCount %]
+                        [% IF zone.server_count %]
 			<li class="area">
                                 [% zone_class = zone.name;
                                    IF zone.name == '@'; zone_class = "global"; END;
@@ -15,7 +15,7 @@
                                 <span class="location [% zone.name %] [% zone_class %]">
 				<a href="[% zone.url %]" dir="auto">[% zone.description | l %]</a>
                                 </span>
-                                <span class="count">[% zone.serverCount %]</span>
+                                <span class="count">[% zone.server_count %]</span>
 			</li>
                         [% END %]
 			[% END %]
