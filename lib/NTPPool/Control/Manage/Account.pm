@@ -99,7 +99,7 @@ sub _user_invites {
 sub _create_account {
     my ($self, $name) = @_;
 
-    $name ||= $self->user->name || 'My Account';
+    $name ||= $self->user->{username} || 'My Account';
 
     my $data = create_account(
         auth    => $self->plain_cookie($self->user_cookie_name),

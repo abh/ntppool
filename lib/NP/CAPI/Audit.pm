@@ -182,7 +182,7 @@ B<Example:>
 
     my $result = get_account_audit_logs(
         auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->id_token,
+        account => $self->current_account->{id_token},
         context => $self->_get_request_context(),
     );
 

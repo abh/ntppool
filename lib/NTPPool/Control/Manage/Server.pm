@@ -384,7 +384,7 @@ sub handle_update_netspeed {
             {   server_ip => $server->ip,
                 netspeed  => int($netspeed),
                 user      => $self->plain_cookie($self->user_cookie_name),
-                a         => $self->current_account->id_token,
+                a         => $self->current_account->{id_token},
             }
         );
 
@@ -563,7 +563,7 @@ sub handle_delete {
 
             $server->deletion_on(undef);
             NP::Model::Log->log_changes($self->user, "server-delete",
-                "Deletion cancelled by " . $self->user->who,
+                "Deletion cancelled by " . ($self->user->{username} || $self->user->{email}),
                 $server, $old);
             $server->save;
 
@@ -604,7 +604,7 @@ sub handle_move {
         # get all accounts available to any user in this account
         my ($account_users) = NP::Model->user->get_users(
             require_objects => ['accounts'],
-            query           => ['accounts.id' => $self->current_account->id]
+            query           => ['accounts.id' => $self->current_account->{account_id}]
         );
         ($accounts) = NP::Model->account->get_accounts(
             require_objects => ['users'],
@@ -617,7 +617,7 @@ sub handle_move {
             query           => ['users.id' => $self->user->{user_id}]
         );
     }
-    $accounts = [grep { $_->id != $self->current_account->id } @$accounts];
+    $accounts = [grep { $_->id != $self->current_account->{account_id} } @$accounts];
     $self->tpl_param('move_accounts', $accounts);
 
     if ($self->request->method eq 'post') {
@@ -639,7 +639,7 @@ sub handle_move {
             return OK, $self->evaluate_template('tpl/manage/move.html');
         }
 
-        warn "current account: ", $self->current_account->id_token;
+        warn "current account: ", $self->current_account->{id_token};
         warn "new     account: ", $new_account->id_token;
 
         my $db  = NP::Model->db;

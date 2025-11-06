@@ -171,7 +171,7 @@ B<Example:>
 
     my $result = list_zones(
         auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->id_token,
+        account => $self->current_account->{id_token},
         context => $self->_get_request_context(),
     );
 
@@ -270,7 +270,7 @@ B<Example:>
 
     my $result = get_zone(
         auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->id_token,
+        account => $self->current_account->{id_token},
         context => $self->_get_request_context(),
     );
 

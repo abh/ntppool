@@ -241,7 +241,7 @@ B<Example:>
 
     my $result = add_server_precheck(
         auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->id_token,
+        account => $self->current_account->{id_token},
         context => $self->_get_request_context(),
     );
 
@@ -342,7 +342,7 @@ B<Example:>
 
     my $result = add_server(
         auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->id_token,
+        account => $self->current_account->{id_token},
         context => $self->_get_request_context(),
     );
 
@@ -450,7 +450,7 @@ B<Example:>
 
     my $result = update_server(
         auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->id_token,
+        account => $self->current_account->{id_token},
         context => $self->_get_request_context(),
     );
 
@@ -527,7 +527,7 @@ B<Example:>
 
     my $result = delete_server(
         auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->id_token,
+        account => $self->current_account->{id_token},
         context => $self->_get_request_context(),
     );
 
@@ -600,7 +600,7 @@ B<Example:>
 
     my $result = start_server_verification(
         auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->id_token,
+        account => $self->current_account->{id_token},
         context => $self->_get_request_context(),
     );
 

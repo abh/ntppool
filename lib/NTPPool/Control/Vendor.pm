@@ -285,7 +285,7 @@ sub render_edit {
     my $redirect = $self->manage_url(
         '/manage/vendor/zone',
         {   id   => $vz->id_token,
-            a    => $self->current_account->id_token,
+            a    => $self->current_account->{id_token},
             mode => 'show'
         }
     );
@@ -338,7 +338,7 @@ sub _edit_zone {
         $vz = NP::Model->vendor_zone->create(
             zone_name  => $zone_name,
             user_id    => $self->user->{user_id},
-            account_id => $self->current_account->id,
+            account_id => $self->current_account->{account_id},
             dns_root   => $dns_root->id,
             (map { $_ => ($self->req_param($_) || '') } @fields)
         );
@@ -420,7 +420,7 @@ sub render_subscription {
     }
 
     my $return_url = $self->manage_url('/manage/vendor/plan',
-        {($vz ? (id => $vz->id_token) : ()), a => $self->current_account->id_token});
+        {($vz ? (id => $vz->id_token) : ()), a => $self->current_account->{id_token}});
 
     my $product_id = $self->req_param('product_id') || '';
     my $price_id   = $self->req_param('price_id')   || '';
@@ -532,7 +532,7 @@ sub render_admin {
     my $self = shift;
 
     return $self->redirect("/manage/vendor")
-      unless $self->user->privileges->vendor_admin;
+      unless $self->user_is_vendor_admin;
 
     $self->tpl_params->{page}->{is_vendor_admin} = 1;
 

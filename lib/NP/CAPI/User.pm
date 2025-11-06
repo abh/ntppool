@@ -269,7 +269,7 @@ B<Example:>
 
     my $result = get_user(
         auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->id_token,
+        account => $self->current_account->{id_token},
         context => $self->_get_request_context(),
     );
 
@@ -384,7 +384,7 @@ B<Example:>
 
     my $result = update_user(
         auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->id_token,
+        account => $self->current_account->{id_token},
         context => $self->_get_request_context(),
     );
 
@@ -494,7 +494,7 @@ B<Example:>
 
     my $result = cancel_user_deletion(
         auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->id_token,
+        account => $self->current_account->{id_token},
         context => $self->_get_request_context(),
     );
 
@@ -602,7 +602,7 @@ B<Example:>
 
     my $result = schedule_user_deletion(
         auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->id_token,
+        account => $self->current_account->{id_token},
         context => $self->_get_request_context(),
     );
 
