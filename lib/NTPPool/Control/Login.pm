@@ -84,11 +84,12 @@ sub user {
             # Return user data as hashref directly from API response
             # Eliminates database dependency - matches account pattern
             $user = {
-                user_id    => $user_data->{user_id},
-                id_token   => $user_data->{id_token},
-                email      => $user_data->{email},
-                username   => $user_data->{username} || '',
+                user_id     => $user_data->{user_id},
+                id_token    => $user_data->{id_token},
+                email       => $user_data->{email},
+                username    => $user_data->{username} || '',
                 deletion_on => $user_data->{deletion_on} || '',
+                csrf_token  => $user_data->{csrf_token} || '',
                 # Privileges for authorization checks
                 privileges => $user_data->{privileges} || {},
             };

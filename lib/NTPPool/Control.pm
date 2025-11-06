@@ -350,6 +350,15 @@ sub user {
     return;
 }
 
+sub auth_token {
+    my $self = shift;
+    return $self->{_auth_token} if exists $self->{_auth_token};
+
+    # Extract CSRF token from cached user data (validates session once if not cached)
+    my $user = $self->user or return '';
+    return $self->{_auth_token} = $user->{csrf_token} || '';
+}
+
 sub www_url {
     my $self = shift;
     return $self->_url('ntppool', @_);
