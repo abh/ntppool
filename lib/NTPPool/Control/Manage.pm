@@ -30,6 +30,27 @@ sub _get_request_context {
     return $x_forwarded_for ? {x_forwarded_for => $x_forwarded_for} : undef;
 }
 
+=head2 api_auth_params
+
+Returns authentication and context parameters for CAPI calls.
+
+    my $result = create_account(
+        $self->api_auth_params,
+        name => "My Account",
+    );
+
+Returns: (auth => '...', context => {...})
+
+=cut
+
+sub api_auth_params {
+    my $self = shift;
+    return (
+        auth    => $self->plain_cookie($self->user_cookie_name) || '',
+        context => $self->_get_request_context(),
+    );
+}
+
 =head2 _handle_capi_error
 
 Handle API errors by setting template parameters and returning HTTP status codes.
