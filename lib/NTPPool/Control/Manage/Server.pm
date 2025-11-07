@@ -17,6 +17,7 @@ use Net::DNS;
 use Math::BaseCalc             qw();
 use Math::Random::Secure       qw(irand);
 use NP::IntAPI                 qw(int_api);
+use NP::CAPI::Account          qw(get_related_accounts);
 use NP::CAPI::Server           qw(get_account_servers);
 use NP::CAPI::ServerManagement qw(add_server_precheck add_server);
 use NP::Data::Server           ();
@@ -595,26 +596,17 @@ sub handle_move {
     my $errors = {};
     $self->tpl_param('errors', $errors);
 
-    my $accounts;
-    if ($self->user_is_staff) {
+    # Get related accounts via CAPI (handles staff/non-staff logic and filtering)
+    my $result = NP::CAPI::Account::get_related_accounts(
+        auth             => $self->plain_cookie($self->user_cookie_name),
+        context          => $self->_get_request_context(),
+        account_id_token => $self->current_account->{id_token},
+    );
 
-        # get all accounts available to any user in this account
-        my ($account_users) = NP::Model->user->get_users(
-            require_objects => ['accounts'],
-            query           => ['accounts.id' => $self->current_account->{account_id}]
-        );
-        ($accounts) = NP::Model->account->get_accounts(
-            require_objects => ['users'],
-            query           => ['users.id' => [map { $_->id } @$account_users]],
-        );
-    }
-    else {
-        ($accounts) = NP::Model->account->get_accounts(
-            require_objects => ['users'],
-            query           => ['users.id' => $self->user->{user_id}]
-        );
-    }
-    $accounts = [grep { $_->id != $self->current_account->{account_id} } @$accounts];
+    my $http_code = $self->_handle_capi_error($result);
+    return $http_code if $http_code != 200;
+
+    my $accounts = $result->{data}{accounts} || [];
     $self->tpl_param('move_accounts', $accounts);
 
     if ($self->request->method eq 'post') {
