@@ -221,8 +221,8 @@ sub reload_server_via_capi {
     my ($self, $server_ip) = @_;
 
     my $result = NP::CAPI::Server::get_server(
-        auth => $self->plain_cookie($self->user_cookie_name),
-        ip   => $server_ip,
+        $self->api_auth_params,
+        ip => $server_ip,
     );
 
     if ($result->{error}) {
@@ -624,8 +624,8 @@ sub staff_zone_edit {
 
     # Get server via CAPI
     my $server_result = NP::CAPI::Server::get_server(
-        auth => $self->plain_cookie($self->user_cookie_name),
-        ip   => $server_ip,
+        $self->api_auth_params,
+        ip => $server_ip,
     );
 
     # Handle CAPI errors
@@ -652,7 +652,7 @@ sub staff_zone_edit {
 
         # Call CAPI to update zones
         my $result = NP::CAPI::ServerManagement::update_server(
-            auth  => $self->plain_cookie($self->user_cookie_name),
+            $self->api_auth_params,
             ip    => $server_ip,
             zones => \@zones,
         );
@@ -810,9 +810,8 @@ sub monitor_eligibility {
 
     # Call new ConnectRPC AccountService.GetAccountStatus
     my $result = get_account_status(
-        auth    => $self->plain_cookie($self->user_cookie_name),
+        $self->api_auth_params,
         account => $self->current_account->{id_token},
-        context => $self->_get_request_context(),
     );
 
     # Handle successful response
@@ -908,8 +907,7 @@ sub user_accounts {
 
     # Call GetUserAccounts API
     my $result = get_user_accounts(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        context => $self->_get_request_context(),
+        $self->api_auth_params,
     );
 
     # Handle errors - return empty array for graceful degradation
@@ -934,8 +932,7 @@ sub user_invites {
 
     # Call GetAccountInvites API for user
     my $result = get_account_invites(
-        auth     => $self->plain_cookie($self->user_cookie_name),
-        context  => $self->_get_request_context(),
+        $self->api_auth_params,
         for_user => JSON::XS::true,
     );
 
@@ -975,9 +972,8 @@ sub account_logs {
     # Call AuditService.GetAccountAuditLogs
     require NP::CAPI::Audit;
     my $result = NP::CAPI::Audit::get_account_audit_logs(
-        auth    => $self->plain_cookie($self->user_cookie_name),
+        $self->api_auth_params,
         account => $account->{id_token},
-        context => $self->_get_request_context(),
         ($args{types} ? (types => $args{types}) : ()),
         ($args{limit} ? (limit => $args{limit}) : ()),
     );

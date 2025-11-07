@@ -187,8 +187,7 @@ sub setup_session {
             # deletion_on is not set. We call it unconditionally on every
             # login to ensure account recovery flow works correctly.
             my $cancel_result = cancel_user_deletion(
-                auth    => $self->plain_cookie($self->user_cookie_name),
-                context => $self->_get_request_context(),
+                $self->api_auth_params,
             );
 
             if ($cancel_result->{error}) {
