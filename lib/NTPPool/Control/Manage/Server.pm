@@ -527,49 +527,64 @@ sub handle_delete {
     my $server = $self->req_server or return NOT_FOUND;
     $self->tpl_param(server => $server);
 
-    my $db  = NP::Model->db;
-    my $txn = $db->begin_scoped_work;
-
     if ($self->request->method eq 'post') {
         if (my $date = $self->req_param('deletion_date')) {
             return 403 unless $self->check_auth_token;
 
-            my $old = $server->get_data_hash();
-
+            # Validate date format (YYYY-MM-DD)
             my @date = split /-/, $date;
-            $date = $date[1] && DateTime->new(
-                year      => $date[0],
-                month     => $date[1],
-                day       => $date[2],
-                time_zone => 'UTC'
-            );
-            if ($date and $date > DateTime->now) {
-                $server->deletion_on($date);
-                NP::Model::Log->log_changes($self->user, "server-delete",
-                    "Deletion scheduled for " . $date->ymd,
-                    $server, $old);
-                $server->save;
-                $db->commit;
+            if ($date[1]) {
+                eval {
+                    my $dt = DateTime->new(
+                        year      => $date[0],
+                        month     => $date[1],
+                        day       => $date[2],
+                        time_zone => 'UTC'
+                    );
+                    if ($dt > DateTime->now) {
+                        # Call Go API to schedule deletion (includes audit logging)
+                        my $result = NP::CAPI::ServerManagement::delete_server(
+                            ip            => $server->ip,
+                            deletion_date => $date,
+                        );
+
+                        if ($result->{data}) {
+                            # Reload server from database to get updated deletion_on
+                            $server->load(speculative => 1);
+                        }
+                    }
+                };
+                if ($@) {
+                    warn "Failed to schedule server deletion: $@";
+                }
             }
         }
         if ($self->req_param('cancel_deletion')) {
             return 403 unless $self->check_auth_token;
 
+            # Permission check is done by the Go API, but we show a better error here
             unless ($self->current_account->{permissions}{can_add_servers}) {
                 $self->tpl_param('error',
                     'Please verify active servers in the account first.');
                 return OK, $self->evaluate_template('tpl/manage/delete_set.html');
             }
 
-            my $old = $server->get_data_hash;
+            # Call Go API to cancel deletion (includes audit logging)
+            eval {
+                my $result = NP::CAPI::ServerManagement::delete_server(
+                    ip     => $server->ip,
+                    cancel => 1,
+                );
 
-            $server->deletion_on(undef);
-            NP::Model::Log->log_changes($self->user, "server-delete",
-                "Deletion cancelled by " . ($self->user->{username} || $self->user->{email}),
-                $server, $old);
-            $server->save;
+                if ($result->{data}) {
+                    # Reload server from database to get cleared deletion_on
+                    $server->load(speculative => 1);
+                }
+            };
+            if ($@) {
+                warn "Failed to cancel server deletion: $@";
+            }
 
-            $db->commit;
             return $self->redirect($self->manage_url($server->manage_url));
         }
     }
