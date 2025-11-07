@@ -19,7 +19,11 @@ use Math::Random::Secure       qw(irand);
 use NP::IntAPI                 qw(int_api);
 use NP::CAPI::Account          qw(get_related_accounts);
 use NP::CAPI::Server           qw(get_account_servers);
-use NP::CAPI::ServerManagement qw(add_server_precheck add_server);
+use NP::CAPI::ServerManagement qw(
+    add_server_precheck
+    add_server
+    move_server
+);
 use NP::Data::Server           ();
 use OpenTelemetry -all;
 use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
@@ -631,37 +635,41 @@ sub handle_move {
         warn "current account: ", $self->current_account->{id_token};
         warn "new     account: ", $new_account->{id_token};
 
-        my $db  = NP::Model->db;
-        my $txn = $db->begin_scoped_work;
-
         my @servers_to_move;
         for my $server (@$servers) {
-            warn "was server selected? ", $server->id;
             next unless $selected{$server->id};
-            warn "moving ", $server->id;
-            push @servers_to_move, $server;
+            push @servers_to_move, $server->ip;  # Collect IPs not objects
         }
 
         if ($new_account_code && @servers_to_move) {
 
-            warn "really moving ...";
+            # Move servers via CAPI
+            my $result = move_server(
+                auth                    => $self->plain_cookie($self->user_cookie_name),
+                context                 => $self->_get_request_context(),
+                server_ips              => \@servers_to_move,
+                target_account_id_token => $new_account_code,
+            );
 
-            for my $server (@servers_to_move) {
-                my $old = $server->get_data_hash();
+            my $http_code = $self->_handle_capi_error($result);
+            return $http_code if $http_code != 200;
 
-                warn "changing account to token / id ", $new_account->id_token,
-                  $new_account->id;
-                $server->account_id($new_account->id);
-
-                NP::Model::Log->log_changes($self->user, "server-move",
-                    "Server account change",
-                    $server, $old);
-                $server->save;
+            my $data = $result->{data};
+            if ($data->{servers_failed_count} > 0) {
+                # Some servers failed to move
+                $self->tpl_param('partial_failure', 1);
+                $self->tpl_param('failed_count', $data->{servers_failed_count});
+                $self->tpl_param('moved_count', $data->{servers_moved_count});
+                # Show which servers failed
+                my @failed = grep { !$_->{success} } @{$data->{results}};
+                $self->tpl_param('failed_servers', \@failed);
             }
-            $db->commit;
+
+            # Get new account details for success page
+            my ($new_account_obj) = grep { $new_account_code eq $_->{id_token} } @$accounts;
             $self->tpl_param('old_account',   $self->current_account);
-            $self->tpl_param('new_account',   $new_account);
-            $self->tpl_param('servers_moved', \@servers_to_move);
+            $self->tpl_param('new_account',   $new_account_obj);
+            $self->tpl_param('servers_moved', \@servers_to_move);  # IPs, not objects
             return OK, $self->evaluate_template('tpl/manage/move_done.html');
         }
     }

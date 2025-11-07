@@ -15,6 +15,7 @@ our @EXPORT_OK = qw(
     update_server
     delete_server
     start_server_verification
+    move_server
 );
 
 =head1 NAME
@@ -23,7 +24,7 @@ NP::CAPI::ServerManagement - ConnectRPC client for ServerManagementService
 
 =head1 SYNOPSIS
 
-    use NP::CAPI::ServerManagement qw(add_server_precheck add_server update_server delete_server start_server_verification);
+    use NP::CAPI::ServerManagement qw(add_server_precheck add_server update_server delete_server start_server_verification move_server);
     # AddServerPrecheck validates multiple server IPs and returns results for each
 Accepts unlimited IPs; processes first 6 NEW servers only
 Authentication: Required via session middleware
@@ -63,6 +64,15 @@ Cancellation requires can_add_servers permission (verified servers in account)
 Authentication: Required via session middleware
 Authorization: User must own server (by account) or be staff
     my $result = start_server_verification(
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
+    );
+
+    # MoveServer moves one or more servers to a different account
+Authentication: Required via session middleware
+Authorization: User must own servers (by account) or be staff
+Authorization: User must have access to target account (via GetRelatedAccounts)
+    my $result = move_server(
         $self->api_auth_params,      # Provides auth and context
         account => $account->{id_token},
     );
@@ -616,6 +626,110 @@ sub start_server_verification {
     return connect_rpc(
         service     => 'ntppool.server.v1.ServerManagementService',
         method      => 'StartServerVerification',
+        request     => \%request,
+        %args  # Pass through auth, account, context
+    );
+}
+
+
+=head2 move_server
+
+MoveServer moves one or more servers to a different account
+Authentication: Required via session middleware
+Authorization: User must own servers (by account) or be staff
+Authorization: User must have access to target account (via GetRelatedAccounts)
+
+B<Arguments:>
+
+    my $result = move_server(
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
+        server_ips => $value,       # arrayref[string] - server_ips is the list of server IPs to move (required, at least 1)
+        target_account_id_token => $value,       # string - target_account_id_token is the destination account (required)
+ Must be validated via GetRelatedAccounts to ensure user has access
+    );
+
+B<Returns:>
+
+Hashref with structure:
+
+    {
+        code         => 200,         # HTTP status code
+        status_line  => "200 OK",    # HTTP status text
+        connect_code => undef,       # ConnectRPC error code (or undef)
+        data         => {            # Response data
+            results => [
+            {
+                ip => ...,  # string
+                success => ...,  # bool
+                error => ...,  # string
+            },
+            # ... more items
+        ],  # arrayref[hashref (ServerMoveResult)] - results contains move result for each requested server
+            servers_moved_count => ...,  # int - servers_moved_count is count of successfully moved servers
+            servers_failed_count => ...,  # int - servers_failed_count is count of failed moves
+        },
+        error        => undef,       # Error message (if any)
+        trace_id     => "...",       # OpenTelemetry trace ID
+    }
+
+B<Response Data Structure:>
+
+The C<data> field contains:
+
+=over 4
+
+=item * B<results> (arrayref[hashref (ServerMoveResult)])
+
+results contains move result for each requested server
+
+
+=item * B<servers_moved_count> (int)
+
+servers_moved_count is count of successfully moved servers
+
+
+=item * B<servers_failed_count> (int)
+
+servers_failed_count is count of failed moves
+
+
+=back
+
+B<ConnectRPC Error Codes:>
+
+    unauthenticated, permission_denied, internal, invalid_argument, etc.
+
+B<Example:>
+
+    my $result = move_server(
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
+    );
+
+    if ($result->{error}) {
+        warn "Error: $result->{error}";
+    } else {
+        my $data = $result->{data};
+        # Use response fields...
+    }
+
+=cut
+
+sub move_server {
+    my $validation_error = validate_key_value_args('move_server', @_);
+    return $validation_error if $validation_error;
+
+    my %args = @_;
+
+    # Extract request fields from args
+    my %request = ();
+    $request{'server_ips'} = delete $args{'server_ips'} if exists $args{'server_ips'};
+    $request{'target_account_id_token'} = delete $args{'target_account_id_token'} if exists $args{'target_account_id_token'};
+
+    return connect_rpc(
+        service     => 'ntppool.server.v1.ServerManagementService',
+        method      => 'MoveServer',
         request     => \%request,
         %args  # Pass through auth, account, context
     );
