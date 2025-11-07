@@ -80,12 +80,6 @@ __PACKAGE__->meta->setup(
       type       => 'one to many',
     },
 
-    logs => {
-      class      => 'NP::Model::Log',
-      column_map => { id => 'account_id' },
-      type       => 'one to many',
-    },
-
     monitors => {
       class      => 'NP::Model::Monitor',
       column_map => { id => 'account_id' },
@@ -458,72 +452,6 @@ __PACKAGE__->make_manager_methods('dns_roots');
 # Allow user defined methods to be added
 eval { require NP::Model::DnsRoot }
   or $@ !~ m:^Can't locate NP/Model/DnsRoot.pm: and die $@;
-
-{ package NP::Model::Log;
-
-use strict;
-
-use base qw(NP::Model::_Object);
-
-__PACKAGE__->meta->setup(
-  table   => 'logs',
-
-  columns => [
-    id             => { type => 'serial', not_null => 1 },
-    account_id     => { type => 'integer' },
-    server_id      => { type => 'integer' },
-    user_id        => { type => 'integer' },
-    vendor_zone_id => { type => 'integer' },
-    type           => { type => 'varchar', length => 50 },
-    message        => { type => 'text', length => 65535 },
-    changes        => { type => 'text', length => 65535 },
-    created_on     => { type => 'datetime', default => 'now', not_null => 1 },
-  ],
-
-  primary_key_columns => [ 'id' ],
-
-  foreign_keys => [
-    account => {
-      class       => 'NP::Model::Account',
-      key_columns => { account_id => 'id' },
-    },
-
-    server => {
-      class       => 'NP::Model::Server',
-      key_columns => { server_id => 'id' },
-    },
-
-    user => {
-      class       => 'NP::Model::User',
-      key_columns => { user_id => 'id' },
-    },
-
-    vendor_zone => {
-      class       => 'NP::Model::VendorZone',
-      key_columns => { vendor_zone_id => 'id' },
-    },
-  ],
-);
-
-__PACKAGE__->meta->setup_json_columns(qw< changes >);
-
-push @table_classes, __PACKAGE__;
-}
-
-{ package NP::Model::Log::Manager;
-
-use strict;
-
-our @ISA = qw(Combust::RoseDB::Manager);
-
-sub object_class { 'NP::Model::Log' }
-
-__PACKAGE__->make_manager_methods('logs');
-}
-
-# Allow user defined methods to be added
-eval { require NP::Model::Log }
-  or $@ !~ m:^Can't locate NP/Model/Log.pm: and die $@;
 
 { package NP::Model::LogScore;
 
@@ -936,12 +864,6 @@ __PACKAGE__->meta->setup(
   relationships => [
     log_scores => {
       class      => 'NP::Model::LogScore',
-      column_map => { id => 'server_id' },
-      type       => 'one to many',
-    },
-
-    logs => {
-      class      => 'NP::Model::Log',
       column_map => { id => 'server_id' },
       type       => 'one to many',
     },
@@ -1460,12 +1382,6 @@ __PACKAGE__->meta->setup(
       type      => 'many to many',
     },
 
-    logs => {
-      class      => 'NP::Model::Log',
-      column_map => { id => 'user_id' },
-      type       => 'one to many',
-    },
-
     monitors => {
       class      => 'NP::Model::Monitor',
       column_map => { id => 'user_id' },
@@ -1733,14 +1649,6 @@ __PACKAGE__->meta->setup(
       key_columns => { user_id => 'id' },
     },
   ],
-
-  relationships => [
-    logs => {
-      class      => 'NP::Model::Log',
-      column_map => { id => 'vendor_zone_id' },
-      type       => 'one to many',
-    },
-  ],
 );
 
 push @table_classes, __PACKAGE__;
@@ -1839,7 +1747,6 @@ eval { require NP::Model::Zone }
   sub api_key { our $api_key ||= bless [], 'NP::Model::ApiKey::Manager' }
   sub api_keys_monitor { our $api_keys_monitor ||= bless [], 'NP::Model::ApiKeysMonitor::Manager' }
   sub dns_root { our $dns_root ||= bless [], 'NP::Model::DnsRoot::Manager' }
-  sub log { our $log ||= bless [], 'NP::Model::Log::Manager' }
   sub log_score { our $log_score ||= bless [], 'NP::Model::LogScore::Manager' }
   sub monitor { our $monitor ||= bless [], 'NP::Model::Monitor::Manager' }
   sub monitor_registration { our $monitor_registration ||= bless [], 'NP::Model::MonitorRegistration::Manager' }
