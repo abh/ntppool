@@ -25,18 +25,16 @@ NP::CAPI::Zone - ConnectRPC client for ZoneService
 Returns continental/regional zones with current server counts.
 No authentication required - all data is public.
     my $result = list_zones(
-        auth    => $user_token,
-        account => $account_token,
-        context => $request_context,
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
     );
 
     # GetZone returns detailed information about a specific zone.
 Includes parent/child relationships and historical statistics.
 No authentication required - all data is public.
     my $result = get_zone(
-        auth    => $user_token,
-        account => $account_token,
-        context => $request_context,
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
     );
 
 
@@ -118,9 +116,8 @@ No authentication required - all data is public.
 B<Arguments:>
 
     my $result = list_zones(
-        auth    => $user_token,      # Optional: User/session authentication token
-        account => $account_token,   # Optional: Account selection token
-        context => $request_context, # Optional: Request context for X-Forwarded-For
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
         parent => $value,       # string - parent is the parent zone name to list children for (e.g., "@" for continents)
  If empty, returns top-level zones (continents + @ + .)
  Special values: "@" for continents, "." is invalid (has no children)
@@ -170,9 +167,8 @@ B<ConnectRPC Error Codes:>
 B<Example:>
 
     my $result = list_zones(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->{id_token},
-        context => $self->_get_request_context(),
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
     );
 
     if ($result->{error}) {
@@ -213,9 +209,8 @@ No authentication required - all data is public.
 B<Arguments:>
 
     my $result = get_zone(
-        auth    => $user_token,      # Optional: User/session authentication token
-        account => $account_token,   # Optional: Account selection token
-        context => $request_context, # Optional: Request context for X-Forwarded-For
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
         name => $value,       # string - name is the zone identifier (e.g., "na", "us", "@", ".")
         basic_only => $value,       # bool - basic_only when true returns only basic zone information (name, description, dns, parents)
  without fetching server counts, children, or historical statistics
@@ -269,9 +264,8 @@ B<ConnectRPC Error Codes:>
 B<Example:>
 
     my $result = get_zone(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->{id_token},
-        context => $self->_get_request_context(),
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
     );
 
     if ($result->{error}) {

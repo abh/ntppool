@@ -25,18 +25,16 @@ NP::CAPI::Server - ConnectRPC client for ServerService
 Authentication is handled by middleware - if authenticated, additional
 data may be returned based on ownership and account settings.
     my $result = get_server(
-        auth    => $user_token,
-        account => $account_token,
-        context => $request_context,
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
     );
 
     # GetAccountServers returns all servers for an account by url_slug.
 Access control: public_profile=true OR authenticated user owns account OR user is staff.
 Returns 404 if account not found or not visible.
     my $result = get_account_servers(
-        auth    => $user_token,
-        account => $account_token,
-        context => $request_context,
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
     );
 
 
@@ -118,9 +116,8 @@ data may be returned based on ownership and account settings.
 B<Arguments:>
 
     my $result = get_server(
-        auth    => $user_token,      # Optional: User/session authentication token
-        account => $account_token,   # Optional: Account selection token
-        context => $request_context, # Optional: Request context for X-Forwarded-For
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
         ip => $value,       # string - ip is the server IP address (IPv4 or IPv6)
     );
 
@@ -176,9 +173,8 @@ B<ConnectRPC Error Codes:>
 B<Example:>
 
     my $result = get_server(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->{id_token},
-        context => $self->_get_request_context(),
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
     );
 
     if ($result->{error}) {
@@ -219,9 +215,8 @@ Returns 404 if account not found or not visible.
 B<Arguments:>
 
     my $result = get_account_servers(
-        auth    => $user_token,      # Optional: User/session authentication token
-        account => $account_token,   # Optional: Account selection token
-        context => $request_context, # Optional: Request context for X-Forwarded-For
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
         id_token => $value,       # string - id_token is the account's public identifier token (e.g., "21wase0")
  Used for authenticated access with access control. Optional if url_slug is provided.
         url_slug => $value,       # string - url_slug is the account's URL-friendly identifier (e.g., "fancytime")
@@ -294,9 +289,8 @@ B<ConnectRPC Error Codes:>
 B<Example:>
 
     my $result = get_account_servers(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->{id_token},
-        context => $self->_get_request_context(),
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
     );
 
     if ($result->{error}) {

@@ -29,9 +29,8 @@ Accepts unlimited IPs; processes first 6 NEW servers only
 Authentication: Required via session middleware
 Authorization: User must have access to account
     my $result = add_server_precheck(
-        auth    => $user_token,
-        account => $account_token,
-        context => $request_context,
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
     );
 
     # AddServer adds multiple servers to an account (all-or-nothing transaction)
@@ -39,18 +38,16 @@ Accepts unlimited servers; processes first 6 NEW servers only
 Authentication: Required via session middleware
 Authorization: User must have access to account
     my $result = add_server(
-        auth    => $user_token,
-        account => $account_token,
-        context => $request_context,
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
     );
 
     # UpdateServer updates server configuration
 Authentication: Required via session middleware
 Authorization: User must own server (by account) or be staff
     my $result = update_server(
-        auth    => $user_token,
-        account => $account_token,
-        context => $request_context,
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
     );
 
     # DeleteServer schedules or cancels server deletion
@@ -58,18 +55,16 @@ Authentication: Required via session middleware
 Authorization: User must own server (by account) or be staff
 Cancellation requires can_add_servers permission (verified servers in account)
     my $result = delete_server(
-        auth    => $user_token,
-        account => $account_token,
-        context => $request_context,
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
     );
 
     # StartServerVerification initiates the verification process
 Authentication: Required via session middleware
 Authorization: User must own server (by account) or be staff
     my $result = start_server_verification(
-        auth    => $user_token,
-        account => $account_token,
-        context => $request_context,
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
     );
 
 
@@ -152,9 +147,8 @@ Authorization: User must have access to account
 B<Arguments:>
 
     my $result = add_server_precheck(
-        auth    => $user_token,      # Optional: User/session authentication token
-        account => $account_token,   # Optional: Account selection token
-        context => $request_context, # Optional: Request context for X-Forwarded-For
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
         inputs => $value,       # arrayref[string] - inputs can be hostnames OR IP addresses (unlimited input)
  Go API will detect type and perform DNS lookup for hostnames
  Multiple IPs may result from a single hostname input
@@ -241,9 +235,8 @@ B<ConnectRPC Error Codes:>
 B<Example:>
 
     my $result = add_server_precheck(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->{id_token},
-        context => $self->_get_request_context(),
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
     );
 
     if ($result->{error}) {
@@ -284,9 +277,8 @@ Authorization: User must have access to account
 B<Arguments:>
 
     my $result = add_server(
-        auth    => $user_token,      # Optional: User/session authentication token
-        account => $account_token,   # Optional: Account selection token
-        context => $request_context, # Optional: Request context for X-Forwarded-For
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
         servers => $value,       # arrayref[hashref (ServerToAdd)] - servers is the list of servers to add (unlimited input, max 6 processed)
         precheck_token => $value,       # string - precheck_token skips validation if provided and valid (expires after 5 minutes)
  If expired, re-validation occurs before adding
@@ -342,9 +334,8 @@ B<ConnectRPC Error Codes:>
 B<Example:>
 
     my $result = add_server(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->{id_token},
-        context => $self->_get_request_context(),
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
     );
 
     if ($result->{error}) {
@@ -386,9 +377,8 @@ Authorization: User must own server (by account) or be staff
 B<Arguments:>
 
     my $result = update_server(
-        auth    => $user_token,      # Optional: User/session authentication token
-        account => $account_token,   # Optional: Account selection token
-        context => $request_context, # Optional: Request context for X-Forwarded-For
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
         ip => $value,       # string
         hostname => $value,       # string - Fields to update (only provided fields are updated)
         netspeed => $value,       # int
@@ -450,9 +440,8 @@ B<ConnectRPC Error Codes:>
 B<Example:>
 
     my $result = update_server(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->{id_token},
-        context => $self->_get_request_context(),
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
     );
 
     if ($result->{error}) {
@@ -497,9 +486,8 @@ Cancellation requires can_add_servers permission (verified servers in account)
 B<Arguments:>
 
     my $result = delete_server(
-        auth    => $user_token,      # Optional: User/session authentication token
-        account => $account_token,   # Optional: Account selection token
-        context => $request_context, # Optional: Request context for X-Forwarded-For
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
         ip => $value,       # string
         deletion_date => $value,       # string - deletion_date is the date when the server should be deleted (YYYY-MM-DD format)
  Must be a future date. Required unless cancel = true.
@@ -530,9 +518,8 @@ B<ConnectRPC Error Codes:>
 B<Example:>
 
     my $result = delete_server(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->{id_token},
-        context => $self->_get_request_context(),
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
     );
 
     if ($result->{error}) {
@@ -574,9 +561,8 @@ Authorization: User must own server (by account) or be staff
 B<Arguments:>
 
     my $result = start_server_verification(
-        auth    => $user_token,      # Optional: User/session authentication token
-        account => $account_token,   # Optional: Account selection token
-        context => $request_context, # Optional: Request context for X-Forwarded-For
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
         ip => $value,       # string
     );
 
@@ -604,9 +590,8 @@ B<ConnectRPC Error Codes:>
 B<Example:>
 
     my $result = start_server_verification(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->{id_token},
-        context => $self->_get_request_context(),
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
     );
 
     if ($result->{error}) {

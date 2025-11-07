@@ -25,9 +25,8 @@ Includes related entity information (account, user, server) via JOINs.
 Authentication: Required (sessions.GetUser and sessions.GetAccount from context)
 Authorization: Staff only (support_staff privilege required)
     my $result = get_account_audit_logs(
-        auth    => $user_token,
-        account => $account_token,
-        context => $request_context,
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
     );
 
 
@@ -110,9 +109,8 @@ Authorization: Staff only (support_staff privilege required)
 B<Arguments:>
 
     my $result = get_account_audit_logs(
-        auth    => $user_token,      # Optional: User/session authentication token
-        account => $account_token,   # Optional: Account selection token
-        context => $request_context, # Optional: Request context for X-Forwarded-For
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
         types => $value,       # arrayref[string] - types optionally filters logs to specific types (e.g., ["invitation", "server-delete"])
  Empty array or omitted means no filtering by type.
         limit => $value,       # int - limit is the maximum number of logs to return (default: 50, max: 200)
@@ -181,9 +179,8 @@ B<ConnectRPC Error Codes:>
 B<Example:>
 
     my $result = get_account_audit_logs(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->{id_token},
-        context => $self->_get_request_context(),
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
     );
 
     if ($result->{error}) {
