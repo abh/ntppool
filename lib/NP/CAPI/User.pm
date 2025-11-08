@@ -30,9 +30,8 @@ Authorization: User can view own profile; staff can view any user via id_token p
 
 Replaces Perl: $user->accounts, $user->pending_invites
     my $result = get_user(
-        auth    => $user_token,
-        account => $account_token,
-        context => $request_context,
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
     );
 
     # UpdateUser updates user profile fields (name, username).
@@ -47,9 +46,8 @@ Validation:
 
 Replaces Perl: $user->name($new_name); $user->username($new_username); $user->save()
     my $result = update_user(
-        auth    => $user_token,
-        account => $account_token,
-        context => $request_context,
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
     );
 
     # CancelUserDeletion cancels a scheduled user deletion.
@@ -64,9 +62,8 @@ Side Effects:
 Replaces Perl: $user->deletion_on(undef); $user->save()
 Used in Auth0 login flow (auto-cancel deletion on login)
     my $result = cancel_user_deletion(
-        auth    => $user_token,
-        account => $account_token,
-        context => $request_context,
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
     );
 
     # ScheduleUserDeletion schedules a user for deletion at a future date.
@@ -79,9 +76,8 @@ Validation:
 
 Replaces Perl: $user->deletion_on($date); $user->save()
     my $result = schedule_user_deletion(
-        auth    => $user_token,
-        account => $account_token,
-        context => $request_context,
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
     );
 
 
@@ -166,9 +162,8 @@ Replaces Perl: $user->accounts, $user->pending_invites
 B<Arguments:>
 
     my $result = get_user(
-        auth    => $user_token,      # Optional: User/session authentication token
-        account => $account_token,   # Optional: Account selection token
-        context => $request_context, # Optional: Request context for X-Forwarded-For
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
         id_token => $value,       # string - id_token optionally specifies which user to retrieve.
  If omitted, returns authenticated user's profile.
  If provided, requires staff privileges to access other users.
@@ -268,9 +263,8 @@ B<ConnectRPC Error Codes:>
 B<Example:>
 
     my $result = get_user(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->{id_token},
-        context => $self->_get_request_context(),
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
     );
 
     if ($result->{error}) {
@@ -318,9 +312,8 @@ Replaces Perl: $user->name($new_name); $user->username($new_username); $user->sa
 B<Arguments:>
 
     my $result = update_user(
-        auth    => $user_token,      # Optional: User/session authentication token
-        account => $account_token,   # Optional: Account selection token
-        context => $request_context, # Optional: Request context for X-Forwarded-For
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
         name => $value,       # string - name is the user's display name (optional)
  If provided, cannot be empty string
         username => $value,       # string - username is the user's username (optional)
@@ -383,9 +376,8 @@ B<ConnectRPC Error Codes:>
 B<Example:>
 
     my $result = update_user(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->{id_token},
-        context => $self->_get_request_context(),
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
     );
 
     if ($result->{error}) {
@@ -434,9 +426,8 @@ Used in Auth0 login flow (auto-cancel deletion on login)
 B<Arguments:>
 
     my $result = cancel_user_deletion(
-        auth    => $user_token,      # Optional: User/session authentication token
-        account => $account_token,   # Optional: Account selection token
-        context => $request_context, # Optional: Request context for X-Forwarded-For
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
     );
 
 B<Returns:>
@@ -493,9 +484,8 @@ B<ConnectRPC Error Codes:>
 B<Example:>
 
     my $result = cancel_user_deletion(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->{id_token},
-        context => $self->_get_request_context(),
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
     );
 
     if ($result->{error}) {
@@ -540,9 +530,8 @@ Replaces Perl: $user->deletion_on($date); $user->save()
 B<Arguments:>
 
     my $result = schedule_user_deletion(
-        auth    => $user_token,      # Optional: User/session authentication token
-        account => $account_token,   # Optional: Account selection token
-        context => $request_context, # Optional: Request context for X-Forwarded-For
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
         deletion_on_unix => $value,       # int - deletion_on_unix is the Unix timestamp when user should be deleted
  Must be at least 7 days (604800 seconds) in the future
     );
@@ -601,9 +590,8 @@ B<ConnectRPC Error Codes:>
 B<Example:>
 
     my $result = schedule_user_deletion(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->{id_token},
-        context => $self->_get_request_context(),
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
     );
 
     if ($result->{error}) {

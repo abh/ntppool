@@ -17,8 +17,13 @@ use Net::DNS;
 use Math::BaseCalc             qw();
 use Math::Random::Secure       qw(irand);
 use NP::IntAPI                 qw(int_api);
+use NP::CAPI::Account          qw(get_related_accounts);
 use NP::CAPI::Server           qw(get_account_servers);
-use NP::CAPI::ServerManagement qw(add_server_precheck add_server);
+use NP::CAPI::ServerManagement qw(
+    add_server_precheck
+    add_server
+    move_server
+);
 use NP::Data::Server           ();
 use OpenTelemetry -all;
 use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
@@ -86,9 +91,8 @@ sub show_manage {
 
     # Fetch servers via ConnectRPC API
     my $result = get_account_servers(
-        auth     => $self->plain_cookie($self->user_cookie_name),
+        $self->api_auth_params,
         account  => $account->{id_token},
-        context  => $self->_get_request_context(),
         id_token => $account->{id_token},
     );
 
@@ -146,9 +150,8 @@ sub handle_add {
     # Pass raw user input (hostname or IP) directly to API
     # DNS resolution happens in Go API (not Perl)
     my $precheck_result = add_server_precheck(
-        auth    => $self->plain_cookie($self->user_cookie_name),
+        $self->api_auth_params,
         account => $account->{id_token},
-        context => $self->_get_request_context(),
         inputs  => [$host],    # Go API handles DNS resolution
     );
 
@@ -298,9 +301,8 @@ sub _add_server {
 
     # Call add_server API
     my $result = add_server(
-        auth           => $self->plain_cookie($self->user_cookie_name),
+        $self->api_auth_params,
         account        => $self->current_account->{id_token},
-        context        => $self->_get_request_context(),
         servers        => [\%server_to_add],
         precheck_token => $precheck_token,
         batch_comment  => $comment,    # API handles audit logging
@@ -525,49 +527,64 @@ sub handle_delete {
     my $server = $self->req_server or return NOT_FOUND;
     $self->tpl_param(server => $server);
 
-    my $db  = NP::Model->db;
-    my $txn = $db->begin_scoped_work;
-
     if ($self->request->method eq 'post') {
         if (my $date = $self->req_param('deletion_date')) {
             return 403 unless $self->check_auth_token;
 
-            my $old = $server->get_data_hash();
-
+            # Validate date format (YYYY-MM-DD)
             my @date = split /-/, $date;
-            $date = $date[1] && DateTime->new(
-                year      => $date[0],
-                month     => $date[1],
-                day       => $date[2],
-                time_zone => 'UTC'
-            );
-            if ($date and $date > DateTime->now) {
-                $server->deletion_on($date);
-                NP::Model::Log->log_changes($self->user, "server-delete",
-                    "Deletion scheduled for " . $date->ymd,
-                    $server, $old);
-                $server->save;
-                $db->commit;
+            if ($date[1]) {
+                eval {
+                    my $dt = DateTime->new(
+                        year      => $date[0],
+                        month     => $date[1],
+                        day       => $date[2],
+                        time_zone => 'UTC'
+                    );
+                    if ($dt > DateTime->now) {
+                        # Call Go API to schedule deletion (includes audit logging)
+                        my $result = NP::CAPI::ServerManagement::delete_server(
+                            ip            => $server->ip,
+                            deletion_date => $date,
+                        );
+
+                        if ($result->{data}) {
+                            # Reload server from database to get updated deletion_on
+                            $server->load(speculative => 1);
+                        }
+                    }
+                };
+                if ($@) {
+                    warn "Failed to schedule server deletion: $@";
+                }
             }
         }
         if ($self->req_param('cancel_deletion')) {
             return 403 unless $self->check_auth_token;
 
+            # Permission check is done by the Go API, but we show a better error here
             unless ($self->current_account->{permissions}{can_add_servers}) {
                 $self->tpl_param('error',
                     'Please verify active servers in the account first.');
                 return OK, $self->evaluate_template('tpl/manage/delete_set.html');
             }
 
-            my $old = $server->get_data_hash;
+            # Call Go API to cancel deletion (includes audit logging)
+            eval {
+                my $result = NP::CAPI::ServerManagement::delete_server(
+                    ip     => $server->ip,
+                    cancel => 1,
+                );
 
-            $server->deletion_on(undef);
-            NP::Model::Log->log_changes($self->user, "server-delete",
-                "Deletion cancelled by " . ($self->user->{username} || $self->user->{email}),
-                $server, $old);
-            $server->save;
+                if ($result->{data}) {
+                    # Reload server from database to get cleared deletion_on
+                    $server->load(speculative => 1);
+                }
+            };
+            if ($@) {
+                warn "Failed to cancel server deletion: $@";
+            }
 
-            $db->commit;
             return $self->redirect($self->manage_url($server->manage_url));
         }
     }
@@ -598,26 +615,17 @@ sub handle_move {
     my $errors = {};
     $self->tpl_param('errors', $errors);
 
-    my $accounts;
-    if ($self->user_is_staff) {
+    # Get related accounts via CAPI (handles staff/non-staff logic and filtering)
+    my $result = NP::CAPI::Account::get_related_accounts(
+        auth             => $self->plain_cookie($self->user_cookie_name),
+        context          => $self->_get_request_context(),
+        account_id_token => $self->current_account->{id_token},
+    );
 
-        # get all accounts available to any user in this account
-        my ($account_users) = NP::Model->user->get_users(
-            require_objects => ['accounts'],
-            query           => ['accounts.id' => $self->current_account->{account_id}]
-        );
-        ($accounts) = NP::Model->account->get_accounts(
-            require_objects => ['users'],
-            query           => ['users.id' => [map { $_->id } @$account_users]],
-        );
-    }
-    else {
-        ($accounts) = NP::Model->account->get_accounts(
-            require_objects => ['users'],
-            query           => ['users.id' => $self->user->{user_id}]
-        );
-    }
-    $accounts = [grep { $_->id != $self->current_account->{account_id} } @$accounts];
+    my $http_code = $self->_handle_capi_error($result);
+    return $http_code if $http_code != 200;
+
+    my $accounts = $result->{data}{accounts} || [];
     $self->tpl_param('move_accounts', $accounts);
 
     if ($self->request->method eq 'post') {
@@ -642,37 +650,41 @@ sub handle_move {
         warn "current account: ", $self->current_account->{id_token};
         warn "new     account: ", $new_account->{id_token};
 
-        my $db  = NP::Model->db;
-        my $txn = $db->begin_scoped_work;
-
         my @servers_to_move;
         for my $server (@$servers) {
-            warn "was server selected? ", $server->id;
             next unless $selected{$server->id};
-            warn "moving ", $server->id;
-            push @servers_to_move, $server;
+            push @servers_to_move, $server->ip;  # Collect IPs not objects
         }
 
         if ($new_account_code && @servers_to_move) {
 
-            warn "really moving ...";
+            # Move servers via CAPI
+            my $result = move_server(
+                auth                    => $self->plain_cookie($self->user_cookie_name),
+                context                 => $self->_get_request_context(),
+                server_ips              => \@servers_to_move,
+                target_account_id_token => $new_account_code,
+            );
 
-            for my $server (@servers_to_move) {
-                my $old = $server->get_data_hash();
+            my $http_code = $self->_handle_capi_error($result);
+            return $http_code if $http_code != 200;
 
-                warn "changing account to token / id ", $new_account->id_token,
-                  $new_account->id;
-                $server->account_id($new_account->id);
-
-                NP::Model::Log->log_changes($self->user, "server-move",
-                    "Server account change",
-                    $server, $old);
-                $server->save;
+            my $data = $result->{data};
+            if ($data->{servers_failed_count} > 0) {
+                # Some servers failed to move
+                $self->tpl_param('partial_failure', 1);
+                $self->tpl_param('failed_count', $data->{servers_failed_count});
+                $self->tpl_param('moved_count', $data->{servers_moved_count});
+                # Show which servers failed
+                my @failed = grep { !$_->{success} } @{$data->{results}};
+                $self->tpl_param('failed_servers', \@failed);
             }
-            $db->commit;
+
+            # Get new account details for success page
+            my ($new_account_obj) = grep { $new_account_code eq $_->{id_token} } @$accounts;
             $self->tpl_param('old_account',   $self->current_account);
-            $self->tpl_param('new_account',   $new_account);
-            $self->tpl_param('servers_moved', \@servers_to_move);
+            $self->tpl_param('new_account',   $new_account_obj);
+            $self->tpl_param('servers_moved', \@servers_to_move);  # IPs, not objects
             return OK, $self->evaluate_template('tpl/manage/move_done.html');
         }
     }

@@ -30,6 +30,7 @@ our @EXPORT_OK = qw(
     can_delete_account
     check_user_deletion_eligibility
     get_public_account_by_username
+    get_related_accounts
 );
 
 =head1 NAME
@@ -38,13 +39,12 @@ NP::CAPI::Account - ConnectRPC client for AccountService
 
 =head1 SYNOPSIS
 
-    use NP::CAPI::Account qw(get_account_status process_auth0_login validate_session delete_session create_account update_account remove_user_from_account create_user_task get_account_server_verification_status get_accounts_to_notify get_account_users get_user_accounts get_account_invites create_account_invite accept_account_invite resend_account_invite get_account can_delete_account check_user_deletion_eligibility get_public_account_by_username);
+    use NP::CAPI::Account qw(get_account_status process_auth0_login validate_session delete_session create_account update_account remove_user_from_account create_user_task get_account_server_verification_status get_accounts_to_notify get_account_users get_user_accounts get_account_invites create_account_invite accept_account_invite resend_account_invite get_account can_delete_account check_user_deletion_eligibility get_public_account_by_username get_related_accounts);
     # GetAccountStatus returns the current monitor eligibility and status for an account.
 Authentication is handled by middleware - the account is extracted from the session context.
     my $result = get_account_status(
-        auth    => $user_token,
-        account => $account_token,
-        context => $request_context,
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
     );
 
     # ProcessAuth0Login handles the Auth0 authorization code callback.
@@ -53,152 +53,135 @@ creates a session, and returns the session token for cookie storage.
 This is an internal-only endpoint called by the Perl frontend after Auth0 redirects.
 Authentication: None required (this endpoint creates authentication).
     my $result = process_auth0_login(
-        auth    => $user_token,
-        account => $account_token,
-        context => $request_context,
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
     );
 
     # ValidateSession validates a session token and returns user information.
 This is called by the Perl frontend on each request to validate the user's session.
 Authentication: None required (this endpoint validates the session token itself).
     my $result = validate_session(
-        auth    => $user_token,
-        account => $account_token,
-        context => $request_context,
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
     );
 
     # DeleteSession deletes a session by its token.
 This is called during logout to invalidate the session.
 Authentication: None required (the session token itself authorizes deletion).
     my $result = delete_session(
-        auth    => $user_token,
-        account => $account_token,
-        context => $request_context,
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
     );
 
     # CreateAccount creates a new account for the authenticated user.
 Authentication: Required via session middleware (sessions.GetUser).
 Authorization: None required for own account creation.
     my $result = create_account(
-        auth    => $user_token,
-        account => $account_token,
-        context => $request_context,
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
     );
 
     # UpdateAccount updates account fields.
 Authentication: Required via session middleware (sessions.GetUser + sessions.GetAccount).
 Authorization: User must have edit access (see permission model).
     my $result = update_account(
-        auth    => $user_token,
-        account => $account_token,
-        context => $request_context,
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
     );
 
     # RemoveUserFromAccount removes a user from an account.
 Authentication: Required via session middleware (sessions.GetUser + sessions.GetAccount).
 Authorization: User must have edit access and cannot remove themselves.
     my $result = remove_user_from_account(
-        auth    => $user_token,
-        account => $account_token,
-        context => $request_context,
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
     );
 
     # CreateUserTask creates a user task (download, delete, etc.).
 Authentication: Required via session middleware (sessions.GetUser).
 Authorization: User can only create tasks for themselves.
     my $result = create_user_task(
-        auth    => $user_token,
-        account => $account_token,
-        context => $request_context,
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
     );
 
     # GetAccountServerVerificationStatus returns server verification counts for an account.
 Used to determine if account can add new servers (blocks if 2+ unverified servers).
 Authentication: Required via session middleware (sessions.GetAccount).
     my $result = get_account_server_verification_status(
-        auth    => $user_token,
-        account => $account_token,
-        context => $request_context,
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
     );
 
     # GetAccountsToNotify returns account IDs that need server alert notifications.
 Finds accounts with servers scoring below threshold that haven't been notified recently.
 Authentication: Admin only.
     my $result = get_accounts_to_notify(
-        auth    => $user_token,
-        account => $account_token,
-        context => $request_context,
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
     );
 
     # GetAccountUsers returns the list of users in an account.
 Authentication: Required via session middleware (sessions.GetAccount).
 Authorization: User must have access to the account.
     my $result = get_account_users(
-        auth    => $user_token,
-        account => $account_token,
-        context => $request_context,
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
     );
 
     # GetUserAccounts returns the list of accounts for the authenticated user.
 Authentication: Required via session middleware (sessions.GetUser).
     my $result = get_user_accounts(
-        auth    => $user_token,
-        account => $account_token,
-        context => $request_context,
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
     );
 
     # GetAccountInvites returns pending invites for an account or user.
 Authentication: Required via session middleware.
 Authorization: Can view invites sent to you or for accounts you manage.
     my $result = get_account_invites(
-        auth    => $user_token,
-        account => $account_token,
-        context => $request_context,
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
     );
 
     # CreateAccountInvite creates a new account invitation.
 Authentication: Required via session middleware (sessions.GetAccount).
 Authorization: User must have edit access to the account.
     my $result = create_account_invite(
-        auth    => $user_token,
-        account => $account_token,
-        context => $request_context,
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
     );
 
     # AcceptAccountInvite accepts a pending invitation.
 Authentication: Required via session middleware (sessions.GetUser).
 Authorization: Invite must be for authenticated user's email or user_id.
     my $result = accept_account_invite(
-        auth    => $user_token,
-        account => $account_token,
-        context => $request_context,
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
     );
 
     # ResendAccountInvite resends the invitation email.
 Authentication: Required via session middleware (sessions.GetAccount).
 Authorization: User must have edit access to the account.
     my $result = resend_account_invite(
-        auth    => $user_token,
-        account => $account_token,
-        context => $request_context,
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
     );
 
     # GetAccount returns full account information.
 Authentication: Required via session middleware (sessions.GetAccount).
 Authorization: User must have access to the account.
     my $result = get_account(
-        auth    => $user_token,
-        account => $account_token,
-        context => $request_context,
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
     );
 
     # CanDeleteAccount checks if an account can be deleted.
 Authentication: Required via session middleware.
 Authorization: User must have access to the account being checked.
     my $result = can_delete_account(
-        auth    => $user_token,
-        account => $account_token,
-        context => $request_context,
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
     );
 
     # CheckUserDeletionEligibility checks if a user can be deleted.
@@ -206,17 +189,25 @@ Validates all accounts owned solely by the user and returns blocker details.
 Authentication: Required via session middleware.
 Authorization: User must be the target user or staff.
     my $result = check_user_deletion_eligibility(
-        auth    => $user_token,
-        account => $account_token,
-        context => $request_context,
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
     );
 
     # GetPublicAccountByUsername returns public URL for legacy /user/{username} redirects.
 No authentication required.
     my $result = get_public_account_by_username(
-        auth    => $user_token,
-        account => $account_token,
-        context => $request_context,
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
+    );
+
+    # GetRelatedAccounts returns accounts related to the source account for server moves.
+Returns different results based on caller role:
+- Non-staff: accounts where caller is a member
+- Staff: accounts sharing users with source account
+Authentication: Required via session middleware (sessions.GetUser + sessions.GetAccount).
+    my $result = get_related_accounts(
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
     );
 
 
@@ -297,9 +288,8 @@ Authentication is handled by middleware - the account is extracted from the sess
 B<Arguments:>
 
     my $result = get_account_status(
-        auth    => $user_token,      # Optional: User/session authentication token
-        account => $account_token,   # Optional: Account selection token
-        context => $request_context, # Optional: Request context for X-Forwarded-For
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
     );
 
 B<Returns:>
@@ -336,9 +326,8 @@ B<ConnectRPC Error Codes:>
 B<Example:>
 
     my $result = get_account_status(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->{id_token},
-        context => $self->_get_request_context(),
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
     );
 
     if ($result->{error}) {
@@ -379,9 +368,8 @@ Authentication: None required (this endpoint creates authentication).
 B<Arguments:>
 
     my $result = process_auth0_login(
-        auth    => $user_token,      # Optional: User/session authentication token
-        account => $account_token,   # Optional: Account selection token
-        context => $request_context, # Optional: Request context for X-Forwarded-For
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
         authorization_code => $value,       # string - authorization_code is the code parameter from Auth0's authorization callback.
  Required. This will be exchanged for an access token with Auth0.
         state => $value,       # string - state is the CSRF protection state token from the callback URL.
@@ -420,9 +408,8 @@ B<ConnectRPC Error Codes:>
 B<Example:>
 
     my $result = process_auth0_login(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->{id_token},
-        context => $self->_get_request_context(),
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
     );
 
     if ($result->{error}) {
@@ -465,9 +452,8 @@ Authentication: None required (this endpoint validates the session token itself)
 B<Arguments:>
 
     my $result = validate_session(
-        auth    => $user_token,      # Optional: User/session authentication token
-        account => $account_token,   # Optional: Account selection token
-        context => $request_context, # Optional: Request context for X-Forwarded-For
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
         session_token => $value,       # string - session_token is the session token from the npuid cookie.
  Format: "nps_{key}_{checksum}" or "nps_{key}_{checksum};{timestamp}"
  Required.
@@ -529,6 +515,9 @@ Hashref with structure:
             deletion_on => ...,  # string - deletion_on is the timestamp when the user is scheduled for deletion.
  RFC3339 format string (e.g., "2025-02-15T10:30:00Z").
  Only present if the user has scheduled deletion.
+            csrf_token => ...,  # string - csrf_token is the CSRF protection token for this session.
+ Generated on session creation or after 24h idle.
+ Only present when valid is true.
         },
         error        => undef,       # Error message (if any)
         trace_id     => "...",       # OpenTelemetry trace ID
@@ -594,6 +583,13 @@ deletion_on is the timestamp when the user is scheduled for deletion.
  Only present if the user has scheduled deletion.
 
 
+=item * B<csrf_token> (string)
+
+csrf_token is the CSRF protection token for this session.
+ Generated on session creation or after 24h idle.
+ Only present when valid is true.
+
+
 =back
 
 B<ConnectRPC Error Codes:>
@@ -603,9 +599,8 @@ B<ConnectRPC Error Codes:>
 B<Example:>
 
     my $result = validate_session(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->{id_token},
-        context => $self->_get_request_context(),
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
     );
 
     if ($result->{error}) {
@@ -646,9 +641,8 @@ Authentication: None required (the session token itself authorizes deletion).
 B<Arguments:>
 
     my $result = delete_session(
-        auth    => $user_token,      # Optional: User/session authentication token
-        account => $account_token,   # Optional: Account selection token
-        context => $request_context, # Optional: Request context for X-Forwarded-For
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
         session_token => $value,       # string - session_token is the session token to delete.
  Format: "nps_{key}_{checksum}" or "nps_{key}_{checksum};{timestamp}"
  Required.
@@ -677,9 +671,8 @@ B<ConnectRPC Error Codes:>
 B<Example:>
 
     my $result = delete_session(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->{id_token},
-        context => $self->_get_request_context(),
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
     );
 
     if ($result->{error}) {
@@ -719,9 +712,8 @@ Authorization: None required for own account creation.
 B<Arguments:>
 
     my $result = create_account(
-        auth    => $user_token,      # Optional: User/session authentication token
-        account => $account_token,   # Optional: Account selection token
-        context => $request_context, # Optional: Request context for X-Forwarded-For
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
         name => $value,       # string - name is the account name (required, 1-255 chars, trimmed)
     );
 
@@ -771,9 +763,8 @@ B<ConnectRPC Error Codes:>
 B<Example:>
 
     my $result = create_account(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->{id_token},
-        context => $self->_get_request_context(),
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
     );
 
     if ($result->{error}) {
@@ -813,9 +804,8 @@ Authorization: User must have edit access (see permission model).
 B<Arguments:>
 
     my $result = update_account(
-        auth    => $user_token,      # Optional: User/session authentication token
-        account => $account_token,   # Optional: Account selection token
-        context => $request_context, # Optional: Request context for X-Forwarded-For
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
         name => $value,       # string - Fields to update (only provided fields are updated)
  If a field is not set in the request, it remains unchanged
         organization_name => $value,       # string
@@ -876,9 +866,8 @@ B<ConnectRPC Error Codes:>
 B<Example:>
 
     my $result = update_account(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->{id_token},
-        context => $self->_get_request_context(),
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
     );
 
     if ($result->{error}) {
@@ -922,9 +911,8 @@ Authorization: User must have edit access and cannot remove themselves.
 B<Arguments:>
 
     my $result = remove_user_from_account(
-        auth    => $user_token,      # Optional: User/session authentication token
-        account => $account_token,   # Optional: Account selection token
-        context => $request_context, # Optional: Request context for X-Forwarded-For
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
         id_token => $value,       # string - id_token is the user's id_token (NOT numeric user_id)
     );
 
@@ -950,9 +938,8 @@ B<ConnectRPC Error Codes:>
 B<Example:>
 
     my $result = remove_user_from_account(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->{id_token},
-        context => $self->_get_request_context(),
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
     );
 
     if ($result->{error}) {
@@ -992,9 +979,8 @@ Authorization: User can only create tasks for themselves.
 B<Arguments:>
 
     my $result = create_user_task(
-        auth    => $user_token,      # Optional: User/session authentication token
-        account => $account_token,   # Optional: Account selection token
-        context => $request_context, # Optional: Request context for X-Forwarded-For
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
         task_type => $value,       # string - task_type is the type of task (e.g., "download", "delete")
         status => $value,       # string - status is the initial status (usually empty string for pending)
         execute_on_unix => $value,       # int - execute_on_unix is when the task should be executed (optional, Unix timestamp)
@@ -1024,9 +1010,8 @@ B<ConnectRPC Error Codes:>
 B<Example:>
 
     my $result = create_user_task(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->{id_token},
-        context => $self->_get_request_context(),
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
     );
 
     if ($result->{error}) {
@@ -1068,9 +1053,8 @@ Authentication: Required via session middleware (sessions.GetAccount).
 B<Arguments:>
 
     my $result = get_account_server_verification_status(
-        auth    => $user_token,      # Optional: User/session authentication token
-        account => $account_token,   # Optional: Account selection token
-        context => $request_context, # Optional: Request context for X-Forwarded-For
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
     );
 
 B<Returns:>
@@ -1096,9 +1080,8 @@ B<ConnectRPC Error Codes:>
 B<Example:>
 
     my $result = get_account_server_verification_status(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->{id_token},
-        context => $self->_get_request_context(),
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
     );
 
     if ($result->{error}) {
@@ -1137,9 +1120,8 @@ Authentication: Admin only.
 B<Arguments:>
 
     my $result = get_accounts_to_notify(
-        auth    => $user_token,      # Optional: User/session authentication token
-        account => $account_token,   # Optional: Account selection token
-        context => $request_context, # Optional: Request context for X-Forwarded-For
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
         score_threshold => $value,       # int - score_threshold is the score below which servers trigger notifications (default: -10)
         grace_period_days => $value,       # int - grace_period_days is how many days after deletion_on to still notify (default: 14)
     );
@@ -1179,9 +1161,8 @@ B<ConnectRPC Error Codes:>
 B<Example:>
 
     my $result = get_accounts_to_notify(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->{id_token},
-        context => $self->_get_request_context(),
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
     );
 
     if ($result->{error}) {
@@ -1222,9 +1203,8 @@ Authorization: User must have access to the account.
 B<Arguments:>
 
     my $result = get_account_users(
-        auth    => $user_token,      # Optional: User/session authentication token
-        account => $account_token,   # Optional: Account selection token
-        context => $request_context, # Optional: Request context for X-Forwarded-For
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
     );
 
 B<Returns:>
@@ -1272,9 +1252,8 @@ B<ConnectRPC Error Codes:>
 B<Example:>
 
     my $result = get_account_users(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->{id_token},
-        context => $self->_get_request_context(),
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
     );
 
     if ($result->{error}) {
@@ -1312,9 +1291,8 @@ Authentication: Required via session middleware (sessions.GetUser).
 B<Arguments:>
 
     my $result = get_user_accounts(
-        auth    => $user_token,      # Optional: User/session authentication token
-        account => $account_token,   # Optional: Account selection token
-        context => $request_context, # Optional: Request context for X-Forwarded-For
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
     );
 
 B<Returns:>
@@ -1363,9 +1341,8 @@ B<ConnectRPC Error Codes:>
 B<Example:>
 
     my $result = get_user_accounts(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->{id_token},
-        context => $self->_get_request_context(),
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
     );
 
     if ($result->{error}) {
@@ -1404,9 +1381,8 @@ Authorization: Can view invites sent to you or for accounts you manage.
 B<Arguments:>
 
     my $result = get_account_invites(
-        auth    => $user_token,      # Optional: User/session authentication token
-        account => $account_token,   # Optional: Account selection token
-        context => $request_context, # Optional: Request context for X-Forwarded-For
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
         for_user => $value,       # bool - for_user when true, returns invites sent to the authenticated user
  When false (default), returns invites for the authenticated account
     );
@@ -1457,9 +1433,8 @@ B<ConnectRPC Error Codes:>
 B<Example:>
 
     my $result = get_account_invites(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->{id_token},
-        context => $self->_get_request_context(),
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
     );
 
     if ($result->{error}) {
@@ -1499,9 +1474,8 @@ Authorization: User must have edit access to the account.
 B<Arguments:>
 
     my $result = create_account_invite(
-        auth    => $user_token,      # Optional: User/session authentication token
-        account => $account_token,   # Optional: Account selection token
-        context => $request_context, # Optional: Request context for X-Forwarded-For
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
         email => $value,       # string - email is the email address to invite (required)
     );
 
@@ -1529,9 +1503,8 @@ B<ConnectRPC Error Codes:>
 B<Example:>
 
     my $result = create_account_invite(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->{id_token},
-        context => $self->_get_request_context(),
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
     );
 
     if ($result->{error}) {
@@ -1571,9 +1544,8 @@ Authorization: Invite must be for authenticated user's email or user_id.
 B<Arguments:>
 
     my $result = accept_account_invite(
-        auth    => $user_token,      # Optional: User/session authentication token
-        account => $account_token,   # Optional: Account selection token
-        context => $request_context, # Optional: Request context for X-Forwarded-For
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
         code => $value,       # string - code is the invitation code (required)
     );
 
@@ -1600,9 +1572,8 @@ B<ConnectRPC Error Codes:>
 B<Example:>
 
     my $result = accept_account_invite(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->{id_token},
-        context => $self->_get_request_context(),
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
     );
 
     if ($result->{error}) {
@@ -1642,9 +1613,8 @@ Authorization: User must have edit access to the account.
 B<Arguments:>
 
     my $result = resend_account_invite(
-        auth    => $user_token,      # Optional: User/session authentication token
-        account => $account_token,   # Optional: Account selection token
-        context => $request_context, # Optional: Request context for X-Forwarded-For
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
         invite_id => $value,       # int - invite_id is the ID of the invitation to resend (required)
     );
 
@@ -1670,9 +1640,8 @@ B<ConnectRPC Error Codes:>
 B<Example:>
 
     my $result = resend_account_invite(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->{id_token},
-        context => $self->_get_request_context(),
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
     );
 
     if ($result->{error}) {
@@ -1712,9 +1681,8 @@ Authorization: User must have access to the account.
 B<Arguments:>
 
     my $result = get_account(
-        auth    => $user_token,      # Optional: User/session authentication token
-        account => $account_token,   # Optional: Account selection token
-        context => $request_context, # Optional: Request context for X-Forwarded-For
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
         mode => $value,       # string (enum: AccountDataMode) - mode determines what data to include (defaults to BASIC)
         include_permissions => $value,       # bool - Custom flags for fine-grained control (override mode defaults)
         include_users => $value,       # bool
@@ -1880,9 +1848,8 @@ B<ConnectRPC Error Codes:>
 B<Example:>
 
     my $result = get_account(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->{id_token},
-        context => $self->_get_request_context(),
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
     );
 
     if ($result->{error}) {
@@ -1930,9 +1897,8 @@ Authorization: User must have access to the account being checked.
 B<Arguments:>
 
     my $result = can_delete_account(
-        auth    => $user_token,      # Optional: User/session authentication token
-        account => $account_token,   # Optional: Account selection token
-        context => $request_context, # Optional: Request context for X-Forwarded-For
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
         id_token => $value,       # string - id_token optionally specifies which account to check
  If omitted, checks the authenticated user's current account
     );
@@ -1991,9 +1957,8 @@ B<ConnectRPC Error Codes:>
 B<Example:>
 
     my $result = can_delete_account(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->{id_token},
-        context => $self->_get_request_context(),
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
     );
 
     if ($result->{error}) {
@@ -2034,9 +1999,8 @@ Authorization: User must be the target user or staff.
 B<Arguments:>
 
     my $result = check_user_deletion_eligibility(
-        auth    => $user_token,      # Optional: User/session authentication token
-        account => $account_token,   # Optional: Account selection token
-        context => $request_context, # Optional: Request context for X-Forwarded-For
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
         id_token => $value,       # string - id_token optionally specifies which user to check
  If omitted, checks the authenticated user
     );
@@ -2099,9 +2063,8 @@ B<ConnectRPC Error Codes:>
 B<Example:>
 
     my $result = check_user_deletion_eligibility(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->{id_token},
-        context => $self->_get_request_context(),
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
     );
 
     if ($result->{error}) {
@@ -2140,9 +2103,8 @@ No authentication required.
 B<Arguments:>
 
     my $result = get_public_account_by_username(
-        auth    => $user_token,      # Optional: User/session authentication token
-        account => $account_token,   # Optional: Account selection token
-        context => $request_context, # Optional: Request context for X-Forwarded-For
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
         username => $value,       # string - username is the user's username to look up
     );
 
@@ -2169,9 +2131,8 @@ B<ConnectRPC Error Codes:>
 B<Example:>
 
     my $result = get_public_account_by_username(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->{id_token},
-        context => $self->_get_request_context(),
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
     );
 
     if ($result->{error}) {
@@ -2196,6 +2157,98 @@ sub get_public_account_by_username {
     return connect_rpc(
         service     => 'ntppool.account.v1.AccountService',
         method      => 'GetPublicAccountByUsername',
+        request     => \%request,
+        %args  # Pass through auth, account, context
+    );
+}
+
+
+=head2 get_related_accounts
+
+GetRelatedAccounts returns accounts related to the source account for server moves.
+Returns different results based on caller role:
+- Non-staff: accounts where caller is a member
+- Staff: accounts sharing users with source account
+Authentication: Required via session middleware (sessions.GetUser + sessions.GetAccount).
+
+B<Arguments:>
+
+    my $result = get_related_accounts(
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
+        account_id_token => $value,       # string - account_id_token is the source account to find related accounts for
+ Uses id_token format (e.g., "abc123")
+    );
+
+B<Returns:>
+
+Hashref with structure:
+
+    {
+        code         => 200,         # HTTP status code
+        status_line  => "200 OK",    # HTTP status text
+        connect_code => undef,       # ConnectRPC error code (or undef)
+        data         => {            # Response data
+            accounts => [
+            {
+                id_token => ...,  # string - id_token is the account ID token for form submission
+                name => ...,  # string - name is the account name for display
+            },
+            # ... more items
+        ],  # arrayref[hashref (RelatedAccount)] - accounts is the list of related accounts
+ Excludes the source account itself
+        },
+        error        => undef,       # Error message (if any)
+        trace_id     => "...",       # OpenTelemetry trace ID
+    }
+
+B<Response Data Structure:>
+
+The C<data> field contains:
+
+=over 4
+
+=item * B<accounts> (arrayref[hashref (RelatedAccount)])
+
+accounts is the list of related accounts
+ Excludes the source account itself
+
+
+=back
+
+B<ConnectRPC Error Codes:>
+
+    unauthenticated, permission_denied, internal, invalid_argument, etc.
+
+B<Example:>
+
+    my $result = get_related_accounts(
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
+    );
+
+    if ($result->{error}) {
+        warn "Error: $result->{error}";
+    } else {
+        my $data = $result->{data};
+        # Use response fields...
+    }
+
+=cut
+
+sub get_related_accounts {
+    my $validation_error = validate_key_value_args('get_related_accounts', @_);
+    return $validation_error if $validation_error;
+
+    my %args = @_;
+
+    # Extract request fields from args
+    my %request = ();
+    $request{'account_id_token'} = delete $args{'account_id_token'} if exists $args{'account_id_token'};
+
+    return connect_rpc(
+        service     => 'ntppool.account.v1.AccountService',
+        method      => 'GetRelatedAccounts',
         request     => \%request,
         %args  # Pass through auth, account, context
     );

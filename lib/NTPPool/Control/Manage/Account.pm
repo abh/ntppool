@@ -34,9 +34,8 @@ sub _account_users {
     return $self->{$cache_key} if exists $self->{$cache_key};
 
     my $result = get_account_users(
-        auth    => $self->plain_cookie($self->user_cookie_name),
+        $self->api_auth_params,
         account => $account->{id_token},
-        context => $self->_get_request_context(),
     );
 
     return $self->{$cache_key} = [] if $result->{error};
@@ -51,8 +50,7 @@ sub _user_accounts {
     return $self->{$cache_key} if exists $self->{$cache_key};
 
     my $result = get_user_accounts(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        context => $self->_get_request_context(),
+        $self->api_auth_params,
     );
 
     return $self->{$cache_key} = [] if $result->{error};
@@ -67,9 +65,8 @@ sub _account_invites {
     return $self->{$cache_key} if exists $self->{$cache_key};
 
     my $result = get_account_invites(
-        auth     => $self->plain_cookie($self->user_cookie_name),
+        $self->api_auth_params,
         account  => $account->{id_token},
-        context  => $self->_get_request_context(),
         for_user => JSON::XS::false,
     );
 
@@ -85,8 +82,7 @@ sub _user_invites {
     return $self->{$cache_key} if exists $self->{$cache_key};
 
     my $result = get_account_invites(
-        auth     => $self->plain_cookie($self->user_cookie_name),
-        context  => $self->_get_request_context(),
+        $self->api_auth_params,
         for_user => JSON::XS::true,
     );
 
@@ -102,9 +98,8 @@ sub _create_account {
     $name ||= $self->user->{username} || 'My Account';
 
     my $data = create_account(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        context => $self->_get_request_context(),
-        name    => $name,
+        $self->api_auth_params,
+        name => $name,
     );
 
     if ($data->{error}) {
@@ -224,9 +219,8 @@ sub remove_user_from_account {
       unless $user;
 
     my $data = remove_user_from_account(
-        auth     => $self->plain_cookie($self->user_cookie_name),
+        $self->api_auth_params,
         account  => $account->{id_token},
-        context  => $self->_get_request_context(),
         id_token => $user->{id_token},
     );
 
@@ -282,8 +276,7 @@ sub handle_invitation {
         # For GET request, we need to fetch the invite to show confirmation page
         # Use get_account_invites to check if this code exists and get details
         my $invites_result = get_account_invites(
-            auth     => $self->token,
-            context  => $self->otel_context,
+            $self->api_auth_params,
             for_user => 1,                     # Get invites for the current user
         );
 
@@ -306,9 +299,8 @@ sub handle_invitation {
     # POST request - accept the invitation via Go API
     # The API handles transaction, adding user to account, and logging
     my $result = accept_account_invite(
-        auth    => $self->token,
-        context => $self->otel_context,
-        code    => $code,
+        $self->api_auth_params,
+        code => $code,
     );
 
     if ($result->{error}) {
@@ -346,9 +338,8 @@ sub handle_invitation {
 
     # Fetch the account to get its id_token for the redirect
     my $account_result = get_account(
-        auth    => $self->token,
-        context => $self->otel_context,
-        id      => $account_id,
+        $self->api_auth_params,
+        id => $account_id,
     );
 
     if ($account_result->{error}) {
@@ -380,9 +371,8 @@ sub render_users_invite {
     # Create invitation via Go API
     # The API handles all validation, email sending, and limits
     my $result = create_account_invite(
-        auth    => $self->token,
+        $self->api_auth_params,
         account => $account->{id_token},
-        context => $self->otel_context,
         email   => $email_address,
     );
 
@@ -510,9 +500,8 @@ sub render_account_edit {
 
     # Get account from API to populate the form before updates
     my $result = get_account(
-        auth    => $self->plain_cookie($self->user_cookie_name),
+        $self->api_auth_params,
         account => $id_token,
-        context => $self->_get_request_context(),
     );
 
     if ($result->{error}) {
@@ -548,9 +537,8 @@ sub render_account_edit {
 
     if (%update_data) {
         my $data = update_account(
-            auth    => $self->plain_cookie($self->user_cookie_name),
+            $self->api_auth_params,
             account => $account->{id_token},
-            context => $self->_get_request_context(),
             %update_data,
         );
 
@@ -624,8 +612,7 @@ sub render_download {
     else {
         if ($self->request->method eq 'post') {
             my $data = create_user_task(
-                auth      => $self->plain_cookie($self->user_cookie_name),
-                context   => $self->_get_request_context(),
+                $self->api_auth_params,
                 task_type => 'download',
                 status    => '',
             );
@@ -660,8 +647,7 @@ sub render_user_delete {
     # Check deletion eligibility using new consolidated API
     # Single API call replaces multiple queries and ORM iterations
     my $result = check_user_deletion_eligibility(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        context => $self->_get_request_context(),
+        $self->api_auth_params,
     );
 
     if ($result->{error}) {
@@ -688,9 +674,8 @@ sub render_user_delete {
         my $deletion_time = DateTime->now->add(days => 7);
 
         my $result = schedule_user_deletion(
-            auth             => $self->plain_cookie($self->user_cookie_name),
+            $self->api_auth_params,
             deletion_on_unix => $deletion_time->epoch,
-            context          => $self->_get_request_context(),
         );
 
         if ($result->{error}) {
@@ -705,8 +690,7 @@ sub render_user_delete {
 
         # Create delete task via API (using same deletion time)
         my $data = create_user_task(
-            auth            => $self->plain_cookie($self->user_cookie_name),
-            context         => $self->_get_request_context(),
+            $self->api_auth_params,
             task_type       => 'delete',
             status          => '',
             execute_on_unix => $deletion_time->epoch,

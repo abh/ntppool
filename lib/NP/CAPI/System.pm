@@ -22,9 +22,8 @@ NP::CAPI::System - ConnectRPC client for SystemService
     use NP::CAPI::System qw(get_settings);
     # GetSettings returns all system settings.
     my $result = get_settings(
-        auth    => $user_token,
-        account => $account_token,
-        context => $request_context,
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
     );
 
 
@@ -104,9 +103,8 @@ GetSettings returns all system settings.
 B<Arguments:>
 
     my $result = get_settings(
-        auth    => $user_token,      # Optional: User/session authentication token
-        account => $account_token,   # Optional: Account selection token
-        context => $request_context, # Optional: Request context for X-Forwarded-For
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
     );
 
 B<Returns:>
@@ -150,9 +148,8 @@ B<ConnectRPC Error Codes:>
 B<Example:>
 
     my $result = get_settings(
-        auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->{id_token},
-        context => $self->_get_request_context(),
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
     );
 
     if ($result->{error}) {
