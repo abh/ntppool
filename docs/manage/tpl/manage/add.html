@@ -36,11 +36,7 @@
 
 
         [% IF server.error %]
-
-        <div class="alert alert-error">
-            [% server.error | html %]
-        </div>
-
+        [% PROCESS tpl/common/error_alert.html, error = server.error %]
     </div> [% # server info div %]
     [% NEXT; END %]
 

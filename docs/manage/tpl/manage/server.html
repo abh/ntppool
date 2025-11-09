@@ -74,9 +74,8 @@
             <input type="submit" name="Update" value="Update">
         </noscript>
         [% IF error %]
-        <div class="alert alert-warning mt-2">
-            [% error | html %]
-            [% IF trace_id %]<br><small class="mt-2 d-block">Trace ID: [% trace_id | html %]</small>[% END %]
+        <div class="mt-2">
+            [% PROCESS tpl/common/error_alert.html %]
         </div>
         [% END %]
 

@@ -328,12 +328,41 @@ my $zones = $result->{data}{zones};
 # Template uses: [% zone.display_name %]
 ```
 
+**❌ WRONG - Perl Creates Audit Logs:**
+```perl
+# DON'T: Make Perl responsible for audit logging
+my $result = NP::CAPI::ServerManagement::delete_server(
+    ip => $ip,
+    deletion_date => $date,
+);
+
+# Then separately log the operation (easy to forget!)
+NP::Model::Log->log_changes($user, "server-delete", "Deletion scheduled", $server);
+```
+
+**✅ RIGHT - API Creates Audit Logs Automatically:**
+```perl
+# DO: API handles audit logging internally
+my $result = NP::CAPI::ServerManagement::delete_server(
+    ip => $ip,
+    deletion_date => $date,
+);
+# Audit log created automatically by Go API in same transaction
+```
+
+**Why This Matters:**
+- Audit logs are created atomically with data changes
+- Can't forget to log operations (happens automatically)
+- Consistent audit messages across all operations
+- Perl doesn't need database access for logging
+- Works correctly during PostgreSQL migration (logs to PostgreSQL)
+
 **When Migrating Code:**
 1. **Identify the User Operation**: What is the user trying to accomplish?
-2. **Move All Related Logic to Go**: Don't split logic between Perl and Go
+2. **Move All Related Logic to Go**: Don't split logic between Perl and Go (including audit logging)
 3. **Return Complete Data**: Include all fields Perl will need for display
 4. **Pre-format Display Strings**: Don't make Perl concatenate or calculate
-5. **Single API Call**: One user action = one API call
+5. **Single API Call**: One user action = one API call (with automatic logging)
 
 **Example Anti-Pattern (WRONG):**
 ```perl
