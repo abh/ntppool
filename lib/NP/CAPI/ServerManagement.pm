@@ -53,9 +53,10 @@ Authorization: User must own server (by account) or be staff
         context => $request_context,
     );
 
-    # DeleteServer schedules a server for deletion
+    # DeleteServer schedules or cancels server deletion
 Authentication: Required via session middleware
 Authorization: User must own server (by account) or be staff
+Cancellation requires can_add_servers permission (verified servers in account)
     my $result = delete_server(
         auth    => $user_token,
         account => $account_token,
@@ -488,9 +489,10 @@ sub update_server {
 
 =head2 delete_server
 
-DeleteServer schedules a server for deletion
+DeleteServer schedules or cancels server deletion
 Authentication: Required via session middleware
 Authorization: User must own server (by account) or be staff
+Cancellation requires can_add_servers permission (verified servers in account)
 
 B<Arguments:>
 
@@ -499,8 +501,10 @@ B<Arguments:>
         account => $account_token,   # Optional: Account selection token
         context => $request_context, # Optional: Request context for X-Forwarded-For
         ip => $value,       # string
-        immediate => $value,       # bool - immediate schedules deletion immediately instead of grace period
- Default is false (14-day grace period)
+        deletion_date => $value,       # string - deletion_date is the date when the server should be deleted (YYYY-MM-DD format)
+ Must be a future date. Required unless cancel = true.
+        cancel => $value,       # bool - cancel clears any scheduled deletion (sets deletion_on = NULL)
+ If true, deletion_date is ignored
     );
 
 B<Returns:>
@@ -549,7 +553,8 @@ sub delete_server {
     # Extract request fields from args
     my %request = ();
     $request{'ip'} = delete $args{'ip'} if exists $args{'ip'};
-    $request{'immediate'} = delete $args{'immediate'} if exists $args{'immediate'};
+    $request{'deletion_date'} = delete $args{'deletion_date'} if exists $args{'deletion_date'};
+    $request{'cancel'} = delete $args{'cancel'} if exists $args{'cancel'};
 
     return connect_rpc(
         service     => 'ntppool.server.v1.ServerManagementService',

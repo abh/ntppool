@@ -632,7 +632,7 @@ sub handle_move {
 
         my $new_account_code = $self->req_param('new_account');
         my ($new_account) =
-          grep { $new_account_code eq $_->id_token } @$accounts;
+          grep { $new_account_code eq $_->{id_token} } @$accounts;
         unless ($new_account) {
             $errors->{new_account} =
               'Please select the account you are transferring the servers to';
@@ -640,7 +640,7 @@ sub handle_move {
         }
 
         warn "current account: ", $self->current_account->{id_token};
-        warn "new     account: ", $new_account->id_token;
+        warn "new     account: ", $new_account->{id_token};
 
         my $db  = NP::Model->db;
         my $txn = $db->begin_scoped_work;
