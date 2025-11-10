@@ -15,6 +15,7 @@ our @EXPORT_OK = qw(
     update_server
     delete_server
     start_server_verification
+    complete_server_verification
     move_server
 );
 
@@ -24,7 +25,7 @@ NP::CAPI::ServerManagement - ConnectRPC client for ServerManagementService
 
 =head1 SYNOPSIS
 
-    use NP::CAPI::ServerManagement qw(add_server_precheck add_server update_server delete_server start_server_verification move_server);
+    use NP::CAPI::ServerManagement qw(add_server_precheck add_server update_server delete_server start_server_verification complete_server_verification move_server);
     # AddServerPrecheck validates multiple server IPs and returns results for each
 Accepts unlimited IPs; processes first 6 NEW servers only
 Authentication: Required via session middleware
@@ -64,6 +65,15 @@ Cancellation requires can_add_servers permission (verified servers in account)
 Authentication: Required via session middleware
 Authorization: User must own server (by account) or be staff
     my $result = start_server_verification(
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
+    );
+
+    # CompleteServerVerification marks a server verification as complete
+after the user confirms ownership via the verification link.
+Authentication: Required via session middleware
+Authorization: User must own server (by account) or be staff
+    my $result = complete_server_verification(
         $self->api_auth_params,      # Provides auth and context
         account => $account->{id_token},
     );
@@ -626,6 +636,105 @@ sub start_server_verification {
     return connect_rpc(
         service     => 'ntppool.server.v1.ServerManagementService',
         method      => 'StartServerVerification',
+        request     => \%request,
+        %args  # Pass through auth, account, context
+    );
+}
+
+
+=head2 complete_server_verification
+
+CompleteServerVerification marks a server verification as complete
+after the user confirms ownership via the verification link.
+Authentication: Required via session middleware
+Authorization: User must own server (by account) or be staff
+
+B<Arguments:>
+
+    my $result = complete_server_verification(
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
+        token => $value,       # string - Verification token from the confirmation URL
+    );
+
+B<Returns:>
+
+Hashref with structure:
+
+    {
+        code         => 200,         # HTTP status code
+        status_line  => "200 OK",    # HTTP status text
+        connect_code => undef,       # ConnectRPC error code (or undef)
+        data         => {            # Response data
+            server => {
+                id => ...,  # int - id is the database ID of the server
+                ip => ...,  # string - ip is the IP address (IPv4 or IPv6)
+                hostname => ...,  # string - hostname is the DNS hostname (may be empty)
+                ip_version => ...,  # int - ip_version is 4 or 6
+                url => ...,  # string - url is the relative URL to the server scores page (e.g., "/scores/192.0.2.1")
+                account => ...,  # hashref (AccountInfo) - account contains account information (conditionally included)
+ Included if: account.public_profile=true OR authenticated user owns server OR user is staff
+                zones => ...,  # arrayref[hashref (ZoneReference)] - zones this server is assigned to (excludes root '.' zone)
+                stratum => ...,  # int - stratum is the NTP stratum level
+                in_pool => ...,  # bool - in_pool indicates if the server is active in the pool
+                score_raw => ...,  # number - score_raw is the current raw score
+                netspeed => ...,  # int - netspeed is the configured network speed weight
+                user_urls => ...,  # arrayref[string] - user_urls are user-provided traffic/stats URLs
+                verification => ...,  # hashref (ServerVerification) - verification contains verification status
+                deletion_on => ...,  # string - deletion_on is when the server is/was scheduled for deletion (ISO 8601)
+ Empty if not scheduled for deletion
+            },  # hashref (Server) - The verified server with complete details
+        },
+        error        => undef,       # Error message (if any)
+        trace_id     => "...",       # OpenTelemetry trace ID
+    }
+
+B<Response Data Structure:>
+
+The C<data> field contains:
+
+=over 4
+
+=item * B<server> (hashref (Server))
+
+The verified server with complete details
+
+
+=back
+
+B<ConnectRPC Error Codes:>
+
+    unauthenticated, permission_denied, internal, invalid_argument, etc.
+
+B<Example:>
+
+    my $result = complete_server_verification(
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
+    );
+
+    if ($result->{error}) {
+        warn "Error: $result->{error}";
+    } else {
+        my $data = $result->{data};
+        # Use response fields...
+    }
+
+=cut
+
+sub complete_server_verification {
+    my $validation_error = validate_key_value_args('complete_server_verification', @_);
+    return $validation_error if $validation_error;
+
+    my %args = @_;
+
+    # Extract request fields from args
+    my %request = ();
+    $request{'token'} = delete $args{'token'} if exists $args{'token'};
+
+    return connect_rpc(
+        service     => 'ntppool.server.v1.ServerManagementService',
+        method      => 'CompleteServerVerification',
         request     => \%request,
         %args  # Pass through auth, account, context
     );
