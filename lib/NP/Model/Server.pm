@@ -146,14 +146,6 @@ sub alert {
     return NP::Model->server_alert->fetch_or_create(server => $self);
 }
 
-sub note {
-    my ($self, $name) = @_;
-    my $note =
-      NP::Model->server_note->fetch_or_create(server => $self->id, name => $name);
-    return $note;
-}
-
-
 sub monitors {
     my $self   = shift;
     my $cutoff = shift;
