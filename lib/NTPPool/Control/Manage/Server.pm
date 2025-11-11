@@ -22,6 +22,7 @@ use NP::CAPI::Server           qw(get_account_servers);
 use NP::CAPI::ServerManagement qw(
     add_server_precheck
     add_server
+    complete_server_verification
     move_server
 );
 use NP::Data::Server           ();
@@ -509,12 +510,18 @@ sub handle_verify {
     if ($self->request->method eq 'post') {
         return 403 unless $self->check_auth_token;
 
-        $verification->verified_on(DateTime->now());
-        $verification->user_ip($self->request->remote_ip);
-        $verification->user_id($self->user->{user_id});
-        $verification->token(undef);
-        $verification->save();
-        $db->commit;
+        # Call Go API to complete verification (includes audit logging)
+        my $result = NP::CAPI::ServerManagement::complete_server_verification(
+            $self->api_auth_params,
+            token => $verification->token,
+        );
+
+        if ($result->{error}) {
+            warn "Failed to complete server verification: $result->{error}";
+            warn "Trace ID: $result->{trace_id}" if $result->{trace_id};
+            $self->tpl_param(error_message => $result->{error});
+            return OK, $self->evaluate_template('tpl/manage/verify_confirm.html');
+        }
 
         return $self->redirect($self->manage_url($server->manage_url));
     }
