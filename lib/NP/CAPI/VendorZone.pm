@@ -16,6 +16,8 @@ our @EXPORT_OK = qw(
     update_vendor_zone
     submit_vendor_zone
     update_vendor_zone_status
+    list_vendor_zones_admin
+    get_vendor_zone_form_metadata
 );
 
 =head1 NAME
@@ -24,7 +26,7 @@ NP::CAPI::VendorZone - ConnectRPC client for VendorZoneService
 
 =head1 SYNOPSIS
 
-    use NP::CAPI::VendorZone qw(list_vendor_zones get_vendor_zone request_vendor_zone update_vendor_zone submit_vendor_zone update_vendor_zone_status);
+    use NP::CAPI::VendorZone qw(list_vendor_zones get_vendor_zone request_vendor_zone update_vendor_zone submit_vendor_zone update_vendor_zone_status list_vendor_zones_admin get_vendor_zone_form_metadata);
     # ListVendorZones lists vendor zones for an account.
 Authentication: Required via session middleware (sessions.GetAccount).
 Authorization: User must have access to the account.
@@ -72,6 +74,23 @@ Authentication: Required via session middleware (sessions.GetUser).
 Authorization: User must have vendor_admin privilege.
 Transitions: Pending->Approved, Pending->Rejected, Rejected->Approved.
     my $result = update_vendor_zone_status(
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
+    );
+
+    # ListVendorZonesAdmin lists all vendor zones (admin only).
+Authentication: Required via session middleware (sessions.GetUser).
+Authorization: User must have vendor_admin privilege.
+Returns: All zones across all accounts, with filtering options.
+    my $result = list_vendor_zones_admin(
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
+    );
+
+    # GetVendorZoneFormMetadata returns metadata for the vendor zone form.
+Authentication: Required via session middleware (sessions.GetUser).
+Returns: Available DNS roots and other form options.
+    my $result = get_vendor_zone_form_metadata(
         $self->api_auth_params,      # Provides auth and context
         account => $account->{id_token},
     );
@@ -170,11 +189,25 @@ Hashref with structure:
         data         => {            # Response data
             zones => [
             {
-                vendor_zone_id => ...,  # int - vendor_zone_id is the numeric ID
+                vendor_zone_id => ...,  # int - Core identification
+ vendor_zone_id is the numeric ID
+                id_token => ...,  # string - id_token is the token ID (format: "vz_{token}")
                 zone_name => ...,  # string - zone_name is the DNS zone name (e.g., "example")
                 status => ...,  # string - status is the zone status (New, Pending, Approved, Rejected)
                 created_on => ...,  # string - created_on is when the zone was requested (RFC3339)
                 approved_on => ...,  # string - approved_on is when the zone was approved (RFC3339, empty if pending)
+                organization_name => ...,  # string - Zone details
+ organization_name is the organization name
+                request_information => ...,  # string - request_information describes usage
+                device_count => ...,  # int - device_count is estimated number of devices
+                device_information => ...,  # string - device_information is implementation details (admin-only)
+                contact_information => ...,  # string - contact_information is NOC/engineering contacts (admin-only)
+                client_type => ...,  # string - client_type is the NTP client type (sntp, ntp, legacy)
+                opensource => ...,  # bool - opensource indicates if using opensource exception
+                opensource_info => ...,  # string - opensource_info is justification for opensource
+                rt_ticket => ...,  # int - rt_ticket is optional admin tracking number
+                dns_root_origin => ...,  # string - dns_root_origin is the DNS root domain (e.g., "pool.ntp.org")
+                account_token => ...,  # string - account_token identifies the owning account
             },
             # ... more items
         ],  # arrayref[hashref (VendorZone)] - zones is the list of vendor zones
@@ -258,22 +291,26 @@ Hashref with structure:
         connect_code => undef,       # ConnectRPC error code (or undef)
         data         => {            # Response data
             zone => {
-                vendor_zone_id => ...,  # int - vendor_zone_id is the numeric ID
+                vendor_zone_id => ...,  # int - Core identification
+ vendor_zone_id is the numeric ID
+                id_token => ...,  # string - id_token is the token ID (format: "vz_{token}")
                 zone_name => ...,  # string - zone_name is the DNS zone name (e.g., "example")
                 status => ...,  # string - status is the zone status (New, Pending, Approved, Rejected)
                 created_on => ...,  # string - created_on is when the zone was requested (RFC3339)
                 approved_on => ...,  # string - approved_on is when the zone was approved (RFC3339, empty if pending)
-            },  # hashref (VendorZone) - zone contains the vendor zone details
-            organization_name => ...,  # string - Additional fields for full details
-            request_information => ...,  # string
-            device_count => ...,  # int
-            device_information => ...,  # string
-            contact_information => ...,  # string
-            client_type => ...,  # string
-            opensource => ...,  # bool
-            opensource_info => ...,  # string
-            rt_ticket => ...,  # int
-            dns_root_origin => ...,  # string
+                organization_name => ...,  # string - Zone details
+ organization_name is the organization name
+                request_information => ...,  # string - request_information describes usage
+                device_count => ...,  # int - device_count is estimated number of devices
+                device_information => ...,  # string - device_information is implementation details (admin-only)
+                contact_information => ...,  # string - contact_information is NOC/engineering contacts (admin-only)
+                client_type => ...,  # string - client_type is the NTP client type (sntp, ntp, legacy)
+                opensource => ...,  # bool - opensource indicates if using opensource exception
+                opensource_info => ...,  # string - opensource_info is justification for opensource
+                rt_ticket => ...,  # int - rt_ticket is optional admin tracking number
+                dns_root_origin => ...,  # string - dns_root_origin is the DNS root domain (e.g., "pool.ntp.org")
+                account_token => ...,  # string - account_token identifies the owning account
+            },  # hashref (VendorZone) - zone contains the complete vendor zone details
         },
         error        => undef,       # Error message (if any)
         trace_id     => "...",       # OpenTelemetry trace ID
@@ -287,39 +324,7 @@ The C<data> field contains:
 
 =item * B<zone> (hashref (VendorZone))
 
-zone contains the vendor zone details
-
-
-=item * B<organization_name> (string)
-
-Additional fields for full details
-
-
-=item * B<request_information> (string)
-
-
-=item * B<device_count> (int)
-
-
-=item * B<device_information> (string)
-
-
-=item * B<contact_information> (string)
-
-
-=item * B<client_type> (string)
-
-
-=item * B<opensource> (bool)
-
-
-=item * B<opensource_info> (string)
-
-
-=item * B<rt_ticket> (int)
-
-
-=item * B<dns_root_origin> (string)
+zone contains the complete vendor zone details
 
 
 =back
@@ -396,10 +401,59 @@ Hashref with structure:
             vendor_zone_id => ...,  # int - vendor_zone_id is the ID of the created request
             id_token => ...,  # string - id_token is the token ID (format: "vz_{token}")
             status => ...,  # string - status will be "New"
+            zone => {
+                vendor_zone_id => ...,  # int - Core identification
+ vendor_zone_id is the numeric ID
+                id_token => ...,  # string - id_token is the token ID (format: "vz_{token}")
+                zone_name => ...,  # string - zone_name is the DNS zone name (e.g., "example")
+                status => ...,  # string - status is the zone status (New, Pending, Approved, Rejected)
+                created_on => ...,  # string - created_on is when the zone was requested (RFC3339)
+                approved_on => ...,  # string - approved_on is when the zone was approved (RFC3339, empty if pending)
+                organization_name => ...,  # string - Zone details
+ organization_name is the organization name
+                request_information => ...,  # string - request_information describes usage
+                device_count => ...,  # int - device_count is estimated number of devices
+                device_information => ...,  # string - device_information is implementation details (admin-only)
+                contact_information => ...,  # string - contact_information is NOC/engineering contacts (admin-only)
+                client_type => ...,  # string - client_type is the NTP client type (sntp, ntp, legacy)
+                opensource => ...,  # bool - opensource indicates if using opensource exception
+                opensource_info => ...,  # string - opensource_info is justification for opensource
+                rt_ticket => ...,  # int - rt_ticket is optional admin tracking number
+                dns_root_origin => ...,  # string - dns_root_origin is the DNS root domain (e.g., "pool.ntp.org")
+                account_token => ...,  # string - account_token identifies the owning account
+            },  # hashref (VendorZone) - zone contains the complete vendor zone details
         },
         error        => undef,       # Error message (if any)
         trace_id     => "...",       # OpenTelemetry trace ID
     }
+
+B<Response Data Structure:>
+
+The C<data> field contains:
+
+=over 4
+
+=item * B<vendor_zone_id> (int)
+
+vendor_zone_id is the ID of the created request
+
+
+=item * B<id_token> (string)
+
+id_token is the token ID (format: "vz_{token}")
+
+
+=item * B<status> (string)
+
+status will be "New"
+
+
+=item * B<zone> (hashref (VendorZone))
+
+zone contains the complete vendor zone details
+
+
+=back
 
 B<ConnectRPC Error Codes:>
 
@@ -478,11 +532,25 @@ Hashref with structure:
         data         => {            # Response data
             success => ...,  # bool - success indicates if the update was successful
             zone => {
-                vendor_zone_id => ...,  # int - vendor_zone_id is the numeric ID
+                vendor_zone_id => ...,  # int - Core identification
+ vendor_zone_id is the numeric ID
+                id_token => ...,  # string - id_token is the token ID (format: "vz_{token}")
                 zone_name => ...,  # string - zone_name is the DNS zone name (e.g., "example")
                 status => ...,  # string - status is the zone status (New, Pending, Approved, Rejected)
                 created_on => ...,  # string - created_on is when the zone was requested (RFC3339)
                 approved_on => ...,  # string - approved_on is when the zone was approved (RFC3339, empty if pending)
+                organization_name => ...,  # string - Zone details
+ organization_name is the organization name
+                request_information => ...,  # string - request_information describes usage
+                device_count => ...,  # int - device_count is estimated number of devices
+                device_information => ...,  # string - device_information is implementation details (admin-only)
+                contact_information => ...,  # string - contact_information is NOC/engineering contacts (admin-only)
+                client_type => ...,  # string - client_type is the NTP client type (sntp, ntp, legacy)
+                opensource => ...,  # bool - opensource indicates if using opensource exception
+                opensource_info => ...,  # string - opensource_info is justification for opensource
+                rt_ticket => ...,  # int - rt_ticket is optional admin tracking number
+                dns_root_origin => ...,  # string - dns_root_origin is the DNS root domain (e.g., "pool.ntp.org")
+                account_token => ...,  # string - account_token identifies the owning account
             },  # hashref (VendorZone) - zone contains the updated vendor zone
         },
         error        => undef,       # Error message (if any)
@@ -582,10 +650,71 @@ Hashref with structure:
             success => ...,  # bool - success indicates if the submission was successful
             status => ...,  # string - status will be "Pending"
             needs_subscription => ...,  # bool - needs_subscription indicates if subscription is required
+            zone => {
+                vendor_zone_id => ...,  # int - Core identification
+ vendor_zone_id is the numeric ID
+                id_token => ...,  # string - id_token is the token ID (format: "vz_{token}")
+                zone_name => ...,  # string - zone_name is the DNS zone name (e.g., "example")
+                status => ...,  # string - status is the zone status (New, Pending, Approved, Rejected)
+                created_on => ...,  # string - created_on is when the zone was requested (RFC3339)
+                approved_on => ...,  # string - approved_on is when the zone was approved (RFC3339, empty if pending)
+                organization_name => ...,  # string - Zone details
+ organization_name is the organization name
+                request_information => ...,  # string - request_information describes usage
+                device_count => ...,  # int - device_count is estimated number of devices
+                device_information => ...,  # string - device_information is implementation details (admin-only)
+                contact_information => ...,  # string - contact_information is NOC/engineering contacts (admin-only)
+                client_type => ...,  # string - client_type is the NTP client type (sntp, ntp, legacy)
+                opensource => ...,  # bool - opensource indicates if using opensource exception
+                opensource_info => ...,  # string - opensource_info is justification for opensource
+                rt_ticket => ...,  # int - rt_ticket is optional admin tracking number
+                dns_root_origin => ...,  # string - dns_root_origin is the DNS root domain (e.g., "pool.ntp.org")
+                account_token => ...,  # string - account_token identifies the owning account
+            },  # hashref (VendorZone) - zone contains the complete vendor zone details (for email template)
+            email_sent => ...,  # bool - email_sent indicates if the notification email was sent successfully
+            user_email => ...,  # string - user_email is the zone owner's email address
         },
         error        => undef,       # Error message (if any)
         trace_id     => "...",       # OpenTelemetry trace ID
     }
+
+B<Response Data Structure:>
+
+The C<data> field contains:
+
+=over 4
+
+=item * B<success> (bool)
+
+success indicates if the submission was successful
+
+
+=item * B<status> (string)
+
+status will be "Pending"
+
+
+=item * B<needs_subscription> (bool)
+
+needs_subscription indicates if subscription is required
+
+
+=item * B<zone> (hashref (VendorZone))
+
+zone contains the complete vendor zone details (for email template)
+
+
+=item * B<email_sent> (bool)
+
+email_sent indicates if the notification email was sent successfully
+
+
+=item * B<user_email> (string)
+
+user_email is the zone owner's email address
+
+
+=back
 
 B<ConnectRPC Error Codes:>
 
@@ -656,10 +785,66 @@ Hashref with structure:
         data         => {            # Response data
             success => ...,  # bool - success indicates if the update was successful
             status => ...,  # string - status is the new status
+            zone => {
+                vendor_zone_id => ...,  # int - Core identification
+ vendor_zone_id is the numeric ID
+                id_token => ...,  # string - id_token is the token ID (format: "vz_{token}")
+                zone_name => ...,  # string - zone_name is the DNS zone name (e.g., "example")
+                status => ...,  # string - status is the zone status (New, Pending, Approved, Rejected)
+                created_on => ...,  # string - created_on is when the zone was requested (RFC3339)
+                approved_on => ...,  # string - approved_on is when the zone was approved (RFC3339, empty if pending)
+                organization_name => ...,  # string - Zone details
+ organization_name is the organization name
+                request_information => ...,  # string - request_information describes usage
+                device_count => ...,  # int - device_count is estimated number of devices
+                device_information => ...,  # string - device_information is implementation details (admin-only)
+                contact_information => ...,  # string - contact_information is NOC/engineering contacts (admin-only)
+                client_type => ...,  # string - client_type is the NTP client type (sntp, ntp, legacy)
+                opensource => ...,  # bool - opensource indicates if using opensource exception
+                opensource_info => ...,  # string - opensource_info is justification for opensource
+                rt_ticket => ...,  # int - rt_ticket is optional admin tracking number
+                dns_root_origin => ...,  # string - dns_root_origin is the DNS root domain (e.g., "pool.ntp.org")
+                account_token => ...,  # string - account_token identifies the owning account
+            },  # hashref (VendorZone) - zone contains the complete vendor zone details (for email template)
+            user_email => ...,  # string - user_email is the zone owner's email address (for approval emails)
+            email_sent => ...,  # bool - email_sent indicates if the notification email was sent successfully
         },
         error        => undef,       # Error message (if any)
         trace_id     => "...",       # OpenTelemetry trace ID
     }
+
+B<Response Data Structure:>
+
+The C<data> field contains:
+
+=over 4
+
+=item * B<success> (bool)
+
+success indicates if the update was successful
+
+
+=item * B<status> (string)
+
+status is the new status
+
+
+=item * B<zone> (hashref (VendorZone))
+
+zone contains the complete vendor zone details (for email template)
+
+
+=item * B<user_email> (string)
+
+user_email is the zone owner's email address (for approval emails)
+
+
+=item * B<email_sent> (bool)
+
+email_sent indicates if the notification email was sent successfully
+
+
+=back
 
 B<ConnectRPC Error Codes:>
 
@@ -696,6 +881,190 @@ sub update_vendor_zone_status {
     return connect_rpc(
         service     => 'ntppool.vendorzone.v1.VendorZoneService',
         method      => 'UpdateVendorZoneStatus',
+        request     => \%request,
+        %args  # Pass through auth, account, context
+    );
+}
+
+
+=head2 list_vendor_zones_admin
+
+ListVendorZonesAdmin lists all vendor zones (admin only).
+Authentication: Required via session middleware (sessions.GetUser).
+Authorization: User must have vendor_admin privilege.
+Returns: All zones across all accounts, with filtering options.
+
+B<Arguments:>
+
+    my $result = list_vendor_zones_admin(
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
+        status => $value,       # string - status filters by status (optional, e.g., "Pending")
+        sort_by => $value,       # string - sort_by specifies sort order (optional, default: created_on desc)
+    );
+
+B<Returns:>
+
+Hashref with structure:
+
+    {
+        code         => 200,         # HTTP status code
+        status_line  => "200 OK",    # HTTP status text
+        connect_code => undef,       # ConnectRPC error code (or undef)
+        data         => {            # Response data
+            zones => [
+            {
+                zone => ...,  # hashref (VendorZone) - zone contains the complete vendor zone
+                account_name => ...,  # string - account_name is the account name
+                user_email => ...,  # string - user_email is the zone owner's email address
+                subscription_created_on => ...,  # string - subscription_created_on is when the subscription started (RFC3339, empty if no subscription)
+            },
+            # ... more items
+        ],  # arrayref[hashref (VendorZoneAdmin)] - zones is the list of vendor zones with account details
+        },
+        error        => undef,       # Error message (if any)
+        trace_id     => "...",       # OpenTelemetry trace ID
+    }
+
+B<Response Data Structure:>
+
+The C<data> field contains:
+
+=over 4
+
+=item * B<zones> (arrayref[hashref (VendorZoneAdmin)])
+
+zones is the list of vendor zones with account details
+
+
+=back
+
+B<ConnectRPC Error Codes:>
+
+    unauthenticated, permission_denied, internal, invalid_argument, etc.
+
+B<Example:>
+
+    my $result = list_vendor_zones_admin(
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
+    );
+
+    if ($result->{error}) {
+        warn "Error: $result->{error}";
+    } else {
+        my $data = $result->{data};
+        # Use response fields...
+    }
+
+=cut
+
+sub list_vendor_zones_admin {
+    my $validation_error = validate_key_value_args('list_vendor_zones_admin', @_);
+    return $validation_error if $validation_error;
+
+    my %args = @_;
+
+    # Extract request fields from args
+    my %request = ();
+    $request{'status'} = delete $args{'status'} if exists $args{'status'};
+    $request{'sort_by'} = delete $args{'sort_by'} if exists $args{'sort_by'};
+
+    return connect_rpc(
+        service     => 'ntppool.vendorzone.v1.VendorZoneService',
+        method      => 'ListVendorZonesAdmin',
+        request     => \%request,
+        %args  # Pass through auth, account, context
+    );
+}
+
+
+=head2 get_vendor_zone_form_metadata
+
+GetVendorZoneFormMetadata returns metadata for the vendor zone form.
+Authentication: Required via session middleware (sessions.GetUser).
+Returns: Available DNS roots and other form options.
+
+B<Arguments:>
+
+    my $result = get_vendor_zone_form_metadata(
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
+    );
+
+B<Returns:>
+
+Hashref with structure:
+
+    {
+        code         => 200,         # HTTP status code
+        status_line  => "200 OK",    # HTTP status text
+        connect_code => undef,       # ConnectRPC error code (or undef)
+        data         => {            # Response data
+            dns_roots => [
+            {
+                dns_root_id => ...,  # int - dns_root_id is the numeric ID
+                origin => ...,  # string - origin is the DNS root domain (e.g., "pool.ntp.org")
+                vendor_available => ...,  # bool - vendor_available indicates if this root is available for vendor zones
+            },
+            # ... more items
+        ],  # arrayref[hashref (DNSRoot)] - dns_roots is the list of available DNS roots for vendor zones
+            default_dns_root_id => ...,  # int - default_dns_root_id is the default DNS root to use
+        },
+        error        => undef,       # Error message (if any)
+        trace_id     => "...",       # OpenTelemetry trace ID
+    }
+
+B<Response Data Structure:>
+
+The C<data> field contains:
+
+=over 4
+
+=item * B<dns_roots> (arrayref[hashref (DNSRoot)])
+
+dns_roots is the list of available DNS roots for vendor zones
+
+
+=item * B<default_dns_root_id> (int)
+
+default_dns_root_id is the default DNS root to use
+
+
+=back
+
+B<ConnectRPC Error Codes:>
+
+    unauthenticated, permission_denied, internal, invalid_argument, etc.
+
+B<Example:>
+
+    my $result = get_vendor_zone_form_metadata(
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
+    );
+
+    if ($result->{error}) {
+        warn "Error: $result->{error}";
+    } else {
+        my $data = $result->{data};
+        # Use response fields...
+    }
+
+=cut
+
+sub get_vendor_zone_form_metadata {
+    my $validation_error = validate_key_value_args('get_vendor_zone_form_metadata', @_);
+    return $validation_error if $validation_error;
+
+    my %args = @_;
+
+    # Extract request fields from args
+    my %request = ();
+
+    return connect_rpc(
+        service     => 'ntppool.vendorzone.v1.VendorZoneService',
+        method      => 'GetVendorZoneFormMetadata',
         request     => \%request,
         %args  # Pass through auth, account, context
     );

@@ -10,6 +10,17 @@ use JSON              ();
 use NP::Stripe;
 use List::Util qw(uniq);
 use Data::Dump qw(pp);
+use NP::CAPI::VendorZone qw(
+    list_vendor_zones
+    get_vendor_zone
+    request_vendor_zone
+    update_vendor_zone
+    submit_vendor_zone
+    update_vendor_zone_status
+    list_vendor_zones_admin
+    get_vendor_zone_form_metadata
+);
+use JSON::XS ();
 
 my $json = JSON::XS->new->pretty->utf8->convert_blessed;
 
@@ -46,8 +57,16 @@ sub manage_dispatch {
     return $self->render_admin
       if $self->request->uri =~ m!^/manage/vendor/admin$!;
 
-    return $self->redirect($self->manage_url('/manage/vendor/new'))
-      unless @{$self->current_account->vendor_zones};
+    # Check if user has any vendor zones via API
+    my $zones_result = list_vendor_zones(
+        auth    => $self->plain_cookie($self->user_cookie_name),
+        account => $self->current_account->id_token,
+        context => $self->_get_request_context(),
+    );
+
+    unless ($zones_result->{data} && @{$zones_result->{data}{zones}}) {
+        return $self->redirect($self->manage_url('/manage/vendor/new'));
+    }
 
     $self->tpl_params->{page}->{is_vendor} = 1;
 
@@ -64,9 +83,30 @@ sub _get_id {
     return $id;
 }
 
+# _resolve_zone_token: Helper to convert ID parameter (numeric or token) to token format for API
+# Accepts: numeric ID or token ID (vz-xxx)
+# Returns: token ID (vz-xxx) for use with CAPI calls
+sub _resolve_zone_token {
+    my $self  = shift;
+    my $input = shift || $self->req_param('id');
+
+    return undef unless $input;
+
+    # If already a token, return as-is
+    return $input if $input =~ m/^vz-/;
+
+    # If numeric ID, convert to token
+    if ($input =~ m/^\d+$/) {
+        # Use NP::Model to convert numeric ID to token
+        return NP::Model::VendorZone->id_token($input);
+    }
+
+    return undef;
+}
+
 sub render_form {
     my $self = shift;
-    my $vz   = shift;
+    my $zone = shift;  # Now a hashref from API, not blessed object
 
     my @device_count_options = (
         500,      2500,   5000,    10000,   25000,    50000,
@@ -74,17 +114,39 @@ sub render_form {
         50000000, 100000000
     );
 
-    if ($vz) {
-        $self->tpl_param('vz', $vz);
+    if ($zone) {
+        $self->tpl_param('vz', $zone);
 
-        push(@device_count_options, $vz->device_count)
-          if $vz->device_count;
+        push(@device_count_options, $zone->{device_count})
+          if $zone->{device_count};
 
-        $self->tpl_param('dns_roots', [$vz->dns_root]);
+        # Fetch DNS root for the zone's dns_root_id
+        if ($zone->{dns_root_id}) {
+            my $dns_root = NP::Model->dns_root->fetch(id => $zone->{dns_root_id});
+            $self->tpl_param('dns_roots', [$dns_root]) if $dns_root;
+        }
     }
     else {
-        $self->tpl_param('dns_roots',
-            NP::Model->dns_root->get_objects(query => [vendor_available => 1]));
+        # Get DNS roots from API
+        my $metadata_result = get_vendor_zone_form_metadata(
+            auth    => $self->plain_cookie($self->user_cookie_name),
+            context => $self->_get_request_context(),
+        );
+
+        if ($metadata_result->{data} && $metadata_result->{data}{dns_roots}) {
+            # Convert API DNS root data to format expected by template
+            my @dns_roots = map {
+                # Create a simple object with origin field
+                bless {origin => $_->{origin}, id => $_->{dns_root_id}}, 'NP::Model::DnsRoot'
+            } @{$metadata_result->{data}{dns_roots}};
+            $self->tpl_param('dns_roots', \@dns_roots);
+        }
+        else {
+            # Fallback to direct database access if API fails
+            warn "Failed to get DNS roots from API: " . ($metadata_result->{error} || 'unknown error') . " (trace: " . ($metadata_result->{trace_id} || 'none') . ")";
+            $self->tpl_param('dns_roots',
+                NP::Model->dns_root->get_objects(query => [vendor_available => 1]));
+        }
     }
 
     my $opt = [uniq(sort { $a <=> $b } @device_count_options)];
@@ -113,22 +175,45 @@ sub render_zone {
 
     $mode ||= $self->req_param('mode') || '';
 
-    my $vz = NP::Model->vendor_zone->fetch(id => $id);
+    # Fetch zone via API
+    my $token = $self->_resolve_zone_token($id);
+    my $result = get_vendor_zone(
+        auth     => $self->plain_cookie($self->user_cookie_name),
+        id_token => $token,
+        context  => $self->_get_request_context(),
+    );
 
-    return $self->redirect($self->manage_url('/manage/vendor'))
-      unless $vz and $vz->can_view($self->user);
+    if ($result->{error}) {
+        if ($result->{code} == 404 || $result->{code} == 403) {
+            return $self->redirect($self->manage_url('/manage/vendor'));
+        }
+        warn "API error getting vendor zone: " . $result->{error} . " (trace: " . ($result->{trace_id} || 'none') . ")";
+        return $result->{code};
+    }
 
-    $self->tpl_param('vz', $vz);
+    my $zone = $result->{data}{zone};
+    $self->tpl_param('vz', $zone);
 
-    return $self->render_form($vz)
-      if (    $mode eq 'edit'
-          and $vz->can_edit($self->user));
+    # Fetch the zone's account for subscription checks (not current_account, which might be admin)
+    my $zone_account = NP::Model->account->fetch(id_token => $zone->{account_token});
 
-    my $device_count = $vz->device_count || 0;
+    # Set have_subscription flag for template (using zone's account, not current account)
+    my $have_subscription = $zone_account ? $zone_account->subscription_limits_not_exceeded($zone->{device_count}) : 0;
+    $self->tpl_param('have_subscription', $have_subscription);
 
-    my @subs = $self->current_account->live_subscriptions;
+    # Set can_edit flag for template (zones can be edited unless Approved)
+    $self->tpl_param('can_edit_zone', $zone->{status} ne 'Approved');
 
-    if ($vz->status eq 'New') {
+    # For edit mode, check if user can edit (API handles permission, but check status)
+    return $self->render_form($zone)
+      if $mode eq 'edit' && $zone->{status} ne 'Approved';
+
+    my $device_count = $zone->{device_count} || 0;
+
+    # Get subscriptions from zone's account (not current account, which might be admin)
+    my @subs = $zone_account ? $zone_account->live_subscriptions : ();
+
+    if ($zone->{status} eq 'New') {
 
         # todo: only load if we need to show this
         my ($products, $groups, $group_list) =
@@ -143,7 +228,7 @@ sub render_zone {
             $self->tpl_param('product_group_list', $group_list);
         }
 
-        unless ($vz->account->subscription_limits_not_exceeded($vz->device_count)) {
+        unless ($zone_account && $zone_account->subscription_limits_not_exceeded($zone->{device_count})) {
             $self->tpl_param('need_subscription' => 1);
             if (@subs) {    # already have subscriptions, but it wasn't enough...
                 warn "need upgrade";
@@ -203,30 +288,37 @@ sub render_submit {
 
     my $id = $self->_get_id;
 
-    my $vz = $id && NP::Model->vendor_zone->fetch(id => $id);
+    # Fetch zone via API
+    my $token = $self->_resolve_zone_token($id);
+    my $result = get_vendor_zone(
+        auth     => $self->plain_cookie($self->user_cookie_name),
+        id_token => $token,
+        context  => $self->_get_request_context(),
+    );
 
-    return $self->render_zone($vz->id)
-      unless $vz->can_edit($self->user)
-      and $vz->status eq 'New';
-
-    unless ($vz->validate) {
-        my $errors = $vz->validation_errors;
-        $self->tpl_param('errors', $errors);
-        return $self->render_form($vz);
+    if ($result->{error}) {
+        warn "API error getting vendor zone for submit: " . $result->{error} . " (trace: " . ($result->{trace_id} || 'none') . ")";
+        return $self->redirect($self->manage_url('/manage/vendor'));
     }
 
-# the basic information validated, so we're in the "subscription / open source" context past this
+    my $zone = $result->{data}{zone};
 
-    my $ok = $vz->account->subscription_limits_not_exceeded($vz->device_count);
+    return $self->render_zone($zone->{vendor_zone_id})
+      unless $zone->{status} eq 'New';
+
+    # Fetch the zone's account for subscription checks
+    my $zone_account = NP::Model->account->fetch(id_token => $zone->{account_token});
+
+    # Basic validation happens in the API, but check subscription requirements client-side
+    my $ok = $zone_account ? $zone_account->subscription_limits_not_exceeded($zone->{device_count}) : 0;
     my $errors;
+    my $opensource_info = '';
 
     if ($self->req_param('opensource_request')) {
         if (my $osinfo = $self->req_param('opensource_info')) {
-
             # todo: sanity check the data?
             $ok = 1;
-            $vz->opensource(1);
-            $vz->opensource_info($osinfo);
+            $opensource_info = $osinfo;
         }
         else {
             $errors = {opensource_info => 'Please provide open source information'};
@@ -235,26 +327,38 @@ sub render_submit {
 
     unless ($ok) {
         if (!$errors) {
-
             # for products page if no accounts exist
-
             $self->tpl_param('need_subscription', 1);
 
             $errors->{missing_plan} =
               'Please choose a subscription plan or choose open source below'
-              unless ($vz->account->have_live_subscription);
-
+              unless ($zone_account && $zone_account->have_live_subscription);
         }
 
         # warn "errors ", Data::Dump::pp($errors);
         $self->tpl_param('errors', $errors);
-        return $self->render_zone($vz->id);
+        return $self->render_zone($zone->{vendor_zone_id});
     }
 
-    $vz->status('Pending');
-    $vz->save;
+    # Submit zone via API
+    my $opensource = $self->req_param('opensource_request') ? JSON::XS::true : JSON::XS::false;
+    my $submit_result = submit_vendor_zone(
+        auth            => $self->plain_cookie($self->user_cookie_name),
+        context         => $self->_get_request_context(),
+        id_token        => $token,
+        opensource      => $opensource,
+        opensource_info => $opensource_info,
+    );
 
-    $self->tpl_param('vz',     $vz);
+    if ($submit_result->{error}) {
+        warn "Failed to submit vendor zone: " . $submit_result->{error} . " (trace: " . ($submit_result->{trace_id} || 'none') . ")";
+        $self->tpl_param('errors', {general => $submit_result->{error}});
+        return $self->render_zone($zone->{vendor_zone_id});
+    }
+
+    $zone = $submit_result->{data}{zone};
+
+    $self->tpl_param('vz',     $zone);
     $self->tpl_param('config', $self->config);
 
     my $msg = $self->evaluate_template('tpl/vendor/submit_email.txt');
@@ -262,7 +366,7 @@ sub render_submit {
       Email::Stuffer->from(NP::Email::address("sender"))
       ->to(NP::Email::address("vendors"))->cc(NP::Email::address("notifications"))
       ->reply_to($self->user->{email})
-      ->subject("New vendor zone application: " . $vz->zone_name)->text_body($msg);
+      ->subject("New vendor zone application: " . $zone->{zone_name})->text_body($msg);
 
     my $return = NP::Email::sendmail($email->email);
     warn Data::Dumper->Dump([\$msg, \$email, \$return], [qw(msg email return)]);
@@ -272,19 +376,19 @@ sub render_submit {
 
 sub render_edit {
     my $self = shift;
-    my ($vz, $errors) = $self->_edit_zone;
+    my ($zone, $errors) = $self->_edit_zone;
 
     if ($errors) {
         $self->tpl_param('errors', $errors);
         warn "vendor form errors: ", pp($errors);
-        return $self->render_form($vz);
+        return $self->render_form($zone);
     }
 
     # if no subscription, go to subscription page
 
     my $redirect = $self->manage_url(
         '/manage/vendor/zone',
-        {   id   => $vz->id_token,
+        {   id   => $zone->{id_token},
             a    => $self->current_account->{id_token},
             mode => 'show'
         }
@@ -295,9 +399,9 @@ sub render_edit {
 
 sub render_edit_json {
     my $self = shift;
-    my ($vz, $errors) = $self->_edit_zone;
+    my ($zone, $errors) = $self->_edit_zone;
 
-    return OK, $json->encode({zone => $vz->json_model, errors => $errors});
+    return OK, $json->encode({zone => $zone, errors => $errors});
 }
 
 sub _edit_zone {
@@ -306,52 +410,49 @@ sub _edit_zone {
     my $id = $self->_get_id;
     $id = 0 if $id and $id eq 'new';
 
-    my $vz = $id ? NP::Model->vendor_zone->fetch(id => $id) : undef;
-
-    if ($vz and !$vz->can_edit($self->user)) {
-        return undef, ["Permission denied"];
-    }
-
     my $zone_name = lc($self->req_param('zone_name') || '');
     $zone_name =~ s/[^a-z0-9-]+//g;
 
-    # validation is in NP::Model::VendorZone
     my @fields =
       qw(organization_name request_information device_information contact_information device_count opensource_info);
 
-    if ($vz) {
-        $vz->zone_name($zone_name);
-        for my $f (@fields) {
-            $vz->$f($self->req_param($f) || '');
-        }
-    }
-    else {
+    # Convert form parameters to hash for API
+    my %zone_params = (
+        auth                => $self->plain_cookie($self->user_cookie_name),
+        account             => $self->current_account->id_token,
+        context             => $self->_get_request_context(),
+        zone_name           => $zone_name,
+        organization_name   => $self->req_param('organization_name') || '',
+        request_information => $self->req_param('request_information') || '',
+        device_information  => $self->req_param('device_information') || '',
+        contact_information => $self->req_param('contact_information') || '',
+        device_count        => 0 + int($self->req_param('device_count') || 0),
+        opensource_info     => $self->req_param('opensource_info') || '',
+    );
 
-        # TODO: If we ever have more than one public dns_root, be smarter here.
-        my $dns_root = (
-            NP::Model->dns_root->get_objects(
-                query => [vendor_available => 1],
-                limit => 1
-            )
-        )->[0];
-
-        $vz = NP::Model->vendor_zone->create(
-            zone_name  => $zone_name,
-            user_id    => $self->user->{user_id},
-            account_id => $self->current_account->{account_id},
-            dns_root   => $dns_root->id,
-            (map { $_ => ($self->req_param($_) || '') } @fields)
+    my $result;
+    if ($id) {
+        # Update existing zone
+        my $token = $self->_resolve_zone_token($id);
+        $result = update_vendor_zone(
+            %zone_params,
+            id_token => $token,
         );
     }
-
-    unless ($vz->validate) {
-        my $errors = $vz->validation_errors;
-        return $vz, $errors;
+    else {
+        # Create new zone
+        $result = request_vendor_zone(%zone_params);
     }
 
-    $vz->save;
+    if ($result->{error}) {
+        warn "API error in _edit_zone: " . $result->{error} . " (trace: " . ($result->{trace_id} || 'none') . ")";
+        # Return zone data if available, otherwise undef, plus error
+        my $zone = $result->{data} ? $result->{data}{zone} : undef;
+        return $zone, [$result->{error}];
+    }
 
-    return $vz;
+    my $zone = $result->{data}{zone};
+    return $zone;
 }
 
 sub _update_subscription {
@@ -409,7 +510,25 @@ sub render_subscription {
     return FORBIDDEN unless $account && $account->{permissions}{can_edit};
 
     my $id = $self->_get_id;
-    my $vz = $id && NP::Model->vendor_zone->fetch(id => $id);
+    my $zone;
+
+    # Fetch zone via API if ID provided
+    if ($id) {
+        my $token = $self->_resolve_zone_token($id);
+        my $result = get_vendor_zone(
+            auth     => $self->plain_cookie($self->user_cookie_name),
+            id_token => $token,
+            context  => $self->_get_request_context(),
+        );
+
+        if ($result->{error}) {
+            warn "API error getting vendor zone for subscription: " . $result->{error} . " (trace: " . ($result->{trace_id} || 'none') . ")";
+            # Continue without zone - subscription page can still work
+        }
+        else {
+            $zone = $result->{data}{zone};
+        }
+    }
 
     $self->tpl_param('account' => $account);
 
@@ -420,7 +539,7 @@ sub render_subscription {
     }
 
     my $return_url = $self->manage_url('/manage/vendor/plan',
-        {($vz ? (id => $vz->id_token) : ()), a => $self->current_account->{id_token}});
+        {($zone ? (id => $zone->{id_token}) : ()), a => $self->current_account->{id_token}});
 
     my $product_id = $self->req_param('product_id') || '';
     my $price_id   = $self->req_param('price_id')   || '';
@@ -431,7 +550,7 @@ sub render_subscription {
     # choosing a product
     if ($product_id) {
 
-        my $device_count = $vz->device_count || 0;
+        my $device_count = $zone ? ($zone->{device_count} || 0) : 0;
         my ($products, $groups, $group_list) =
           NP::Stripe::product_groups(1, $device_count);
 
@@ -450,19 +569,20 @@ sub render_subscription {
         {
             my ($plan) = grep { $_->{ID} eq $price_id } @{$product->{Plans}};
 
-            my $account = $vz->account;
+            # Use current_account instead of zone->account
+            my $account = $self->current_account;
 
             # TODO:
             #  - take parameters to create session for the right price
             #  - set the right urls for cancel, etc
             #  - set the right customer ID if one exists
 
-            my $quantity = $vz->device_count;
+            my $quantity = $zone ? ($zone->{device_count} || 1) : 1;
             if ($plan->{TiersMode} eq "") {
                 $quantity = 1;
             }
 
-            unless ($vz->account->stripe_customer_id) {
+            unless ($account->stripe_customer_id) {
                 my $customer = NP::Stripe::create_customer(
                     email       => $self->user->{email},
                     name        => $account->name,
@@ -537,55 +657,101 @@ sub render_admin {
     $self->tpl_params->{page}->{is_vendor_admin} = 1;
 
     if (my $id = $self->_get_id) {
-        my $vz = $id ? NP::Model->vendor_zone->fetch(id => $id) : undef;
-        return 404 unless $vz;
+        # Fetch zone via API
+        my $token = $self->_resolve_zone_token($id);
+        my $result = get_vendor_zone(
+            auth     => $self->plain_cookie($self->user_cookie_name),
+            id_token => $token,
+            context  => $self->_get_request_context(),
+        );
+
+        if ($result->{error}) {
+            warn "API error getting vendor zone for admin: " . $result->{error} . " (trace: " . ($result->{trace_id} || 'none') . ")";
+            return 404 if $result->{code} == 404;
+            return $result->{code};
+        }
+
+        my $zone = $result->{data}{zone};
 
         if ($self->req_param('show')) {
             return $self->render_zone($id, 'show');
         }
 
-        if (my $status = $self->req_param('status_change')) {
-            if ($vz->status eq 'Pending' and $status =~ m/^Reject/) {
-                $vz->status('Rejected');
-                $vz->save;
-                $self->tpl_param("msg" => $vz->zone_name . ' rejected');
+        if (my $status_param = $self->req_param('status_change')) {
+            if ($zone->{status} eq 'Pending' and $status_param =~ m/^Reject/) {
+                # Reject zone via API
+                my $update_result = update_vendor_zone_status(
+                    auth     => $self->plain_cookie($self->user_cookie_name),
+                    context  => $self->_get_request_context(),
+                    id_token => $token,
+                    status   => 'Rejected',
+                );
+
+                if ($update_result->{error}) {
+                    warn "Failed to reject vendor zone: " . $update_result->{error} . " (trace: " . ($update_result->{trace_id} || 'none') . ")";
+                }
+                else {
+                    $zone = $update_result->{data}{zone};
+                    $self->tpl_param("msg" => $zone->{zone_name} . ' rejected');
+                }
             }
-            elsif ( $vz->status =~ m/(Pending|Rejected)/
-                and $status =~ m/^Approve/)
+            elsif ( $zone->{status} =~ m/(Pending|Rejected)/
+                and $status_param =~ m/^Approve/)
             {
-                $vz->status('Approved');
-                $vz->approved_on(DateTime->now);
-                $vz->save;
+                # Approve zone via API
+                my $update_result = update_vendor_zone_status(
+                    auth     => $self->plain_cookie($self->user_cookie_name),
+                    context  => $self->_get_request_context(),
+                    id_token => $token,
+                    status   => 'Approved',
+                );
 
-                $self->tpl_param('vz' => $vz);
-                $self->tpl_param('config', $self->config);
+                if ($update_result->{error}) {
+                    warn "Failed to approve vendor zone: " . $update_result->{error} . " (trace: " . ($update_result->{trace_id} || 'none') . ")";
+                }
+                else {
+                    $zone = $update_result->{data}{zone};
+                    my $user_email = $update_result->{data}{user_email};
 
-                my $msg = $self->evaluate_template('tpl/vendor/approved_email.txt');
+                    $self->tpl_param('vz' => $zone);
+                    $self->tpl_param('config', $self->config);
 
-                my $email =
-                  Email::Stuffer->from(NP::Email::address("vendors"))
-                  ->to($vz->user->email)->cc(NP::Email::address("notifications"))
-                  ->reply_to(NP::Email::address("vendors"))
-                  ->subject("Vendor zone activated: " . $vz->zone_name)->text_body($msg);
+                    # Create dns_root hashref from API data (no database fetch needed)
+                    $self->tpl_param('dns_root', {origin => $zone->{dns_root_origin}});
 
-                my $return = NP::Email::sendmail($email->email);
-                warn Data::Dumper->Dump([\$msg, \$email, \$return],
-                    [qw(msg email return)]);
+                    my $msg = $self->evaluate_template('tpl/vendor/approved_email.txt');
 
-                $self->tpl_param("msg" => $vz->zone_name . ' approved');
+                    my $email =
+                      Email::Stuffer->from(NP::Email::address("vendors"))
+                      ->to($user_email)->cc(NP::Email::address("notifications"))
+                      ->reply_to(NP::Email::address("vendors"))
+                      ->subject("Vendor zone activated: " . $zone->{zone_name})->text_body($msg);
 
+                    my $return = NP::Email::sendmail($email->email);
+                    warn Data::Dumper->Dump([\$msg, \$email, \$return],
+                        [qw(msg email return)]);
+
+                    $self->tpl_param("msg" => $zone->{zone_name} . ' approved');
+                }
             }
         }
     }
 
-    my $pending = NP::Model->vendor_zone->get_vendor_zones(
-        query        => [status => ['Pending']],
-        sort_by      => 'account_subscriptions.created_on desc, account.id desc',
-        with_objects => ['account', 'account.account_subscriptions'],
-
+    # Fetch pending zones via API
+    my $pending_result = list_vendor_zones_admin(
+        auth    => $self->plain_cookie($self->user_cookie_name),
+        context => $self->_get_request_context(),
+        status  => 'Pending',
     );
 
-    $self->tpl_param(pending_zones => $pending);
+    if ($pending_result->{error}) {
+        warn "Failed to list pending zones: " . $pending_result->{error} . " (trace: " . ($pending_result->{trace_id} || 'none') . ")";
+        $self->tpl_param(pending_zones => []);
+    }
+    else {
+        # API returns VendorZoneAdmin objects with zone + account details
+        $self->tpl_param(pending_zones => $pending_result->{data}{zones});
+    }
 
     return OK, $self->evaluate_template('tpl/vendor/admin.html');
 }

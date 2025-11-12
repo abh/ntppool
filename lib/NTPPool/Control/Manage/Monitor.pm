@@ -1,8 +1,7 @@
 package NTPPool::Control::Manage::Monitor;
 use v5.30.0;
 use warnings;
-use parent qw(NTPPool::Control::Manage);
-use NP::Model;
+use parent            qw(NTPPool::Control::Manage);
 use Combust::Constant qw(OK NOT_FOUND FORBIDDEN SERVER_ERROR);
 use JSON              ();
 use MIME::Base64      qw(encode_base64);
@@ -21,7 +20,6 @@ sub _get_request_context {
     my $x_forwarded_for = $self->request->header_in('X-Forwarded-For');
     return $x_forwarded_for ? {x_forwarded_for => $x_forwarded_for} : undef;
 }
-
 
 sub manage_dispatch {
     my $self = shift;
@@ -221,13 +219,6 @@ sub render_confirm_monitor {
     # );
 }
 
-sub _get_id {
-    my $self  = shift;
-    my $token = $self->req_param('id') or return;
-    my $id    = $token =~ m/^mon-/ ? NP::Model::Monitor->token_id($token) : $token;
-    return $id;
-}
-
 sub render_instructions {
     my $self = shift;
     return OK, $self->evaluate_template('tpl/monitors/instructions.html');
@@ -262,8 +253,7 @@ sub render_monitors {
     $self->tpl_param('monitors', \@monitors);
 
     # Fetch metrics for all monitors in this account
-    my $metrics =
-      $self->monitor_metrics(id_token => $self->current_account->{id_token});
+    my $metrics = $self->monitor_metrics(id_token => $self->current_account->{id_token});
     $self->tpl_param('metrics', $metrics);
 
     return OK, $self->evaluate_template('tpl/monitors/list.html');
@@ -410,7 +400,8 @@ sub render_delete_monitor {
     }
     else {
         # Error case - use actual API error message
-        my $error_msg = $data->{error} || 'Unable to delete monitor - please try again or contact support';
+        my $error_msg = $data->{error}
+          || 'Unable to delete monitor - please try again or contact support';
 
         if ($self->is_htmx) {
             $self->tpl_param('error',    $error_msg);
@@ -427,66 +418,36 @@ sub render_delete_monitor {
     }
 }
 
-sub _edit_monitor {
-    my $self = shift;
-
-    my $id = $self->_get_id;
-    $id = 0 if $id and $id eq 'new';    # 'new' isn't supported here anymore
-
-    my $mon = $id ? NP::Model->monitor->fetch(id => $id) : undef;
-
-    unless ($mon) {
-        return undef, ["Permission denied"];
-    }
-
-    if ($mon and !$mon->can_edit($self->user)) {
-        return undef, ["Permission denied"];
-    }
-
-    # todo: move this to the API and use the client to set the name?
-    my @setup_fields = qw(name);
-
-    for my $f (@setup_fields) {
-        $mon->$f($self->req_param($f) || '');
-    }
-
-    unless ($mon->validate) {
-        my $errors = $mon->validation_errors;
-        return $mon, $errors;
-    }
-
-    $mon->save;
-    return $mon;
-}
-
 sub _format_metrics_breakdown {
     my ($self, $period_data) = @_;
     return '' unless $period_data && ref $period_data eq 'HASH';
 
     my @metric_types = (
-        { key => 'ok', label => 'ok' },
-        { key => 'timeout', label => 'timeout' },
-        { key => 'offset', label => 'offset' },
-        { key => 'signature_validation', label => 'signature' },
-        { key => 'batch_out_of_order', label => 'batch' }
+        {key => 'ok',                   label => 'ok'},
+        {key => 'timeout',              label => 'timeout'},
+        {key => 'offset',               label => 'offset'},
+        {key => 'signature_validation', label => 'signature'},
+        {key => 'batch_out_of_order',   label => 'batch'}
     );
 
     my @components;
     my @non_ok_components;
-    my $ok_value = 0;
+    my $ok_value     = 0;
     my $ok_component = '';
 
     for my $type (@metric_types) {
         my $value = $period_data->{$type->{key}};
         next unless defined $value && $value > 0;
 
-        my $formatted_value = $value > 1 ? sprintf('%.1f', $value) : sprintf('%.2f', $value);
+        my $formatted_value =
+          $value > 1 ? sprintf('%.1f', $value) : sprintf('%.2f', $value);
         my $component_text = "$formatted_value $type->{label}";
 
         if ($type->{key} eq 'ok') {
-            $ok_value = $value;
+            $ok_value     = $value;
             $ok_component = $component_text;
-        } else {
+        }
+        else {
             push @non_ok_components, $component_text;
         }
     }
@@ -558,10 +519,12 @@ sub monitor_metrics {
             for my $monitor_name (keys %{$metrics_data->{monitors}}) {
                 my $monitor = $metrics_data->{monitors}->{$monitor_name};
                 if ($monitor->{tests_per_minute_1h}) {
-                    $monitor->{breakdown_1h} = $self->_format_metrics_breakdown($monitor->{tests_per_minute_1h});
+                    $monitor->{breakdown_1h} =
+                      $self->_format_metrics_breakdown($monitor->{tests_per_minute_1h});
                 }
                 if ($monitor->{tests_per_minute_24h}) {
-                    $monitor->{breakdown_24h} = $self->_format_metrics_breakdown($monitor->{tests_per_minute_24h});
+                    $monitor->{breakdown_24h} =
+                      $self->_format_metrics_breakdown($monitor->{tests_per_minute_24h});
                 }
             }
         }
@@ -570,11 +533,13 @@ sub monitor_metrics {
         if ($metrics_data->{account_totals}) {
             if ($metrics_data->{account_totals}->{tests_per_minute_1h}) {
                 $metrics_data->{account_totals}->{breakdown_1h} =
-                    $self->_format_metrics_breakdown($metrics_data->{account_totals}->{tests_per_minute_1h});
+                  $self->_format_metrics_breakdown(
+                      $metrics_data->{account_totals}->{tests_per_minute_1h});
             }
             if ($metrics_data->{account_totals}->{tests_per_minute_24h}) {
                 $metrics_data->{account_totals}->{breakdown_24h} =
-                    $self->_format_metrics_breakdown($metrics_data->{account_totals}->{tests_per_minute_24h});
+                  $self->_format_metrics_breakdown(
+                      $metrics_data->{account_totals}->{tests_per_minute_24h});
             }
         }
 

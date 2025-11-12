@@ -28,7 +28,8 @@ The server also responds to non-TLS requests.
 <p>
 
 If you can't send HTTP requests from the NTP server, you can do the
-requests from another system on the same network:
+requests from another system on the same network (within the same /24
+subnet for IPv4 or /64 for IPv6):
 
 <pre class="code">
 curl [% validation_server | html %]indirect/[% server.ip %]
