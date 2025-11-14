@@ -3,62 +3,16 @@ eval 'exec $CBROOT/bin/perl $0 ${1+"$@"}'
   unless $running_under_some_shell;
 use strict;
 use warnings;
-use lib "$ENV{CBROOTLOCAL}/lib";
-use lib "$ENV{CBROOT}/lib";
-use Combust::Config;
-use Combust::Template;
 
-use NP::Model;
+print <<'EOF';
+This script has been replaced by the Go serverremoval task.
 
-use NP::Email;
-use Email::Stuffer;
+The server removal functionality has been migrated to:
+  go/ntp/api/tasks/serverremoval
 
-my $config          = Combust::Config->new;
-my $deployment_mode = $config->site->{ntppool}->{deployment_mode};
+The task runs automatically every 24 hours as part of the API service.
 
-NP::Model->dbh->selectrow_array(q[SELECT GET_LOCK("notifications", 0)]) or exit;
+If you need to manually trigger server removals, use the Go API instead.
+EOF
 
-my $servers = NP::Model->server->get_bad_servers_to_remove;
-my $tpl     = Combust::Template->new;
-
-my $i = 0;
-
-my $deletion_date = DateTime->today;
-$deletion_date->add(days => 2);
-
-for my $server (@$servers) {
-
-    print "Notifying of server removal: ", $server->admin->email, " for ", $server->ip, "\n";
-
-    my $param = {
-        server => $server,
-        admin  => $server->admin,
-    };
-
-    $server->deletion_on($deletion_date);
-    $server->add_logs(
-        {   user_id => undef,
-            type    => 'delete',
-            message => "Deletion scheduled for " . $deletion_date->ymd . " by the system",
-        }
-    );
-
-    my $msg =
-      $tpl->process('tpl/bad_server_removal.txt', $param, {site => 'ntppool', config => $config});
-
-    my $email =
-      Email::Stuffer->from(NP::Email::address("sender"))->to($server->admin->email)
-      ->reply_to(NP::Email::address("support"))
-      ->subject("NTP Pool: " . $server->ip . " has been removed from the NTP Pool")
-      ->text_body($msg);
-
-    NP::Email::sendmail($email->email);
-
-    $server->save;
-
-    if ($deployment_mode ne "prod") {
-        last if ++$i == 1;
-    }
-}
-
-1;
+exit 0;

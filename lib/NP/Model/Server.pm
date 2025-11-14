@@ -141,11 +141,6 @@ sub urls {
     [map { $_->url } @$urls];
 }
 
-sub alert {
-    my $self = shift;
-    return NP::Model->server_alert->fetch_or_create(server => $self);
-}
-
 sub monitors {
     my $self   = shift;
     my $cutoff = shift;
@@ -235,25 +230,6 @@ sub find_server {
     $server = $class->get_servers(query => [hostname => $arg], sort_by => 'deletion_on')
       unless $server;
     $server && @$server ? $server->[0] : ();
-}
-
-sub get_bad_servers_to_remove {
-    my $class = shift;
-    $class->get_objects_from_sql(
-        sql => q[
-                  SELECT s.*
-                    FROM
-                      servers s
-                      LEFT JOIN server_alerts sa ON(sa.server_id=s.id)
-                    WHERE
-                      s.score_raw < 0
-                       AND s.in_pool = 1
-                       AND s.deletion_on IS NULL
-                       AND (sa.first_email_time < DATE_SUB(NOW(), INTERVAL 45 DAY))
-                       AND (sa.last_email_time  < DATE_SUB(NOW(), INTERVAL 5 DAY))
-                       AND (sa.last_score+10) >= s.score_raw
-                  ]
-    );
 }
 
 sub get_check_due {

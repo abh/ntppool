@@ -2,7 +2,6 @@ package NTPPool::Control::Manage::Check;
 use v5.30.0;
 use warnings;
 use parent qw(NTPPool::Control::Manage);
-use NP::Model;
 use NP::NTP;
 use Combust::Constant qw(OK NOT_FOUND FORBIDDEN);
 use JSON              ();
