@@ -143,7 +143,7 @@ sub render_form {
         }
         else {
             # Fallback to direct database access if API fails
-            warn "Failed to get DNS roots from API: " . ($metadata_result->{error} || 'unknown error');
+            warn "Failed to get DNS roots from API: " . ($metadata_result->{error} || 'unknown error') . " (trace: " . ($metadata_result->{trace_id} || 'none') . ")";
             $self->tpl_param('dns_roots',
                 NP::Model->dns_root->get_objects(query => [vendor_available => 1]));
         }
@@ -187,15 +187,18 @@ sub render_zone {
         if ($result->{code} == 404 || $result->{code} == 403) {
             return $self->redirect($self->manage_url('/manage/vendor'));
         }
-        warn "API error getting vendor zone: " . $result->{error};
+        warn "API error getting vendor zone: " . $result->{error} . " (trace: " . ($result->{trace_id} || 'none') . ")";
         return $result->{code};
     }
 
     my $zone = $result->{data}{zone};
     $self->tpl_param('vz', $zone);
 
-    # Set have_subscription flag for template
-    my $have_subscription = $self->current_account->subscription_limits_not_exceeded($zone->{device_count});
+    # Fetch the zone's account for subscription checks (not current_account, which might be admin)
+    my $zone_account = NP::Model->account->fetch(id_token => $zone->{account_token});
+
+    # Set have_subscription flag for template (using zone's account, not current account)
+    my $have_subscription = $zone_account ? $zone_account->subscription_limits_not_exceeded($zone->{device_count}) : 0;
     $self->tpl_param('have_subscription', $have_subscription);
 
     # Set can_edit flag for template (zones can be edited unless Approved)
@@ -207,7 +210,8 @@ sub render_zone {
 
     my $device_count = $zone->{device_count} || 0;
 
-    my @subs = $self->current_account->live_subscriptions;
+    # Get subscriptions from zone's account (not current account, which might be admin)
+    my @subs = $zone_account ? $zone_account->live_subscriptions : ();
 
     if ($zone->{status} eq 'New') {
 
@@ -224,7 +228,7 @@ sub render_zone {
             $self->tpl_param('product_group_list', $group_list);
         }
 
-        unless ($self->current_account->subscription_limits_not_exceeded($zone->{device_count})) {
+        unless ($zone_account && $zone_account->subscription_limits_not_exceeded($zone->{device_count})) {
             $self->tpl_param('need_subscription' => 1);
             if (@subs) {    # already have subscriptions, but it wasn't enough...
                 warn "need upgrade";
@@ -293,7 +297,7 @@ sub render_submit {
     );
 
     if ($result->{error}) {
-        warn "API error getting vendor zone for submit: " . $result->{error};
+        warn "API error getting vendor zone for submit: " . $result->{error} . " (trace: " . ($result->{trace_id} || 'none') . ")";
         return $self->redirect($self->manage_url('/manage/vendor'));
     }
 
@@ -302,8 +306,11 @@ sub render_submit {
     return $self->render_zone($zone->{vendor_zone_id})
       unless $zone->{status} eq 'New';
 
+    # Fetch the zone's account for subscription checks
+    my $zone_account = NP::Model->account->fetch(id_token => $zone->{account_token});
+
     # Basic validation happens in the API, but check subscription requirements client-side
-    my $ok = $self->current_account->subscription_limits_not_exceeded($zone->{device_count});
+    my $ok = $zone_account ? $zone_account->subscription_limits_not_exceeded($zone->{device_count}) : 0;
     my $errors;
     my $opensource_info = '';
 
@@ -325,7 +332,7 @@ sub render_submit {
 
             $errors->{missing_plan} =
               'Please choose a subscription plan or choose open source below'
-              unless ($self->current_account->have_live_subscription);
+              unless ($zone_account && $zone_account->have_live_subscription);
         }
 
         # warn "errors ", Data::Dump::pp($errors);
@@ -344,7 +351,7 @@ sub render_submit {
     );
 
     if ($submit_result->{error}) {
-        warn "Failed to submit vendor zone: " . $submit_result->{error};
+        warn "Failed to submit vendor zone: " . $submit_result->{error} . " (trace: " . ($submit_result->{trace_id} || 'none') . ")";
         $self->tpl_param('errors', {general => $submit_result->{error}});
         return $self->render_zone($zone->{vendor_zone_id});
     }
@@ -438,7 +445,7 @@ sub _edit_zone {
     }
 
     if ($result->{error}) {
-        warn "API error in _edit_zone: " . $result->{error};
+        warn "API error in _edit_zone: " . $result->{error} . " (trace: " . ($result->{trace_id} || 'none') . ")";
         # Return zone data if available, otherwise undef, plus error
         my $zone = $result->{data} ? $result->{data}{zone} : undef;
         return $zone, [$result->{error}];
@@ -515,7 +522,7 @@ sub render_subscription {
         );
 
         if ($result->{error}) {
-            warn "API error getting vendor zone for subscription: " . $result->{error};
+            warn "API error getting vendor zone for subscription: " . $result->{error} . " (trace: " . ($result->{trace_id} || 'none') . ")";
             # Continue without zone - subscription page can still work
         }
         else {
@@ -659,7 +666,7 @@ sub render_admin {
         );
 
         if ($result->{error}) {
-            warn "API error getting vendor zone for admin: " . $result->{error};
+            warn "API error getting vendor zone for admin: " . $result->{error} . " (trace: " . ($result->{trace_id} || 'none') . ")";
             return 404 if $result->{code} == 404;
             return $result->{code};
         }
@@ -681,7 +688,7 @@ sub render_admin {
                 );
 
                 if ($update_result->{error}) {
-                    warn "Failed to reject vendor zone: " . $update_result->{error};
+                    warn "Failed to reject vendor zone: " . $update_result->{error} . " (trace: " . ($update_result->{trace_id} || 'none') . ")";
                 }
                 else {
                     $zone = $update_result->{data}{zone};
@@ -700,25 +707,19 @@ sub render_admin {
                 );
 
                 if ($update_result->{error}) {
-                    warn "Failed to approve vendor zone: " . $update_result->{error};
+                    warn "Failed to approve vendor zone: " . $update_result->{error} . " (trace: " . ($update_result->{trace_id} || 'none') . ")";
                 }
                 else {
                     $zone = $update_result->{data}{zone};
+                    my $user_email = $update_result->{data}{user_email};
 
                     $self->tpl_param('vz' => $zone);
                     $self->tpl_param('config', $self->config);
 
-                    # Fetch DNS root for email template
-                    if ($zone->{dns_root_id}) {
-                        my $dns_root = NP::Model->dns_root->fetch(id => $zone->{dns_root_id});
-                        $self->tpl_param('dns_root', $dns_root) if $dns_root;
-                    }
+                    # Create dns_root hashref from API data (no database fetch needed)
+                    $self->tpl_param('dns_root', {origin => $zone->{dns_root_origin}});
 
                     my $msg = $self->evaluate_template('tpl/vendor/approved_email.txt');
-
-                    # Note: Need user email from zone or fetch separately
-                    # For now, using a placeholder - Phase 3 will move email to API
-                    my $user_email = $self->user->{email};  # TODO: Get actual zone owner email
 
                     my $email =
                       Email::Stuffer->from(NP::Email::address("vendors"))
@@ -744,7 +745,7 @@ sub render_admin {
     );
 
     if ($pending_result->{error}) {
-        warn "Failed to list pending zones: " . $pending_result->{error};
+        warn "Failed to list pending zones: " . $pending_result->{error} . " (trace: " . ($pending_result->{trace_id} || 'none') . ")";
         $self->tpl_param(pending_zones => []);
     }
     else {
