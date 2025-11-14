@@ -10,6 +10,17 @@ use JSON              ();
 use NP::Stripe;
 use List::Util qw(uniq);
 use Data::Dump qw(pp);
+use NP::CAPI::VendorZone qw(
+    list_vendor_zones
+    get_vendor_zone
+    request_vendor_zone
+    update_vendor_zone
+    submit_vendor_zone
+    update_vendor_zone_status
+    list_vendor_zones_admin
+    get_vendor_zone_form_metadata
+);
+use JSON::XS ();
 
 my $json = JSON::XS->new->pretty->utf8->convert_blessed;
 
@@ -46,8 +57,16 @@ sub manage_dispatch {
     return $self->render_admin
       if $self->request->uri =~ m!^/manage/vendor/admin$!;
 
-    return $self->redirect($self->manage_url('/manage/vendor/new'))
-      unless @{$self->current_account->vendor_zones};
+    # Check if user has any vendor zones via API
+    my $zones_result = list_vendor_zones(
+        auth    => $self->plain_cookie($self->user_cookie_name),
+        account => $self->current_account->id_token,
+        context => $self->_get_request_context(),
+    );
+
+    unless ($zones_result->{data} && @{$zones_result->{data}{zones}}) {
+        return $self->redirect($self->manage_url('/manage/vendor/new'));
+    }
 
     $self->tpl_params->{page}->{is_vendor} = 1;
 
@@ -62,6 +81,27 @@ sub _get_id {
     my $token = $self->req_param('id');
     my $id    = $token =~ m/^vz-/ ? NP::Model::VendorZone->token_id($token) : $token;
     return $id;
+}
+
+# _resolve_zone_token: Helper to convert ID parameter (numeric or token) to token format for API
+# Accepts: numeric ID or token ID (vz-xxx)
+# Returns: token ID (vz-xxx) for use with CAPI calls
+sub _resolve_zone_token {
+    my $self  = shift;
+    my $input = shift || $self->req_param('id');
+
+    return undef unless $input;
+
+    # If already a token, return as-is
+    return $input if $input =~ m/^vz-/;
+
+    # If numeric ID, convert to token
+    if ($input =~ m/^\d+$/) {
+        # Use NP::Model to convert numeric ID to token
+        return NP::Model::VendorZone->id_token($input);
+    }
+
+    return undef;
 }
 
 sub render_form {
@@ -83,8 +123,26 @@ sub render_form {
         $self->tpl_param('dns_roots', [$vz->dns_root]);
     }
     else {
-        $self->tpl_param('dns_roots',
-            NP::Model->dns_root->get_objects(query => [vendor_available => 1]));
+        # Get DNS roots from API
+        my $metadata_result = get_vendor_zone_form_metadata(
+            auth    => $self->plain_cookie($self->user_cookie_name),
+            context => $self->_get_request_context(),
+        );
+
+        if ($metadata_result->{data} && $metadata_result->{data}{dns_roots}) {
+            # Convert API DNS root data to format expected by template
+            my @dns_roots = map {
+                # Create a simple object with origin field
+                bless {origin => $_->{origin}, id => $_->{dns_root_id}}, 'NP::Model::DnsRoot'
+            } @{$metadata_result->{data}{dns_roots}};
+            $self->tpl_param('dns_roots', \@dns_roots);
+        }
+        else {
+            # Fallback to direct database access if API fails
+            warn "Failed to get DNS roots from API: " . ($metadata_result->{error} || 'unknown error');
+            $self->tpl_param('dns_roots',
+                NP::Model->dns_root->get_objects(query => [vendor_available => 1]));
+        }
     }
 
     my $opt = [uniq(sort { $a <=> $b } @device_count_options)];
