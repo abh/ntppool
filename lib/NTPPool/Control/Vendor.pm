@@ -194,6 +194,13 @@ sub render_zone {
     my $zone = $result->{data}{zone};
     $self->tpl_param('vz', $zone);
 
+    # Set have_subscription flag for template
+    my $have_subscription = $self->current_account->subscription_limits_not_exceeded($zone->{device_count});
+    $self->tpl_param('have_subscription', $have_subscription);
+
+    # Set can_edit flag for template (zones can be edited unless Approved)
+    $self->tpl_param('can_edit_zone', $zone->{status} ne 'Approved');
+
     # For edit mode, check if user can edit (API handles permission, but check status)
     return $self->render_form($zone)
       if $mode eq 'edit' && $zone->{status} ne 'Approved';
@@ -700,6 +707,12 @@ sub render_admin {
 
                     $self->tpl_param('vz' => $zone);
                     $self->tpl_param('config', $self->config);
+
+                    # Fetch DNS root for email template
+                    if ($zone->{dns_root_id}) {
+                        my $dns_root = NP::Model->dns_root->fetch(id => $zone->{dns_root_id});
+                        $self->tpl_param('dns_root', $dns_root) if $dns_root;
+                    }
 
                     my $msg = $self->evaluate_template('tpl/vendor/approved_email.txt');
 

@@ -6,10 +6,10 @@ The DNS name below will be active within the next 20 minutes.
 
 [% IF vz.client_type == "legacy" %]
    [%- FOR i = [0..3] -%]
-      [% i %].[% vz.zone_name %].[% vz.dns_root.origin %]
+      [% i %].[% vz.zone_name %].[% dns_root.origin %]
    [% END %]
 [% ELSE %]
-   [% vz.zone_name %].[% vz.dns_root.origin %]
+   [% vz.zone_name %].[% dns_root.origin %]
 [% END%]
 
 For NTP clients that support the "pool" configuration, we

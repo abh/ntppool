@@ -6,10 +6,11 @@
 
 <h3>Pending zones</h3>
 
-[% last_account_id = 0 %]
-[% FOR vz = pending_zones %]
-[% IF last_account_id != vz.account.account_id;
-   last_account_id = vz.account.account_id
+[% last_account_name = '' %]
+[% FOR admin_zone = pending_zones %]
+[% zone = admin_zone.zone %]
+[% IF last_account_name != admin_zone.account_name;
+   last_account_name = admin_zone.account_name
 %]
 
 
@@ -17,22 +18,22 @@
 </ul>
 [% END %]
 
-<h4>[% vz.account.name | html %]</h4>
+<h4>[% admin_zone.account_name | html %]</h4>
 
 <ul>
-<li><a href="[% vz.account.url %]">Account</a></li>
-[% FOR sub = vz.account.live_subscriptions %]
-<li>Plan: [% sub.name %] (<a href="[% sub.stripe_dashboard_link %]">billing</a>)</li>
+<li>User: [% admin_zone.user_email | html %]</li>
+[% IF admin_zone.subscription_created_on %]
+<li>Subscription created: [% admin_zone.subscription_created_on %]</li>
 [% END %]
 <br>
-[% END # new account.id %]
+[% END # new account_name %]
 
 <li>
-    <a href="admin?show=1;id=[% vz.id_token %]">
-        [% vz.zone_name | html %]
+    <a href="admin?show=1;id=[% zone.id_token %]">
+        [% zone.zone_name | html %]
     </a>
-    ([% vz.status %])<br>
-    [% vz.modified_on %]
+    ([% zone.status %])<br>
+    [% zone.modified_on %]
 </li>
 
 [% END %]
