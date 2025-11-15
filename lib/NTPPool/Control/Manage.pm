@@ -8,6 +8,7 @@ use Socket6;
 use JSON::XS   qw(encode_json decode_json);
 use Data::Dump qw(pp);
 use Net::DNS;
+use Net::IP;
 use Math::BaseCalc       qw();
 use Math::Random::Secure qw(irand);
 use URI::URL             ();
@@ -735,33 +736,48 @@ sub staff_hostname_edit {
 
         # Save hostname
         my $hostname_value = $self->req_param('hostname') || '';
+        my $error          = "";
 
-        # Call the existing API method
-        require NTPPool::API::Staff;
-        my $api = NTPPool::API::Staff->new(
-            args => {
-                user   => $self->user,
-                params => {
-                    id         => 'hostname',
-                    server     => $server_ip,
-                    value      => $hostname_value,
-                    auth_token => $self->auth_token,
+        # Allow clearing the hostname (setting to empty string)
+        if (!$hostname_value || $hostname_value eq '') {
+            warn "Clearing hostname for server ID: " . $server->id;
+            $server->hostname('');
+            $server->save;
+            warn "After save, server hostname is: " . ($server->hostname || 'undef');
+        }
+        else {
+            # Validate that hostname resolves to server IP
+            my $server_ip_obj = Net::IP->new($server->ip);
+            my $res           = Net::DNS::Resolver->new(defnames => 0);
+            my $reply =
+              $res->query($hostname_value, $server->ip_version eq 'v4' ? 'A' : 'AAAA');
+
+            my $found = 0;
+
+            if ($reply) {
+                for my $rr ($reply->answer) {
+                    next unless $rr->type eq 'A' or $rr->type eq 'AAAA';
+                    $found++ if Net::IP->new($rr->address)->short eq $server_ip_obj->short;
                 }
             }
-        );
 
-        my $result = $api->edit_server();
-
-        # Debug logging
-
-        # Update the server object with the returned hostname
-        if ($result && ref($result) eq 'HASH' && exists $result->{hostname}) {
-            $server->hostname($result->{hostname});
+            if ($found) {
+                warn "Setting hostname to: "
+                  . lc($hostname_value)
+                  . " for server ID: "
+                  . $server->id;
+                $server->hostname(lc $hostname_value);
+                $server->save;
+                warn "After save, server hostname is: " . ($server->hostname || 'undef');
+            }
+            else {
+                $error = "That hostname doesn't resolve to the IP address of the server";
+            }
         }
 
         # Return view state after save
         $self->tpl_param('server' => $server);
-        $self->tpl_param('error'  => $result->{error}) if $result->{error};
+        $self->tpl_param('error'  => $error) if $error;
         return OK, $self->evaluate_template('tpl/admin/hostname_view.html');
     }
     else {
