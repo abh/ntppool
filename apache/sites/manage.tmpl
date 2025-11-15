@@ -63,11 +63,6 @@
        [% PH %] NTPPool::Control::Manage::Webhook->super
     </Location>
 
-    <Location /api>
-       SetHandler perl-script
-       [% PH %] NTPPool::Control::API->super
-    </Location>
-
     <Location /static>
       SetHandler perl-script
       [% PH %] NTPPool::Control::Basic->super
