@@ -15,7 +15,7 @@ use URI::URL             ();
 use NP::UA;
 use NP::IntAPI qw(int_api);
 use NP::CAPI::Account
-  qw(get_account_status process_auth0_login validate_session get_user_accounts get_account_invites);
+  qw(get_account_status get_oauth_login_url process_auth0_login validate_session get_user_accounts get_account_invites);
 use NP::CAPI::ServerManagement qw(update_server);
 use OpenTelemetry::Trace;
 use OpenTelemetry -all;
@@ -323,6 +323,9 @@ sub handle_login {
         return;
     }
 
+    # Determine environment-specific audience
+    my $audience = $self->_get_audience();
+
     # Call ConnectRPC API to process Auth0 login
     my $result = NP::CAPI::Account::process_auth0_login(
         authorization_code => $code,
@@ -330,6 +333,7 @@ sub handle_login {
         redirect_uri       => $self->callback_url,
         client_site        => "" . $self->site,   # Force to string: 'manage', 'www', etc.
         context            => $self->_get_request_context(),
+        audience           => $audience,          # Environment-specific: api-dev, api-test, api-prod
     );
 
     if ($result->{error}) {
@@ -364,25 +368,27 @@ sub handle_login {
     return;    # Will redirect via parent handler
 }
 
-sub _auth0_config {
+sub _get_audience {
     my $self = shift;
 
-    return @{$self->{_auth0_config}} if $self->{_auth0_config};
+    # Determine environment from base URL
+    my $base_url = $self->config->base_url($self->site);
 
-    my $site = $self->site;
-
-    my $auth0_domain = $self->config->site->{$site}->{auth0_domain}
-      or die "auth0_domain not configured for site $site";
-
-    my $auth0_client = $self->config->site->{$site}->{auth0_client}
-      or die "auth0_client not configured for site $site";
-
-    my $auth0_secret = $self->config->site->{$site}->{auth0_secret}
-      or die "auth0_secret not configured for site $site";
-
-    $self->{_auth0_config} = [$auth0_domain, $auth0_client, $auth0_secret];
-
-    return @{$self->{_auth0_config}};
+    # Map environment to Auth0 audience
+    if ($base_url =~ m{(askdev|dev|devel)\.}) {
+        return 'api-dev';
+    }
+    elsif ($base_url =~ m{(beta|test)\.}) {
+        return 'api-test';
+    }
+    elsif ($base_url =~ m{ntppool\.org}) {
+        return 'api-prod';
+    }
+    else {
+        # Default to dev for unknown environments
+        warn "Unknown environment from base_url: $base_url, defaulting to api-dev";
+        return 'api-dev';
+    }
 }
 
 sub callback_url {
@@ -409,26 +415,21 @@ sub login_url {
         $self->cookie('login_state', $state);
     }
 
-    my ($auth0_domain, $auth0_client, $auth0_secret) = $self->_auth0_config();
-
-# https://auth0.com/docs/get-started/authentication-and-authorization-flow/add-login-auth-code-flow
-# https://community.auth0.com/t/invalid-access-token-payload-jwt-encrypted-with-a256gcm/77893
-
-    my $login_url = URI->new('https://' . $auth0_domain . "/authorize");
-    $login_url->query_form(
-        client_id     => $auth0_client,
-        redirect_uri  => $self->callback_url,
-        response_type => 'code',
-        audience      => 'api-dev',
-        scope         => 'openid name email profile preferred_username',
-        state         => $state,
+    # Call Go RPC to generate OAuth login URL
+    # This centralizes Auth0 configuration in the Go API
+    my $result = NP::CAPI::Account::get_oauth_login_url(
+        redirect_uri => $self->callback_url,
+        state        => $state,
+        client_site  => "" . $self->site,  # Force to string: 'manage', 'www', etc.
+        context      => $self->_get_request_context(),
     );
 
-    use Data::Dump qw(pp);
+    if ($result->{error}) {
+        warn "Failed to get OAuth login URL: " . $result->{error};
+        return undef;
+    }
 
-    # warn "login_url: ", $login_url->as_string, pp($login_url);
-
-    return $login_url->as_string;
+    return $result->{data}{login_url};
 }
 
 sub manage_dispatch {
