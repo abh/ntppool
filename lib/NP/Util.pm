@@ -12,6 +12,7 @@ our @EXPORT_OK = qw(
     run
     utf8_safe
     utf8_safe_tree
+    netspeed_human
 );
 
 sub convert_to_html {
@@ -60,6 +61,16 @@ sub utf8_safe_tree {
         }
     )->traverse($data);
     $data;
+}
+
+sub netspeed_human {
+    my $netspeed = shift;
+
+    return ("disabled, monitoring only") if $netspeed == 0;
+
+    return ($netspeed / 1_000_000) . ' Gbit' if ($netspeed / 1_000_000 >= 1);
+    return ($netspeed / 1_000) . ' Mbit'     if ($netspeed / 1_000 >= 1);
+    return "$netspeed Kbit";
 }
 
 1;

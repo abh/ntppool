@@ -26,6 +26,7 @@ use NP::CAPI::ServerManagement qw(
     move_server
 );
 use NP::Data::Server           ();
+use NP::Util                   qw(netspeed_human);
 use OpenTelemetry -all;
 use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
 use experimental             qw( defer );
@@ -702,7 +703,7 @@ sub handle_move {
 
 sub netspeed_human {
     my ($self, $netspeed) = @_;
-    NP::Model::Server::_netspeed_human($netspeed);
+    netspeed_human($netspeed);
 }
 
 1;
