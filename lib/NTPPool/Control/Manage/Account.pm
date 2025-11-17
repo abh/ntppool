@@ -95,7 +95,7 @@ sub _user_invites {
 sub _create_account {
     my ($self, $name) = @_;
 
-    $name ||= $self->user->{username} || 'My Account';
+    $name ||= $self->user->{name} || 'My Account';
 
     my $data = create_account(
         $self->api_auth_params,
@@ -196,7 +196,7 @@ sub manage_dispatch {
             if ($delete_user_id
                 and ($self->user_is_staff or $self->user->{user_id} != $delete_user_id))
             {
-                return $self->remove_user_from_account($account, $delete_user_id);
+                return $self->_remove_user_from_account($account, $delete_user_id);
             }
         }
         return $self->render_users($account);
@@ -211,7 +211,7 @@ sub manage_dispatch {
     return NOT_FOUND;
 }
 
-sub remove_user_from_account {
+sub _remove_user_from_account {
     my ($self, $account, $user_id) = @_;
     my $users = $self->_account_users($account);
     my ($user) = grep { $_->{user_id} == $user_id } @$users;

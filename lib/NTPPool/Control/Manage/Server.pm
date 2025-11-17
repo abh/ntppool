@@ -25,7 +25,9 @@ use NP::CAPI::ServerManagement qw(
     complete_server_verification
     move_server
 );
-use NP::Data::Server           ();
+use NP::CAPI::Zone   qw(list_zones);
+use NP::Data::Server ();
+use NP::Util         ();
 use OpenTelemetry -all;
 use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
 use experimental             qw( defer );
@@ -112,7 +114,7 @@ sub show_manage {
 
     if ($self->user_is_staff) {
 
-      # Use AuditService API (eliminates N+1 query problem: ~150 queries → ~5 queries)
+        # Use AuditService API (eliminates N+1 query problem: ~150 queries → ~5 queries)
         my $logs = $self->account_logs(
             account => $account,
             limit   => 50,
@@ -153,7 +155,7 @@ sub handle_add {
     my $precheck_result = add_server_precheck(
         $self->api_auth_params,
         account => $account->{id_token},
-        inputs  => [$host],    # Go API handles DNS resolution
+        inputs  => [$host],                # Go API handles DNS resolution
     );
 
     # Handle API errors
@@ -263,14 +265,25 @@ sub handle_add {
         return $self->redirect($self->manage_url($next));
     }
 
-    my @all_zones = NP::Model->zone->get_zones(
-        query => [
-            name => {like => '__'},
-            dns  => 1,
-        ],
-        sort_by => 'description',
-    );
-    $self->tpl_param(all_zones => @all_zones);
+    # Fetch zones via CAPI
+    my $zones_result =
+      list_zones($self->api_auth_params, account => $account->{id_token});
+
+    my @all_zones;
+    if ($zones_result->{error}) {
+        warn "Failed to fetch zones via CAPI: " . $zones_result->{error};
+        warn "Trace ID: " . $zones_result->{trace_id} if $zones_result->{trace_id};
+        @all_zones = ();
+    }
+    else {
+        # Filter to 2-character zones (country codes) with DNS enabled
+        my @zones = grep { length($_->{name} // '') == 2 && $_->{dns} }
+          @{$zones_result->{data}{zones} || []};
+
+        # Sort by description
+        @all_zones = sort { $a->{description} cmp $b->{description} } @zones;
+    }
+    $self->tpl_param(all_zones => \@all_zones);
 
     #use Data::Dump qw(pp);
     #warn "SERVERS: ", pp(\@servers);
@@ -306,7 +319,7 @@ sub _add_server {
         account        => $self->current_account->{id_token},
         servers        => [\%server_to_add],
         precheck_token => $precheck_token,
-        batch_comment  => $comment,    # API handles audit logging
+        batch_comment  => $comment,                            # API handles audit logging
     );
 
     # Handle API errors
@@ -511,10 +524,9 @@ sub handle_verify {
         return 403 unless $self->check_auth_token;
 
         # Call Go API to complete verification (includes audit logging)
-        my $result = NP::CAPI::ServerManagement::complete_server_verification(
-            $self->api_auth_params,
-            token => $verification->token,
-        );
+        my $result =
+          NP::CAPI::ServerManagement::complete_server_verification($self->api_auth_params,
+              token => $verification->token,);
 
         if ($result->{error}) {
             warn "Failed to complete server verification: $result->{error}";
@@ -549,6 +561,7 @@ sub handle_delete {
                         time_zone => 'UTC'
                     );
                     if ($dt > DateTime->now) {
+
                         # Call Go API to schedule deletion (includes audit logging)
                         my $result = NP::CAPI::ServerManagement::delete_server(
                             ip            => $server->ip,
@@ -556,6 +569,7 @@ sub handle_delete {
                         );
 
                         if ($result->{data}) {
+
                             # Reload server from database to get updated deletion_on
                             $server->load(speculative => 1);
                         }
@@ -584,6 +598,7 @@ sub handle_delete {
                 );
 
                 if ($result->{data}) {
+
                     # Reload server from database to get cleared deletion_on
                     $server->load(speculative => 1);
                 }
@@ -660,7 +675,7 @@ sub handle_move {
         my @servers_to_move;
         for my $server (@$servers) {
             next unless $selected{$server->id};
-            push @servers_to_move, $server->ip;  # Collect IPs not objects
+            push @servers_to_move, $server->ip;    # Collect IPs not objects
         }
 
         if ($new_account_code && @servers_to_move) {
@@ -678,20 +693,23 @@ sub handle_move {
 
             my $data = $result->{data};
             if ($data->{servers_failed_count} > 0) {
+
                 # Some servers failed to move
                 $self->tpl_param('partial_failure', 1);
-                $self->tpl_param('failed_count', $data->{servers_failed_count});
-                $self->tpl_param('moved_count', $data->{servers_moved_count});
+                $self->tpl_param('failed_count',    $data->{servers_failed_count});
+                $self->tpl_param('moved_count',     $data->{servers_moved_count});
+
                 # Show which servers failed
                 my @failed = grep { !$_->{success} } @{$data->{results}};
                 $self->tpl_param('failed_servers', \@failed);
             }
 
             # Get new account details for success page
-            my ($new_account_obj) = grep { $new_account_code eq $_->{id_token} } @$accounts;
+            my ($new_account_obj) =
+              grep { $new_account_code eq $_->{id_token} } @$accounts;
             $self->tpl_param('old_account',   $self->current_account);
             $self->tpl_param('new_account',   $new_account_obj);
-            $self->tpl_param('servers_moved', \@servers_to_move);  # IPs, not objects
+            $self->tpl_param('servers_moved', \@servers_to_move);       # IPs, not objects
             return OK, $self->evaluate_template('tpl/manage/move_done.html');
         }
     }
@@ -702,7 +720,7 @@ sub handle_move {
 
 sub netspeed_human {
     my ($self, $netspeed) = @_;
-    NP::Model::Server::_netspeed_human($netspeed);
+    NP::Util::netspeed_human($netspeed);
 }
 
 1;

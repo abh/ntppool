@@ -16,6 +16,7 @@ use NP::UA;
 use NP::IntAPI qw(int_api);
 use NP::CAPI::Account
   qw(get_account_status process_auth0_login validate_session get_user_accounts get_account_invites);
+use NP::CAPI::ServerManagement qw(update_server);
 use OpenTelemetry::Trace;
 use OpenTelemetry -all;
 use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
@@ -734,50 +735,40 @@ sub staff_hostname_edit {
 
     if ($is_save && $self->request->method eq 'post') {
 
-        # Save hostname
+        # Save hostname via API
         my $hostname_value = $self->req_param('hostname') || '';
-        my $error          = "";
 
-        # Allow clearing the hostname (setting to empty string)
-        if (!$hostname_value || $hostname_value eq '') {
-            warn "Clearing hostname for server ID: " . $server->id;
-            $server->hostname('');
-            $server->save;
-            warn "After save, server hostname is: " . ($server->hostname || 'undef');
-        }
-        else {
-            # Validate that hostname resolves to server IP
-            my $server_ip_obj = Net::IP->new($server->ip);
-            my $res           = Net::DNS::Resolver->new(defnames => 0);
-            my $reply =
-              $res->query($hostname_value, $server->ip_version eq 'v4' ? 'A' : 'AAAA');
+        # Call API to update hostname (API handles validation and normalization)
+        my $result = update_server(
+            $self->api_auth_params,
+            ip       => $server_ip,
+            hostname => $hostname_value,
+        );
 
-            my $found = 0;
+        # Handle API response
+        if ($result->{error}) {
+            # API returned an error (validation failed or other error)
+            warn "Hostname update failed: "
+              . $result->{error}
+              . " (Trace ID: "
+              . $result->{trace_id} . ")";
 
-            if ($reply) {
-                for my $rr ($reply->answer) {
-                    next unless $rr->type eq 'A' or $rr->type eq 'AAAA';
-                    $found++ if Net::IP->new($rr->address)->short eq $server_ip_obj->short;
-                }
-            }
-
-            if ($found) {
-                warn "Setting hostname to: "
-                  . lc($hostname_value)
-                  . " for server ID: "
-                  . $server->id;
-                $server->hostname(lc $hostname_value);
-                $server->save;
-                warn "After save, server hostname is: " . ($server->hostname || 'undef');
-            }
-            else {
-                $error = "That hostname doesn't resolve to the IP address of the server";
-            }
+            $self->tpl_param('server' => $server);
+            $self->tpl_param('error'  => $result->{error});
+            return OK, $self->evaluate_template('tpl/admin/hostname_view.html');
         }
 
-        # Return view state after save
+        # Success - use data from API response
+        warn "Hostname updated successfully for server "
+          . $server_ip
+          . " to: "
+          . ($result->{data}{server}{hostname} || '(empty)');
+
+        # Update the server object with API response data for display
+        # (Don't reload from MySQL - use API data directly)
+        $server->hostname($result->{data}{server}{hostname} || '');
+
         $self->tpl_param('server' => $server);
-        $self->tpl_param('error'  => $error) if $error;
         return OK, $self->evaluate_template('tpl/admin/hostname_view.html');
     }
     else {
