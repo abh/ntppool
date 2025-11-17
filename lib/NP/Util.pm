@@ -2,7 +2,7 @@ package NP::Util;
 use strict;
 use warnings;
 use HTML::Entities qw(encode_entities);
-use Exporter;
+use Exporter qw(import);
 use Encode            ();
 use Carp              qw(croak);
 use Data::Transformer ();
