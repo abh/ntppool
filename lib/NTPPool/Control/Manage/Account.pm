@@ -139,21 +139,9 @@ sub manage_dispatch {
     $account = $self->current_account unless $account;
 
     unless ($account) {
-
-        my $invites = $self->_user_invites($self->user);
-        if ($invites && @$invites) {
-            warn "has no account and there are pending invites...";
-            return $self->redirect("/manage/account/invites/");
-        }
-
-        $account = $self->_create_account();
-        unless ($account) {
-            $self->tpl_param('error', 'Failed to create account. Please try again.');
-            return $self->redirect("/manage/");
-        }
-
-# Note: Logging moved to Go API (CreateAccount service)
-# During PostgreSQL migration, cannot log to MySQL with account_id that only exists in PostgreSQL
+        # No account means user has pending invitations
+        # (Go API auto-creates account if no invitations exist)
+        return $self->redirect("/manage/account/invites/");
     }
 
     # check access
