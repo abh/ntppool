@@ -95,7 +95,7 @@ sub _user_invites {
 sub _create_account {
     my ($self, $name) = @_;
 
-    $name ||= $self->user->{username} || 'My Account';
+    $name ||= $self->user->{name} || 'My Account';
 
     my $data = create_account(
         $self->api_auth_params,
