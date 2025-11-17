@@ -396,10 +396,73 @@ Hashref with structure:
             email => ...,  # string - email is the user's email address from Auth0.
             username => ...,  # string - username is the user's username.
             deletion_cancelled => ...,  # bool - deletion_cancelled indicates if a pending user deletion was cancelled during login.
+            account => {
+                account_id => ...,  # int - Core database fields
+                id_token => ...,  # string
+                name => ...,  # string
+                organization_name => ...,  # string
+                organization_url => ...,  # string
+                url_slug => ...,  # string
+                public_profile => ...,  # bool
+                flags => ...,  # string
+                created_on => ...,  # string
+                modified_on => ...,  # string
+                url => ...,  # string - Computed fields (always included)
+                public_url => ...,  # string
+                display_name => ...,  # string
+            },  # hashref (AccountContext) - account is the user's default account (or auto-created account).
+ Omitted if user has no accounts (meaning they have pending invitations).
+ Pattern follows ValidateSessionResponse.account field.
         },
         error        => undef,       # Error message (if any)
         trace_id     => "...",       # OpenTelemetry trace ID
     }
+
+B<Response Data Structure:>
+
+The C<data> field contains:
+
+=over 4
+
+=item * B<session_token> (string)
+
+session_token is the session key to set as the npuid cookie.
+ Format: "nps_{key}_{checksum}"
+
+
+=item * B<user_id> (int)
+
+user_id is the numeric ID of the authenticated user.
+
+
+=item * B<id_token> (string)
+
+id_token is the user's id_token for identification.
+
+
+=item * B<email> (string)
+
+email is the user's email address from Auth0.
+
+
+=item * B<username> (string)
+
+username is the user's username.
+
+
+=item * B<deletion_cancelled> (bool)
+
+deletion_cancelled indicates if a pending user deletion was cancelled during login.
+
+
+=item * B<account> (hashref (AccountContext))
+
+account is the user's default account (or auto-created account).
+ Omitted if user has no accounts (meaning they have pending invitations).
+ Pattern follows ValidateSessionResponse.account field.
+
+
+=back
 
 B<ConnectRPC Error Codes:>
 

@@ -371,7 +371,15 @@ sub _parse_connect_response {
     } else {
         # HTTP 4xx/5xx - error, body contains error object
         $result{connect_code} = $data->{code} || "unknown";
-        $result{error} = $data->{message} || "HTTP error: " . $res->status_line;
+
+        # Ensure error message is always a string, not a hashref/arrayref
+        # Defense-in-depth: don't trust API to return correct types
+        my $message = $data->{message};
+        if (ref($message)) {
+            # API returned structured data instead of string - serialize it
+            $message = "API error (invalid message type): " . Data::Dump::pp($message);
+        }
+        $result{error} = $message || "HTTP error: " . $res->status_line;
         $result{data} = undef;
     }
 
