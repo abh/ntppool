@@ -22,8 +22,9 @@ NP::CAPI::Server - ConnectRPC client for ServerService
 
     use NP::CAPI::Server qw(get_server get_account_servers);
     # GetServer returns detailed information about a specific server.
-Authentication is handled by middleware - if authenticated, additional
+Authentication is optional by default - if authenticated, additional
 data may be returned based on ownership and account settings.
+Set require_edit_permission=true to enforce authentication and permission checks.
     my $result = get_server(
         $self->api_auth_params,      # Provides auth and context
         account => $account->{id_token},
@@ -110,15 +111,25 @@ OpenTelemetry trace ID for request tracing and debugging. Include this when repo
 =head2 get_server
 
 GetServer returns detailed information about a specific server.
-Authentication is handled by middleware - if authenticated, additional
+Authentication is optional by default - if authenticated, additional
 data may be returned based on ownership and account settings.
+Set require_edit_permission=true to enforce authentication and permission checks.
 
 B<Arguments:>
 
     my $result = get_server(
         $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
         account => $account->{id_token},  # Optional: Account selection token
-        ip => $value,       # string - ip is the server IP address (IPv4 or IPv6)
+        ip => $value,       # string - ip is the server identifier - can be an IP address (IPv4 or IPv6)
+ or numeric server ID (e.g., "12345"). The format is auto-detected.
+        require_edit_permission => $value,       # bool - require_edit_permission enforces edit permission checks.
+ When true:
+   - Authentication is required (returns CodeUnauthenticated if not logged in)
+   - User must be staff OR own the server's account
+   - Returns CodeNotFound if permission denied (hides server existence)
+ When false (default):
+   - Authentication is optional
+   - Public access allowed for non-deleted servers
     );
 
 B<Returns:>
@@ -195,6 +206,7 @@ sub get_server {
     # Extract request fields from args
     my %request = ();
     $request{'ip'} = delete $args{'ip'} if exists $args{'ip'};
+    $request{'require_edit_permission'} = delete $args{'require_edit_permission'} if exists $args{'require_edit_permission'};
 
     return connect_rpc(
         service     => 'ntppool.server.v1.ServerService',

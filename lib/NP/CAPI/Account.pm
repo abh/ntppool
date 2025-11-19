@@ -12,6 +12,7 @@ use Exporter 'import';
 our @EXPORT_OK = qw(
     get_account_status
     process_auth0_login
+    get_oauth_login_url
     validate_session
     delete_session
     create_account
@@ -39,7 +40,7 @@ NP::CAPI::Account - ConnectRPC client for AccountService
 
 =head1 SYNOPSIS
 
-    use NP::CAPI::Account qw(get_account_status process_auth0_login validate_session delete_session create_account update_account remove_user_from_account create_user_task get_account_server_verification_status get_accounts_to_notify get_account_users get_user_accounts get_account_invites create_account_invite accept_account_invite resend_account_invite get_account can_delete_account check_user_deletion_eligibility get_public_account_by_username get_related_accounts);
+    use NP::CAPI::Account qw(get_account_status process_auth0_login get_oauth_login_url validate_session delete_session create_account update_account remove_user_from_account create_user_task get_account_server_verification_status get_accounts_to_notify get_account_users get_user_accounts get_account_invites create_account_invite accept_account_invite resend_account_invite get_account can_delete_account check_user_deletion_eligibility get_public_account_by_username get_related_accounts);
     # GetAccountStatus returns the current monitor eligibility and status for an account.
 Authentication is handled by middleware - the account is extracted from the session context.
     my $result = get_account_status(
@@ -53,6 +54,15 @@ creates a session, and returns the session token for cookie storage.
 This is an internal-only endpoint called by the Perl frontend after Auth0 redirects.
 Authentication: None required (this endpoint creates authentication).
     my $result = process_auth0_login(
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
+    );
+
+    # GetOAuthLoginURL generates an OAuth authorization URL for the authentication flow.
+This removes OAuth provider configuration from Perl, centralizing it in the Go API.
+The URL includes the environment-specific audience parameter and CSRF state token.
+Authentication: None required (this starts the authentication flow).
+    my $result = get_oauth_login_url(
         $self->api_auth_params,      # Provides auth and context
         account => $account->{id_token},
     );
@@ -378,6 +388,9 @@ B<Arguments:>
  Must match exactly for Auth0 token exchange. Required.
         client_site => $value,       # string - client_site identifies which site initiated the login (e.g., "manage", "www").
  Used to determine which Auth0 client configuration to use. Required.
+        audience => $value,       # string - audience is the Auth0 API audience identifier for token exchange.
+ Should be environment-specific: "api-dev", "api-test", or "api-prod".
+ Optional - if not provided, token exchange will work without audience.
     );
 
 B<Returns:>
@@ -496,10 +509,88 @@ sub process_auth0_login {
     $request{'state'} = delete $args{'state'} if exists $args{'state'};
     $request{'redirect_uri'} = delete $args{'redirect_uri'} if exists $args{'redirect_uri'};
     $request{'client_site'} = delete $args{'client_site'} if exists $args{'client_site'};
+    $request{'audience'} = delete $args{'audience'} if exists $args{'audience'};
 
     return connect_rpc(
         service     => 'ntppool.account.v1.AccountService',
         method      => 'ProcessAuth0Login',
+        request     => \%request,
+        %args  # Pass through auth, account, context
+    );
+}
+
+
+=head2 get_oauth_login_url
+
+GetOAuthLoginURL generates an OAuth authorization URL for the authentication flow.
+This removes OAuth provider configuration from Perl, centralizing it in the Go API.
+The URL includes the environment-specific audience parameter and CSRF state token.
+Authentication: None required (this starts the authentication flow).
+
+B<Arguments:>
+
+    my $result = get_oauth_login_url(
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
+        redirect_uri => $value,       # string - redirect_uri is the callback URL where the OAuth provider will redirect after authentication.
+ Must be registered in the OAuth provider's dashboard. Required.
+        state => $value,       # string - state is the CSRF protection token that will be validated in the callback.
+ Should be a cryptographically random value stored in a secure cookie. Required.
+        client_site => $value,       # string - client_site identifies which site is initiating the login (e.g., "manage", "www").
+ Used for logging and potential site-specific configuration. Required.
+    );
+
+B<Returns:>
+
+Hashref with structure:
+
+    {
+        code         => 200,         # HTTP status code
+        status_line  => "200 OK",    # HTTP status text
+        connect_code => undef,       # ConnectRPC error code (or undef)
+        data         => {            # Response data
+            login_url => ...,  # string - login_url is the complete OAuth authorization URL to redirect the user to.
+ Includes all necessary parameters: client_id, redirect_uri, response_type, audience, scope, state.
+        },
+        error        => undef,       # Error message (if any)
+        trace_id     => "...",       # OpenTelemetry trace ID
+    }
+
+B<ConnectRPC Error Codes:>
+
+    unauthenticated, permission_denied, internal, invalid_argument, etc.
+
+B<Example:>
+
+    my $result = get_oauth_login_url(
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
+    );
+
+    if ($result->{error}) {
+        warn "Error: $result->{error}";
+    } else {
+        my $data = $result->{data};
+        # Use response fields...
+    }
+
+=cut
+
+sub get_oauth_login_url {
+    my $validation_error = validate_key_value_args('get_oauth_login_url', @_);
+    return $validation_error if $validation_error;
+
+    my %args = @_;
+
+    # Extract request fields from args
+    my %request = ();
+    $request{'redirect_uri'} = delete $args{'redirect_uri'} if exists $args{'redirect_uri'};
+    $request{'state'} = delete $args{'state'} if exists $args{'state'};
+    $request{'client_site'} = delete $args{'client_site'} if exists $args{'client_site'};
+
+    return connect_rpc(
+        service     => 'ntppool.account.v1.AccountService',
+        method      => 'GetOAuthLoginURL',
         request     => \%request,
         %args  # Pass through auth, account, context
     );
