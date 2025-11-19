@@ -30,10 +30,6 @@ sub login {
     my $msg       = shift;
     my $login_url = $self->login_url;
 
-    my ($auth0_domain, $auth0_client) = $self->_auth0_config();
-
-    $self->tpl_param('auth0_domain', $auth0_domain);
-    $self->tpl_param('auth0_client', $auth0_client);
     $self->tpl_param('login_url',    $login_url);
     $self->tpl_param('callback_url', $self->callback_url);
     $self->tpl_param('message',      $msg);
