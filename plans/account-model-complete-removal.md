@@ -1,13 +1,21 @@
 # Plan: Complete Account Model Removal
 
-**Status:** Planning - Dependencies Identified
+**Status:** In Progress - Issues Created
 **Created:** 2025-10-13
+**Updated:** 2025-11-17
 **Parent Plan:** account-model-removal-revised.md
 **Goal:** Complete the account ORM removal by migrating all remaining Perl code to use Go APIs exclusively. Make Perl purely a presentation layer with zero database access for account-related operations.
 
+**Tracking Issue:** [#29 - Complete Account Model Removal (Meta-Issue)](https://gitea.develooper.com/ntppool/ntppool/issues/29)
+
+**Critical Path Issues:**
+- [#22 - Migrate Stripe Billing and Subscription Validation to CAPI](https://gitea.develooper.com/ntppool/ntppool/issues/22) - **BLOCKS MODEL REMOVAL**
+- [#25 - Migrate Server Permission Checks to CAPI](https://gitea.develooper.com/ntppool/ntppool/issues/25)
+- [#28 - Migrate Monitor.pm from int_api to CAPI](https://gitea.develooper.com/ntppool/ntppool/issues/28) - Lower priority
+
 ---
 
-## Current Status (2025-10-13)
+## Current Status (2025-11-17)
 
 ### ✅ Completed (from parent plan)
 - Phase 3: Updated `/manage/account` and `/manage/account/team` controllers to use API hashrefs
@@ -16,11 +24,41 @@
 
 ### ❌ Blocking Phase 5 (Model Removal)
 Phase 5 cannot proceed because significant ORM usage remains in:
-- `lib/NTPPool/Control/Vendor.pm` - Vendor zone management (subscriptions, stripe)
-- `lib/NTPPool/Control/Manage/Server.pm` - Server management
-- `lib/NTPPool/Control/Manage/Monitor.pm` - Monitor permission checks
-- `lib/NTPPool/API/Staff.pm` - Staff APIs
-- `lib/NTPPool/Control/UserProfile.pm` - Public profile lookups
+- `lib/NTPPool/Control/Vendor.pm` - Vendor zone management (subscriptions, stripe) - **Issue #22**
+- `lib/NTPPool/Control/Manage/Server.pm` - Server management - **Issue #25**
+- `lib/NTPPool/Control/Manage/Monitor.pm` - Monitor permission checks - **Issue #28** (lower priority)
+- `lib/NTPPool/API/Staff.pm` - Staff APIs (minor cleanup)
+- `lib/NTPPool/Control/UserProfile.pm` - Public profile lookups (already using APIs)
+
+### ✅ What Already Exists (2025-11-17)
+
+**Go APIs (ConnectRPC):**
+- ✅ VendorZone service (List, Get, Request, Update, Submit, UpdateStatus, ListAdmin)
+- ✅ Server service (GetServer, GetAccountServers)
+- ✅ Account service (GetAccount with `include_subscriptions` flag)
+- ✅ AccountSubscription message type in Account proto
+
+**Perl CAPI Wrappers:**
+- ✅ NP::CAPI::VendorZone (all vendor zone operations)
+- ✅ NP::CAPI::Server (get_server, get_account_servers)
+- ✅ NP::CAPI::Account (get_account, update_account, etc.)
+
+### ❌ What's Missing (Critical for #22)
+
+**Subscription Business Logic:**
+- ❌ `subscription_limits_not_exceeded(device_count)` validation API
+- ❌ `have_live_subscription()` check API
+- ❌ `live_subscriptions()` filtering API
+- ❌ Can read subscriptions via GetAccount, but can't validate limits
+
+**Stripe Integration:**
+- ❌ `stripe_customer_id` field NOT in Account proto
+- ❌ Can't update stripe_customer_id via UpdateAccount
+- ❌ No API for account_subscription CRUD operations
+
+**Permission Flags:**
+- ❌ VendorZone responses don't include `_permissions` hash
+- ❌ Need `can_view` and `can_edit` computed server-side
 
 ---
 
@@ -771,33 +809,61 @@ git commit -m "refactor(account): remove ORM models, fully migrated to Go APIs"
 
 ## Migration Strategy
 
-### Development Order
+### Development Order (By Issue)
 
-**Week 1: Vendor/Subscription APIs**
-1. GetAccountVendorZones + tests
-2. GetVendorZone + subscription status + tests
-3. UpdateAccountStripeCustomer + tests
-4. CAPI wrappers
-5. Update Vendor.pm controller
+**Phase 1: Issue #22 - Stripe Billing & Subscription Validation (Critical)**
 
-**Week 2: Server/Monitor APIs**
-1. GetAccountServers + tests
-2. GetServer (with account context) + tests
-3. Extend GetMonitor + tests
-4. CAPI wrappers
-5. Update Server.pm and Monitor.pm controllers
+**Week 1-2: Go API Development**
+1. Add stripe_customer_id to Account proto
+2. Extend UpdateAccount to accept stripe_customer_id
+3. Create subscription validation logic:
+   - Add ValidateSubscriptionLimits RPC or extend GetAccount
+   - Input: account_token, device_count
+   - Output: subscription_status with validation flags
+4. Create subscription CRUD APIs:
+   - CreateOrUpdateAccountSubscription RPC
+   - UpdateSubscriptionStatus RPC
+5. Add VendorZone permission computation (_permissions.can_edit, _permissions.can_view)
+6. Write comprehensive tests
 
-**Week 3: Remaining + Testing**
-1. Update Staff.pm (servers_all replacement)
-2. Manual testing of all flows
-3. Fix any issues discovered
+**Week 3: Perl Integration**
+1. Update NP::CAPI::Account wrappers
+2. Create NP::CAPI::Subscription (or add to Account)
+3. Update Vendor.pm to use new APIs
+4. Update Webhook.pm to use subscription APIs
+5. Test vendor zone submission flow
+6. Test Stripe checkout flow
+7. Test webhook processing
 
-**Week 4: Model Removal + Deploy**
+**Phase 2: Issue #25 - Server Permissions (Critical)**
+
+**Week 4: Server API Enhancement**
+1. Extend GetServer to include account context
+2. Add ServerPermissions computation
+3. Update CAPI wrappers
+4. Update Server.pm req_server method
+5. Test server management flows
+
+**Phase 3: Issue #28 - Monitor API (Lower Priority)**
+
+**Week 5: Monitor ConnectRPC Migration**
+1. Create proto/ntppool/monitor/v1/monitor.proto
+2. Implement Monitor service
+3. Create NP::CAPI::Monitor
+4. Update Monitor.pm from int_api to CAPI
+5. Test monitor flows
+
+**Phase 4: Model Removal & Deployment**
+
+**Week 6: Final Cleanup & Removal**
 1. Verify zero ORM references
-2. Remove models
-3. Deploy to staging
-4. Monitor staging
-5. Deploy to production
+2. Add account tables to @IGNORED_TABLES
+3. Archive NP::Model::Account to old/model/
+4. Regenerate NP::Model
+5. Test all flows end-to-end
+6. Deploy to staging
+7. Monitor staging for issues
+8. Deploy to production
 
 ### Rollback Plan
 
