@@ -11,6 +11,9 @@ my @excluded_tables = qw(
     user_sessions
     zone_server_counts
     logs
+    users
+    accounts
+    servers
 );
 
 sub db_model_class {

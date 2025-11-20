@@ -36,97 +36,6 @@ BEGIN {
   our $VERSION = 0;
 }
 
-{ package NP::Model::Account;
-
-use strict;
-
-use base qw(NP::Model::_Object);
-
-__PACKAGE__->meta->setup(
-  table   => 'accounts',
-
-  columns => [
-    id                 => { type => 'serial', not_null => 1 },
-    id_token           => { type => 'varchar', alias => '_id_token', length => 36 },
-    name               => { type => 'varchar', length => 255 },
-    organization_name  => { type => 'varchar', length => 150 },
-    organization_url   => { type => 'varchar', length => 150 },
-    public_profile     => { type => 'integer', default => '0', not_null => 1 },
-    url_slug           => { type => 'varchar', length => 150 },
-    flags              => { type => 'scalar' },
-    created_on         => { type => 'datetime', default => 'now', not_null => 1 },
-    modified_on        => { type => 'timestamp', not_null => 1 },
-    stripe_customer_id => { type => 'varchar', length => 255 },
-  ],
-
-  primary_key_columns => [ 'id' ],
-
-  unique_keys => [
-    [ 'id_token' ],
-    [ 'stripe_customer_id' ],
-    [ 'url_slug' ],
-  ],
-
-  relationships => [
-    account_subscriptions => {
-      class      => 'NP::Model::AccountSubscription',
-      column_map => { id => 'account_id' },
-      type       => 'one to many',
-    },
-
-    invites => {
-      class      => 'NP::Model::AccountInvite',
-      column_map => { id => 'account_id' },
-      type       => 'one to many',
-    },
-
-    monitors => {
-      class      => 'NP::Model::Monitor',
-      column_map => { id => 'account_id' },
-      type       => 'one to many',
-    },
-
-    servers_all => {
-      class      => 'NP::Model::Server',
-      column_map => { id => 'account_id' },
-      type       => 'one to many',
-    },
-
-    users => {
-      map_class => 'NP::Model::AccountUser',
-      map_from  => 'account',
-      map_to    => 'user',
-      type      => 'many to many',
-    },
-
-    vendor_zones => {
-      class      => 'NP::Model::VendorZone',
-      column_map => { id => 'account_id' },
-      type       => 'one to many',
-    },
-  ],
-);
-
-__PACKAGE__->meta->setup_json_columns(qw< flags >);
-
-push @table_classes, __PACKAGE__;
-}
-
-{ package NP::Model::Account::Manager;
-
-use strict;
-
-our @ISA = qw(Combust::RoseDB::Manager);
-
-sub object_class { 'NP::Model::Account' }
-
-__PACKAGE__->make_manager_methods('accounts');
-}
-
-# Allow user defined methods to be added
-eval { require NP::Model::Account }
-  or $@ !~ m:^Can't locate NP/Model/Account.pm: and die $@;
-
 { package NP::Model::AccountInvite;
 
 use strict;
@@ -154,23 +63,6 @@ __PACKAGE__->meta->setup(
   unique_keys => [
     [ 'account_id', 'email' ],
     [ 'code' ],
-  ],
-
-  foreign_keys => [
-    account => {
-      class       => 'NP::Model::Account',
-      key_columns => { account_id => 'id' },
-    },
-
-    sent_by => {
-      class       => 'NP::Model::User',
-      key_columns => { sent_by_id => 'id' },
-    },
-
-    user => {
-      class       => 'NP::Model::User',
-      key_columns => { user_id => 'id' },
-    },
   ],
 );
 
@@ -217,13 +109,6 @@ __PACKAGE__->meta->setup(
   primary_key_columns => [ 'id' ],
 
   unique_key => [ 'stripe_subscription_id' ],
-
-  foreign_keys => [
-    account => {
-      class       => 'NP::Model::Account',
-      key_columns => { account_id => 'id' },
-    },
-  ],
 );
 
 push @table_classes, __PACKAGE__;
@@ -259,18 +144,6 @@ __PACKAGE__->meta->setup(
   ],
 
   primary_key_columns => [ 'account_id', 'user_id' ],
-
-  foreign_keys => [
-    account => {
-      class       => 'NP::Model::Account',
-      key_columns => { account_id => 'id' },
-    },
-
-    user => {
-      class       => 'NP::Model::User',
-      key_columns => { user_id => 'id' },
-    },
-  ],
 );
 
 push @table_classes, __PACKAGE__;
@@ -317,18 +190,6 @@ __PACKAGE__->meta->setup(
   primary_key_columns => [ 'id' ],
 
   unique_key => [ 'api_key' ],
-
-  foreign_keys => [
-    account => {
-      class       => 'NP::Model::Account',
-      key_columns => { account_id => 'id' },
-    },
-
-    user => {
-      class       => 'NP::Model::User',
-      key_columns => { user_id => 'id' },
-    },
-  ],
 
   relationships => [
     monitors => {
@@ -481,11 +342,6 @@ __PACKAGE__->meta->setup(
       class       => 'NP::Model::Monitor',
       key_columns => { monitor_id => 'id' },
     },
-
-    server => {
-      class       => 'NP::Model::Server',
-      key_columns => { server_id => 'id' },
-    },
   ],
 
   relationships => [
@@ -558,26 +414,7 @@ __PACKAGE__->meta->setup(
     [ 'tls_name', 'ip_version' ],
   ],
 
-  foreign_keys => [
-    account => {
-      class       => 'NP::Model::Account',
-      key_columns => { account_id => 'id' },
-    },
-
-    user => {
-      class       => 'NP::Model::User',
-      key_columns => { user_id => 'id' },
-    },
-  ],
-
   relationships => [
-    accounts => {
-      map_class => 'NP::Model::MonitorRegistration',
-      map_from  => 'monitor',
-      map_to    => 'account',
-      type      => 'many to many',
-    },
-
     api_keies => {
       map_class => 'NP::Model::ApiKeysMonitor',
       map_from  => 'monitor',
@@ -660,11 +497,6 @@ __PACKAGE__->meta->setup(
   ],
 
   foreign_keys => [
-    account => {
-      class       => 'NP::Model::Account',
-      key_columns => { account_id => 'id' },
-    },
-
     monitor => {
       class       => 'NP::Model::Monitor',
       key_columns => { monitor_id => 'id' },
@@ -816,171 +648,6 @@ __PACKAGE__->make_manager_methods('scorer_status');
 eval { require NP::Model::ScorerStatu }
   or $@ !~ m:^Can't locate NP/Model/ScorerStatu.pm: and die $@;
 
-{ package NP::Model::Server;
-
-use strict;
-
-use base qw(NP::Model::_Object);
-
-__PACKAGE__->meta->setup(
-  table   => 'servers',
-
-  columns => [
-    id              => { type => 'serial', not_null => 1 },
-    ip              => { type => 'varchar', length => 40, not_null => 1 },
-    ip_version      => { type => 'enum', check_in => [ 'v4', 'v6' ], default => 'v4', not_null => 1 },
-    user_id         => { type => 'integer' },
-    account_id      => { type => 'integer' },
-    hostname        => { type => 'varchar', length => 255 },
-    stratum         => { type => 'integer' },
-    in_pool         => { type => 'integer', default => '0', not_null => 1 },
-    in_server_list  => { type => 'integer', default => '0', not_null => 1 },
-    netspeed        => { type => 'integer', default => 10000, not_null => 1 },
-    netspeed_target => { type => 'integer', default => 10000, not_null => 1 },
-    created_on      => { type => 'datetime', default => 'now', not_null => 1 },
-    updated_on      => { type => 'timestamp', not_null => 1 },
-    score_ts        => { type => 'datetime' },
-    score_raw       => { type => 'scalar', default => '0', length => 64, not_null => 1 },
-    deletion_on     => { type => 'date' },
-    flags           => { type => 'varchar', default => '{}', length => 4096, not_null => 1 },
-  ],
-
-  primary_key_columns => [ 'id' ],
-
-  unique_key => [ 'ip' ],
-
-  foreign_keys => [
-    account => {
-      class       => 'NP::Model::Account',
-      key_columns => { account_id => 'id' },
-    },
-
-    user => {
-      class       => 'NP::Model::User',
-      key_columns => { user_id => 'id' },
-    },
-  ],
-
-  relationships => [
-    log_scores => {
-      class      => 'NP::Model::LogScore',
-      column_map => { id => 'server_id' },
-      type       => 'one to many',
-    },
-
-    server_alert => {
-      class                => 'NP::Model::ServerAlert',
-      column_map           => { id => 'server_id' },
-      type                 => 'one to one',
-      with_column_triggers => '0',
-    },
-
-    server_scores => {
-      class      => 'NP::Model::ServerScore',
-      column_map => { id => 'server_id' },
-      type       => 'one to many',
-    },
-
-    server_urls => {
-      class      => 'NP::Model::ServerUrl',
-      column_map => { id => 'server_id' },
-      type       => 'one to many',
-    },
-
-    server_verification => {
-      class                => 'NP::Model::ServerVerification',
-      column_map           => { id => 'server_id' },
-      type                 => 'one to one',
-      with_column_triggers => '0',
-    },
-
-    server_verifications_history => {
-      class      => 'NP::Model::ServerVerificationsHistory',
-      column_map => { id => 'server_id' },
-      type       => 'one to many',
-    },
-
-    servers_monitor_review => {
-      class                => 'NP::Model::ServersMonitorReview',
-      column_map           => { id => 'server_id' },
-      type                 => 'one to one',
-      with_column_triggers => '0',
-    },
-
-    zones => {
-      map_class => 'NP::Model::ServerZone',
-      map_from  => 'server',
-      map_to    => 'zone',
-      type      => 'many to many',
-    },
-  ],
-);
-
-__PACKAGE__->meta->setup_json_columns(qw< flags >);
-
-push @table_classes, __PACKAGE__;
-}
-
-{ package NP::Model::Server::Manager;
-
-use strict;
-
-our @ISA = qw(Combust::RoseDB::Manager);
-
-sub object_class { 'NP::Model::Server' }
-
-__PACKAGE__->make_manager_methods('servers');
-}
-
-# Allow user defined methods to be added
-eval { require NP::Model::Server }
-  or $@ !~ m:^Can't locate NP/Model/Server.pm: and die $@;
-
-{ package NP::Model::ServerAlert;
-
-use strict;
-
-use base qw(NP::Model::_Object);
-
-__PACKAGE__->meta->setup(
-  table   => 'server_alerts',
-
-  columns => [
-    server_id        => { type => 'integer', not_null => 1 },
-    last_score       => { type => 'scalar', length => 64, not_null => 1 },
-    first_email_time => { type => 'datetime', default => 'now', not_null => 1 },
-    last_email_time  => { type => 'datetime' },
-  ],
-
-  primary_key_columns => [ 'server_id' ],
-
-  foreign_keys => [
-    server => {
-      class       => 'NP::Model::Server',
-      key_columns => { server_id => 'id' },
-      rel_type    => 'one to one',
-    },
-  ],
-);
-
-push @table_classes, __PACKAGE__;
-}
-
-{ package NP::Model::ServerAlert::Manager;
-
-use strict;
-
-our @ISA = qw(Combust::RoseDB::Manager);
-
-sub object_class { 'NP::Model::ServerAlert' }
-
-__PACKAGE__->make_manager_methods('server_alerts');
-}
-
-# Allow user defined methods to be added
-eval { require NP::Model::ServerAlert }
-  or $@ !~ m:^Can't locate NP/Model/ServerAlert.pm: and die $@;
-
 { package NP::Model::ServerScore;
 
 use strict;
@@ -1015,11 +682,6 @@ __PACKAGE__->meta->setup(
     monitor => {
       class       => 'NP::Model::Monitor',
       key_columns => { monitor_id => 'id' },
-    },
-
-    server => {
-      class       => 'NP::Model::Server',
-      key_columns => { server_id => 'id' },
     },
   ],
 );
@@ -1058,13 +720,6 @@ __PACKAGE__->meta->setup(
   ],
 
   primary_key_columns => [ 'id' ],
-
-  foreign_keys => [
-    server => {
-      class       => 'NP::Model::Server',
-      key_columns => { server_id => 'id' },
-    },
-  ],
 );
 
 push @table_classes, __PACKAGE__;
@@ -1112,19 +767,6 @@ __PACKAGE__->meta->setup(
     [ 'server_id' ],
     [ 'token' ],
   ],
-
-  foreign_keys => [
-    server => {
-      class       => 'NP::Model::Server',
-      key_columns => { server_id => 'id' },
-      rel_type    => 'one to one',
-    },
-
-    user => {
-      class       => 'NP::Model::User',
-      key_columns => { user_id => 'id' },
-    },
-  ],
 );
 
 push @table_classes, __PACKAGE__;
@@ -1166,18 +808,6 @@ __PACKAGE__->meta->setup(
   ],
 
   primary_key_columns => [ 'id' ],
-
-  foreign_keys => [
-    server => {
-      class       => 'NP::Model::Server',
-      key_columns => { server_id => 'id' },
-    },
-
-    user => {
-      class       => 'NP::Model::User',
-      key_columns => { user_id => 'id' },
-    },
-  ],
 );
 
 push @table_classes, __PACKAGE__;
@@ -1215,11 +845,6 @@ __PACKAGE__->meta->setup(
   primary_key_columns => [ 'server_id', 'zone_id' ],
 
   foreign_keys => [
-    server => {
-      class       => 'NP::Model::Server',
-      key_columns => { server_id => 'id' },
-    },
-
     zone => {
       class       => 'NP::Model::Zone',
       key_columns => { zone_id => 'id' },
@@ -1263,14 +888,6 @@ __PACKAGE__->meta->setup(
   ],
 
   primary_key_columns => [ 'server_id' ],
-
-  foreign_keys => [
-    server => {
-      class       => 'NP::Model::Server',
-      key_columns => { server_id => 'id' },
-      rel_type    => 'one to one',
-    },
-  ],
 );
 
 __PACKAGE__->meta->setup_json_columns(qw< config >);
@@ -1335,121 +952,6 @@ __PACKAGE__->make_manager_methods('system_settings');
 eval { require NP::Model::SystemSetting }
   or $@ !~ m:^Can't locate NP/Model/SystemSetting.pm: and die $@;
 
-{ package NP::Model::User;
-
-use strict;
-
-use base qw(NP::Model::_Object);
-
-__PACKAGE__->meta->setup(
-  table   => 'users',
-
-  columns => [
-    id             => { type => 'serial', not_null => 1 },
-    id_token       => { type => 'varchar', alias => '_id_token', length => 36 },
-    email          => { type => 'varchar', length => 255, not_null => 1 },
-    name           => { type => 'varchar', length => 255 },
-    username       => { type => 'varchar', length => 40 },
-    public_profile => { type => 'integer', default => '0', not_null => 1 },
-    deletion_on    => { type => 'datetime' },
-  ],
-
-  primary_key_columns => [ 'id' ],
-
-  unique_keys => [
-    [ 'email' ],
-    [ 'id_token' ],
-    [ 'username' ],
-  ],
-
-  relationships => [
-    account_invites => {
-      class      => 'NP::Model::AccountInvite',
-      column_map => { id => 'sent_by_id' },
-      type       => 'one to many',
-    },
-
-    account_invites_objs => {
-      class      => 'NP::Model::AccountInvite',
-      column_map => { id => 'user_id' },
-      type       => 'one to many',
-    },
-
-    accounts => {
-      map_class => 'NP::Model::AccountUser',
-      map_from  => 'user',
-      map_to    => 'account',
-      type      => 'many to many',
-    },
-
-    monitors => {
-      class      => 'NP::Model::Monitor',
-      column_map => { id => 'user_id' },
-      type       => 'one to many',
-    },
-
-    server_verifications => {
-      class      => 'NP::Model::ServerVerification',
-      column_map => { id => 'user_id' },
-      type       => 'one to many',
-    },
-
-    server_verifications_history => {
-      class      => 'NP::Model::ServerVerificationsHistory',
-      column_map => { id => 'user_id' },
-      type       => 'one to many',
-    },
-
-    servers => {
-      class      => 'NP::Model::Server',
-      column_map => { id => 'user_id' },
-      type       => 'one to many',
-    },
-
-    user_equipment_applications => {
-      class      => 'NP::Model::UserEquipmentApplication',
-      column_map => { id => 'user_id' },
-      type       => 'one to many',
-    },
-
-    user_identities => {
-      class      => 'NP::Model::UserIdentity',
-      column_map => { id => 'user_id' },
-      type       => 'one to many',
-    },
-
-    user_tasks => {
-      class      => 'NP::Model::UserTask',
-      column_map => { id => 'user_id' },
-      type       => 'one to many',
-    },
-
-    vendor_zones => {
-      class      => 'NP::Model::VendorZone',
-      column_map => { id => 'user_id' },
-      type       => 'one to many',
-    },
-  ],
-);
-
-push @table_classes, __PACKAGE__;
-}
-
-{ package NP::Model::User::Manager;
-
-use strict;
-
-our @ISA = qw(Combust::RoseDB::Manager);
-
-sub object_class { 'NP::Model::User' }
-
-__PACKAGE__->make_manager_methods('users');
-}
-
-# Allow user defined methods to be added
-eval { require NP::Model::User }
-  or $@ !~ m:^Can't locate NP/Model/User.pm: and die $@;
-
 { package NP::Model::UserEquipmentApplication;
 
 use strict;
@@ -1468,13 +970,6 @@ __PACKAGE__->meta->setup(
   ],
 
   primary_key_columns => [ 'id' ],
-
-  foreign_keys => [
-    user => {
-      class       => 'NP::Model::User',
-      key_columns => { user_id => 'id' },
-    },
-  ],
 );
 
 push @table_classes, __PACKAGE__;
@@ -1518,13 +1013,6 @@ __PACKAGE__->meta->setup(
   primary_key_columns => [ 'id' ],
 
   unique_key => [ 'profile_id' ],
-
-  foreign_keys => [
-    user => {
-      class       => 'NP::Model::User',
-      key_columns => { user_id => 'id' },
-    },
-  ],
 );
 
 push @table_classes, __PACKAGE__;
@@ -1566,13 +1054,6 @@ __PACKAGE__->meta->setup(
   ],
 
   primary_key_columns => [ 'id' ],
-
-  foreign_keys => [
-    user => {
-      class       => 'NP::Model::User',
-      key_columns => { user_id => 'id' },
-    },
-  ],
 );
 
 __PACKAGE__->meta->setup_json_columns(qw< status >);
@@ -1634,19 +1115,9 @@ __PACKAGE__->meta->setup(
   ],
 
   foreign_keys => [
-    account => {
-      class       => 'NP::Model::Account',
-      key_columns => { account_id => 'id' },
-    },
-
     dns_root => {
       class       => 'NP::Model::DnsRoot',
       key_columns => { dns_root_id => 'id' },
-    },
-
-    user => {
-      class       => 'NP::Model::User',
-      key_columns => { user_id => 'id' },
     },
   ],
 );
@@ -1698,13 +1169,6 @@ __PACKAGE__->meta->setup(
   ],
 
   relationships => [
-    servers => {
-      map_class => 'NP::Model::ServerZone',
-      map_from  => 'zone',
-      map_to    => 'server',
-      type      => 'many to many',
-    },
-
     zones => {
       class      => 'NP::Model::Zone',
       column_map => { id => 'parent_id' },
@@ -1740,7 +1204,6 @@ eval { require NP::Model::Zone }
     $_->clear_object_cache for @cache_classes;
   }
 
-  sub account { our $account ||= bless [], 'NP::Model::Account::Manager' }
   sub account_invite { our $account_invite ||= bless [], 'NP::Model::AccountInvite::Manager' }
   sub account_subscription { our $account_subscription ||= bless [], 'NP::Model::AccountSubscription::Manager' }
   sub account_user { our $account_user ||= bless [], 'NP::Model::AccountUser::Manager' }
@@ -1753,8 +1216,6 @@ eval { require NP::Model::Zone }
   sub oidc_public_key { our $oidc_public_key ||= bless [], 'NP::Model::OidcPublicKey::Manager' }
   sub schema_revision { our $schema_revision ||= bless [], 'NP::Model::SchemaRevision::Manager' }
   sub scorer_statu { our $scorer_statu ||= bless [], 'NP::Model::ScorerStatu::Manager' }
-  sub server { our $server ||= bless [], 'NP::Model::Server::Manager' }
-  sub server_alert { our $server_alert ||= bless [], 'NP::Model::ServerAlert::Manager' }
   sub server_score { our $server_score ||= bless [], 'NP::Model::ServerScore::Manager' }
   sub server_url { our $server_url ||= bless [], 'NP::Model::ServerUrl::Manager' }
   sub server_verification { our $server_verification ||= bless [], 'NP::Model::ServerVerification::Manager' }
@@ -1762,7 +1223,6 @@ eval { require NP::Model::Zone }
   sub server_zone { our $server_zone ||= bless [], 'NP::Model::ServerZone::Manager' }
   sub servers_monitor_review { our $servers_monitor_review ||= bless [], 'NP::Model::ServersMonitorReview::Manager' }
   sub system_setting { our $system_setting ||= bless [], 'NP::Model::SystemSetting::Manager' }
-  sub user { our $user ||= bless [], 'NP::Model::User::Manager' }
   sub user_equipment_application { our $user_equipment_application ||= bless [], 'NP::Model::UserEquipmentApplication::Manager' }
   sub user_identity { our $user_identity ||= bless [], 'NP::Model::UserIdentity::Manager' }
   sub user_task { our $user_task ||= bless [], 'NP::Model::UserTask::Manager' }
