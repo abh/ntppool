@@ -1,6 +1,10 @@
 # -*- cperl -*-
 eval 'exec $CBROOT/bin/perl $0 ${1+"$@"}'
   unless $running_under_some_shell;
+
+# Disabled - migrated to Go task system (api/tasks/statuspagedns)
+exit 0;
+
 use strict;
 use warnings;
 use v5.14;
