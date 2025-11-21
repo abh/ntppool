@@ -1,7 +1,5 @@
 package NP::Model::Account;
 use strict;
-use Math::BaseCalc       qw();
-use Math::Random::Secure qw(irand);
 use NP::Model::TokenID;
 use base              qw(NP::Model::TokenID);
 use Combust::Config   ();
@@ -18,12 +16,6 @@ sub token_key_config {
     return 'account_id_key';
 }
 
-sub insert {
-    my $self = shift;
-    $self->SUPER::insert(@_);
-    $self->insert_token_id();
-}
-
 sub url {
     my $self = shift;
     return $config->base_url('manage') . '/manage?a=' . $self->id_token;
@@ -38,45 +30,6 @@ sub public_url {
 sub display_name {
     my $self = shift;
     return $self->name || $self->organization_name || $self->url_slug;
-}
-
-sub validate {
-    my $account = shift;
-    my $errors  = {};
-    for my $f (qw(name)) {
-        $errors->{$f} = 'Required field' unless $account->$f and $account->$f =~ m/\S/;
-    }
-
-    if ($account->public_profile and !$account->url_slug) {
-        my $base36 = Math::BaseCalc->new(digits => ['a' .. 'k', 'm' .. 'z', 2 .. 9]);
-        my $url    = join "", map { $base36->to_base(irand) } (undef) x 2;
-        $account->url_slug($url);
-    }
-
-    if (my $url = $account->url_slug) {
-        if ($url =~ m{[^a-z0-9-_]}i) {
-            $errors->{url_slug} =
-              "Page URL can only contain basic letters, numbers, hypens and underscores";
-        }
-        else {
-            if (NP::Model->account->get_accounts_count(
-                    query => [url_slug => $account->url_slug]
-                )
-              )
-            {
-                $errors->{url_slug} = "this page URL isn't available";
-            }
-        }
-    }
-
-    $account->{_validation_errors} = $errors;
-
-    %$errors ? 0 : 1;
-}
-
-sub validation_errors {
-    my $self = shift;
-    $self->{_validation_errors} || {};
 }
 
 sub can_edit {
