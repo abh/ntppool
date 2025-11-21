@@ -1,7 +1,7 @@
 package NP::CAPI;
 use strict;
 use warnings;
-use NP::UA qw();
+use NP::UA qw($ua_long);
 use JSON::XS ();
 use Data::Dump ();
 use HTTP::Request;
@@ -63,8 +63,12 @@ designed for ConnectRPC protocol.
 
 # ua returns a user agent object with the correct headers
 sub ua {
-    my ($request_context) = @_;
-    my $ua = $NP::UA::ua;
+    my ($request_context, $service, $method) = @_;
+
+    # Use long-timeout UA for server management operations (precheck, add)
+    my $ua = ($service && $service =~ /ServerManagementService/ && $method =~ /^(AddServerPrecheck|AddServer)$/)
+        ? $NP::UA::ua_long
+        : $NP::UA::ua;
 
     # Add X-Forwarded-For header if request context is provided
     if ($request_context && $request_context->{x_forwarded_for}) {
@@ -264,7 +268,7 @@ sub connect_rpc {
     }
 
     # Make request with error handling
-    my $ua = ua($context);
+    my $ua = ua($context, $service, $method);
     my $res = eval { $ua->request($req) };
     if ($@ || !$res) {
         return {
