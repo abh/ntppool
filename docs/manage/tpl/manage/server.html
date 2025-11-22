@@ -6,7 +6,7 @@
 
         [% IF server.hostname %]Hostname: <b>[% server.hostname | html %]</b><br />[% END %]
         IP: <b><a href="[% IF combust.user.is_staff %][% combust.manage_url(server.url, { a => combust.current_account.id_token }) %][% ELSE %][% combust.www_url(server.url) %][% END %]">[% server.ip | html %]</a></b>
-        [% IF server.server_verification.verified_on %]
+        [% IF server.verification.verified_on %]
         &nbsp;&check; <!-- &#x2705; -->
         [% ELSE %]
         <br>
@@ -18,10 +18,10 @@
 
         [% IF server.deletion_on %]
         This server is <span class="deletion">scheduled for deletion</span>
-        on [% server.deletion_on.strftime("%B %d, %Y") %].
+        on [% server.deletion_on %].
         <br />
         [% END %]
-        Current score: <b>[% server.score %]</b><br />
+        Current score: <b>[% server.score_raw %]</b><br />
         [% IF server.stratum %]Stratum: <b>[% server.stratum %]</b><br />[% END %]
 
         Zones:
@@ -31,7 +31,7 @@
         <input type="hidden" name="server" value="[% server.id %]">
 
         <a href="#netspeed">Net speed</a>:
-        <span id="netspeed_[% server.id %]">[% server.netspeed_human %]
+        <span id="netspeed_[% server.id %]">[% combust.netspeed_human(server.netspeed) %]
         </span>
                 |
         <select name="netspeed"
@@ -43,7 +43,7 @@
                 hx-include="[name='auth_token'],[name='server'],[name='a']">
             <option value="">Set connection speed</option>
             [% all_speeds = [server.netspeed, 0, 512, 1500, 3000, 6000, 12000, 25000, 50000, 100000, 250000, 500000, 1000000, 1500000, 2000000, 3000000]; %]
-            [% is_verified = server.server_verification.verified_on; %]
+            [% is_verified = server.verification.verified_on; %]
             [% available_speeds = []; %]
             [% disabled_speeds = []; %]
             [% separator_added = 0; %]

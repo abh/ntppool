@@ -58,8 +58,8 @@
     <p>
         <div class="alert alert-warning">
             We couldn't determine which country this IP address is in, please specify:
-            <select name="explicit_zone_[% server.ip %]">
-                <option>Select country:</option>
+            <select name="explicit_zone_[% server.ip %]" class="form-control" required>
+                <option value="">Select country:</option>
                 [% FOR zone = all_zones %]
                 <option value="[% zone.name %]">[% zone.description %]</option>
                 [% END %]

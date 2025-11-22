@@ -1,7 +1,7 @@
 package NP::CAPI;
 use strict;
 use warnings;
-use NP::UA qw();
+use NP::UA qw($ua_long);
 use JSON::XS ();
 use Data::Dump ();
 use HTTP::Request;
@@ -63,8 +63,12 @@ designed for ConnectRPC protocol.
 
 # ua returns a user agent object with the correct headers
 sub ua {
-    my ($request_context) = @_;
-    my $ua = $NP::UA::ua;
+    my ($request_context, $service, $method) = @_;
+
+    # Use long-timeout UA for server management operations (precheck, add)
+    my $ua = ($service && $service =~ /ServerManagementService/ && $method =~ /^(AddServerPrecheck|AddServer)$/)
+        ? $NP::UA::ua_long
+        : $NP::UA::ua;
 
     # Add X-Forwarded-For header if request context is provided
     if ($request_context && $request_context->{x_forwarded_for}) {
@@ -264,7 +268,7 @@ sub connect_rpc {
     }
 
     # Make request with error handling
-    my $ua = ua($context);
+    my $ua = ua($context, $service, $method);
     my $res = eval { $ua->request($req) };
     if ($@ || !$res) {
         return {
@@ -305,7 +309,9 @@ sub connect_rpc {
             my $span = OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
             if ($span) {
                 $span->set_status(SPAN_STATUS_ERROR, $result{error});
-                $span->record_exception($result{error});
+                # NOTE: record_exception creates attributes that may exceed limits
+                # We skip it here since set_status already records the error
+                # $span->record_exception($result{error});
                 $span->set_attribute("rpc.system", "connect");
                 $span->set_attribute("rpc.service", $service);
                 $span->set_attribute("rpc.method", $method);
@@ -314,7 +320,10 @@ sub connect_rpc {
                 $span->set_attribute("api.trace_id", $result{trace_id}) if $result{trace_id};
             }
         };
-        # Also log the error with trace ID
+        if ($@) {
+            warn "OpenTelemetry error: $@";
+        }
+        # Log the error with trace ID
         warn "ConnectRPC error: " . $result{error};
         warn "Trace ID: " . ($result{trace_id} || 'none');
     }
@@ -341,15 +350,54 @@ sub _parse_connect_response {
 
     my %result;
 
-    # ConnectRPC always returns JSON
-    if ($res->content_type !~ m{^application/json}) {
-        $result{error} = "Invalid response content-type: " . ($res->content_type || 'none');
-        $result{connect_code} = "internal";
+    # DEBUG: Log response status and content-type for troubleshooting
+    if ($ENV{CAPI_DEBUG}) {
+        warn "HTTP Status: " . $res->code . " " . $res->status_line;
+        warn "Content-Type: " . ($res->content_type || 'none');
+        warn "Body length: " . length($res->content || '');
+    }
+
+    # Check HTTP status FIRST - infrastructure errors (502, 503, 504) won't have JSON
+    if (!$res->is_success) {
+        # HTTP 4xx/5xx error
+        # Try to parse as ConnectRPC JSON error if content-type suggests it
+        if ($res->content_type =~ m{^application/json}) {
+            my $content = $res->content;
+            my $data = eval { $json->decode($content) };
+
+            if ($data && ref($data) eq 'HASH') {
+                # Successfully parsed JSON error response from API
+                $result{connect_code} = $data->{code} || "unknown";
+
+                # Ensure error message is always a string, not a hashref/arrayref
+                # Defense-in-depth: don't trust API to return correct types
+                my $message = $data->{message};
+                if (ref($message)) {
+                    # API returned structured data instead of string - serialize it
+                    $message = "API error (invalid message type): " . Data::Dump::pp($message);
+                }
+                $result{error} = $message || "HTTP error: " . $res->status_line;
+                $result{data} = undef;
+                return %result;
+            }
+        }
+
+        # Fall back to HTTP status line (502, 503, 504, or malformed JSON)
+        $result{connect_code} = "unavailable";
+        $result{error} = "HTTP error: " . $res->status_line;
+        $result{data} = undef;
         return %result;
     }
 
-    # Get content - already decompressed by $res->decode() call above
-    # Use content() not decoded_content() after calling decode()
+    # HTTP 2xx - success, ConnectRPC always returns JSON for successful responses
+    if ($res->content_type !~ m{^application/json}) {
+        $result{error} = "Invalid response content-type for successful response: " . ($res->content_type || 'none');
+        $result{connect_code} = "internal";
+        warn "Content-type check failed for 2xx response: regex did not match";
+        return %result;
+    }
+
+    # Parse successful JSON response
     my $content = $res->content;
     my $data = eval { $json->decode($content) };
 
@@ -359,29 +407,10 @@ sub _parse_connect_response {
         return %result;
     }
 
-    # ConnectRPC uses HTTP status codes to indicate success vs error
-    # Success: HTTP 2xx with response message as body (no "code" field)
-    # Error: HTTP 4xx/5xx with {"code": "error_code", "message": "..."}
-
-    if ($res->is_success) {
-        # HTTP 2xx - success, entire body is the response message
-        $result{connect_code} = undef;
-        $result{error} = undef;
-        $result{data} = $data;
-    } else {
-        # HTTP 4xx/5xx - error, body contains error object
-        $result{connect_code} = $data->{code} || "unknown";
-
-        # Ensure error message is always a string, not a hashref/arrayref
-        # Defense-in-depth: don't trust API to return correct types
-        my $message = $data->{message};
-        if (ref($message)) {
-            # API returned structured data instead of string - serialize it
-            $message = "API error (invalid message type): " . Data::Dump::pp($message);
-        }
-        $result{error} = $message || "HTTP error: " . $res->status_line;
-        $result{data} = undef;
-    }
+    # HTTP 2xx with valid JSON - success
+    $result{connect_code} = undef;
+    $result{error} = undef;
+    $result{data} = $data;
 
     return %result;
 }

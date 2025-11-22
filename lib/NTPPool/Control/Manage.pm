@@ -112,8 +112,11 @@ sub init {
         my $span =
           OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
 
+        # Set account/user template params (DRY: also used by refresh_account_context)
+        $self->_set_account_template_params();
+
+        # Set telemetry attributes
         if (my $account = $self->current_account) {
-            $self->tpl_param('account' => $account);
             $span->set_attribute("account.id",       $account->{account_id});
             $span->set_attribute("account.id_token", $account->{id_token});
 
@@ -131,12 +134,6 @@ sub init {
             if (my $a = $self->current_account) {
                 $self->plausible_props("account" => $a->{id_token});
             }
-
-            # Fetch user accounts via API for navigation sidebar
-            # During PostgreSQL migration, accounts created via API won't appear in MySQL
-            # so we fetch them directly from the API
-            $self->tpl_param('user_accounts' => $self->user_accounts());
-            $self->tpl_param('user_invites'  => $self->user_invites());
         }
 
         # Redirect users with scheduled deletion to logout page
@@ -147,6 +144,30 @@ sub init {
     }
 
     return OK;
+}
+
+sub _set_account_template_params {
+    my $self = shift;
+
+    if (my $account = $self->current_account) {
+        $self->tpl_param('account' => $account);
+    }
+
+    if ($self->user) {
+        $self->tpl_param('user_accounts' => $self->user_accounts());
+        $self->tpl_param('user_invites'  => $self->user_invites());
+    }
+}
+
+sub refresh_account_context {
+    my $self = shift;
+
+    # Invalidate cached account data
+    delete $self->{_current_account};
+    delete $self->{_user_accounts};
+
+    # Re-fetch and update template params
+    $self->_set_account_template_params();
 }
 
 sub current_account {

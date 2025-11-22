@@ -547,6 +547,10 @@ sub render_account_edit {
 
 # Note: Logging moved to Go API (UpdateAccount service)
 # During PostgreSQL migration, cannot log to MySQL with account_id that only exists in PostgreSQL
+
+        # Refresh account context so sidebar shows updated account name immediately
+        # Without this, cached data persists and sidebar shows stale name until next page load
+        $self->refresh_account_context();
     }
 
     return $self->render_account_form($account);

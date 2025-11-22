@@ -18,7 +18,7 @@ use Math::BaseCalc             qw();
 use Math::Random::Secure       qw(irand);
 use NP::IntAPI                 qw(int_api);
 use NP::CAPI::Account          qw(get_related_accounts);
-use NP::CAPI::Server           qw(get_account_servers);
+use NP::CAPI::Server           qw(get_account_servers get_server);
 use NP::CAPI::ServerManagement qw(
     add_server_precheck
     add_server
@@ -231,18 +231,57 @@ sub handle_add {
     $self->tpl_param('allow_submit' => $allow_submit);
 
     if ($self->req_param('yes') and $allow_submit and !$data_missing) {
-        my $s;
-        my @added;
+
+        # Collect all servers to add in single batch
+        my @servers_to_add;
         for my $server (@servers) {
-            unless ($server->{error} or $server->{listed}) {
-                $s = $self->_add_server($server);
-                $server->{id} = $s->id;
+            next if $server->{error} or $server->{listed};
+
+            my %server_to_add = (ip => $server->{ip});
+            if (my $zone = $self->req_param('explicit_zone_' . $server->{ip})) {
+                $server_to_add{fallback_zone} = $zone;
+            }
+            push @servers_to_add, \%server_to_add;
+        }
+
+        # Make single API call for all servers
+        my $comment = $self->req_param('comment');
+        my $result  = add_server(
+            $self->api_auth_params,
+            account        => $self->current_account->{id_token},
+            servers        => \@servers_to_add,
+            precheck_token => $self->req_param('precheck_token'),
+            batch_comment  => $comment,
+        );
+
+        if ($result->{error}) {
+            warn "Failed to add servers: $result->{error} (trace: $result->{trace_id})";
+            $self->tpl_param(error => $result->{error}, trace_id => $result->{trace_id});
+            return OK, $self->evaluate_template('tpl/manage/add.html');
+        }
+
+        # Match results to original servers
+        my @added;
+        my $s;
+        my $result_idx      = 0;
+        my $base_scores_url = $self->config->base_url('ntppool') . '/scores/';
+
+        for my $server (@servers) {
+            next if $server->{error} or $server->{listed};
+
+            my $api_result = $result->{data}{results}[$result_idx++];
+            if ($api_result->{success}) {
+                $server->{id}         = $api_result->{server}{id};
+                $server->{scores_url} = $base_scores_url . $server->{ip};
+                $s                    = NP::Data::Server->new(%{$api_result->{server}});
                 push @added, $server;
             }
         }
-        $self->tpl_param(servers => \@added);
 
-        if ($self->req_param('comment')) {
+        $self->tpl_param(servers => \@added);
+        $self->tpl_param('comment', $comment);
+
+        if ($comment) {
             my $msg = $self->evaluate_template('tpl/manage/add_email.txt');
             my $email =
               Email::Stuffer->from(NP::Email::address("sender"))
@@ -293,79 +332,29 @@ sub handle_add {
 
 # _get_server_ips removed - DNS resolution now handled by Go API
 # See add_server_precheck which accepts hostname/IP inputs
-
-sub _add_server {
-    my ($self, $server) = @_;
-
-    my $comment = $self->req_param('comment');
-    $self->tpl_param('comment', $comment);
-    $self->tpl_param('scores_url',
-        $self->config->base_url('ntppool') . '/scores/' . $server->{ip});
-
-    # Build server data for API
-    my %server_to_add = (ip => $server->{ip},);
-
-    # Get fallback zone if user explicitly selected one
-    if (my $zone_name = $self->req_param('explicit_zone_' . $server->{ip})) {
-        $server_to_add{fallback_zone} = $zone_name;
-    }
-
-    # Get precheck token from form (passed from add.html)
-    my $precheck_token = $self->req_param('precheck_token');
-
-    # Call add_server API
-    my $result = add_server(
-        $self->api_auth_params,
-        account        => $self->current_account->{id_token},
-        servers        => [\%server_to_add],
-        precheck_token => $precheck_token,
-        batch_comment  => $comment,                            # API handles audit logging
-    );
-
-    # Handle API errors
-    if ($result->{error}) {
-        warn "Failed to add server: " . $result->{error};
-        warn "Trace ID: " . $result->{trace_id};
-
-        # Return data object with error info for template compatibility
-        return NP::Data::Server->new(
-            error    => $result->{error},
-            trace_id => $result->{trace_id},
-            ip       => $server->{ip},
-        );
-    }
-
-    # Get the server from API response
-    my $api_result = $result->{data}{results}[0];
-    if (!$api_result->{success}) {
-        warn "Server add failed: " . ($api_result->{error} || 'Unknown error');
-        return NP::Data::Server->new(
-            error => $api_result->{error} || 'Failed to add server',
-            ip    => $server->{ip},
-        );
-    }
-
-    # Use server data directly from API response (no database reload)
-    my $server_data = $api_result->{server};
-
-    # Return API server data with compatibility methods for template
-    # The API returns complete server object, use it directly
-    return NP::Data::Server->new(%$server_data);
-}
+# _add_server removed - now batching all servers in single API call (handle_add)
 
 sub req_server {
     my $self      = shift;
     my $server_id = $self->req_param('server') or return;
-    my $servers   = NP::Model->server->get_servers(
-        query        => [($server_id =~ m/[.:]/ ? 'ip' : 'id') => $server_id],
-        with_objects => ['server_verification', 'account'],
+
+    # Call Go API with permission enforcement
+    my $result = get_server(
+        $self->api_auth_params,
+        account => $self->current_account->{id_token},
+        ip      => $server_id,                           # Auto-detects IP vs numeric ID
+        require_edit_permission => JSON::XS::true,
     );
-    my ($server) = ($servers && $servers->[0]);
-    return
-          unless $server
-      and $server->account
-      and $server->account->can_edit($self->user);
-    return $server;
+
+    # Handle API errors (permission denied or not found)
+    if ($result->{error}) {
+        warn "Failed to get server: " . $result->{error};
+        warn "Trace ID: " . $result->{trace_id};
+        return;                                          # Returns undef, same as before
+    }
+
+    # Wrap in NP::Data::Server for compatibility with templates
+    return NP::Data::Server->new(%{$result->{data}{server}});
 }
 
 sub handle_update {
@@ -499,15 +488,32 @@ sub handle_verify {
 
     my $verification = NP::Model->server_verification->fetch(token => $token);
     return NOT_FOUND unless $verification;
-    my $server = $verification->server;
-    return 403 unless $server->account->can_edit($self->user);
+
+    # Get server IP from verification (read-only MySQL access)
+    my $server_ip = $verification->server->ip;
+
+    # Fetch server from API with permission check
+    my $result = get_server(
+        $self->api_auth_params,
+        account                 => $self->current_account->{id_token},
+        ip                      => $server_ip,
+        require_edit_permission => JSON::XS::true,
+    );
+
+    # Permission denied or not found
+    if ($result->{error}) {
+        warn "Server verification permission denied: " . $result->{error};
+        return 403;
+    }
+
+    my $server = NP::Data::Server->new(%{$result->{data}{server}});
 
     # If no account parameter, redirect with server's account to set proper context
     unless ($self->req_param('a')) {
         return $self->redirect(
             $self->manage_url(
                 "/manage/server/verify/$token",
-                {a => $server->account->id_token}
+                {a => $result->{data}{server}{account}{id_token}}
             )
         );
     }
