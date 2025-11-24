@@ -1,6 +1,6 @@
 package NTPPool::Control::Login;
 use strict;
-use Combust::Constant qw(OK);
+use Combust::Constant qw(OK SERVER_ERROR);
 use Crypt::Passphrase;
 use Crypt::Passphrase::Bcrypt;
 use JSON::XS qw(decode_json);
@@ -83,23 +83,39 @@ sub user {
                 user_id     => $user_data->{user_id},
                 id_token    => $user_data->{id_token},
                 email       => $user_data->{email},
-                username    => $user_data->{username} || '',
+                username    => $user_data->{username}    || '',
                 deletion_on => $user_data->{deletion_on} || '',
-                csrf_token  => $user_data->{csrf_token} || '',
+                csrf_token  => $user_data->{csrf_token}  || '',
+
                 # Privileges for authorization checks
                 privileges => $user_data->{privileges} || {},
             };
         }
         else {
-            # Session validation failed - clear cookies
+            my $code = $result->{code} || 0;
+
+            # API unavailable (5xx or network error) - preserve session
+            if ($code >= 500 || $code == 0) {
+                my $trace = $result->{trace_id} ? " trace_id=$result->{trace_id}" : "";
+                warn "Session validation failed (API unavailable): ",
+                  ($result->{error} || "code=$code"), $trace;
+                $self->{_session_error} = SERVER_ERROR;
+                return;    # Return undef but DON'T clear cookies
+            }
+
+            # Invalid session (4xx) - clear cookies
             warn "Session validation failed: ", ($result->{error} || 'invalid session');
         }
     }
+
     # Legacy cookie support removed - all sessions must use validate_session API
 
+    # Only clear cookies if no API error (session_error not set)
     unless ($uid && $user) {
-        $self->cookie($self->user_cookie_name, '0');
-        $self->plain_cookie($self->user_cookie_name, '', {expires => -1});
+        unless ($self->{_session_error}) {
+            $self->cookie($self->user_cookie_name, '0');
+            $self->plain_cookie($self->user_cookie_name, '', {expires => -1});
+        }
         return;
     }
 
@@ -111,6 +127,11 @@ sub is_logged_in {
     my $user = $self->user;
     return 1 if $user and $user->{user_id};
     return 0;
+}
+
+sub session_error {
+    my $self = shift;
+    return $self->{_session_error};
 }
 
 sub logout {
@@ -182,9 +203,7 @@ sub setup_session {
             # Note: cancel_user_deletion is idempotent and succeeds even if
             # deletion_on is not set. We call it unconditionally on every
             # login to ensure account recovery flow works correctly.
-            my $cancel_result = cancel_user_deletion(
-                $self->api_auth_params,
-            );
+            my $cancel_result = cancel_user_deletion($self->api_auth_params,);
 
             if ($cancel_result->{error}) {
 
