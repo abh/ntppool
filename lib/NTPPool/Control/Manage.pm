@@ -142,6 +142,11 @@ sub init {
         }
 
     }
+    elsif (my $err = $self->session_error) {
+
+        # API unavailable during session validation - return server error
+        return $err;
+    }
 
     return OK;
 }
@@ -243,10 +248,7 @@ sub user_is_vendor_admin {
 sub reload_server_via_capi {
     my ($self, $server_ip) = @_;
 
-    my $result = NP::CAPI::Server::get_server(
-        $self->api_auth_params,
-        ip => $server_ip,
-    );
+    my $result = NP::CAPI::Server::get_server($self->api_auth_params, ip => $server_ip,);
 
     if ($result->{error}) {
         warn "Failed to reload server via CAPI: " . $result->{error};
@@ -354,7 +356,7 @@ sub handle_login {
         redirect_uri       => $self->callback_url,
         client_site        => "" . $self->site,   # Force to string: 'manage', 'www', etc.
         context            => $self->_get_request_context(),
-        audience           => $audience,          # Environment-specific: api-dev, api-test, api-prod
+        audience => $audience,    # Environment-specific: api-dev, api-test, api-prod
     );
 
     if ($result->{error}) {
@@ -441,7 +443,7 @@ sub login_url {
     my $result = NP::CAPI::Account::get_oauth_login_url(
         redirect_uri => $self->callback_url,
         state        => $state,
-        client_site  => "" . $self->site,  # Force to string: 'manage', 'www', etc.
+        client_site  => "" . $self->site,      # Force to string: 'manage', 'www', etc.
         context      => $self->_get_request_context(),
     );
 
@@ -647,10 +649,8 @@ sub staff_zone_edit {
     return 400, "Server IP required" unless $server_ip;
 
     # Get server via CAPI
-    my $server_result = NP::CAPI::Server::get_server(
-        $self->api_auth_params,
-        ip => $server_ip,
-    );
+    my $server_result =
+      NP::CAPI::Server::get_server($self->api_auth_params, ip => $server_ip,);
 
     # Handle CAPI errors
     if ($server_result->{error}) {
@@ -769,6 +769,7 @@ sub staff_hostname_edit {
 
         # Handle API response
         if ($result->{error}) {
+
             # API returned an error (validation failed or other error)
             warn "Hostname update failed: "
               . $result->{error}
@@ -782,8 +783,7 @@ sub staff_hostname_edit {
 
         # Success - use data from API response
         warn "Hostname updated successfully for server "
-          . $server_ip
-          . " to: "
+          . $server_ip . " to: "
           . ($result->{data}{server}{hostname} || '(empty)');
 
         # Update the server object with API response data for display
@@ -838,10 +838,8 @@ sub monitor_eligibility {
     }
 
     # Call new ConnectRPC AccountService.GetAccountStatus
-    my $result = get_account_status(
-        $self->api_auth_params,
-        account => $self->current_account->{id_token},
-    );
+    my $result = get_account_status($self->api_auth_params,
+        account => $self->current_account->{id_token},);
 
     # Handle successful response
     if ($result->{data}) {
@@ -935,9 +933,7 @@ sub user_accounts {
     return $self->{_user_accounts} = [] unless $self->user;
 
     # Call GetUserAccounts API
-    my $result = get_user_accounts(
-        $self->api_auth_params,
-    );
+    my $result = get_user_accounts($self->api_auth_params,);
 
     # Handle errors - return empty array for graceful degradation
     if ($result->{error}) {
@@ -960,10 +956,7 @@ sub user_invites {
     return $self->{_user_invites} = [] unless $self->user;
 
     # Call GetAccountInvites API for user
-    my $result = get_account_invites(
-        $self->api_auth_params,
-        for_user => JSON::XS::true,
-    );
+    my $result = get_account_invites($self->api_auth_params, for_user => JSON::XS::true,);
 
     # Handle errors - return empty array for graceful degradation
     if ($result->{error}) {
