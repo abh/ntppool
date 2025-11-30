@@ -7,14 +7,14 @@
            placeholder="us uk europe @">
     <button type="button"
             class="btn btn-sm btn-primary"
-            hx-post="/manage/admin/zones/save?server=[% server.ip | uri %]"
+            hx-post="[% combust.manage_url('/manage/admin/zones/save', { server => server.ip }) %]"
             hx-target="#zone_list"
             hx-swap="outerHTML"
             hx-indicator="#zone-saving"
             hx-include="[name='auth_token'], [name='zones']">Save</button>
     <button type="button"
             class="btn btn-sm btn-secondary"
-            hx-get="/manage/admin/zones/edit?server=[% server.ip | uri %]&cancel=1"
+            hx-get="[% combust.manage_url('/manage/admin/zones/edit', { server => server.ip, cancel => 1 }) %]"
             hx-target="#zone_list"
             hx-swap="outerHTML">Cancel</button>
     <span id="zone-saving" class="htmx-indicator">

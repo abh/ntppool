@@ -2,7 +2,8 @@ package NTPPool::Control::Graph;
 use strict;
 use parent            qw(NTPPool::Control);
 use Combust::Constant qw(OK DECLINED);
-use NP::Model;
+use NP::CAPI::Server qw(get_server);
+use NP::Data::Server;
 use LWP::UserAgent qw();
 
 my $ua = LWP::UserAgent->new(
@@ -28,8 +29,10 @@ sub render {
 
     return 404 unless $type and $type =~ m!^(offset|score)$!;
 
-    my ($server) = $p && NP::Model->server->find_server($p);
-    return 404 unless $server;
+    return 404 unless $p;
+    my $result = get_server(ip => $p);
+    return 404 if $result->{error} || !$result->{data}{server};
+    my $server = NP::Data::Server->new(%{$result->{data}{server}});
     return 404 if $server->deleted;
 
     # we only have one graph type now

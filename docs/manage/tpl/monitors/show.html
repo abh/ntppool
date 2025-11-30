@@ -52,7 +52,7 @@
 
         [% PROCESS tpl/common/error_alert.html %]
 
-        [% IF combust.user.is_monitor_admin %]
+        [% IF combust.user.privileges.monitor_admin %]
         <h3>Admin actions</h3>
 
         <p>

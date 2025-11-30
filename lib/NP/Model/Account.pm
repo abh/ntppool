@@ -3,12 +3,10 @@ use strict;
 use NP::Model::TokenID;
 use base              qw(NP::Model::TokenID);
 use Combust::Config   ();
-use NP::CAPI::Account qw(get_account_server_verification_status get_accounts_to_notify);
+use NP::CAPI::Account qw(get_account_server_verification_status);
 use OpenTelemetry::Trace;
 use OpenTelemetry -all;
 use OpenTelemetry::Constants qw( SPAN_STATUS_ERROR );
-
-sub BAD_SERVER_THRESHOLD {-15}
 
 my $config = Combust::Config->new;
 
@@ -122,11 +120,6 @@ sub subscription_limits_not_exceeded {
     return 0;
 }
 
-sub bad_servers {
-    my $s = [grep { $_->score < BAD_SERVER_THRESHOLD } shift->servers];
-    wantarray ? @$s : $s;
-}
-
 sub servers {
     my $self = shift;
 
@@ -161,38 +154,6 @@ sub servers {
         } @$s
     ];
     wantarray ? @$s : $s;
-}
-
-package NP::Model::Account::Manager;
-use strict;
-use NP::CAPI::Account qw(get_accounts_to_notify);
-use OpenTelemetry -all;
-use OpenTelemetry::Constants qw( SPAN_STATUS_ERROR );
-
-sub accounts_to_notify {
-    my $class = shift;
-
-    my $result = get_accounts_to_notify(
-        score_threshold   => NP::Model::Account->BAD_SERVER_THRESHOLD,
-        grace_period_days => NP::Model::Zone->deletion_grace_days + 2,
-    );
-
-    # Return empty on API error
-    if ($result->{error}) {
-        my $span = otel_current_context->span;
-        $span->set_status(SPAN_STATUS_ERROR, $result->{error});
-        $span->record_exception($result->{error});
-        warn "Failed to get accounts to notify: " . $result->{error};
-        warn "Trace ID: " . ($result->{trace_id} || 'none');
-        return;
-    }
-
-    my $ids = $result->{data}{account_ids};
-    return unless $ids and @$ids;
-
-    warn "some server doesn't have an account" if grep { not defined $_ } @$ids;
-
-    return $class->get_accounts(query => [id => $ids]);
 }
 
 1;

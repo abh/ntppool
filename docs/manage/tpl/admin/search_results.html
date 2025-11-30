@@ -18,9 +18,9 @@
 <ul>
     [% FOR account IN results.accounts %]
     <li>[% account.name | html %]
-        (<a href="/manage/servers?a=[% account.id_token | html %]">servers</a>,
-        <a href="/manage/account?a=[% account.id_token | html %]">account</a>[% IF combust.user.is_monitor_admin && account.monitors && account.monitors.size %],
-        <a href="/manage/monitors?a=[% account.id_token | html %]">monitors</a>[% END %])
+        (<a href="[% combust.manage_url('/manage/servers', { a => account.id_token }) %]">servers</a>,
+        <a href="[% combust.manage_url('/manage/account', { a => account.id_token }) %]">account</a>[% IF combust.user.privileges.monitor_admin && account.monitors && account.monitors.size %],
+        <a href="[% combust.manage_url('/manage/monitors', { a => account.id_token }) %]">monitors</a>[% END %])
         <br>
 [% SET users_class = '' %]
 [% IF results.filter_context.show_monitors_only %]
@@ -60,11 +60,11 @@
 [% IF results.filter_context.show_zone_servers_only %]
     [% SET monitors_class = 'search-result-secondary' %]
 [% END %]
-        [% IF combust.user.is_monitor_admin && account.monitors && account.monitors.size %]
+        [% IF combust.user.privileges.monitor_admin && account.monitors && account.monitors.size %]
         <ol[% IF monitors_class %] class="[% monitors_class %]"[% END %]>
             [% FOR monitor IN account.monitors %]
             <li>
-                <a href="/manage/monitors?a=[% account.id_token | html %]&monitor_id=[% monitor.id | html %]">
+                <a href="[% combust.manage_url('/manage/monitors', { a => account.id_token, monitor_id => monitor.id }) %]">
                     [% IF monitor.tls_name %][% monitor.tls_name | html %][% ELSE %]Monitor [% monitor.id | html %][% END %]
                 </a>
                 ([% monitor.ip | html %], [% monitor.location | html %], [% monitor.status | html %])

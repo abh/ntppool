@@ -16,7 +16,9 @@ use NP::UA;
 use NP::IntAPI qw(int_api);
 use NP::CAPI::Account
   qw(get_account_status get_oauth_login_url process_auth0_login validate_session get_user_accounts get_account_invites);
+use NP::CAPI::Server qw(get_server);
 use NP::CAPI::ServerManagement qw(update_server);
+use NP::Data::Server;
 use OpenTelemetry::Trace;
 use OpenTelemetry -all;
 use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
@@ -105,15 +107,16 @@ sub init {
         $self->tpl_param('bare'       => 1);
     }
 
+    # Set account/user template params first - this calls current_account() which
+    # populates both _current_account and _user caches from a single ValidateSession call
+    $self->_set_account_template_params();
+
     if ($self->is_logged_in) {
         $self->request->env->{REMOTE_USER} =
           $self->user->{username} . '|' . $self->user->{id_token};
 
         my $span =
           OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
-
-        # Set account/user template params (DRY: also used by refresh_account_context)
-        $self->_set_account_template_params();
 
         # Set telemetry attributes
         if (my $account = $self->current_account) {
@@ -213,7 +216,11 @@ sub current_account {
 
     my $data = $result->{data};
 
-    # Cache user privileges from session
+    # Cache user data from ValidateSession response to avoid duplicate API call
+    # The user() method in Login.pm will use this cached data
+    $self->{_user} = $data;
+
+    # Cache user privileges for template access (backwards compatibility)
     $self->{_user_privileges} = $data->{privileges} || {};
 
     # Session valid but user has no accounts
@@ -749,8 +756,18 @@ sub staff_hostname_edit {
     my $server_ip = $self->req_param('server') || '';
     return 400, "Server IP required" unless $server_ip;
 
-    my $server = NP::Model->server->find_server($server_ip);
-    return 404, "Server not found" unless $server;
+    # Get account context (handles ?a=... parameter)
+    my $account = $self->current_account;
+    return 403, "Account context required" unless $account;
+
+    my $lookup = get_server(
+        $self->api_auth_params,
+        account                 => $account->{id_token},
+        ip                      => $server_ip,
+        require_edit_permission => JSON::XS::true,
+    );
+    return 404, "Server not found" if $lookup->{error} || !$lookup->{data}{server};
+    my $server = NP::Data::Server->new(%{$lookup->{data}{server}});
 
     # Determine if this is edit or save
     my $is_save = $self->request->uri =~ m{/save/?$};
@@ -763,6 +780,7 @@ sub staff_hostname_edit {
         # Call API to update hostname (API handles validation and normalization)
         my $result = update_server(
             $self->api_auth_params,
+            account  => $account->{id_token},
             ip       => $server_ip,
             hostname => $hostname_value,
         );
@@ -786,10 +804,8 @@ sub staff_hostname_edit {
           . $server_ip . " to: "
           . ($result->{data}{server}{hostname} || '(empty)');
 
-        # Update the server object with API response data for display
-        # (Don't reload from MySQL - use API data directly)
-        $server->hostname($result->{data}{server}{hostname} || '');
-
+        # Wrap API response data for display
+        $server = NP::Data::Server->new(%{$result->{data}{server}});
         $self->tpl_param('server' => $server);
         return OK, $self->evaluate_template('tpl/admin/hostname_view.html');
     }
