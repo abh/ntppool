@@ -1,72 +1,89 @@
-version: v1beta10
-images:
-  ntppool:
-    dockerfile: Dockerfile.dev
-    image: harbor.ntppool.org/ntpdev/ntppool-dev
-    tags:
-      - dev-${DEVSPACE_GIT_COMMIT}-${DEVSPACE_TIMESTAMP}
-      - latest
-    injectRestartHelper: true
+version: v2beta1
+name: ntppool
+pipelines:
     build:
-      kaniko:
-        cache: true
-        snapshotMode: full
-        image: gcr.io/kaniko-project/executor:v1.23.2
-        resources:
-          limits:
-            cpu: 2000m
-            memory: 1024Mi
-          requests:
-            cpu: 100m
-            memory: 256Mi
+        run: build_images ntppool
+    deploy:
+        run: |-
+            ensure_pull_secrets ntppool
+            build_images ntppool
+            create_deployments ntppool --sequential
+    dev:
+        run: |-
+            ensure_pull_secrets ntppool
+            build_images ntppool
+            create_deployments ntppool --sequential
+
+            start_dev --all
+    purge:
+        run: |-
+            stop_dev --all
+            purge_deployments ntppool --sequential
+images:
+    ntppool:
+        image: harbor.ntppool.org/ntpdev/ntppool-dev
+        dockerfile: Dockerfile.dev
+        rebuildStrategy: default
+        kaniko:
+            cache: true
+            snapshotMode: full
+            image: gcr.io/kaniko-project/executor:v1.23.2
+            resources:
+                requests:
+                    cpu: 100m
+                    memory: 256Mi
+                limits:
+                    cpu: 2000m
+                    memory: 1024Mi
+        injectLegacyRestartHelper: true
 
 deployments:
-  - name: ntppool
-    helm:
-      chart:
-        #name: ntppool
-        name: ../ntppool-charts/pub/charts/ntppool
-        repo: https://charts.ntppool.org
-      valuesFiles:
-        #- /Users/ask/src/ntppool-k8s/dev-values-kind.yaml
-        - /Users/ask/src/ntppool-k8s/devel/dev-values-ewr1.yaml
-      values:
-        image:
-          image: harbor.ntppool.org/ntpdev/ntppool-dev
-        config:
-          manage_hostname: manage.askdev.grundclock.com
-          web_hostname: web.askdev.grundclock.com
-          pool_domain: ntp.askdev.grundclock.com
-          httpd_maxclients: "6"
-          #static_base: https://st.ntppool.org/askntp/
-          static_base: /static/
-      wait: true
-      #timeout: "300s"
+    ntppool:
+        helm:
+            chart:
+                name: ../ntppool-charts/pub/charts/ntppool
+                repo: https://charts.ntppool.org
+            values:
+                config:
+                    httpd_maxclients: "6"
+                    manage_hostname: manage.askdev.grundclock.com
+                    pool_domain: ntp.askdev.grundclock.com
+                    static_base: /static/
+                    web_hostname: web.askdev.grundclock.com
+                image:
+                    image: harbor.ntppool.org/ntpdev/ntppool-dev
+            valuesFiles:
+                - /Users/ask/src/ntppool-k8s/devel/dev-values-ewr1.yaml
 
 dev:
-  sync:
-    - labelSelector:
-        app: ntppool
-        tier: frontend
-      containerName: httpd
-      waitInitialSync: true
-      localSubPath: ./
-      containerPath: /ntppool
-      excludePaths:
-        - backup/
-        - logs/
-        - manage2/
-        - blib/
-        - ".data/"
-        #- ".git"
-        - ".vscode"
-        - node_modules/
-        - perl-languageserver.log
-      downloadExcludePaths:
-        - "*"
-      disableDownload: true
-      onUpload:
-        restartContainer: false
-#profiles:
-#- name: ewrdev
-#  replace:
+    sync-0:
+        labelSelector:
+            app: ntppool
+            tier: frontend
+        container: httpd
+        sync:
+            - path: ./:/ntppool
+              excludePaths:
+                - backup/
+                - logs/
+                - manage2/
+                - blib/
+                - .data/
+                - .vscode
+                - node_modules/
+                - perl-languageserver.log
+              downloadExcludePaths:
+                - '*'
+              onUpload: {}
+              waitInitialSync: true
+              disableDownload: true
+        restartHelper:
+            inject: false
+vars:
+    DEVSPACE_ENV_FILE:
+        value: .env
+        alwaysResolve: false
+
+pullSecrets:
+    ntppool:
+        registry: harbor.ntppool.org
