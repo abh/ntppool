@@ -12,6 +12,7 @@ use Exporter 'import';
 our @EXPORT_OK = qw(
     list_zones
     get_zone
+    get_zone_active_servers
 );
 
 =head1 NAME
@@ -20,7 +21,7 @@ NP::CAPI::Zone - ConnectRPC client for ZoneService
 
 =head1 SYNOPSIS
 
-    use NP::CAPI::Zone qw(list_zones get_zone);
+    use NP::CAPI::Zone qw(list_zones get_zone get_zone_active_servers);
     # ListZones returns all zones in the hierarchy for homepage display.
 Returns continental/regional zones with current server counts.
 No authentication required - all data is public.
@@ -33,6 +34,14 @@ No authentication required - all data is public.
 Includes parent/child relationships and historical statistics.
 No authentication required - all data is public.
     my $result = get_zone(
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
+    );
+
+    # GetZoneActiveServers returns active servers for DNS zone generation.
+Used by GeoDNS to build weighted server lists per zone.
+No authentication required - all data is public.
+    my $result = get_zone_active_servers(
         $self->api_auth_params,      # Provides auth and context
         account => $account->{id_token},
     );
@@ -291,6 +300,96 @@ sub get_zone {
     return connect_rpc(
         service     => 'ntppool.zone.v1.ZoneService',
         method      => 'GetZone',
+        request     => \%request,
+        http_method => 'GET',  # Side-effect free, use GET
+        %args  # Pass through auth, account, context
+    );
+}
+
+
+=head2 get_zone_active_servers
+
+GetZoneActiveServers returns active servers for DNS zone generation.
+Used by GeoDNS to build weighted server lists per zone.
+No authentication required - all data is public.
+
+B<Arguments:>
+
+    my $result = get_zone_active_servers(
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
+        zone_name => $value,       # string - zone_name is the zone identifier (e.g., "na", "us", "@", ".")
+        ip_version => $value,       # string - ip_version must be "v4" or "v6"
+    );
+
+B<Returns:>
+
+Hashref with structure:
+
+    {
+        code         => 200,         # HTTP status code
+        status_line  => "200 OK",    # HTTP status text
+        connect_code => undef,       # ConnectRPC error code (or undef)
+        data         => {            # Response data
+            servers => [
+            {
+                ip => ...,  # string - ip is the server's IP address
+                netspeed => ...,  # int - netspeed is the server's configured network speed (used for DNS weighting)
+            },
+            # ... more items
+        ],  # arrayref[hashref (ActiveServer)] - servers is the list of active servers with IP and netspeed
+        },
+        error        => undef,       # Error message (if any)
+        trace_id     => "...",       # OpenTelemetry trace ID
+    }
+
+B<Response Data Structure:>
+
+The C<data> field contains:
+
+=over 4
+
+=item * B<servers> (arrayref[hashref (ActiveServer)])
+
+servers is the list of active servers with IP and netspeed
+
+
+=back
+
+B<ConnectRPC Error Codes:>
+
+    unauthenticated, permission_denied, internal, invalid_argument, etc.
+
+B<Example:>
+
+    my $result = get_zone_active_servers(
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
+    );
+
+    if ($result->{error}) {
+        warn "Error: $result->{error}";
+    } else {
+        my $data = $result->{data};
+        # Use response fields...
+    }
+
+=cut
+
+sub get_zone_active_servers {
+    my $validation_error = validate_key_value_args('get_zone_active_servers', @_);
+    return $validation_error if $validation_error;
+
+    my %args = @_;
+
+    # Extract request fields from args
+    my %request = ();
+    $request{'zone_name'} = delete $args{'zone_name'} if exists $args{'zone_name'};
+    $request{'ip_version'} = delete $args{'ip_version'} if exists $args{'ip_version'};
+
+    return connect_rpc(
+        service     => 'ntppool.zone.v1.ZoneService',
+        method      => 'GetZoneActiveServers',
         request     => \%request,
         http_method => 'GET',  # Side-effect free, use GET
         %args  # Pass through auth, account, context

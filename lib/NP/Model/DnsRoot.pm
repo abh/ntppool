@@ -5,6 +5,8 @@ use Combust::Config;
 use List::Util qw(shuffle);
 use NP::Settings;
 use NP::Model;
+use NP::CAPI::Zone qw(get_zone_active_servers);
+use Carp qw(croak);
 
 my $config     = Combust::Config->new;
 my $config_ntp = $config->site->{ntppool};
@@ -101,6 +103,61 @@ sub populate {
     $self->populate_country_zones;
 }
 
+sub _get_zone_servers {
+    my ($zone, $ip_version) = @_;
+
+    my $result = get_zone_active_servers(
+        zone_name  => $zone->name,
+        ip_version => $ip_version,
+    );
+
+    # Fail hard on API errors
+    if ($result->{error}) {
+        my $msg = "Failed to get active servers for zone " . $zone->name . " ($ip_version): ";
+        $msg .= $result->{error} // 'unknown error';
+        $msg .= " [code: " . $result->{connect_code} . "]" if $result->{connect_code};
+        $msg .= " [trace: " . $result->{trace_id} . "]" if $result->{trace_id};
+        croak $msg;
+    }
+
+    unless (defined $result->{data}) {
+        croak "No data returned for zone "
+            . $zone->name . " ($ip_version)";
+    }
+
+    my $servers = $result->{data}{servers};
+    unless (defined $servers && ref($servers) eq 'ARRAY') {
+        croak "Invalid servers response for zone "
+            . $zone->name . " ($ip_version)";
+    }
+
+    # Convert from CAPI format [{ip => ..., netspeed => ...}, ...]
+    # to legacy format [[ip, netspeed], ...]
+    my @entries;
+    for my $srv (@$servers) {
+        unless (ref($srv) eq 'HASH') {
+            croak "Invalid server entry (not a hash) for zone "
+                . $zone->name;
+        }
+
+        my $ip = $srv->{ip};
+        unless (defined $ip && length($ip) > 0) {
+            croak "Missing or empty IP in server entry for zone "
+                . $zone->name;
+        }
+
+        my $netspeed = $srv->{netspeed};
+        unless (defined $netspeed && $netspeed =~ /^\d+$/ && $netspeed > 0) {
+            croak "Invalid netspeed '$netspeed' for server $ip in zone "
+                . $zone->name;
+        }
+
+        push @entries, [$ip, $netspeed];
+    }
+
+    return \@entries;
+}
+
 sub populate_country_zones {
     my $self = shift;
 
@@ -119,7 +176,7 @@ sub populate_country_zones {
         $name = ''       if $name eq '@';
         $name = "$name." if $name;
 
-        if (my $entries = $zone->active_servers('v4')) {
+        if (my $entries = _get_zone_servers($zone, 'v4')) {
 
             my $min_non_duplicate_size = 2;
             my $response_records       = 3;
@@ -182,7 +239,7 @@ sub populate_country_zones {
             }
         }
 
-        if (my $entries = $zone->active_servers('v6')) {
+        if (my $entries = _get_zone_servers($zone, 'v6')) {
             @$entries = shuffle(@$entries);
 
             # for now just put all IPv6 servers in the '2' zone
