@@ -637,7 +637,17 @@ sub handle_delete {
 sub handle_move {
     my $self = shift;
 
-    my $servers = $self->current_account->servers;
+    # Get servers for current account via CAPI
+    my $servers_result = get_account_servers(
+        $self->api_auth_params,
+        id_token => $self->current_account->{id_token},
+    );
+    my $servers = [];
+    if (!$servers_result->{error} && $servers_result->{data}{servers}) {
+        $servers = [
+            map { NP::Data::Server->new(%$_) } @{$servers_result->{data}{servers}}
+        ];
+    }
     $self->tpl_param('servers', $servers);
 
     my $errors = {};

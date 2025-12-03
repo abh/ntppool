@@ -12,6 +12,7 @@ use Syntax::Keyword::Dynamically;
 use OpenTelemetry::Constants qw( SPAN_KIND_INTERNAL SPAN_STATUS_ERROR SPAN_STATUS_OK );
 use OpenTelemetry -all;
 use NP::CAPI::Server qw(get_server);
+use NP::Data::Server;
 use DateTime::Format::ISO8601;
 
 my $json = JSON::XS->new->utf8;
@@ -46,8 +47,9 @@ sub render {
     }
 
     if (my $ip = ($self->req_param('ip') || $self->req_param('server_ip'))) {
-        my $server = NP::Model->server->find_server($ip) or return 404;
-        return $self->redirect('/scores/' . $server->ip) if $server;
+        my $result = $self->server_data($ip);
+        return 404 if $result->{error} || !$result->{data}{server};
+        return $self->redirect('/scores/' . $result->{data}{server}{ip});
     }
 
     # "tell me your IP" form
@@ -58,11 +60,11 @@ sub render {
     return $self->redirect('/scores/') if ($self->request->uri =~ m!^/s(cores)?/?$!);
 
     if ($self->request->uri =~ m!^/s/([^/]+)!) {
-        my $server = NP::Model->server->find_server($1) or return 404;
+        my $result = $self->server_data($1);
+        return 404 if $result->{error} || !$result->{data}{server};
+        my $server = NP::Data::Server->new(%{$result->{data}{server}});
         $self->cache_control('max-age=14400, s-maxage=7200');
-        if (   $server->deletion_on
-            && $server->deletion_on < DateTime->now->subtract(years => 3))
-        {
+        if ($server->deletion_on && $server->deletion_on < DateTime->now->subtract(years => 3)) {
             return 404;
         }
         return $self->redirect('/scores/' . $server->ip, 301);
@@ -71,7 +73,9 @@ sub render {
     if (my ($id, $mode) =
         ($self->request->uri =~ m!^/scores/graph/(\d+)-(score|offset).png!))
     {
-        my $server = NP::Model->server->find_server($id) or return 404;
+        my $result = $self->server_data($id);
+        return 404 if $result->{error} || !$result->{data}{server};
+        my $server = NP::Data::Server->new(%{$result->{data}{server}});
         $self->cache_control('max-age=14400, s-maxage=7200');
         return $self->redirect($server->graph_uri($mode), 301);
     }
@@ -110,10 +114,10 @@ sub render {
 
             # Hide history sections if server was deleted more than 6 months ago
             my $show_history = 1;
-            if ($server_data->{deletionOn}) {
+            if ($server_data->{deletion_on}) {
                 $self->tpl_param('now' => DateTime->now());
                 my $deletion_date =
-                  DateTime::Format::ISO8601->parse_datetime($server_data->{deletionOn});
+                  DateTime::Format::ISO8601->parse_datetime($server_data->{deletion_on});
                 my $six_months_ago = DateTime->now->subtract(months => 6);
                 $show_history = 0 if $deletion_date < $six_months_ago;
             }
@@ -126,22 +130,24 @@ sub render {
             return OK, $self->evaluate_template('tpl/server.html');
         }
 
-        # For other modes, still use the old DB model
-        my ($server) = NP::Model->server->find_server($p);
-        return 404 unless $server;
+        # For other modes, use CAPI
+        my $server_result = $self->server_data($p);
+        return 404 if $server_result->{error} || !$server_result->{data}{server};
+        my $server = NP::Data::Server->new(%{$server_result->{data}{server}});
 
-        return 404
-          if ($public and $server->deletion_on < DateTime->now->subtract(years => 3));
+        if ($public && $server->deletion_on
+            && $server->deletion_on < DateTime->now->subtract(years => 3))
+        {
+            return 404;
+        }
 
         return $self->redirect('/scores/' . $server->ip, 301) unless $p eq $server->ip;
 
         $self->request->header_out('Vary', undef);
 
         if ($mode eq 'monitors') {
-            $self->cache_control('s-maxage=480,max-age=240') if $public;
-            my $cutoff   = DateTime->now->subtract(days => 120);
-            my $monitors = $server->monitors($cutoff);
-            return OK, $json->convert_blessed->encode({monitors => $monitors}),
+            # TODO: Implement GetServerMonitorScores CAPI endpoint
+            return 501, $json->encode({error => 'monitors endpoint temporarily unavailable'}),
               'application/json';
         }
         elsif ($mode eq 'log' or $self->req_param('log') or $mode eq 'json') {

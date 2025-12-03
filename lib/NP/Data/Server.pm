@@ -41,4 +41,31 @@ sub trace_id {
     return $self->{trace_id} || '';
 }
 
+sub deletion_on {
+    my $self = shift;
+    return unless $self->{deletion_on};
+    # Return DateTime object for compatibility with existing code
+    require DateTime::Format::ISO8601;
+    return DateTime::Format::ISO8601->parse_datetime($self->{deletion_on});
+}
+
+sub graph_uri {
+    my ($self, $name) = @_;
+    return unless $name;
+    return "/graph/" . $self->{ip} . "/${name}.png";
+}
+
+sub url {
+    my $self = shift;
+    return '/scores/' . $self->{ip};
+}
+
+sub deleted {
+    my $self = shift;
+    return 0 unless $self->{deletion_on};
+    require DateTime::Format::ISO8601;
+    my $deletion = DateTime::Format::ISO8601->parse_datetime($self->{deletion_on});
+    return $deletion <= DateTime->today ? 1 : 0;
+}
+
 1;

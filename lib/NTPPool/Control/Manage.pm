@@ -16,7 +16,9 @@ use NP::UA;
 use NP::IntAPI qw(int_api);
 use NP::CAPI::Account
   qw(get_account_status get_oauth_login_url process_auth0_login validate_session get_user_accounts get_account_invites);
+use NP::CAPI::Server qw(get_server);
 use NP::CAPI::ServerManagement qw(update_server);
+use NP::Data::Server;
 use OpenTelemetry::Trace;
 use OpenTelemetry -all;
 use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
@@ -749,8 +751,13 @@ sub staff_hostname_edit {
     my $server_ip = $self->req_param('server') || '';
     return 400, "Server IP required" unless $server_ip;
 
-    my $server = NP::Model->server->find_server($server_ip);
-    return 404, "Server not found" unless $server;
+    my $lookup = get_server(
+        $self->api_auth_params,
+        ip                      => $server_ip,
+        require_edit_permission => JSON::XS::true,
+    );
+    return 404, "Server not found" if $lookup->{error} || !$lookup->{data}{server};
+    my $server = NP::Data::Server->new(%{$lookup->{data}{server}});
 
     # Determine if this is edit or save
     my $is_save = $self->request->uri =~ m{/save/?$};
@@ -786,10 +793,8 @@ sub staff_hostname_edit {
           . $server_ip . " to: "
           . ($result->{data}{server}{hostname} || '(empty)');
 
-        # Update the server object with API response data for display
-        # (Don't reload from MySQL - use API data directly)
-        $server->hostname($result->{data}{server}{hostname} || '');
-
+        # Wrap API response data for display
+        $server = NP::Data::Server->new(%{$result->{data}{server}});
         $self->tpl_param('server' => $server);
         return OK, $self->evaluate_template('tpl/admin/hostname_view.html');
     }
