@@ -38,12 +38,8 @@ IP <input type="text" name="ip">
 </style>
 [% END %]
 
-[% # For admin hostname view, we still need the server object from DB %]
 [% IF manage_site AND combust.user_is_staff %]
-[% # Note: This will require server object from DB for admin functions %]
-<h3>[% server_data.ip %]
-  [% IF server_data.hostname %]/ [% server_data.hostname | html %][% END %]
-</h3>
+[% PROCESS "tpl/admin/hostname_view.html" server = server_data FILTER collapse %]
 [% ELSE %]
 <h3>[% server_data.ip %]
   [% IF server_data.hostname %]/ [% server_data.hostname | html %][% END %]
@@ -64,20 +60,16 @@ Account: <a href="[% server_data.account.public_url | html %]"
 <span id="zones">
 [% "Zones:" | l %]
 [% IF manage_site AND combust.user_is_staff %]
-    [% # Admin zone editing requires server object from DB %]
     [% zone_names = [];
        FOR zone = server_data.zones;
            zone_names.push(zone.name);
        END;
+       PROCESS "tpl/admin/zone_view.html"
+           server = server_data,
+           zones = zone_names.join(" "),
+           manage_site = manage_site
+           FILTER collapse;
     %]
-    <span id="zone_list">
-    [% FOR zone = server_data.zones %]
-    <a href="[% zone.url %]">[% zone.name %]</a>
-    [% END  %]
-    [% IF server_data.verification.verified %]
-    &nbsp;&check;
-    [% END %]
-    </span>
 [% ELSE %]
     <span id="zone_list">
     [% FOR zone = server_data.zones %]

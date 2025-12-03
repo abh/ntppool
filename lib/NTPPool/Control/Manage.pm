@@ -756,8 +756,13 @@ sub staff_hostname_edit {
     my $server_ip = $self->req_param('server') || '';
     return 400, "Server IP required" unless $server_ip;
 
+    # Get account context (handles ?a=... parameter)
+    my $account = $self->current_account;
+    return 403, "Account context required" unless $account;
+
     my $lookup = get_server(
         $self->api_auth_params,
+        account                 => $account->{id_token},
         ip                      => $server_ip,
         require_edit_permission => JSON::XS::true,
     );
@@ -775,6 +780,7 @@ sub staff_hostname_edit {
         # Call API to update hostname (API handles validation and normalization)
         my $result = update_server(
             $self->api_auth_params,
+            account  => $account->{id_token},
             ip       => $server_ip,
             hostname => $hostname_value,
         );
