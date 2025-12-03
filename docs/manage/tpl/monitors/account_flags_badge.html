@@ -1,4 +1,4 @@
-[% IF combust.user.is_monitor_admin %]
+[% IF combust.user.privileges.monitor_admin %]
     [% IF mon.Account.flags %]
         <small class="ml-2">
             [% IF mon.Account.flags.match('monitor_enabled.*true') %]

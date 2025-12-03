@@ -5,7 +5,7 @@
         <input type="hidden" name="a" value="[% combust.current_account.id_token %]">
 
         [% IF server.hostname %]Hostname: <b>[% server.hostname | html %]</b><br />[% END %]
-        IP: <b><a href="[% IF combust.user.is_staff %][% combust.manage_url(server.url, { a => combust.current_account.id_token }) %][% ELSE %][% combust.www_url(server.url) %][% END %]">[% server.ip | html %]</a></b>
+        IP: <b><a href="[% IF combust.user.privileges.support_staff %][% combust.manage_url(server.url, { a => combust.current_account.id_token }) %][% ELSE %][% combust.www_url(server.url) %][% END %]">[% server.ip | html %]</a></b>
         [% IF server.verification.verified_on %]
         &nbsp;&check; <!-- &#x2705; -->
         [% ELSE %]

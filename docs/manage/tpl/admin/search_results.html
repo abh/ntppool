@@ -19,7 +19,7 @@
     [% FOR account IN results.accounts %]
     <li>[% account.name | html %]
         (<a href="/manage/servers?a=[% account.id_token | html %]">servers</a>,
-        <a href="/manage/account?a=[% account.id_token | html %]">account</a>[% IF combust.user.is_monitor_admin && account.monitors && account.monitors.size %],
+        <a href="/manage/account?a=[% account.id_token | html %]">account</a>[% IF combust.user.privileges.monitor_admin && account.monitors && account.monitors.size %],
         <a href="/manage/monitors?a=[% account.id_token | html %]">monitors</a>[% END %])
         <br>
 [% SET users_class = '' %]
@@ -60,7 +60,7 @@
 [% IF results.filter_context.show_zone_servers_only %]
     [% SET monitors_class = 'search-result-secondary' %]
 [% END %]
-        [% IF combust.user.is_monitor_admin && account.monitors && account.monitors.size %]
+        [% IF combust.user.privileges.monitor_admin && account.monitors && account.monitors.size %]
         <ol[% IF monitors_class %] class="[% monitors_class %]"[% END %]>
             [% FOR monitor IN account.monitors %]
             <li>
