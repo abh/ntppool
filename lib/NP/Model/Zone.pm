@@ -45,8 +45,6 @@ sub random_subzone_ids {
     return keys %ids;
 }
 
-use constant deletion_grace_days => 14;
-
 1;
 
 __END__
