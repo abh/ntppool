@@ -107,15 +107,16 @@ sub init {
         $self->tpl_param('bare'       => 1);
     }
 
+    # Set account/user template params first - this calls current_account() which
+    # populates both _current_account and _user caches from a single ValidateSession call
+    $self->_set_account_template_params();
+
     if ($self->is_logged_in) {
         $self->request->env->{REMOTE_USER} =
           $self->user->{username} . '|' . $self->user->{id_token};
 
         my $span =
           OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
-
-        # Set account/user template params (DRY: also used by refresh_account_context)
-        $self->_set_account_template_params();
 
         # Set telemetry attributes
         if (my $account = $self->current_account) {
@@ -215,7 +216,11 @@ sub current_account {
 
     my $data = $result->{data};
 
-    # Cache user privileges from session
+    # Cache user data from ValidateSession response to avoid duplicate API call
+    # The user() method in Login.pm will use this cached data
+    $self->{_user} = $data;
+
+    # Cache user privileges for template access (backwards compatibility)
     $self->{_user_privileges} = $data->{privileges} || {};
 
     # Session valid but user has no accounts
