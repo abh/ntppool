@@ -25,7 +25,7 @@
 
     <Location /scores/>
       SetHandler perl-script
-      [% PH %] NTPPool::Control::Scores->super
+      [% PH %] NTPPool::Control::Manage::Scores->super
     </Location>
 
     <Location /manage/vendor>

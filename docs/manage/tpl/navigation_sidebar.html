@@ -5,7 +5,7 @@
 <ul id="manage-sidebar" class="manage-sidebar nav nav-pills flex-column">
 
 
-    [% IF combust.user.privileges.support_staff %]
+    [% IF combust.user_is_staff %]
     <li class="nav-item">
         <a class="nav-link [% page.is_admin ? " active" : "" %]" href="[% combust.manage_url('/manage/admin') %]">Admin
             search</a>
@@ -43,7 +43,7 @@
                     </form>
                 </div>
             </div>
-            [% IF user_invites.size > 0 %]
+            [% IF user_invites && user_invites.size %]
             <div class="dropdown-item">
                 <a type="button" class="btn btn-light btn-sm" href="/manage/account/invites/">
                     Invitations <span class="badge badge-primary">[% user_invites.size %]</span>

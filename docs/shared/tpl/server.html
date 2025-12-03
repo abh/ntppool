@@ -22,7 +22,7 @@ IP <input type="text" name="ip">
 
 [% page.title = "Stats for %1" | l(server_data.ip) %]
 
-[% IF manage_site AND combust.user.is_staff %]
+[% IF manage_site AND combust.user_is_staff %]
 <input type="hidden" name="auth_token" value="[% combust.auth_token %]">
 <style>
 .editable-zones {
@@ -39,7 +39,7 @@ IP <input type="text" name="ip">
 [% END %]
 
 [% # For admin hostname view, we still need the server object from DB %]
-[% IF manage_site AND combust.user.is_staff %]
+[% IF manage_site AND combust.user_is_staff %]
 [% # Note: This will require server object from DB for admin functions %]
 <h3>[% server_data.ip %]
   [% IF server_data.hostname %]/ [% server_data.hostname | html %][% END %]
@@ -63,7 +63,7 @@ Account: <a href="[% server_data.account.public_url | html %]"
 [% END %]
 <span id="zones">
 [% "Zones:" | l %]
-[% IF manage_site AND combust.user.is_staff %]
+[% IF manage_site AND combust.user_is_staff %]
     [% # Admin zone editing requires server object from DB %]
     [% zone_names = [];
        FOR zone = server_data.zones;

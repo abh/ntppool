@@ -8,7 +8,7 @@
 &nbsp;&check;
 [% END %]
 </span>
-[% IF manage_site AND combust.user.privileges.support_staff %]
+[% IF manage_site AND combust.user_is_staff %]
    <button id="server_edit_zones"
            hx-get="/manage/admin/zones/edit?server=[% server.ip | uri %]"
            hx-target="#zone_list"
