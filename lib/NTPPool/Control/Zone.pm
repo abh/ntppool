@@ -1,7 +1,6 @@
 package NTPPool::Control::Zone;
 use strict;
 use parent qw(NTPPool::Control);
-use NP::Model;
 use Combust::Constant qw(OK);
 use JSON              qw(encode_json);
 use List::Util        qw(uniq);
