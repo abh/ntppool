@@ -22,26 +22,19 @@ sub new_from_api {
         ns_list           => $dns_root->{ns_list},
         _api_zones        => $api_data->{zones}        || [],
         _api_vendor_zones => $api_data->{vendor_zones} || [],
-        _api_ttl          => ($api_data->{settings} || {})->{ttl},
+        ttl               => ($api_data->{settings} || {})->{ttl},
     }, $class;
+
+    # Sanity check required fields from API
+    croak "Missing origin from API response"  unless defined $self->{origin};
+    croak "Missing ns_list from API response" unless defined $self->{ns_list};
+    croak "Missing TTL from API response"     unless defined $self->{ttl} && $self->{ttl} > 0;
 
     return $self;
 }
 
-sub ttl {
-    my $self = shift;
-    my $ttl  = $self->{_api_ttl};
-    croak "Missing TTL from API response" unless defined $ttl && $ttl > 0;
-    $ttl = 30 if $ttl < 30;
-    return $ttl;
-}
-
 sub serial {
     return shift->{_dns_serial} ||= time;
-}
-
-sub stathat_api {
-    return $config_ntp->{stathat_api} || '';
 }
 
 sub data {
@@ -63,7 +56,7 @@ sub data {
             $data->{"$i.gb"} = {alias => "$i.uk"};
         }
 
-        $data->{""}->{ns} = {map { $_ => undef } split /[\s+,]/, $self->ns_list};
+        $data->{""}->{ns} = {map { $_ => undef } split /[\s+,]/, $self->{ns_list}};
 
         $data->{""}->{txt} = [
 
@@ -76,7 +69,7 @@ sub data {
         # null MX records by default, rfc7505
         $data->{""}->{mx} = [{mx => ".", preference => 0},];
 
-        if ($self->origin eq "pool.ntp.org") {
+        if ($self->{origin} eq "pool.ntp.org") {
 
             # google domain verification
             $data->{"v4zgfk4oagsu"}->{cname} = "gv-35off4weczdcxg.dv.googlehosted.com.";
@@ -90,7 +83,7 @@ sub data {
               'v=DMARC1; p=reject; pct=100; rua=mailto:4649a710@in.mailhardener.com; sp=reject; adkim=s; aspf=r; ruf=mailto:4649a710@in.mailhardener.com';
 
         }
-        elsif ($self->origin eq "beta.grundclock.com") {
+        elsif ($self->{origin} eq "beta.grundclock.com") {
             $data->{"fchof3xzaiyl"}->{cname} = "gv-fveibxaoathoje.dv.googlehosted.com.";
             push @{$data->{""}->{txt}},
               {txt => "facebook-domain-verification=9gahpfmem9gwjmxypka1o3v3fgnb4k"};
@@ -104,10 +97,10 @@ sub TO_JSON {
     my $self = shift;
     return {
         serial    => $self->serial,
-        ttl       => $self->ttl,
+        ttl       => $self->{ttl},
         data      => $self->data,
         max_hosts => 4,
-        logging   => {stathat_api => $self->stathat_api},
+        logging   => {},
     };
 }
 
@@ -269,7 +262,7 @@ sub populate_vendor_zones {
         $vendors{$name} = {type => $vz->{client_type},};
     }
 
-    if ($root->origin eq 'pool.ntp.org') {
+    if ($root->{origin} eq 'pool.ntp.org') {
         my $vendordir = "vendordns";
         opendir my $dir, $vendordir or die "could not open '$vendordir' dir: $!";
         my @vendor_files =
