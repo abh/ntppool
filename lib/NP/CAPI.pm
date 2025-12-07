@@ -359,6 +359,14 @@ sub _parse_connect_response {
 
     # Check HTTP status FIRST - infrastructure errors (502, 503, 504) won't have JSON
     if (!$res->is_success) {
+        # Log rate limit headers for 429 responses
+        if ($res->code == 429) {
+            my $limit = $res->header('X-RateLimit-Limit') || 'unknown';
+            my $remaining = $res->header('X-RateLimit-Remaining') || 'unknown';
+            my $reset = $res->header('X-RateLimit-Reset') || 'unknown';
+            warn "Rate limit exceeded - Limit: $limit/s, Remaining: $remaining, Reset: $reset";
+        }
+
         # HTTP 4xx/5xx error
         # Try to parse as ConnectRPC JSON error if content-type suggests it
         if ($res->content_type =~ m{^application/json}) {

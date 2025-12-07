@@ -12,7 +12,7 @@ my $config_ntp = $config->site->{ntppool};
 use constant default_ttl => 150;
 
 sub new_from_api {
-    my ($class, $api_data) = @_;
+    my ($class, $api_data, %opts) = @_;
 
     my $dns_root = $api_data->{dns_root} || {};
 
@@ -23,6 +23,7 @@ sub new_from_api {
         _api_zones        => $api_data->{zones}        || [],
         _api_vendor_zones => $api_data->{vendor_zones} || [],
         ttl               => ($api_data->{settings} || {})->{ttl},
+        _auth             => $opts{auth},
     }, $class;
 
     # Sanity check required fields from API
@@ -111,11 +112,12 @@ sub populate {
 }
 
 sub _get_zone_servers {
-    my ($zone_name, $ip_version) = @_;
+    my ($self, $zone_name, $ip_version) = @_;
 
     my $result = get_zone_active_servers(
         zone_name  => $zone_name,
         ip_version => $ip_version,
+        ($self->{_auth} ? (auth => $self->{_auth}) : ()),
     );
 
     # Fail hard on API errors
@@ -178,7 +180,7 @@ sub populate_country_zones {
         $name = ''       if $name eq '@';
         $name = "$name." if $name;
 
-        if (my $entries = _get_zone_servers($zone->{name}, 'v4')) {
+        if (my $entries = $self->_get_zone_servers($zone->{name}, 'v4')) {
 
             my $min_non_duplicate_size = 2;
             my $response_records       = 3;
@@ -241,7 +243,7 @@ sub populate_country_zones {
             }
         }
 
-        if (my $entries = _get_zone_servers($zone->{name}, 'v6')) {
+        if (my $entries = $self->_get_zone_servers($zone->{name}, 'v6')) {
             @$entries = shuffle(@$entries);
 
             # for now just put all IPv6 servers in the '2' zone

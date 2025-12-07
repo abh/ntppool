@@ -54,7 +54,7 @@ sub render {
     }
 
     # Build DNS zone data using API response
-    my $root = NP::Model::DnsRoot->new_from_api($zone_result->{data});
+    my $root = NP::Model::DnsRoot->new_from_api($zone_result->{data}, auth => $token);
     $root->populate;
 
     my $json = JSON::XS->new->pretty->utf8->convert_blessed;
