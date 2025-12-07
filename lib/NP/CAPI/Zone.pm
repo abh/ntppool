@@ -13,6 +13,7 @@ our @EXPORT_OK = qw(
     list_zones
     get_zone
     get_zone_active_servers
+    get_dns_zone_data
 );
 
 =head1 NAME
@@ -21,7 +22,7 @@ NP::CAPI::Zone - ConnectRPC client for ZoneService
 
 =head1 SYNOPSIS
 
-    use NP::CAPI::Zone qw(list_zones get_zone get_zone_active_servers);
+    use NP::CAPI::Zone qw(list_zones get_zone get_zone_active_servers get_dns_zone_data);
     # ListZones returns all zones in the hierarchy for homepage display.
 Returns continental/regional zones with current server counts.
 No authentication required - all data is public.
@@ -42,6 +43,14 @@ No authentication required - all data is public.
 Used by GeoDNS to build weighted server lists per zone.
 No authentication required - all data is public.
     my $result = get_zone_active_servers(
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
+    );
+
+    # GetDnsZoneData returns zone configuration data for DNS zone generation.
+Requires service API key with type=dns.
+Used by GeoDNS to build zone files with server lists and vendor zones.
+    my $result = get_dns_zone_data(
         $self->api_auth_params,      # Provides auth and context
         account => $account->{id_token},
     );
@@ -390,6 +399,126 @@ sub get_zone_active_servers {
     return connect_rpc(
         service     => 'ntppool.zone.v1.ZoneService',
         method      => 'GetZoneActiveServers',
+        request     => \%request,
+        http_method => 'GET',  # Side-effect free, use GET
+        %args  # Pass through auth, account, context
+    );
+}
+
+
+=head2 get_dns_zone_data
+
+GetDnsZoneData returns zone configuration data for DNS zone generation.
+Requires service API key with type=dns.
+Used by GeoDNS to build zone files with server lists and vendor zones.
+
+B<Arguments:>
+
+    my $result = get_dns_zone_data(
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
+        origin => $value,       # string - origin is the DNS root origin (e.g., "pool.ntp.org")
+    );
+
+B<Returns:>
+
+Hashref with structure:
+
+    {
+        code         => 200,         # HTTP status code
+        status_line  => "200 OK",    # HTTP status text
+        connect_code => undef,       # ConnectRPC error code (or undef)
+        data         => {            # Response data
+            dns_root => {
+                id => ...,  # int - id is the database ID of the DNS root
+                origin => ...,  # string - origin is the DNS root origin (e.g., "pool.ntp.org")
+                ns_list => ...,  # string - ns_list is the comma-separated list of nameservers
+            },  # hashref (DnsRootInfo) - dns_root contains the root zone configuration
+            zones => [
+            {
+                id => ...,  # int - id is the database ID of the zone
+                name => ...,  # string - name is the zone identifier (e.g., "na", "us")
+                description => ...,  # string - description is the human-readable zone name
+            },
+            # ... more items
+        ],  # arrayref[hashref (DnsZone)] - zones contains all zones with DNS entries enabled
+            vendor_zones => [
+            {
+                id => ...,  # int - id is the database ID of the vendor zone
+                zone_name => ...,  # string - zone_name is the vendor zone name
+                client_type => ...,  # string - client_type is "sntp" or "ntp"
+            },
+            # ... more items
+        ],  # arrayref[hashref (ActiveVendorZone)] - vendor_zones contains approved vendor zones for this DNS root
+            settings => {
+                ttl => ...,  # int - ttl is the DNS TTL in seconds
+            },  # hashref (DnsSettings) - settings contains DNS configuration settings
+        },
+        error        => undef,       # Error message (if any)
+        trace_id     => "...",       # OpenTelemetry trace ID
+    }
+
+B<Response Data Structure:>
+
+The C<data> field contains:
+
+=over 4
+
+=item * B<dns_root> (hashref (DnsRootInfo))
+
+dns_root contains the root zone configuration
+
+
+=item * B<zones> (arrayref[hashref (DnsZone)])
+
+zones contains all zones with DNS entries enabled
+
+
+=item * B<vendor_zones> (arrayref[hashref (ActiveVendorZone)])
+
+vendor_zones contains approved vendor zones for this DNS root
+
+
+=item * B<settings> (hashref (DnsSettings))
+
+settings contains DNS configuration settings
+
+
+=back
+
+B<ConnectRPC Error Codes:>
+
+    unauthenticated, permission_denied, internal, invalid_argument, etc.
+
+B<Example:>
+
+    my $result = get_dns_zone_data(
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
+    );
+
+    if ($result->{error}) {
+        warn "Error: $result->{error}";
+    } else {
+        my $data = $result->{data};
+        # Use response fields...
+    }
+
+=cut
+
+sub get_dns_zone_data {
+    my $validation_error = validate_key_value_args('get_dns_zone_data', @_);
+    return $validation_error if $validation_error;
+
+    my %args = @_;
+
+    # Extract request fields from args
+    my %request = ();
+    $request{'origin'} = delete $args{'origin'} if exists $args{'origin'};
+
+    return connect_rpc(
+        service     => 'ntppool.zone.v1.ZoneService',
+        method      => 'GetDnsZoneData',
         request     => \%request,
         http_method => 'GET',  # Side-effect free, use GET
         %args  # Pass through auth, account, context

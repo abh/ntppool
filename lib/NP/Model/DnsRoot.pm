@@ -2,23 +2,37 @@ package NP::Model::DnsRoot;
 use strict;
 use warnings;
 use Combust::Config;
-use List::Util qw(shuffle);
-use NP::Settings;
-use NP::Model;
+use List::Util     qw(shuffle);
 use NP::CAPI::Zone qw(get_zone_active_servers);
-use Carp qw(croak);
+use Carp           qw(croak);
 
 my $config     = Combust::Config->new;
 my $config_ntp = $config->site->{ntppool};
 
 use constant default_ttl => 150;
 
+sub new_from_api {
+    my ($class, $api_data) = @_;
+
+    my $dns_root = $api_data->{dns_root} || {};
+
+    my $self = bless {
+        id                => $dns_root->{id},
+        origin            => $dns_root->{origin},
+        ns_list           => $dns_root->{ns_list},
+        _api_zones        => $api_data->{zones}        || [],
+        _api_vendor_zones => $api_data->{vendor_zones} || [],
+        _api_ttl          => ($api_data->{settings} || {})->{ttl},
+    }, $class;
+
+    return $self;
+}
+
 sub ttl {
-    my $settings = NP::Settings->get_setting('dns_settings');
-    $settings or return default_ttl;
-    my $ttl = $settings->{ttl} + 0 or return default_ttl;
-    $ttl = default_ttl if $ttl <= 0;
-    $ttl = 30          if $ttl < 30;
+    my $self = shift;
+    my $ttl  = $self->{_api_ttl};
+    croak "Missing TTL from API response" unless defined $ttl && $ttl > 0;
+    $ttl = 30 if $ttl < 30;
     return $ttl;
 }
 
@@ -104,31 +118,29 @@ sub populate {
 }
 
 sub _get_zone_servers {
-    my ($zone, $ip_version) = @_;
+    my ($zone_name, $ip_version) = @_;
 
     my $result = get_zone_active_servers(
-        zone_name  => $zone->name,
+        zone_name  => $zone_name,
         ip_version => $ip_version,
     );
 
     # Fail hard on API errors
     if ($result->{error}) {
-        my $msg = "Failed to get active servers for zone " . $zone->name . " ($ip_version): ";
+        my $msg = "Failed to get active servers for zone $zone_name ($ip_version): ";
         $msg .= $result->{error} // 'unknown error';
         $msg .= " [code: " . $result->{connect_code} . "]" if $result->{connect_code};
-        $msg .= " [trace: " . $result->{trace_id} . "]" if $result->{trace_id};
+        $msg .= " [trace: " . $result->{trace_id} . "]"    if $result->{trace_id};
         croak $msg;
     }
 
     unless (defined $result->{data}) {
-        croak "No data returned for zone "
-            . $zone->name . " ($ip_version)";
+        croak "No data returned for zone $zone_name ($ip_version)";
     }
 
     my $servers = $result->{data}{servers};
     unless (defined $servers && ref($servers) eq 'ARRAY') {
-        croak "Invalid servers response for zone "
-            . $zone->name . " ($ip_version)";
+        croak "Invalid servers response for zone $zone_name ($ip_version)";
     }
 
     # Convert from CAPI format [{ip => ..., netspeed => ...}, ...]
@@ -136,20 +148,17 @@ sub _get_zone_servers {
     my @entries;
     for my $srv (@$servers) {
         unless (ref($srv) eq 'HASH') {
-            croak "Invalid server entry (not a hash) for zone "
-                . $zone->name;
+            croak "Invalid server entry (not a hash) for zone $zone_name";
         }
 
         my $ip = $srv->{ip};
         unless (defined $ip && length($ip) > 0) {
-            croak "Missing or empty IP in server entry for zone "
-                . $zone->name;
+            croak "Missing or empty IP in server entry for zone $zone_name";
         }
 
         my $netspeed = $srv->{netspeed};
         unless (defined $netspeed && $netspeed =~ /^\d+$/ && $netspeed > 0) {
-            croak "Invalid netspeed '$netspeed' for server $ip in zone "
-                . $zone->name;
+            croak "Invalid netspeed '$netspeed' for server $ip in zone $zone_name";
         }
 
         push @entries, [$ip, $netspeed];
@@ -161,11 +170,11 @@ sub _get_zone_servers {
 sub populate_country_zones {
     my $self = shift;
 
-    my $zones = NP::Model->zone->get_zones_iterator(query => [dns => 1]);
+    my $zones = $self->{_api_zones} || [];
     my $data  = $self->data;
 
-    while (my $zone = $zones->next) {
-        my $name = $zone->name;
+    for my $zone (@$zones) {
+        my $name = $zone->{name};
 
         my $ttl;
 
@@ -176,7 +185,7 @@ sub populate_country_zones {
         $name = ''       if $name eq '@';
         $name = "$name." if $name;
 
-        if (my $entries = _get_zone_servers($zone, 'v4')) {
+        if (my $entries = _get_zone_servers($zone->{name}, 'v4')) {
 
             my $min_non_duplicate_size = 2;
             my $response_records       = 3;
@@ -239,7 +248,7 @@ sub populate_country_zones {
             }
         }
 
-        if (my $entries = _get_zone_servers($zone, 'v6')) {
+        if (my $entries = _get_zone_servers($zone->{name}, 'v6')) {
             @$entries = shuffle(@$entries);
 
             # for now just put all IPv6 servers in the '2' zone
@@ -253,22 +262,11 @@ sub populate_country_zones {
 sub populate_vendor_zones {
     my $root = shift;
 
-    my $vendor_zones = NP::Model->vendor_zone->get_vendor_zones(
-        query => [
-            status      => 'Approved',
-            dns_root_id => $root->id
-        ],
-        sort_by => 'approved_on',
-    );
-
     my %vendors;
 
-    for my $vendor (@$vendor_zones) {
-        my $name = $vendor->zone_name;
-        $vendors{$name} = {
-            type   => $vendor->client_type,
-            vendor => $vendor
-        };
+    for my $vz (@{$root->{_api_vendor_zones} || []}) {
+        my $name = $vz->{zone_name};
+        $vendors{$name} = {type => $vz->{client_type},};
     }
 
     if ($root->origin eq 'pool.ntp.org') {

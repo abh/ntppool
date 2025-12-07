@@ -4,7 +4,6 @@ use strict;
 # include ::Login since the manage site use this controller, too
 use parent            qw(NTPPool::Control::Login NTPPool::Control);
 use Combust::Constant qw(OK DECLINED);
-use NP::Model;
 use List::Util   qw(min);
 use JSON         ();
 use experimental qw( defer );
@@ -178,9 +177,6 @@ sub render {
     # if we didn't match on any URL, return 404
     return 404;
 }
-
-sub bc_user_class    { NP::Model->user }
-sub bc_info_required {'username,email'}
 
 sub server_data {
     my ($self, $ip) = @_;

@@ -15,8 +15,9 @@ use URI::URL             ();
 use NP::UA;
 use NP::IntAPI qw(int_api);
 use NP::CAPI::Account
-  qw(get_account_status get_oauth_login_url process_auth0_login validate_session get_user_accounts get_account_invites);
-use NP::CAPI::Server qw(get_server);
+  qw(get_account_status validate_session get_user_accounts get_account_invites);
+use NP::CAPI::Auth             qw(get_oauth_login_url process_auth0_login);
+use NP::CAPI::Server           qw(get_server);
 use NP::CAPI::ServerManagement qw(update_server);
 use NP::Data::Server;
 use OpenTelemetry::Trace;
@@ -211,6 +212,10 @@ sub current_account {
     if ($result->{error}) {
         warn "ValidateSession error: " . $result->{error};
         warn "Trace ID: " . $result->{trace_id} if $result->{trace_id};
+
+        # Cache both _user and _current_account as undef to prevent
+        # repeated API calls when session validation fails
+        $self->{_user} = undef;
         return $self->{_current_account} = undef;
     }
 
@@ -357,7 +362,7 @@ sub handle_login {
     my $audience = $self->_get_audience();
 
     # Call ConnectRPC API to process Auth0 login
-    my $result = NP::CAPI::Account::process_auth0_login(
+    my $result = NP::CAPI::Auth::process_auth0_login(
         authorization_code => $code,
         state              => $state,
         redirect_uri       => $self->callback_url,
@@ -447,7 +452,7 @@ sub login_url {
 
     # Call Go RPC to generate OAuth login URL
     # This centralizes Auth0 configuration in the Go API
-    my $result = NP::CAPI::Account::get_oauth_login_url(
+    my $result = NP::CAPI::Auth::get_oauth_login_url(
         redirect_uri => $self->callback_url,
         state        => $state,
         client_site  => "" . $self->site,      # Force to string: 'manage', 'www', etc.
