@@ -54,8 +54,11 @@ my $crypt = Crypt::Passphrase->new(
 sub user {
     my $self = shift;
 
-    return $self->{_user} if $self->{_user};
+    # Setter must be checked first (before exists check)
     if (@_) { return $self->{_user} = $_[0] }
+
+    # Use exists to respect cached undef (when validation already failed)
+    return $self->{_user} if exists $self->{_user};
 
     # if there's no user cookie, we can't be logged in
     return
@@ -116,7 +119,9 @@ sub user {
             $self->cookie($self->user_cookie_name, '0');
             $self->plain_cookie($self->user_cookie_name, '', {expires => -1});
         }
-        return;
+
+        # Cache negative result to prevent repeated API calls
+        return $self->{_user} = undef;
     }
 
     return $self->{_user} = $user;
