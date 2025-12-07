@@ -4,16 +4,30 @@ use base qw(Combust::RoseDB::Scaffold);
 
 # Tables excluded from model generation (migrated to CAPI or not needed)
 my @excluded_tables = qw(
+    account_invites
+    account_users
+    accounts
+    api_keys
+    api_keys_monitors
+    dns_roots
+    log_scores
     log_scores_archive_status
+    logs
+    monitor_registrations
+    monitors
+    scorer_statu
     server_alerts
     server_notes
+    server_verifications
+    server_verifications_history
+    server_zones
+    servers
+    user_equipment_applications
+    user_identities
     user_privileges
     user_sessions
-    zone_server_counts
-    logs
     users
-    accounts
-    servers
+    zone_server_counts
 );
 
 sub db_model_class {

@@ -120,40 +120,4 @@ sub subscription_limits_not_exceeded {
     return 0;
 }
 
-sub servers {
-    my $self = shift;
-
-    #local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
-    my $s = NP::Model->server->get_servers(
-        query => [
-            account_id => $self->id,
-            or         => [
-                deletion_on => undef,                       # not deleted
-                deletion_on => {'gt' => DateTime->today}    # deleted in the future
-            ],
-        ],
-        with_objects => ['server_verification'],
-    );
-    $s = [
-        sort {
-            my $r  = 0;
-            my $ia = Net::IP->new($a->ip);
-            my $ib = Net::IP->new($b->ip);
-
-            if (my $c = $ia->version <=> $ib->version) {
-                return $c;
-            }
-
-            if ($ia->bincomp('lt', $ib)) {
-                $r = -1;
-            }
-            elsif ($ia->bincomp('gt', $ib)) {
-                $r = 1;
-            }
-            $r;
-        } @$s
-    ];
-    wantarray ? @$s : $s;
-}
-
 1;
