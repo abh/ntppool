@@ -4,6 +4,7 @@ use NP::Model::TokenID;
 use base              qw(NP::Model::TokenID);
 use Combust::Config   ();
 use NP::CAPI::Account qw(get_account_server_verification_status);
+use NP::CAPI::Subscription qw(get_account_subscription_status get_account_subscriptions);
 use OpenTelemetry::Trace;
 use OpenTelemetry -all;
 use OpenTelemetry::Constants qw( SPAN_STATUS_ERROR );
@@ -102,22 +103,52 @@ sub can_add_servers {
 
 sub have_live_subscription {
     my $self = shift;
-    return 1 if $self->live_subscriptions;
-    return 0;
+
+    my $result = get_account_subscription_status(
+        account => $self->id_token,
+    );
+
+    if ($result->{error}) {
+        warn "get_account_subscription_status error: $result->{error}";
+        warn "Trace ID: $result->{trace_id}" if $result->{trace_id};
+        return 0;
+    }
+
+    return $result->{data}{has_live_subscription} ? 1 : 0;
 }
 
 sub live_subscriptions {
     my $self = shift;
-    return grep { $_->live_subscription } $self->account_subscriptions;
+
+    my $result = get_account_subscriptions(
+        account => $self->id_token,
+    );
+
+    if ($result->{error}) {
+        warn "get_account_subscriptions error: $result->{error}";
+        warn "Trace ID: $result->{trace_id}" if $result->{trace_id};
+        return ();
+    }
+
+    return grep { $_->{live_subscription} } @{$result->{data}{subscriptions} || []};
 }
 
 sub subscription_limits_not_exceeded {
-    my $self = shift;
-    my @args = @_;
-    for my $sub ($self->live_subscriptions) {
-        return 1 if not $sub->limits_exceeded(@args);
+    my $self             = shift;
+    my $new_device_count = shift || 0;
+
+    my $result = get_account_subscription_status(
+        account      => $self->id_token,
+        device_count => $new_device_count,
+    );
+
+    if ($result->{error}) {
+        warn "get_account_subscription_status error: $result->{error}";
+        warn "Trace ID: $result->{trace_id}" if $result->{trace_id};
+        return 0;    # Fail closed on error
     }
-    return 0;
+
+    return $result->{data}{limits_exceeded} ? 0 : 1;
 }
 
 1;
