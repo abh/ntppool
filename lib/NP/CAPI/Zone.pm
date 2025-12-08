@@ -41,7 +41,7 @@ No authentication required - all data is public.
 
     # GetZoneActiveServers returns active servers for DNS zone generation.
 Used by GeoDNS to build weighted server lists per zone.
-No authentication required - all data is public.
+Requires service API key with type=dns.
     my $result = get_zone_active_servers(
         $self->api_auth_params,      # Provides auth and context
         account => $account->{id_token},
@@ -320,7 +320,7 @@ sub get_zone {
 
 GetZoneActiveServers returns active servers for DNS zone generation.
 Used by GeoDNS to build weighted server lists per zone.
-No authentication required - all data is public.
+Requires service API key with type=dns.
 
 B<Arguments:>
 

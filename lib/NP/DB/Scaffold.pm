@@ -15,19 +15,29 @@ my @excluded_tables = qw(
     logs
     monitor_registrations
     monitors
+    oidc_public_keys
+    schema_revision
     scorer_statu
+    scorer_status
     server_alerts
     server_notes
+    server_scores
+    server_urls
     server_verifications
     server_verifications_history
     server_zones
     servers
+    servers_monitor_review
+    system_settings
     user_equipment_applications
     user_identities
     user_privileges
     user_sessions
+    user_tasks
     users
+    vendor_zones
     zone_server_counts
+    zones
 );
 
 sub db_model_class {

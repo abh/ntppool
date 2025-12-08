@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-set -exufo pipefail
-./combust/bin/database_update combust
-./combust/bin/database_update ntppool
-./bin/populate_zones
-set +x
-echo `date` -- done
+
+# Disabled - database setup is now handled by the Go API:
+#   pool_domain=pool.ntp.org api setup
+# This runs migrations and populates zone data.
+exit 0
