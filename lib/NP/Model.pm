@@ -462,60 +462,6 @@ __PACKAGE__->make_manager_methods('vendor_zones');
 eval { require NP::Model::VendorZone }
   or $@ !~ m:^Can't locate NP/Model/VendorZone.pm: and die $@;
 
-{ package NP::Model::Zone;
-
-use strict;
-
-use base qw(NP::Model::_Object);
-
-__PACKAGE__->meta->setup(
-  table   => 'zones',
-
-  columns => [
-    id          => { type => 'serial', not_null => 1 },
-    name        => { type => 'varchar', length => 255, not_null => 1 },
-    description => { type => 'varchar', length => 255 },
-    parent_id   => { type => 'integer' },
-    dns         => { type => 'integer', default => 1, not_null => 1 },
-  ],
-
-  primary_key_columns => [ 'id' ],
-
-  unique_key => [ 'name' ],
-
-  foreign_keys => [
-    parent => {
-      class       => 'NP::Model::Zone',
-      key_columns => { parent_id => 'id' },
-    },
-  ],
-
-  relationships => [
-    zones => {
-      class      => 'NP::Model::Zone',
-      column_map => { id => 'parent_id' },
-      type       => 'one to many',
-    },
-  ],
-);
-
-push @table_classes, __PACKAGE__;
-}
-
-{ package NP::Model::Zone::Manager;
-
-use strict;
-
-our @ISA = qw(Combust::RoseDB::Manager);
-
-sub object_class { 'NP::Model::Zone' }
-
-__PACKAGE__->make_manager_methods('zones');
-}
-
-# Allow user defined methods to be added
-eval { require NP::Model::Zone }
-  or $@ !~ m:^Can't locate NP/Model/Zone.pm: and die $@;
 { package NP::Model;
 
   sub db  { shift; NP::Model::_Object->init_db(@_);      }
@@ -536,7 +482,6 @@ eval { require NP::Model::Zone }
   sub system_setting { our $system_setting ||= bless [], 'NP::Model::SystemSetting::Manager' }
   sub user_task { our $user_task ||= bless [], 'NP::Model::UserTask::Manager' }
   sub vendor_zone { our $vendor_zone ||= bless [], 'NP::Model::VendorZone::Manager' }
-  sub zone { our $zone ||= bless [], 'NP::Model::Zone::Manager' }
 
 }
 1;
