@@ -20,6 +20,12 @@ use NP::CAPI::VendorZone qw(
     list_vendor_zones_admin
     get_vendor_zone_form_metadata
 );
+use NP::CAPI::Subscription qw(
+    get_account_subscriptions
+    get_account_subscription_status
+    update_account_stripe_customer
+    create_or_update_subscription
+);
 use JSON::XS ();
 
 my $json = JSON::XS->new->pretty->utf8->convert_blessed;
@@ -161,8 +167,13 @@ sub render_zones {
     my $accounts = $self->user_accounts();
     $self->tpl_param('accounts' => $accounts);
 
-    if (my @subs = $self->current_account->account_subscriptions) {
-        $self->tpl_param('subscriptions', [grep { $_->live_subscription } @subs]);
+    my $subs_result = get_account_subscriptions(
+        $self->api_auth_params,
+        account => $self->current_account->{id_token},
+    );
+    if ($subs_result->{data} && $subs_result->{data}{subscriptions}) {
+        my @live = grep { $_->{live_subscription} } @{$subs_result->{data}{subscriptions}};
+        $self->tpl_param('subscriptions', \@live);
     }
 
     return OK, $self->evaluate_template('tpl/vendor.html');
@@ -211,7 +222,16 @@ sub render_zone {
     my $device_count = $zone->{device_count} || 0;
 
     # Get subscriptions from zone's account (not current account, which might be admin)
-    my @subs = $zone_account ? $zone_account->live_subscriptions : ();
+    my @subs = ();
+    if ($zone_account) {
+        my $subs_result = get_account_subscriptions(
+            $self->api_auth_params,
+            account => $zone_account->id_token,
+        );
+        if ($subs_result->{data} && $subs_result->{data}{subscriptions}) {
+            @subs = grep { $_->{live_subscription} } @{$subs_result->{data}{subscriptions}};
+        }
+    }
 
     if ($zone->{status} eq 'New') {
 
@@ -268,7 +288,7 @@ sub render_zone {
 
         @subs = sort {
                  $sort{$a->{status}}   <=> $sort{$b->{status}}
-              || $b->created_on->epoch <=> $a->created_on->epoch
+              || $b->{created_on} cmp $a->{created_on}  # RFC3339 strings sort correctly
         } @subs;
 
         # If subscription on file, but plan has "max zones":
@@ -470,35 +490,50 @@ sub _update_subscription {
     warn "subscription_id: $subscription_id";
 
     if ($subscription_id) {
-        my $account_subscription = NP::Model->account_subscription->fetch_or_create(
-            account_id             => $account->id,
-            stripe_subscription_id => $subscription_id
+        # Handle max_devices fallback from max_clients
+        my $max_devices = $session->{subscription}->{max_devices}
+                       || $session->{subscription}->{max_clients}
+                       || 10000000;
+
+        my $result = create_or_update_subscription(
+            $self->api_auth_params,
+            account                => $account->{id_token},
+            stripe_subscription_id => $subscription_id,
+            stripe_customer_id     => $customer_id,
+            status                 => $session->{subscription}->{status},
+            name                   => $session->{subscription}->{name} || '',
+            max_zones              => $session->{subscription}->{max_zones} || 1,
+            max_devices            => $max_devices,
+            created_on_unix        => time(),
         );
 
-        unless ($session->{subscription}->{max_devices}) {
-            $session->{subscription}->{max_devices} =
-              $session->{subscription}->{max_clients}
-              if $session->{subscription}->{max_clients};
+        if ($result->{error}) {
+            warn "Failed to create/update subscription: $result->{error}";
+            warn "Trace ID: $result->{trace_id}" if $result->{trace_id};
+            return 500, "Failed to process subscription";
         }
 
-        for my $f (qw(status name max_zones max_devices)) {
-            $account_subscription->$f($session->{subscription}->{$f});
-        }
-        $account_subscription->save();
-
-        $account->stripe_customer_id($customer_id);
-        $account->save();
-
-        if ($account_subscription->live_subscription) {
+        my $subscription = $result->{data}{subscription};
+        if ($subscription && $subscription->{live_subscription}) {
             warn "got live subscription";
             return $self->render_submit();
         }
         else {
-            warn "sub status: ", $account_subscription->status;
+            warn "sub status: ", ($subscription ? $subscription->{status} : 'unknown');
         }
     }
 
-    # show appropriate status page for the subscription status.
+    # Also update stripe_customer_id if needed
+    if ($customer_id && !$account->{stripe_customer_id}) {
+        my $update_result = update_account_stripe_customer(
+            $self->api_auth_params,
+            account            => $account->{id_token},
+            stripe_customer_id => $customer_id,
+        );
+        if ($update_result->{error}) {
+            warn "Failed to update stripe_customer_id: $update_result->{error}";
+        }
+    }
 
     return 200, "finished processing session";
 }
@@ -582,19 +617,29 @@ sub render_subscription {
                 $quantity = 1;
             }
 
-            unless ($account->stripe_customer_id) {
+            unless ($account->{stripe_customer_id}) {
                 my $customer = NP::Stripe::create_customer(
                     email       => $self->user->{email},
-                    name        => $account->name,
-                    description => $account->organization_name,
+                    name        => $account->{name},
+                    description => $account->{organization_name},
 
-                    account_id  => $account->id_token,
+                    account_id  => $account->{id_token},
                     account_url =>
-                      $self->manage_url('/manage/vendor', {a => $account->id_token}),
+                      $self->manage_url('/manage/vendor', {a => $account->{id_token}}),
                 );
                 if ($customer && $customer->{id}) {
-                    $account->stripe_customer_id($customer->{id});
-                    $account->save();
+                    my $update_result = update_account_stripe_customer(
+                        $self->api_auth_params,
+                        account            => $account->{id_token},
+                        stripe_customer_id => $customer->{id},
+                    );
+                    if ($update_result->{error}) {
+                        warn "Failed to update stripe_customer_id: $update_result->{error}";
+                    }
+                    else {
+                        # Update local copy for immediate use
+                        $account->{stripe_customer_id} = $customer->{id};
+                    }
                 }
             }
 
@@ -603,9 +648,9 @@ sub render_subscription {
                 quantity => $quantity,
 
                 environment => "devel",
-                account_id  => $account->id_token,
+                account_id  => $account->{id_token},
 
-                customer_id => $account->stripe_customer_id,
+                customer_id => $account->{stripe_customer_id},
                 email       => $self->user->{email},
 
                 return_url => $return_url,
@@ -626,10 +671,14 @@ sub render_subscription {
         return OK, $self->evaluate_template('tpl/vendor/subscription.html');
     }
 
-    warn "customer id: ", $account->stripe_customer_id;
+    warn "customer id: ", $account->{stripe_customer_id};
 
-    if (my @subs = $self->current_account->account_subscriptions) {
-        $self->tpl_param('subscriptions', \@subs);
+    my $subs_result = get_account_subscriptions(
+        $self->api_auth_params,
+        account => $self->current_account->{id_token},
+    );
+    if ($subs_result->{data} && $subs_result->{data}{subscriptions}) {
+        $self->tpl_param('subscriptions', $subs_result->{data}{subscriptions});
     }
 
     return OK, $self->evaluate_template('tpl/vendor/subscription.html');
