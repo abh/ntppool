@@ -22,12 +22,12 @@
                 <td>Processing archive, check back later.</td>
                 [% ELSE %]
                 <td>
-                [% IF req.status.URL %]
+                [% IF req.status_url %]
                     <a href="[% req.download_url | html %]">
                         Download archive
                     </a>
                 [% ELSE %]
-                  [% IF req.status.Error %]
+                  [% IF req.status_error %]
                   Error: [% req.traceid %]
                   [% END %]
                 [% END %]

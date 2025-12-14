@@ -17,6 +17,8 @@ our @EXPORT_OK = qw(
     update_account
     remove_user_from_account
     create_user_task
+    list_user_tasks
+    get_user_task
     get_account_server_verification_status
     get_accounts_to_notify
     get_account_users
@@ -67,7 +69,7 @@ NP::CAPI::Account - ConnectRPC client for AccountService
 
 =head1 SYNOPSIS
 
-    use NP::CAPI::Account qw(get_account_status validate_session delete_session create_account update_account remove_user_from_account create_user_task get_account_server_verification_status get_accounts_to_notify get_account_users get_user_accounts get_account_invites create_account_invite accept_account_invite resend_account_invite get_account can_delete_account check_user_deletion_eligibility get_public_account_by_username get_related_accounts who_am_i);
+    use NP::CAPI::Account qw(get_account_status validate_session delete_session create_account update_account remove_user_from_account create_user_task list_user_tasks get_user_task get_account_server_verification_status get_accounts_to_notify get_account_users get_user_accounts get_account_invites create_account_invite accept_account_invite resend_account_invite get_account can_delete_account check_user_deletion_eligibility get_public_account_by_username get_related_accounts who_am_i);
     # GetAccountStatus returns the current monitor eligibility and status for an account.
 Authentication is handled by middleware - the account is extracted from the session context.
     my $result = get_account_status(
@@ -119,6 +121,22 @@ Authorization: User must have edit access and cannot remove themselves.
 Authentication: Required via session middleware (sessions.GetUser).
 Authorization: User can only create tasks for themselves.
     my $result = create_user_task(
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
+    );
+
+    # ListUserTasks lists user tasks by type.
+Authentication: Required via session middleware (sessions.GetUser).
+Authorization: User can only list their own tasks.
+    my $result = list_user_tasks(
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
+    );
+
+    # GetUserTask gets a user task by traceid.
+Authentication: Required via session middleware (sessions.GetUser).
+Authorization: User can only get their own tasks.
+    my $result = get_user_task(
         $self->api_auth_params,      # Provides auth and context
         account => $account->{id_token},
     );
@@ -436,6 +454,7 @@ Hashref with structure:
                 url => ...,  # string - Computed fields (always included)
                 public_url => ...,  # string
                 display_name => ...,  # string
+                subscription_summary => ...,  # hashref (SubscriptionSummary) - Subscription summary (computed from account_subscriptions)
             },  # hashref (AccountContext) - account is the current account context (specified or default)
  Omitted if user has no accounts or account is inaccessible
             permissions => {
@@ -979,6 +998,191 @@ sub create_user_task {
     return connect_rpc(
         service     => 'ntppool.account.v1.AccountService',
         method      => 'CreateUserTask',
+        request     => \%request,
+        %args  # Pass through auth, account, context
+    );
+}
+
+
+=head2 list_user_tasks
+
+ListUserTasks lists user tasks by type.
+Authentication: Required via session middleware (sessions.GetUser).
+Authorization: User can only list their own tasks.
+
+B<Arguments:>
+
+    my $result = list_user_tasks(
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
+        task_type => $value,       # string - task_type is the type of tasks to list (e.g., "download", "delete")
+    );
+
+B<Returns:>
+
+Hashref with structure:
+
+    {
+        code         => 200,         # HTTP status code
+        status_line  => "200 OK",    # HTTP status text
+        connect_code => undef,       # ConnectRPC error code (or undef)
+        data         => {            # Response data
+            tasks => [
+            {
+                id => ...,  # int - id is the task ID
+                task => ...,  # string - task is the task type (e.g., "download", "delete")
+                status => ...,  # string - status is the JSON status string (empty for pending)
+                traceid => ...,  # string - traceid is the trace ID linking to async processing logs
+                created_on_unix => ...,  # int - created_on_unix is the creation timestamp in Unix seconds
+                download_url => ...,  # string - download_url is the computed download URL (empty if not ready)
+ Format: /manage/account/download/data/{traceid}/{filename}
+                status_url => ...,  # string - status_url is the URL from the status JSON (for redirect)
+                status_error => ...,  # string - status_error is the error from the status JSON (if any)
+            },
+            # ... more items
+        ],  # arrayref[hashref (UserTask)] - tasks is the list of user tasks
+        },
+        error        => undef,       # Error message (if any)
+        trace_id     => "...",       # OpenTelemetry trace ID
+    }
+
+B<Response Data Structure:>
+
+The C<data> field contains:
+
+=over 4
+
+=item * B<tasks> (arrayref[hashref (UserTask)])
+
+tasks is the list of user tasks
+
+
+=back
+
+B<ConnectRPC Error Codes:>
+
+    unauthenticated, permission_denied, internal, invalid_argument, etc.
+
+B<Example:>
+
+    my $result = list_user_tasks(
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
+    );
+
+    if ($result->{error}) {
+        warn "Error: $result->{error}";
+    } else {
+        my $data = $result->{data};
+        # Use response fields...
+    }
+
+=cut
+
+sub list_user_tasks {
+    my $validation_error = validate_key_value_args('list_user_tasks', @_);
+    return $validation_error if $validation_error;
+
+    my %args = @_;
+
+    # Extract request fields from args
+    my %request = ();
+    $request{'task_type'} = delete $args{'task_type'} if exists $args{'task_type'};
+
+    return connect_rpc(
+        service     => 'ntppool.account.v1.AccountService',
+        method      => 'ListUserTasks',
+        request     => \%request,
+        %args  # Pass through auth, account, context
+    );
+}
+
+
+=head2 get_user_task
+
+GetUserTask gets a user task by traceid.
+Authentication: Required via session middleware (sessions.GetUser).
+Authorization: User can only get their own tasks.
+
+B<Arguments:>
+
+    my $result = get_user_task(
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
+        traceid => $value,       # string - traceid is the trace ID of the task
+    );
+
+B<Returns:>
+
+Hashref with structure:
+
+    {
+        code         => 200,         # HTTP status code
+        status_line  => "200 OK",    # HTTP status text
+        connect_code => undef,       # ConnectRPC error code (or undef)
+        data         => {            # Response data
+            task => {
+                id => ...,  # int - id is the task ID
+                task => ...,  # string - task is the task type (e.g., "download", "delete")
+                status => ...,  # string - status is the JSON status string (empty for pending)
+                traceid => ...,  # string - traceid is the trace ID linking to async processing logs
+                created_on_unix => ...,  # int - created_on_unix is the creation timestamp in Unix seconds
+                download_url => ...,  # string - download_url is the computed download URL (empty if not ready)
+ Format: /manage/account/download/data/{traceid}/{filename}
+                status_url => ...,  # string - status_url is the URL from the status JSON (for redirect)
+                status_error => ...,  # string - status_error is the error from the status JSON (if any)
+            },  # hashref (UserTask) - task is the user task
+        },
+        error        => undef,       # Error message (if any)
+        trace_id     => "...",       # OpenTelemetry trace ID
+    }
+
+B<Response Data Structure:>
+
+The C<data> field contains:
+
+=over 4
+
+=item * B<task> (hashref (UserTask))
+
+task is the user task
+
+
+=back
+
+B<ConnectRPC Error Codes:>
+
+    unauthenticated, permission_denied, internal, invalid_argument, etc.
+
+B<Example:>
+
+    my $result = get_user_task(
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
+    );
+
+    if ($result->{error}) {
+        warn "Error: $result->{error}";
+    } else {
+        my $data = $result->{data};
+        # Use response fields...
+    }
+
+=cut
+
+sub get_user_task {
+    my $validation_error = validate_key_value_args('get_user_task', @_);
+    return $validation_error if $validation_error;
+
+    my %args = @_;
+
+    # Extract request fields from args
+    my %request = ();
+    $request{'traceid'} = delete $args{'traceid'} if exists $args{'traceid'};
+
+    return connect_rpc(
+        service     => 'ntppool.account.v1.AccountService',
+        method      => 'GetUserTask',
         request     => \%request,
         %args  # Pass through auth, account, context
     );
@@ -1658,6 +1862,7 @@ Hashref with structure:
                 url => ...,  # string - Computed fields (always included)
                 public_url => ...,  # string
                 display_name => ...,  # string
+                subscription_summary => ...,  # hashref (SubscriptionSummary) - Subscription summary (computed from account_subscriptions)
             },  # hashref (AccountContext) - Core account with computed fields (always included)
             permissions => {
                 can_edit => ...,  # bool - can_edit: User is in account or is staff

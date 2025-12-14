@@ -7,6 +7,7 @@ use NP::IntAPI        qw(int_api);
 use NP::CAPI::Account qw(
     get_account_users get_user_accounts get_account_invites
     create_account get_account update_account remove_user_from_account create_user_task
+    list_user_tasks get_user_task
     check_user_deletion_eligibility
     create_account_invite accept_account_invite resend_account_invite
 );
@@ -556,6 +557,29 @@ sub render_account_edit {
     return $self->render_account_form($account);
 }
 
+sub _format_task_for_template {
+    my ($task) = @_;
+    return unless $task;
+
+    # Convert created_on_unix to formatted timestamp
+    my $created_on = '';
+    if ($task->{created_on_unix}) {
+        my $dt = DateTime->from_epoch(epoch => $task->{created_on_unix});
+        $created_on = $dt->ymd('-') . ' ' . $dt->hms(':');
+    }
+
+    return {
+        id           => $task->{id},
+        task         => $task->{task},
+        status       => $task->{status},
+        traceid      => $task->{traceid},
+        created_on   => $created_on,
+        download_url => $task->{download_url},
+        status_url   => $task->{status_url},
+        status_error => $task->{status_error},
+    };
+}
+
 sub render_download {
     my ($self, $user) = @_;
 
@@ -566,39 +590,38 @@ sub render_download {
         my $filename = $2;
         return NOT_FOUND unless $traceid && $filename;
         warn "checking downloads for $traceid / $filename";
-        my $tasks = NP::Model->user_task->get_user_tasks(
-            query => [
-                task    => 'download',
-                user_id => $user->{user_id},
-                traceid => $traceid,
-            ],
-            sort_by => 'created_on desc'
+
+        my $result = get_user_task(
+            $self->api_auth_params,
+            traceid => $traceid,
         );
-        return NOT_FOUND unless $tasks && @$tasks;
-        my $task = $tasks->[0];
-        return NOT_FOUND unless $task;
-        my $task_filename = $task && $task->status->{Filename} or return NOT_FOUND;
-        return NOT_FOUND unless $task_filename eq $filename;
 
-        # warn "redirecting to fastly: ", $task->status->{URL};
+        return NOT_FOUND if $result->{error};
+        my $task = $result->{data}{task};
+        return NOT_FOUND unless $task && $task->{status_url};
+
+        # Verify filename matches what's in the download_url
+        return NOT_FOUND unless $task->{download_url} && $task->{download_url} =~ /\Q$filename\E$/;
+
         $self->request->header_out('Fastly-Follow' => '1');
-
-        return $self->redirect($task->status->{URL}, 302);
+        return $self->redirect($task->{status_url}, 302);
     }
 
     $self->tpl_param('user', $user);
 
-    my $requests = NP::Model->user_task->get_user_tasks(
-        query => [
-            task    => 'download',
-            user_id => $user->{user_id},
-        ],
-        sort_by => 'created_on desc'
+    my $result = list_user_tasks(
+        $self->api_auth_params,
+        task_type => 'download',
     );
+
+    my $requests = [];
+    if (!$result->{error} && $result->{data}{tasks}) {
+        $requests = [map { _format_task_for_template($_) } @{$result->{data}{tasks}}];
+    }
 
     $self->tpl_param('requests', $requests);
 
-    if ($requests && grep { $_->status eq '' } @$requests) {
+    if (@$requests && grep { !$_->{status} } @$requests) {
         $self->tpl_param('pending_requests', 1);
     }
     else {
