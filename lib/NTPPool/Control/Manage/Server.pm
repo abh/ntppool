@@ -23,6 +23,7 @@ use NP::CAPI::ServerManagement qw(
     add_server_precheck
     add_server
     complete_server_verification
+    get_server_verification
     move_server
 );
 use NP::CAPI::Zone   qw(list_zones);
@@ -459,8 +460,6 @@ sub handle_update_netspeed {
 
 sub handle_verify {
     my $self = shift;
-    my $db   = NP::Model->db;
-    my $txn  = $db->begin_scoped_work;
 
     my ($token) = ($self->request->uri =~ m!^/manage/server/verify/(.+)!);
     unless ($token) {
@@ -486,58 +485,61 @@ sub handle_verify {
         return OK, $self->evaluate_template('tpl/manage/verify_instructions.html');
     }
 
-    my $verification = NP::Model->server_verification->fetch(token => $token);
-    return NOT_FOUND unless $verification;
-
-    # Get server IP from verification (read-only MySQL access)
-    my $server_ip = $verification->server->ip;
-
-    # Fetch server from API with permission check
-    my $result = get_server(
+    # Single CAPI call to get verification + server data
+    my $result = get_server_verification(
         $self->api_auth_params,
-        account                 => $self->current_account->{id_token},
-        ip                      => $server_ip,
-        require_edit_permission => JSON::XS::true,
+        token => $token,
     );
 
-    # Permission denied or not found
+    # Handle errors
     if ($result->{error}) {
-        warn "Server verification permission denied: " . $result->{error};
-        return 403;
+        if ($result->{connect_code} && $result->{connect_code} eq 'not_found') {
+            return NOT_FOUND;
+        }
+        if ($result->{connect_code} && $result->{connect_code} eq 'unauthenticated') {
+            # User not logged in - redirect to login
+            return $self->redirect('/manage');
+        }
+        warn "Server verification lookup failed: " . $result->{error};
+        warn "Trace ID: " . $result->{trace_id} if $result->{trace_id};
+        return 500;
     }
 
-    my $server = NP::Data::Server->new(%{$result->{data}{server}});
+    my $data   = $result->{data};
+    my $server = NP::Data::Server->new(%{$data->{server}});
 
     # If no account parameter, redirect with server's account to set proper context
     unless ($self->req_param('a')) {
         return $self->redirect(
             $self->manage_url(
                 "/manage/server/verify/$token",
-                {a => $result->{data}{server}{account}{id_token}}
+                {a => $data->{server}{account}{id_token}}
             )
         );
     }
 
-    # if verified already, redirect to server on manage page
-    if ($verification->verified_on) {
+    # If verified already, redirect to server on manage page
+    if ($data->{already_verified}) {
         return $self->redirect($self->manage_url($server->manage_url));
     }
 
     $self->tpl_param(server => $server);
-    $self->tpl_param(token  => $verification->token);
+    $self->tpl_param(token  => $data->{token});
 
     if ($self->request->method eq 'post') {
         return 403 unless $self->check_auth_token;
 
         # Call Go API to complete verification (includes audit logging)
-        my $result =
-          NP::CAPI::ServerManagement::complete_server_verification($self->api_auth_params,
-              token => $verification->token,);
+        my $complete_result = complete_server_verification(
+            $self->api_auth_params,
+            account => $self->current_account->{id_token},
+            token   => $data->{token},
+        );
 
-        if ($result->{error}) {
-            warn "Failed to complete server verification: $result->{error}";
-            warn "Trace ID: $result->{trace_id}" if $result->{trace_id};
-            $self->tpl_param(error_message => $result->{error});
+        if ($complete_result->{error}) {
+            warn "Failed to complete server verification: $complete_result->{error}";
+            warn "Trace ID: $complete_result->{trace_id}" if $complete_result->{trace_id};
+            $self->tpl_param(error_message => $complete_result->{error});
             return OK, $self->evaluate_template('tpl/manage/verify_confirm.html');
         }
 

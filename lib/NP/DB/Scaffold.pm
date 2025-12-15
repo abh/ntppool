@@ -33,7 +33,6 @@ my @excluded_tables = qw(
     user_identities
     user_privileges
     user_sessions
-    user_tasks
     users
     vendor_zones
     zone_server_counts
@@ -58,7 +57,6 @@ my %json_fields = (
     logs                   => 'changes',
     servers                => 'flags',
     accounts               => 'flags',
-    user_tasks             => 'status',
 );
 
 sub json_columns {
