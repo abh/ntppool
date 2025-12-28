@@ -166,6 +166,7 @@ Hashref with structure:
                 url => ...,  # string - Computed fields (always included)
                 public_url => ...,  # string
                 display_name => ...,  # string
+                subscription_summary => ...,  # hashref (SubscriptionSummary) - Subscription summary (computed from account_subscriptions)
             },  # hashref (AccountContext) - account is the user's default account (or auto-created account).
  Omitted if user has no accounts (meaning they have pending invitations).
         },

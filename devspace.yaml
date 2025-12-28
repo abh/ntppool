@@ -45,6 +45,7 @@ deployments:
                 repo: https://charts.ntppool.org
             values:
                 config:
+                    #CAPI_DEBUG: "1"
                     httpd_maxclients: "6"
                     manage_hostname: manage.askdev.grundclock.com
                     pool_domain: ntp.askdev.grundclock.com
