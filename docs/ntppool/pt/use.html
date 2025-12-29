@@ -9,7 +9,7 @@
 	programa ntpd da <a	href="https://www.ntp.org">distribuição
 	do ntp.org</a>, em qualquer sistema operacional com suporte - <b>Linux,
 	*BSD, Windows e até mesmo nos sistemas mais exóticos</b>)
-	é realmente simples:
+	é bem simples:
 	</p>
 
 	[% INCLUDE "ntppool/use/sample-config.html" %]
@@ -30,7 +30,7 @@
 	<p>
 	Os endereços IP vão ser diferentes porque foi
 	atribuído a você servidores de tempo aleatórios. A
-	questão essencial é que uma das linhas comece com	um
+	questão essencial é que uma das linhas comece com um
 	asterisco (<code>*</code>), o que significa que seu computador está
 	obtendo a hora da Internet - você nunca mais terá que se
 	preocupar com isso novamente!
@@ -57,7 +57,7 @@
 	<p>
 	Se você está usando <b>uma versão recente do
 	Windows</b>, você pode usar o cliente ntp que já vem no
-	sistema. Na posição de administrador,	digite</p>
+	sistema. No usuário de administrador,	digite</p>
 <pre class="code">
 w32tm /config /syncfromflags:manual /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 /manualpeerlist:0.pool.ntp.org,1.pool.ntp.org,2.pool.ntp.org,3.pool.ntp.org
@@ -111,16 +111,16 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
 	e próximo a você, você deveria usar este, e não
 	esta lista - você provavelmente terá melhor tempo e
 	você usará menos recursos de rede. Se você conhece
-	apenas um servidor de tempo perto de você, é claro que
-	você pode usar este mais dois do pool.ntp.org e por aí vai.</p>
+	apenas um servidor de tempo perto de você, 
+	você também pode usar este e mais dois do pool.ntp.org, por exemplo.</p>
 
 	<p><span class="hook">Raramente pode acontecer de você receber
 	o mesmo servidor de tempo duas vezes seguidas</span> - apenas
 	reiniciar o servidor ntp normalmente resolve este problema. Se
 	você usa uma zone de país, note que isso pode ser
 	por causa que há apenas um servidor conhecido no projeto
-	- é melhor usar uma zona continental neste caso. Você
-	pode <a href="/zone">explorar as zonas</a> para ver como quantos
+	- nesse caso, é melhor utilizar uma zona continental. Você
+	pode <a href="/zone">explorar as zonas</a> para ver quantos
 	servidores nós temos em cada zona.</p>
 
 	<p><span class="hook">Seja amigável</span>. Muitos servidores
@@ -147,7 +147,7 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
 	sempre o <a href="news:comp.protocols.time.ntp">grupo de
 	notícias comp.protocols.time.ntp</a>.)</p>
 
-	<p class="thanks">Neste ponto, eu gostaria de agradecer
-	àqueles que doaram seus tempos e servidores de tempo a
+	<p class="thanks">Por último, eu gostaria de agradecer
+	àqueles que doaram seu tempo e servidores de tempo a
 	esta rede.</p>
 </div>
