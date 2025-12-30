@@ -1,0 +1,135 @@
+msgid ""
+msgstr ""
+"Last-Translator: Theerawat Patthawee <smrmakeyt@gmail.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "go up"
+msgstr "ขึ้นไป"
+
+# zone names
+msgid "Africa"
+msgstr "แอฟริกา"
+
+msgid "Asia"
+msgstr "เอเชีย"
+
+msgid "North America"
+msgstr "อเมริกาเหนือ"
+
+msgid "South America"
+msgstr "อเมริกาใต้"
+
+msgid "Europe"
+msgstr "ยุโรป"
+
+msgid "Oceania"
+msgstr "โอเชียเนีย"
+
+msgid "Global"
+msgstr "ทั่วโลก"
+
+msgid "All Pool Servers"
+msgstr "เซิร์ฟเวอร์พูลทั้งหมด"
+
+# navigation
+msgid "Translations"
+msgstr "การแปลภาษา"
+
+# index.html
+msgid  "Introduction"
+msgstr "บทนำ"
+
+msgid  "Active Servers"
+msgstr "เซิร์ฟเวอร์ที่ใช้งานอยู่"
+
+msgid  "Links"
+msgstr "ลิงก์ที่เกี่ยวข้อง"
+
+msgid  "Terms of service"
+msgstr "ข้อกำหนดการให้บริการ"
+
+msgid  "Subscribe in a reader"
+msgstr "สมัครรับข่าวผ่านฟีด"
+
+msgid  "Older news"
+msgstr "ข่าวเก่า"
+
+# mailinglists.html
+msgid  "archive"
+msgstr "คลังข้อมูล"
+
+msgid  "NTP Pool Forum"
+msgstr "ฟอรัม NTP Pool"
+
+msgid  "News site"
+msgstr "เว็บไซต์ข่าว"
+
+msgid  "Discussion list"
+msgstr "กลุ่มสนทนา"
+
+msgid  "Development"
+msgstr "การพัฒนาโครงการ"
+
+msgid  "forum_description"
+msgstr "คำถาม (และคำตอบ) เกี่ยวกับ NTP Pool คำแนะนำในการปรับปรุง และหัวข้อที่เกี่ยวข้องกับการรักษาเวลาและการดำเนินการเซิร์ฟเวอร์ NTP"
+
+msgid  "news_description"
+msgstr "ประกาศและข่าวสารจะถูกโพสต์บนเว็บไซต์ข่าวหรือฟอรัม"
+
+msgid  "development_list_description"
+msgstr "การสนทนาทางเทคนิค (และเน้นการใช้งานจริง) เกี่ยวกับการพัฒนา <a href=\"%1\">โค้ด NTP Pool</a> และ <a href=\"%2\">GeoDNS</a> จะอยู่ใน <a href=\"%3\">ฟอรัมการพัฒนา</a>"
+
+# tpl/server.html
+msgid  "Back to the front page"
+msgstr "กลับไปหน้าแรก"
+
+msgid  "Find"
+msgstr "ค้นหา"
+
+msgid  "Stats for %1"
+msgstr "สถิติสำหรับ %1"
+
+msgid  "Not active in the pool, monitoring only"
+msgstr "ไม่ได้ใช้งานในพูล (ตรวจสอบสถานะเท่านั้น)"
+
+msgid  "Zones:"
+msgstr "โซน:"
+
+msgid  "This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
+msgstr "เซิร์ฟเวอร์นี้<span class=\"deletion\">มีกำหนดลบ</span>ในวันที่ %1"
+
+msgid  "This server was <span class=\"deletion\">scheduled for deletion</span> on %1."
+msgstr "เซิร์ฟเวอร์นี้<span class=\"deletion\">มีกำหนดลบ</span>เมื่อวันที่ %1"
+
+msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
+msgstr "คะแนนปัจจุบัน: %1 (เฉพาะเซิร์ฟเวอร์ที่มีคะแนนสูงกว่า %2 เท่านั้นที่จะถูกใช้ในพูล)"
+
+msgid  "What do the graphs mean?"
+msgstr "กราฟเหล่านี้หมายถึงอะไร?"
+
+msgid  "CSV log"
+msgstr "บันทึก CSV"
+
+# tpl/navigation_sidebar.html
+msgid  "News"
+msgstr "ข่าว"
+
+msgid  "How do I <i>use</i> pool.ntp.org?"
+msgstr "ฉันจะ<i>ใช้งาน</i> pool.ntp.org ได้อย่างไร?"
+
+msgid  "How do I <i>join</i> pool.ntp.org?"
+msgstr "ฉันจะ<i>เข้าร่วม</i> pool.ntp.org ได้อย่างไร?"
+
+msgid  "Information for vendors"
+msgstr "ข้อมูลสำหรับผู้จำหน่าย"
+
+msgid  "The mailing lists"
+msgstr "ชุมชน"
+
+msgid  "Additional links"
+msgstr "ลิงก์เพิ่มเติม"
+
+msgid  "Can you translate?"
+msgstr "อยากช่วยแปลเว็บไซต์นี้ไหม?"
