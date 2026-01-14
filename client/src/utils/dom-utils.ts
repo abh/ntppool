@@ -53,9 +53,10 @@ export const COLORS: ChartColors = {
 
 // Threshold values for chart display
 export const THRESHOLDS: ChartThresholds = {
+  // values taken from https://github.com/ntppool/monitor/blob/main/scorer/statusscore/statusscore.go#L72
   offset: {
-    good: 0.05,
-    warning: 0.2,
+    good: 0.025,
+    warning: 0.100,
     max: 2,
     min: -2
   },
