@@ -60,8 +60,11 @@ msgstr "Tin tức cũ hơn"
 msgid  "archive"
 msgstr "archive"
 
-msgid  "NTP Pool mailing lists"
-msgstr "Diễn đàn và tin tức"
+msgid  "NTP Pool Forum"
+msgstr "Diễn đàn NTP Pool"
+
+msgid  "Discussion list"
+msgstr "Danh sách thảo luận"
 
 # "Discourse forum" untranslated
 
@@ -110,7 +113,7 @@ msgstr "Log CSV"
 
 # tpl/navigation_sidebar.html
 msgid  "News"
-msgstr "Tin tức"
+msgstr "Bản tin"
 
 msgid  "How do I <i>use</i> pool.ntp.org?"
 msgstr "Làm sao để <i>sử dụng</i> pool.ntp.org?"

@@ -1,0 +1,30 @@
+<div id="server_header_section">
+  <h3>[% server.ip %]
+    [% IF server.hostname %]/ [% server.hostname | html %][% END %]
+  </h3>
+  <div>
+    <form hx-post="/manage/admin/hostname/save?server=[% server.ip | uri %]"
+          hx-target="#server_header_section"
+          hx-swap="outerHTML swap:0ms settle:0ms"
+          hx-indicator="#hostname-saving"
+          hx-include="[name='auth_token']"
+          class="hostname-edit-form d-inline">
+        <input type="hidden" name="auth_token" value="[% combust.auth_token %]">
+        <input type="text"
+               name="hostname"
+               value="[% server.hostname | html %]"
+               class="form-control form-control-sm d-inline-block"
+               placeholder="hostname.example.com"
+               autofocus>
+        <button type="submit" class="btn btn-sm btn-primary">Save</button>
+        <button type="button"
+                class="btn btn-sm btn-secondary"
+                hx-get="/manage/admin/hostname/edit?server=[% server.ip | uri %]&cancel=1"
+                hx-target="#server_header_section"
+                hx-swap="outerHTML swap:0ms settle:0ms">Cancel</button>
+        <span id="hostname-saving" class="htmx-indicator">
+            <small>Saving...</small>
+        </span>
+    </form>
+  </div>
+</div>

@@ -1,9 +1,21 @@
+[% PROCESS tpl/monitors/metrics.html %]
 [% page.js.push("ntppool.js"); %]
 
 <div class="block">
 
-    [% IF !admin_list AND combust.user.is_staff %]
+    [% IF !admin_list AND combust.user.is_monitor_admin %]
         <p><a href="/manage/monitors/admin">All monitors (admin)</a></p>
+    [% END %]
+
+    [% UNLESS admin_list %]
+        [% IF monitors.size > 2 %]
+            [% eligibility = combust.monitor_eligibility %]
+            [% IF eligibility.can_register %]
+                <p>
+                    <a href="[% combust.manage_url('/manage/monitors/new') %]" class="btn btn-primary">Setup a new monitor</a>
+                </p>
+            [% END %]
+        [% END %]
     [% END %]
 
     [% IF error %]
@@ -16,8 +28,18 @@
       [% IF last_account != 0 %]
       </div>
       [% END %]
-      <h2>[% mon.Account.Name || "Account " _ (mon.Account.IDToken || mon.Account.ID) | html %]</h2>
-      <br>
+      <h2>
+        [% IF admin_list %]
+          <a href="[% combust.manage_url('/manage/monitors', { a => mon.Account.IDToken }) %]">
+            [% mon.Account.Name || "Account " _ (mon.Account.IDToken || mon.Account.ID) | html %]
+          </a>
+        [% ELSE %]
+          [% mon.Account.Name || "Account " _ (mon.Account.IDToken || mon.Account.ID) | html %]
+        [% END %]
+        [% INCLUDE tpl/monitors/account_flags_badge.html %]
+      </h2>
+
+      [% PROCESS account_totals %]
 
 <div class="row row-cols-1 row-cols-md-2 g-4">
       [% last_account = mon.Account.ID %]
@@ -30,9 +52,28 @@
 </div>
 
     [% UNLESS admin_list %]
-    <p>
-        <a href="[% combust.manage_url('/manage/monitors/new') %]">Setup a new monitor</a>
-    </p>
+        [% eligibility = combust.monitor_eligibility %]
+        [% IF eligibility.can_register %]
+            <p class="mt-4">
+                <a href="[% combust.manage_url('/manage/monitors/new') %]" class="btn btn-primary">Setup a new monitor</a>
+            </p>
+        [% ELSIF eligibility.enabled %]
+            [% IF eligibility.global_limit_reached %]
+                <div class="alert alert-warning">
+                    <p>Monitor registration is temporarily unavailable due to the configured global maximum number of monitors.</p>
+                </div>
+            [% ELSE %]
+                <div class="alert alert-info">
+                    <p>
+                        You have reached your monitor limit.
+                        Email <a href="mailto:[% "support" | email %]">[% "support" | email %]</a>
+                        if you need help.
+                    </p>
+                </div>
+            [% END %]
+        [% END %]
     [% END %]
+
+    [% PROCESS metrics_error %]
 
 </div>

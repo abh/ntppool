@@ -92,7 +92,8 @@ sub get_monitoring_secret_properties {
     my @keys;
 
     for my $key (get_monitoring_secret_accessors($name)) {
-        my $resp = ua()->post("$url", Content => $json->encode({secret_id_accessor => $key}));
+        my $resp =
+          ua()->post("$url", Content => $json->encode({secret_id_accessor => $key}));
         unless ($resp->is_success) {
             warn "could not get secret id data for $key: "
               . $resp->status_line . " -- "
@@ -110,7 +111,8 @@ sub delete_monitoring_secret_accessor {
     my $accessor = shift;
     my $url      = "${role_base}/role/${name}/secret-id-accessor/destroy";
 
-    my $resp = ua()->post("$url", Content => $json->encode({secret_id_accessor => $accessor}));
+    my $resp =
+      ua()->post("$url", Content => $json->encode({secret_id_accessor => $accessor}));
     if ($resp->is_success) {
         return 1;
     }
@@ -180,8 +182,9 @@ sub setup_monitoring_role {
         "token_ttl"      => "96h",           # this makes the cert also expire (in vault)
         "token_max_ttl"  => "168h",          # renewed at this interval by vault-agent ?
         "token_type"     => "default",
-        "period"         => "96h",  # vault-agent has to check-in this often to keep the token valid
-        "policies"       => "monitor-${deployment_mode}",
+        "period"         =>
+          "96h",    # vault-agent has to check-in this often to keep the token valid
+        "policies" => "monitor-${deployment_mode}",
     );
 
     my $resp = ua()->post("$url", Content => $json->encode(\%data),);

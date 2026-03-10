@@ -39,30 +39,53 @@ msgstr "Alla servrar i poolen"
 msgid "Translations"
 msgstr "Översättningar"
 
+# Basic navigation entries
+msgid "Europe"
+msgstr "Europa"
+
+msgid "Oceania"
+msgstr "Oceanien"
+
+# index.html
+msgid "Introduction"
+msgstr "Introduktion"
+
+msgid "Active Servers"
+msgstr "Aktiva Servrar"
+
+msgid "Links"
+msgstr "Länkar"
+
+msgid "Terms of service"
+msgstr "Användarvillkor"
+
+msgid "Subscribe in a reader"
+msgstr "Prenumerera i läsare"
+
+msgid "Older news"
+msgstr "Äldre nyheter"
+
 # mailinglists.html
-msgid "NTP Pool mailing lists"
-msgstr "Distributionslistor för NTP Pool"
-
-msgid "subscribe"
-msgstr "prenumerera"
-
 msgid "archive"
 msgstr "arkiv"
 
-msgid "Announcement list"
-msgstr "Informationslista"
+msgid "NTP Pool Forum"
+msgstr "NTP Pool Forum"
+
+msgid "News site"
+msgstr "Nyhetsida"
 
 msgid "Discussion list"
 msgstr "Diskussionslista"
 
-msgid "Development list"
-msgstr "Utvecklarlista"
+msgid "Development"
+msgstr "Utveckling"
 
-msgid "announcement_list_description"
-msgstr "Information från NTP Pool, som skickas ut mycket sällan. Alla som driver en server bör prenumerera på informationslistan."
+msgid "forum_description"
+msgstr "Frågor (och svar) om NTP Pool, förslag på förbättringar och ämnen relaterade till tidsmätning och drift av NTP-servrar."
 
-msgid "discussion_list_description"
-msgstr "Server-innehavare (och användare) som vill vare djupare involverade i projektet, kan prenumerera på diskussionslistan.<br/>Allmänna diskussioner om ntp hör givetvis hemma på nyhetsgruppen %1 på Usenet (och på <a href=\"%2\">Google Groups</a>)."
+msgid "news_description"
+msgstr "Meddelanden och nyheter publiceras på nyhetssidan eller på forumet."
 
 msgid "development_list_description"
 msgstr "Mer tekniskt inriktade (och förhoppningsvis alltid pragmatiska) diskussioner kring den löpande utvecklingen av <a href=\"%1\">koden för ntp pool</a> och <a href=\"%2\">GeoDNS</a> sker på listan timekeepers-dev."

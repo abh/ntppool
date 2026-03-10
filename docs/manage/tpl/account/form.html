@@ -1,3 +1,5 @@
+[% page.js.push(combust.static_group("manage.js")) %]
+
 <div class="row">
     <div class="col-md-6">
 
@@ -99,6 +101,8 @@
 
                 <p><input type="submit" class="btn btn-primary" value="[% account.id ? 'Update' : 'Create' %]"></p>
         </form>
+
+        [% INCLUDE tpl/account/monitor_config_section.html %]
     </div>
 
     <div class="col-md-3">

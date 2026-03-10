@@ -1,0 +1,17 @@
+<div id="server_header_section">
+  <h3>[% server.ip %]
+    [% IF server.hostname %]/ [% server.hostname | html %][% END %]
+    <button type="button"
+            class="btn btn-sm btn-outline-primary ms-2"
+            hx-get="/manage/admin/hostname/edit?server=[% server.ip | uri %]"
+            hx-target="#server_header_section"
+            hx-swap="outerHTML swap:0ms settle:0ms">
+        [% IF server.hostname %]Edit[% ELSE %]Set hostname[% END %]
+    </button>
+  </h3>
+  [% IF error %]
+  <div class="error">
+      [% error | html %]
+  </div>
+  [% END %]
+</div>

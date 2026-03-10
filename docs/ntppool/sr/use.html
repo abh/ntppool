@@ -13,8 +13,8 @@
 	0,1,2 i 3.pool.ntp.org imena usmeravaju na nasumični skup servera koji se
 	menjaju na svakih sat vremena. Proverite da li su časovnici na vašim racunarima
 	podešeni na nešto razumno (u okviru par minuta od 'tačnog' vremena) -
-	trebali bi da koristite <tt>ntpdate pool.ntp.org</tt>, ili da koristite
-	<tt>date</tt> naredbu i podesite prema vašem ručnom satu.
+	trebali bi da koristite <code>ntpdate pool.ntp.org</code>, ili da koristite
+	<code>date</code> naredbu i podesite prema vašem ručnom satu.
 	Startujte ntpd, i posle nekog vremena (to bi trebalo da potraje oko pola sata!)
 	<code>ntpq -pn</code> bi trebao da pokazuje nečto ovako:
 	</p>
@@ -25,7 +25,7 @@
 
 	IP adrese će biti drugačije, zato što će Vam biti dodeljeni nasumični
 	vremenski serveri. Esencijalna stvar je da će jedna od linija počinjati sa
-	zvezdicom (<tt>*</tt>), to znači da Vaš računar dobija vreme sa interneta
+	zvezdicom (<code>*</code>), to znači da Vaš računar dobija vreme sa interneta
 	- nećete više morati da brinete o tome!
 	</p>
 	<p>
@@ -98,7 +98,7 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
 	Veliki broj servera je omogućen od strane volontera, i skoro većina vremenskih servera
 	su file, mail ili webserver-i koji istovremeno pokreću ntp. Zato nemojte koristiti
 	više od četiri vremenska servera u svojoj konfiguraciji i nemojte praviti trikove sa
-	<tt>burst</tt> ili <tt>minpoll</tt> - sve što ćete dobiti je dodatni saobraćaj
+	<code>burst</code> ili <code>minpoll</code> - sve što ćete dobiti je dodatni saobraćaj
 	na serverima naših volontera.</p>
 
 

@@ -1,17 +1,31 @@
-[% page.js.push(combust.static_group("admin.js")) %]
-<script>NP.token='[% combust.auth_token %]';</script>
-
 <div id="admin" class="block">
     <h3>Manage NTP Pool</h3>
 
     <input type="hidden" name="xs" value="[% xs %]">
 
-    <form id="search_form" class="well form-search">
+    <form id="search_form" class="well form-search"
+          hx-post="/manage/admin/search"
+          hx-target="#users"
+          hx-swap="innerHTML"
+          hx-indicator="#search-loading"
+          hx-include="[name='auth_token']">
+      <input type="hidden" name="auth_token" value="[% combust.auth_token %]">
       <input class="form-group form-control form-control col-md-6 search-query"
         id="q" type="text" name="q"
         placeholder="email, ip or user name">
 
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox"
+               id="include_deleted" name="include_deleted" value="1">
+        <label class="form-check-label" for="include_deleted">
+          Include deleted servers/monitors
+        </label>
+      </div>
+
       <button type="submit" class="btn btn-primary">Search</button>
+      <span id="search-loading" class="htmx-indicator">
+          <small>Searching...</small>
+      </span>
       &nbsp;
       <small>Search by IP address, email address, user name or id:123</small>
     </form>

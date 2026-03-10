@@ -69,8 +69,9 @@ sub render_form {
     my $vz   = shift;
 
     my @device_count_options = (
-        500,     2500,    5000,     10000,    25000,    50000, 100000, 500000,
-        1000000, 5000000, 10000000, 25000000, 50000000, 100000000
+        500,      2500,   5000,    10000,   25000,    50000,
+        100000,   500000, 1000000, 5000000, 10000000, 25000000,
+        50000000, 100000000
     );
 
     if ($vz) {
@@ -130,7 +131,8 @@ sub render_zone {
     if ($vz->status eq 'New') {
 
         # todo: only load if we need to show this
-        my ($products, $groups, $group_list) = NP::Stripe::product_groups(1, $device_count);
+        my ($products, $groups, $group_list) =
+          NP::Stripe::product_groups(1, $device_count);
         if ($products->{error}) {
             warn "stripe gw error: ", $products->{error};
 
@@ -213,7 +215,7 @@ sub render_submit {
         return $self->render_form($vz);
     }
 
-   # the basic information validated, so we're in the "subscription / open source" context past this
+# the basic information validated, so we're in the "subscription / open source" context past this
 
     my $ok = $vz->account->subscription_limits_not_exceeded($vz->device_count);
     my $errors;
@@ -257,8 +259,9 @@ sub render_submit {
 
     my $msg = $self->evaluate_template('tpl/vendor/submit_email.txt');
     my $email =
-      Email::Stuffer->from(NP::Email::address("sender"))->to(NP::Email::address("vendors"))
-      ->cc(NP::Email::address("notifications"))->reply_to($self->user->email)
+      Email::Stuffer->from(NP::Email::address("sender"))
+      ->to(NP::Email::address("vendors"))->cc(NP::Email::address("notifications"))
+      ->reply_to($self->user->email)
       ->subject("New vendor zone application: " . $vz->zone_name)->text_body($msg);
 
     my $return = NP::Email::sendmail($email->email);
@@ -372,7 +375,8 @@ sub _update_subscription {
         );
 
         unless ($session->{subscription}->{max_devices}) {
-            $session->{subscription}->{max_devices} = $session->{subscription}->{max_clients}
+            $session->{subscription}->{max_devices} =
+              $session->{subscription}->{max_clients}
               if $session->{subscription}->{max_clients};
         }
 
@@ -428,7 +432,8 @@ sub render_subscription {
     if ($product_id) {
 
         my $device_count = $vz->device_count || 0;
-        my ($products, $groups, $group_list) = NP::Stripe::product_groups(1, $device_count);
+        my ($products, $groups, $group_list) =
+          NP::Stripe::product_groups(1, $device_count);
 
         warn "STRIPE: ", Data::Dump::pp($products);
         if ($products->{error}) {
@@ -464,7 +469,8 @@ sub render_subscription {
                     description => $account->organization_name,
 
                     account_id  => $account->id_token,
-                    account_url => $self->manage_url('/manage/vendor', {a => $account->id_token}),
+                    account_url =>
+                      $self->manage_url('/manage/vendor', {a => $account->id_token}),
                 );
                 if ($customer && $customer->{id}) {
                     $account->stripe_customer_id($customer->{id});
@@ -557,13 +563,14 @@ sub render_admin {
                 my $msg = $self->evaluate_template('tpl/vendor/approved_email.txt');
 
                 my $email =
-                  Email::Stuffer->from(NP::Email::address("vendors"))->to($vz->user->email)
-                  ->cc(NP::Email::address("notifications"))
+                  Email::Stuffer->from(NP::Email::address("vendors"))
+                  ->to($vz->user->email)->cc(NP::Email::address("notifications"))
                   ->reply_to(NP::Email::address("vendors"))
                   ->subject("Vendor zone activated: " . $vz->zone_name)->text_body($msg);
 
                 my $return = NP::Email::sendmail($email->email);
-                warn Data::Dumper->Dump([\$msg, \$email, \$return], [qw(msg email return)]);
+                warn Data::Dumper->Dump([\$msg, \$email, \$return],
+                    [qw(msg email return)]);
 
                 $self->tpl_param("msg" => $vz->zone_name . ' approved');
 

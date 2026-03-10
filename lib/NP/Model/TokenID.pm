@@ -57,8 +57,8 @@ sub token_key {
 }
 
 sub _set_token_key {
-    my $self = shift;
-    my $key  = shift;
+    my $self       = shift;
+    my $key        = shift;
     my $config_key = $self->token_key_config or die "missing token_key_config";
     warn "set token_key for ", ref $self, " ($config_key)";
     $tk->{data}->{$config_key} = $key;
@@ -99,7 +99,8 @@ sub id_token {
 
 sub id_token_generated {
     my $self = shift;
-    return $self->token_prefix . lc $self->token_cipher->encrypt_number_b32_crockford($self->id);
+    return $self->token_prefix
+      . lc $self->token_cipher->encrypt_number_b32_crockford($self->id);
 }
 
 1;

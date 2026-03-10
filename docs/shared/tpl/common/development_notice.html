@@ -1,0 +1,24 @@
+[% IF combust.deployment_mode != 'prod' %]
+[% SET site_type = combust.deployment_mode == 'test' ? 'Beta Site' : 'Development Site' %]
+[% SET is_manage = combust.site == 'manage' %]
+[% SET live_url = is_manage ? 'https://manage.ntppool.org' _ combust.request.uri : 'https://www.ntppool.org' _ combust.request.uri %]
+<div class="alert alert-warning py-2" role="alert">
+	<div class="d-flex justify-content-between align-items-center">
+		<small><strong>[% site_type %]</strong> - Live site: <a href="[% live_url | html %]" class="alert-link">here</a></small>
+		<button class="btn btn-sm btn-link p-0 text-warning-emphasis" type="button" onclick="document.getElementById('devDetails').classList.toggle('d-none')">
+			<small>Details</small>
+		</button>
+	</div>
+	<div class="d-none mt-1" id="devDetails">
+		<small>
+			[% IF combust.deployment_mode == 'test' %]
+			Beta version for testing new features, updates and translations before they are updated on the production site.<br>
+			Report issues: <a href="https://github.com/abh/ntppool/issues/new" class="alert-link">GitHub</a> | Discussion: <a href="https://community.ntppool.org/c/dev" class="alert-link">Community</a>
+			[% ELSE %]
+			Development version that may or may not work at any given time.<br>
+			Discussion: <a href="https://community.ntppool.org/c/dev" class="alert-link">Community</a>
+			[% END %]
+		</small>
+	</div>
+</div>
+[% END %]

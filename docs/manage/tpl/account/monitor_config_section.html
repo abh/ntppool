@@ -1,0 +1,74 @@
+[% IF combust.user.is_monitor_admin %]
+<div id="monitor-config-section" class="mt-4">
+    <h4>Monitor Configuration <small class="text-muted">(Admin Only)</small></h4>
+
+    <!-- Error display area for HTMX errors -->
+    <div id="monitor-config-error" class="alert alert-danger alert-dismissible d-none">
+        <strong>Error:</strong> <span id="monitor-config-error-message"></span>
+        <br><small><strong>Trace ID:</strong> <span id="monitor-config-error-traceid"></span></small>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+
+    [% IF success %]
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        [% success | html %]
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    [% END %]
+
+    [% IF error %]
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        [% error | html %]
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    [% END %]
+
+    <div id="monitor-config-display" class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span><strong>Monitors Enabled:</strong></span>
+                        <span class="[% IF monitor_config.monitor_enabled %]text-success font-weight-bold[% ELSE %]text-muted[% END %]">
+                            [% IF monitor_config.monitor_enabled %]Yes[% ELSE %]No[% END %]
+                        </span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span><strong>Monitor Limit:</strong></span>
+                        <span class="text-primary font-weight-bold">
+                            [% IF monitor_config.monitor_limit == -1 %]
+                                Disabled
+                            [% ELSE %]
+                                [% monitor_config.monitor_limit %]
+                            [% END %]
+                        </span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span><strong>Monitors per Server:</strong></span>
+                        <span class="text-primary font-weight-bold">[% monitor_config.monitors_per_server %]</span>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-3">
+                <button type="button" class="btn btn-sm btn-outline-primary"
+                        hx-get="/manage/account/monitor-config?a=[% account.id_token %]"
+                        hx-target="#monitor-config-display"
+                        hx-swap="outerHTML"
+                        hx-headers='{"X-Requested-With": "XMLHttpRequest"}'>
+                    <i class="fa fa-edit"></i> Edit Configuration
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+[% END %]

@@ -12,8 +12,7 @@
 	Din server <b>skal have en statisk IP adresse</b> og fast internet forbindelse.
 	Det er meget vigtigt at din IP adresse ikke skifter eller at det gør det
 	meget sjældent (ca 1 gang om året eller mindre). Den krævede båndbredde er
-	relativ lille. Hver klient vil kun sende et par UDB pakker ca hver anden
-	minut eller 20. minut.
+	relativ lille. Hver klient vil kun sende et par UDP pakker hver par minutter til hver tyvende minut.
 	</p>
 
 	<p>
@@ -52,20 +51,20 @@
 	href="mailto:ask@develooper.com">ask@develooper.com</a>.
 	</p>
 	<p>
-	Jeg vil også bede dig om tilmelde dig <a href="https://news.ntppool.org/atom.xml">weblog feed</a>
+	Jeg vil også bede dig om tilmelde dig <a href="/mailinglists.html">projektets fællesskabsforum</a>
 	og måske <a href="https://lists.ntp.org/listinfo/pool">pool mail listen</a>.
 	</p>
 	<p>
 	Det ville også være dejligt hvis du omdirigere alle kald til port 80 til den officielle side for
-	projektet <tt>https://www.ntppool.org</tt>. Dette er dog frivilligt. Køre du apache så kan du gøre
+	projektet <code>https://www.ntppool.org</code>. Dette er dog frivilligt. Køre du apache så kan du gøre
 	det med:
 	</p>
 
         [% PROCESS tpl/join/virtual_host_example.html %]
 
 	<p>
-	Igen, detter er kun hvis du køre en web server. Den officielle side vil altid komme frem hvis man starter
-	med 'www' - Men sommetider er folk dovne og skriver <tt>pool.ntp.org</tt> og bliver overrasket over at
+	Igen, dette er kun hvis du køre en web server. Den officielle side vil altid komme frem hvis man starter
+	med 'www' - Men sommetider er folk dovne og skriver <code>pool.ntp.org</code> og bliver overrasket over at
 	få en tilfældig side.
 	</p>
 	<p>

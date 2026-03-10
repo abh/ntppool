@@ -1,0 +1,48 @@
+[% page.title = 'Nola konfiguratu NTP poola erabiltzeko?' %]
+
+<div class="block">
+	<h3 id="use">Nola erabili pool.ntp.org?</h3>
+
+	<p>
+	Zure ordenagailuaren erlojua sarera sinkronizatu nahi baduzu soilik, konfigurazio fitxategia (<a href="https://www.ntp.org/">ntp.org banaketatik</a> datorren ntpd programarentzat, onartutako edozein sistema eragiletan - <b>Linux, *BSD, Windows eta sistema exotiko batzuetan ere</b>) oso sinplea da:
+	</p>
+
+	[% INCLUDE "ntppool/use/sample-config.html" %]
+
+	<p>
+	0, 1, 2 eta <code>3.pool.ntp.org</code> izenek zerbitzari ausazko multzo batera zuzentzen dute, orduro aldatuko dena. Ziurtatu zure ordenagailuaren erlojua zerbait zentzuzkotan ezarrita dagoela (denbora 'erreala'ren minutu gutxi batzuen barruan) - <code>ntpdate pool.ntp.org</code> erabil dezakezu, edo <code>date</code> komandoa soilik erabili eta zure eskumuturreko erlojuarekin ezarri. Hasi ntpd, eta denbora baten ondoren (honek ordu erdi iraun dezake!), <code>ntpq -pn</code>-k honelako zerbait erakutsi behar luke:
+	</p>
+
+	[% INCLUDE "ntppool/use/sample-ntpq.html" %]
+
+	<p>
+	IP helbideak desberdinak izango dira, ausazko denbora-zerbitzariak esleitu baitizaizkizu. Funtsezko gauza da lerro batek asterisko batekin (<code>*</code>) hasi behar duela, honek esan nahi du zure ordenagailuak Internetetik hartzen duela denbora - ez duzu berriz ere horretaz kezkatu beharko!
+	</p>
+	<p>
+	<code>pool.ntp.org</code> (edo <code>0.pool.ntp.org</code>, <code>1.pool.ntp.org</code>, etab.) bilatzeak normalean zure herrialdeko edo hurbileko zerbitzarien IP helbideak itzuliko ditu. Erabiltzaile gehienentzat honek emaitza onenak emango ditu.
+	</p>
+
+	<p>Halaber, <a href="/zone/@">kontinente eremuak</a> ere erabil ditzakezu (Adibidez <a href="/zone/europe">europe</a>, <a href="/zone/north-america">north-america</a>, <a href="/zone/oceania">oceania</a> edo <code><a href="/zone/asia">asia</a>.pool.ntp.org</code>), eta herrialde eremu bat (Suitzako <code>ch.pool.ntp.org</code> bezala) - eremu hauetarako guztietarako, berriro ere 0, 1, 2, edo 3 aurrizkiak erabil ditzakezu, <code>0.ch.pool.ntp.org</code> bezala. Ohartu, ordea, herrialde eremua agian ez dela existitzen zure herrialderentzat, edo denbora-zerbitzari bat edo bi bakarrik eduki ditzakeela.
+	</p>
+	<p>
+	Ohar hau ere kontuan hartu: sistema honek oraingoz IPv6 helbideak bakarrik eskaintzen ditu eremu batentzat IPv4 helbideekin batera, eremu izena 2 zenbakiarekin hasita badago, adib. <code>2.pool.ntp.org</code> (eremu horretan IPv6 NTP zerbitzaririk badago). Zenbakiarekin hasi gabeko eremu izenek, edo 0, 1 edo 3rekin hasitakoek, oraingoz IPv4 helbideak bakarrik eskaintzen dituzte.
+	</p>
+</div>
+
+<div class="block">
+	<h3>Ohar gehigarriak</h3>
+	<p><span class="hook">IP helbide estatiko bat eta Internet konexio ona baduzu</span> (banda-zabalera ez da hain garrantzitsua, baina egonkorra eta ez oso kargatua izan behar luke), mesedez kontuan hartu zure zerbitzaria zerbitzarien poolera donatzea. Ez zaizu segundo bakoitzeko byte ehunka batzuk baino gehiago kostatuko trafiko gisa, baina proiektu hau bizirik mantentzen lagunduko duzu. Mesedez, <a href="/join.html">nola elkartu orrialdea irakurri</a> informazio gehiagorako.
+	</p>
+
+	<p><span class="hook">Zure Internet hornitzaileak denbora-zerbitzari bat badu</span> edo zure hurbil denbora-zerbitzari on bat ezagutzen baduzu, hori erabili beharko zenuke eta ez zerrenda hau - ziurrenik denbora hobea lortuko duzu eta sare baliabide gutxiago erabiliko dituzu. Zure hurbil denbora-zerbitzari bakarra ezagutzen baduzu, ziur hori eta pool.ntp.org-tik beste biak erabil ditzakezula.</p>
+
+	<p><span class="hook">Bakanka gerta daiteke denbora-zerbitzari bera bi aldiz jarraian jasotzea</span> - ntp zerbitzaria berrabiaraztea normalean arazo hau konpontzen du. Herrialde eremu bat erabiltzen baduzu, ohartu hau gerta daitekeela proiektuan zerbitzari ezagun bakarra dagoelako - hobe da kasu honetan kontinente eremu bat erabiltzea. <a href="/zone">eremuak arakatu</a> ditzakezu eremu bakoitzean zenbat zerbitzari ditugun ikusteko.</p>
+
+	<p><span class="hook">Izan adeitsu</span>. Zerbitzari asko boluntarioek eskaintzen dituzte, eta gehienak benetan artxibo, posta edo web zerbitzariak dira, ntp ere exekutatzen dutenak kasualitatea. Beraz, ez erabili lau denbora-zerbitzari baino gehiago zure konfigurazioan, eta ez egin trapakeriarik <code>burst</code> edo <code>minpoll</code>-ekin - lortuko duzun guztia boluntario denbora-zerbitzarietan karga gehigarria izango da.</p>
+
+	<p><span class="hook">Ziurtatu zure ordenagailuaren <i>ordu-eremu konfigurazioa</i> zuzena dagoela</span>. ntpd-k berak ez du ezer egiten ordu-eremuekin, UTC soilik erabiltzen du barnean.</p>
+
+	<p><span class="hook">Sare bat pool.ntp.org-ra sinkronizatzen ari bazara</span>, mesedez konfiguratu zure ordenagailuetako bat denbora-zerbitzari gisa eta gainerako ordenagailuak horretara sinkronizatu. (irakurri beharko duzu pixka bat - ez da zaila, dena den. Eta beti dago <a href="news:comp.protocols.time.ntp">comp.protocols.time.ntp berri taldea</a>.)</p>
+
+	<p class="thanks">Une honetan, eskerrak eman nahi dizkiet beren denbora eta denbora-zerbitzariak sare honetara donatu dizkieten horiei.</p>
+</div>

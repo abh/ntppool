@@ -1,22 +1,22 @@
 <div id="graph_explanation_box" class="graph_explanation [% graph_explanation ? 'visible' : '' %]">
 
-<h3>The Score graph</h3>
+<h3>Το γράφημα Βαθμολογίας</h3>
 
 <p>
-A couple of times an hour the pool system checks the time from your server and compares it to the local time. Points are deducted if the server can't be reached or if the time offset is more than 100ms (as measured from the monitoring systems). More points are deducted the bigger the offset is.
+Λίγες φορές την ώρα το σύστημα δεξαμενής ελέγχει τον χρόνο από τον διακομιστή σας και τον συγκρίνει με τον τοπικό του χρόνο. Αφαιρούνται πόντοι αν ο διακομιστής δεν μπορεί να προσπελαστεί ή αν η απόκλιση χρόνου είναι περισσότερη από 100ms (όπως μετριέται από τα συστήματα παρακολούθησης). Περισσότεροι πόντοι αφαιρούνται όσο μεγαλύτερη είναι η απόκλιση.
 </p>
 
 <p>
-The graph is only meant as a tool to visualize trends. For more exact details of what the monitoring system found you can click on the CSV link.
+Το γράφημα είναι απλώς ένα εργαλείο για την οπτικοποίηση των τάσεων. Για πιο ακριβείς λεπτομέρειες του τι βρήκε το σύστημα παρακολούθησης μπορείτε να κάνετε κλικ στον σύνδεσμο CSV.
 </p>
 
-<h3>The Offset graph</h3>
+<h3>Το γράφημα Απόκλισης</h3>
 
 <p>
-The monitoring system works roughly like an <a href="https://www.ntp.org/ntpfaq/NTP-s-def/#412-what-is-sntp">SNTP</a> (<a href="https://tools.ietf.org/html/rfc2030">RFC 2030</a>) client, so it is more susceptible by random network latencies between the server and the monitoring system than a regular ntpd server would be.</p>
+Το σύστημα παρακολούθησης λειτουργεί περίπου σαν έναν πελάτη <a href="https://www.ntp.org/ntpfaq/NTP-s-def/#412-what-is-sntp">SNTP</a> (<a href="https://tools.ietf.org/html/rfc2030">RFC 2030</a>), οπότε είναι πιο ευάλωτο σε τυχαίες καθυστερήσεις δικτύου μεταξύ του διακομιστή και του συστήματος παρακολούθησης από ό,τι θα ήταν ένας κανονικός διακομιστής ntpd.</p>
 
 <p>
-The monitoring system can be inaccurate as much as 10ms or more.
+Το σύστημα παρακολούθησης μπορεί να είναι ανακριβές έως και 10ms ή περισσότερο.
 </p>
 
 </div>

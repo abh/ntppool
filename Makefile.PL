@@ -67,12 +67,38 @@ WriteMakefile(
 sub MY::postamble {
     return <<'MAKE_FRAG';
 
-.PHONY: testcover
+.PHONY: testcover js js-dev js-build js-build-prod js-clean js-deps js-type-check
 
-HULK ?= ./node_modules/hogan.js/bin/hulk
+NPM ?= npm
+CLIENT_DIR = client
+NODE_MODULES = $(CLIENT_DIR)/node_modules/.installed
 
-templates:
-	($(HULK) docs/manage/tpl/client/*.html > docs/shared/static/js/admin-templates.js)
+# TypeScript/JavaScript build targets
+$(NODE_MODULES): $(CLIENT_DIR)/package.json
+	cd $(CLIENT_DIR) && $(NPM) install
+	@touch $(NODE_MODULES)
+
+js-deps: $(NODE_MODULES)
+
+js-type-check: js-deps
+	cd $(CLIENT_DIR) && $(NPM) run type-check
+
+js-dev: js-deps
+	cd $(CLIENT_DIR) && $(NPM) run dev
+
+js-build: js-deps js-type-check
+	cd $(CLIENT_DIR) && $(NPM) run build:dev
+	@echo "TypeScript bundles built to docs/shared/static/js/"
+
+js-build-prod: js-deps js-type-check
+	cd $(CLIENT_DIR) && $(NPM) run build
+	@echo "TypeScript production bundles built to docs/shared/static/js/"
+
+js-clean:
+	cd $(CLIENT_DIR) && $(NPM) run clean
+	rm -rf $(NODE_MODULES)
+
+js: js-build
 
 testcover:
 	cover -delete

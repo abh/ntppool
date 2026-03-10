@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+#
+# Build TypeScript/JavaScript assets for NTP Pool
+#
+
+set -e
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROJECT_ROOT="$( cd "$SCRIPT_DIR/.." && pwd )"
+
+cd "$PROJECT_ROOT"
+
+echo "Building TypeScript/JavaScript assets..."
+
+# Check if npm is installed
+if ! command -v npm &> /dev/null; then
+    echo "ERROR: npm is not installed. Please install Node.js and npm first."
+    exit 1
+fi
+
+# Change to client directory
+cd client
+
+# Install dependencies if needed
+if [ ! -f "node_modules/.installed" ] || [ "package.json" -nt "node_modules/.installed" ]; then
+    echo "Installing npm dependencies..."
+    npm install
+    touch node_modules/.installed
+fi
+
+# Type check TypeScript
+echo "Type checking TypeScript..."
+npm run type-check
+
+# Build production bundles
+echo "Building production bundles..."
+npm run build
+
+echo "Build complete!"
+
+# Show bundle sizes
+echo ""
+echo "Bundle sizes:"
+find ../docs/shared/static/js -name "*.bundle.js" -o -name "*.bundle-legacy.js" 2>/dev/null | while read file; do
+    if [ -f "$file" ]; then
+        size=$(du -h "$file" | cut -f1)
+        echo "  $(basename "$file"): $size"
+    fi
+done
+
+# Check if source maps were generated
+if ls ../docs/shared/static/js/*.map &> /dev/null 2>&1; then
+    echo ""
+    echo "Source maps generated for debugging"
+fi
+
+# Show chunks if they exist
+if [ -d "../docs/shared/static/js/chunks" ]; then
+    echo ""
+    echo "Code-split chunks:"
+    find ../docs/shared/static/js/chunks -name "*.js" | while read file; do
+        size=$(du -h "$file" | cut -f1)
+        echo "  $(basename "$file"): $size"
+    done
+fi
+
+echo ""
+echo "TypeScript/JavaScript assets built successfully!"
+echo "Output location: docs/shared/static/js/"
+echo "Use 'npm run clean' from client/ directory to remove build artifacts"
+
+# Return to original directory
+cd "$PROJECT_ROOT"

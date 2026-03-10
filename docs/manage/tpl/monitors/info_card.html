@@ -1,8 +1,26 @@
+[% PROCESS tpl/monitors/metrics.html %]
 <div class="col">
     <div class="card">
 
+        [% UNLESS show_details %]
+        [% details_link = combust.manage_url('/manage/monitors/monitor',
+                            a    => mon.Account.IDToken,
+                            name => mon.TLSName,
+                        )
+        %]
+        [% END %]
+
         <div class="card-header">
-            <h5 class="card-title">[% mon.display_name || mon.TLSName | html %]</h5>
+            <h5 class="card-title">
+                [% IF show_details %]
+                    [% mon.display_name || mon.TLSName | html %]
+                [% ELSE %]
+                <a href="[% details_link %]">
+                    [% mon.display_name || mon.TLSName | html %]
+                </a>
+                [% END %]
+            </h5>
+            [% IF mon.Hostname %][% mon.Hostname | html %][% END %]
         </div>
 
 
@@ -11,15 +29,12 @@
             [% IF mon.CombinedStatus OR mon.CombinedLastSeen %]
 
             <li class="list-group-item">
-                [% IF mon.CombinedStatus %]
-                <span class="badge rounded-pill text-bg-[% mon.StatusColor | html %]">
-                    Status [% mon.Status | html %]</span>
-                [% END %]
-                [% IF mon.CombinedLastSeen %]
-                <span class="badge rounded-pill text-bg-[% mon.LastSeenStatus.Class %]">
-                    Connection [% mon.LastSeenStatus.Text | html %]
-                </span>
-                [% END %]
+                [% INCLUDE tpl/monitors/info_details.html,
+                mon = mon,
+                show_status = mon.CombinedStatus,
+                show_connection = mon.CombinedLastSeen,
+                show_client_version = 0,
+                %]
             </li>
 
             [% END %]
@@ -43,19 +58,18 @@
 
             [% IF mon.ClientVersion %]
             <li class="list-group-item">
-                Version: [% mon.ClientVersion | html %]<br>
+                <small>[% mon.ClientVersion | html %]</small><br>
             </li>
 
             [% END %]
+
+            [% PROCESS monitor_metrics %]
 
 
             [% UNLESS show_details %]
 
             <div class="card-footer">
-                <a class="card-link" href="[% combust.manage_url('/manage/monitors/monitor', 
-            { a    => mon.Account.IDToken,
-              name => mon.TLSName })
-        %]">See details</a>
+                <a class="card-link" href="[% details_link %]">See details</a>
             </div>
             [% END %]
 

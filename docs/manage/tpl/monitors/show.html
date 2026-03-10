@@ -1,3 +1,4 @@
+[% PROCESS tpl/monitors/metrics.html %]
 [% BLOCK status_form %]
           <form class="monitor-form" action="/manage/monitors/monitor/status?a=[% account.id_token %]&name=[% monitor.TLSName | html %]" method="post" accept-charset="utf-8">
           <input type="hidden" name="auth_token" value="[% combust.auth_token %]">
@@ -21,16 +22,45 @@
         show_details => 1,
         %]
 
+        [% PROCESS metrics_error %]
+
         <p>
         [% UNLESS mon.Status == "testing" OR mon.Status == "active" %]
           Email <a href="mailto:[% "support" | email %]?subject=Monitor [% mon.id_token | html %] setup">[% "support" | email %]</a> to continue the setup.
         [% END %]
         </p>
 
+        <!-- Delete Monitor Section -->
+        <h3>Monitor Actions</h3>
+        <div class="mb-3">
+            <button hx-get="/manage/monitors/monitor/confirm-delete?name=[% mon.TLSName | uri %]&id=[% mon.IDToken | uri %]"
+                    hx-target="#modal-container"
+                    hx-swap="innerHTML"
+                    hx-indicator="#delete-loading"
+                    class="btn btn-outline-danger btn-sm">
+                Delete Monitor
+                <div id="delete-loading" class="htmx-indicator spinner-border spinner-border-sm ms-2" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </button>
+
+            <div id="delete-result" class="mt-2"></div>
+        </div>
+
+        <!-- Modal Container for HTMX-loaded content -->
+        <div id="modal-container"></div>
+
+        [% IF error %]
+        <div class="alert alert-warning">
+            [% error | html %]
+            [% IF trace_id %]<small>(Trace ID: [% trace_id | html %])</small>[% END %]
+        </div>
+        [% END %]
+
         [% IF combust.user.is_monitor_admin %]
         <h3>Admin actions</h3>
 
-        <p>        
+        <p>
 
           [% IF mon.CombinedStatus %]
           <div class="monitor-status">
@@ -49,7 +79,8 @@
           [% END %]
 
           [% IF mon.CombinedStatus %]
-          <button class="btn btn-secondary btn-sm" hx-on:click="htmx.findAll('.monitor-status').forEach(function(child) { htmx.toggleClass(child, 'hidden') })">
+          <button class="btn btn-secondary btn-sm"
+            hx-on:click="htmx.findAll('.monitor-status').forEach(function(child) { htmx.toggleClass(child, 'hidden') })">
           Change status for both or individually</button>
           [% END %]
 

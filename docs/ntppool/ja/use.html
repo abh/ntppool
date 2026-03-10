@@ -5,15 +5,15 @@
 
 	<p>
 	単にあなたのコンピュータをネットワークに同期させたい場合は、設定ファイルは非常に簡単です。
-	(<a	href="https://www.ntp.org">ntp.org ディストリビューション</a>にあるntpdもしくは、他にNTPをサポートする Linux、*BSD、WindowsやあまりなじみのないOSなどでも)
+	(<a	href="https://www.ntp.org">ntp.org ディストリビューション</a> にあるntpdもしくは、他にNTPをサポートする Linux、*BSD、WindowsやあまりなじみのないOSなどでも)
 	</p>
 
 	[% INCLUDE "ntppool/use/sample-config.html" %]
 
 	<p>
 	0, 1,2 及び 3.pool.ntp.orgの名称はランダムに設定されたサーバを指し、1時間毎に変更されます。
-	お使いのコンピュータの時刻がある程度きちんと(正確な時刻と数分以内の誤差で)設定されていることを確認してから、<code>ntpdate pool.ntp.org</code>コマンドを実行するか、腕時計を見て単に<code>date</code>コマンドを使用して時刻を合わせます。
-	ntpdを実行してしばらくしてから(大体30分～1時間)、<code>ntpq -pn</code>コマンドを実行すると下記のような感じで出力される筈です。
+	お使いのコンピュータの時刻がある程度きちんと(正確な時刻と数分以内の誤差で)設定されていることを確認してから、<code>ntpdate pool.ntp.org</code> コマンドを実行するか、腕時計を見て単に <code>date</code> コマンドを使用して時刻を合わせます。
+	ntpdを実行してしばらくしてから(大体30分～1時間)、<code>ntpq -pn</code> コマンドを実行すると下記のような感じで出力される筈です。
 	</p>
 
 	[% INCLUDE "ntppool/use/sample-ntpq.html" %]
@@ -37,7 +37,7 @@
 	しかしながら、あなたの国のゾーン設定が存在しなかったり、1つか2つのタイムサーバしか存在しないかも知れないことを注記しておきます。
 	</p>
 	<p>
-	もし<b>最近のバージョンのWindows</b>を使用しているのであれば、システム内蔵のntpクライアントを使用可能です。
+	もし <b>最近のバージョンのWindows</b> を使用しているのであれば、システム内蔵のntpクライアントを使用可能です。
 	管理者としてコマンドプロンプトで下記を入力します。</p>
 <pre class="code">
 w32tm /config /syncfromflags:manual /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
@@ -54,13 +54,13 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 	</p>
 
 	<p>
-	Meinberg氏は<a href="http://www.meinberg.de/english/sw/ntp.htm">Windows用のntpデーモン</a>の作成をしました。
+	Meinberg氏は <a href="http://www.meinberg.de/english/sw/ntp.htm">Windows用のntpデーモン</a> の作成をしました。
 	</p>
 
 	<p>
 	もしあなたのWindowsシステムがドメインの一部である場合、そのコンピュータの時刻を勝手に更新できないかもしれません。
 	Windows の時間設定の詳細については、
-	<a href="https://technet.microsoft.com/en-us/library/cc773013%28WS.10%29.aspx">タイムサーバがどのように動作するのか</a>を参照して下さい。
+	<a href="https://technet.microsoft.com/en-us/library/cc773013%28WS.10%29.aspx">タイムサーバがどのように動作するのか</a> を参照して下さい。
 	</p>
 </div>
 
@@ -74,7 +74,7 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 	あなたは「インターネットからそれを手に入れる」べきではありません。
 	NTP プールは一般的に非常に高品質ですが、ボランティアが空き時間に運営するサービスです。
 	ローカルで信頼できるサービスのセットアップについては、機器およびサービスのベンダにご相談ください。
-	<a href="/tos.html">利用規約</a>もご覧ください。
+	<a href="/tos.html">利用規約</a> もご覧ください。
 
 	<a href="http://www.meinbergglobal.com/english/products/ntp-time-server.htm">Meinberg</a>
 	のタイムサーバをお勧めします。
@@ -85,7 +85,7 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 
 	<p><span class="hook">もしあなたが固定のグローバルIPアドレスとそれなりのインターネット接続環境をお持ちの場合</span>	(帯域幅はあまり重要ではなく、安定していて負荷が重すぎないこと)、サーバプールへの参加を検討して下さい。
 	毎秒数百バイト程しか通信はありませんが、このプロジェクトの存続の助けになります。
-	<a href="/join.html">参加のためのページ</a>を読んで詳しい情報を確認して下さい。
+	<a href="/join.html">参加のためのページ</a> を読んで詳しい情報を確認して下さい。
 	</p>
 
 	<p><span class="hook">あなたが使用しているインターネット接続プロバイダがタイムサーバを用意している場合</span>、あるいはあなたの近くに良いタイムサーバがあるのを知っている場合は、それらのタイムサーバを使用して下さい。その方が時刻精度も良く、ネットワークへの負荷も少なくてすむでしょう。
@@ -95,17 +95,17 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 	これは大抵ntpサーバを再起動するだけで解決します。
 	もし国名ゾーンを利用する場合、その国のゾーンに1つだけしかサーバが登録されていない事が原因でこの問題が発生していないか確認して下さい。
 	この場合は、大陸ゾーンを指定してください。
-	<a href="/zone">ゾーンを見る</a>ことで各ゾーンにいくつのサーバが登録されているかを知ることが出来ます。</p>
+	<a href="/zone">ゾーンを見る</a> ことで各ゾーンにいくつのサーバが登録されているかを知ることが出来ます。</p>
 
 	<p><span class="hook">友好的にしましょう</span>。多くのサーバはボランティアで提供されており、殆どがファイルサーバやメールサーバ、Webサーバを運用している傍らでntpを実行させているのです。
-	ですから 4 つを超えるタイムサーバをあなたの設定に記述しないで下さい。また、<code>burst</code>や<code>minpoll</code>などでいたずらしないで下さい。
+	ですから 4 つを超えるタイムサーバをあなたの設定に記述しないで下さい。また、<code>burst</code> や <code>minpoll</code> などでいたずらしないで下さい。
 	ボランティアのタイムサーバに余分な負荷がかかるだけです。</p>
 
-	<p><span class="hook">あなたのコンピュータの<i>タイムゾーン設定</i>が正しいか確認して下さい</span>。
+	<p><span class="hook">あなたのコンピュータの <i>タイムゾーン設定</i> が正しいか確認して下さい</span>。
 	ntpd自身はUTCを内部で使用しているため、自分自身がどのタイムゾーンに属しているのか知ることが出来ません。</p>
 
 	<p><span class="hook">ネットワークをpool.ntp.orgと同期する場合</span>、コンピュータのいずれか1台をタイムサーバとして設定して、残りのコンピュータをそのサーバに同期させて下さい。
-	(この設定をするためにマニュアルを読む必要がありますが、そんなに難しくありません。また<a href="news:comp.protocols.time.ntp">comp.protocols.time.ntpニュースグループ</a>も参照して下さい。)</p>
+	(この設定をするためにマニュアルを読む必要がありますが、そんなに難しくありません。また <a href="news:comp.protocols.time.ntp">comp.protocols.time.ntpニュースグループ</a> も参照して下さい。)</p>
 
 	<p class="thanks">最後にこのネットワークのために時間と労力を割いて、タイムサーバを提供して下さった方々に感謝いたします。</p>
 </div>

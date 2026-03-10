@@ -1,0 +1,41 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use JSON::XS;
+use FindBin;
+
+my $languages_file = "$FindBin::Bin/../i18n/languages.json";
+
+# Read and parse languages.json
+open my $fh, '<', $languages_file or die "Cannot open $languages_file: $!";
+my $json_text = do { local $/; <$fh> };
+close $fh;
+
+my $languages = decode_json($json_text);
+
+# Separate production and testing languages
+my (@production_langs, @testing_langs);
+
+for my $lang_code (sort keys %$languages) {
+    if ($languages->{$lang_code}->{testing}) {
+        push @testing_langs, $lang_code;
+    } else {
+        push @production_langs, $lang_code;
+    }
+}
+
+# Build language strings
+my $production_list = join(':', @production_langs);
+my $all_languages_list = join(':', @production_langs, @testing_langs);
+
+# Generate VCL configuration
+print <<"EOF";
+# Normalise headers that you may vary on.
+# Accept-Language has a dedicated normalising function
+if (req.http.host ~ "\\.grundclock\\.com\$") {
+    set req.http.Accept-Language = accept.language_lookup("$all_languages_list", "en", req.http.Accept-Language);
+} else {
+    set req.http.Accept-Language = accept.language_lookup("$production_list", "en", req.http.Accept-Language);
+}
+EOF

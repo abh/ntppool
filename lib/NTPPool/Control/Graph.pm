@@ -35,7 +35,8 @@ sub render {
     # we only have one graph type now
     $type = 'offset';
 
-    return $self->redirect('/graph/' . $server->ip . "/$type", 301) unless $p eq $server->ip;
+    return $self->redirect('/graph/' . $server->ip . "/$type", 301)
+      unless $p eq $server->ip;
 
     my $graph = eval { get_graph($server) };
     my $err   = $@ || !$graph;

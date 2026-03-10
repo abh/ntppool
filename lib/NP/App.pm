@@ -21,7 +21,7 @@ $lang_regexp = qr!^/$lang_regexp/!;
 
 $SIG{__WARN__} = sub {
     my $message = shift;
-    my $span    = OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
+    my $span = OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
     if ($span) {
         my $trace_id = $span->context->hex_trace_id;
         my $span_id  = $span->context->hex_span_id;
@@ -46,11 +46,14 @@ augment 'reference' => sub {
             my $uri = $env->{PATH_INFO};
 
             if ($uri eq "/__health"
-                and ($env->{REQUEST_METHOD} eq "GET" or $env->{REQUEST_METHOD} eq "HEAD"))
+                and
+                ($env->{REQUEST_METHOD} eq "GET" or $env->{REQUEST_METHOD} eq "HEAD")
+              )
             {
                 {
                     my $pspan =
-                      OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
+                      OpenTelemetry::Trace->span_from_context(
+                          OpenTelemetry::Context->current);
                     $pspan->set_name($env->{REQUEST_METHOD} . " __health");
                     my $span = NP::Tracing->tracer->create_span(
                         name => "flush_otel",

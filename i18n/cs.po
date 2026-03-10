@@ -24,6 +24,9 @@ msgstr "Jižní Amerika"
 msgid "Europe"
 msgstr "Evropa"
 
+msgid "Oceania"
+msgstr "Oceánie"
+
 msgid "Global"
 msgstr "Globální"
 
@@ -35,32 +38,47 @@ msgid "Translations"
 msgstr "Překlady"
 
 # mailinglists.html
-msgid  "NTP Pool mailing lists"
-msgstr "E-mailové konference NTP Pool"
+msgid "Introduction"
+msgstr "Úvod"
 
-msgid  "subscribe"
-msgstr "přihlásit odběr"
+msgid "Active Servers"
+msgstr "Aktivní servery"
 
-msgid  "archive"
+msgid "Links"
+msgstr "Odkazy"
+
+msgid "Terms of service"
+msgstr "Podmínky služby"
+
+msgid "Subscribe in a reader"
+msgstr "Přihlásit odběr v čtečce"
+
+msgid "Older news"
+msgstr "Starší novinky"
+
+msgid "archive"
 msgstr "archiv"
 
-msgid  "Announcement list"
-msgstr "Konference pro oznámení"
+msgid "NTP Pool Forum"
+msgstr "Fórum NTP Pool"
 
-msgid  "Discussion list"
-msgstr "Diskusní konference"
+msgid "News site"
+msgstr "Novinkový web"
 
-msgid  "Development list"
-msgstr "Vývojářská konference"
+msgid "Discussion list"
+msgstr "Diskusní seznam"
 
-msgid  "announcement_list_description"
-msgstr "Velmi velmi nízký počet oznámení o NTP Pool novinkách. Všichni operátoři serverů by měli být přihlášeni do konference pro oznámení."
+msgid "Development"
+msgstr "Vývoj"
 
-msgid  "discussion_list_description"
-msgstr "Operátoři serverů (a uživatelé), kteří chtějí být více zapojeni do projektu se mohou přihlásit do této konference.<br/> Samozřejmě, obecná diskuse o ntp by měla probíhat v Usenet skupině %1 (také na <a href=\"%2\">Google Groups</a>)."
+msgid "forum_description"
+msgstr "Otázky (a odpovědi) o NTP Pool, návrhy vylepšení a témata spojená s časováním a provozem NTP serverů."
 
-msgid  "development_list_description"
-msgstr "Více technické (a ideálně vždy pragmatické) diskuse o současném vývoji <a href=\"%1\">ntp pool kódu</a> a <a href=\"%2\">GeoDNS</a> probíhají v konferenci timekeepers-dev."
+msgid "news_description"
+msgstr "Oznámení a novinky jsou publikovány na novinkovém webu nebo na fóru."
+
+msgid "development_list_description"
+msgstr "Techničtější (a ideálně vždy pragmatičtější) diskuse o aktuálním vývoji <a href=\"%1\">kódu pool ntp</a> a <a href=\"%2\">GeoDNS</a> probíha v seznamu timekeepers-dev."
 
 # tpl/server.html
 msgid  "Back to the front page"

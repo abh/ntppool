@@ -92,7 +92,11 @@ sub render_account {
           JSON::XS->new->utf8->encode(
               {   account => {
                       url  => $account->public_url,
-                      name => ($account->organization_name || $account->name || $account->id_token),
+                      name => (
+                             $account->organization_name
+                          || $account->name
+                          || $account->id_token
+                      ),
                   },
                   servers => \@servers
               },

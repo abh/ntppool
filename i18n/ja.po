@@ -57,9 +57,6 @@ msgid "Older news"
 msgstr "古いニュース"
 
 # mailinglists.html
-msgid  "subscribe"
-msgstr "登録"
-
 msgid  "archive"
 msgstr "アーカイブ"
 
@@ -80,9 +77,6 @@ msgstr "NTPプールに関する質問（および回答）、改善の提案、
 
 msgid "news_description"
 msgstr "お知らせおよびニュースは、ニュースサイトまたはフォーラムに投稿されます。"
-
-msgid  "discussion_list_description"
-msgstr "このプロジェクトにより深く関与したいサーバ管理者(とユーザ)はディスカッションリストに登録して下さい。<br/>当然ですが、ntpに関する一般的な議論は、Usenetニュースグループ%1で行って下さい。(<a href=\"%2\">Google Groups</a>にもあります)。"
 
 msgid  "development_list_description"
 msgstr "<a href=\"%3\">開発フォーラム</a>では、<a href=\"%1\">ntpプールコード</a>と<a href=\"%2\">GeoDNS</a>の開発に関するより技術的な（そして理想を言えば実用的な）議論が行われます。"

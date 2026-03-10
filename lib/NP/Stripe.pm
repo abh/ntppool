@@ -106,7 +106,7 @@ sub billing_portal_url {
 sub get_products {
     my $zone_count   = shift || 1;
     my $device_count = shift || 0;
-    my $r            = _gw_get_api('products', {quantity => $device_count, zones => $zone_count});
+    my $r = _gw_get_api('products', {quantity => $device_count, zones => $zone_count});
     return $r unless $r and $r->{Products};
 
     # warn "PRODUCTS: ", Data::Dump::pp($r);

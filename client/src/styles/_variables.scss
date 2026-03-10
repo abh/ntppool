@@ -1,0 +1,40 @@
+/**
+ * Custom Bootstrap variable overrides for NTP Pool Project
+ * These variables are used by Bootstrap components
+ */
+
+// Typography
+$font-family-base: merriweather, "Georgia", serif;
+$font-size-base: 0.9375rem; // 15px
+$font-weight-base: 400;
+
+// Colors
+$primary: #3885B4;
+$link-color: #3885B4;
+
+// Status colors - base and hover variants
+$status-active-base: rgba(16, 185, 129, 0.2);      // Light green (table-success)
+$status-active-hover: rgba(16, 185, 129, 0.5);     // Richer green for hover
+$status-testing-base: rgba(59, 130, 246, 0.2);     // Light blue (table-info)
+$status-testing-hover: rgba(59, 130, 246, 0.5);    // Richer blue for hover
+$status-candidate-base: rgba(107, 114, 128, 0.2);  // Light gray (table-secondary)
+$status-candidate-hover: rgba(107, 114, 128, 0.5); // Richer gray for hover
+
+// Remove link underlines globally
+$link-decoration: none;
+
+// Breakpoints (consistent with Bootstrap md breakpoint)
+$breakpoint-mobile-max: 767px;
+$breakpoint-desktop-min: 768px;
+$breakpoint-tablet-max: 1024px;
+
+// Component-specific variables
+$nav-link-color: #3885B4;
+
+// Note: We override btn-primary color in _components.scss after Bootstrap loads
+
+// Custom CSS custom properties (for compatibility with existing styles)
+:root {
+    --bs-nav-link-color: #{$link-color};
+    --bs-link-color: #{$link-color};
+}

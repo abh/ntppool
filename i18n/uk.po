@@ -23,6 +23,12 @@ msgstr "Північна Америка"
 msgid "South America"
 msgstr "Південна Америка"
 
+msgid "Europe"
+msgstr "Європа"
+
+msgid "Oceania"
+msgstr "Океанія"
+
 msgid "Global"
 msgstr "Глобально"
 
@@ -34,32 +40,47 @@ msgid "Translations"
 msgstr "Переклади"
 
 # mailinglists.html
-msgid  "NTP Pool mailing lists"
-msgstr "Списки розсилки пула NTP"
+msgid "Introduction"
+msgstr "Вступ"
 
-msgid  "subscribe"
-msgstr "підписатися"
+msgid "Active Servers"
+msgstr "Активні сервери"
 
-msgid  "archive"
+msgid "Links"
+msgstr "Посилання"
+
+msgid "Terms of service"
+msgstr "Умови обслуговування"
+
+msgid "Subscribe in a reader"
+msgstr "Підписатися в рідері"
+
+msgid "Older news"
+msgstr "Старіші новини"
+
+msgid "archive"
 msgstr "архів"
 
-msgid  "Announcement list"
-msgstr "Список оголошеннь"
+msgid "NTP Pool Forum"
+msgstr "Форум NTP Pool"
 
-msgid  "Discussion list"
+msgid "News site"
+msgstr "Сайт новин"
+
+msgid "Discussion list"
 msgstr "Список обговорення"
 
-msgid  "Development list"
-msgstr "Список розробки"
+msgid "Development"
+msgstr "Розробка"
 
-msgid  "announcement_list_description"
-msgstr "Оголошення новин пулу NTP з дуже низьким трафіком. Всім адміністраторам серверів бажано мати підписку на ці оголошення."
+msgid "forum_description"
+msgstr "Питання (та відповіді) про NTP Pool, пропозиції покращень та теми, пов'язані з хронометражем та роботою NTP-серверів."
 
-msgid  "discussion_list_description"
-msgstr "Адміністратори та користувачі серверів, які бажають приймати більшу участь у проекті, можуть мати підписку на список обговорення.<br/> Зрозуміло, що обговорення ntp має відбуватися в %1 Usenet конференції (також на <a href=\"%2\">Google Groups</a>)."
+msgid "news_description"
+msgstr "Оголошення та новини публікуються на сайті новин або на форумі."
 
-msgid  "development_list_description"
-msgstr "Технічна дискусія розробки <a href=\"%1\">коду пулу ntp</a> та <a href=\"%2\">GeoDNS</a>."
+msgid "development_list_description"
+msgstr "Більш технічні (і в ідеалі завжди прагматичні) обговорення поточної розробки <a href=\"%1\">коду пула ntp</a> та <a href=\"%2\">GeoDNS</a> відбуваються в списку timekeepers-dev."
 
 
 # tpl/server.html

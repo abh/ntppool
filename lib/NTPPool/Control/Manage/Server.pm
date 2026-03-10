@@ -17,6 +17,7 @@ use Net::DNS;
 use Math::BaseCalc       qw();
 use Math::Random::Secure qw(irand);
 use NP::NTP;
+use NP::IntAPI qw(int_api);
 use OpenTelemetry -all;
 use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
 use experimental             qw( defer );
@@ -116,7 +117,8 @@ sub handle_add {
 
     unless ($account->can_add_servers) {
         $span->set_attribute("request.error", "verify_existing");
-        $self->tpl_param('error', 'Please verify your existing servers before adding more.');
+        $self->tpl_param('error',
+            'Please verify your existing servers before adding more.');
         return OK, $self->evaluate_template('tpl/manage/add_form.html');
     }
 
@@ -172,10 +174,12 @@ sub handle_add {
             my $msg = $self->evaluate_template('tpl/manage/add_email.txt');
             my $email =
               Email::Stuffer->from(NP::Email::address("sender"))
-              ->to(NP::Email::address("notifications"))->reply_to($self->user->email)
+              ->to(NP::Email::address("notifications"))
+              ->reply_to($self->user->email)
               ->text_body($msg);
 
-            my $subject = "New addition to the NTP Pool: " . join(", ", map { $_->{ip} } @added);
+            my $subject =
+              "New addition to the NTP Pool: " . join(", ", map { $_->{ip} } @added);
             if (grep { $_->{hostname} } @added) {
                 $subject .= " (" . join(", ", map { $_->{hostname} } @added) . ")";
             }
@@ -233,8 +237,9 @@ sub _add_server {
     my ($self, $server) = @_;
 
     my $comment = $self->req_param('comment');
-    $self->tpl_param('comment',    $comment);
-    $self->tpl_param('scores_url', $self->config->base_url('ntppool') . '/scores/' . $server->{ip});
+    $self->tpl_param('comment', $comment);
+    $self->tpl_param('scores_url',
+        $self->config->base_url('ntppool') . '/scores/' . $server->{ip});
 
     my $s;
 
@@ -265,7 +270,10 @@ sub _add_server {
 
         # move verification to history table
         my %d = ();
-        for my $k (qw(server_id user_id user_ip indirect_ip verified_on created_on modified_on)) {
+        for my $k (
+            qw(server_id user_id user_ip indirect_ip verified_on created_on modified_on)
+          )
+        {
             $d{$k} = $v->$k;
         }
         my $h = NP::Model->server_verifications_history->create(%d);
@@ -302,7 +310,8 @@ sub get_server_info {
 
     my %server;
 
-    my $span = NP::Tracing->tracer->create_span(name => "manage.servers.get_server_info",);
+    my $span =
+      NP::Tracing->tracer->create_span(name => "manage.servers.get_server_info",);
     dynamically otel_current_context = otel_context_with_span($span);
     defer {
         if (my $err = $server{error}) {
@@ -394,7 +403,10 @@ sub req_server {
         with_objects => ['server_verification', 'account'],
     );
     my ($server) = ($servers && $servers->[0]);
-    return unless $server and $server->account and $server->account->can_edit($self->user);
+    return
+          unless $server
+      and $server->account
+      and $server->account->can_edit($self->user);
     return $server;
 }
 
@@ -403,12 +415,9 @@ sub handle_update {
 
     return $self->handle_update_netspeed
       if $self->request->uri =~ m!^/manage/server/update/netspeed!;
-    return $self->handle_mode7_check
-      if $self->request->uri =~ m!^/manage/server/update/mode7check!;
 
     # deletion and non-js netspeed
     if ($self->request->uri =~ m!^/manage/server/update/server!) {
-        return $self->handle_mode7_check     if $self->req_param('mode7check');
         return $self->handle_update_netspeed if $self->req_param('Update');
         if ($self->req_param('Delete')) {
             return $self->handle_delete;
@@ -417,92 +426,88 @@ sub handle_update {
     return NOT_FOUND;
 }
 
-sub handle_mode7_check {
-    my $self     = shift;
-    my $server   = $self->req_server or return NOT_FOUND;
-    my $ntpcheck = $config_ntp->{ntpcheck};
-    my $url      = URI->new("$ntpcheck");
-    $url->path("/check/" . $server->ip);
-    $url->query("queue=1");
-    warn "URL: $url";
-    $self->ua->post($url);
-    return $self->redirect('/manage/servers') if $self->req_param('noscript');
-
-    my $return = {queued => 1,};
-
-    return OK, encode_json($return);
-
-}
-
 sub handle_update_netspeed {
     my $self   = shift;
     my $server = $self->req_server or return NOT_FOUND;
+
     if (defined(my $netspeed = $self->req_param('netspeed'))) {
         return 403 unless $self->check_auth_token;
 
         return 400 unless $netspeed =~ m/^\d+$/;
-        $netspeed = 100000 if $netspeed > 3000000;
-        $netspeed = 1000   if $netspeed < 0;
 
-        my $old = $server->get_data_hash;
-
-        if ($netspeed > $server->netspeed_target) {
-            unless ($server->verified) {
-                my $return = {
-                    netspeed => $self->netspeed_human($server->netspeed_target),
-                    zones    => $self->evaluate_template(
-                        'tpl/manage/server_zones.html',
-                        {   page_style => "none",
-                            server     => $server,
-                            "error" => "Please verify your server before increasing the netspeed",
-                            verify_link => 1,
-                        }
-                    )
-                };
-                return OK, encode_json($return);
+        # Call internal API
+        my $api_response = int_api(
+            'post',
+            'server/netspeed',
+            {   server_ip => $server->ip,
+                netspeed  => int($netspeed),
+                user      => $self->plain_cookie($self->user_cookie_name),
+                a         => $self->current_account->id_token,
             }
+        );
+
+        # For non-HTMX requests, redirect after processing
+        unless ($self->is_htmx) {
+            return $self->redirect('/manage/servers');
         }
 
-        my $db  = NP::Model->db;
-        my $txn = $db->begin_scoped_work;
+        # Set common template parameters
+        # Refresh server data from database for success cases
+        if ($api_response->{code} == 200) {
+            $server = $self->req_server;
+        }
+        $self->tpl_param('server', $server);
 
-        # todo: adjust elsewhere based on verification, etc
-        $server->netspeed($netspeed);
-        $server->netspeed_target($netspeed);
-        if ($server->netspeed_target < 10000) {
-            $server->leave_zone('@');
+        # Handle API response codes
+        if ($api_response->{code} == 200) {
+
+            # Success - return updated server template fragment
+            return OK, $self->evaluate_template('tpl/manage/server.html');
+        }
+        elsif ($api_response->{code} == 403) {
+
+            # Verification required
+            $self->tpl_param('error',
+                     $api_response->{message}
+                  || $api_response->{error}
+                  || "Please verify your server before increasing the netspeed");
+            return OK, $self->evaluate_template('tpl/manage/server.html');
+        }
+        elsif ($api_response->{code} == 404) {
+
+            # Server not found
+            $self->tpl_param('error',
+                     $api_response->{message}
+                  || $api_response->{error}
+                  || "Server not found or access denied");
+            return OK, $self->evaluate_template('tpl/manage/server.html');
+        }
+        elsif ($api_response->{code} == 409) {
+
+            # Conflict - don't show trace ID
+            $self->tpl_param('error',
+                     ($api_response->{data} && $api_response->{data}->{message})
+                  || $api_response->{message}
+                  || $api_response->{error}
+                  || 'Conflict updating netspeed');
+            return OK, $self->evaluate_template('tpl/manage/server.html');
         }
         else {
-            $server->join_zone('@');
+            # Other errors
+            $self->tpl_param('error',
+                     $api_response->{message}
+                  || $api_response->{error}
+                  || 'Failed to update netspeed');
+            return OK, $self->evaluate_template('tpl/manage/server.html');
         }
-
-        NP::Model::Log->log_changes($self->user, "server-netspeed",
-            "set netspeed to " . $server->netspeed_target,
-            $server, $old);
-
-        if ($server->netspeed > $server->netspeed_target) {
-            $server->netspeed($server->netspeed_target);
-        }
-
-        $server->save;
-
-        $db->commit;
     }
 
-    return $self->redirect('/manage/servers') if $self->req_param('noscript');
+    # For non-HTMX requests without netspeed parameter, redirect
+    return $self->redirect('/manage/servers') unless $self->is_htmx;
 
-    my $return = {
-        netspeed => $self->netspeed_human($server->netspeed_target),
-        zones    => $self->evaluate_template(
-            'tpl/manage/server_zones.html',
-            {page_style => "none", server => $server}
-        )
-    };
-
-    #warn Data::Dumper->Dump([\$return],[qw(return)]);
-
-    return OK, encode_json($return);
-
+    # Default return for HTMX requests without netspeed parameter
+    $self->tpl_param('server', $server);
+    return OK, $self->evaluate_template('tpl/manage/server.html');
 }
 
 sub handle_verify {
@@ -513,8 +518,9 @@ sub handle_verify {
     my ($token) = ($self->request->uri =~ m!^/manage/server/verify/(.+)!);
     unless ($token) {
         my $server = $self->req_server or return NOT_FOUND;
-        $self->tpl_param(server           => $server);
-        $self->tpl_param(verification_url => $config->site->{ntppool}->{verification_url});
+        $self->tpl_param(server => $server);
+        $self->tpl_param(
+            verification_url => $config->site->{ntppool}->{verification_url});
 
         my $validate_settings = $self->system_setting('validation');
         if ($validate_settings and %$validate_settings) {
@@ -537,6 +543,16 @@ sub handle_verify {
     return NOT_FOUND unless $verification;
     my $server = $verification->server;
     return 403 unless $server->account->can_edit($self->user);
+
+    # If no account parameter, redirect with server's account to set proper context
+    unless ($self->req_param('a')) {
+        return $self->redirect(
+            $self->manage_url(
+                "/manage/server/verify/$token",
+                {a => $server->account->id_token}
+            )
+        );
+    }
 
     # if verified already, redirect to server on manage page
     if ($verification->verified_on) {
@@ -596,7 +612,8 @@ sub handle_delete {
             return 403 unless $self->check_auth_token;
 
             unless ($self->current_account->can_add_servers) {
-                $self->tpl_param('error', 'Please verify active servers in the account first.');
+                $self->tpl_param('error',
+                    'Please verify active servers in the account first.');
                 return OK, $self->evaluate_template('tpl/manage/delete_set.html');
             }
 
@@ -701,10 +718,12 @@ sub handle_move {
             for my $server (@servers_to_move) {
                 my $old = $server->get_data_hash();
 
-                warn "changing account to token / id ", $new_account->token_id, $new_account->id;
+                warn "changing account to token / id ", $new_account->token_id,
+                  $new_account->id;
                 $server->account_id($new_account->id);
 
-                NP::Model::Log->log_changes($self->user, "server-move", "Server account change",
+                NP::Model::Log->log_changes($self->user, "server-move",
+                    "Server account change",
                     $server, $old);
                 $server->save;
             }

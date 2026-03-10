@@ -1,0 +1,118 @@
+{
+  "ar": {
+    "name": "اَلْعَرَبِيَّةُ"
+  },
+  "bg": {
+    "name": "Български"
+  },
+  "ca": {
+    "name": "Català"
+  },
+  "cs": {
+    "name": "Čeština"
+  },
+  "da": {
+    "name": "Dansk"
+  },
+  "de": {
+    "name": "Deutsch"
+  },
+  "el": {
+    "name": "Ελληνικά"
+  },
+  "en": {
+    "name": "English"
+  },
+  "es": {
+    "name": "Español"
+  },
+  "eu": {
+    "name": "Euskara"
+  },
+  "fa": {
+    "name": "فارسی"
+  },
+  "fi": {
+    "name": "Suomi"
+  },
+  "fr": {
+    "name": "Français"
+  },
+  "he": {
+    "name": "עברית"
+  },
+  "hr": {
+    "name": "Hrvatski",
+    "testing": 1
+  },
+  "hi": {
+    "name": "हिन्दी"
+  },
+  "hu": {
+    "name": "Magyar"
+  },
+  "id": {
+    "name": "Bahasa Indonesia"
+  },
+  "it": {
+    "name": "Italiano"
+  },
+  "ja": {
+    "name": "日本語"
+  },
+  "kk": {
+    "name": "Қазақша"
+  },
+  "ko": {
+    "name": "한국어"
+  },
+  "nb": {
+    "name": "Norsk (bokmål)"
+  },
+  "nl": {
+    "name": "Nederlands"
+  },
+  "nn": {
+    "name": "Norsk (nynorsk)"
+  },
+  "pl": {
+    "name": "Polski"
+  },
+  "pt": {
+    "name": "Português"
+  },
+  "ro": {
+    "name": "Română"
+  },
+  "ru": {
+    "name": "Русский"
+  },
+  "si": {
+    "name": "සිංහල"
+  },
+  "sr": {
+    "name": "Српски"
+  },
+  "sv": {
+    "name": "Svenska"
+  },
+  "th": {
+    "name": "ภาษาไทย"
+  },
+  "tr": {
+    "name": "Türkçe"
+  },
+  "uk": {
+    "name": "Українська"
+  },
+  "vi": {
+    "name": "Tiếng Việt"
+  },
+  "zh": {
+    "name": "中文（简体）"
+  },
+  "zh-tw": {
+    "name": "中文（繁體）",
+    "testing": 1
+  }
+}

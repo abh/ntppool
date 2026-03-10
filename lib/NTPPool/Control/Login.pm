@@ -42,7 +42,8 @@ my $crypt = Crypt::Passphrase->new(
         module => 'Bcrypt',
         cost   => 4,
         hash   => 'sha256',
-    }
+    },
+    validators => ["Argon2"],
 );
 
 sub user {
@@ -59,7 +60,9 @@ sub user {
     my $uid;
 
     if (my $session_cookie = $self->plain_cookie($self->user_cookie_name)) {
-        if (my ($session_key, $checksum) = ($session_cookie =~ m!^nps_([^_]+)_(\d+)(?:;\d+)?$!)) {
+        if (my ($session_key, $checksum) =
+            ($session_cookie =~ m!^nps_([^_]+)_(\d+)(?:;\d+)?$!))
+        {
             my $sessions = NP::Model->user_session->get_objects(
                 query   => [token_lookup => $checksum],
                 sort_by => 'last_seen desc',
@@ -167,7 +170,8 @@ sub logout {
 sub _here_url {
     my $self = shift;
     my $args = $self->request->args || '';
-    my $here = URI->new($self->config->base_url($self->site) . $self->request->uri . '?' . $args);
+    my $here =
+      URI->new($self->config->base_url($self->site) . $self->request->uri . '?' . $args);
     $here->as_string;
 }
 
@@ -178,13 +182,19 @@ sub setup_session {
         my $data = decode_json($resp->decoded_content());
         unless ($data->{session_token}) {
             warn "could not get session key from response";
+            return {success => 0, error => "Invalid session response from API"};
         }
         else {
             $self->_set_session_cookie($data->{session_token});
+            return {success => 1};
         }
     }
     else {
         warn "could not create sesssion: ", $resp->status_line;
+        return {
+            success => 0,
+            error   => "Could not create session: " . $resp->status_line
+        };
     }
 }
 

@@ -4,30 +4,30 @@
 	<h3 id="use">Làm sao để sử dụng pool.ntp.org?</h3>
 
 	<p>
-	Nếu bạn chỉ muốn đồng bộ thời gian trên máy tính với mạng lưới NTP Pool, bạn có thể đặt cấu hình đồng bộ thời gian trên phần mềm ntpd như sau:
+	Để đồng bộ thời gian của máy với NTP Pool, bạn có thể đặt cấu hình đồng bộ thời gian trên phần mềm ntpd như sau:
 	</p>
 
 	[% INCLUDE "ntppool/use/sample-config.html" %]
 
 	<p>
-	Các địa chỉ 0, 1, 2 và <code>3.pool.ntp.org<code/> chỉ đến một tập hợp các máy chủ thời gian ngẫu nhiên, ở gần máy tính bạn và mà sẽ làm mới mỗi giờ.
-	Đảm bảo đồng hồ máy tính của bạn được đặt ở một mức hợp lý (trong vòng vài phút so với thời gian 'thực')
+	Các địa chỉ 0, 1, 2 và <code>3.pool.ntp.org</code> chỉ đến một tập hợp các máy chủ thời gian ngẫu nhiên, ở gần máy tính bạn và mà sẽ làm mới mỗi giờ.
+	Đảm bảo đồng hồ máy tính được đặt ở một mức hợp lý (trong vòng vài phút so với thời gian 'thực')
 	- bạn có thể chạy lệnh <code>ntpdate pool.ntp.org</code> (đồng bộ thời gian 1 lần với máy chủ NTP Pool gần nhất)
-	hay chỉ đơn giản chạy lệnh <code>date</code> và chỉnh thời gian gần đúng với đồng hồ đeo tay của bạn.
+	hay chỉ đơn giản chạy lệnh <code>date</code> và chỉnh thời gian gần đúng với đồng hồ vật lý.
 	Sau đó, hãy khởi chạy ntpd và sau một thời gian (có thể mất tới nửa giờ!), <code>ntpq -pn</code> sẽ xuất ra na ná như sau:
 	</p>
 
 	[% INCLUDE "ntppool/use/sample-ntpq.html" %]
 
 	<p>
-	Địa chỉ IP mỗi dòng sẽ khác nhau vì bạn đã được chỉ định các máy chủ thời gian
-	ngẫu nhiên. Nếu bạn muốn biết rằng máy tính của bạn có đồng bộ thời gian liên tục
+	Lúc này, địa chỉ IP mỗi dòng sẽ khác nhau vì chúng được chỉ định
+	ngẫu nhiên. Nếu bạn muốn biết rằng máy tính có đang đồng bộ NTP liên tục
 	với Internet hay không, bạn có thể tìm dấu sao ở một trong các dòng (<code>*</code>; như đầu ra trên).
 	Có dấu sao nghĩa là lúc này máy tính đang được đồng bộ.
 	</p>
 	<p>
 	Tra cứu <code>pool.ntp.org</code> (hoặc <code>0.pool.ntp.org</code>, <code>1.pool.ntp.org</code>, v.v.) thường sẽ trả về địa chỉ IP cho các máy chủ đồng bộ thời gian gần máy tính bạn.
-	Đối với hầu hết người dùng, các địa chỉ ấy thường sẽ mang kết quả tốt nhất.
+	Nếu bạn chỉ sử dụng với mục đích đơn giản, các IP ấy thường sẽ mang kết quả tốt nhất.
 	</p>
 
 	<p>Bạn cũng có thể sử dụng các phân vùng cấp lục địa
@@ -36,7 +36,7 @@
 	<a href="/zone/oceania">oceania</a>
 	hoặc <code><a href="/zone/asia">asia</a>.pool.ntp.org</code>)
 	hay cấp quốc gia (như ch.pool.ntp.org ở Thụy Sĩ) - đối với tất cả các vùng này, bạn cũng có thể sử dụng các tiền tố 0, 1, 2 hoặc 3 (ví dụ như <code>0.ch.pool.ntp.org</code>). Xin lưu ý rằng
-	các phân vùng cấp quốc gia có thể không tồn tại với đất nước của bạn hay chỉ chứa một hoặc hai máy chủ thời gian.
+	các phân vùng cấp quốc gia có thể không có sẵn với quốc gia của bạn hay chứa một vài máy chủ thời gian.
 	</p>
 	<p>
 	Các địa chỉ phân vùng cấp lục địa như là
@@ -74,7 +74,7 @@
 
         <p><span class="hook">Hãy cân nhắc xem NTP Pool có phù hợp với nhu cầu của bạn không</span>.
 			Nếu doanh nghiệp, tổ chức hoặc cuộc sống con người phụ thuộc vào việc có thời gian chính xác hoặc có thể bị tổn hại nếu thời gian sai, bạn không nên "chỉ cần xóa nó khỏi Internet". NTP Pool thường có chất lượng rất cao, nhưng đây là dịch vụ do các tình nguyện viên điều hành trong thời gian rảnh rỗi. Vui lòng trao đổi với nhà cung cấp thiết bị và dịch vụ của bạn về việc thiết lập dịch vụ cục bộ và đáng tin cậy cho bạn. Xem thêm các điều khoản dịch vụ của chúng tôi. Chúng tôi khuyên bạn nên sử dụng máy chủ thời gian từ Meinberg, nhưng bạn cũng có thể tìm thấy máy chủ thời gian từ End Run, Spectracom và nhiều công ty khác.
-			Bạn cũng có thể xem thêm <a href="/tos.html">Điều khoản Dịch vụ</a> của chúng tôi.
+			Bạn cũng có thể xem thêm <a href="/tos.html">Điều khoản Dịch vụ</a> của dự án.
 		</p><p>
         Chúng tôi khuyến khích bạn nên dùng thiết bị đồng bộ thời gian NTP của công ty
         <a href="http://www.meinbergglobal.com/english/products/ntp-time-server.htm">Meinberg</a>,
@@ -83,17 +83,17 @@
         <a href="http://spectracom.com/products-services/precision-timing#anchor-2172">Spectracom</a>, v.v.
         </p>
 
-	<p><span class="hook">Nếu bạn có địa chỉ IP tĩnh và kết nối Internet hợp lý</span> (băng thông không quá quan trọng, nhưng phải ổn định và không quá tải), vui lòng cân nhắc tặng máy chủ của bạn cho nhóm máy chủ. Bạn sẽ không mất nhiều hơn vài trăm byte lưu lượng mỗi giây, nhưng bạn sẽ giúp dự án này tồn tại.
+	<p><span class="hook">Nếu bạn có địa chỉ IP tĩnh và kết nối Internet tốt</span> (băng thông không quá quan trọng, nhưng phải ổn định và không quá tải), vui lòng cân nhắc tặng máy chủ của bạn cho nhóm máy chủ. Bạn sẽ không mất nhiều hơn vài trăm byte lưu lượng mỗi giây, nhưng bạn sẽ giúp dự án này tồn tại.
 	Vui lòng đọc thêm trang <a href="/join.html">hướng dẫn thêm máy chủ</a> để biết thêm thông tin.
 	</p>
 
-	<p><span class="hook">Nếu bạn biết các máy chủ đồng bộ thời gian tốt ở gần bạn hay của nhà cung cấp Internet của bạn</span>, bạn nên sử dụng máy chủ đó thay cho các máy chủ trong dự án NTP Pool - như vậy khả năng bạn sẽ được thời gian chính xác hơn và sử dụng ít tài nguyên mạng hơn. Bạn cũng có thể sử dụng kết hợp các máy chủ đó kết hợp với các máy chủ trong mạng lưới NTP Pool.</p>
+	<p><span class="hook">Nếu bạn biết có máy chủ đồng bộ thời gian tốt của ISP</span> hay trong khu vực bạn ở, bạn nên dùng các máy chủ thay cho dự án này - như vậy bạn sẽ được thời gian chính xác hơn và sử dụng ít tài nguyên mạng hơn. Bạn cũng có thể sử dụng kết hợp các máy chủ đó với dự án NTP Pool.</p>
 
-	<p><span class="hook">Đôi khi bạn được chỉ định cùng một máy chủ NTP nhiều lần khi dùng NTP Pool</span> -
-	việc chỉ khởi động lại phần mềm NTP thường giải quyết được vấn đề này.
-	Nếu bạn đang dùng phân vùng cấp quốc gia, bạn nên lưu ý rằng một số phân vùng có rất ít máy chủ.
-	Trong trường hợp đó, bạn có thể sử dụng các phân vùng cấp cao hơn (theo lục địa hay cả dự án này) để tránh tình trạng lặp máy chủ.
-	Bạn có thể duyệt qua các <a href="/zone">phân vùng</a> để số lượng máy chủ.</p>
+	<p><span class="hook">Đôi khi máy bạn được chỉ định cùng một địa chỉ nhiều lần khi dùng NTP Pool</span> -
+	khởi động lại phần mềm NTP thường giải quyết được vấn đề này.
+	Nếu bạn đang cài cấu hình chỉ phân vùng cấp quốc gia, bạn nên lưu ý rằng một số phân vùng có không hoặc rất ít máy chủ.
+	Trong trường hợp đó, bạn có thể sử dụng các phân vùng cấp cao hơn (theo lục địa hay toàn cầu) để tránh tình trạng lặp máy chủ.
+	Các phân vùng có thể được tra cứu tại <a href="/zone">đây</a>.</p>
 
 	<p><span class="hook">Hãy nghĩ đến những người đã tình nguyên liên kết máy chủ với NTP Pool</span>.
 	Dịch vụ đồng bộ hóa thời gian của dự án này đa phần được cung cấp bởi các tình nguyện viên. Khi bạn sử dụng quá
@@ -102,8 +102,8 @@
 	<p><span class="hook">Hãy đảm bảo rằng <i>cài đặt múi giờ</i> của máy bạn như mong muốn</span>.
 	Các máy chủ NTP không thể thay đổi múi giờ, mà chỉ cung cấp giờ UTC cho máy tính tự tính ra múi giờ đã cài đặt.</p>
 
-	<p><span class="hook">Nếu bạn muốn đồng bộ hóa cả mạng nội bộ với pool.ntp.org</span>, vui lòng thiết lập
+	<p><span class="hook">Nếu bạn muốn đồng bộ hóa cả mạng nội bộ với pool.ntp.org</span>, bạn cần phải thiết lập
 	dịch vụ cung cấp NTP trên máy chủ và đồng bộ các máy tính trong mạng nội bộ với máy chủ đó.</p>
 
-	<p class="thanks">Xin chân thành cảm ơn những người đã góp công sức và thời gian để xây dựng nên dự án này!</p>
+	<p class="thanks">Xin chân thành cảm ơn những người đã góp phần xây dựng nên dự án này!</p>
 </div>

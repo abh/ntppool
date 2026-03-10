@@ -1,9 +1,9 @@
 package NP::Model::Account;
 use strict;
-use Math::BaseCalc qw();
+use Math::BaseCalc       qw();
 use Math::Random::Secure qw(irand);
 use NP::Model::TokenID;
-use base qw(NP::Model::TokenID);
+use base            qw(NP::Model::TokenID);
 use Combust::Config ();
 
 sub BAD_SERVER_THRESHOLD {-15}
@@ -55,7 +55,11 @@ sub validate {
               "Page URL can only contain basic letters, numbers, hypens and underscores";
         }
         else {
-            if (NP::Model->account->get_accounts_count(query => [url_slug => $account->url_slug])) {
+            if (NP::Model->account->get_accounts_count(
+                    query => [url_slug => $account->url_slug]
+                )
+              )
+            {
                 $errors->{url_slug} = "this page URL isn't available";
             }
         }
@@ -80,7 +84,10 @@ sub can_edit {
 }
 
 sub can_view {
-    return shift->can_edit(shift);
+    my ($self, $user) = @_;
+    return 1 if $self->can_edit($user);
+    return 1 if $user->is_monitor_admin;
+    return 0;
 }
 
 sub can_add_servers {

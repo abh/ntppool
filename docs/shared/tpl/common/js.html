@@ -1,6 +1,11 @@
-[%
+<script
+  src="[% combust.static_url("/build/app.js") %]"
+  type="module"
+></script>
 
-page.js.unshift(combust.static_group("common.js"));
+[%-
+
+# legacy scripts
 
 MACRO show_js(list_js_files) BLOCK;
   IF list_js_files && list_js_files.list && list_js_files.list.size;
@@ -37,5 +42,3 @@ show_js(page.js);
 %]
 
 [% page.js_final %]
-
-<script defer data-domain="[% combust.analytics_hostname %]" src="https://st.ntppool.org/js/script.js"></script>

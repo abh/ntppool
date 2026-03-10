@@ -1,16 +1,16 @@
 <div class="block">
 
-<h3>Recomendaciones de configuraci&oacute;n para los sevidores que se unen a la lista de servidores</h3>
+<h3>Recomendaciones de configuración para los servidores que se unen al pool</h3>
 
 <p>
 La <a href="http://support.ntp.org/bin/view/Support/WebHome">
-secci&oacute;n de soporte</a> en <a href="http://support.ntp.org/">
-support.ntp.org</a> tiene mucha informaci&oacute;n &uacute;til.
+sección de soporte</a> en <a href="http://support.ntp.org/">
+support.ntp.org</a> tiene mucha información útil.
 </p>
 
 <p>
-Si simplemente quieres <i>utilizar</i> la lista de sevidores, echa un vistazo
-a la p&aacute;gina de <a href="/use.html">uso de la lista de servidores</a>.
+Si simplemente quieres <i>utilizar</i> el pool, echa un vistazo
+a la página de <a href="/use.html">uso del pool</a>.
 </p>
 
 <p>
@@ -22,16 +22,20 @@ ntpd (servicio de protocolo de hora de Internet).
 
 <p>
 Debajo te ofrecemos algunas cuestiones de particular importancia si vas a
-unirte a la lista de servidores NTP con tu servidor.
+unirte al Pool NTP con tu servidor.
 </p>
 
-<h4 id="management-queries">Management queries</h4>
+<p>El Internet Engineering Task Force ha publicado un borrador sobre
+<a href="https://tools.ietf.org/html/draft-ietf-ntp-bcp">
+Mejores Prácticas Actuales del Protocolo de Tiempo de Red</a> que recomendamos.</p>
 
-<p>Make the default configuration be to not allow "management queries". For ntpd this will be adding the "noquery" option to the default "restrict" lines, for example:</p>
+<h4 id="management-queries">Consultas de gestión</h4>
+
+<p>Haz que la configuración predeterminada no permita "consultas de gestión". Para ntpd esto significa agregar la opción "noquery" a las líneas "restrict" predeterminadas, por ejemplo:</p>
 
 [% INCLUDE "join/configuration/restrict-default.html" %]
 
-<p>To allow commands like "ntpq -c pe" to work from localhost you can add:</p>
+<p>Para permitir que comandos como "ntpq -c pe" funcionen desde localhost puedes agregar:</p>
 
 [% INCLUDE "join/configuration/restrict-localhost.html" %]
 
@@ -44,27 +48,27 @@ relojes nunca est&aacute; seguro").
 </p>
 
 <p>
-Para los servidores a&ntilde;adidos a la lista de servidores recomendamos
-configurar no menos de 4 servidores y no m&aacute;s de 7 servidores.
+Para los servidores añadidos al pool recomendamos
+configurar no menos de 4 servidores y no más de 7 servidores.
 </p>
 
 <h4>No uses los servidores *.pool.ntp.org</h4>
 
 <p>
-Ironicamente, para asegurarse de que el servicio del grupo es el mejor posible,
-no deber&iacute;as usar los alias *.pool.ntp.org en tu configuraci&oacute;n
-cuando vas a a&ntilde;adir tu servidor a la lista de servidores.
+Irónicamente, para asegurarse de que el servicio del pool es el mejor posible,
+no deberías usar los alias *.pool.ntp.org en tu configuración
+cuando vas a añadir tu servidor al pool.
 </p>
 
 <p>
-Para que la lista de servidores sea robusta, es mejor que todos los servidores
-de la lista "elijan a dedo" buenos servidores horarios locales (a esto se le
-llama red inteligente). La wiki de NTP.org tiene una
+Para que el pool sea robusto, es mejor que todos los operadores
+del pool "elijan a mano" buenos servidores horarios locales (en términos de red).
+La wiki de NTP.org tiene una
 <a href="https://support.ntp.org/Servers/">
-lista de servidores p&uacute;blicos</a>.
+lista de servidores públicos</a>.
 </p>
 
-<h4>Uso del servicio de protocolo hora de red est&aacute;ndar (ntpd)</h4>
+<h4>Uso del ntpd estándar</h4>
 
 <p>
 Todos apostamos por la diversidad de programas, pero un porcentaje
@@ -73,15 +77,25 @@ se producen con software distinto a ntpd.
 </p>
 
 <p>
-Puedes <i>utilizar</i> la lista de servidores con cualquier programa que
-hable NTP, pero si vas a participar en el proyecto, te recomendamos que
+Puedes <i>utilizar</i> el pool con cualquier programa que
+hable NTP, pero si vas a unirte al pool, te recomendamos que
 uses <a href="http://support.ntp.org/bin/view/Main/SoftwareDownloads">ntpd</a>.
 </p>
 
 <h4>No utilices el controlador de reloj LOCAL</h4>
 
-<p>Los servidores del grupo NTP no deben tener configurado el controlador
+<p>Los servidores del Pool NTP no deben tener configurado el controlador
 de reloj LOCAL.
+</p>
+
+<h4>Cuidado con las consultas PTR DNS</h4>
+
+<p>Algunos operadores de servidor han reportado que algunos de los usuarios NTP (o
+su software de firewall) hacen una consulta "DNS inverso" (PTR) para la dirección IP
+del servidor NTP. Ten en cuenta que esto podría causar que el número de consultas
+aumente. Se recomienda aumentar el "tiempo de vida" de esos registros si
+el número de consultas DNS es una preocupación, y generalmente hará que el número
+de consultas sea insignificante.
 </p>
 
 </div>

@@ -9,34 +9,60 @@
 
 <div class="container">
 	<div id="hd" class="row">
-		<h1>pool.ntp.org</h1>
-		[% IF combust.deployment_mode != 'prod' %]
-		<p class="develwarning">Note: This is a development/test version of
-		the NTP Pool system!  For the real site with real data, go to <a
-		href="https://www.ntppool.org/">www.ntppool.org</a>.  Discussion and
-		bug reports for the beta/test site here, see <a
-		href="https://community.ntppool.org/c/dev">NTP Pool development</a>.
-		</p>
-		[% END %]
+		<div class="col-12 d-flex justify-content-between align-items-center">
+			<h1>pool.ntp.org</h1>
+			<h1 class="d-md-none"><a href="[% combust.www_url("/") %]">NTP Pool</a></h1>
 
-	</div>
-	<div class="row">
-		<div id="sidebar" class="col-4 col-md-3">
-			<h1><a href="[% combust.www_url("/") %]">NTP Pool Project</a></h1>
-			[% PROCESS tpl/navigation_sidebar.html %]
+			<!-- Mobile burger menu button -->
+			<button class="mobile-nav-toggle d-md-none" type="button" aria-label="Toggle navigation" aria-expanded="false">
+				<span class="burger-line"></span>
+				<span class="burger-line"></span>
+				<span class="burger-line"></span>
+			</button>
 		</div>
-		<div id="mainbar" class="col-8 col-md-9">
-			[% PROCESS tpl/navigation_topbar.html %]
+		[% PROCESS "tpl/common/development_notice.html" %]
+	</div>
+
+	<!-- Mobile navigation overlay -->
+	<div class="mobile-nav-overlay d-md-none" id="mobile-nav">
+		<div class="mobile-nav-content">
+			<div class="mobile-nav-header">
+				<h2><a href="[% combust.www_url("/") %]">NTP Pool Project</a></h2>
+				<button class="mobile-nav-close" type="button" aria-label="Close navigation">
+					<span>&times;</span>
+				</button>
+			</div>
+			<nav class="mobile-nav-body">
+				[% PROCESS tpl/navigation_topbar.html %]
+				[% sidebar_context = '-mobile'; PROCESS tpl/navigation_sidebar.html %]
+			</nav>
+		</div>
+	</div>
+
+	<div class="row">
+		<!-- Desktop sidebar - hidden on mobile -->
+		<div id="sidebar" class="col-md-3 d-none d-md-block">
+			<h1><a href="[% combust.www_url("/") %]">NTP Pool Project</a></h1>
+			<div id="navigation-container">
+				[% sidebar_context = '-desktop'; PROCESS tpl/navigation_sidebar.html %]
+			</div>
+		</div>
+
+		<!-- Main content - full width on mobile, 9/12 on desktop -->
+		<div id="mainbar" class="col-12 col-md-9">
+			<!-- Top navigation only shown on desktop -->
+			<div class="d-none d-md-block" id="topbar-navigation">
+				[% PROCESS tpl/navigation_topbar.html %]
+			</div>
 			<br class="clearboth">
 			[% content %]
-
 		</div>
 	</div>
 </div>
 
-<footer class="pt-1 pt-md-2 col-12 border-top">
-<div class="row">
-	<div id="ft" class="col-12 col-md">
+<footer class="pt-1 pt-md-2 border-top">
+<div class="container">
+	<div id="ft">
 	<a href="https://status.ntppool.org/" target="_blank">
 		<span class="color-dot"></span>
 		<span class="color-description">Status</span>
@@ -46,25 +72,6 @@
 </footer>
 
 [% PROCESS tpl/common/js.html %]
-
-[% IF combust.deployment_mode != 'devel' %]
-<script src="https://cdn.statuspage.io/se-v2.js"></script>
-<script>
-(function(i){
-	if (i["StatusPage"] === undefined) {
-		console.log("StatusPage not loaded");
-		return
-	}
-	var sp = new StatusPage.page({ page: '8ll7xvh0qt1p'});
-	sp.summary({
-		success: function(data) {
-			$('.color-description').text(data.status.description);
-			$('.color-dot').addClass(data.status.indicator);
-		}
-	});
-}(window));
-</script>
-[% END %]
 
 <script defer src="https://www.mapper.ntppool.org/mapper.js"></script>
 

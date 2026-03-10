@@ -6,6 +6,7 @@ use Net::IP;
 
 sub search {
     my $self = shift;
+
     #$self->set_span_name("api.search");
 
     return {error => 'No access'} unless $self->user && $self->user->is_staff;
@@ -23,7 +24,8 @@ sub search {
     #local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
 
     my $servers = NP::Model->server->get_servers(
-        query => [or => [($ip ? (ip => $ip->short) : ()), hostname => {like => $q . '%'},]],
+        query =>
+          [or => [($ip ? (ip => $ip->short) : ()), hostname => {like => $q . '%'},]],
         require_objects => ['account']
     );
     if ($servers) {
@@ -151,27 +153,39 @@ sub edit_server {
     }
     elsif ($field eq 'hostname') {
         my $hostname  = $value;
-        my $server_ip = Net::IP->new($server->ip);
-
-        my $res   = Net::DNS::Resolver->new(defnames => 0);
-        my $reply = $res->query($hostname, $server->ip_version eq 'v4' ? 'A' : 'AAAA');
-
         my $error = "";
-        my $found = 0;
 
-        if ($reply) {
-            for my $rr ($reply->answer) {
-                next unless $rr->type eq 'A' or $rr->type eq 'AAAA';
-                $found++ if Net::IP->new($rr->address)->short eq $server_ip->short;
-            }
-        }
-
-        if ($found) {
-            $server->hostname(lc $hostname);
+        # Allow clearing the hostname (setting to empty string)
+        if (!$hostname || $hostname eq '') {
+            warn "Clearing hostname for server ID: " . $server->id;
+            $server->hostname('');
             $server->save;
+            warn "After save, server hostname is: " . ($server->hostname || 'undef');
         }
         else {
-            $error = "That hostname doesn't resolve to the IP address of the server";
+            # Validate that hostname resolves to server IP
+            my $server_ip = Net::IP->new($server->ip);
+            my $res   = Net::DNS::Resolver->new(defnames => 0);
+            my $reply = $res->query($hostname, $server->ip_version eq 'v4' ? 'A' : 'AAAA');
+
+            my $found = 0;
+
+            if ($reply) {
+                for my $rr ($reply->answer) {
+                    next unless $rr->type eq 'A' or $rr->type eq 'AAAA';
+                    $found++ if Net::IP->new($rr->address)->short eq $server_ip->short;
+                }
+            }
+
+            if ($found) {
+                warn "Setting hostname to: " . lc($hostname) . " for server ID: " . $server->id;
+                $server->hostname(lc $hostname);
+                $server->save;
+                warn "After save, server hostname is: " . ($server->hostname || 'undef');
+            }
+            else {
+                $error = "That hostname doesn't resolve to the IP address of the server";
+            }
         }
 
         return {

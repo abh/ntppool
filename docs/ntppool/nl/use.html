@@ -16,11 +16,11 @@
 	<p>
 	De 0, 1, 2 en 3.pool.ntp.org namen wijzen naar een willekeurige verzameling van
 	servers die elk uur wijzigt. zorg ervoor dat de klok van de computer ingesteld
-	is op een reële waarde (binnen enkele minuten van de 'ware' tijd) - je kunt <tt>ntpdate
-	pool.ntp.org</tt> gebruiken, of je zou gewoon het <tt>date</tt> commando kunnen gebruiken en
+	is op een reële waarde (binnen enkele minuten van de 'ware' tijd) - je kunt <code>ntpdate
+	pool.ntp.org</code> gebruiken, of je zou gewoon het <code>date</code> commando kunnen gebruiken en
 	het gelijk te zetten met je horloge.
 	Start ntpd en na enige tijd (dit kan tot een half uur duren!), zou
-	<tt>ntpq -pn</tt> een soortgelijke uitvoer moeten geven:
+	<code>ntpq -pn</code> een soortgelijke uitvoer moeten geven:
 	</p>
 
 	[% INCLUDE "ntppool/use/sample-ntpq.html" %]
@@ -28,12 +28,12 @@
 	<p>
 	De IP adressen zullen anders zijn, omdat je willekeurige tijdservers
 	krijgt toegewezen. Het is wel belangrijk dat één van de regels begint met een
-	sterretje (<tt>*</tt>), dat betekent dat je computer de tijd ontvang vanaf
+	sterretje (<code>*</code>), dat betekent dat je computer de tijd ontvang vanaf
 	het internet
 	- je hoeft je er daarna nooit meer zorgen over te maken!
 	</p>
 	<p>
-	Omdat <tt>pool.ntp.org</tt> je tijdservers zal toewijzen van over de gehele wereld
+	Omdat <code>pool.ntp.org</code> je tijdservers zal toewijzen van over de gehele wereld
 	zal de kwaliteit van de tijd niet ideaal zijn. Je krijgt een wat beter resultaat wanneer
 	je gebruik maakt van de
 	<a href="/zone/@">continentale zones</a> (Bijvoorbeeld
@@ -46,7 +46,7 @@
 	gebruiken zoals 0.nl.pool.ntp.org. Houd er echter rekening mee dat een land zone
 	niet zou kunnen bestaan voor een land, of slechts één of twee tijdservers zou kunnen
 	bevatten. Wanneer je tijdservers kent die echt dicht bij jouw staan (gemeten in
-	netwerk afstand, met <tt>traceroute</tt> of <tt>ping</tt>), wordt de tijd waarschijnlijk
+	netwerk afstand, met <code>traceroute</code> of <code>ping</code>), wordt de tijd waarschijnlijk
 	zelfs nog beter.
 	</p>
 	<p>
@@ -103,8 +103,8 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 	<p><span class="hook">Wees vriendelijk</span>. Veel servers worden ter beschikking
 	gesteld door vrijwilligers en vrijwel alle tijdservers zijn in werkelijkheid
 	file, mail of webservers waarop ook nog eens ntp draait. Dus gebruik niet meer dan
-	drie tijdservers in je configuratie, en speel niet met trucjes met <tt>burst</tt>
-	of <tt>minpoll</tt> - alles wat je daarmee bereikt is dat project vroeger of
+	vier tijdservers in je configuratie, en speel niet met trucjes met <code>burst</code>
+	of <code>minpoll</code> - alles wat je daarmee bereikt is dat project vroeger of
 	later zal stoppen.
 
 	<p><span class="hook">Zorg ervoor dat de <i>tijdzone configuratie</i> van je computer correct is</span>.

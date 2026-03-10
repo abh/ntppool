@@ -1,0 +1,87 @@
+<div class="block">
+
+<h3>Pool-era elkartzen diren zerbitzarien konfigurazio gomendioak</h3>
+
+<p>
+<a href="http://support.ntp.org/">support.ntp.org</a>-ko <a href="http://support.ntp.org/bin/view/Support/WebHome">Laguntza atala</a>k informazio erabilgarri asko dauka.
+</p>
+
+<p>
+Pool-a <i>erabili</i> nahi baduzu soilik, ikus <a href="/use.html">pool-aren erabilera</a> orrialdea.
+</p>
+
+<p>
+<a href="http://groups.google.com/group/comp.protocols.time.ntp">comp.protocols.time.ntp</a> berri taldea ntpd softwarearekin laguntza lortzeko leku onena da.
+</p>
+
+<p>
+Behean garrantzi berezia duten zenbait gauza daude zure zerbitzariarekin NTP Pool-era elkartu nahi baduzu.
+</p>
+
+<p>Internet Engineering Task Force-ak <a href="https://tools.ietf.org/html/draft-ietf-ntp-bcp">Network Time Protocol Best Current Practices</a>-ri buruzko zirriborro bat argitaratu du, gomendatzen duguna.</p>
+
+<h4 id="management-queries">Kudeaketa galderak</h4>
+
+<p>Egin lehenetsitako konfigurazioak "kudeaketa galderak" ez onartzea. ntpd-rentzat hau "noquery" aukera lehenetsitako "restrict" lerroei gehitzea izango da, adibidez:</p>
+
+[% INCLUDE "join/configuration/restrict-default.html" %]
+
+<p>localhost-etik "ntpq -c pe" bezalako komandoak funtziona dezaten, hau gehi dezakezu:</p>
+
+[% INCLUDE "join/configuration/restrict-localhost.html" %]
+
+<h4>5 zerbitzari inguru konfiguratu</h4>
+
+<p>
+Behar bezala funtzionatzeko ntpd-k gutxienez 3 zerbitzarirekin hitz egin behar du ("Erloju bat duen gizonak zein ordu den badaki. Bi erloju dituen gizonak ez dago inoiz ziur").
+</p>
+
+<p>
+Pool-eko zerbitzarientzat gutxienez 4 eta gehienez 7 zerbitzari konfiguratzea gomendatzen dugu.
+</p>
+
+<h4>Pool-etik ez erabili goragoko zerbitzariak</h4>
+
+<p>
+Pool kalitatea mantentzeko, pool-era elkartzen diren zerbitzariek ez lukete beraiek pool.ntp.org erabili behar beren denbora iturri gisa. Horren ordez, <a href="https://support.ntp.org/Servers/StratumTwoTimeServers/">stratum 1 eta 2 zerbitzari</a> fidagarriak aukeratu behar lituzkete eskuz.
+</p>
+
+<p>
+Pool-etik zerbitzari batzuk zure goragoko zerbitzari gisa erabil ditzakezu, baina hauek estatikoki konfiguratu behar dira eta ez pool-etik ausaz esleitutakoak izan.
+</p>
+
+<h4>Denbora iturriak ezarri</h4>
+
+<p>
+Zure zerbitzaria maila 1 stratum-eko zerbitzarietan (edo behintzat oso fidagarrietan) oinarriturik egon behar da. Horrela kalitate ona ziurtatzen da pool-eko bezero guztientzat.
+</p>
+
+<p>
+Pool-ean stratum 3 edo 4 zerbitzariak onartzen diren arren, beharrezkoa da denbora iturriak egonkorrak eta zehatzak izatea.
+</p>
+
+<h4>Sarbide urritzaileak konfiguratu</h4>
+
+<p>
+Normalean ez da gomendagarria pool zerbitzariek edozein bezerorentzat zabaldutako sarbidea edukitzea. Pool-eko trafikoa kontrolpean edukitzeko eta segurutesunerako:
+</p>
+
+<ul>
+<li>Gehienezko galdera kopurua mugatu</li>
+<li>Menpeko zerbitzari gisa ez funtzionatzea</li>
+<li>Kudeaketa galderak desgaitu</li>
+</ul>
+
+<h4>Monitorizazioa</h4>
+
+<p>
+Pool sistemak zure zerbitzaria orduro monitorizatuko du. Zure zerbitzaria egoki funtzionatzen duela ziurtatzeko, hau kontrolatu:
+</p>
+
+<ul>
+<li>ntpd zerbitzua exekutatzen dagoela</li>
+<li>Denbora-iturriak sinkronizatuta daudela</li>
+<li>Pool sistemaren monitoretik NTP galderak erantzuten ari dela</li>
+</ul>
+
+</div>

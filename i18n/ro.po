@@ -21,6 +21,12 @@ msgstr "America de Nord"
 msgid "South America"
 msgstr "America de Sud"
 
+msgid "Europe"
+msgstr "Europa"
+
+msgid "Oceania"
+msgstr "Oceania"
+
 msgid "Global"
 msgstr "Global"
 # i have to see the context to translate properly
@@ -29,35 +35,51 @@ msgstr "Toate Serverele"
 
 # navigation
 msgid "Translations"
-msgstr "Tranduceri"
+msgstr "Traduceri"
+
+# index.html
+msgid  "Introduction"
+msgstr "Introducere"
+
+msgid  "Active Servers"
+msgstr "Servere Active"
+
+msgid  "Links"
+msgstr "Linkuri"
+
+msgid  "Terms of service"
+msgstr "Termeni de serviciu"
+
+msgid  "Subscribe in a reader"
+msgstr "Abonează-te într-un cititor"
+
+msgid  "Older news"
+msgstr "Știri mai vechi"
 
 # mailinglists.html
-msgid  "NTP Pool mailing lists"
-msgstr "Lista de discuţii a comunităţii NTP"
-# i have to see the context to translate properly
-msgid  "subscribe"
-msgstr "înscrie-te"
-
 msgid  "archive"
 msgstr "arhivă"
 
-msgid  "Announcement list"
-msgstr "Lista de anunţuri"
+msgid  "NTP Pool Forum"
+msgstr "Forum NTP Pool"
+
+msgid  "News site"
+msgstr "Site de știri"
 
 msgid  "Discussion list"
-msgstr "Lista de discuţii"
+msgstr "Lista de discuții"
 
-msgid  "Development list"
-msgstr "Lista de progres"
+msgid  "Development"
+msgstr "Dezvoltare"
 
-msgid  "announcement_list_description"
-msgstr "Trafic foarte, foarte scăzut a listei de anunţuri a comunităţii NTP. Toţi administratorii de servere ar trebui să se înscrie in aceasta lista de anunţuri."
-# i have to see the context to translate properly.
-msgid  "discussion_list_description"
-msgstr "Administratorii de servere ( şi utilizatori ) care doresc să se implice in acest proiect, se pot înscrie in lista de discuţii.<br/> Desigur, discuţiile generale ar trebui să aiba loc pe %1 Usenet newsgroup ( sau si pe <a href=\"%2\">Google Groups</a>)."
-# i have to see the context to translate properly.
+msgid  "forum_description"
+msgstr "Întrebări (și răspunsuri) despre NTP Pool, sugestii pentru îmbunătățiri și subiecte legate de păstrarea timpului și operarea serverelor NTP."
+
+msgid  "news_description"
+msgstr "Anunțurile și știrile sunt postate pe site-ul de știri sau pe forum."
+
 msgid  "development_list_description"
-msgstr "Discuţiile tehnice ( şi mai întotdeauna pragmatice ) despre progresul acestui proiect îl găsiţi pe <a href=\"%1\">comunitatea NTP</a> si <a href=\"%2\">GeoDNS</a> au loc in lista timekeepers-dev"
+msgstr "Discuții mai tehnice (și ideal pragmatice) despre dezvoltarea <a href=\"%1\">codului ntp pool</a> și <a href=\"%2\">GeoDNS</a> au loc în <a href=\"%3\">forumul de dezvoltare</a>."
 
 # tpl/server.html
 msgid  "Back to the front page"

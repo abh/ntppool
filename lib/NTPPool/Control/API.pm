@@ -5,7 +5,7 @@ use NTPPool::API;
 
 sub post_process {
     my $self = shift;
-    $self->request->header_out('Cache-Control' => 'private');
+    $self->request->header_out('Cache-Control' => 'private, no-cache');
     return $self->SUPER::post_process(@_);
 }
 

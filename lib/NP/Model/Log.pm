@@ -2,8 +2,8 @@ package NP::Model::Log;
 use strict;
 use Scalar::Util ();
 use String::Diff ();
-use JSON::XS qw(encode_json);
-use Data::Dump qw(pp);
+use JSON::XS     qw(encode_json);
+use Data::Dump   qw(pp);
 
 sub log_changes {
     my $class = shift;

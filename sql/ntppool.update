@@ -1043,8 +1043,7 @@ create table monitor_registrations (
     -- generated, provide to the user to authenticate to the api server
     verification_token varchar(32) NOT NULL UNIQUE,
 
-    -- temporary storage for delivery to the client
-    -- (todo: come up with something better)
+    -- dropped below
     api_token          text,
 
     ip                 varchar(39) NOT NULL,
@@ -1154,10 +1153,125 @@ alter table monitors
   drop api_key_id;
 
 
+#140
+alter table api_keys_monitors
+  drop foreign key api_keys_monitors_api_keys_fk;
+
+alter table api_keys_monitors
+  add constraint `api_keys_monitors_api_keys_fk` foreign key (`api_key_id`) references api_keys (`id`) ON DELETE CASCADE;
+
+#141
+alter table monitors change name hostname varchar(255) not null default '';
+alter table monitor_registrations change name hostname varchar(256) not null default '';
+
+drop view if exists monitors_data;
+create view monitors_data as
+select id, account_id, type,
+   IF(type="score", hostname, SUBSTRING_INDEX(tls_name,'.',1)) as name,
+   ip,  ip_version, status, client_version, last_seen, last_submit
+from monitors
+where tls_name not like '%.system';
+
+#142
+-- Modify flags column in accounts table for per-account settings
+alter table accounts modify flags json null;
+
+-- Add default system settings for monitor eligibility
+insert ignore into system_settings (`key`, `value`, created_on)
+values ('monitor_server_verification_months', '18', NOW());
+
+insert ignore into system_settings (`key`, `value`, created_on)
+values ('monitor_global_max', '0', NOW());
+-- Note: 0 means no limit
+
+#143
+-- Extend server_scores.status enum to include 'candidate' state
+ALTER TABLE server_scores
+MODIFY COLUMN status enum('new','candidate','testing','active') NOT NULL DEFAULT 'new';
+
+-- Add constraint tracking columns to server_scores
+ALTER TABLE server_scores
+ADD COLUMN constraint_violation_type varchar(50) DEFAULT NULL,
+ADD COLUMN constraint_violation_since datetime DEFAULT NULL,
+ADD INDEX idx_constraint_violation (constraint_violation_type, constraint_violation_since);
+
+#144
+update accounts
+SET flags = JSON_SET(flags, '$.monitor_enabled', true)
+where id in
+  (select account_id from monitors
+   where account_id is not null group by account_id
+  );
+
+update monitors
+  set status = 'deleted', is_current = 0, deleted_on = now()
+  where
+    status != 'deleted' and tls_name is null
+    and type = 'monitor' and created_on < '2025-06-01';
+
+#145
+-- delete server_scores where monitor and server is on the same account
+DELETE ss FROM server_scores ss, servers s, monitors m
+WHERE ss.server_id = s.id
+AND ss.monitor_id = m.id
+AND m.account_id = s.account_id;
+
+#146
+-- Migrate any existing 'new' status records to 'candidate' before removing 'new' from enum
+UPDATE server_scores SET status = 'candidate' WHERE status = 'new';
+
+-- Remove 'new' status from server_scores enum and set default to 'candidate'
+ALTER TABLE server_scores
+MODIFY COLUMN status enum('candidate','testing','active') NOT NULL DEFAULT 'candidate';
+
+
+#147
+
+drop view if exists monitors_data;
+create
+SQL SECURITY INVOKER
+view monitors_data as
+select id, account_id, type,
+   IF(type="score", hostname, SUBSTRING_INDEX(tls_name,'.',1)) as name,
+   ip,  ip_version, status, client_version, last_seen, last_submit
+from monitors
+where tls_name not like '%.system';
+
+#148
+update monitors set is_current=null where is_current=0;
+
+#149
+-- OIDC token issuing service
+CREATE TABLE oidc_public_keys (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    kid VARCHAR(255) NOT NULL UNIQUE,     -- Key ID from certificate
+    public_key TEXT NOT NULL,             -- PEM-encoded ECC public key
+    algorithm VARCHAR(20) NOT NULL,       -- ES384 for P-384
+    created_at TIMESTAMP NOT NULL,
+    expires_at TIMESTAMP NULL,            -- When to remove from JWKS (key expiry + 24h)
+    active BOOLEAN NOT NULL DEFAULT TRUE, -- Whether currently signing with this key
+    INDEX idx_kid (kid),
+    INDEX idx_active_expires (active, expires_at)
+);
+
+#150
+-- Add 'paused' state to server_scores.status enum
+ALTER TABLE server_scores
+MODIFY COLUMN status enum('candidate','testing','active','paused') NOT NULL DEFAULT 'candidate';
+
+#151
+-- Add paused status constraint resolution columns for unchangeable constraints
+ALTER TABLE server_scores
+ADD COLUMN last_constraint_check datetime DEFAULT NULL,
+ADD COLUMN pause_reason varchar(20) DEFAULT NULL,
+ADD INDEX idx_paused_monitors (status, last_constraint_check, pause_reason);
+
 #todo
 
-- reverse the api_key_id in monitors relationship to be a column in
-  api_keys similar to user / account ids
+
+- drop api_key in monitors table when it's empty
+
+
 - add check constraints in monitors
   - make sure ip / ip_version make sense (or in postgres just use one column)
   - make sure status + is_current + deleted_on are in sync

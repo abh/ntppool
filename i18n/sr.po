@@ -58,35 +58,26 @@ msgid "Older news"
 msgstr "Starije vesti"
 
 # mailinglists.html
-msgid "NTP Pool mailing lists"
-msgstr "NTP Pool mejling lista"
-
-msgid "subscribe"
-msgstr "pretplati se"
-
 msgid "archive"
 msgstr "arhiva"
 
-msgid "Announcement list"
-msgstr "Lista obaveštenja"
+msgid "NTP Pool Forum"
+msgstr "NTP Pool Forum"
+
+msgid "News site"
+msgstr "Sajt vesti"
 
 msgid "Discussion list"
 msgstr "Diskusiona lista"
 
-msgid "Development list"
-msgstr "Razvojna lista"
+msgid "Development"
+msgstr "Razvoj"
 
-msgid "announcement_list_description"
-msgstr ""
-"Povremene objave o NTP Pool novostima .  Svi operatori servera bi trebali da "
-"budu pretplaćeni na listu obaveštenja ."
+msgid "forum_description"
+msgstr "Pitanja (i odgovori) o NTP Pool-u, predlozi za poboljšanja i teme vezane za merenje vremena i pokretanje NTP servera."
 
-msgid "discussion_list_description"
-msgstr ""
-"Server operatori (i korisnici) koji bi leli da budu više uključeni u "
-"projekat mogu se pretplatiti na listu za diskusiju.<br/> Naravno, glavne "
-"diskusije o ntp-u bi trebale da se vode na %1 Usenet news grupi  (takodje na "
-"<a href=\"%2\">Google Grupi</a>)."
+msgid "news_description"
+msgstr "Obaveštenja i vesti se objavljuju na sajtu vesti ili na forumu."
 
 msgid "development_list_description"
 msgstr ""

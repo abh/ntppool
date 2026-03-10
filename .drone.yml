@@ -16,7 +16,7 @@ steps:
   settings:
     repo: ntppool/ntppool
     registry: harbor.ntppool.org
-    tags: SHAABBREV,SHA7,${DRONE_BRANCH}
+    tags: "${DRONE_BRANCH},build-${DRONE_BUILD_NUMBER},SHAABBREV,SHA7"
     auto_tag: true
     cache: true
     username:
@@ -25,6 +25,6 @@ steps:
       from_secret: harbor_password
 ---
 kind: signature
-hmac: a0bb8189d87668bb32165e34e1d660947effabf3696facf169826e590ea963fe
+hmac: 25f900b66061f7fae26c281ce08c0082d3d2c887710f330924e75513386386eb
 
 ...

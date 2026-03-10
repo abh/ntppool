@@ -5,17 +5,21 @@
 <meta name="trace-id" content="[% trace_id | html %]">
 [% END %]
 
+<meta name="plausible-domain" content="[% combust.analytics_hostname %]">
+[% SET plausible_props = combust.plausible_props; IF plausible_props %]
+<meta name="plausible-props" content="[% plausible_props | html %]">
+[% END %]
+
 [%- IF page.canonical %]
 <link rel="canonical" href="[% page.canonical | html %]">
 [% END -%]
 
 [%- PROCESS tpl/common/language_headers.html -%]
 
-<script>
-  if (!NP) var NP = {};
-</script>
 
-[% page.css.unshift( combust.static_group("common.css") );
+<link rel="stylesheet" href="[% combust.static_url("/build/style.css") %]" type="text/css">
+
+[%- # Load any additional page-specific CSS files
    FOR css_elem = page.css;
        FOR css = css_elem.list;
            IF css.match('^/');

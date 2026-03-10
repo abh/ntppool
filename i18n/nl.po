@@ -31,42 +31,56 @@ msgstr "Alle pool-servers"
 msgid "Translations"
 msgstr "Vertalingen"
 
+# Basic navigation entries
+msgid "Europe"
+msgstr "Europa"
+
+msgid "Oceania"
+msgstr "Oceanië"
+
+# index.html
+msgid "Introduction"
+msgstr "Introductie"
+
+msgid "Active Servers"
+msgstr "Actieve Servers"
+
+msgid "Links"
+msgstr "Links"
+
+msgid "Terms of service"
+msgstr "Servicevoorwaarden"
+
+msgid "Subscribe in a reader"
+msgstr "Abonneren in een reader"
+
+msgid "Older news"
+msgstr "Ouder nieuws"
+
 # mailinglists.html
-msgid "NTP Pool mailing lists"
-msgstr "NTP Pool e-maillijsten"
-
-msgid "subscribe"
-msgstr "abonneer"
-
 msgid "archive"
 msgstr "archief"
 
-msgid "Announcement list"
-msgstr "Aankondigingenlijst"
+msgid "NTP Pool Forum"
+msgstr "NTP Pool Forum"
+
+msgid "News site"
+msgstr "Nieuwssite"
 
 msgid "Discussion list"
 msgstr "Discussielijst"
 
-msgid "Development list"
-msgstr "Ontwikkelaarslijst"
+msgid "Development"
+msgstr "Ontwikkeling"
 
-msgid "announcement_list_description"
-msgstr ""
-"Zeer zeer laag frequente aankondigingen van nieuws over de NTP Pool. Alle "
-"serverbeheerders zouden op de aankondigingenlijst geabonneerd moeten zijn."
+msgid "forum_description"
+msgstr "Vragen (en antwoorden) over de NTP Pool, suggesties voor verbeteringen en onderwerpen gerelateerd aan tijdmeting en het draaien van NTP servers."
 
-msgid "discussion_list_description"
-msgstr ""
-"Serverbeheerders (en gebruikers) die meer betrokken willen zijn bij het "
-"project kunnen zich abonneren op de discussielijst.<br/>Algemene discussies "
-"over ntp zouden natuurlijke plaats moeten vinden in de Usenet-nieuwsgroep %1 "
-"(ook op <a href=\"%2\">Google Groups</a>)."
+msgid "news_description"
+msgstr "Aankondigingen en nieuws worden geplaatst op de nieuwssite of op het forum."
 
 msgid "development_list_description"
-msgstr ""
-"Meer technische (en idealiter altijd praktische) discussies over de huidige "
-"ontwikkeling van de <a href=\"%1\">broncode van ntp pool</a> en <a href="
-"\"%2\">GeoDNS</a> vinden plaats op de lijst timekeepers-dev."
+msgstr "Meer technische (en idealiter altijd praktische) discussies over de huidige ontwikkeling van de <a href=\"%1\">broncode van ntp pool</a> en <a href=\"%2\">GeoDNS</a> vinden plaats op de lijst timekeepers-dev."
 
 # tpl/server.html
 msgid "Back to the front page"

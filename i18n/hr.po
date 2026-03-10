@@ -21,6 +21,12 @@ msgstr "Sjeverna Amerika"
 msgid "South America"
 msgstr "Južna Amerika"
 
+msgid "Europe"
+msgstr "Europa"
+
+msgid "Oceania"
+msgstr "Oceanija"
+
 msgid "Global"
 msgstr "Globalno"
 
@@ -31,33 +37,49 @@ msgstr "Svi Pool Serveri"
 msgid "Translations"
 msgstr "Prijevodi"
 
+# index.html
+msgid  "Introduction"
+msgstr "Uvod"
+
+msgid  "Active Servers"
+msgstr "Aktivni Serveri"
+
+msgid  "Links"
+msgstr "Linkovi"
+
+msgid  "Terms of service"
+msgstr "Uvjeti usluge"
+
+msgid  "Subscribe in a reader"
+msgstr "Pretplati se u čitaču"
+
+msgid  "Older news"
+msgstr "Starije vijesti"
+
 # mailinglists.html
-msgid  "NTP Pool mailing lists"
-msgstr "NTP Pool mail lista"
-
-msgid  "subscribe"
-msgstr "pretplati se"
-
 msgid  "archive"
 msgstr "arhiva"
 
-msgid  "Announcement list"
-msgstr "Lista najava"
+msgid  "NTP Pool Forum"
+msgstr "NTP Pool Forum"
+
+msgid  "News site"
+msgstr "Stranica vijesti"
 
 msgid  "Discussion list"
-msgstr "Lista rasprava"
+msgstr "Lista za rasprave"
 
-msgid  "Development list"
-msgstr "Razvojna lista "
+msgid  "Development"
+msgstr "Razvoj"
 
-msgid  "announcement_list_description"
-msgstr "Objave o NTP Pool vijestima s vrlo malo prometa. Svi operatori servera trebali bi biti pretplaćeni na listu objava."
+msgid  "forum_description"
+msgstr "Pitanja (i odgovori) o NTP Pool-u, prijedlozi za poboljšanja i teme vezane uz održavanje vremena i upravljanje NTP serverima."
 
-msgid  "discussion_list_description"
-msgstr "Operatori servera (i korisnici) koji žele biti više uključeni u ovaj projekt mogu se pretplatiti na listu rasprava.<br/> Naravno, generalne rasprave o ntp-u bi trebale biti raspravljane na %1 Usenet news grupi (dostupno i na <a href=\"%2\">Google Grupe</a>)."
+msgid  "news_description"
+msgstr "Najave i vijesti se objavljuju na stranici vijesti ili na forumu."
 
 msgid  "development_list_description"
-msgstr "Više tehničke (i idealno uvijek pragmatičane) diskusije o trenutačnom razvoju <a href=\"%1\">ntp pool koda</a> i <a href=\"%2\">GeoDNS</a> se dešavaju na timekeepers-dev listi."
+msgstr "Više tehničke (i idealno pragmatične) diskusije o razvoju <a href=\"%1\">ntp pool koda</a> i <a href=\"%2\">GeoDNS</a> odvijaju se u <a href=\"%3\">razvojnom forumu</a>."
 
 
 # tpl/server.html
@@ -87,3 +109,25 @@ msgstr "Šta znače grafovi?"
 
 msgid  "CSV log"
 msgstr "CSV dnevnik"
+
+# tpl/navigation_sidebar.html
+msgid  "News"
+msgstr "Vijesti"
+
+msgid  "How do I <i>use</i> pool.ntp.org?"
+msgstr "Kako <i>koristiti</i> pool.ntp.org?"
+
+msgid  "How do I <i>join</i> pool.ntp.org?"
+msgstr "Kako se <i>pridružiti</i> pool.ntp.org?"
+
+msgid  "Information for vendors"
+msgstr "Informacije za prodavače"
+
+msgid  "The mailing lists"
+msgstr "Zajednica"
+
+msgid  "Additional links"
+msgstr "Dodatni linkovi"
+
+msgid  "Can you translate?"
+msgstr "Možete li prevoditi?"

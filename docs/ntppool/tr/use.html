@@ -15,9 +15,9 @@
 	<p>
 	0, 1, 2 ve 3.pool.ntp.org isimleri her saat değişen rastgele sunucuları gösterir.
 	Bilgisayarınızın saatinin makul bir şekilde ayarlandığına emin olun (gerçek zamandan
-	bir kaç dakika fark aralığında). <tt>ntpdate pool.ntp.org</tt> şeklinde kullanabilirsiniz
-	veya sadece <tt>date</tt> komutu ile bileğinizdeki saate göre ayarlayabilirsiniz.
-	ntpd'yi başlattıktan biraz sonra (en fazla yarım saat sürer) <tt>ntpq -pn</tt> komutu
+	bir kaç dakika fark aralığında). <code>ntpdate pool.ntp.org</code> şeklinde kullanabilirsiniz
+	veya sadece <code>date</code> komutu ile bileğinizdeki saate göre ayarlayabilirsiniz.
+	ntpd'yi başlattıktan biraz sonra (en fazla yarım saat sürer) <code>ntpq -pn</code> komutu
 	aşağıdaki gibi bir çıktı vermelidir:
 	</p>
 
@@ -25,12 +25,12 @@
 
 	<p>
 	IP adresi farklı olacaktır çünkü rastgele zaman sunucusu olarak ayarladık.
-	Buradaki önemli noktalardan biri (<tt>*</tt>) ile başlayan satırlardır. Bunlar
+	Buradaki önemli noktalardan biri (<code>*</code>) ile başlayan satırlardır. Bunlar
 	bilgisayarınızın saati internetten aldığını gösterir. Bu adımdan sonra
 	asla endişelenmenize gerek yok!
 	</p>
 	<p>
-	<tt>pool.ntp.org</tt> dünya üzerindeki çeşitli zaman sunucularından size
+	<code>pool.ntp.org</code> dünya üzerindeki çeşitli zaman sunucularından size
 	atama yapacaktır. Zaman kalitesi ideal olmayabilir. <a href="/zone/@">Kıta bölgeleri</a>
 	(mesela <a href="/zone/europe">avrupa</a>,	<a href="/zone/north-america">kuzey-amerika</a>,
 	<a href="/zone/oceania">okyanusya</a> veya <a href="/zone/asia">asya</a>.pool.ntp.org)
@@ -39,7 +39,7 @@
 	için adreslerin başlarında 0 veya 1 gibi ön ekleri de (0.tr.pool.ntp.org gibi)
 	kullanabilirsiniz. Tabii ki ön ek olarak yazdığınız sunucunun gerçekten var olduğunu
 	kontrol etmelisiniz. Eğer zaman sunucusunun size yakın olduğunu biliyorsanız (ağ ölçümü ile
-	, <tt>traceroute</tt> veya <tt>ping</tt>) en iyi sonuçları alırsınız.
+	, <code>traceroute</code> veya <code>ping</code>) en iyi sonuçları alırsınız.
 	</p>
 	<p>
 	Eğer Windows'un <b>son versiyonlarından birini</b> kullanıyorsanız, sistem dahilinde olan
@@ -93,7 +93,7 @@ net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
 	<p><span class="hook">Dostça davranın</span>. Bir çok sunucu gönüllüler tarafından
 	sunulmaktadır ve neredeyse tüm zaman sunucuları gerçekte ntp çalıştıran dosya, posta
 	veya web sunucusudur. Bu yüzden ayarlarınızda dörtten fazla zaman sunucusu ayarlamayınız
-	ve <tt>burst</tt> veya <tt>minpoll</tt> ile kurnazlık yapmayınız. Bunlar sadece
+	ve <code>burst</code> veya <code>minpoll</code> ile kurnazlık yapmayınız. Bunlar sadece
 	gönüllü zaman sunucularına ek bir yük getirecektir.</p>
 
 	<p><span class="hook">Bilgisayarınızın <i>zaman bölgesi ayarlarının</i> doğru olduğuna emin olun

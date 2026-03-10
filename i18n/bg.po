@@ -34,74 +34,98 @@ msgstr "Всички сървъри"
 msgid "Translations"
 msgstr "Преводи"
 
-# mailinglists.html
-msgid  "NTP Pool mailing lists"
-msgstr "пощенски списък на NTP Pool"
+# Modern forum/community entries
+msgid "Oceania"
+msgstr "Океания"
 
-msgid  "archive"
+msgid "Introduction"
+msgstr "Въведение"
+
+msgid "Active Servers"
+msgstr "Активни сървъри"
+
+msgid "Links"
+msgstr "Връзки"
+
+msgid "Terms of service"
+msgstr "Условия за ползване"
+
+msgid "Subscribe in a reader"
+msgstr "Абониране в четец"
+
+msgid "Older news"
+msgstr "По-стари новини"
+
+msgid "archive"
 msgstr "архив"
 
-msgid  "Announcement list"
-msgstr "Списък за анонси"
+msgid "NTP Pool Forum"
+msgstr "Форум на NTP Pool"
 
-msgid  "Discussion list"
-msgstr "Списък за дискусии"
+msgid "News site"
+msgstr "Новинарски сайт"
 
-msgid  "Development list"
-msgstr "Списък за разработчици"
+msgid "Discussion list"
+msgstr "Дискусионен списък"
 
-msgid  "announcement_list_description"
-msgstr "Новини от NTP Pool - нисък трафик.  Всички оператори на сървъри трябва за се абонират за списъка за анонси."
+msgid "Development"
+msgstr "Разработка"
 
-msgid  "development_list_description"
-msgstr "More technical (and ideally always pragmatic) discussions about the current development of the <a href=\"%1\">ntp pool code</a> and <a href=\"%2\">GeoDNS</a> happens on the timekeepers-dev list."
+msgid "forum_description"
+msgstr "Най-доброто място за обсъждане на NTP Pool проекта"
+
+msgid "news_description"
+msgstr "Новини и анонси за NTP Pool проекта"
+
+msgid "development_list_description"
+msgstr "Технически дискусии за разработката на NTP Pool проекта"
 
 # tpl/server.html
 msgid  "Back to the front page"
-msgstr "Back to the front page"
+msgstr "Обратно към началната страница"
 
 msgid  "Find"
-msgstr "Find"
+msgstr "Търсене"
 
 msgid  "Stats for %1"
-msgstr "Statistics for %1"
+msgstr "Статистики за %1"
 
 msgid  "Not active in the pool, monitoring only"
-msgstr "Not active in the pool, monitoring only"
+msgstr "Неактивен в пула, само наблюдение"
 
 msgid  "Zones:"
-msgstr "Zones:"
+msgstr "Зони:"
 
 msgid  "This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
-msgstr "This server is <span class=\"deletion\">scheduled for deletion</span> on %1."
+msgstr "Този сървър е <span class=\"deletion\">планиран за изтриване</span> на %1."
 
 msgid  "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
-msgstr "Current score: %1 (only servers with a score higher than %2 are used in the pool)"
+msgstr "Текущ резултат: %1 (само сървъри с резултат над %2 се използват в пула)"
 
 msgid  "What do the graphs mean?"
-msgstr "What do the graphs mean?"
+msgstr "Какво означават графиките?"
 
 msgid  "CSV log"
-msgstr "CSV log"
+msgstr "CSV дневник"
 
 # tpl/navigation_sidebar.html
 msgid  "News"
-msgstr "News"
+msgstr "Новини"
 
 msgid  "How do I <i>use</i> pool.ntp.org?"
-msgstr "How do I <i>use</i> pool.ntp.org?"
+msgstr "Как да <i>използвам</i> pool.ntp.org?"
 
 msgid  "How do I <i>join</i> pool.ntp.org?"
-msgstr "How do I <i>join</i> pool.ntp.org?"
+msgstr "Как да се <i>присъединя</i> към pool.ntp.org?"
 
 msgid  "Information for vendors"
-msgstr "Information for vendors"
+msgstr "Информация за доставчици"
 
 msgid  "The mailing lists"
-msgstr "The mailing lists"
+msgstr "Пощенските списъци"
 
 msgid  "Additional links"
-msgstr "Additional links"
+msgstr "Допълнителни връзки"
 
 msgid  "Can you translate?"
-msgstr "Can you translate?"
+msgstr "Можете ли да преведете?"

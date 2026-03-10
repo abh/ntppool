@@ -52,7 +52,9 @@ sub data {
         $data->{""}->{txt} = [
 
             # Fastly TLS verification
-            {txt => "_globalsign-domain-verification=mVYWxIl-2ab_B1yPPFxEmDCLrBcl6ucouXJOU_P0_C"},
+            {   txt =>
+                  "_globalsign-domain-verification=mVYWxIl-2ab_B1yPPFxEmDCLrBcl6ucouXJOU_P0_C"
+            },
         ];
 
         # null MX records by default, rfc7505
@@ -65,7 +67,8 @@ sub data {
             push @{$data->{""}->{txt}},
               {txt => "v=spf1 -all"},
               {txt => "facebook-domain-verification=sfjgxys7hmryn50lszk658gi7amidt"},
-              {txt => "google-site-verification=PRDJb3cjUxA4K-Abx2wItCnGwTkkNTRqJVjCkmAk54Q"};
+              {txt =>
+                  "google-site-verification=PRDJb3cjUxA4K-Abx2wItCnGwTkkNTRqJVjCkmAk54Q"};
 
             $data->{"_dmarc"}->{txt} =
               'v=DMARC1; p=reject; pct=100; rua=mailto:4649a710@in.mailhardener.com; sp=reject; adkim=s; aspf=r; ruf=mailto:4649a710@in.mailhardener.com';
@@ -134,7 +137,7 @@ sub populate_country_zones {
             $min_non_duplicate_size = int(@$entries / $zone_count)
               if (@$entries / $zone_count > $min_non_duplicate_size);
 
-            # print $fh "# " . scalar @$entries . " active servers in ", $zone->name, "\n";
+           # print $fh "# " . scalar @$entries . " active servers in ", $zone->name, "\n";
 
             if ($#$entries < ($min_non_duplicate_size * $zone_count - 1)) {
 

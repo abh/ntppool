@@ -3,8 +3,8 @@ use strict;
 use warnings;
 use HTML::Entities qw(encode_entities);
 use Exporter;
-use Encode ();
-use Carp qw(croak);
+use Encode            ();
+use Carp              qw(croak);
 use Data::Transformer ();
 
 our @EXPORT_OK = qw(
@@ -17,7 +17,7 @@ our @EXPORT_OK = qw(
 sub convert_to_html {
     my $str = shift;
 
-    encode_entities($str, '<>&"');    # how can we encode everything without messing up UTF8?
+    encode_entities($str, '<>&"'); # how can we encode everything without messing up UTF8?
     $str =~ s!(https?://.+?)(\s|$)!<a href="$1">$1</a>$2!g;
     $str =~ s!\n\s*[\n\s]+!<br/><br/>!g;
     $str =~ s!\n!<br/>\n!g;

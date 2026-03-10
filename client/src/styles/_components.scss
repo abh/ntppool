@@ -1,0 +1,1820 @@
+/**
+ * Custom component styles for NTP Pool Project
+ * Comprehensive conversion from original CSS files: main.css, content.css, fonts.css
+ */
+
+// HTMX Loading Indicators
+.htmx-indicator {
+    display: none;
+}
+
+.htmx-request .htmx-indicator {
+    display: inline-block;
+}
+
+.htmx-request.htmx-indicator {
+    display: inline-block;
+}
+
+// Accessibility: Provide static loading text for users with reduced motion
+@media (prefers-reduced-motion: reduce) {
+    .htmx-indicator .spinner-border {
+        display: none !important;
+    }
+
+    .htmx-indicator::after {
+        content: "Loading...";
+        font-size: 0.875rem;
+        color: currentColor;  // Use the button's text color for better contrast
+        font-weight: normal;
+    }
+
+    // Ensure proper contrast on danger buttons when loading
+    .btn-outline-danger .htmx-indicator::after {
+        color: white;
+    }
+}
+
+// CSS Variables and Bootstrap Configuration
+:root {
+    --bs-nav-link-color: #3885b4;
+    --bs-link-color: #3885b4;
+}
+
+// Base body styles
+body {
+    color: #222;
+    font-size: 15px;
+    font-family: merriweather, "Georgia", serif;
+    font-weight: 400;
+}
+
+// Links and headings
+a {
+    color: #3885B4;
+}
+
+h1, h2, h3, h4, h5 {
+    color: #454545;
+}
+
+// Header styles
+#hd {
+    min-height: 10px;
+
+    h1 {
+        display: none;
+    }
+
+    p.develwarning {
+        padding: 3px;
+        margin-bottom: 10px;
+        text-align: center;
+        font-size: 88%;
+        border: 1px solid #f00;
+        border-top: 0;
+        background-color: #fafafa;
+    }
+}
+
+// Sidebar styles
+#sidebar {
+    padding: 0 10px 0 10px;
+
+    h1 a {
+        display: block;
+        height: 138px;
+        background: no-repeat url(@/assets/images/logo-2019@x2.png);
+        background-size: 120px 150px;
+        background-position: center center;
+        background-repeat: no-repeat;
+        text-indent: -9000px;
+        margin: auto;
+        margin-bottom: 15px;
+    }
+
+    h3 {
+        font-family: 'Economica', sans-serif;
+        font-size: 144%;
+        padding: 3px 0;
+        margin-bottom: 2px;
+    }
+
+    .manage-sidebar {
+        padding: .6rem .75rem .5reml .5rem;
+    }
+}
+
+// Navigation icons
+#nav .feather {
+    width: 30px;
+    height: 30px;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+}
+
+// Module styles
+.mod {
+    margin-bottom: 15px;
+    font-size: 114%;
+
+    h3 {
+        font-family: 'Economica', sans-serif;
+        font-size: 144%;
+        padding: 3px 0;
+        margin-bottom: 2px;
+    }
+}
+
+// Activity and list styles
+#activity ul {
+    margin: 0;
+}
+
+#translations ul,
+#quickstart ul {
+    padding: 0;
+    margin: 0 0 0 15px;
+    list-style: none;
+}
+
+// Navigation styling with Economica font
+ul#nav {
+    // Work with Bootstrap 5's flexbox nav
+    flex-wrap: nowrap !important;
+    justify-content: flex-start !important;
+    padding-left: 0 !important;
+    margin-bottom: 0 !important;
+    list-style: none;
+
+    li {
+        font-size: 30px;
+        font-family: 'Economica', sans-serif;
+        font-variant: small-caps;
+        font-weight: 700;
+        list-style: none;
+
+        a {
+            display: block;
+            height: 40px;
+            color: #5A595B;
+            padding: 10px 10px 10px 0;
+            margin-right: 20px;
+            text-decoration: none;
+
+            &:hover {
+                color: #3885B4;
+            }
+        }
+    }
+}
+
+// Mobile responsive navigation
+@media (max-width: $breakpoint-mobile-max) {
+    ul#nav {
+        // Allow wrapping on mobile
+        flex-wrap: wrap !important;
+
+        li {
+            font-size: 14px;
+
+            a {
+                height: 24px;
+                padding: 4px 8px 4px 0;
+                margin-right: 15px;
+            }
+        }
+
+        .feather {
+            width: 20px;
+            height: 20px;
+        }
+    }
+}
+
+@media (max-width: 480px) {
+    ul#nav {
+        li {
+            font-size: 12px;
+
+            a {
+                height: 20px;
+                padding: 3px 6px 3px 0;
+                margin-right: 10px;
+            }
+        }
+
+        .feather {
+            width: 16px;
+            height: 16px;
+        }
+    }
+}
+
+// Main content area headers with Bree Serif
+#mainbar h1,
+h2,
+h3,
+h4 {
+    margin: 15px 0 0 0;
+    font-family: 'Bree Serif', serif;
+}
+
+// Server area map backgrounds
+#servers .area {
+    .africa-img {
+        background: no-repeat url(@/assets/images/maps/wrld-af.svg);
+    }
+
+    .antarctica-img {
+        background: no-repeat url(@/assets/images/maps/wrld-an.svg);
+    }
+
+    .north-america-img {
+        background: no-repeat url(@/assets/images/maps/wrld-na.svg);
+    }
+
+    .south-america-img {
+        background: no-repeat url(@/assets/images/maps/wrld-sa.svg);
+    }
+
+    .europe-img {
+        background: no-repeat url(@/assets/images/maps/wrld-eu.svg);
+    }
+
+    .asia-img {
+        background: no-repeat url(@/assets/images/maps/wrld-as.svg);
+    }
+
+    .oceania-img {
+        background: no-repeat url(@/assets/images/maps/wrld-oc.svg);
+    }
+
+    .global-img {
+        background: no-repeat url(@/assets/images/maps/wrld.svg);
+    }
+}
+
+// Homepage tagline styling
+div#tagline {
+    font-size: 122%;
+    font-style: italic;
+    text-align: right;
+    margin: 0;
+    padding: 0;
+    float: right;
+}
+
+// Server area layout styling
+#servers .area {
+    clear: both;
+    padding: 4px 0;
+    font-size: 115%;
+    list-style: none;
+    display: flex;
+    align-items: center;
+
+    .location {
+        display: block;
+        width: 125px;
+        font-size: 100%;
+
+        a {
+            text-decoration: none;
+
+            &:hover {
+                border-bottom: 1px solid #7EC6EC;
+            }
+        }
+    }
+
+    .location-img {
+        display: block;
+        width: 50px;
+        height: 40px;
+        font-size: 100%;
+        filter: invert(.35);
+    }
+
+    .all-servers {
+        font-weight: bold;
+        margin-top: 5px;
+    }
+}
+
+#servers .count {
+    margin-left: auto;
+    margin-right: 10px;
+}
+
+// Code and pre styling
+pre,
+tt,
+code {
+    color: #002D62;
+    font-family: source-code-pro, "source-code-pro-1", "source-code-pro-2", monospace;
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 18px;
+}
+
+pre.code {
+    background-color: #eee;
+    padding: 10px;
+    margin: 5px 0;
+}
+
+// Utility classes
+.clearboth {
+    clear: both;
+}
+
+a.up {
+    display: block;
+    text-align: right;
+    font-variant: small-caps;
+}
+
+// Other missing styles from content.css
+#quickstart li {
+    margin-bottom: 10px;
+}
+
+// Mobile Navigation System
+.mobile-nav-toggle {
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+
+    .burger-line {
+        display: block;
+        width: 24px;
+        height: 3px;
+        background-color: #454545;
+        margin: 2px 0;
+        transition: all 0.3s ease;
+        transform-origin: center;
+
+        @media (prefers-reduced-motion: reduce) {
+            transition: none;
+        }
+    }
+
+    &:hover .burger-line {
+        background-color: #3885B4;
+    }
+
+    &:focus {
+        outline: 2px solid #3885B4;
+        outline-offset: 2px;
+    }
+
+    // Burger to X animation when active
+    &.active {
+        .burger-line:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+
+        .burger-line:nth-child(2) {
+            opacity: 0;
+        }
+
+        .burger-line:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -6px);
+        }
+    }
+}
+
+.mobile-nav-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1050;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+
+    @media (prefers-reduced-motion: reduce) {
+        transition: none;
+    }
+
+    &.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .mobile-nav-content {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 90%;
+        max-width: 320px;
+        height: 100vh;
+        background-color: #ffffff;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+
+        @media (prefers-reduced-motion: reduce) {
+            transition: none;
+        }
+    }
+
+    &.active .mobile-nav-content {
+        transform: translateX(0);
+    }
+}
+
+.mobile-nav-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #eee;
+    background-color: #f8f9fa;
+
+    h2 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-family: 'Bree Serif', serif;
+
+        a {
+            color: #454545;
+            text-decoration: none;
+
+            &:hover {
+                color: #3885B4;
+            }
+        }
+    }
+
+    .mobile-nav-close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        padding: 0.25rem;
+        cursor: pointer;
+        color: #6c757d;
+        line-height: 1;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &:hover {
+            color: #3885B4;
+        }
+
+        &:focus {
+            outline: 2px solid #3885B4;
+            outline-offset: 2px;
+        }
+    }
+}
+
+.mobile-nav-body {
+    padding: 1rem 0;
+
+    // Style the top navigation in mobile menu
+    ul#nav {
+        flex-direction: column;
+        padding: 0 1rem;
+        margin-bottom: 1.5rem;
+
+        li {
+            margin-bottom: 0.5rem;
+            width: 100%;
+
+            a {
+                display: flex;
+                align-items: center;
+                padding: 0.75rem;
+                border-radius: 0.375rem;
+                transition: background-color 0.2s ease;
+                font-size: 1.75rem;
+                font-weight: 600;
+
+                @media (prefers-reduced-motion: reduce) {
+                    transition: none;
+                }
+
+                &:hover {
+                    background-color: #f8f9fa;
+                }
+
+                .feather {
+                    width: 20px;
+                    height: 20px;
+                    margin-right: 0.75rem;
+                }
+            }
+        }
+    }
+
+    // Style the sidebar navigation in mobile menu
+    #quickstart {
+        margin: 0 1rem 1.5rem;
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+
+            li {
+                margin-bottom: 0.25rem;
+
+                a {
+                    display: block;
+                    padding: 0.5rem 0.75rem;
+                    color: #454545;
+                    text-decoration: none;
+                    border-radius: 0.375rem;
+                    transition: background-color 0.2s ease;
+
+                    @media (prefers-reduced-motion: reduce) {
+                        transition: none;
+                    }
+
+                    &:hover {
+                        background-color: #f8f9fa;
+                        color: #3885B4;
+                    }
+                }
+            }
+        }
+    }
+
+    // Style translations in mobile menu
+    #translations {
+        margin: 0 1rem;
+
+        .translations-header {
+            margin-bottom: 0.5rem;
+
+            .translations-label {
+                padding-left: 0.75rem;
+            }
+        }
+
+        .translations-list ul {
+            padding-left: 1.5rem;
+
+            li a {
+                padding: 0.25rem 0.5rem;
+
+                &:hover {
+                    background-color: #f8f9fa;
+                }
+            }
+        }
+    }
+
+    // Style management navigation in mobile menu
+    #manage-sidebar {
+        margin: 0 1rem;
+        padding: 0;
+
+        .nav-item {
+            width: 100%;
+            margin-bottom: 0.25rem;
+
+            .nav-link {
+                display: flex;
+                align-items: center;
+                padding: 0.75rem;
+                border-radius: 0.375rem;
+                color: #454545;
+                text-decoration: none;
+                background: transparent;
+                border: none;
+                transition: background-color 0.2s ease;
+
+                @media (prefers-reduced-motion: reduce) {
+                    transition: none;
+                }
+
+                &:hover {
+                    background-color: #f8f9fa;
+                    color: #3885B4;
+                }
+
+                &.active {
+                    background-color: #3885B4;
+                    color: white;
+                }
+
+                i {
+                    margin-right: 0.75rem;
+                    width: 16px;
+                }
+
+                .badge {
+                    margin-left: auto;
+                }
+            }
+
+            // Handle dropdown in mobile
+            &.dropdown {
+                .dropdown-toggle {
+                    width: 100%;
+
+                    &::after {
+                        margin-left: auto;
+                    }
+                }
+
+                .dropdown-menu {
+                    position: static;
+                    float: none;
+                    width: 100%;
+                    margin-top: 0.25rem;
+                    border: none;
+                    box-shadow: none;
+                    background-color: #f8f9fa;
+                    border-radius: 0.375rem;
+
+                    .dropdown-item {
+                        padding: 0.5rem 1rem;
+                        font-size: 0.875rem;
+
+                        &:hover {
+                            background-color: #e9ecef;
+                        }
+
+                        &.active {
+                            background-color: #3885B4;
+                            color: white;
+                        }
+                    }
+
+                    .dropdown-divider {
+                        margin: 0.5rem 0;
+                    }
+
+                    .d-flex {
+                        flex-direction: column;
+                        gap: 0.5rem;
+
+                        .dropdown-item {
+                            width: 100%;
+                        }
+
+                        form {
+                            width: 100%;
+
+                            .btn {
+                                width: 100%;
+                                justify-content: center;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Prevent body scroll when mobile menu is open
+body.mobile-nav-open {
+    overflow: hidden;
+
+    @media (min-width: $breakpoint-desktop-min) {
+        overflow: auto; // Reset on desktop
+    }
+}
+
+// CSS-only mobile translations collapse
+#translations {
+    .translations-checkbox {
+        display: none;
+    }
+
+    .translations-label {
+        color: #454545;
+        text-decoration: none;
+        padding: 0;
+        border: none;
+        background: none;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 114%;
+        font-weight: normal;
+        margin-bottom: 2px;
+        cursor: pointer;
+
+        &:hover {
+            color: #3885B4;
+        }
+
+        .translations-globe {
+            flex-shrink: 0;
+            min-width: 18px;
+            width: 18px;
+            height: 18px;
+        }
+
+        .translations-text {
+            font-size: inherit;
+        }
+
+        .translations-chevron {
+            transition: transform 0.3s ease;
+            flex-shrink: 0;
+            min-width: 12px;
+
+            @media (prefers-reduced-motion: reduce) {
+                transition: none;
+            }
+        }
+    }
+
+    // Mobile behavior: collapsed by default, expanded when checked
+    @media (max-width: $breakpoint-mobile-max) {
+        .translations-list {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+
+            @media (prefers-reduced-motion: reduce) {
+                transition: none;
+            }
+        }
+
+        .translations-checkbox:checked + .translations-header .translations-label .translations-chevron {
+            transform: rotate(180deg);
+        }
+
+        .translations-checkbox:checked ~ .translations-list {
+            max-height: 2000px; // Large enough to accommodate all languages
+        }
+    }
+
+    // Very small screens: align globe with list text
+    @media (max-width: 575px) {
+        .translations-label {
+            padding-left: 15px; // Match the margin from #translations ul
+        }
+    }
+
+    // Desktop behavior: always visible
+    @media (min-width: $breakpoint-desktop-min) {
+        .translations-list {
+            display: block;
+        }
+
+        .translations-label {
+            display: none;
+        }
+    }
+
+    // Tablet/intermediate sizes: reduce header font size to match sidebar scale
+    @media (min-width: $breakpoint-desktop-min) and (max-width: $breakpoint-tablet-max) {
+        .translations-header {
+            font-size: 114%; // Match the .mod font-size instead of h3 144%
+        }
+    }
+}
+
+.graph-desc {
+    display: none;
+    color: #777;
+    margin-top: 5px;
+}
+
+.server-id {
+    font-size: 60%;
+}
+
+// Active Servers box on homepage
+#activity {
+    float: right;
+    padding: 10px;
+    border: 1px solid #ddd;
+    margin: 0 0 10px 10px;
+
+    h3 {
+        margin: 0;
+    }
+
+    ul {
+        padding-inline-start: 0px;
+    }
+
+    .date {
+        display: block;
+        font-size: 92%;
+        text-align: right;
+        clear: both;
+        margin-top: 40px;
+    }
+}
+
+// Mobile responsive styles for Active Servers box
+@media (max-width: $breakpoint-mobile-max) {
+    #activity {
+        float: right;
+        padding: 6px;
+        margin: 0 0 15px 10px;
+        width: auto;
+        max-width: 45%;
+        box-sizing: border-box;
+
+        h3 {
+            font-size: 110%;
+            margin-bottom: 8px;
+        }
+
+        span.date {
+            display: none !important; // Hide date on mobile
+        }
+    }
+
+    .date {
+        display: none;
+    }
+
+    #servers .area {
+        padding: 2px 0;
+        font-size: 95%;
+
+        .location {
+            width: 80px;
+            height: auto; // Allow height to adjust for wrapped text
+            font-size: 90%;
+            line-height: 1.0; // Very tight line spacing for wrapped text
+            margin-bottom: 4px; // Add spacing between location items
+        }
+
+        .location-img {
+            width: 35px;
+            height: 28px;
+        }
+    }
+
+    #servers .count {
+        margin: 6px;
+        font-size: 90%;
+    }
+}
+
+
+// Italic text styling
+em {
+    font-style: italic;
+}
+
+// Footer styles
+#ft {
+    text-align: right;
+    padding-right: 10px;
+    font-size: 88%;
+
+    .color-dot {
+        -moz-border-radius: 99px;
+        -webkit-border-radius: 99px;
+        border-radius: 99px;
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        margin-right: 5px;
+
+        &.critical {
+            background-color: #e74c3c;
+        }
+
+        &.major {
+            background-color: #e67e22;
+        }
+
+        &.minor {
+            background-color: #f1c40f;
+        }
+
+        &.none {
+            background-color: #2ecc71;
+        }
+    }
+}
+
+// Utility classes
+.hidden {
+    visibility: hidden;
+    display: none;
+}
+
+.visible {
+    display: block;
+}
+
+// HTMX Integration styles
+.htmx-indicator {
+    opacity: 0;
+}
+
+.htmx-request .htmx-indicator {
+    opacity: 1;
+    transition: opacity 200ms ease-in;
+}
+
+.htmx-request.htmx-indicator {
+    opacity: 1;
+    transition: opacity 200ms ease-in;
+}
+
+// News section styles
+ul#news {
+    li {
+        padding-top: 5px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #ccc;
+        min-height: 29px;
+
+        &.last {
+            border: 0;
+        }
+
+        div.date {
+            float: left;
+            font-size: 122%;
+            color: #3885B4;
+            padding: 3px 5px;
+            margin: 0 7px 5px 0;
+        }
+
+        ul li {
+            border: 0;
+            list-style-type: disc;
+            margin-left: 25px;
+        }
+    }
+
+    h4 {
+        padding-bottom: 5px;
+    }
+}
+
+// Use page styles
+.block span.hook {
+    font-weight: bold;
+}
+
+p.thanks {
+    font-style: italic;
+    font-weight: bold;
+}
+
+// Admin/manage styles
+#admin {
+    .profile {
+        padding: 10px;
+        border-bottom: 1px solid #ccc;
+        margin-bottom: 5px;
+    }
+
+    .value span {
+        font-size: 107%;
+    }
+
+    .server_desc {
+        font-size: 88%;
+    }
+}
+
+// User profile styles
+#userprofile .server {
+    border-bottom: 1px dotted #bbb;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+// Login form styles
+#login-form {
+    padding-bottom: 30px;
+    padding-top: 20px;
+
+    input.gotcha {
+        display: none;
+    }
+}
+
+// Table styles
+table.servertable {
+    width: 100%;
+    margin: 5px 0;
+}
+
+tr.deleted_server {
+    text-decoration: line-through;
+}
+
+// Graph and miscellaneous styles
+.graph_explanation {
+    display: none;
+    width: 400px;
+    margin-left: 30px;
+    margin-top: 10px;
+    padding: 9px;
+    border: 1px dotted #999;
+}
+
+dt {
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+p.develwarning {
+    border: 1px dotted #555555;
+    background: #DDDDDD;
+    padding: 15px;
+    width: 750px;
+    margin: 0 10px 10px 10px;
+}
+
+// Vendor and DNS info styles
+#vendor_list {
+    border: 1px dotted #999;
+    text-align: right;
+    margin: auto;
+    width: 250px;
+
+    li {
+        background: red;
+    }
+}
+
+#vendor_content {
+    float: left;
+}
+
+#dnsinfo td {
+    padding: 8px;
+}
+
+// Server history styles
+span.s_his {
+    font-family: source-code-pro, monospace;
+
+    &_ok {
+        color: green;
+        font-size: 80%;
+    }
+
+    &_tol {
+        color: yellow;
+    }
+
+    &_big {
+        color: #ffa500;
+    }
+
+    &_down {
+        color: red;
+    }
+}
+
+// Error and status styles
+span.error {
+    color: red;
+}
+
+div.error {
+    color: red;
+}
+
+span.deletion {
+    color: red;
+}
+
+// SVG Graph styles
+.total_score {
+    fill: none;
+    stroke: blue;
+    stroke-width: 2px;
+}
+
+.zone_graph {
+    .registered_count {
+        fill: none;
+        stroke: #00cccc;
+        stroke-width: 1px;
+    }
+
+    .active_count {
+        fill: none;
+        stroke: #006600;
+        stroke-width: 2px;
+    }
+
+    .inactive_count {
+        fill: none;
+        stroke: #dd9000;
+        stroke-width: 1px;
+    }
+
+    .y line {
+        stroke: #ddd;
+        shape-rendering: crispEdges;
+        stroke-dasharray: 2, 2, 2, 2;
+    }
+
+    .v6 {
+        stroke-dasharray: 2, 3, 2, 3;
+    }
+}
+
+.graph {
+    font-size: 90%;
+
+    rect {
+        fill: none;
+        stroke: black;
+        shape-rendering: crispEdges;
+    }
+
+    .x line,
+    .y line {
+        stroke: #ccc;
+        shape-rendering: crispEdges;
+    }
+
+    .y_score line {
+        stroke: #ddd;
+        shape-rendering: crispEdges;
+        stroke-dasharray: 2, 2, 2, 2;
+    }
+}
+
+// Bootstrap table overrides
+.table-success {
+    background-color: $status-active-base !important;
+}
+
+.table-info {
+    background-color: $status-testing-base !important;
+}
+
+.table-light {
+    background-color: var(--bs-table-bg, #f8f9fa) !important;
+}
+
+.table-secondary {
+    background-color: $status-candidate-base !important;
+}
+
+table.table-hover tbody tr:hover td,
+table.table-hover tbody tr:hover th {
+    background-color: rgba(0, 0, 0, .075) !important;
+}
+
+// Status header hover effects - richer versions of base colors
+.legend-table .status-header.table-success:hover {
+    background-color: $status-active-hover !important;
+}
+
+.legend-table .status-header.table-info:hover {
+    background-color: $status-testing-hover !important;
+}
+
+.legend-table .status-header.table-secondary:hover {
+    background-color: $status-candidate-hover !important;
+}
+
+// Keep existing behavior for non-header cells
+.legend-table tbody tr:hover td:not(.status-header),
+.legend-table tbody tr:hover th:not(.status-header) {
+    background-color: transparent !important;
+}
+
+// Ensure non-hovered status headers maintain their base colors
+.legend-table .status-header.table-success:not(:hover) {
+    background-color: $status-active-base !important;
+}
+
+.legend-table .status-header.table-info:not(:hover) {
+    background-color: $status-testing-base !important;
+}
+
+.legend-table .status-header.table-secondary:not(:hover) {
+    background-color: $status-candidate-base !important;
+}
+
+table.table td,
+table.table th {
+    padding: .35rem !important;
+}
+
+// Form and interface styles
+img.atom-logo {
+    vertical-align: middle;
+    margin-right: 3px;
+}
+
+#account-form {
+    .form-group {
+        margin-top: 14px;
+    }
+
+    .form-label {
+        font-weight: bold;
+    }
+}
+
+#monitor-form .form-floating {
+    margin-top: 5px;
+}
+
+#manage-sidebar {
+    .account-name {
+        white-space: normal;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .logout-item {
+        overflow-y: auto;
+        overflow-x: hidden;
+        word-wrap: break-word;
+    }
+}
+
+// Additional UI elements
+p.serverurls {
+    font-size: 0.8em;
+}
+
+#zone_counts td {
+    padding-right: 8px;
+    vertical-align: text-top;
+}
+
+em.beta {
+    color: #888;
+}
+
+#add_server {
+    margin-bottom: 20px;
+
+    &_form div.server_info {
+        margin-top: 10px;
+    }
+}
+
+.log-border {
+    border-top: solid gray 1px;
+}
+
+.log-changes {
+    line-height: 15px;
+    padding: 0;
+    margin: 0;
+}
+
+.btn-inline {
+    display: inline-block;
+}
+
+ul.product-details {
+    margin-bottom: 1em;
+
+    li.continue {
+        list-style-type: none;
+    }
+}
+
+div.product-header {
+    margin-bottom: 0.5em;
+    margin-top: 1em;
+}
+
+div.product-group .btn {
+    margin: 3px;
+}
+
+// Override Bootstrap's automatic color contrast calculation for btn-primary
+// Bootstrap calculates that #3885B4 background needs black text for accessibility,
+// but design requires white text for visual consistency
+.btn-primary {
+    --bs-btn-color: #ffffff !important;
+    --bs-btn-hover-color: #ffffff !important;
+    --bs-btn-active-color: #ffffff !important;
+    --bs-btn-disabled-color: #ffffff !important;
+}
+
+// Server Chart Legend Styles
+.legend-table {
+    width: 100%;
+    margin-bottom: 0;
+
+    td {
+        padding: 0.05rem 0.3rem;
+        border: none;
+        font-size: 0.8rem;
+        vertical-align: bottom;
+    }
+
+    th {
+        padding: 0.2rem 0.5rem;
+        border: none;
+        font-size: 0.85rem;
+        font-weight: 600;
+        height: 1.8rem;
+    }
+
+    .monitor-name {
+        min-width: 120px;
+        max-width: 200px;
+        width: 40%;
+    }
+
+    .monitor-score {
+        min-width: 40px;
+        max-width: 80px;
+        width: 8%;
+        text-align: right;
+    }
+
+    tbody tr td.monitor-rtt {
+        min-width: 50px;
+        max-width: 80px;
+        width: 8% !important;
+        text-align: right !important;
+        font-size: 0.7rem !important;
+        color: #495057 !important;
+        padding-left: 0.2rem !important;
+        font-weight: normal !important;
+    }
+
+
+
+    // 3-column layout (Candidate)
+    .monitor-name-3col {
+        min-width: 100px;
+        max-width: 150px;
+        width: 20%;
+    }
+
+    .monitor-score-3col {
+        min-width: 30px;
+        max-width: 50px;
+        width: 8%;
+        text-align: right;
+    }
+
+    .column-gap {
+        min-width: 10px;
+        max-width: 20px;
+        width: 3%;
+    }
+
+    .status-header {
+        text-align: left;
+
+        &:hover {
+            // Intensify existing Bootstrap table colors on hover
+            &.table-success { background-color: $status-active-hover !important; }
+            &.table-info { background-color: $status-testing-hover !important; }
+            &.table-secondary { background-color: $status-candidate-hover !important; }
+            &.table-danger { background-color: rgba(220, 53, 69, 0.25) !important; }
+        }
+    }
+
+    .empty-cell {
+        padding: 0;
+        border: none;
+    }
+
+    tbody tr:hover td,
+    tbody tr:hover th {
+        background-color: transparent !important;
+    }
+
+    &.table tbody tr td.monitor-cell-hover {
+        background-color: rgba(0, 0, 0, 0.075) !important;
+    }
+
+    // Prevent row hover effects when status header is hovered
+    tbody tr:has(.status-header:hover) td:not(.status-header),
+    tbody tr:has(.status-header:hover) th:not(.status-header) {
+        background-color: transparent !important;
+    }
+
+    // More specific override for Bootstrap table hover on status header rows
+    &.table-hover tbody tr:has(.status-header:hover) td:not(.status-header),
+    &.table-hover tbody tr:has(.status-header:hover) th:not(.status-header) {
+        background-color: transparent !important;
+    }
+}
+
+// Chart container styles to avoid inline CSS and maintain proper SVG sizing
+.chart-container {
+    // Prevent container from expanding beyond SVG's intended dimensions
+    display: inline-block;
+    max-width: max-content;
+    margin-bottom: 0.2rem;
+
+    svg {
+        // Ensure SVG respects its width/height attributes and doesn't scale up
+        max-width: none !important;
+        width: attr(width px, auto);
+        height: attr(height px, auto);
+    }
+}
+
+.legend-container {
+    // Allow natural sizing to match chart width, up to chart maximum (640px)
+    display: inline-block;
+    max-width: 640px;  // Allow full chart width instead of limiting to content
+    width: 100%;       // Take available width up to max-width
+
+    // Add spacing above legend (about one line height)
+    margin-top: 1.2em;
+
+    // Remove unwanted Bootstrap styling - clean appearance
+    border: none !important;
+    background: none !important;
+    padding: 0 !important;
+    margin-bottom: 0 !important;
+    margin-right: 0 !important;
+
+    // Remove left padding - legend starts at chart edge
+    margin-left: 0 !important;
+
+    // Override all padding classes to remove left margin
+    &.padding-20,
+    &.padding-30,
+    &.padding-40,
+    &.padding-50,
+    &.padding-60,
+    &.padding-70,
+    &.padding-80,
+    &.padding-90,
+    &.padding-100 {
+        margin-left: 0 !important;
+    }
+}
+
+.legend-spacer {
+    height: 0.75rem;
+}
+
+.graph-desc-visible {
+    display: block;
+}
+
+// RTT cell fallback styles (for CSP compliance)
+.monitor-rtt-fallback {
+    font-size: 0.7rem;
+}
+
+// Bootstrap Popovers - compact styling with proper background
+.popover {
+    --bs-popover-max-width: 120px;
+    --bs-popover-bg: #000;
+    --bs-popover-border-color: #333;
+    font-size: 0.75rem;
+    background-color: #000 !important;
+    border: 1px solid #333 !important;
+
+    .popover-body {
+        padding: 0.375rem 0.5rem;
+        font-weight: 500;
+        color: #fff;
+        background-color: #000;
+    }
+
+    .popover-arrow::before {
+        border-top-color: #000 !important;
+        border-bottom-color: #000 !important;
+        border-left-color: #000 !important;
+        border-right-color: #000 !important;
+    }
+
+    .popover-header {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.7rem;
+        font-weight: 600;
+        background-color: #000;
+        color: #fff;
+        border-bottom: 1px solid #333;
+    }
+}
+
+// Chart status link hidden
+.status-link-hidden {
+    display: none;
+}
+
+// Chart tooltip box visible
+.tooltip-box-visible {
+    display: block;
+}
+
+// SVG dimension utilities (CSP compliant)
+.chart-svg {
+    width: var(--chart-width, 100%);
+    height: var(--chart-height, auto);
+}
+
+// Chart Web Component Styles (moved from TypeScript files)
+.chart-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    min-height: 200px;
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+    svg {
+        width: 100%;
+        height: auto;
+        max-width: 100%;
+
+        .line {
+            fill: none;
+            stroke-width: 2;
+
+            &.registered_count {
+                stroke: #1f77b4;
+            }
+
+            &.active_count {
+                stroke: #2ca02c;
+            }
+
+            &.inactive_count {
+                stroke: #ff7f0e;
+            }
+
+            &.v6 {
+                stroke-dasharray: 5,5;
+            }
+        }
+
+        .legend {
+            font-size: 12px;
+
+            .legend-item:hover {
+                opacity: 0.8;
+            }
+        }
+
+        .x-axis line,
+        .y-axis line {
+            stroke: #e0e0e0;
+            stroke-dasharray: 2,2;
+        }
+
+        .x-axis text,
+        .y-axis text {
+            fill: #6b7280;
+            font-size: 12px;
+        }
+    }
+}
+
+.chart-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    color: #666;
+
+    .spinner {
+        width: 1rem;
+        height: 1rem;
+        border: 2px solid #e5e7eb;
+        border-top: 2px solid #3b82f6;
+        border-radius: 50%;
+        animation: chart-spinner-spin 1s linear infinite;
+        margin-right: 0.5rem;
+    }
+}
+
+@keyframes chart-spinner-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+// Zone Chart Specific Styles
+.zone-info {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    color: #6b7280;
+    border: 1px solid #e5e7eb;
+    pointer-events: none;
+}
+
+.ip-version-toggle {
+    margin-top: 0.5rem;
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+
+    .version-button {
+        padding: 0.25rem 0.75rem;
+        border: 1px solid #d1d5db;
+        background: white;
+        border-radius: 4px;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &:hover {
+            background: #f3f4f6;
+        }
+
+        &.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+    }
+}
+
+// Server Chart Legend Container
+.legend-container {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: #f9fafb;
+    border-radius: 4px;
+    border: 1px solid #e5e7eb;
+
+    table {
+        width: 100%;
+        font-size: 0.875rem;
+        border-collapse: collapse;
+
+        th,
+        td {
+            padding: 0.25rem 0.5rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        tr:hover {
+            background-color: transparent !important;
+        }
+
+        .table-success {
+            background-color: $status-active-base;
+        }
+
+        .table-info {
+            background-color: $status-testing-base;
+        }
+
+        .table-secondary {
+            background-color: $status-candidate-base;
+        }
+
+        .table-danger {
+            background-color: rgba(239, 68, 68, 0.1);
+        }
+
+        .fw-bold {
+            font-weight: 600;
+        }
+    }
+}
+
+// Chart responsive adjustments
+@container (max-width: 480px) {
+    .chart-container {
+        min-height: 180px;
+    }
+}
+
+@container (max-width: 600px) {
+    .zone-info {
+        position: static;
+        margin-bottom: 0.5rem;
+        text-align: center;
+    }
+
+    .ip-version-toggle {
+        margin-top: 0.25rem;
+
+        .version-button {
+            font-size: 0.75rem;
+            padding: 0.1875rem 0.5rem;
+        }
+    }
+
+    .legend-container {
+        margin-top: 0.5rem;
+        padding: 0.5rem;
+
+        table {
+            font-size: 0.75rem;
+        }
+    }
+}
+
+// Developer Mode Styles
+.developer-menu {
+    margin-top: 1rem;
+    animation: slideDown 0.3s ease-in-out;
+
+    .card {
+        box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+        border-width: 2px;
+    }
+
+    .card-header {
+        font-size: 0.875rem;
+        padding: 0.5rem 0.75rem;
+
+        strong {
+            font-weight: 600;
+        }
+    }
+
+    .card-body {
+        padding: 0.75rem;
+        background-color: #fefefe;
+    }
+
+    .form-label {
+        font-weight: 500;
+        color: #495057;
+        margin-bottom: 0.25rem;
+    }
+
+    .form-select-sm,
+    .form-check-input {
+        font-size: 0.875rem;
+    }
+
+    .form-check {
+        padding-left: 1.25em;
+    }
+
+    .form-check-label {
+        color: #6c757d;
+        font-weight: 400;
+    }
+
+    // Animation for smooth appearance
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+}
+
+// Search Results Relevance Filtering
+.search-result-secondary {
+    display: none;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.search-result-secondary.show-all {
+    display: block;
+    opacity: 1;
+}
+
+// Responsive adjustments for developer menu
+@media (max-width: $breakpoint-mobile-max) {
+    .developer-menu {
+        .row {
+            margin: 0;
+        }
+
+        .col-md-6 {
+            padding: 0 0.5rem;
+        }
+
+        .card-body {
+            padding: 0.5rem;
+        }
+    }
+}

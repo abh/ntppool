@@ -57,9 +57,6 @@ msgid  "Older news"
 msgstr "Eldre nyheter"
 
 # mailinglists.html
-msgid  "NTP Pool mailing lists"
-msgstr "NTP-pulje-E-postlister"
-
 msgid  "archive"
 msgstr "arkiv"
 

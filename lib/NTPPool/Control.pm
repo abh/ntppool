@@ -11,7 +11,8 @@ use I18N::LangTags::Detect ();
 use List::Util             qw(first);
 use Unicode::Collate;
 use Data::ULID;
-use JSON::XS qw(decode_json);
+use JSON::XS      qw(decode_json encode_json);
+use File::Slurper qw(read_binary);
 use Syntax::Keyword::Dynamically;
 use OpenTelemetry::Constants
   qw( SPAN_KIND_SERVER SPAN_KIND_INTERNAL SPAN_STATUS_ERROR SPAN_STATUS_OK );
@@ -25,50 +26,39 @@ use NP::Version;
 my $version = NP::Version->new;
 my $config  = Combust::Config->new;
 
-our %valid_languages = (
-    ar => {name => "اَلْعَرَبِيَّةُ", testing => 1},
-    bg => {name => "Български",       testing => 1},
-    ca => {name => "Català",          testing => 1},
-    da => {name => "Dansk"},
-    de => {name => "Deutsch"},
-    el => {name => "Ελληνικά"},
-    en => {name => "English",},
-    es => {name => "Español"},
-    eu => {name => "Euskara", testing => 1},
-    fa => {name => "فارسی",   testing => 1},
-    fi => {name => "Suomi"},
-    fr => {name => "Français",},
-    he => {name => "עברית", testing => 1},
-    hi => {name => "हिन्दी"},
-    hu => {name => "Magyar",           testing => 1},
-    id => {name => "Bahasa Indonesia", testing => 1},
-    it => {name => "Italiano"},
-    ja => {name => "日本語"},
-    kk => {name => "Қазақша", testing => 1},
-    ko => {name => "한국어",},
-    nb => {name => "Norsk (bokmål)"},
-    nl => {name => "Nederlands",},
-    nn => {name => "Norsk (nynorsk)"},
-    pl => {name => "Język", testing => 1},
-    pt => {name => "Português"},
-    ro => {name => "Română", testing => 1},
-    ru => {name => "Русский"},
-    sr => {name => "Српски"},
-    sv => {name => "Svenska"},
-    vi => {name => "Tiếng Việt", testing => 1},
-    tr => {name => "Türkçe"},
-    uk => {name => "Українська"},
-    zh => {name => "中文（简体）"},
-);
+our %valid_languages;
 
 NP::I18N::loc_lang('en');
 
 my $uc = Unicode::Collate->new();
 
-my $valid_languages_sorted = [
-    sort { $uc->cmp($valid_languages{$a}->{name}, $valid_languages{$b}->{name}) }
-      keys %valid_languages
-];
+my $valid_languages_sorted;
+
+# Load languages immediately at startup
+{
+    my $json_file = ($ENV{CBROOTLOCAL} || '.') . '/i18n/languages.json';
+
+    # Add debugging and error handling
+    unless (-f $json_file) {
+        die "Language file not found: $json_file (CBROOTLOCAL="
+          . ($ENV{CBROOTLOCAL} || 'unset') . ")";
+    }
+
+    my $json_content = read_binary($json_file);
+    my $languages    = decode_json($json_content);
+    %valid_languages = %$languages;
+
+    $valid_languages_sorted = [
+        sort { $uc->cmp($valid_languages{$a}->{name}, $valid_languages{$b}->{name}) }
+          keys %valid_languages
+    ];
+
+    # Debug: dump the loaded data structure
+    #use Data::Dumper;
+    #warn "Loaded languages from $json_file:\n" . Dumper(\%valid_languages);
+    #warn "Language keys: " . join(', ', sort keys %valid_languages) . "\n";
+    #warn "Sorted languages: " . join(', ', @$valid_languages_sorted) . "\n";
+}
 
 my $ctemplate;
 
@@ -91,7 +81,7 @@ sub request_id {
 sub init {
     my $self = shift;
 
-    my $span       = OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
+    my $span = OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
     my $class_name = ref $self;
     $span->set_attribute("class", $class_name);
 
@@ -146,8 +136,8 @@ sub init {
             return $self->redirect($self->_url($self->site, $self->request->path));
         }
         else {
-           # we're setting Strict-Transport-Security with haproxy
-           # $self->request->header_out('Strict-Transport-Security', 'max-age=' . (86400 * 7 * 20));
+ # we're setting Strict-Transport-Security with haproxy
+ # $self->request->header_out('Strict-Transport-Security', 'max-age=' . (86400 * 7 * 20));
         }
     }
 
@@ -172,6 +162,9 @@ sub init {
 
     $self->tpl_param('pool_domain' => Combust::Config->new->site->{ntppool}->{pool_domain}
           || 'pool.ntp.org');
+
+    # Add default surrogate key for environment
+    $self->surrogate_key(env => $self->deployment_mode);
 
     $span->end();
     return OK;
@@ -225,7 +218,7 @@ sub language {
     my $self = shift;
     return $self->{_lang} if $self->{_lang};
     my $language = $self->path_language || $self->detect_language || 'en';
-    my $span     = OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
+    my $span = OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
     $span->set_attribute("combust.lang", $language);
     return $self->{_lang} = $language;
 }
@@ -324,7 +317,8 @@ sub localize_url {
         $uri->path("/$lang" . $uri->path);
         $self->request->header_out('Vary', 'Accept-Language');
         $self->cache_control(
-            's-maxage=900, max-age=3600, stale-while-revalidate=90, stale-if-error=43200');
+            's-maxage=900, max-age=3600, stale-while-revalidate=90, stale-if-error=43200'
+        );
         return $self->redirect($uri->as_string);
     }
     return;
@@ -422,7 +416,8 @@ sub count_by_continent {
 sub is_htmx {
     my $self = shift;
     if ($self->request->header_in('HX-Request')) {
-        my $span = OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
+        my $span =
+          OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
         $span->set_attribute('request.htmx' => 1);
         return 1;
     }
@@ -454,10 +449,65 @@ sub cache_control {
     return $self->{cache_control} = shift;
 }
 
+sub plausible_props {
+    my $self = shift;
+    my ($key, $value) = @_;
+
+    # If key and value are provided, set them
+    if (defined $key && defined $value) {
+        $self->{_plausible_props} ||= {};
+        $self->{_plausible_props}->{$key} = $value;
+        return;
+    }
+
+    # If called without parameters, return JSON or empty string
+    if (!$self->{_plausible_props} || !%{$self->{_plausible_props}}) {
+        return '';
+    }
+
+    return encode_json($self->{_plausible_props});
+}
+
+sub surrogate_key {
+    my $self = shift;
+
+    # If called without parameters, return space-separated key=value pairs
+    unless (@_) {
+        return '' unless $self->{_surrogate_keys} && %{$self->{_surrogate_keys}};
+        return join(' ',
+            map {"$_=$self->{_surrogate_keys}->{$_}"}
+            sort keys %{$self->{_surrogate_keys}});
+    }
+
+    # Accept key=value pairs
+    my %pairs = @_;
+    $self->{_surrogate_keys} ||= {};
+
+    for my $key (keys %pairs) {
+        my $value = $pairs{$key};
+
+        # Basic validation - keys and values should not contain spaces or special chars
+        next if $key =~ /[=\s]/ || $value =~ /[=\s]/;
+        $self->{_surrogate_keys}->{$key} = $value;
+    }
+
+    return;
+}
+
 sub post_process {
     my $self = shift;
 
     my $cspdomains = "st.ntppool.org st.pimg.net news.ntppool.org";
+
+    # If on manage site, add web hostname to CSP connect-src
+    my $web_hostname = '';
+    if ($self->site->name eq 'manage') {
+        if (my $ntppool_site = $config->site->{ntppool}) {
+            if (my $servername = $ntppool_site->{servername}) {
+                $web_hostname = " $servername";
+            }
+        }
+    }
 
     my @headers = (
 
@@ -465,16 +515,18 @@ sub post_process {
         [   'Report-To' =>
               '{"group":"default","max_age":31536000,"endpoints":[{"url":"https://ntppool.report-uri.com/a/t/g"}],"include_subdomains":true}'
         ],
-        ['NEL' => '{"report_to":"default","max_age":31536000,"include_subdomains":true}'],
-        [   'Content-Security-Policy-Report-Only' => join(
+        [   'NEL' =>
+              '{"report_to":"default","max_age":31536000,"include_subdomains":true}'
+        ],
+        [   'Content-Security-Policy' => join(
                 " ",
                 qq[default-src 'none'; frame-ancestors 'none';],
-                qq[connect-src 'self' www.ntppool.org st.ntppool.org 8ll7xvh0qt1p.statuspage.io;],
+                qq[connect-src 'self' www.ntppool.org st.ntppool.org status.ntppool.org 8ll7xvh0qt1p.statuspage.io send.webform.dev${web_hostname};],
                 qq[font-src fonts.gstatic.com;],
-                qq[form-action 'self' mailform.ntppool.org checkout.stripe.com;],
-                qq[img-src 'self' $cspdomains *.mapper.ntppool.org;],
-                qq[script-src 'self' 'unsafe-eval' 'unsafe-inline' cdn.statuspage.io $cspdomains www.mapper.ntppool.org js.stripe.com;],
-                qq[style-src 'self' fonts.googleapis.com $cspdomains;],
+                qq[form-action 'self' send.webform.dev checkout.stripe.com;],
+                qq[img-src 'self' data: $cspdomains *.mapper.ntppool.org;],
+                qq[script-src 'self' 'unsafe-eval' 'unsafe-inline' cdn.statuspage.io $cspdomains www.mapper.ntppool.org js.stripe.com send.webform.dev;],
+                qq[style-src 'self' fonts.googleapis.com fonts.gstatic.com send.webform.dev $cspdomains;],
 
                 # qq[child-src 'self' js.stripe.com;],
                 qq[report-uri https://ntppool.report-uri.com/r/t/csp/wizard],
@@ -485,6 +537,10 @@ sub post_process {
         ['X-Content-Type-Options' => 'nosniff'],
         ['X-Frame-Options'        => 'deny'],
         ['Referrer-Policy'        => 'origin-when-cross-origin'],
+
+        # HTMX CORS support
+        ['Access-Control-Allow-Headers' => 'HX-Request'],
+        ['Access-Control-Expose-Headers' => 'HX-Redirect'],
 
         # ntppool version / build
         ['X-NPV' => $version->current_release . " (" . $version->hostname . ")"],
@@ -499,7 +555,109 @@ sub post_process {
         $req->header_out('Cache-Control', $cache);
     }
 
+    if (my $surrogate_keys = $self->surrogate_key) {
+        $self->request->header_out('Surrogate-Key', $surrogate_keys);
+    }
+
     return OK;
+}
+
+# Vite manifest cache
+my $vite_manifest;
+my $vite_manifest_mtime;
+
+sub _load_vite_manifest {
+    my $self = shift;
+    my $manifest_file =
+      ($ENV{CBROOTLOCAL} || '.') . '/docs/shared/static/build/.vite/manifest.json';
+
+    unless (-f $manifest_file) {
+        warn "Vite manifest not found: $manifest_file";
+        return $vite_manifest = {};
+    }
+
+    my $file_mtime = (stat($manifest_file))[9];
+
+    # In development, check if file has changed
+    my $is_development = $self->deployment_mode eq 'devel';
+    if ($is_development) {
+        if ($vite_manifest && $vite_manifest_mtime && $file_mtime == $vite_manifest_mtime)
+        {
+            return $vite_manifest;
+        }
+    }
+    else {
+        # In production/test, load only once
+        return $vite_manifest if $vite_manifest;
+    }
+
+    eval {
+        my $json_content = read_binary($manifest_file);
+        $vite_manifest       = decode_json($json_content);
+        $vite_manifest_mtime = $file_mtime;
+    };
+
+    if ($@) {
+        warn "Failed to load vite manifest: $@";
+        return $vite_manifest = {};
+    }
+
+    return $vite_manifest;
+}
+
+sub static_url {
+    my $self = shift;
+    my $file = shift;
+
+    # Handle vite-bundled files
+    if ($file =~ m!^/build/(.+)\.(js|css)$!) {
+        my $entry_name = $1;
+        my $extension  = $2;
+        my $manifest   = $self->_load_vite_manifest();
+        my $found_entry;
+
+        if ($extension eq 'js') {
+
+            # For JS files, find entry with matching name and isEntry: true
+            for my $entry_key (keys %$manifest) {
+                my $entry = $manifest->{$entry_key};
+                if ($entry->{name} && $entry->{name} eq $entry_name && $entry->{isEntry})
+                {
+                    $found_entry = $entry;
+                    last;
+                }
+            }
+        }
+        elsif ($extension eq 'css') {
+
+            # For CSS files, direct lookup by key
+            my $lookup_key = "$entry_name.$extension";
+            $found_entry = $manifest->{$lookup_key};
+        }
+
+        if ($found_entry) {
+
+            # We found the vite manifest entry, construct the result with static base
+            my $vite_file = "/build/" . $found_entry->{file};
+
+            # Get the static base from configuration and combine with vite filename
+            my $static_base = eval { $self->__static->static_base($self->site) };
+            if ($@ || !$static_base) {
+                warn "Failed to get static_base for site "
+                  . ($self->site || 'unknown') . ": $@"
+                  if $@;
+                $static_base = '/static';    # Default fallback
+            }
+            my $result = $static_base . $vite_file;
+            return $result;
+        }
+
+        # Fallback to original filename if not found in manifest
+        warn "Vite manifest entry not found for: $entry_name.$extension";
+    }
+
+    # Use parent class method for all other files
+    return $self->SUPER::static_url($file, @_);
 }
 
 sub plain_cookie {
@@ -526,7 +684,7 @@ sub plain_cookie {
         $args->{expires} = 1;    # 1970-01-01
     }
 
-    $args->{secure} = 1;
+    $args->{secure}   = 1;
     $args->{httpOnly} = 1;
 
     $args->{value} = $value;

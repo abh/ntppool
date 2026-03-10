@@ -65,29 +65,26 @@ msgid "Older news"
 msgstr "पुराने समाचार"
 
 # mailinglists.html
-msgid "NTP Pool mailing lists"
-msgstr "एनटीपी पूल मेलिंग सूची"
-
-msgid "subscribe"
-msgstr "सदस्यता लें"
-
 msgid "archive"
 msgstr "संग्रह"
 
-msgid "Announcement list"
-msgstr "घोषणा सूची"
+msgid "NTP Pool Forum"
+msgstr "एनटीपी पूल फोरम"
+
+msgid "News site"
+msgstr "समाचार साइट"
 
 msgid "Discussion list"
 msgstr "चर्चा सूची"
 
-msgid "Development list"
-msgstr "विकास कार्य सूची"
+msgid "Development"
+msgstr "विकास"
 
-msgid "announcement_list_description"
-msgstr "एनटीपी पूल समाचार की बहुत कम ट्रैफिक की घोषणाएं. सभी सर्वर ऑपरेटरों को घोषणा सूची में सब्सक्राइब करना आवश्यक है"
+msgid "forum_description"
+msgstr "एनटीपी पूल के बारे में प्रश्न (और उत्तर), सुधार के लिए सुझाव और समय मापने और एनटीपी सर्वर चलाने से संबंधित विषय।"
 
-msgid "discussion_list_description"
-msgstr "सर्वर ऑपरेटर (और उपयोगकर्ता), जो परियोजना में अधिक शामिल होना चाहते हैं, चर्चा सूची की सदस्यता ले सकते हैं.<br/> बेशक, एनटीपी के बारे में सामान्य चर्चा %1 यूज़नेट न्यूज ग्रुप पर होनी चाहिए (<a href=\"%2\">Google ग्रुप्स</a>पर भी उपलब्ध"
+msgid "news_description"
+msgstr "घोषणाएं और समाचार समाचार साइट या फोरम पर पोस्ट किए जाते हैं।"
 
 msgid "development_list_description"
 msgstr "<a href=\"%1\">एनटीपी पूल कोड</a> और <a href=\"%2\">GeoDNS</a> के वर्तमान विकास कार्य के बारे में अधिक तकनीकी (और आदर्श रूप में हमेशा व्यावहारिक) चर्चा timekeepers-dev सूची पर होती है"

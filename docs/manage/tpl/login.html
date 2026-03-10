@@ -35,19 +35,45 @@ see <a href="https://www.ntppool.org/vendors">vendor information</a>.
 <i>Your message has been sent, thanks!</i>
 [% ELSE %]
 
-<form action="https://mailform.ntppool.org/send/jsrthkgjkw45ht3f"
-    method="POST">
-    <input type="text" name="name" placeholder="Your name"><br>
-    <input type="email" name="_replyto" placeholder="Your email address"><br>
-    <textarea cols="60" rows="10" name="text" placeholder="message ..."></textarea>
-    <br>
-    <input type="hidden" name="subject" value="NTP Pool login help">
+<form action="https://send.webform.dev/send/form_5591UV4BxvG8_2316865334"
+    method="POST" id="help-form" class="webform-embed needs-validation" novalidate
+    data-success-behavior="button"
+    data-success-message="Your message has been sent, thanks!"
+    data-submit-text="Sending..."
+    data-error-position="top">
 
-    <br>
+    <div class="mb-3">
+        <label for="help-name" class="form-label">Your name</label>
+        <input type="text" name="name" id="help-name" class="form-control" placeholder="Enter your name" required>
+        <div class="invalid-feedback">
+            Please provide your name.
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label for="help-email" class="form-label">Email address</label>
+        <input type="email" name="_replyto" id="help-email" class="form-control" placeholder="Enter your email address" required>
+        <div class="invalid-feedback">
+            Please provide a valid email address.
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label for="help-message" class="form-label">Message</label>
+        <textarea name="text" id="help-message" class="form-control" rows="6" placeholder="Describe the issue you're having with logging in..." required></textarea>
+        <div class="invalid-feedback">
+            Please provide a message describing your issue.
+        </div>
+    </div>
+
     <input type="text" name="_gotcha" value="" class="gotcha" />
-    <input type="submit" value="Request help">
     <input type="hidden" name="_next" value="[% combust.manage_url('/manage', "msg"="thanks") %]">
+
+    <button type="submit" class="btn btn-primary">
+        <i class="bi bi-envelope"></i> Request help
+    </button>
 </form>
+<p><small class="text-muted">Powered by <a href="https://www.webform.dev" target="_blank" rel="noopener">webform.dev</a></small></p>
 [% END %]
 </p>
 

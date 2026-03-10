@@ -1,130 +1,110 @@
-[% page.title = 'How do I setup NTP to use the pool?' %]
+[% page.title = 'Πώς ρυθμίζω το NTP για να χρησιμοποιήσω τη δεξαμενή;' %]
 
 <div class="block">
-	<h3 id="use">How do I use pool.ntp.org?</h3>
+	<h3 id="use">Πώς μπορώ να χρησιμοποιήσω το pool.ntp.org;</h3>
 
 	<p>
-	If you just want to synchronise your computer's clock to the network, the configuration file (for the ntpd program from the <a href="https://www.ntp.org/">ntp.org distribution</a>, on any supported operating system - <b>Linux, *BSD, Windows and even some more exotic systems</b>) is really simple:
+	Αν απλά θέλετε να συγχρονίσετε το ρολόι του υπολογιστή σας με το δίκτυο, το αρχείο διαμόρφωσης (για το πρόγραμμα ntpd από τη <a href="https://www.ntp.org/">διανομή ntp.org</a>, σε οποιοδήποτε υποστηριζόμενο λειτουργικό σύστημα - <b>Linux, *BSD, Windows και ακόμη και μερικά πιο εξωτικά συστήματα</b>) είναι πραγματικά απλό:
 	</p>
 
 	[% INCLUDE "ntppool/use/sample-config.html" %]
 
 	<p>
-	The 0, 1, 2 and 3.pool.ntp.org names point to a random set of servers that will
-	change every hour.  Make sure your computer's clock is set to something
-	sensible (within a few minutes of the 'true' time) - you could use <code>ntpdate
-	pool.ntp.org</code>, or you could just use the <code>date</code> command and set it
-	to your wristwatch. Start ntpd, and after some time (this could take as long as
-	half an hour!), <code>ntpq -pn</code> should output something like:
+	Τα ονόματα 0, 1, 2 και <code>3.pool.ntp.org</code> δείχνουν σε ένα τυχαίο σύνολο διακομιστών που αλλάζουν κάθε ώρα. Βεβαιωθείτε ότι το ρολόι του υπολογιστή σας έχει ρυθμιστεί σε κάτι λογικό (μέσα σε λίγα λεπτά από την 'πραγματική' ώρα) - θα μπορούσατε να χρησιμοποιήσετε το <code>ntpdate pool.ntp.org</code>, ή θα μπορούσατε απλώς να χρησιμοποιήσετε την εντολή <code>date</code> και να το ρυθμίσετε σύμφωνα με το ρολόι χειρός σας. Ξεκινήστε το ntpd, και μετά από κάποιο χρόνο (αυτό μπορεί να διαρκέσει έως και μισή ώρα!), η εντολή <code>ntpq -pn</code> θα πρέπει να δώσει κάτι παρόμοιο:
 	</p>
 
 	[% INCLUDE "ntppool/use/sample-ntpq.html" %]
 
 	<p>
-	The IP addresses will be different, because you've been assigned random
-	timeservers. The essential thing is that one of the lines starts with an
-	asterisk (<code>*</code>), this means your computer gets the time from the Internet
-	- you'll never have to worry about it again!
+	Οι διευθύνσεις IP θα είναι διαφορετικές, επειδή σας έχουν ανατεθεί τυχαίοι διακομιστές χρόνου. Το ουσιώδες είναι ότι μία από τις γραμμές ξεκινά με αστερίσκο (<code>*</code>), αυτό σημαίνει ότι ο υπολογιστής σας παίρνει τον χρόνο από το Διαδίκτυο - δεν θα χρειαστεί ποτέ να ανησυχήσετε γι' αυτό ξανά!
 	</p>
 	<p>
-	Looking up <code>pool.ntp.org</code> (or <code>0.pool.ntp.org</code>,
-	<code>1.pool.ntp.org</code>, etc) will usually return IP addresses for servers
-	in or close to your country. For most users this will give the best results.
+	Η αναζήτηση του <code>pool.ntp.org</code> (ή <code>0.pool.ntp.org</code>, <code>1.pool.ntp.org</code>, κλπ.) θα επιστρέψει συνήθως διευθύνσεις IP για διακομιστές στη χώρα σας ή κοντά σε αυτήν. Για τους περισσότερους χρήστες αυτό θα δώσει τα καλύτερα αποτελέσματα.
 	</p>
 
-	<p>You can also use the <a href="/zone/@">continental zones</a> (For example
+	<p>Μπορείτε επίσης να χρησιμοποιήσετε τις <a href="/zone/@">ηπειρωτικές ζώνες</a> (Για παράδειγμα
 	<a href="/zone/europe">europe</a>,
 	<a href="/zone/north-america">north-america</a>,
 	<a href="/zone/oceania">oceania</a>
-	or <a href="/zone/asia">asia</a>.pool.ntp.org),
-	and a country zone (like
-	ch.pool.ntp.org in Switzerland) - for all these zones, you can again use the 0,
-	1, 2, or 3 prefixes, like 0.ch.pool.ntp.org.  Note, however, that the country zone
-	might not exist for your country, or might contain only one or two timeservers.
+	ή <code><a href="/zone/asia">asia</a>.pool.ntp.org</code>),
+	και μια ζώνη χώρας (όπως
+	<code>ch.pool.ntp.org</code> στην Ελβετία) - για όλες αυτές τις ζώνες, μπορείτε ξανά να χρησιμοποιήσετε τα προθέματα 0, 1, 2, ή 3, όπως <code>0.ch.pool.ntp.org</code>. Σημειώστε, ωστόσο, ότι η ζώνη της χώρας μπορεί να μην υπάρχει για τη χώρα σας, ή μπορεί να περιέχει μόνο έναν ή δύο διακομιστές χρόνου.
 	</p>
 	<p>
-	If you're using <b>a recent Windows version</b>, you can use the NTP
-	client that is built into the system. As administrator enter</p>
-<pre class="code">
-w32tm /config /syncfromflags:manual /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
-</pre>
+	Παρακαλούμε επίσης σημειώστε ότι το σύστημα προς το παρόν παρέχει διευθύνσεις IPv6 για μια ζώνη επιπρόσθετα των διευθύνσεων IPv4 μόνο αν το όνομα της ζώνης προηγείται από τον αριθμό 2, π.χ. <code>2.pool.ntp.org</code> (υπό την προϋπόθεση ότι υπάρχουν διακομιστές NTP IPv6 στην αντίστοιχη ζώνη). Ονόματα ζωνών που δεν προηγούνται από αριθμό, ή προηγούνται από 0, 1 ή 3, παρέχουν προς το παρόν μόνο διευθύνσεις IPv4.
 	<p>
-	at the command prompt.  This will work on Windows 2003 and newer.  If you use an
-	older version of Windows you can try</p>
-<pre class="code">
-net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
-</pre>
+	Αν χρησιμοποιείτε <b>μια πρόσφατη έκδοση των Windows</b>, μπορείτε να χρησιμοποιήσετε τον πελάτη ntp που είναι ενσωματωμένος στο σύστημα.</p>
+	<p>Κάντε δεξί κλικ στην ημερομηνία/ώρα στην περιοχή συστήματος και επιλέξτε Προσαρμογή Ημερομηνίας/ώρας ή ανοίξτε τις ρυθμίσεις με Win+I και κάντε κλικ Ώρα &amp; Γλώσσα -&gt; Ημερομηνία &amp; Ώρα.
+		κυλήστε προς τα κάτω και κάντε κλικ Ημερομηνία, ώρα, περιφερειακή μορφοποίηση
+		κυλήστε προς τα κάτω και κάντε κλικ Πρόσθετες ρυθμίσεις ημερομηνίας, ώρας &amp; περιφερειακές
+		κάντε κλικ Ημερομηνία και Ώρα και Ώρα Διαδικτύου
+		κάντε κλικ στο κουμπί Αλλαγή ρυθμίσεων. Εισάγετε <code>pool.ntp.org</code> και κάντε κλικ Ενημέρωση τώρα.</p>
 	<p>
-	The same can be achieved by, as administrator, right-clicking the clock in the taskbar,
-	selecting 'Adjust Date/Time' and entering the server name in the 'Internet Time' tab.
+		Δοκιμάστε κάνοντας δεξί κλικ στην ημερομηνία/ώρα στην περιοχή συστήματος και επιλέξτε Προσαρμογή Ημερομηνίας/ώρας ή ανοίξτε τις ρυθμίσεις με Win+I και κάντε κλικ Ώρα &amp; Γλώσσα -&gt; Ημερομηνία &amp; Ώρα.
+		Κάντε κλικ στο κουμπί "Συγχρονισμός τώρα".
 	</p>
-
 	<p>
-	Meinberg made a port of the <a href="http://www.meinberg.de/english/sw/ntp.htm">ntp daemon for Windows</a>.
-	</p>
+	Αν το σύστημα Windows σας είναι μέρος ενός domain, μπορεί να μην μπορείτε να ενημερώσετε ανεξάρτητα τον χρόνο του υπολογιστή σας.
 
-	<p>
-	If your Windows system is part of a domain, you might not be able to independently update your computer time.
-
-	For more information about setting the time on Windows, see <a href="https://technet.microsoft.com/en-us/library/cc773013%28WS.10%29.aspx">How Windows Time Service Works</a>.
+	Για περισσότερες πληροφορίες σχετικά με τη ρύθμιση της ώρας στα Windows, δείτε <a href="https://technet.microsoft.com/en-us/library/cc773013%28WS.10%29.aspx">How Windows Time Service Works</a>.
 	</p>
 </div>
 
 <div class="block">
-	<h3 id="notes">Additional Notes</h3>
+	<h3 id="notes">Πρόσθετες Σημειώσεις</h3>
 
-        <p><span class="hook">Consider if the NTP Pool is appropriate
-        for your use</span>. If business, organization or human life
-        depends on having correct time or can be harmed by it being
-        wrong, you shouldn't "just get it off the Internet". The NTP
-        Pool is generally very high quality, but it is a service run
-        by volunteers in their spare time. Please talk to your
-        equipment and service vendors about getting local and reliable
-        service setup for you. See also our <a href="/tos.html">terms
-        of service</a>.
+        <p><span class="hook">Σκεφτείτε αν η Δεξαμενή NTP είναι κατάλληλη
+        για τη χρήση σας</span>. Αν η επιχείρηση, ο οργανισμός ή η ανθρώπινη ζωή
+        εξαρτάται από το να έχετε σωστό χρόνο ή μπορεί να βλαφτεί αν είναι
+        λάθος, δεν θα πρέπει να "το παίρνετε απλώς από το Διαδίκτυο". Η Δεξαμενή
+        NTP είναι γενικά πολύ υψηλής ποιότητας, αλλά είναι μια υπηρεσία που
+        λειτουργεί από εθελοντές στον ελεύθερο χρόνο τους. Παρακαλούμε μιλήστε με
+        τους προμηθευτές εξοπλισμού και υπηρεσιών σας για να αποκτήσετε τοπική και
+        αξιόπιστη ρύθμιση υπηρεσίας. Δείτε επίσης τους <a href="/tos.html">όρους
+        υπηρεσίας</a> μας.
 
-        We recommend time servers from
+        Συνιστούμε διακομιστές χρόνου από τη
         <a href="http://www.meinbergglobal.com/english/products/ntp-time-server.htm">Meinberg</a>,
-        but you can also find time servers from
+        αλλά μπορείτε επίσης να βρείτε διακομιστές χρόνου από την
         <a href="http://www.endruntechnologies.com/NTP-Servers/gps-cdma-ntp.htm">End Run</a>,
         <a href="http://spectracom.com/products-services/precision-timing#anchor-2172">Spectracom</a>
-        and many others.
+        και πολλούς άλλους.
         </p>
 
-	<p><span class="hook">If you have a static IP address and a reasonable Internet connection</span> (bandwidth
-	is not so important, but it should be stable and not too highly loaded), please
-	consider donating your server to the server pool. It doesn't cost you more than
-	a few hundred bytes per second traffic, but you help this project survive.
-	Please <a href="/join.html">read the joining page</a> for more information.
+	<p><span class="hook">Αν έχετε στατική διεύθυνση IP και λογική σύνδεση Διαδικτύου</span> (το bandwidth
+	δεν είναι τόσο σημαντικό, αλλά θα πρέπει να είναι σταθερό και όχι πολύ φορτωμένο), παρακαλούμε
+	σκεφτείτε να δωρίσετε τον διακομιστή σας στη δεξαμενή διακομιστών. Δεν θα σας κοστίσει περισσότερο από
+	λίγες εκατοντάδες bytes ανά δευτερόλεπτο κίνηση, αλλά βοηθάτε αυτό το έργο να επιβιώσει.
+	Παρακαλούμε <a href="/join.html">διαβάστε τη σελίδα συμμετοχής</a> για περισσότερες πληροφορίες.
 	</p>
 
-	<p><span class="hook">If your Internet provider has a timeserver</span>, or if you know of a good timeserver
-	near you, you should use that and not this list - you'll probably get better
-	time and you'll use fewer network resources.  If you know only one timeserver
-	near you, you can of course use that and two from pool.ntp.org or so.</p>
+	<p><span class="hook">Αν ο πάροχος Διαδικτύου σας έχει διακομιστή χρόνου</span>, ή αν γνωρίζετε έναν καλό διακομιστή χρόνου
+	κοντά σας, θα πρέπει να χρησιμοποιήσετε αυτόν και όχι αυτή τη λίστα - θα πάρετε πιθανώς καλύτερο
+	χρόνο και θα χρησιμοποιήσετε λιγότερους δικτυακούς πόρους. Αν γνωρίζετε μόνο έναν διακομιστή χρόνου
+	κοντά σας, μπορείτε φυσικά να χρησιμοποιήσετε αυτόν και δύο από το pool.ntp.org.</p>
 
-	<p><span class="hook">It can rarely happen that you are assigned the same timeserver twice</span> -
-	just restarting the ntp server usually solves this problem.  If you
-	use a country zone, please note that it may be because there is only
-	one server known in the project - better use a continental zone in
-	that case.  You can <a href="/zone">browse the zones</a> to see how
-	many servers we have in each zone.</p>
+	<p><span class="hook">Μπορεί σπάνια να συμβεί να σας ανατεθεί ο ίδιος διακομιστής χρόνου δύο φορές</span> -
+	απλώς επανεκκινώντας τον διακομιστή ntp συνήθως λύνει αυτό το πρόβλημα. Αν
+	χρησιμοποιείτε ζώνη χώρας, παρακαλούμε σημειώστε ότι μπορεί να οφείλεται στο ότι υπάρχει μόνο
+	ένας διακομιστής γνωστός στο έργο - καλύτερα χρησιμοποιήστε ηπειρωτική ζώνη σε
+	αυτή την περίπτωση. Μπορείτε να <a href="/zone">περιηγηθείτε στις ζώνες</a> για να δείτε πόσους
+	διακομιστές έχουμε σε κάθε ζώνη.</p>
 
-	<p><span class="hook">Be friendly</span>. Many servers are provided by volunteers, and almost all time
-	servers are really file or mail or webservers which just happen to also run ntp.
-	So don't use more than four time servers in your configuration, and don't play
-	tricks with <code>burst</code> or <code>minpoll</code> - all you will gain is extra
-        load on the volunteer time servers.</p>
+	<p><span class="hook">Να είστε φιλικοί</span>. Πολλοί διακομιστές παρέχονται από εθελοντές, και σχεδόν όλοι οι διακομιστές
+	χρόνου είναι στην πραγματικότητα διακομιστές αρχείων ή mail ή web που τυχαίνει επίσης να τρέχουν ntp.
+	Οπότε μη χρησιμοποιείτε περισσότερους από τέσσερις διακομιστές χρόνου στη διαμόρφωσή σας, και μη παίζετε
+	τρικ με το <code>burst</code> ή <code>minpoll</code> - το μόνο που θα κερδίσετε είναι επιπλέον
+        φορτίο στους εθελοντικούς διακομιστές χρόνου.</p>
 
-	<p><span class="hook">Make sure that the <i>time zone configuration</i> of your computer is correct</span>.
-	ntpd itself does not do anything about the time zones, it just uses UTC
-	internally.</p>
+	<p><span class="hook">Βεβαιωθείτε ότι η <i>διαμόρφωση ζώνης ώρας</i> του υπολογιστή σας είναι σωστή</span>.
+	Το ίδιο το ntpd δεν κάνει τίποτα για τις ζώνες ώρας, χρησιμοποιεί απλώς UTC
+	εσωτερικά.</p>
 
-	<p><span class="hook">If you are synchronising a network to pool.ntp.org</span>, please set up one of your
-	computers as a time server and synchronize the other computers to that one.
-	(you'll have some reading to do - it's not difficult though. And there's always
-	the <a href="news:comp.protocols.time.ntp">comp.protocols.time.ntp newsgroup</a>.)</p>
+	<p><span class="hook">Αν συγχρονίζετε ένα δίκτυο με το pool.ntp.org</span>, παρακαλούμε ρυθμίστε έναν από τους
+	υπολογιστές σας ως διακομιστή χρόνου και συγχρονίστε τους άλλους υπολογιστές με αυτόν.
+	(θα έχετε κάποιο διάβασμα να κάνετε - δεν είναι δύσκολο όμως. Και υπάρχει πάντα
+	η <a href="news:comp.protocols.time.ntp">ομάδα ειδήσεων comp.protocols.time.ntp</a>.)</p>
 
-	<p class="thanks">At this point, I'd like to thank those donating their time and timeservers to
-	this network.</p>
+	<p class="thanks">Σε αυτό το σημείο, θα ήθελα να ευχαριστήσω αυτούς που δωρίζουν τον χρόνο και τους διακομιστές χρόνου τους σε
+	αυτό το δίκτυο.</p>
 </div>

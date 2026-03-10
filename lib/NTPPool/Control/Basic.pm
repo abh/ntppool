@@ -1,6 +1,7 @@
 package NTPPool::Control::Basic;
 use parent            qw(NTPPool::Control Combust::Control::Basic);
 use Combust::Constant qw(OK NOT_FOUND);
+use HTTP::Date;
 
 sub init {
     my $self = shift;
@@ -16,8 +17,9 @@ sub render {
         return NOT_FOUND;
     }
 
-    if ($self->request->path =~ m!^/static/(js|css)!) {
+    if ($self->request->path =~ m!^/static/(js|css|build)!) {
         $self->request->header_out('Access-Control-Allow-Origin' => '*');
+        $self->request->header_out('Vary', 'Origin');
     }
 
     if ($self->request->path =~ m!^/manage! and $self->site ne 'manage') {
@@ -35,14 +37,64 @@ sub render {
         }
     }
 
-    if ($self->request->uri =~ m{\.v[0-9a-f.]+\.(css|js|gif|png|jpg|png|ico)$}) {
-        $self->cache_control('s-maxage=1209600,max-age=31536000');
-    }
-    else {
-        $self->cache_control('s-maxage=1800,max-age=3600');
+    # Only set cache headers if not already set by fixup_static_version
+    unless ($self->cache_control) {
+        if ($self->request->uri =~ m{\.v[0-9a-zA-Z._-]+\.(css|js|gif|png|jpg|png|ico)$}) {
+            $self->cache_control('s-maxage=1209600,max-age=31536000');
+        }
+        else {
+            $self->cache_control('s-maxage=1800,max-age=3600');
+        }
     }
 
     return $self->SUPER::render(@_);
+}
+
+sub fixup_static_version {
+    my $self = shift;
+    my $uri  = $self->request->path;
+
+    # Check if this is a versioned file in the build directory
+    if ($uri =~ m!^/static/build/.*\.v[0-9a-zA-Z._-]+\.(js|css|gif|png|jpg|svg|htc|ico)$!)
+    {
+
+        # Check if the versioned file exists on disk
+        my $file = $uri;
+        substr($file, 0, 1) = "";    # trim leading slash
+        my $data = $self->tt->provider->expand_filename($file);
+
+        my $include_paths = $self->get_include_path;
+
+        # Also check if file exists directly on filesystem
+        my $full_path   = "docs/shared/$file";
+        my $file_exists = -f $full_path;
+
+        if ($data->{path}) {
+
+            # Versioned file exists, keep the version and set cache headers
+            $self->cache_control('s-maxage=1209600,max-age=31536000');
+
+            # You can add application-specific logic here based on the versioned filename
+            return;
+        }
+        else {
+
+            # Versioned file doesn't exist in build directory
+            # Strip version ourselves and use short cache time
+            if ($uri
+                =~ s!^(/.*)\.v[0-9a-zA-Z._-]+\.(js|css|gif|png|jpg|svg|htc|ico)$!$1.$2!)
+            {
+                $self->request->path($uri);
+
+                # Set short cache headers (10 minutes instead of 10 years)
+                $self->cache_control('s-maxage=600,max-age=600');
+            }
+            return;
+        }
+    }
+
+    # Fall back to parent's behavior for all other cases
+    return $self->SUPER::fixup_static_version(@_);
 }
 
 sub servers_with_urls {

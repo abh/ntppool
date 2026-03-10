@@ -10,6 +10,7 @@ to the NTP Pool system.
 
 <p>
 <form action="/manage/server/verify/[% token %]" method="post">
+<input type="hidden" name="a" value="[% combust.current_account.id_token %]" />
 <input type="hidden" name="server" value="[% server.id %]" />
 <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
 <input type="submit" name="verify" class="btn btn-outline-primary" value="I am authorized to add [% server.ip %] to the NTP Pool" />

@@ -22,6 +22,12 @@ msgstr "Amérique du Nord"
 msgid "South America"
 msgstr "Amérique du Sud"
 
+msgid "Europe"
+msgstr "Europe"
+
+msgid "Oceania"
+msgstr "Océanie"
+
 msgid "Global"
 msgstr "Mondial"
 
@@ -32,30 +38,46 @@ msgstr "Tous les Réservoirs de Serveurs"
 msgid "Translations"
 msgstr "Traductions"
 
+# index.html
+msgid "Introduction"
+msgstr "Introduction"
+
+msgid "Active Servers"
+msgstr "Serveurs Actifs"
+
+msgid "Links"
+msgstr "Liens"
+
+msgid "Terms of service"
+msgstr "Conditions d'utilisation"
+
+msgid "Subscribe in a reader"
+msgstr "S'abonner dans un lecteur"
+
+msgid "Older news"
+msgstr "Anciennes nouvelles"
+
 # mailinglists.html
-msgid "NTP Pool mailing lists"
-msgstr "Listes de diffusion sur le Réservoir NTP"
-
-msgid "subscribe"
-msgstr "souscrire"
-
 msgid "archive"
 msgstr "archive"
 
-msgid "Announcement list"
-msgstr "Liste d'annonces"
+msgid "NTP Pool Forum"
+msgstr "Forum NTP Pool"
+
+msgid "News site"
+msgstr "Site d'actualités"
 
 msgid "Discussion list"
 msgstr "Liste de discussion"
 
-msgid "Development list"
-msgstr "Liste de développement"
+msgid "Development"
+msgstr "Développement"
 
-msgid "announcement_list_description"
-msgstr "Annonces des nouvelles du Réservoir NTP à très très faible trafic. Tous les administrateurs de serveurs devraient s'inscrire à cette liste de diffusion."
+msgid "forum_description"
+msgstr "Questions (et réponses) sur NTP Pool, suggestions d'améliorations et sujets liés au chronométrage et au fonctionnement des serveurs NTP."
 
-msgid "discussion_list_description"
-msgstr "Les administrateurs de serveurs (et les utilisateurs) qui veulent s'impliquer plus dans le projet peuvent souscrire à la liste de discussion.<br/>Bien sûr, les discussions générales à propos de ntp devraient avoir lieu dans le newsgroup Usenet %1 (voir aussi les <a href=\"%2\">Google Groups</a>)"
+msgid "news_description"
+msgstr "Les annonces et nouvelles sont publiées sur le site d'actualités ou dans le forum."
 
 msgid "development_list_description"
 msgstr "Les discussions plus techniques (et idéalement plus pragmatiques) sur le développement actuel du <a href=\"%1\">code du réservoir ntp</a> et de <a href=\"%2\">GeoDNS</a> ont lieu sur la liste timekeepers-dev."

@@ -5,6 +5,11 @@ use NP::UA qw();
 use LWP::UserAgent;
 use JSON::XS   ();
 use Data::Dump ();
+use HTTP::Request;
+use URI;
+use OpenTelemetry::Trace;
+use OpenTelemetry::Context;
+use OpenTelemetry::Constants qw( SPAN_STATUS_ERROR );
 
 use Exporter 'import';
 our @EXPORT_OK = qw(
@@ -19,7 +24,13 @@ $api_base =~ s{/$}{};
 # ua returns a user agent object with the correct headers for the internal API,
 # it should be called for every request
 sub ua {
+    my ($request_context) = @_;
     my $ua = $NP::UA::ua;
+
+    # Add X-Forwarded-For header if request context is provided
+    if ($request_context && $request_context->{x_forwarded_for}) {
+        $ua->default_header('X-Forwarded-For' => $request_context->{x_forwarded_for});
+    }
 
     # todo: add global headers for api authentication
     return $ua;
@@ -30,7 +41,7 @@ sub int_api {
 }
 
 sub _int_api {
-    my ($method, $function, $data) = @_;
+    my ($method, $function, $data, $request_context) = @_;
 
     my %r;
 
@@ -47,7 +58,7 @@ sub _int_api {
         $auth = "Bearer $user";
     }
 
-    my $ua = ua();
+    my $ua = ua($request_context);
 
     if ($method eq 'get') {
         if ($data) {
@@ -65,12 +76,55 @@ sub _int_api {
             Content         => $data
         );
     }
+    elsif ($method eq 'patch') {
+
+        # For PATCH, $data should contain the JSON body and auth parameters
+        my $json_body = delete $data->{data} || '{}';
+
+        # Add auth parameters to URL like GET requests
+        if ($data && %$data) {
+            my $uri = URI->new($url);
+            my $o   = $uri->query_form_hash();
+            $uri->query_form_hash({%$o, %$data});
+            $url = $uri->as_string();
+        }
+
+        $res = $ua->request(
+            HTTP::Request->new(
+                'PATCH', $url,
+                [   'Authorization' => $auth,
+                    'Content-Type'  => 'application/json',
+                ],
+                $json_body
+            )
+        );
+    }
+    elsif ($method eq 'delete') {
+        # For DELETE, add parameters to URL like GET requests
+        if ($data && %$data) {
+            my $uri = URI->new($url);
+            my $o   = $uri->query_form_hash();
+            $uri->query_form_hash({%$o, %$data});
+            $url = $uri->as_string();
+        }
+        $res = $ua->$method($url, 'Authorization' => $auth);
+    }
     else {
         warn qq[unknown method "$method" for _int_api];
     }
 
     warn $res->status_line,     "\n";
     warn $res->decoded_content, "\n";
+
+    # Check for rate limit headers and log warning if remaining requests are low
+    my $rate_limit_remaining = $res->header('X-RateLimit-Remaining');
+    if (defined $rate_limit_remaining && $rate_limit_remaining < 5) {
+        my $rate_limit_limit = $res->header('X-RateLimit-Limit') || 'unknown';
+        my $rate_limit_reset = $res->header('X-RateLimit-Reset') || 'unknown';
+
+        warn
+          "API rate limit warning: remaining=$rate_limit_remaining, limit=$rate_limit_limit, reset=$rate_limit_reset (function: $function)";
+    }
 
     if ($res->code >= 300) {
         warn "api-internal response code $function call: ", $res->status_line;
@@ -82,7 +136,19 @@ sub _int_api {
     }
     $r{code}        ||= $res->code;
     $r{status_line} ||= $res->status_line;
-    $r{trace_id}     ||= $res->header('TraceID');
+    $r{trace_id}    ||= $res->header('TraceID');
+
+    # Mark OpenTelemetry span as error for HTTP 4xx/5xx responses
+    if ($res->code >= 400) {
+        my $span = OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
+        if ($span) {
+            $span->set_status(SPAN_STATUS_ERROR, "Internal API error: " . $res->status_line);
+            $span->set_attribute("api.function", $function);
+            $span->set_attribute("api.method", $method);
+            $span->set_attribute("api.status_code", $res->code);
+            $span->set_attribute("api.trace_id", $r{trace_id}) if $r{trace_id};
+        }
+    }
 
     warn "Data: ", Data::Dump::pp(\%r);
 
@@ -123,13 +189,15 @@ sub get_monitoring_registration_data {
     my $validation_token = shift;
     my $user_cookie      = shift;
     my $account_token    = shift;
+    my $request_context  = shift;
 
     my $data = _int_api_get(
         "monitor/registration/data",
         {   token => $validation_token,
             user  => $user_cookie,
             a     => $account_token,
-        }
+        },
+        $request_context
     );
     return $data;
 }
@@ -137,17 +205,19 @@ sub get_monitoring_registration_data {
 sub accept_monitoring_registration {
     my $validation_token = shift;
     my $user_cookie      = shift;
-    my $account_token       = shift;
+    my $account_token    = shift;
     my $location         = shift;
+    my $request_context  = shift;
 
     my $data = _int_api_post(
         "monitor/registration/accept",
-        {   token      => $validation_token,
-            user       => $user_cookie,
-            a          => $account_token,
-            location   => $location,
+        {   token    => $validation_token,
+            user     => $user_cookie,
+            a        => $account_token,
+            location => $location,
 
-        }
+        },
+        $request_context
     );
     return $data;
 }

@@ -57,29 +57,26 @@ msgid  "Older news"
 msgstr "Vanhemmat uutiset"
 
 # mailinglists.html
-msgid  "NTP Pool mailing lists"
-msgstr "NTP Poolin postituslistat"
-
-msgid  "subscribe"
-msgstr "tilaa"
-
 msgid  "archive"
 msgstr "arkisto"
 
-msgid  "Announcement list"
-msgstr "Ilmoituslista"
+msgid  "NTP Pool Forum"
+msgstr "NTP Pool Foorumi"
+
+msgid  "News site"
+msgstr "Uutissivusto"
 
 msgid  "Discussion list"
 msgstr "Keskustelulista"
 
-msgid  "Development list"
-msgstr "Kehityslista"
+msgid  "Development"
+msgstr "Kehitys"
 
-msgid  "announcement_list_description"
-msgstr "NTP Poolin ilmoituslista, jolla on hyvin vähän liikennettä. Kaikkien poolin palvelinten ylläpitäjien tulisi liittyä tähän."
+msgid  "forum_description"
+msgstr "Kysymyksiä (ja vastauksia) NTP Poolista, parannusehdotuksia ja aiheita ajanlaskentaan ja NTP-palvelinten pyörittämiseen liittyen."
 
-msgid  "discussion_list_description"
-msgstr "Palvelinylläpitäjien (ja käyttäjien) jotka haluavat osallistua projektiin enemmän kannattaa liittyä keskustelulistalle.<br/>Yleisen ntp-aiheisen keskustelun tulisi tapahtua %1 Usenet-uutisryhmässä (myös <a href=\"%2\">Google Groupsissa</a>)."
+msgid  "news_description"
+msgstr "Ilmoitukset ja uutiset julkaistaan uutissivustolla tai foorumilla."
 
 msgid  "development_list_description"
 msgstr "Teknisemmät (ja toivottavasti myös käytännöllisemmät) <a href=\"%1\">poolin koodiin</a> ja <a href=\"%2\">GeoDNS:n</a> kehittämiseen liittyvät keskustelut käydään timekeepers-dev-listalla."

@@ -1,0 +1,22 @@
+<div id="graph_explanation_box" class="graph_explanation [% graph_explanation ? 'visible' : '' %]">
+
+<h3>Le graphique Score</h3>
+
+<p>
+Plusieurs fois par heure, le système de pool vérifie l'heure de votre serveur et la compare à son heure locale. Des points sont déduits si le serveur ne peut être atteint ou si le décalage temporel est supérieur à 100ms (tel que mesuré par les systèmes de surveillance). Plus de points sont déduits plus le décalage est important.
+</p>
+
+<p>
+Le graphique n'est destiné qu'à servir d'outil pour visualiser les tendances. Pour des détails plus précis sur ce que le système de surveillance a trouvé, vous pouvez cliquer sur le lien CSV.
+</p>
+
+<h3>Le graphique Décalage</h3>
+
+<p>
+Le système de surveillance fonctionne grossièrement comme un client <a href="https://www.ntp.org/ntpfaq/NTP-s-def/#412-what-is-sntp">SNTP</a> (<a href="https://tools.ietf.org/html/rfc2030">RFC 2030</a>), il est donc plus susceptible aux latences réseau aléatoires entre le serveur et le système de surveillance qu'un serveur ntpd régulier ne le serait.</p>
+
+<p>
+Le système de surveillance peut être imprécis jusqu'à 10ms ou plus.
+</p>
+
+</div>

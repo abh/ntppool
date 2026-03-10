@@ -57,29 +57,26 @@ msgid  "Older news"
 msgstr "Gamle nyhende"
 
 # mailinglists.html
-msgid  "NTP Pool mailing lists"
-msgstr "E-postlister for prosjektet"
-
-msgid  "subscribe"
-msgstr "abonner"
-
 msgid  "archive"
 msgstr "arkiv"
 
-msgid  "Announcement list"
-msgstr "Kunngjeringsliste"
+msgid  "NTP Pool Forum"
+msgstr "NTP Pool Forum"
+
+msgid  "News site"
+msgstr "Nyhendeside"
 
 msgid  "Discussion list"
 msgstr "Diskusjonsliste"
 
-msgid  "Development list"
-msgstr "Utviklingsliste"
+msgid  "Development"
+msgstr "Utvikling"
 
-msgid  "announcement_list_description"
-msgstr "Kortfatta og presise kunngjeringar med nyhende om NTP Pool-prosjektet. Alle tenar-administratorar bør abonnere på denne lista."
+msgid  "forum_description"
+msgstr "Spørsmål (og svar) om NTP Pool, forslag til forbedringar og emne relaterte til tidsmåling og drift av NTP-tenarar."
 
-msgid  "discussion_list_description"
-msgstr "Tenaradministatorar (og gjerne brukarar) som ynskjer å involvere seg meir i prosjektet kan abonnere til denne diskusjonslista. <br/> Generelle diskusjonar om NTP bør takast på %1 Usenet-nyhendegruppa (og på <a href=\"%2\">Google Groups</a>)."
+msgid  "news_description"
+msgstr "Kunngjeringar og nyhende blir publiserte på nyhendessida eller på forumet."
 
 msgid  "development_list_description"
 msgstr "Meir tekniske (og helst sett løysingsorienterte) diskusjonar om aktuell utvikling innan<a href=\"%1\">prosjektkoden</a> og <a href=\"%2\">GeoDNS</a> skjer på timekeepers-dev diskusjonslista."

@@ -53,7 +53,7 @@ __PACKAGE__->meta->setup(
     organization_url   => { type => 'varchar', length => 150 },
     public_profile     => { type => 'integer', default => '0', not_null => 1 },
     url_slug           => { type => 'varchar', length => 150 },
-    flags              => { type => 'varchar', default => '{}', length => 4096, not_null => 1 },
+    flags              => { type => 'scalar' },
     created_on         => { type => 'datetime', default => 'now', not_null => 1 },
     modified_on        => { type => 'timestamp', not_null => 1 },
     stripe_customer_id => { type => 'varchar', length => 255 },
@@ -605,7 +605,7 @@ __PACKAGE__->meta->setup(
     type           => { type => 'enum', check_in => [ 'monitor', 'score' ], default => 'monitor', not_null => 1 },
     user_id        => { type => 'integer' },
     account_id     => { type => 'integer' },
-    name           => { type => 'varchar', length => 30, not_null => 1 },
+    hostname       => { type => 'varchar', default => '', length => 255, not_null => 1 },
     location       => { type => 'varchar', default => '', length => 255, not_null => 1 },
     ip             => { type => 'varchar', alias => '_ip', length => 40 },
     ip_version     => { type => 'enum', check_in => [ 'v4', 'v6' ] },
@@ -715,7 +715,7 @@ __PACKAGE__->meta->setup(
     ip4                => { type => 'varchar', default => '', length => 15, not_null => 1 },
     ip6                => { type => 'varchar', default => '', length => 39, not_null => 1 },
     tls_name           => { type => 'varchar', default => '', length => 255 },
-    name               => { type => 'varchar', default => '', length => 256, not_null => 1 },
+    hostname           => { type => 'varchar', default => '', length => 256, not_null => 1 },
     location_code      => { type => 'varchar', default => '', length => 5, not_null => 1 },
     account_id         => { type => 'integer' },
     client             => { type => 'varchar', default => '', length => 256, not_null => 1 },
@@ -761,6 +761,48 @@ __PACKAGE__->make_manager_methods('monitor_registrations');
 # Allow user defined methods to be added
 eval { require NP::Model::MonitorRegistration }
   or $@ !~ m:^Can't locate NP/Model/MonitorRegistration.pm: and die $@;
+
+{ package NP::Model::OidcPublicKey;
+
+use strict;
+
+use base qw(NP::Model::_Object);
+
+__PACKAGE__->meta->setup(
+  table   => 'oidc_public_keys',
+
+  columns => [
+    id         => { type => 'bigserial', not_null => 1 },
+    kid        => { type => 'varchar', length => 255, not_null => 1 },
+    public_key => { type => 'text', length => 65535, not_null => 1 },
+    algorithm  => { type => 'varchar', length => 20, not_null => 1 },
+    created_at => { type => 'timestamp', not_null => 1 },
+    expires_at => { type => 'timestamp' },
+    active     => { type => 'integer', default => 1, not_null => 1 },
+  ],
+
+  primary_key_columns => [ 'id' ],
+
+  unique_key => [ 'kid' ],
+);
+
+push @table_classes, __PACKAGE__;
+}
+
+{ package NP::Model::OidcPublicKey::Manager;
+
+use strict;
+
+our @ISA = qw(Combust::RoseDB::Manager);
+
+sub object_class { 'NP::Model::OidcPublicKey' }
+
+__PACKAGE__->make_manager_methods('oidc_public_keies');
+}
+
+# Allow user defined methods to be added
+eval { require NP::Model::OidcPublicKey }
+  or $@ !~ m:^Can't locate NP/Model/OidcPublicKey.pm: and die $@;
 
 { package NP::Model::SchemaRevision;
 
@@ -1081,16 +1123,20 @@ __PACKAGE__->meta->setup(
   table   => 'server_scores',
 
   columns => [
-    id          => { type => 'bigserial', not_null => 1 },
-    monitor_id  => { type => 'integer', not_null => 1 },
-    server_id   => { type => 'integer', not_null => 1 },
-    score_ts    => { type => 'datetime' },
-    score_raw   => { type => 'scalar', default => '0', length => 64, not_null => 1 },
-    stratum     => { type => 'integer' },
-    status      => { type => 'enum', check_in => [ 'new', 'testing', 'active' ], default => 'new', not_null => 1 },
-    queue_ts    => { type => 'datetime' },
-    created_on  => { type => 'datetime', default => 'now', not_null => 1 },
-    modified_on => { type => 'timestamp', not_null => 1 },
+    id                         => { type => 'bigserial', not_null => 1 },
+    monitor_id                 => { type => 'integer', not_null => 1 },
+    server_id                  => { type => 'integer', not_null => 1 },
+    score_ts                   => { type => 'datetime' },
+    score_raw                  => { type => 'scalar', default => '0', length => 64, not_null => 1 },
+    stratum                    => { type => 'integer' },
+    status                     => { type => 'enum', check_in => [ 'candidate', 'testing', 'active', 'paused' ], default => 'candidate', not_null => 1 },
+    queue_ts                   => { type => 'datetime' },
+    created_on                 => { type => 'datetime', default => 'now', not_null => 1 },
+    modified_on                => { type => 'timestamp', not_null => 1 },
+    constraint_violation_type  => { type => 'varchar', length => 50 },
+    constraint_violation_since => { type => 'datetime' },
+    last_constraint_check      => { type => 'datetime' },
+    pause_reason               => { type => 'varchar', length => 20 },
   ],
 
   primary_key_columns => [ 'id' ],
@@ -2012,6 +2058,7 @@ eval { require NP::Model::ZoneServerCount }
   sub log_score { our $log_score ||= bless [], 'NP::Model::LogScore::Manager' }
   sub monitor { our $monitor ||= bless [], 'NP::Model::Monitor::Manager' }
   sub monitor_registration { our $monitor_registration ||= bless [], 'NP::Model::MonitorRegistration::Manager' }
+  sub oidc_public_key { our $oidc_public_key ||= bless [], 'NP::Model::OidcPublicKey::Manager' }
   sub schema_revision { our $schema_revision ||= bless [], 'NP::Model::SchemaRevision::Manager' }
   sub scorer_statu { our $scorer_statu ||= bless [], 'NP::Model::ScorerStatu::Manager' }
   sub server { our $server ||= bless [], 'NP::Model::Server::Manager' }

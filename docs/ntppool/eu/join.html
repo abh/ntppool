@@ -1,0 +1,44 @@
+[% page.title = 'NTP Pool-era elkartu!'  %]
+
+<div class="block">
+	<h3><a name="join">Nola elkartu pool.ntp.org-era?</a></h3>
+	<p>
+	Lehenik: Eskerrik asko zure interesagatik. Poolaren erabilera izugarri hazi da, eta denok pool zerbitzari bat exekutatzea erraza izan dadin daukagunen modu bakarra parte hartzen duten zerbitzari kopurua handitzea da ere.
+	</p>
+
+	<p>
+	Zure ordenagailuak <b>IP helbide estatiko bat</b> eta Internet konexio iraunkorra eduki behar ditu. Oso garrantzitsua da zure IP helbidea ez aldatzea edo oso noiz edo noizka bakarrik aldatzea (esate baterako urtean behin edo gutxiago). Beharrezko banda-zabalera nahiko txikia da. Bezero bakoitzak UDP pakete gutxi batzuk bakarrik bidaliko ditu minutu gutxi batzuetan edo 20 minutuetan.
+	</p>
+
+	<p>
+	Oraingoz zerbitzari gehienek segundoko 5-15 NTP pakete jasotzen dituzte, egunean zenbait aldiz segundoko 60-120 pakete-ko puntuekin. Hau, gutxi gorabehera, segundoko 10-15Kbit-ekin parekoa da, segundoko 50-120Kbit-eko puntuekin. Proiektuak etengabe denbora-zerbitzari gehiago eskuratzen ditu, beraz karga ez luke dramatikoki handitu behar zerbitzari bakoitzerako. Hitz soiletan esanda, ziurrenik gutxienez 384-512Kbit banda-zabalera behar duzu (sarrera eta irteerakoa).
+	</p>
+
+	<p>
+	Elkartzen diren zerbitzariek ez lukete <code>pool.ntp.org</code> eduki behar beren goragoko zerbitzari gisa, baizik eta <a href="https://support.ntp.org/Servers/StratumTwoTimeServers/">zerbitzari on</a> batzuk eskuz konfiguratu behar lituzkete. Zerbitzari horiek pool-etik aukeratu <b>daitezke</b>. Puntua da estatikoki aukeratzen direla, pool-etik ausaz esleitu beharrean zerbitzari berrabiarazte bakoitzean. Honek zerbitzu kalitate onargarria eskaintzen lagunduko du.
+
+	Ohartu ez dela beharrezkoa zure zerbitzaria maila 1 edo 2ko zerbitzaria izatea - proiektu hau karga banaketari buruzkoa den heinean, ez dago arrazoirik maila 3 edo maila 4ko zerbitzari batek elkartu ez dadin.
+	</p>
+
+	<p>
+	<a href="/join/configuration.html">Pool-era elkartzen diren zerbitzarien konfigurazio gomendioak</a> dituen orrialde bat daukagu.
+	</p>
+	<p>Azkenik, azpimarratu behar dut pool-era elkartzea <b>epe luzerako konpromiso</b> bat dela. Pozik zaitugu pool-etik ateratzen zure egoera aldatzen bada, baina NTP bezeroen funtzionamendu modua dela eta <b>asteak, hilabeteak edo URTEAK ere beharko ditu trafikoa guztiz desagertu aurretik</b>.
+	</p>
+
+	<h3><a name="account">Kontu informazioa</a></h3>
+
+	<p>Pool-era elkartzeko, kontu bat sortu behar duzu gure <a href="/manage">kudeaketa interfazean</a>. Zure zerbitzaria gehitu ondoren, gure monitorizazio sistemak orduro begiratu egingo du ea funtzionatzen duen.
+	</p>
+	<p>Zure zerbitzaria pool-etik hartzen den trafiko kopurua zure zerbitzariaren "puntuazioaren" arabera kontrolatzen da. Puntuazio handiago batek trafiko gehiago esan nahi du.
+	</p>
+	<p>Zerbitzu kalitate ona eskaintzeko, zure zerbitzaria ondo konfiguratua egon behar da eta denbora iturriak fidagarriak izan behar dira. Zerbitzaria ez funtzionatzeak edo denbora desinkronizatua edukitzeak puntuazioa murriztu egingo du eta azkenean pool-etik kanpo utziko da.
+	</p>
+
+	<h3>Sare eta gainzama</h3>
+
+	<p>Pool-era parte hartzeak ez du zure zerbitzariaren errendimendu orokorrean eragin handirik izan behar. NTP oso banda-zabalera gutxi erabiltzen du. </p>
+
+	<p>Pool zerbitzarientzako trafiko gehiena egunean zehar banaturiko NTP galderak dira. Goiz-arratsaldetan eta gauetan trafiko piku txikiak egon daitezke, baina normalean oso kudeagarriak dira.</p>
+
+</div>
