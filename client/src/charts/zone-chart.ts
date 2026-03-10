@@ -162,6 +162,28 @@ function calculateYMax(history: ZoneHistoryPoint[]): number {
 }
 
 /**
+ * Custom 24-hour date formatter for x-axis ticks to avoid 12-hour format in minute displays
+ */
+const formatMillisecond = d3.utcFormat('.%L');
+const formatSecond = d3.utcFormat(':%S');
+const formatMinute24 = d3.utcFormat('%H:%M');
+const formatHour24 = d3.utcFormat('%H');
+const formatDay = d3.utcFormat('%a %d');
+const formatWeek = d3.utcFormat('%b %d');
+const formatMonth = d3.utcFormat('%B');
+const formatYear = d3.utcFormat('%Y');
+
+function format24HourDate(date: Date): string {
+  if (d3.utcSecond(date) < date) return formatMillisecond(date);
+  if (d3.utcMinute(date) < date) return formatSecond(date);
+  if (d3.utcHour(date) < date) return formatMinute24(date);
+  if (d3.utcDay(date) < date) return formatHour24(date);
+  if (d3.utcMonth(date) < date) return d3.utcWeek(date) < date ? formatDay(date) : formatWeek(date);
+  if (d3.utcYear(date) < date) return formatMonth(date);
+  return formatYear(date);
+}
+
+/**
  * Draw grid lines and axis labels
  */
 function drawGrid(
@@ -193,7 +215,7 @@ function drawGrid(
     .attr('dy', '.71em')
     .attr('text-anchor', 'middle')
     .attr('font-size', '12px')
-    .text(xScale.tickFormat(CHART_DEFAULTS.ticks.x));
+    .text(format24HourDate);
 
   // Y-axis grid lines and labels
   const yTicks = yMax > 8 ? 8 : yMax;
