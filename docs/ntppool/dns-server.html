@@ -22,25 +22,16 @@ services.
 <h2>Requirements for hosting a server</h2>
 
 <p>
-The NTP Pool DNS server usually runs on CentOS or Ubuntu LTS; either
-will work though Ubuntu LTS is preferred.  We also have one instance
-running on FreeBSD (in a jail I believe) which is performing very very well,
-but our automation setup isn't as robust for configuring it.
+The NTP Pool DNS server usually runs on Ubuntu LTS. Virtual machines
+work well but need to be KVM or BHyve based (not container-based),
+as our setup process needs full root access to a kernel.
 </p>
 
-<p>
-
-If it's a virtual machine it needs to be something like KVM or BHyve
-based, not a "kernel container based" system (basically our setup
-process needs full root access to a kernel).
-</p>
-
-<p>
     <dl>
 
     <dt>Operating System</dt>
     <dd>
-        A minimal-ish install of (64-bit, x86_64) Ubuntu LTS.
+        A minimal install of 64-bit (x86_64) Ubuntu LTS.
 
         Our software also works with Enterprise Linux and FreeBSD, but
         our automation is most tested with Ubuntu.
@@ -48,7 +39,7 @@ process needs full root access to a kernel).
 
     <dt>CPU</dt>
 
-    <dd>Any two or more core 64-bit CPU from the last decade will do a nice job.
+    <dd>2-4 cores; any 64-bit CPU from the last decade will do a nice job.
     </dd>
 
     <dt>RAM</dt>
@@ -70,13 +61,12 @@ process needs full root access to a kernel).
 
     <dt>Bandwidth</dt>
     <dd>
-        It used to be less, currently it's about 5-20Mbit/second per server (anywhere
-        from 1-4TB data per month).
+        Typically 10-30Mbit/second per server (3-5TB per month).
         <br><br>
-        During certain times of the hour and the day the rate goes up significantly
-        for a few seconds. If you are in a country with poor DNS server coverage
-        but can't serve that many requests, we have tools to send less traffic to
-        a particular DNS server.
+        During certain times of the hour and day the rate goes up significantly
+        for a few seconds. If you are in a region with limited DNS server coverage
+        but can't serve that many requests, we can configure less traffic for
+        a particular server.
     </dd>
 
     <dt>Software</dt>
@@ -115,6 +105,8 @@ process needs full root access to a kernel).
     <dd>
         We do the day-to-day management of the system.
     </dd>
+
+    </dl>
 
     <p>If you are interested in helping with this, please email <a href="mailto:ask@develooper.com">
         ask@develooper.com</a>.
