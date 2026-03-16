@@ -42,4 +42,18 @@ sub flush {
     $i = 0;
 }
 
+sub flush_and_shutdown {
+    warn "NP::Tracing: shutting down, flushing traces...\n";
+    eval {
+        OpenTelemetry->tracer_provider->force_flush(5);
+        OpenTelemetry->tracer_provider->shutdown();
+    };
+    warn "NP::Tracing: flush error: $@\n" if $@;
+}
+
+$SIG{TERM} = sub {
+    flush_and_shutdown();
+    exit 0;
+};
+
 1;
