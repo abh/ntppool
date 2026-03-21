@@ -1,0 +1,22 @@
+<div id="graph_explanation_box" class="graph_explanation [% graph_explanation ? 'visible' : '' %]">
+
+<h3>評分圖</h3>
+
+<p>
+池系統會在一小時中數次檢查您的伺服器上的時間，並與本地之間相比較。如果伺服器無法連線或者時間偏差超過100ms（以監控系統測量為準）將會扣分；時間偏差越大，扣分越多。
+</p>
+
+<p>
+圖表只是一個用於顯示趨勢的工具。如果需要監控系統提供的詳細資訊，您可以點選CSV連結。
+</p>
+
+<h3>偏差圖</h3>
+
+<p>
+監控系統大致像一個<a href="https://www.ntp.org/ntpfaq/NTP-s-def/#412-what-is-sntp">SNTP</a> (<a href="https://tools.ietf.org/html/rfc2030">RFC 2030</a>) 服務端一樣工作，所以它比普通ntpd伺服器更容易受到伺服器與監控系統間的隨機網路延遲的影響。</p>
+
+<p>
+監控系統的時間偏差有可能會大於或等於10ms。
+</p>
+
+</div>
