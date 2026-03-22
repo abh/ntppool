@@ -96,6 +96,10 @@
   "sv": {
     "name": "Svenska"
   },
+  "sw": {
+    "name": "Kiswahili",
+    "testing": 1
+  },
   "th": {
     "name": "ภาษาไทย"
   },
