@@ -413,7 +413,6 @@ B<Arguments:>
     my $result = validate_session(
         $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
         account => $account->{id_token},  # Optional: Account selection token
-        session_token => $value,       # string - Deprecated: pass the token via Authorization: Bearer instead. Ignored by the server.
         id_token => $value,       # string - id_token optionally specifies which account to use (from ?a= parameter)
  If provided, validates user has access to this account
  If omitted, returns user's default account (first account in user's list)
@@ -578,7 +577,6 @@ sub validate_session {
 
     # Extract request fields from args
     my %request = ();
-    $request{'session_token'} = delete $args{'session_token'} if exists $args{'session_token'};
     $request{'id_token'} = delete $args{'id_token'} if exists $args{'id_token'};
 
     return connect_rpc(
