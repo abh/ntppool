@@ -72,8 +72,8 @@ sub user {
 
         # Validate session using the Go API instead of database
         my $result = validate_session(
-            session_token => $session_cookie,
-            context       => $self->_get_request_context(),
+            auth    => $session_cookie,
+            context => $self->_get_request_context(),
         );
 
         if ($result->{code} == 200 && $result->{data} && $result->{data}->{valid}) {
