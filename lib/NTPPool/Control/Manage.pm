@@ -198,10 +198,7 @@ sub current_account {
     # 3. Check permissions
     # 4. Return account context + permissions
     my $id_token = $self->req_param('a');
-    my %params   = (
-        session_token => $session_token,
-        context       => $self->_get_request_context(),
-    );
+    my %params   = $self->api_auth_params;
 
     # Only include id_token if defined (avoid undef causing parameter shift)
     $params{id_token} = $id_token if defined $id_token;
