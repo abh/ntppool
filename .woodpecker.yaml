@@ -1,5 +1,5 @@
 when:
-  - event: [push, pull_request, manual]
+  - event: [push, pull_request, manual, tag]
 
 clone:
   git:
@@ -14,7 +14,7 @@ steps:
       - git submodule update --init --recursive
 
   - name: generate-tags
-    image: ghcr.io/abh/woodpecker-docker-tags-plugin:sha-8a3bd7c
+    image: ghcr.io/abh/woodpecker-docker-tags-plugin:0.2.1-abh
     settings:
       tags: |
         branch
