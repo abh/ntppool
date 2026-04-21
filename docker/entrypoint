@@ -21,6 +21,18 @@ if [ -z "$CBCONFIG" ]; then
     export CBCONFIG=`mktemp -d`/combust.conf
 fi
 
+# Source any vault-agent-rendered env files before gomplate runs so
+# values like auth0_secret can flow from Vault (via pod annotations
+# on the ntppool chart) into gomplate's getenv() calls without
+# going through a k8s Secret. Each file should be shell-sourceable
+# (e.g. `export auth0_secret="..."`). Silent if the directory is
+# absent or empty.
+if [ -d /vault/secrets ]; then
+    for f in /vault/secrets/*.env; do
+        [ -r "$f" ] && . "$f"
+    done
+fi
+
 gomplate -f combust.conf.tmpl -o $CBCONFIG
 
 set -x
