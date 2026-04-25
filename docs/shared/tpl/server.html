@@ -24,18 +24,6 @@ IP <input type="text" name="ip">
 
 [% IF manage_site AND combust.user_is_staff %]
 <input type="hidden" name="auth_token" value="[% combust.auth_token %]">
-<style>
-.editable-zones {
-    cursor: pointer;
-    border-bottom: 1px dashed #999;
-}
-.editable-zones:hover {
-    background-color: #f0f0f0;
-}
-.zone-edit-form, .hostname-edit-form {
-    display: inline-block;
-}
-</style>
 [% END %]
 
 [% IF manage_site AND combust.user_is_staff %]
