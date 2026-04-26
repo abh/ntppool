@@ -312,7 +312,9 @@ sub render_users {
                 account_id => [$self->current_account->id],
                 type       => ['invitation', 'account-users']
             ],
-            sort_by => "created_on desc",
+            with_objects => [qw/account user server/],
+            sort_by      => "t1.created_on desc",
+            limit        => 100,
         );
         $self->tpl_param('logs', $logs);
     }
@@ -342,8 +344,10 @@ sub render_account_form {
     # todo: how do you end up here without an account?
     if ($self->user->is_staff && $self->current_account) {
         my $logs = NP::Model->log->get_objects(
-            query   => [account_id => [$self->current_account->id],],
-            sort_by => "created_on desc",
+            query        => [account_id => [$self->current_account->id],],
+            with_objects => [qw/account user server/],
+            sort_by      => "t1.created_on desc",
+            limit        => 100,
         );
         $self->tpl_param('logs', $logs);
     }

@@ -90,8 +90,9 @@ sub show_manage {
                     (@server_ids ? (server_id => \@server_ids) : ()),
                 ],
             ],
-            limit   => 50,
-            sort_by => "created_on desc",
+            with_objects => [qw/account user server/],
+            limit        => 50,
+            sort_by      => "t1.created_on desc",
         );
         $self->tpl_param('logs', $logs);
     }
