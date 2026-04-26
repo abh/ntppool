@@ -9,7 +9,8 @@ fi
 fastly_ips=/etc/fastly-ips/fastly.json
 
 if [ -e $fastly_ips ]; then
-  export proxyip_forwarders=`jq -cr '[.ipv6_addresses, .addresses] | flatten | join(", ") ' < $fastly_ips`
+  fastly=`jq -cr '[.ipv6_addresses, .addresses] | flatten | join(", ") ' < $fastly_ips`
+  export proxyip_forwarders="${proxyip_forwarders:+$proxyip_forwarders, }$fastly"
 fi
 
 while [ ! -e combust.conf.tmpl ]; do
