@@ -50,6 +50,7 @@ deployments:
                     manage_hostname: manage.askdev.grundclock.com
                     pool_domain: ntp.askdev.grundclock.com
                     static_base: /static/
+                    VAULT_ADDR: https://vault.vault.svc:8200
                     web_hostname: web.askdev.grundclock.com
                 image:
                     image: harbor.ntppool.org/ntpdev/ntppool-dev
