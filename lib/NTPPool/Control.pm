@@ -540,7 +540,7 @@ sub post_process {
 
         # HTMX CORS support
         ['Access-Control-Allow-Headers' => 'HX-Request'],
-        ['Access-Control-Expose-Headers' => 'HX-Redirect'],
+        ['Access-Control-Expose-Headers' => 'HX-Redirect, TraceID, Request-ID'],
 
         # ntppool version / build
         ['X-NPV' => $version->current_release . " (" . $version->hostname . ")"],
