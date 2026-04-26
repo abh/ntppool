@@ -5,7 +5,7 @@ use warnings;
 use JSON::XS;
 use FindBin;
 
-my $languages_file = "$FindBin::Bin/../i18n/languages.json";
+my $languages_file = "$FindBin::Bin/../languages.json";
 
 # Read and parse languages.json
 open my $fh, '<', $languages_file or die "Cannot open $languages_file: $!";
