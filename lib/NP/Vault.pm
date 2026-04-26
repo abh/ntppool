@@ -4,6 +4,7 @@ use warnings;
 use NP::UA qw();
 use LWP::UserAgent;
 use JSON::XS ();
+use Time::HiRes qw(time);
 
 my $config          = Combust::Config->new;
 my $deployment_mode = $config->site->{ntppool}->{deployment_mode};
@@ -39,11 +40,25 @@ sub _ua {
 sub ua {
     _ua() unless $ua;
     open(my $token_fh, '<', '/vault/secrets/token')
-      or die "Could not open token: $!";
+      or die "vault: cannot open token file '/vault/secrets/token': $!";
     my $token = <$token_fh>;
     close $token_fh;
     $ua->default_header("X-Vault-Token" => $token);
     return $ua;
+}
+
+sub _req {
+    my ($method, $url, @args) = @_;
+    my $t0   = time();
+    my $resp = ua()->$method($url, @args);
+    my $ms   = int(((time() - $t0) * 1000) + 0.5);
+    my $msg  = $resp->message;
+    warn sprintf("vault %s %s -> %s%s (%dms)\n",
+        uc $method, $url, $resp->code, ($msg ? " $msg" : ''), $ms);
+    unless ($resp->is_success) {
+        warn "vault response body: ", $resp->decoded_content, "\n";
+    }
+    return $resp;
 }
 
 my $role_base = "$api/auth/monitors/${deployment_mode}";
@@ -56,16 +71,11 @@ sub monitoring_tls_domain {
 sub get_monitoring_role_id {
     my $name = shift;
     my $url  = "${role_base}/role/${name}/role-id";
-    warn "getting $url";
-    my $resp = ua()->get($url);
+    my $resp = _req('get', $url);
     if ($resp->is_success) {
-
-        # warn "MONITORING ROLE: ", $resp->decoded_content;
         my $data = $json->decode($resp->decoded_content)->{data};
         return $data->{role_id};
     }
-    warn $resp->status_line,     "\n";
-    warn $resp->decoded_content, "\n";
     return undef;
 }
 
@@ -73,14 +83,11 @@ sub get_monitoring_secret_accessors {
     my $name = shift;
     my $url  = "${role_base}/role/${name}/secret-id?list=true";
 
-    my $resp = ua()->get($url);
+    my $resp = _req('get', $url);
     unless ($resp->is_success) {
         if ($resp->code == 404) {
             return ();    # no available secrets
         }
-        warn "could not get secret id accessor list: "
-          . $resp->status_line . " -- "
-          . $resp->decoded_content;
         return ();
     }
 
@@ -95,12 +102,9 @@ sub get_monitoring_secret_properties {
     my @keys;
 
     for my $key (get_monitoring_secret_accessors($name)) {
-        my $resp =
-          ua()->post("$url", Content => $json->encode({secret_id_accessor => $key}));
+        my $resp = _req('post', $url,
+            Content => $json->encode({secret_id_accessor => $key}));
         unless ($resp->is_success) {
-            warn "could not get secret id data for $key: "
-              . $resp->status_line . " -- "
-              . $resp->decoded_content;
             next;
         }
         push @keys, $json->decode($resp->decoded_content)->{data};
@@ -114,14 +118,11 @@ sub delete_monitoring_secret_accessor {
     my $accessor = shift;
     my $url      = "${role_base}/role/${name}/secret-id-accessor/destroy";
 
-    my $resp =
-      ua()->post("$url", Content => $json->encode({secret_id_accessor => $accessor}));
+    my $resp = _req('post', $url,
+        Content => $json->encode({secret_id_accessor => $accessor}));
     if ($resp->is_success) {
         return 1;
     }
-
-    warn $resp->status_line,     "\n";
-    warn $resp->decoded_content, "\n";
 
     return 0;
 }
@@ -129,14 +130,10 @@ sub delete_monitoring_secret_accessor {
 sub delete_monitoring_role {
     my $name = shift;
     my $url  = "${role_base}/role/${name}";
-    my $resp = ua()->delete($url);
+    my $resp = _req('delete', $url);
     if ($resp->is_success) {
         return 1;
     }
-
-    warn "delete role $url";
-    warn $resp->status_line,     "\n";
-    warn $resp->decoded_content, "\n";
 
     return 0;
 }
@@ -146,23 +143,16 @@ sub setup_monitoring_secret {
     my $metadata = shift;
     my $url      = "${role_base}/role/${name}/secret-id";
 
-    warn "setting $url";
-
     my %data = ();
     $data{metadata} = $metadata if $metadata;
 
     my $content = $json->encode(\%data);
 
-    my $resp = ua()->post("$url", Content => $content);
+    my $resp = _req('post', $url, Content => $content);
     if ($resp->is_success) {
-
-        # warn "MONITORING ROLE: ", $resp->decoded_content;
         my $data = $json->decode($resp->decoded_content)->{data};
         return $data->{secret_id}, $data->{secret_id_accessor};
     }
-
-    warn $resp->status_line,     "\n";
-    warn $resp->decoded_content, "\n";
 
     return 0;
 
@@ -190,13 +180,10 @@ sub setup_monitoring_role {
         "policies" => "monitor-${deployment_mode}",
     );
 
-    my $resp = ua()->post("$url", Content => $json->encode(\%data),);
+    my $resp = _req('post', $url, Content => $json->encode(\%data));
     if ($resp->is_success) {
         return 1;
     }
-
-    warn $resp->status_line,     "\n";
-    warn $resp->decoded_content, "\n";
 
     return 0;
 
@@ -211,15 +198,11 @@ sub get_kv {
         $url .= "?version=$v";
     }
 
-    # warn "getting $url";
-
-    my $resp = ua()->get($url);
+    my $resp = _req('get', $url);
     if ($resp->is_success) {
         return $json->decode($resp->decoded_content)->{data};
     }
 
-    #warn $resp->status_line,     "\n";
-    warn "error fetching $k from vault: ", $resp->decoded_content, "\n";
     return {};
 }
 
@@ -233,18 +216,11 @@ sub set_kv {
         "data"    => $data,
     };
 
-    my $resp = ua()->post(
-        "${kv_base}/$k",
-        Content => $json->encode($payload)
-
-    );
+    my $url  = "${kv_base}/$k";
+    my $resp = _req('post', $url, Content => $json->encode($payload));
     if ($resp->is_success) {
         my $r = $json->decode($resp->decoded_content);
         return $r->{data}->{version};
-    }
-    else {
-        warn $resp->status_line,     "\n";
-        warn $resp->decoded_content, "\n";
     }
     return 0;
 }
