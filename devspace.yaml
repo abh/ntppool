@@ -40,6 +40,7 @@ deployments:
           httpd_maxclients: "6"
           #static_base: https://st.ntppool.org/askntp/
           static_base: /static/
+          VAULT_ADDR: https://vault.vault.svc:8200
       wait: true
       #timeout: "300s"
 
