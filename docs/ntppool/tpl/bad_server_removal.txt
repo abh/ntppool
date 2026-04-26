@@ -1,6 +1,6 @@
 [% page.style = 'email.txt' -%]
 
-Hi [% admin.email %],
+Hi [% greeting %],
 
 Due to unresolved problems with your timeserver it is being removed
 from the NTP Pool (pool.ntp.org) project.
@@ -22,5 +22,5 @@ If you haven't logged in for a long time, you might need to
 recreate your account after our login system upgrade in 2016:
     https://news.ntppool.org/2016/04/login-upgrade/
 
--- 
+--
 [% config.base_url('ntppool') %]/
