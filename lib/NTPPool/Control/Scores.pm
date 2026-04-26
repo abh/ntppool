@@ -76,7 +76,8 @@ sub render {
         return 404 if $result->{error} || !$result->{data}{server};
         my $server = NP::Data::Server->new(%{$result->{data}{server}});
         $self->cache_control('max-age=14400, s-maxage=7200');
-        return $self->redirect($server->graph_uri($mode), 301);
+        my $uri = $server->graph_uri('offset') or return 404;
+        return $self->redirect($uri, 301);
     }
 
     if (my ($p, $mode) = $self->request->uri =~ m!^/scores/([^/]+)(?:/(\w+))?!) {
@@ -167,7 +168,9 @@ sub render {
         }
         elsif ($mode eq 'graph') {
             my ($type) = ($self->request->uri =~ m{/(offset|score)\.png$});
-            return $self->redirect($server->graph_uri($type), 301);
+            return 404 unless $type;
+            my $uri = $server->graph_uri('offset') or return 404;
+            return $self->redirect($uri, 301);
         }
         else {
             return $self->redirect('/scores/' . $server->ip);
