@@ -19,7 +19,7 @@ my $ua;
 
 sub _ua {
     return $ua if $ua;
-    my $ca = '/vault/secrets/vault-ca';
+    my $ca = $ENV{VAULT_CACERT} || '/vault/secrets/vault-ca';
     if (-e $ca) {
         $ua = LWP::UserAgent->new(
             timeout           => 2,
