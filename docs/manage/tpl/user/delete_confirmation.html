@@ -26,13 +26,17 @@
         [% ELSE %]
         <p>
         This user can't be deleted as it's the only user
-        associated with an account with active servers.
+        associated with an account that still has
+        [% items = []; IF delete_blockers.servers; items.push("active servers"); END;
+           IF delete_blockers.vendor_zones; items.push("vendor zones"); END;
+           IF delete_blockers.monitors; items.push("active monitors"); END;
+           IF items.size; items.join(", ") | html; ELSE %]active resources[% END %].
         </p>
 
         <p>
         To prepare the user for deletion, please make sure that
         the account either has an alternate user or
-        all servers have been marked for deletion.
+        all associated resources have been removed.
         </p>
         <p>
         If this is unexpected, please email

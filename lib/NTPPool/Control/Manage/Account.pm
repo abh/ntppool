@@ -481,10 +481,8 @@ sub render_user_delete {
     $self->tpl_param('user', $user);
 
     my $delete_ok = 1;
+    my %blockers;
 
-    # todo:
-    # - check there are no active servers on the account
-    # - or that there are an alternate user
     for my $a ($user->accounts) {
         my @users = grep { $_->id != $user->id && not $_->deletion_on } @{$a->users};
         next if @users;
@@ -492,24 +490,29 @@ sub render_user_delete {
             unless ($s->deletion_on) {
                 warn "account has active servers";
                 $delete_ok = 0;
+                $blockers{servers} = 1;
                 last;
             }
         }
-        for my $v ($a->vendor_zones) {
+        if ($a->vendor_zones && @{$a->vendor_zones}) {
             warn "account has vendor zones";
             $delete_ok = 0;
-            last;
+            $blockers{vendor_zones} = 1;
         }
         for my $m ($a->monitors) {
-            unless ($m->status eq 'deleted') {
-                warn "account has monitors";
-                $delete_ok = 0;
-                last;
-            }
+            next if $m->status eq 'deleted';
+            next if $m->deleted_on;
+            next unless $m->is_current;
+            next unless ($m->type // 'monitor') eq 'monitor';
+            warn "account has monitors";
+            $delete_ok = 0;
+            $blockers{monitors} = 1;
+            last;
         }
     }
 
     $self->tpl_param('delete_available', $delete_ok);
+    $self->tpl_param('delete_blockers',  \%blockers);
 
     return OK, $self->evaluate_template('tpl/user/delete_confirmation.html')
       unless $delete_ok;
