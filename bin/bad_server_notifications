@@ -25,8 +25,12 @@ $dbh->selectrow_array(q[SELECT GET_LOCK("notifications", 0)]) or exit;
 
 warn "deleting alert records of good servers";
 
+# Subquery instead of multi-table DELETE: under binlog_format=ROW (required
+# by group replication), the IN-subquery against `servers` is a snapshot
+# read, so no row locks are held on `servers` during the DELETE.
 $dbh->do(
-    q[delete from sa using server_alerts sa inner join servers s on (s.id=sa.server_id) where s.score_raw > 10]
+    q[delete from server_alerts
+       where server_id in (select id from servers where score_raw > 10)]
 );
 
 warn "Getting accounts to notify";
