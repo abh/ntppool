@@ -382,14 +382,10 @@ sub system_setting {
 
     my $k = "_system_setting_$name";
 
-    return $self->{$k} if $self->{$k};
+    return $self->{$k} if exists $self->{$k};
 
-    my $settings = NP::Model->system_setting->fetch(key => $name);
-    if (!$settings) {
-        return undef;
-    }
-    $settings = $settings->value;
-    return $self->{$k} = $settings;
+    my $row = NP::Model->system_setting->fetch(key => $name);
+    return $self->{$k} = $row ? $row->value : undef;
 }
 
 sub system_feature {
