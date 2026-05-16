@@ -75,10 +75,6 @@ sub init {
             }
         }
 
-        if ($self->user->deletion_on and $self->request->uri ne "/manage/logout") {
-            return $self->redirect($self->manage_url('/manage/logout'));
-        }
-
     }
 
     return OK;
