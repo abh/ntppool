@@ -9,9 +9,10 @@ use NP::CAPI::Account qw(
     create_account get_account update_account remove_user_from_account create_user_task
     list_user_tasks get_user_task
     check_user_deletion_eligibility
+    schedule_account_deletion cancel_account_deletion
     create_account_invite accept_account_invite resend_account_invite
 );
-use NP::CAPI::User qw(schedule_user_deletion);
+use NP::CAPI::User qw(get_user schedule_user_deletion);
 use DateTime;
 use JSON::XS   qw(encode_json decode_json);
 use Data::Dump qw(pp);
@@ -194,7 +195,29 @@ sub manage_dispatch {
         return $self->render_download($self->user);
     }
     elsif ($self->request->uri =~ m!^/manage/account/delete$!) {
-        return $self->render_user_delete($self->user);
+        my $self_token     = $self->user->{id_token};
+        my $target_token   = $self_token;
+        my $is_self        = 1;
+        if (my $u_token = $self->req_param('u')) {
+            if ($u_token ne $self_token) {
+                return 403 unless $self->user_is_staff;
+
+                my $lookup = get_user(
+                    $self->api_auth_params,
+                    id_token => $u_token,
+                );
+                return NOT_FOUND if $lookup->{error};
+                return NOT_FOUND unless $lookup->{data}{user};
+
+                $target_token = $u_token;
+                $is_self      = 0;
+            }
+        }
+        return $self->render_user_delete($target_token, $is_self);
+    }
+    elsif ($self->request->uri =~ m!^/manage/account/dissolve$!) {
+        return 403 unless $self->user_is_staff;
+        return $self->render_account_dissolve($account);
     }
 
     return NOT_FOUND;
@@ -648,7 +671,7 @@ sub render_download {
 }
 
 sub render_user_delete {
-    my ($self, $user) = @_;
+    my ($self, $target_id_token, $is_self) = @_;
 
     my $tracer = NP::Tracing->tracer;
     my $span   = $tracer->create_span(
@@ -657,12 +680,29 @@ sub render_user_delete {
     );
     dynamically otel_current_context = otel_context_with_span($span);
 
+    # Fetch target user for template rendering. When acting on self, use the
+    # already-loaded session user; otherwise look up the target via the API.
+    my $user;
+    if ($is_self) {
+        $user = $self->user;
+    }
+    else {
+        my $lookup = get_user(
+            $self->api_auth_params,
+            id_token => $target_id_token,
+        );
+        return NOT_FOUND if $lookup->{error};
+        $user = $lookup->{data}{user} or return NOT_FOUND;
+    }
+
     $self->tpl_param('user', $user);
 
-    # Check deletion eligibility using new consolidated API
-    # Single API call replaces multiple queries and ORM iterations
+    # Check deletion eligibility using new consolidated API.
+    # Pass id_token only when targeting another user; the API treats the
+    # caller as self when id_token is omitted.
     my $result = check_user_deletion_eligibility(
         $self->api_auth_params,
+        ($is_self ? () : (id_token => $target_id_token)),
     );
 
     if ($result->{error}) {
@@ -691,6 +731,7 @@ sub render_user_delete {
         my $result = schedule_user_deletion(
             $self->api_auth_params,
             deletion_on_unix => $deletion_time->epoch,
+            ($is_self ? () : (id_token => $target_id_token)),
         );
 
         if ($result->{error}) {
@@ -733,13 +774,93 @@ sub render_user_delete {
           ->subject("NTP Pool user deletion scheduled")
           ->text_body($msg);
 
+        # Deletion-scheduled email goes to the target user, not the caller.
         $email->to($updated_user->{email});
         NP::Email::sendmail($email);
 
-        return $self->redirect($self->manage_url('/manage/logout'));
+        return $self->redirect(
+            $self->manage_url($is_self ? '/manage/logout' : '/manage'));
     }
 
     return OK, $self->evaluate_template('tpl/user/delete_confirmation.html');
+}
+
+sub render_account_dissolve {
+    my ($self, $account) = @_;
+
+    my $tracer = NP::Tracing->tracer;
+    my $span   = $tracer->create_span(
+        name => "render_account_dissolve",
+        kind => SPAN_KIND_SERVER,
+    );
+    dynamically otel_current_context = otel_context_with_span($span);
+
+    $self->tpl_param('account', $account);
+
+    # Cancel an already-scheduled deletion
+    if ($self->request->method eq 'post' and $self->req_param('cancel')) {
+        my $result = cancel_account_deletion(
+            $self->api_auth_params,
+            account_id_token => $account->{id_token},
+        );
+
+        if ($result->{error}) {
+            warn "Failed to cancel account deletion: " . $result->{error};
+            warn "Trace ID: " . $result->{trace_id} if $result->{trace_id};
+            return $self->render_error(
+                "Could not cancel scheduled deletion.");
+        }
+
+        return $self->redirect(
+            $self->manage_url('/manage/account', {a => $account->{id_token}}));
+    }
+
+    # Schedule a deletion 7 days out
+    if ($self->request->method eq 'post') {
+        my $deletion_time = DateTime->now->add(days => 7);
+
+        my $result = schedule_account_deletion(
+            $self->api_auth_params,
+            account_id_token => $account->{id_token},
+            deletion_on_unix => $deletion_time->epoch,
+        );
+
+        if ($result->{error}) {
+            warn "Failed to schedule account deletion: " . $result->{error};
+            warn "Trace ID: " . $result->{trace_id} if $result->{trace_id};
+            return $self->render_error(
+                "Could not schedule deletion.");
+        }
+
+        my $data = $result->{data} || {};
+
+        if ($data->{scheduled}) {
+            return $self->redirect(
+                $self->manage_url('/manage/account', {a => $account->{id_token}}));
+        }
+
+        # Blockers: surface them on the confirmation page. The API also
+        # returns a structured details hashref but the blockers list already
+        # carries the human-readable strings the template needs.
+        $self->tpl_param('blockers', $data->{blockers} || []);
+        $self->tpl_param('orphaned_emails',
+            $data->{orphaned_user_emails} || []);
+
+        return OK,
+          $self->evaluate_template('tpl/account/dissolve_confirmation.html');
+    }
+
+    # GET: show pending state or scheduling form
+    if ($account->{deletion_on}) {
+        my $display = $account->{deletion_on};
+        $display =~ s/T.*//;    # date-only display for RFC3339 input
+
+        $self->tpl_param('pending',      1);
+        $self->tpl_param('deletion_on',  $display);
+    }
+
+    return OK,
+      $self->evaluate_template('tpl/account/dissolve_confirmation.html');
 }
 
 sub render_monitor_config_form {

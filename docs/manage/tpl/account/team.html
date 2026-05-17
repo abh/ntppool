@@ -19,6 +19,16 @@
                             Remove
                         </button>
                     </td>
+                    [% ELSE %]
+                    <td></td>
+                    [% END %]
+                    [% IF combust.user_is_staff %]
+                    <td>
+                        <a class="btn btn-outline-danger"
+                           href="[% combust.manage_url('/manage/account/delete', u => user.id_token) %]">
+                            Delete user
+                        </a>
+                    </td>
                     [% END %]
                 </tr>
                 [% END %]
