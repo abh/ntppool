@@ -9,14 +9,14 @@
             <table class="table">
                 [% FOR user = users %]
                 <tr>
-                    <td>[% user.email  | html %]</td>
+                    <td>[% user.email  | html %][% IF user.deletion_on %] <span class="badge badge-warning">scheduled for deletion</span>[% END %]</td>
                     <td>[% IF user.name != user.email; user.name | html; END %]</td>
                     [% IF account.can_edit(combust.user) AND
                          (combust.user.is_staff OR combust.user.id != user.id) %]
                     <td>
                         <button class="btn btn-outline-warning"
                             name="user_id" value="[% user.id %]" type="submit">
-                            Remove
+                            Remove from team
                         </button>
                     </td>
                     [% ELSE %]
@@ -24,10 +24,14 @@
                     [% END %]
                     [% IF combust.user.is_staff %]
                     <td>
+                        [% IF user.deletion_on %]
+                        &nbsp;
+                        [% ELSE %]
                         <a class="btn btn-outline-danger"
                            href="[% combust.manage_url('/manage/account/delete', u => user.id_token) %]">
                             Delete user
                         </a>
+                        [% END %]
                     </td>
                     [% END %]
                 </tr>

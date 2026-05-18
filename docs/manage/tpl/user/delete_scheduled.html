@@ -1,0 +1,25 @@
+<div class="row">
+    <div class="col-md-10">
+        <h3>Deletion scheduled</h3>
+
+        <p>
+        Deletion has been scheduled for user
+        <strong>[% user.email | html %]</strong>.
+        </p>
+
+        <p>
+        The user deletion will typically be processed within a week.
+        If the user logs in again before the deletion is done the
+        deletion process will get cancelled.
+        </p>
+
+        <p>
+        A notification email has been sent to the user.
+        </p>
+
+        <p>
+            <a href="[% combust.manage_url('/manage') %]">Back to manage</a>
+        </p>
+
+    </div>
+</div>

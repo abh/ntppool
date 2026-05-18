@@ -75,11 +75,18 @@ sub validation_errors {
     $self->{_validation_errors} || {};
 }
 
+sub is_member {
+    my ($self, $user) = @_;
+    return 0 unless $user;
+    return 1 if grep { $_->id == $user->id } $self->users;
+    return 0;
+}
+
 sub can_edit {
     my ($self, $user) = @_;
     return 0 unless $user;
     return 1 if $user->privileges->support_staff;
-    return 1 if grep { $_->id == $user->id } $self->users;
+    return 1 if $self->is_member($user);
     return 0;
 }
 
