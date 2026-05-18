@@ -1424,16 +1424,20 @@ div.product-group .btn {
 
 // Chart container styles to avoid inline CSS and maintain proper SVG sizing
 .chart-container {
-    // Prevent container from expanding beyond SVG's intended dimensions
+    // Size to the SVG's intrinsic width/height attributes (set in JS)
     display: inline-block;
     max-width: max-content;
     margin-bottom: 0.2rem;
 
+    // Card treatment shared by ntp-server-chart and ntp-zone-chart
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
     svg {
-        // Ensure SVG respects its width/height attributes and doesn't scale up
+        // Don't let Bootstrap's `svg { max-width: 100% }` shrink the chart
         max-width: none !important;
-        width: attr(width px, auto);
-        height: attr(height px, auto);
+        display: block;
     }
 }
 
@@ -1532,61 +1536,49 @@ div.product-group .btn {
     height: var(--chart-height, auto);
 }
 
-// Chart Web Component Styles (moved from TypeScript files)
-.chart-container {
-    width: 100%;
-    height: 100%;
-    position: relative;
-    min-height: 200px;
-    background: white;
-    border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+// Chart D3 styling (moved from TypeScript files). Scoped to the SVG so it
+// doesn't re-declare layout properties on .chart-container — that caused the
+// outer container to fight itself and collapse to the SVG's default 300x150.
+.chart-container svg {
+    .line {
+        fill: none;
+        stroke-width: 2;
 
-    svg {
-        width: 100%;
-        height: auto;
-        max-width: 100%;
-
-        .line {
-            fill: none;
-            stroke-width: 2;
-
-            &.registered_count {
-                stroke: #1f77b4;
-            }
-
-            &.active_count {
-                stroke: #2ca02c;
-            }
-
-            &.inactive_count {
-                stroke: #ff7f0e;
-            }
-
-            &.v6 {
-                stroke-dasharray: 5,5;
-            }
+        &.registered_count {
+            stroke: #1f77b4;
         }
 
-        .legend {
-            font-size: 12px;
-
-            .legend-item:hover {
-                opacity: 0.8;
-            }
+        &.active_count {
+            stroke: #2ca02c;
         }
 
-        .x-axis line,
-        .y-axis line {
-            stroke: #e0e0e0;
-            stroke-dasharray: 2,2;
+        &.inactive_count {
+            stroke: #ff7f0e;
         }
 
-        .x-axis text,
-        .y-axis text {
-            fill: #6b7280;
-            font-size: 12px;
+        &.v6 {
+            stroke-dasharray: 5,5;
         }
+    }
+
+    .legend {
+        font-size: 12px;
+
+        .legend-item:hover {
+            opacity: 0.8;
+        }
+    }
+
+    .x-axis line,
+    .y-axis line {
+        stroke: #e0e0e0;
+        stroke-dasharray: 2,2;
+    }
+
+    .x-axis text,
+    .y-axis text {
+        fill: #6b7280;
+        font-size: 12px;
     }
 }
 
