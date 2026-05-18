@@ -109,7 +109,17 @@ sub manage_dispatch {
         return $self->render_download($self->user);
     }
     elsif ($self->request->uri =~ m!^/manage/account/delete$!) {
-        return $self->render_user_delete($self->user);
+        my $target = $self->user;
+        if (my $u_token = $self->req_param('u')) {
+            my $uid = NP::Model::User->token_id($u_token);
+            return NOT_FOUND unless $uid;
+            if ($uid != $self->user->id) {
+                return 403 unless $self->user->is_staff;
+                $target = NP::Model->user->fetch(id => $uid)
+                  or return NOT_FOUND;
+            }
+        }
+        return $self->render_user_delete($target);
     }
 
     return NOT_FOUND;
@@ -474,10 +484,6 @@ sub render_user_delete {
     );
     dynamically otel_current_context = otel_context_with_span($span);
 
-    # todo:
-    #   if u= parameter, get user from id_token
-    #   and check it's the current user; or an admin
-
     $self->tpl_param('user', $user);
 
     my $delete_ok = 1;
@@ -519,6 +525,8 @@ sub render_user_delete {
 
     if ($self->request->method eq 'post') {
 
+        my $self_delete = ($self->user->id == $user->id);
+
         my $db  = NP::Model->db;
         my $txn = $db->begin_scoped_work;
 
@@ -532,6 +540,12 @@ sub render_user_delete {
             execute_on => DateTime->now()->add(days => 7),
         );
         $task->save;
+
+        my $log_message =
+          $self_delete
+          ? "scheduled user deletion"
+          : sprintf("scheduled deletion of user %s (%d)", $user->email, $user->id);
+        NP::Model::Log->log_changes($self->user, "user", $log_message, $user);
 
         $db->commit or die "could not mark user deleted";
 
@@ -551,7 +565,8 @@ sub render_user_delete {
         $email->to($user->email);
         NP::Email::sendmail($email);
 
-        return $self->redirect($self->manage_url('/manage/logout'));
+        return $self->redirect(
+            $self->manage_url($self_delete ? '/manage/logout' : '/manage'));
     }
 
     return OK, $self->evaluate_template('tpl/user/delete_confirmation.html');
