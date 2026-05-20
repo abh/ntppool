@@ -11,7 +11,7 @@ use NP::CAPI::Account qw(
     check_user_deletion_eligibility
     create_account_invite accept_account_invite resend_account_invite
 );
-use NP::CAPI::User qw(schedule_user_deletion);
+use NP::CAPI::User qw(get_user schedule_user_deletion);
 use DateTime;
 use JSON::XS   qw(encode_json decode_json);
 use Data::Dump qw(pp);
@@ -194,7 +194,25 @@ sub manage_dispatch {
         return $self->render_download($self->user);
     }
     elsif ($self->request->uri =~ m!^/manage/account/delete$!) {
-        return $self->render_user_delete($self->user);
+        my $self_token     = $self->user->{id_token};
+        my $target_token   = $self_token;
+        my $is_self        = 1;
+        if (my $u_token = $self->req_param('u')) {
+            if ($u_token ne $self_token) {
+                return 403 unless $self->user_is_staff;
+
+                my $lookup = get_user(
+                    $self->api_auth_params,
+                    id_token => $u_token,
+                );
+                return NOT_FOUND if $lookup->{error};
+                return NOT_FOUND unless $lookup->{data}{user};
+
+                $target_token = $u_token;
+                $is_self      = 0;
+            }
+        }
+        return $self->render_user_delete($target_token, $is_self);
     }
 
     return NOT_FOUND;
@@ -648,7 +666,7 @@ sub render_download {
 }
 
 sub render_user_delete {
-    my ($self, $user) = @_;
+    my ($self, $target_id_token, $is_self) = @_;
 
     my $tracer = NP::Tracing->tracer;
     my $span   = $tracer->create_span(
@@ -657,12 +675,29 @@ sub render_user_delete {
     );
     dynamically otel_current_context = otel_context_with_span($span);
 
+    # Fetch target user for template rendering. When acting on self, use the
+    # already-loaded session user; otherwise look up the target via the API.
+    my $user;
+    if ($is_self) {
+        $user = $self->user;
+    }
+    else {
+        my $lookup = get_user(
+            $self->api_auth_params,
+            id_token => $target_id_token,
+        );
+        return NOT_FOUND if $lookup->{error};
+        $user = $lookup->{data}{user} or return NOT_FOUND;
+    }
+
     $self->tpl_param('user', $user);
 
-    # Check deletion eligibility using new consolidated API
-    # Single API call replaces multiple queries and ORM iterations
+    # Check deletion eligibility using new consolidated API.
+    # Pass id_token only when targeting another user; the API treats the
+    # caller as self when id_token is omitted.
     my $result = check_user_deletion_eligibility(
         $self->api_auth_params,
+        ($is_self ? () : (id_token => $target_id_token)),
     );
 
     if ($result->{error}) {
@@ -691,6 +726,7 @@ sub render_user_delete {
         my $result = schedule_user_deletion(
             $self->api_auth_params,
             deletion_on_unix => $deletion_time->epoch,
+            ($is_self ? () : (id_token => $target_id_token)),
         );
 
         if ($result->{error}) {
@@ -733,10 +769,12 @@ sub render_user_delete {
           ->subject("NTP Pool user deletion scheduled")
           ->text_body($msg);
 
+        # Deletion-scheduled email goes to the target user, not the caller.
         $email->to($updated_user->{email});
         NP::Email::sendmail($email);
 
-        return $self->redirect($self->manage_url('/manage/logout'));
+        return $self->redirect(
+            $self->manage_url($is_self ? '/manage/logout' : '/manage'));
     }
 
     return OK, $self->evaluate_template('tpl/user/delete_confirmation.html');
