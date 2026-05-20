@@ -9,6 +9,7 @@ use NP::CAPI::Account qw(
     create_account get_account update_account remove_user_from_account create_user_task
     list_user_tasks get_user_task
     check_user_deletion_eligibility
+    schedule_account_deletion cancel_account_deletion
     create_account_invite accept_account_invite resend_account_invite
 );
 use NP::CAPI::User qw(get_user schedule_user_deletion);
@@ -213,6 +214,10 @@ sub manage_dispatch {
             }
         }
         return $self->render_user_delete($target_token, $is_self);
+    }
+    elsif ($self->request->uri =~ m!^/manage/account/dissolve$!) {
+        return 403 unless $self->user_is_staff;
+        return $self->render_account_dissolve($account);
     }
 
     return NOT_FOUND;
@@ -778,6 +783,84 @@ sub render_user_delete {
     }
 
     return OK, $self->evaluate_template('tpl/user/delete_confirmation.html');
+}
+
+sub render_account_dissolve {
+    my ($self, $account) = @_;
+
+    my $tracer = NP::Tracing->tracer;
+    my $span   = $tracer->create_span(
+        name => "render_account_dissolve",
+        kind => SPAN_KIND_SERVER,
+    );
+    dynamically otel_current_context = otel_context_with_span($span);
+
+    $self->tpl_param('account', $account);
+
+    # Cancel an already-scheduled deletion
+    if ($self->request->method eq 'post' and $self->req_param('cancel')) {
+        my $result = cancel_account_deletion(
+            $self->api_auth_params,
+            account_id_token => $account->{id_token},
+        );
+
+        if ($result->{error}) {
+            warn "Failed to cancel account deletion: " . $result->{error};
+            warn "Trace ID: " . $result->{trace_id} if $result->{trace_id};
+            return $self->render_error(
+                "Could not cancel scheduled deletion.");
+        }
+
+        return $self->redirect(
+            $self->manage_url('/manage/account', {a => $account->{id_token}}));
+    }
+
+    # Schedule a deletion 7 days out
+    if ($self->request->method eq 'post') {
+        my $deletion_time = DateTime->now->add(days => 7);
+
+        my $result = schedule_account_deletion(
+            $self->api_auth_params,
+            account_id_token => $account->{id_token},
+            deletion_on_unix => $deletion_time->epoch,
+        );
+
+        if ($result->{error}) {
+            warn "Failed to schedule account deletion: " . $result->{error};
+            warn "Trace ID: " . $result->{trace_id} if $result->{trace_id};
+            return $self->render_error(
+                "Could not schedule deletion.");
+        }
+
+        my $data = $result->{data} || {};
+
+        if ($data->{scheduled}) {
+            return $self->redirect(
+                $self->manage_url('/manage/account', {a => $account->{id_token}}));
+        }
+
+        # Blockers: surface them on the confirmation page. The API also
+        # returns a structured details hashref but the blockers list already
+        # carries the human-readable strings the template needs.
+        $self->tpl_param('blockers', $data->{blockers} || []);
+        $self->tpl_param('orphaned_emails',
+            $data->{orphaned_user_emails} || []);
+
+        return OK,
+          $self->evaluate_template('tpl/account/dissolve_confirmation.html');
+    }
+
+    # GET: show pending state or scheduling form
+    if ($account->{deletion_on}) {
+        my $display = $account->{deletion_on};
+        $display =~ s/T.*//;    # date-only display for RFC3339 input
+
+        $self->tpl_param('pending',      1);
+        $self->tpl_param('deletion_on',  $display);
+    }
+
+    return OK,
+      $self->evaluate_template('tpl/account/dissolve_confirmation.html');
 }
 
 sub render_monitor_config_form {

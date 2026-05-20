@@ -127,6 +127,19 @@
         <a href="[% combust.manage_url('/manage/account/delete', u => combust.user.id_token) %]">Delete user</a><br>
         [% END %]
 
+        [% IF combust.user_is_staff %]
+        <br>
+        [% IF account.deletion_on %]
+        <a href="[% combust.manage_url('/manage/account/dissolve', { a => account.id_token }) %]"
+           class="text-danger">
+           Account deletion scheduled &mdash; manage
+        </a><br>
+        [% ELSE %]
+        <a href="[% combust.manage_url('/manage/account/dissolve', { a => account.id_token }) %]"
+           class="text-danger">Delete account</a><br>
+        [% END %]
+        [% END %]
+
     </div>
 
 </div>
