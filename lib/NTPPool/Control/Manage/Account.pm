@@ -778,8 +778,12 @@ sub render_user_delete {
         $email->to($updated_user->{email});
         NP::Email::sendmail($email);
 
-        return $self->redirect(
-            $self->manage_url($is_self ? '/manage/logout' : '/manage'));
+        if ($is_self) {
+            return $self->redirect($self->manage_url('/manage/logout'));
+        }
+
+        $self->tpl_param('user', $updated_user);
+        return OK, $self->evaluate_template('tpl/user/delete_scheduled.html');
     }
 
     return OK, $self->evaluate_template('tpl/user/delete_confirmation.html');

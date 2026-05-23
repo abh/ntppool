@@ -31,13 +31,20 @@ sub display_name {
     return $self->name || $self->organization_name || $self->url_slug;
 }
 
+sub is_member {
+    my ($self, $user) = @_;
+    return 0 unless $user;
+    return 1 if grep { $_->id == $user->id } $self->users;
+    return 0;
+}
+
 sub can_edit {
     my ($self, $user, $controller) = @_;
     return 0 unless $user;
 
     # Check controller-level privileges if controller is provided
     return 1 if $controller && $controller->user_is_staff;
-    return 1 if grep { $_->id == $user->id } $self->users;
+    return 1 if $self->is_member($user);
     return 0;
 }
 

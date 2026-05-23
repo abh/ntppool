@@ -110,7 +110,7 @@
 
         <ul>
             [% FOR user = account.users %]
-            <li>[% user.email | html %]</li>
+            <li>[% user.email | html %][% IF user.deletion_on %] <span class="badge badge-warning">scheduled for deletion</span>[% END %]</li>
             [% END %]
         </ul>
 
@@ -118,6 +118,7 @@
 
         <p>To change your email address, add the new address to the team and login to remove the old address.</p>
 
+        [% IF account.is_member(combust.user) %]
         [% IF combust.system_feature('user-download') %]
         <a href="[% combust.manage_url('/manage/account/download', u => combust.user.id_token) %]">Download user data</a><br>
         [% END %]
@@ -125,6 +126,7 @@
         [% IF combust.system_feature('user-deletion') %]
         <br>
         <a href="[% combust.manage_url('/manage/account/delete', u => combust.user.id_token) %]">Delete user</a><br>
+        [% END %]
         [% END %]
 
         [% IF combust.user_is_staff %]
