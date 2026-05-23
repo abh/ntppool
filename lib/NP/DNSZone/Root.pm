@@ -1,4 +1,4 @@
-package NP::Model::DnsRoot;
+package NP::DNSZone::Root;
 use strict;
 use warnings;
 use Combust::Config;
