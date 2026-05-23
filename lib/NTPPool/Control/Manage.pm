@@ -1,7 +1,6 @@
 package NTPPool::Control::Manage;
 use strict;
 use parent qw(NTPPool::Control::Login NTPPool::Control);
-use NP::Model;
 use Combust::Constant qw(OK NOT_FOUND SERVER_ERROR);
 use Socket            qw(inet_ntoa);
 use Socket6;
