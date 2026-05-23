@@ -530,6 +530,10 @@ sub render_user_delete {
         );
         $task->save;
 
+        NP::Model->user_session->delete_user_sessions(
+            where => [user_id => $user->id],
+        );
+
         $db->commit or die "could not mark user deleted";
 
         my $param = {
