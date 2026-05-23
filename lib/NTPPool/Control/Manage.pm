@@ -1,7 +1,6 @@
 package NTPPool::Control::Manage;
 use strict;
 use parent qw(NTPPool::Control::Login NTPPool::Control);
-use NP::Model;
 use Combust::Constant qw(OK NOT_FOUND SERVER_ERROR);
 use Socket            qw(inet_ntoa);
 use Socket6;
@@ -355,17 +354,15 @@ sub handle_login {
         return;
     }
 
-    # Determine environment-specific audience
-    my $audience = $self->_get_audience();
-
-    # Call ConnectRPC API to process Auth0 login
+    # Call ConnectRPC API to process Auth0 login.
+    # Audience is derived entirely by the Go API (single source of truth);
+    # Perl does not compute or send it.
     my $result = NP::CAPI::Auth::process_auth0_login(
         authorization_code => $code,
         state              => $state,
         redirect_uri       => $self->callback_url,
-        client_site        => "" . $self->site,   # Force to string: 'manage', 'www', etc.
+        client_site        => "" . $self->site,    # Force to string: 'manage', 'www', etc.
         context            => $self->_get_request_context(),
-        audience => $audience,    # Environment-specific: api-dev, api-test, api-prod
     );
 
     if ($result->{error}) {
@@ -398,29 +395,6 @@ sub handle_login {
     }
 
     return;    # Will redirect via parent handler
-}
-
-sub _get_audience {
-    my $self = shift;
-
-    # Determine environment from base URL
-    my $base_url = $self->config->base_url($self->site);
-
-    # Map environment to Auth0 audience
-    if ($base_url =~ m{(askdev|dev|devel)\.}) {
-        return 'api-dev';
-    }
-    elsif ($base_url =~ m{(beta|test)\.}) {
-        return 'api-test';
-    }
-    elsif ($base_url =~ m{ntppool\.org}) {
-        return 'api-prod';
-    }
-    else {
-        # Default to dev for unknown environments
-        warn "Unknown environment from base_url: $base_url, defaulting to api-dev";
-        return 'api-dev';
-    }
 }
 
 sub callback_url {
@@ -824,21 +798,6 @@ sub staff_hostname_edit {
         $self->tpl_param('server' => $server);
         return OK, $self->evaluate_template('tpl/admin/hostname_edit.html');
     }
-}
-
-sub account_monitor_count {
-    my $self = shift;
-    return $self->{_account_monitor_count}
-      if defined $self->{_account_monitor_count};
-
-    return $self->{_account_monitor_count} = 0
-      unless $self->current_account;    # if we are being invited to a new account
-
-    my $monitor_count =
-      NP::Model->monitor->get_objects_count(
-          query => [account_id => $self->current_account->{account_id}]);
-
-    return $self->{_account_monitor_count} = $monitor_count;
 }
 
 sub monitor_eligibility {
