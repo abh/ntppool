@@ -1,6 +1,5 @@
 package NP::Stripe;
 use strict;
-use NP::Model;
 use NP::UA qw($ua);
 use JSON::XS;
 use List::Util qw(uniq);

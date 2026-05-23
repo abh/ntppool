@@ -4,7 +4,6 @@ use strict;
 use warnings;
 use NTPPool::Control::Manage;
 use parent qw(NTPPool::Control::Manage);
-use NP::Model;
 use Combust::Constant qw(OK NOT_FOUND);
 use Combust::Config   ();
 use NP::Email         ();
