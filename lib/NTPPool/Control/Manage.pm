@@ -355,17 +355,15 @@ sub handle_login {
         return;
     }
 
-    # Determine environment-specific audience
-    my $audience = $self->_get_audience();
-
-    # Call ConnectRPC API to process Auth0 login
+    # Call ConnectRPC API to process Auth0 login.
+    # Audience is derived entirely by the Go API (single source of truth);
+    # Perl does not compute or send it.
     my $result = NP::CAPI::Auth::process_auth0_login(
         authorization_code => $code,
         state              => $state,
         redirect_uri       => $self->callback_url,
-        client_site        => "" . $self->site,   # Force to string: 'manage', 'www', etc.
+        client_site        => "" . $self->site,    # Force to string: 'manage', 'www', etc.
         context            => $self->_get_request_context(),
-        audience => $audience,    # Environment-specific: api-dev, api-test, api-prod
     );
 
     if ($result->{error}) {
@@ -398,29 +396,6 @@ sub handle_login {
     }
 
     return;    # Will redirect via parent handler
-}
-
-sub _get_audience {
-    my $self = shift;
-
-    # Determine environment from base URL
-    my $base_url = $self->config->base_url($self->site);
-
-    # Map environment to Auth0 audience
-    if ($base_url =~ m{(askdev|dev|devel)\.}) {
-        return 'api-dev';
-    }
-    elsif ($base_url =~ m{(beta|test)\.}) {
-        return 'api-test';
-    }
-    elsif ($base_url =~ m{ntppool\.org}) {
-        return 'api-prod';
-    }
-    else {
-        # Default to dev for unknown environments
-        warn "Unknown environment from base_url: $base_url, defaulting to api-dev";
-        return 'api-dev';
-    }
 }
 
 sub callback_url {

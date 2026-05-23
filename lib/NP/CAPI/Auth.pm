@@ -131,9 +131,6 @@ B<Arguments:>
  Must match exactly for Auth0 token exchange. Required.
         client_site => $value,       # string - client_site identifies which site initiated the login (e.g., "manage", "www").
  Used to determine which Auth0 client configuration to use. Required.
-        audience => $value,       # string - audience is the Auth0 API audience identifier for token exchange.
- Should be environment-specific: "api-dev", "api-test", or "api-prod".
- Optional - if not provided, token exchange will work without audience.
     );
 
 B<Returns:>
@@ -166,6 +163,9 @@ Hashref with structure:
                 url => ...,  # string - Computed fields (always included)
                 public_url => ...,  # string
                 display_name => ...,  # string
+                deletion_on => ...,  # string - deletion_on is the RFC3339 timestamp when the account is scheduled for
+ deletion by the accountdelete background task. Unset when no deletion
+ is scheduled.
                 subscription_summary => ...,  # hashref (SubscriptionSummary) - Subscription summary (computed from account_subscriptions)
             },  # hashref (AccountContext) - account is the user's default account (or auto-created account).
  Omitted if user has no accounts (meaning they have pending invitations).
@@ -251,7 +251,6 @@ sub process_auth0_login {
     $request{'state'} = delete $args{'state'} if exists $args{'state'};
     $request{'redirect_uri'} = delete $args{'redirect_uri'} if exists $args{'redirect_uri'};
     $request{'client_site'} = delete $args{'client_site'} if exists $args{'client_site'};
-    $request{'audience'} = delete $args{'audience'} if exists $args{'audience'};
 
     return connect_rpc(
         service     => 'ntppool.auth.v1.AuthService',
