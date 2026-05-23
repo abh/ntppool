@@ -205,12 +205,16 @@ sub render_zone {
     my $zone = $result->{data}{zone};
     $self->tpl_param('vz', $zone);
 
-    # Fetch the zone's account for subscription checks (not current_account, which might be admin)
-    my $zone_account = NP::Model->account->fetch(id_token => $zone->{account_token});
-
-    # Set have_subscription flag for template (using zone's account, not current account)
-    my $have_subscription = $zone_account ? $zone_account->subscription_limits_not_exceeded($zone->{device_count}) : 0;
-    $self->tpl_param('have_subscription', $have_subscription);
+    # Check subscription status for the zone's account (not current_account, which might be admin)
+    my $account_token = $zone->{account_token};
+    my $sub_status    = $account_token ? get_account_subscription_status(
+        $self->api_auth_params,
+        account      => $account_token,
+        device_count => $zone->{device_count},
+    ) : undef;
+    my $sub_data  = ($sub_status && !$sub_status->{error}) ? $sub_status->{data} : {};
+    my $limits_ok = ($account_token && !$sub_data->{limits_exceeded}) ? 1 : 0;    # fail closed
+    $self->tpl_param('have_subscription', $limits_ok);
 
     # Set can_edit flag for template (zones can be edited unless Approved)
     $self->tpl_param('can_edit_zone', $zone->{status} ne 'Approved');
@@ -223,10 +227,10 @@ sub render_zone {
 
     # Get subscriptions from zone's account (not current account, which might be admin)
     my @subs = ();
-    if ($zone_account) {
+    if ($account_token) {
         my $subs_result = get_account_subscriptions(
             $self->api_auth_params,
-            account => $zone_account->id_token,
+            account => $account_token,
         );
         if ($subs_result->{data} && $subs_result->{data}{subscriptions}) {
             @subs = grep { $_->{live_subscription} } @{$subs_result->{data}{subscriptions}};
@@ -248,7 +252,7 @@ sub render_zone {
             $self->tpl_param('product_group_list', $group_list);
         }
 
-        unless ($zone_account && $zone_account->subscription_limits_not_exceeded($zone->{device_count})) {
+        unless ($limits_ok) {
             $self->tpl_param('need_subscription' => 1);
             if (@subs) {    # already have subscriptions, but it wasn't enough...
                 warn "need upgrade";
@@ -326,11 +330,18 @@ sub render_submit {
     return $self->render_zone($zone->{vendor_zone_id})
       unless $zone->{status} eq 'New';
 
-    # Fetch the zone's account for subscription checks
-    my $zone_account = NP::Model->account->fetch(id_token => $zone->{account_token});
+    # Check subscription status for the zone's account
+    my $account_token = $zone->{account_token};
+    my $sub_status    = $account_token ? get_account_subscription_status(
+        $self->api_auth_params,
+        account      => $account_token,
+        device_count => $zone->{device_count},
+    ) : undef;
+    my $sub_data = ($sub_status && !$sub_status->{error}) ? $sub_status->{data} : {};
 
     # Basic validation happens in the API, but check subscription requirements client-side
-    my $ok = $zone_account ? $zone_account->subscription_limits_not_exceeded($zone->{device_count}) : 0;
+    my $ok = ($account_token && !$sub_data->{limits_exceeded}) ? 1 : 0;    # fail closed
+    $self->tpl_param('have_subscription', $ok);
     my $errors;
     my $opensource_info = '';
 
@@ -352,7 +363,7 @@ sub render_submit {
 
             $errors->{missing_plan} =
               'Please choose a subscription plan or choose open source below'
-              unless ($zone_account && $zone_account->have_live_subscription);
+              unless ($sub_data->{has_live_subscription});
         }
 
         # warn "errors ", Data::Dump::pp($errors);

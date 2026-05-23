@@ -4,7 +4,7 @@ use NP::Model::TokenID;
 use base              qw(NP::Model::TokenID);
 use Combust::Config   ();
 use NP::CAPI::Account qw(get_account_server_verification_status);
-use NP::CAPI::Subscription qw(get_account_subscription_status get_account_subscriptions);
+use NP::CAPI::Subscription qw(get_account_subscription_status);
 use OpenTelemetry::Trace;
 use OpenTelemetry -all;
 use OpenTelemetry::Constants qw( SPAN_STATUS_ERROR );
@@ -122,22 +122,6 @@ sub have_live_subscription {
     }
 
     return $result->{data}{has_live_subscription} ? 1 : 0;
-}
-
-sub live_subscriptions {
-    my $self = shift;
-
-    my $result = get_account_subscriptions(
-        account => $self->id_token,
-    );
-
-    if ($result->{error}) {
-        warn "get_account_subscriptions error: $result->{error}";
-        warn "Trace ID: $result->{trace_id}" if $result->{trace_id};
-        return ();
-    }
-
-    return grep { $_->{live_subscription} } @{$result->{data}{subscriptions} || []};
 }
 
 sub subscription_limits_not_exceeded {
