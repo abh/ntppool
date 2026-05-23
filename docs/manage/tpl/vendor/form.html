@@ -10,7 +10,7 @@
     <form action="/manage/vendor/zone" method="post" accept-charset="utf-8">
         <div class="form-group">
             <fieldset>
-                <input type="hidden" name="id" value="[% vz.id || 'new' %]" />
+                <input type="hidden" name="id" value="[% vz.id_token || 'new' %]" />
                 <input type="hidden" name="a" value="[% combust.current_account.id_token %]">
                 <input type="hidden" name="auth_token" value="[% combust.auth_token %]">
 

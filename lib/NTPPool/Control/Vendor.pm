@@ -82,32 +82,15 @@ sub manage_dispatch {
     return NOT_FOUND;
 }
 
+# _get_id: read the 'id' request param and pass it through to the CAPI calls
+# unchanged. Accept a token (vz-...) or a purely numeric id (the Go API may
+# resolve numerics later); anything else returns undef and callers redirect to
+# /manage/vendor.
 sub _get_id {
-    my $self  = shift;
-    my $token = $self->req_param('id');
-    my $id    = $token =~ m/^vz-/ ? NP::Model::VendorZone->token_id($token) : $token;
-    return $id;
-}
-
-# _resolve_zone_token: Helper to convert ID parameter (numeric or token) to token format for API
-# Accepts: numeric ID or token ID (vz-xxx)
-# Returns: token ID (vz-xxx) for use with CAPI calls
-sub _resolve_zone_token {
-    my $self  = shift;
-    my $input = shift || $self->req_param('id');
-
-    return undef unless $input;
-
-    # If already a token, return as-is
-    return $input if $input =~ m/^vz-/;
-
-    # If numeric ID, convert to token
-    if ($input =~ m/^\d+$/) {
-
-        # Use NP::Model to convert numeric ID to token
-        return NP::Model::VendorZone->id_token($input);
-    }
-
+    my $self = shift;
+    my $id   = $self->req_param('id');
+    return undef unless defined $id;
+    return $id if $id =~ m/^vz-/ || $id =~ m/^\d+$/;
     return undef;
 }
 
@@ -182,10 +165,9 @@ sub render_zone {
     $mode ||= $self->req_param('mode') || '';
 
     # Fetch zone via API
-    my $token  = $self->_resolve_zone_token($id);
     my $result = get_vendor_zone(
         auth     => $self->plain_cookie($self->user_cookie_name),
-        id_token => $token,
+        id_token => $id,
         context  => $self->_get_request_context(),
     );
 
@@ -205,7 +187,8 @@ sub render_zone {
 
 # Check subscription status for the zone's account (not current_account, which might be admin)
     my $account_token = $zone->{account_token};
-    my $sub_status    = $account_token
+    my $sub_status =
+      $account_token
       ? get_account_subscription_status(
           $self->api_auth_params,
           account      => $account_token,
@@ -313,10 +296,9 @@ sub render_submit {
     my $id = $self->_get_id;
 
     # Fetch zone via API
-    my $token  = $self->_resolve_zone_token($id);
     my $result = get_vendor_zone(
         auth     => $self->plain_cookie($self->user_cookie_name),
-        id_token => $token,
+        id_token => $id,
         context  => $self->_get_request_context(),
     );
 
@@ -330,12 +312,13 @@ sub render_submit {
 
     my $zone = $result->{data}{zone};
 
-    return $self->render_zone($zone->{vendor_zone_id})
+    return $self->render_zone($zone->{id_token})
       unless $zone->{status} eq 'New';
 
     # Check subscription status for the zone's account
     my $account_token = $zone->{account_token};
-    my $sub_status    = $account_token
+    my $sub_status =
+      $account_token
       ? get_account_subscription_status(
           $self->api_auth_params,
           account      => $account_token,
@@ -375,7 +358,7 @@ sub render_submit {
 
         # warn "errors ", Data::Dump::pp($errors);
         $self->tpl_param('errors', $errors);
-        return $self->render_zone($zone->{vendor_zone_id});
+        return $self->render_zone($zone->{id_token});
     }
 
     # Submit zone via API
@@ -384,7 +367,7 @@ sub render_submit {
     my $submit_result = submit_vendor_zone(
         auth            => $self->plain_cookie($self->user_cookie_name),
         context         => $self->_get_request_context(),
-        id_token        => $token,
+        id_token        => $id,
         opensource      => $opensource,
         opensource_info => $opensource_info,
     );
@@ -395,7 +378,7 @@ sub render_submit {
           . " (trace: "
           . ($submit_result->{trace_id} || 'none') . ")";
         $self->tpl_param('errors', {general => $submit_result->{error}});
-        return $self->render_zone($zone->{vendor_zone_id});
+        return $self->render_zone($zone->{id_token});
     }
 
     $zone = $submit_result->{data}{zone};
@@ -478,8 +461,7 @@ sub _edit_zone {
     if ($id) {
 
         # Update existing zone
-        my $token = $self->_resolve_zone_token($id);
-        $result = update_vendor_zone(%zone_params, id_token => $token,);
+        $result = update_vendor_zone(%zone_params, id_token => $id,);
     }
     else {
         # Create new zone
@@ -577,10 +559,9 @@ sub render_subscription {
 
     # Fetch zone via API if ID provided
     if ($id) {
-        my $token  = $self->_resolve_zone_token($id);
         my $result = get_vendor_zone(
             auth     => $self->plain_cookie($self->user_cookie_name),
-            id_token => $token,
+            id_token => $id,
             context  => $self->_get_request_context(),
         );
 
@@ -743,10 +724,9 @@ sub render_admin {
     if (my $id = $self->_get_id) {
 
         # Fetch zone via API
-        my $token  = $self->_resolve_zone_token($id);
         my $result = get_vendor_zone(
             auth     => $self->plain_cookie($self->user_cookie_name),
-            id_token => $token,
+            id_token => $id,
             context  => $self->_get_request_context(),
         );
 
@@ -772,7 +752,7 @@ sub render_admin {
                 my $update_result = update_vendor_zone_status(
                     auth     => $self->plain_cookie($self->user_cookie_name),
                     context  => $self->_get_request_context(),
-                    id_token => $token,
+                    id_token => $id,
                     status   => 'Rejected',
                 );
 
@@ -794,7 +774,7 @@ sub render_admin {
                 my $update_result = update_vendor_zone_status(
                     auth     => $self->plain_cookie($self->user_cookie_name),
                     context  => $self->_get_request_context(),
-                    id_token => $token,
+                    id_token => $id,
                     status   => 'Approved',
                 );
 
