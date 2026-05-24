@@ -65,7 +65,7 @@ sub manage_dispatch {
     # Check if user has any vendor zones via API
     my $zones_result = list_vendor_zones(
         auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->id_token,
+        account => $self->current_account->{id_token},
         context => $self->_get_request_context(),
     );
 
@@ -468,7 +468,7 @@ sub _edit_zone {
     # Convert form parameters to hash for API
     my %zone_params = (
         auth                => $self->plain_cookie($self->user_cookie_name),
-        account             => $self->current_account->id_token,
+        account             => $self->current_account->{id_token},
         context             => $self->_get_request_context(),
         zone_name           => $zone_name,
         organization_name   => $self->req_param('organization_name')   || '',
@@ -729,10 +729,10 @@ sub render_billing {
     my $account = $self->current_account;
     return FORBIDDEN unless $account && $account->{permissions}{can_edit};
 
-    my $return_url = $self->manage_url('/manage/vendor', {a => $account->id_token});
+    my $return_url = $self->manage_url('/manage/vendor', {a => $account->{id_token}});
 
     return $self->redirect(
-        NP::Stripe::billing_portal_url($account->stripe_customer_id, $return_url));
+        NP::Stripe::billing_portal_url($account->{stripe_customer_id}, $return_url));
 }
 
 sub render_admin {
