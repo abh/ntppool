@@ -134,7 +134,7 @@ perl batch_translation_processor.pl -g romance --report romance_report.txt
 - `nordic`: Danish, Swedish, Norwegian (Bokmål & Nynorsk), Finnish
 - `romance`: Spanish, French, Italian, Portuguese, Romanian
 - `germanic`: German, Dutch
-- `slavic`: Czech, Polish, Russian, Ukrainian, Serbian, Bulgarian
+- `slavic`: Czech, Polish, Russian, Ukrainian, Serbian, Bulgarian, Slovak
 - `asian`: Japanese, Korean, Chinese, Hindi, Vietnamese
 - `middle_eastern`: Arabic, Persian, Hebrew, Turkish
 - `other`: Greek, Hungarian, Indonesian, Kazakh, Basque, Sinhala, Catalan

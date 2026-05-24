@@ -1,0 +1,128 @@
+[% page.title = 'Ako nastavím NTP, aby používal klaster?' %]
+
+<div class="block"> 
+	<h3 id="use">Ako použiť pool.ntp.org?</h3> 
+
+	<p> 
+	Ak chcete len synchronizovať systémový čas vášho počítača pomocou internetu,
+	stačí vám veľmi jednoduchý konfiguračný súbor (pre program ntpd z
+	<a  href="https://www.ntp.org/">dielne ntp.org</a>, na akomkoľvek 
+	podporovanom operačnom systéme - <b>Linuxe, *BSD, Windows a dokonca 
+	aj na niekoľkých exotickejších systémoch</b>): 
+	</p> 
+
+[% INCLUDE "ntppool/use/sample-config.html" %] 
+
+	<p> 
+	Mená 0, 1, 2 a 3.pool.ntp.org ukazujú na náhodne vybranú skupinu serverov, 
+	ktorá sa mení každú hodinu. Najskôr skontrolujte, či čas vášho počítača je
+	nastavený zmysluplne (v rozsahu niekoľkých minút od 'správneho' času) - 
+	môžete použiť <tt>ntpdate pool.ntp.org</tt>, alebo len použite príkaz 
+	<tt>date</tt> a nastavte čas podľa vašich hodiniek. Spustite ntpd, a za 
+	určitý čas (môže to trvať až pol hodiny!), by mal výstup príkazu 
+	<code>ntpq -pn</code> vyzerať podobne ako:
+	</p> 
+
+[% INCLUDE "ntppool/use/sample-ntpq.html" %] 
+
+	<p> 
+	IP adresy budú iné, pretože vám boli náhodne pridelené časové servery. 
+	Podstatné sú riadky začínajúce hviezdičkou (<tt>*</tt>), ktoré značia, 
+	že váš počítač dostáva časové informácie z internetu - a už sa o to nebudete 
+	musieť viac starať! 
+	</p> 
+	<p> 
+	Hľadanie adresy pre <code>pool.ntp.org</code> (alebo 
+	<code>0.pool.ntp.org</code>, <code>1.pool.ntp.org</code> atď.) zvyčajne 
+	vráti IP adresy serverov vo vašej krajine alebo v jej blízkosti. Pre väčšinu 
+	používateľov to bude znamenať najlepšie výsledky. 
+	</p> 
+
+	<p>Môžete tiež použiť <a href="/zone/@">zóny kontinentov</a> (Napríklad 
+	<a href="/zone/europe">europe</a>, 
+	<a href="/zone/north-america">north-america</a>, 
+	<a href="/zone/oceania">oceania</a> 
+	alebo <a href="/zone/asia">asia</a>.pool.ntp.org), 
+	a zóny krajín (teda sk.pool.ntp.org pre Slovensko) - vo všetkých týchto zónach 
+	môžete použiť opäť mená 0, 1 alebo 2, teda 0.sk.pool.ntp.org. Zóna zeme 
+	nemusí pre vašu krajinu existovať, alebo môže obsahovať len jeden alebo dva 
+	časové servery. 
+	</p> 
+	<p> 
+	Ak používate <b>novšiu verziu Windows</b>, môžete použiť vstavaný ntp 
+	klienta systému. Ako správca zadajte príkaz</p>
+	<pre class="code">
+	w32tm /config /syncfromflags:manual /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
+	</pre> 
+	<p> 
+	do príkazového riadka. Bude to fungovať vo Windows 2003 a novších. 
+	Ak používate staršiu verziu Windows, skúste</p>
+	<pre class="code">
+	net time /setsntp:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
+	</pre> 
+	<p> 
+	To isté dosiahnete, keď ako správca kliknete pravým tlačidlom na hodiny 
+	v stavovej lište, vyberiete 'Upraviť dátum a čas' a zadáte meno servera 
+	do záložky 'Čas siete'. 
+	</p> 
+
+	<p> 
+	Firma Meinberg vytvorila port 
+	<a href="http://www.meinberg.de/english/sw/ntp.htm">ntp démona pre Windows</a>. 
+	</p> 
+
+	<p> 
+	Ak je váš systém Windows súčasťou domény, možno nebudete môcť nezávisle 
+	nastavovať čas na vašom počítači. 
+
+	Viac informácií o nastavení času v systéme Windows nájdete na stránke 
+	<a href="https://technet.microsoft.com/en-us/library/cc773013%28WS.10%29.aspx">How 
+	Windows Time Service Works</a>. 
+	</p>
+</div>
+
+<div class="block"> 
+	<h3>Poznámky</h3> 
+	<p><span class="hook">Ak máte statickú IP adresu a rozumné pripojenie k 
+	internetu</span> (kapacita nie je až taká dôležitá, ale musí byť stabilná a 
+	nie príliš vyťažené), zvážte prosím pripojenie vášho systému k projektu. 
+	Neprídete o viac ako niekoľko sto bytov za sekundu a pomôžete tomuto projektu 
+	prežiť. Ďalšie informácie nájdete na <a href="/join.html">stránke venovanej 
+	informáciám o pripojení</a>, prosíme prečítajte si ju. 
+	</p> 
+
+	<p><span class="hook">Ak má váš poskytovateľ pripojenia k internetu časový
+	server</span>, alebo ak viete o dobrom časovom serveri vo vašej blízkosti,
+	mali by ste použiť ten a nie tento klaster - pravdepodobne dostanete presnejší
+	čas a použijete menej sieťových prostriedkov. Ak viete iba o jednom časovom
+	servera vo vašej blízkosti, môžete použiť ten a napríklad ďalšie dva z
+	pool.ntp.org a podobne.</p> 
+
+	<p><span class="hook">Zriedka sa môže stať, že dostanete pridelený rovnaký 
+	časový server dvakrát</span> - reštart ntp servera zvyčajne tento problém 
+	vyrieši. Ak používate zónu príslušnej krajiny, môže to byť spôsobené tým, že je 
+	v nej len jeden server - v tom prípade radšej použite zónu príslušného 
+	kontinentu. Jednotlivé <a href="/zone">zóny a ich obsah si môžete 
+	prezrieť</a>, aby ste vedeli koľko serverov máme priradených do danej zóny.</p> 
+
+	<p><span class="hook">Buďte priateľskí</span>. Vačšinu serverov poskytujú 
+	dobrovoľníci a takmer všetky servery sú v skutočnosti súborové servery 
+	alebo e-mailové servery alebo webové servery, na ktorých pridružene beží ešte 
+	ntp. Nepoužívajte prosím vo svojej konfigurácii viac ako štyri časové servery 
+	a nehrajte sa prosím s <tt>burst</tt> alebo <tt>minpoll</tt> - dosiahnete len 
+	zvýšenej záťaže na časových serveroch dobrovoľníkov.</p> 
+
+	<p><span class="hook">Uistite sa, že máte správne <i>nakonfigurovanú 
+	časovú zónu</i> vášho počítača</span>. Sám ntpd časovej zóny nepoužíva, 
+	pracuje len s UTC.</p> 
+
+	<p><span class="hook">Ak Synchronizujete nejakú sieť pomocou
+	pool.ntp.org</span>, nastavte si prosím jeden počítač ako časový server
+	(tento budete synchronizovať s našim poolom) a synchronizujte ostatné počítače
+	s ním. (Budete si musieť niečo prečítať - ale nie je to vôbec zložité.
+	A vždy je tu <a href="news:comp.protocols.time.ntp">
+	konferencia comp.protocols.time.ntp</a>.)</p> 
+
+	<p class="thanks">Na tomto mieste by sme radi poďakovali tým, ktorí venujú 
+	svoj čas a svoje časové servery nášmu projektu.</p>
+</div>
