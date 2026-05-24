@@ -209,6 +209,15 @@ sub current_account {
         warn "ValidateSession error: " . $result->{error};
         warn "Trace ID: " . $result->{trace_id} if $result->{trace_id};
 
+        # API unavailable (5xx or network error): don't mask this as "no
+        # account" — that would route the user to a misleading onboarding
+        # page. Flag a session error so init() returns a real server error.
+        # (4xx means an invalid/expired session, handled as logged-out.)
+        my $code = $result->{code} || 0;
+        if ($code >= 500 || $code == 0) {
+            $self->{_session_error} = SERVER_ERROR;
+        }
+
         # Cache both _user and _current_account as undef to prevent
         # repeated API calls when session validation fails
         $self->{_user} = undef;

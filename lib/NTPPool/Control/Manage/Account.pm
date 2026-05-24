@@ -2,7 +2,7 @@ package NTPPool::Control::Manage::Account;
 use strict;
 use NTPPool::Control::Manage;
 use base              qw(NTPPool::Control::Manage);
-use Combust::Constant qw(OK NOT_FOUND);
+use Combust::Constant qw(OK NOT_FOUND SERVER_ERROR);
 use NP::IntAPI        qw(int_api);
 use NP::CAPI::Account qw(
     get_account_users get_user_accounts get_account_invites
@@ -141,9 +141,28 @@ sub manage_dispatch {
     $account = $self->current_account unless $account;
 
     unless ($account) {
-        # No account means user has pending invitations
-        # (Go API auto-creates account if no invitations exist)
-        return $self->redirect("/manage/account/invites/");
+        # A non-logged-in request can reach here with a truthy-but-invalid
+        # user stub (validate_session returns valid:false at HTTP 200); send
+        # those to login rather than an account error.
+        return $self->login unless $self->is_logged_in;
+
+        # The Go API auto-creates an account at login when the user has none
+        # and no pending invitations. So a logged-in user with no account
+        # should only get here if they have an invitation to act on...
+        my $invites = $self->_user_invites($self->user);
+        if ($invites && @$invites) {
+            return $self->redirect("/manage/account/invites/");
+        }
+
+        # ...otherwise this is an unexpected backend state (e.g. the API
+        # returned no account when one should exist). Surface it as an error
+        # with the trace ID rather than a misleading "create an account" page.
+        warn "no account and no invites for logged-in user "
+          . ($self->user->{id_token} || '?');
+        $self->tpl_param('error',
+            'We could not load your account. Please try again; if this keeps happening, contact support with the trace ID below.'
+        );
+        return SERVER_ERROR, $self->evaluate_template('tpl/user/account_error.html');
     }
 
     # check access
