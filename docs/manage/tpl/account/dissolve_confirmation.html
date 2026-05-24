@@ -2,14 +2,7 @@
     <div class="col-md-10">
         <h3>Delete account: [% account.name | html %]</h3>
 
-        [% IF error %]
-        <div class="alert alert-danger">
-            [% error | html %]
-            [% IF trace_id %]
-            <div><small>Trace ID: <code>[% trace_id | html %]</code></small></div>
-            [% END %]
-        </div>
-        [% END %]
+        [% INCLUDE tpl/common/error_alert.html %]
 
         [% IF blockers && blockers.size > 0 %]
         <p>
