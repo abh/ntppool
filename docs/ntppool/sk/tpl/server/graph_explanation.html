@@ -1,0 +1,30 @@
+<div id="graph_explanation_box" class="graph_explanation [% graph_explanation ? 'visible' : '' %]">
+
+<h3>Grafické zobrazenia skóre</h3>
+<p>
+Systém klastra niekoľkokrát za hodinu skontroluje čas poskytovaný vaším serverom
+a porovná ho so svojim lokálnym časom. Body sú odpočítané, ak je server
+nedostupný alebo ak je rozdiel v čase väčší ako 100ms (vzhľadom k relatívne
+hrubému spôsobu merania monitorovacím systémom). Čím je rozdiel väčší, tým viac
+bodov je odpočítané.
+</p>
+
+<p>
+Toto je iba nástroj pre vizualizáciu trendov. Podrobnejšie záznamy a dáta
+monitorovacieho systému dostanete po kliknutí na odkaz CSV.
+</p>
+
+<h3>Graf rozdielov</h3>
+
+<p>
+Monitorovací systém pracuje zhruba ako <a
+href="https://www.ntp.org/ntpfaq/NTP-s-def/#412-what-is-sntp">SNTP</a> (<a
+href="https://www.eecis.udel.edu/~mills/database/rfc/rfc2030.txt">RFC
+2030</a>) klient, takže je viac citlivý na náhodné sieťové oneskorenie medzi
+serverom a monitorovacím systémom ako by bol skutočný ntpd klient. Inými
+slovami: Neznepokojujte sa občasným veľkým rozdielom a nepoužívajte tento
+rozdiel ako absolútne meradlo výkonnosti.
+</p>
+
+</div>
+

@@ -174,6 +174,11 @@ my %language_chars = (
         ],
         common_words => ['система', 'сервер', 'час', 'мережа'],
     },
+    'sk' => {
+        name => 'Slovak',
+        expected_chars => ['ľ', 'š', 'ď', 'č', 'ť', 'ž', 'ý', 'á', 'í', 'é', 'ô', 'ú', 'ä', 'ň', 'Ľ', 'Š', 'Ď', 'Č', 'Ť', 'Ž', 'Ý', 'Á', 'Í', 'É', 'Ô', 'Ú', 'Ň'],
+        common_words => ['slovenčina', 'systém', 'ďaľšie', 'vôkol', 'zvláštne'],
+    },
 );
 
 # HTML entities that should be native UTF-8 characters
