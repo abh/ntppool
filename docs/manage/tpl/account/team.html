@@ -11,8 +11,8 @@
                 <tr>
                     <td>[% user.email  | html %][% IF user.deletion_on %] <span class="badge badge-warning">scheduled for deletion</span>[% END %]</td>
                     <td>[% IF user.username && user.username != user.email; user.username | html; END %]</td>
-                    [% IF account.permissions.can_edit AND
-                         (combust.user_is_staff OR combust.user.id != user.user_id) %]
+                    [% IF account.permissions.can_edit AND users.size > 1 AND
+                         (combust.user_is_staff OR combust.user.user_id != user.user_id) %]
                     <td>
                         <button class="btn btn-outline-warning"
                             name="user_id" value="[% user.user_id %]" type="submit">
