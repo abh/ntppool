@@ -5,7 +5,7 @@ Status: Approved (design)
 
 ## Problem
 
-Editing a vendor zone that is already submitted ("Processing") leads to a dead
+Editing a vendor zone that is already submitted (status `Pending`) leads to a dead
 end: the user clicks "Continue" on the edit form, the save silently fails, and a
 blank form is shown with no error message.
 
@@ -42,7 +42,12 @@ Two distinct causes:
 
 Editable content fields: `zone_name`, `organization_name`,
 `request_information`, `device_count`, `device_information`,
-`contact_information`, `client_type`, `opensource_info`.
+`contact_information`, `client_type`, `opensource`, `opensource_info`.
+
+Note: `opensource` / `opensource_info` are currently *not* accepted by
+`UpdateVendorZone` (proto + SQL), even though `_edit_zone` already sends
+`opensource_info` — the param is silently dropped today. The Go API changes
+below add them to the update path.
 
 Never editable via the edit endpoint: `id`, `id_token`, `status`, `account_id`,
 `user_id`, `dns_root_id`, `approved_on`, `rt_ticket`, `created_on`,
@@ -73,6 +78,41 @@ works on the admin side (`UpdateVendorZoneStatus` allows `status IN
 
 ## Go API Changes (`~/src/go/ntp/api`)
 
+The dev environment is the only API consumer right now, so the proto can be
+refactored freely.
+
+### Shared content message (`proto/ntppool/vendorzone/v1/vendor.proto`)
+
+Today the editable content fields are duplicated inline across
+`RequestVendorZoneRequest`, `UpdateVendorZoneRequest`, and (partially)
+`SubmitVendorZoneRequest`, and `opensource`/`opensource_info` are missing from
+the update path entirely. Introduce one shared message:
+
+```proto
+message VendorZoneContent {
+  optional string zone_name = 1;
+  optional string organization_name = 2;
+  optional string request_information = 3;
+  optional int64  device_count = 4;
+  optional string device_information = 5;
+  optional string contact_information = 6;
+  optional string client_type = 7;
+  optional bool   opensource = 8;
+  optional string opensource_info = 9;
+}
+```
+
+- `UpdateVendorZoneRequest` becomes `{ string id_token; VendorZoneContent content }`
+  (partial update — only set fields are applied).
+- `SubmitVendorZoneRequest` becomes `{ string id_token; VendorZoneContent content }`,
+  so a resubmit can carry the user's corrections plus the opensource gate in one
+  call. Submit still applies the content (where provided) and transitions status.
+- `RequestVendorZoneRequest` keeps its current required-field shape for now
+  (adopting `VendorZoneContent` there would relax required→optional — out of
+  scope; noted as a follow-up).
+- Regenerate buf/protobuf and update the Perl CAPI client (`lib/NP/CAPI/*`) and
+  `_edit_zone` to send fields under `content` instead of flat params.
+
 ### `UpdateVendorZone` (`server/api/vendorzone/update.go` + `sql/vendor_zones.sql`)
 
 - Remove the blanket `status='New'` gate.
@@ -82,17 +122,25 @@ works on the admin side (`UpdateVendorZoneStatus` allows `status IN
   - If `status == 'Approved'` (admin) → reject any `zone_name` change with
     `InvalidArgument` ("zone name cannot be changed after approval"); other
     content fields update normally.
-- SQL `UpdateVendorZone`: drop `AND status='New'`. Status/role enforcement lives
-  in Go (zone already fetched). Keep the zone-name uniqueness check.
+- Read content fields from `req.Msg.Content.*` instead of the old flat fields.
+- SQL `UpdateVendorZone`: drop `AND status='New'`; add `opensource` and
+  `opensource_info` to the `COALESCE`-guarded SET list. Status/role enforcement
+  lives in Go (zone already fetched). Keep the zone-name uniqueness check.
 
 ### `SubmitVendorZone` (`server/api/vendorzone/submit.go` + SQL)
 
 - Change the Go status check and SQL `WHERE` clause from `status='New'` to
   `status IN ('New','Rejected')`. Update the rejection message accordingly.
+- Apply any `req.Msg.Content` fields (including `opensource`/`opensource_info`)
+  before the status transition, reusing the same update query/path as
+  `UpdateVendorZone` so the two stay consistent. The opensource-required
+  validation still applies at submit.
 
 ### Codegen + tests
 
-- Regenerate sqlc (`go tool sqlc generate`); stage all generated files.
+- Regenerate protobuf (buf) for the new `VendorZoneContent` message and the
+  reshaped Update/Submit requests, then sqlc (`go tool sqlc generate`); stage all
+  generated files.
 - Update integration tests that assert "updates blocked after submission"
   (e.g. `workflow_integration_test.go`, `update_integration_test.go`) to match
   the new matrix; add cases for: user editing Pending, user editing + resubmit
@@ -127,7 +175,9 @@ works on the admin side (`UpdateVendorZoneStatus` allows `status IN
   `errors => { general => $result->{error}, trace_id => $result->{trace_id} }`
   (merging any field-specific errors the API returns). Covers `_edit_zone`,
   `render_submit`, `render_zone`, and the admin/subscription paths.
-- `_edit_zone`: on error, return the errors hashref and re-fetch the current
+- `_edit_zone`: send content fields nested under `content` (matching the new
+  proto) rather than flat params; this also fixes the silently-dropped
+  `opensource_info`. On error, return the errors hashref and re-fetch the current
   zone (via `get_vendor_zone`) so `render_form` keeps the user's context instead
   of rendering a blank "new zone" form.
 - `render_edit_json`: error shape becomes the hashref (general + trace_id);
