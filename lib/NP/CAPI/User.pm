@@ -53,11 +53,14 @@ Replaces Perl: $user->name($new_name); $user->username($new_username); $user->sa
     # CancelUserDeletion cancels a scheduled user deletion.
 
 Authentication: Required via session middleware (sessions.GetUser).
-Authorization: User can only cancel own deletion.
+Authorization: User can cancel own deletion; staff can cancel any user's
+deletion via id_token (requires support_staff privilege).
 
 Side Effects:
 - Clears deletion_on timestamp
 - Deletes any pending deletion tasks (via DeleteUserDeletionTasks)
+- When staff acts on another user, writes an audit log row to each of the
+target user's accounts naming the acting staff user.
 
 Replaces Perl: $user->deletion_on(undef); $user->save()
 Used in Auth0 login flow (auto-cancel deletion on login)
@@ -69,10 +72,17 @@ Used in Auth0 login flow (auto-cancel deletion on login)
     # ScheduleUserDeletion schedules a user for deletion at a future date.
 
 Authentication: Required via session middleware (sessions.GetUser).
-Authorization: User can only schedule own deletion.
+Authorization: User can schedule own deletion; staff can schedule any
+user's deletion via id_token (requires support_staff
+privilege).
 
 Validation:
 - deletion_on_unix must be at least 7 days in the future
+
+Side Effects:
+- Sets deletion_on timestamp
+- When staff acts on another user, writes an audit log row to each of the
+target user's accounts naming the acting staff user.
 
 Replaces Perl: $user->deletion_on($date); $user->save()
     my $result = schedule_user_deletion(
@@ -414,11 +424,14 @@ sub update_user {
 CancelUserDeletion cancels a scheduled user deletion.
 
 Authentication: Required via session middleware (sessions.GetUser).
-Authorization: User can only cancel own deletion.
+Authorization: User can cancel own deletion; staff can cancel any user's
+deletion via id_token (requires support_staff privilege).
 
 Side Effects:
 - Clears deletion_on timestamp
 - Deletes any pending deletion tasks (via DeleteUserDeletionTasks)
+- When staff acts on another user, writes an audit log row to each of the
+target user's accounts naming the acting staff user.
 
 Replaces Perl: $user->deletion_on(undef); $user->save()
 Used in Auth0 login flow (auto-cancel deletion on login)
@@ -428,6 +441,9 @@ B<Arguments:>
     my $result = cancel_user_deletion(
         $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
         account => $account->{id_token},  # Optional: Account selection token
+        id_token => $value,       # string - id_token optionally specifies which user to cancel deletion for.
+ If omitted, cancels the authenticated user's deletion.
+ If provided, requires support_staff privilege.
     );
 
 B<Returns:>
@@ -451,7 +467,9 @@ Hashref with structure:
  Empty string means not scheduled for deletion
                 created_on => ...,  # string - created_on is when the user was created (RFC3339 format)
                 modified_on => ...,  # string - modified_on is when the user was last modified (RFC3339 format)
-            },  # hashref (User) - user is the complete updated user object (deletion_on cleared)
+            },  # hashref (User) - user is the complete updated user object for the *target* user
+ (deletion_on cleared). When staff acts on another user this is the
+ target, not the caller.
  Perl MUST use this data, NOT reload from database
         },
         error        => undef,       # Error message (if any)
@@ -471,7 +489,9 @@ success indicates if the cancellation was successful
 
 =item * B<user> (hashref (User))
 
-user is the complete updated user object (deletion_on cleared)
+user is the complete updated user object for the *target* user
+ (deletion_on cleared). When staff acts on another user this is the
+ target, not the caller.
  Perl MUST use this data, NOT reload from database
 
 
@@ -505,6 +525,7 @@ sub cancel_user_deletion {
 
     # Extract request fields from args
     my %request = ();
+    $request{'id_token'} = delete $args{'id_token'} if exists $args{'id_token'};
 
     return connect_rpc(
         service     => 'ntppool.user.v1.UserService',
@@ -520,10 +541,17 @@ sub cancel_user_deletion {
 ScheduleUserDeletion schedules a user for deletion at a future date.
 
 Authentication: Required via session middleware (sessions.GetUser).
-Authorization: User can only schedule own deletion.
+Authorization: User can schedule own deletion; staff can schedule any
+user's deletion via id_token (requires support_staff
+privilege).
 
 Validation:
 - deletion_on_unix must be at least 7 days in the future
+
+Side Effects:
+- Sets deletion_on timestamp
+- When staff acts on another user, writes an audit log row to each of the
+target user's accounts naming the acting staff user.
 
 Replaces Perl: $user->deletion_on($date); $user->save()
 
@@ -534,6 +562,9 @@ B<Arguments:>
         account => $account->{id_token},  # Optional: Account selection token
         deletion_on_unix => $value,       # int - deletion_on_unix is the Unix timestamp when user should be deleted
  Must be at least 7 days (604800 seconds) in the future
+        id_token => $value,       # string - id_token optionally specifies which user to schedule for deletion.
+ If omitted, schedules the authenticated user.
+ If provided, requires support_staff privilege.
     );
 
 B<Returns:>
@@ -557,7 +588,9 @@ Hashref with structure:
  Empty string means not scheduled for deletion
                 created_on => ...,  # string - created_on is when the user was created (RFC3339 format)
                 modified_on => ...,  # string - modified_on is when the user was last modified (RFC3339 format)
-            },  # hashref (User) - user is the complete updated user object (with deletion_on set)
+            },  # hashref (User) - user is the complete updated user object for the *target* user
+ (with deletion_on set). When staff acts on another user this is the
+ target, not the caller.
  Perl MUST use this data, NOT reload from database
         },
         error        => undef,       # Error message (if any)
@@ -577,7 +610,9 @@ success indicates if the scheduling was successful
 
 =item * B<user> (hashref (User))
 
-user is the complete updated user object (with deletion_on set)
+user is the complete updated user object for the *target* user
+ (with deletion_on set). When staff acts on another user this is the
+ target, not the caller.
  Perl MUST use this data, NOT reload from database
 
 
@@ -612,6 +647,7 @@ sub schedule_user_deletion {
     # Extract request fields from args
     my %request = ();
     $request{'deletion_on_unix'} = delete $args{'deletion_on_unix'} if exists $args{'deletion_on_unix'};
+    $request{'id_token'} = delete $args{'id_token'} if exists $args{'id_token'};
 
     return connect_rpc(
         service     => 'ntppool.user.v1.UserService',
