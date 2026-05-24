@@ -160,7 +160,7 @@ sub manage_dispatch {
         warn "no account and no invites for logged-in user "
           . ($self->user->{id_token} || '?');
         $self->tpl_param('error',
-            'We could not load your account. Please try again; if this keeps happening, contact support with the trace ID below.'
+            'We could not load your account. Please try logging in again. If this keeps happening, contact support and include the trace ID below.'
         );
         return SERVER_ERROR, $self->evaluate_template('tpl/user/account_error.html');
     }
