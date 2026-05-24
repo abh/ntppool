@@ -2,6 +2,8 @@
     <div class="col-md-10">
         <h3>[% user.email | html %]</h3>
 
+        [% INCLUDE tpl/common/error_alert.html %]
+
         [% IF delete_available %]
         <p>
         Click the delete button below to continue to schedule your

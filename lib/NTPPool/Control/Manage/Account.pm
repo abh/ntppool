@@ -744,31 +744,32 @@ sub render_user_delete {
 
     if ($self->request->method eq 'post') {
 
-        # Schedule deletion 7 days from now (minimum allowed by API)
-        my $deletion_time = DateTime->now->add(days => 7);
-
         my $result = schedule_user_deletion(
             $self->api_auth_params,
-            deletion_on_unix => $deletion_time->epoch,
             ($is_self ? () : (id_token => $target_id_token)),
         );
 
         if ($result->{error}) {
             warn "Failed to schedule user deletion: " . $result->{error};
             warn "Trace ID: " . $result->{trace_id} if $result->{trace_id};
-            return $self->render_error(
-                "Failed to schedule account deletion. Please try again.");
+            $self->tpl_param('error',
+                "Failed to schedule account deletion: " . $result->{error});
+            $self->tpl_param('trace_id', $result->{trace_id});
+            return OK,
+              $self->evaluate_template('tpl/user/delete_confirmation.html');
         }
 
         # Use the updated user data from API response
         my $updated_user = $result->{data}{user};
 
-        # Create delete task via API (using same deletion time)
+        # The user_tasks worker triggers on execute_on <= NOW(); pick a value
+        # >= the API's scheduled deletion_on so the task fires no earlier than
+        # the real deletion time.
         my $data = create_user_task(
             $self->api_auth_params,
             task_type       => 'delete',
             status          => '',
-            execute_on_unix => $deletion_time->epoch,
+            execute_on_unix => DateTime->now->add(days => 7)->epoch,
         );
 
         if ($data->{error}) {
@@ -830,29 +831,32 @@ sub render_account_dissolve {
         if ($result->{error}) {
             warn "Failed to cancel account deletion: " . $result->{error};
             warn "Trace ID: " . $result->{trace_id} if $result->{trace_id};
-            return $self->render_error(
-                "Could not cancel scheduled deletion.");
+            $self->tpl_param('error',
+                "Could not cancel scheduled deletion: " . $result->{error});
+            $self->tpl_param('trace_id', $result->{trace_id});
+            return OK,
+              $self->evaluate_template('tpl/account/dissolve_confirmation.html');
         }
 
         return $self->redirect(
             $self->manage_url('/manage/account', {a => $account->{id_token}}));
     }
 
-    # Schedule a deletion 7 days out
+    # Schedule a deletion. The API picks the deletion date (fixed 7-day delay).
     if ($self->request->method eq 'post') {
-        my $deletion_time = DateTime->now->add(days => 7);
-
         my $result = schedule_account_deletion(
             $self->api_auth_params,
             account_id_token => $account->{id_token},
-            deletion_on_unix => $deletion_time->epoch,
         );
 
         if ($result->{error}) {
             warn "Failed to schedule account deletion: " . $result->{error};
             warn "Trace ID: " . $result->{trace_id} if $result->{trace_id};
-            return $self->render_error(
-                "Could not schedule deletion.");
+            $self->tpl_param('error',
+                "Could not schedule deletion: " . $result->{error});
+            $self->tpl_param('trace_id', $result->{trace_id});
+            return OK,
+              $self->evaluate_template('tpl/account/dissolve_confirmation.html');
         }
 
         my $data = $result->{data} || {};

@@ -2,6 +2,8 @@
     <div class="col-md-10">
         <h3>Delete account: [% account.name | html %]</h3>
 
+        [% INCLUDE tpl/common/error_alert.html %]
+
         [% IF blockers && blockers.size > 0 %]
         <p>
             <span class="badge badge-danger">Cannot schedule deletion</span>

@@ -76,8 +76,7 @@ Authorization: User can schedule own deletion; staff can schedule any
 user's deletion via id_token (requires support_staff
 privilege).
 
-Validation:
-- deletion_on_unix must be at least 7 days in the future
+The server schedules deletion at a fixed delay (7 days) from receipt.
 
 Side Effects:
 - Sets deletion_on timestamp
@@ -545,8 +544,7 @@ Authorization: User can schedule own deletion; staff can schedule any
 user's deletion via id_token (requires support_staff
 privilege).
 
-Validation:
-- deletion_on_unix must be at least 7 days in the future
+The server schedules deletion at a fixed delay (7 days) from receipt.
 
 Side Effects:
 - Sets deletion_on timestamp
@@ -560,8 +558,6 @@ B<Arguments:>
     my $result = schedule_user_deletion(
         $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
         account => $account->{id_token},  # Optional: Account selection token
-        deletion_on_unix => $value,       # int - deletion_on_unix is the Unix timestamp when user should be deleted
- Must be at least 7 days (604800 seconds) in the future
         id_token => $value,       # string - id_token optionally specifies which user to schedule for deletion.
  If omitted, schedules the authenticated user.
  If provided, requires support_staff privilege.
@@ -646,7 +642,6 @@ sub schedule_user_deletion {
 
     # Extract request fields from args
     my %request = ();
-    $request{'deletion_on_unix'} = delete $args{'deletion_on_unix'} if exists $args{'deletion_on_unix'};
     $request{'id_token'} = delete $args{'id_token'} if exists $args{'id_token'};
 
     return connect_rpc(
