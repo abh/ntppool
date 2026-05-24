@@ -1,6 +1,6 @@
 package NTPPool::Control::Vendor;
 use strict;
-use parent qw(NTPPool::Control::Manage);
+use parent            qw(NTPPool::Control::Manage);
 use Combust::Constant qw(OK NOT_FOUND FORBIDDEN);
 use NP::Email         ();
 use Email::Stuffer    ();
@@ -65,7 +65,7 @@ sub manage_dispatch {
     # Check if user has any vendor zones via API
     my $zones_result = list_vendor_zones(
         auth    => $self->plain_cookie($self->user_cookie_name),
-        account => $self->current_account->id_token,
+        account => $self->current_account->{id_token},
         context => $self->_get_request_context(),
     );
 
@@ -91,6 +91,12 @@ sub _get_id {
     return undef unless defined $id;
     return $id if $id =~ m/^vz-/ || $id =~ m/^\d+$/;
     return undef;
+}
+
+sub can_edit_zone {
+    my ($self, $zone) = @_;
+    return 1 if $self->user_is_vendor_admin;
+    return $zone->{status} ne 'Approved';
 }
 
 sub render_form {
@@ -165,8 +171,7 @@ sub render_zones {
       ($status_result->{data} && !$status_result->{error})
       ? $status_result->{data}
       : {};
-    $self->tpl_param('have_subscription',
-        $status_data->{has_live_subscription} ? 1 : 0);
+    $self->tpl_param('have_subscription', $status_data->{has_live_subscription} ? 1 : 0);
 
     my $subs_result = get_account_subscriptions($self->api_auth_params,
         account => $self->current_account->{id_token},);
@@ -222,12 +227,12 @@ sub render_zone {
       ($account_token && !$sub_data->{limits_exceeded}) ? 1 : 0;    # fail closed
     $self->tpl_param('have_subscription', $limits_ok);
 
-    # Set can_edit flag for template (zones can be edited unless Approved)
-    $self->tpl_param('can_edit_zone', $zone->{status} ne 'Approved');
+    $self->tpl_param('can_edit_zone',   $self->can_edit_zone($zone));
+    $self->tpl_param('is_vendor_admin', $self->user_is_vendor_admin ? 1 : 0);
 
-    # For edit mode, check if user can edit (API handles permission, but check status)
+    # For edit mode, render the form when editable (API enforces the details)
     return $self->render_form($zone)
-      if $mode eq 'edit' && $zone->{status} ne 'Approved';
+      if $mode eq 'edit' && $self->can_edit_zone($zone);
 
     my $device_count = $zone->{device_count} || 0;
 
@@ -335,7 +340,7 @@ sub render_submit {
     my $zone = $result->{data}{zone};
 
     return $self->render_zone($zone->{id_token})
-      unless $zone->{status} eq 'New';
+      unless $zone->{status} eq 'New' || $zone->{status} eq 'Rejected';
 
     # Check subscription status for the zone's account
     my $account_token = $zone->{account_token};
@@ -387,11 +392,13 @@ sub render_submit {
     my $opensource =
       $self->req_param('opensource_request') ? JSON::XS::true : JSON::XS::false;
     my $submit_result = submit_vendor_zone(
-        auth            => $self->plain_cookie($self->user_cookie_name),
-        context         => $self->_get_request_context(),
-        id_token        => $id,
-        opensource      => $opensource,
-        opensource_info => $opensource_info,
+        auth     => $self->plain_cookie($self->user_cookie_name),
+        context  => $self->_get_request_context(),
+        id_token => $id,
+        content  => {
+            opensource      => $opensource,
+            opensource_info => $opensource_info,
+        },
     );
 
     if ($submit_result->{error}) {
@@ -399,7 +406,12 @@ sub render_submit {
           . $submit_result->{error}
           . " (trace: "
           . ($submit_result->{trace_id} || 'none') . ")";
-        $self->tpl_param('errors', {general => $submit_result->{error}});
+        $self->tpl_param(
+            'errors',
+            {   general  => $submit_result->{error},
+                trace_id => $submit_result->{trace_id}
+            }
+        );
         return $self->render_zone($zone->{id_token});
     }
 
@@ -462,32 +474,32 @@ sub _edit_zone {
     my $zone_name = lc($self->req_param('zone_name') || '');
     $zone_name =~ s/[^a-z0-9-]+//g;
 
-    my @fields =
-      qw(organization_name request_information device_information contact_information device_count opensource_info);
-
-    # Convert form parameters to hash for API
-    my %zone_params = (
-        auth                => $self->plain_cookie($self->user_cookie_name),
-        account             => $self->current_account->id_token,
-        context             => $self->_get_request_context(),
+    my %content = (
         zone_name           => $zone_name,
         organization_name   => $self->req_param('organization_name')   || '',
         request_information => $self->req_param('request_information') || '',
         device_information  => $self->req_param('device_information')  || '',
         contact_information => $self->req_param('contact_information') || '',
         device_count        => 0 + int($self->req_param('device_count') || 0),
-        opensource_info     => $self->req_param('opensource_info') || '',
+    );
+
+    # opensource / opensource_info are not part of the edit form; they are set
+    # in the submit flow (render_submit). Sending opensource_info here would
+    # blank a stored value and, for opensource zones, fail update validation.
+
+    my %auth = (
+        auth    => $self->plain_cookie($self->user_cookie_name),
+        account => $self->current_account->{id_token},
+        context => $self->_get_request_context(),
     );
 
     my $result;
     if ($id) {
-
-        # Update existing zone
-        $result = update_vendor_zone(%zone_params, id_token => $id,);
+        $result = update_vendor_zone(%auth, id_token => $id, content => \%content);
     }
     else {
-        # Create new zone
-        $result = request_vendor_zone(%zone_params);
+        # request_vendor_zone keeps its flat shape (proto unchanged)
+        $result = request_vendor_zone(%auth, %content);
     }
 
     if ($result->{error}) {
@@ -496,13 +508,19 @@ sub _edit_zone {
           . " (trace: "
           . ($result->{trace_id} || 'none') . ")";
 
-        # Return zone data if available, otherwise undef, plus error
-        my $zone = $result->{data} ? $result->{data}{zone} : undef;
-        return $zone, [$result->{error}];
+        my $zone;
+        if ($id) {
+            my $fetch = get_vendor_zone(
+                auth     => $self->plain_cookie($self->user_cookie_name),
+                id_token => $id,
+                context  => $self->_get_request_context(),
+            );
+            $zone = $fetch->{data} ? $fetch->{data}{zone} : undef;
+        }
+        return $zone, {general => $result->{error}, trace_id => $result->{trace_id}};
     }
 
-    my $zone = $result->{data}{zone};
-    return $zone;
+    return $result->{data}{zone};
 }
 
 sub _update_subscription {
@@ -729,10 +747,10 @@ sub render_billing {
     my $account = $self->current_account;
     return FORBIDDEN unless $account && $account->{permissions}{can_edit};
 
-    my $return_url = $self->manage_url('/manage/vendor', {a => $account->id_token});
+    my $return_url = $self->manage_url('/manage/vendor', {a => $account->{id_token}});
 
     return $self->redirect(
-        NP::Stripe::billing_portal_url($account->stripe_customer_id, $return_url));
+        NP::Stripe::billing_portal_url($account->{stripe_customer_id}, $return_url));
 }
 
 sub render_admin {
@@ -783,6 +801,12 @@ sub render_admin {
                       . $update_result->{error}
                       . " (trace: "
                       . ($update_result->{trace_id} || 'none') . ")";
+                    $self->tpl_param(
+                        'errors',
+                        {   general  => $update_result->{error},
+                            trace_id => $update_result->{trace_id}
+                        }
+                    );
                 }
                 else {
                     $zone = $update_result->{data}{zone};
@@ -805,6 +829,12 @@ sub render_admin {
                       . $update_result->{error}
                       . " (trace: "
                       . ($update_result->{trace_id} || 'none') . ")";
+                    $self->tpl_param(
+                        'errors',
+                        {   general  => $update_result->{error},
+                            trace_id => $update_result->{trace_id}
+                        }
+                    );
                 }
                 else {
                     $zone = $update_result->{data}{zone};

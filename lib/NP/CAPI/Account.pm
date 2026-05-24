@@ -29,6 +29,8 @@ our @EXPORT_OK = qw(
     resend_account_invite
     get_account
     can_delete_account
+    schedule_account_deletion
+    cancel_account_deletion
     check_user_deletion_eligibility
     get_public_account_by_username
     get_related_accounts
@@ -69,7 +71,7 @@ NP::CAPI::Account - ConnectRPC client for AccountService
 
 =head1 SYNOPSIS
 
-    use NP::CAPI::Account qw(get_account_status validate_session delete_session create_account update_account remove_user_from_account create_user_task list_user_tasks get_user_task get_account_server_verification_status get_accounts_to_notify get_account_users get_user_accounts get_account_invites create_account_invite accept_account_invite resend_account_invite get_account can_delete_account check_user_deletion_eligibility get_public_account_by_username get_related_accounts who_am_i);
+    use NP::CAPI::Account qw(get_account_status validate_session delete_session create_account update_account remove_user_from_account create_user_task list_user_tasks get_user_task get_account_server_verification_status get_accounts_to_notify get_account_users get_user_accounts get_account_invites create_account_invite accept_account_invite resend_account_invite get_account can_delete_account schedule_account_deletion cancel_account_deletion check_user_deletion_eligibility get_public_account_by_username get_related_accounts who_am_i);
     # GetAccountStatus returns the current monitor eligibility and status for an account.
 Authentication is handled by middleware - the account is extracted from the session context.
     my $result = get_account_status(
@@ -216,6 +218,27 @@ Authorization: User must have access to the account.
 Authentication: Required via session middleware.
 Authorization: User must have access to the account being checked.
     my $result = can_delete_account(
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
+    );
+
+    # ScheduleAccountDeletion sets accounts.deletion_on so a background task
+will permanently remove the account at that time.
+Authentication: Required via session middleware.
+Authorization: Staff only (support_staff privilege).
+Behavior: validates eligibility (no active servers, vendor zones, active
+monitors, or members who would be orphaned) and that deletion_on is at
+least 7 days in the future. Returns blockers without writing when any
+are present. On success writes an audit log row naming the acting staff.
+    my $result = schedule_account_deletion(
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
+    );
+
+    # CancelAccountDeletion clears accounts.deletion_on.
+Authentication: Required via session middleware.
+Authorization: Staff only (support_staff privilege).
+    my $result = cancel_account_deletion(
         $self->api_auth_params,      # Provides auth and context
         account => $account->{id_token},
     );
@@ -451,6 +474,9 @@ Hashref with structure:
                 url => ...,  # string - Computed fields (always included)
                 public_url => ...,  # string
                 display_name => ...,  # string
+                deletion_on => ...,  # string - deletion_on is the RFC3339 timestamp when the account is scheduled for
+ deletion by the accountdelete background task. Unset when no deletion
+ is scheduled.
                 subscription_summary => ...,  # hashref (SubscriptionSummary) - Subscription summary (computed from account_subscriptions)
             },  # hashref (AccountContext) - account is the current account context (specified or default)
  Omitted if user has no accounts or account is inaccessible
@@ -1858,6 +1884,9 @@ Hashref with structure:
                 url => ...,  # string - Computed fields (always included)
                 public_url => ...,  # string
                 display_name => ...,  # string
+                deletion_on => ...,  # string - deletion_on is the RFC3339 timestamp when the account is scheduled for
+ deletion by the accountdelete background task. Unset when no deletion
+ is scheduled.
                 subscription_summary => ...,  # hashref (SubscriptionSummary) - Subscription summary (computed from account_subscriptions)
             },  # hashref (AccountContext) - Core account with computed fields (always included)
             permissions => {
@@ -2125,6 +2154,191 @@ sub can_delete_account {
     return connect_rpc(
         service     => 'ntppool.account.v1.AccountService',
         method      => 'CanDeleteAccount',
+        request     => \%request,
+        %args  # Pass through auth, account, context
+    );
+}
+
+
+=head2 schedule_account_deletion
+
+ScheduleAccountDeletion sets accounts.deletion_on so a background task
+will permanently remove the account at that time.
+Authentication: Required via session middleware.
+Authorization: Staff only (support_staff privilege).
+Behavior: validates eligibility (no active servers, vendor zones, active
+monitors, or members who would be orphaned) and that deletion_on is at
+least 7 days in the future. Returns blockers without writing when any
+are present. On success writes an audit log row naming the acting staff.
+
+B<Arguments:>
+
+    my $result = schedule_account_deletion(
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
+        account_id_token => $value,       # string - id_token of the account to schedule for deletion.
+        deletion_on_unix => $value,       # int - Unix timestamp for when deletion should occur (must be >= now + 7 days).
+    );
+
+B<Returns:>
+
+Hashref with structure:
+
+    {
+        code         => 200,         # HTTP status code
+        status_line  => "200 OK",    # HTTP status text
+        connect_code => undef,       # ConnectRPC error code (or undef)
+        data         => {            # Response data
+            scheduled => ...,  # bool - True iff deletion was scheduled. False when blockers are present.
+            blockers => [...]  # arrayref[string],  # arrayref[string] - Human-readable blockers when scheduled=false.
+            details => {
+                active_servers_count => ...,  # int - active_servers_count is the number of servers not scheduled for deletion
+                vendor_zones_count => ...,  # int - vendor_zones_count is the number of vendor zones (any status)
+                active_monitors_count => ...,  # int - active_monitors_count is the number of monitors with status != 'deleted'
+                has_other_users => ...,  # bool - has_other_users indicates if account has other non-deleted users
+            },  # hashref (DeletionBlockDetails) - Structured details for UI (reuse DeletionBlockDetails).
+            orphaned_user_emails => [...]  # arrayref[string],  # arrayref[string] - Emails of members who would be orphaned by deletion.
+            deletion_on => ...,  # string - RFC3339 deletion_on timestamp when scheduled=true.
+        },
+        error        => undef,       # Error message (if any)
+        trace_id     => "...",       # OpenTelemetry trace ID
+    }
+
+B<Response Data Structure:>
+
+The C<data> field contains:
+
+=over 4
+
+=item * B<scheduled> (bool)
+
+True iff deletion was scheduled. False when blockers are present.
+
+
+=item * B<blockers> (arrayref[string])
+
+Human-readable blockers when scheduled=false.
+
+
+=item * B<details> (hashref (DeletionBlockDetails))
+
+Structured details for UI (reuse DeletionBlockDetails).
+
+
+=item * B<orphaned_user_emails> (arrayref[string])
+
+Emails of members who would be orphaned by deletion.
+
+
+=item * B<deletion_on> (string)
+
+RFC3339 deletion_on timestamp when scheduled=true.
+
+
+=back
+
+B<ConnectRPC Error Codes:>
+
+    unauthenticated, permission_denied, internal, invalid_argument, etc.
+
+B<Example:>
+
+    my $result = schedule_account_deletion(
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
+    );
+
+    if ($result->{error}) {
+        warn "Error: $result->{error}";
+    } else {
+        my $data = $result->{data};
+        # Use response fields...
+    }
+
+=cut
+
+sub schedule_account_deletion {
+    my $validation_error = validate_key_value_args('schedule_account_deletion', @_);
+    return $validation_error if $validation_error;
+
+    my %args = @_;
+
+    # Extract request fields from args
+    my %request = ();
+    $request{'account_id_token'} = delete $args{'account_id_token'} if exists $args{'account_id_token'};
+    $request{'deletion_on_unix'} = delete $args{'deletion_on_unix'} if exists $args{'deletion_on_unix'};
+
+    return connect_rpc(
+        service     => 'ntppool.account.v1.AccountService',
+        method      => 'ScheduleAccountDeletion',
+        request     => \%request,
+        %args  # Pass through auth, account, context
+    );
+}
+
+
+=head2 cancel_account_deletion
+
+CancelAccountDeletion clears accounts.deletion_on.
+Authentication: Required via session middleware.
+Authorization: Staff only (support_staff privilege).
+
+B<Arguments:>
+
+    my $result = cancel_account_deletion(
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
+        account_id_token => $value,       # string
+    );
+
+B<Returns:>
+
+Hashref with structure:
+
+    {
+        code         => 200,         # HTTP status code
+        status_line  => "200 OK",    # HTTP status text
+        connect_code => undef,       # ConnectRPC error code (or undef)
+        data         => {            # Response data
+            success => ...,  # bool
+        },
+        error        => undef,       # Error message (if any)
+        trace_id     => "...",       # OpenTelemetry trace ID
+    }
+
+B<ConnectRPC Error Codes:>
+
+    unauthenticated, permission_denied, internal, invalid_argument, etc.
+
+B<Example:>
+
+    my $result = cancel_account_deletion(
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
+    );
+
+    if ($result->{error}) {
+        warn "Error: $result->{error}";
+    } else {
+        my $data = $result->{data};
+        # Use response fields...
+    }
+
+=cut
+
+sub cancel_account_deletion {
+    my $validation_error = validate_key_value_args('cancel_account_deletion', @_);
+    return $validation_error if $validation_error;
+
+    my %args = @_;
+
+    # Extract request fields from args
+    my %request = ();
+    $request{'account_id_token'} = delete $args{'account_id_token'} if exists $args{'account_id_token'};
+
+    return connect_rpc(
+        service     => 'ntppool.account.v1.AccountService',
+        method      => 'CancelAccountDeletion',
         request     => \%request,
         %args  # Pass through auth, account, context
     );

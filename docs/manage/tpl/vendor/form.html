@@ -7,6 +7,8 @@
 
     [% PROCESS tpl/vendor/help.html %]
 
+    [% PROCESS tpl/vendor/_errors.html %]
+
     <form action="/manage/vendor/zone" method="post" accept-charset="utf-8">
         <div class="form-group">
             <fieldset>
@@ -32,7 +34,8 @@
                 <div class="row">
                     <div class="col">
                         <input type="text" id="zone_name" class="form-control" name="zone_name"
-                            value="[% vz.zone_name | html %]" id="name" size="18" maxsize="50">
+                            value="[% vz.zone_name | html %]" id="name" size="18" maxsize="50"
+                            [% IF vz.status == 'Approved' %]readonly[% END %]>
 
                     </div>
 

@@ -6,6 +6,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 The NTP Pool Project is a website frontend for managing a global cluster of NTP time servers. It's written in Perl using Template Toolkit templates and the internal "Combust" web framework. The system runs in Kubernetes in production and has many dependencies.
 
+## Related Codebases
+
+This project spans a few repositories. Paths below assume teammates check them
+out as siblings; adjust for your own layout (or note local paths in CLAUDE.local.md).
+
+- **ntppool** (this repo) — Perl/Template Toolkit web frontend. Becoming a thin
+  controller layer with no direct database access.
+- **Go API** (`../go/ntp/api`) — Go + PostgreSQL backend. All new database
+  operations live here, exposed via ConnectRPC (consumed in Perl through
+  `lib/NP/CAPI/*.pm`). See its `plans/postgres.md` for migration strategy.
+- **ntppool-main** (`../ntppool-main`) — the pre-migration Perl/MySQL version,
+  kept for reference and occasional sync of non-migration changes.
+
 ## Technology Stack
 
 - **Language**: Perl (latest released version)

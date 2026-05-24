@@ -512,13 +512,7 @@ B<Arguments:>
         $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
         account => $account->{id_token},  # Optional: Account selection token
         id_token => $value,       # string - id_token identifies the zone (required, format: "vz_{token}")
-        zone_name => $value,       # string - Fields to update (only provided fields are updated)
-        organization_name => $value,       # string
-        request_information => $value,       # string
-        device_count => $value,       # int
-        device_information => $value,       # string
-        contact_information => $value,       # string
-        client_type => $value,       # string
+        content => $value,       # hashref (VendorZoneContent) - content holds the fields to update (only provided fields are applied)
     );
 
 B<Returns:>
@@ -604,13 +598,7 @@ sub update_vendor_zone {
     # Extract request fields from args
     my %request = ();
     $request{'id_token'} = delete $args{'id_token'} if exists $args{'id_token'};
-    $request{'zone_name'} = delete $args{'zone_name'} if exists $args{'zone_name'};
-    $request{'organization_name'} = delete $args{'organization_name'} if exists $args{'organization_name'};
-    $request{'request_information'} = delete $args{'request_information'} if exists $args{'request_information'};
-    $request{'device_count'} = delete $args{'device_count'} if exists $args{'device_count'};
-    $request{'device_information'} = delete $args{'device_information'} if exists $args{'device_information'};
-    $request{'contact_information'} = delete $args{'contact_information'} if exists $args{'contact_information'};
-    $request{'client_type'} = delete $args{'client_type'} if exists $args{'client_type'};
+    $request{'content'} = delete $args{'content'} if exists $args{'content'};
 
     return connect_rpc(
         service     => 'ntppool.vendorzone.v1.VendorZoneService',
@@ -634,8 +622,8 @@ B<Arguments:>
         $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
         account => $account->{id_token},  # Optional: Account selection token
         id_token => $value,       # string - id_token identifies the zone (required, format: "vz_{token}")
-        opensource => $value,       # bool - opensource indicates if requesting opensource exception
-        opensource_info => $value,       # string - opensource_info is justification for opensource (required if opensource=true)
+        content => $value,       # hashref (VendorZoneContent) - content holds any final edits to apply before submission (optional).
+ opensource / opensource_info live here.
     );
 
 B<Returns:>
@@ -745,8 +733,7 @@ sub submit_vendor_zone {
     # Extract request fields from args
     my %request = ();
     $request{'id_token'} = delete $args{'id_token'} if exists $args{'id_token'};
-    $request{'opensource'} = delete $args{'opensource'} if exists $args{'opensource'};
-    $request{'opensource_info'} = delete $args{'opensource_info'} if exists $args{'opensource_info'};
+    $request{'content'} = delete $args{'content'} if exists $args{'content'};
 
     return connect_rpc(
         service     => 'ntppool.vendorzone.v1.VendorZoneService',

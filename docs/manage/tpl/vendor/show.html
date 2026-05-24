@@ -1,6 +1,8 @@
 
 [% USE Number.Format %]
 
+[% PROCESS tpl/vendor/_errors.html %]
+
 <div class="row">
     <div class="col-md-12">
         For help or questions, email <a href="mailto:vendors@ntppool.org?subject=Vendor%20DNS%20Zone%20(account%20[% account.id_token %])">vendors@ntppool.org</a>.
@@ -80,12 +82,13 @@
     [% END %]
     <a class="btn btn-secondary btn-sm" href="[% combust.manage_url('/manage/vendor') %]">Back to list</a>
 
-    [% IF vz.status == 'New' && !need_subscription %]
+    [% IF (vz.status == 'New' || vz.status == 'Rejected') && !need_subscription %]
       <form method="post" class="form-inline btn-inline" action="/manage/vendor/submit">
           <input type="hidden" name="id" value="[% vz.id_token %]" />
           <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
           <input type="hidden" name="a" value="[% combust.current_account.id_token %]">
-          <input type="submit" class="btn btn-primary" value="Submit for production &rarr;" />
+          <input type="submit" class="btn btn-primary"
+              value="[% vz.status == 'Rejected' ? 'Resubmit for production &rarr;' : 'Submit for production &rarr;' %]" />
       </form>
     [% END %]
 
