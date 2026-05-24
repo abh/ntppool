@@ -1,0 +1,8 @@
+[% IF errors AND errors.general %]
+<div class="alert alert-danger" role="alert">
+    [% errors.general | html %]
+    [% IF errors.trace_id %]
+    <div class="small text-muted">Trace ID: [% errors.trace_id | html %]</div>
+    [% END %]
+</div>
+[% END %]
