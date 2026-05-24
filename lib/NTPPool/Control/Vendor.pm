@@ -392,11 +392,13 @@ sub render_submit {
     my $opensource =
       $self->req_param('opensource_request') ? JSON::XS::true : JSON::XS::false;
     my $submit_result = submit_vendor_zone(
-        auth            => $self->plain_cookie($self->user_cookie_name),
-        context         => $self->_get_request_context(),
-        id_token        => $id,
-        opensource      => $opensource,
-        opensource_info => $opensource_info,
+        auth     => $self->plain_cookie($self->user_cookie_name),
+        context  => $self->_get_request_context(),
+        id_token => $id,
+        content  => {
+            opensource      => $opensource,
+            opensource_info => $opensource_info,
+        },
     );
 
     if ($submit_result->{error}) {
@@ -479,8 +481,11 @@ sub _edit_zone {
         device_information  => $self->req_param('device_information')  || '',
         contact_information => $self->req_param('contact_information') || '',
         device_count        => 0 + int($self->req_param('device_count') || 0),
-        opensource_info     => $self->req_param('opensource_info') || '',
     );
+
+    # opensource / opensource_info are not part of the edit form; they are set
+    # in the submit flow (render_submit). Sending opensource_info here would
+    # blank a stored value and, for opensource zones, fail update validation.
 
     my %auth = (
         auth    => $self->plain_cookie($self->user_cookie_name),
