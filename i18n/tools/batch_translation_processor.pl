@@ -70,8 +70,8 @@ my %language_groups = (
     },
     'slavic' => {
         name => 'Slavic Languages',
-        languages => ['cs', 'pl', 'ru', 'uk', 'sr', 'bg'],
-        description => 'Czech, Polish, Russian, Ukrainian, Serbian, Bulgarian'
+        languages => ['cs', 'pl', 'ru', 'uk', 'sr', 'bg', 'sk'],
+        description => 'Czech, Polish, Russian, Ukrainian, Serbian, Bulgarian, Slovak'
     },
     'asian' => {
         name => 'Asian Languages',
