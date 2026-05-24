@@ -2177,7 +2177,6 @@ B<Arguments:>
         $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
         account => $account->{id_token},  # Optional: Account selection token
         account_id_token => $value,       # string - id_token of the account to schedule for deletion.
-        deletion_on_unix => $value,       # int - Unix timestamp for when deletion should occur (must be >= now + 7 days).
     );
 
 B<Returns:>
@@ -2266,7 +2265,6 @@ sub schedule_account_deletion {
     # Extract request fields from args
     my %request = ();
     $request{'account_id_token'} = delete $args{'account_id_token'} if exists $args{'account_id_token'};
-    $request{'deletion_on_unix'} = delete $args{'deletion_on_unix'} if exists $args{'deletion_on_unix'};
 
     return connect_rpc(
         service     => 'ntppool.account.v1.AccountService',
