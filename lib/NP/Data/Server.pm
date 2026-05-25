@@ -28,7 +28,7 @@ sub hostname {
 
 sub manage_url {
     my $self = shift;
-    return "/manage/server?server=" . $self->{ip};
+    return '/manage/servers#s-' . $self->{ip};
 }
 
 sub error {
