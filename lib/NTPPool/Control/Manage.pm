@@ -306,8 +306,6 @@ sub render {
         return $self->logout;
     }
 
-    $self->tpl_param("xs", $self->cookie("xs"));
-
     if ($self->request->uri =~ m!^/manage/login!) {
         $self->set_span_name("manage.login");
         if ($self->req_param('code')) {
@@ -358,7 +356,7 @@ sub handle_login {
     }
 
     my $state = $self->req_param('state');
-    unless ($state && $state eq $self->cookie('login_state')) {
+    unless ($state && $state eq $self->plain_cookie('login_state')) {
         $span->set_status(SPAN_STATUS_ERROR, "invalid state parameter");
         return;
     }
@@ -385,14 +383,8 @@ sub handle_login {
     # Set session cookie
     $self->_set_session_cookie($data->{session_token});
 
-    # Clear legacy cookie information
-    $self->cookie($self->user_cookie_name, '');
-
-    # XSS token for manage page
-    $self->cookie("xs", join("", map { $base36->to_base(irand) } (undef) x 6));
-
     # Clear login state
-    $self->cookie('login_state', '');
+    $self->plain_cookie('login_state', '', {expires => -1});
 
     # Set user data from API response
     # On the next request, validate_session will load deletion_on and privileges
@@ -424,10 +416,12 @@ sub callback_url {
 sub login_url {
     my $self = shift;
 
-    my $state = $self->cookie('login_state');
+    my $state = $self->plain_cookie('login_state');
     unless ($state) {
         $state = (join "", map { $base36->to_base(irand) } (undef) x 6);
-        $self->cookie('login_state', $state);
+
+        # short TTL: only needs to survive the OAuth redirect round-trip
+        $self->plain_cookie('login_state', $state, {expires => time + 600});
     }
 
     # Call Go RPC to generate OAuth login URL

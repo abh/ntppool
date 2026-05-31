@@ -62,8 +62,7 @@ sub user {
 
     # if there's no user cookie, we can't be logged in
     return
-      unless $self->plain_cookie($self->user_cookie_name)
-      or $self->cookie($self->user_cookie_name);
+      unless $self->plain_cookie($self->user_cookie_name);
 
     my $uid;
     my $user;
@@ -116,7 +115,6 @@ sub user {
     # Only clear cookies if no API error (session_error not set)
     unless ($uid && $user) {
         unless ($self->{_session_error}) {
-            $self->cookie($self->user_cookie_name, '0');
             $self->plain_cookie($self->user_cookie_name, '', {expires => -1});
         }
 
@@ -149,10 +147,6 @@ sub logout {
     );
     dynamically otel_current_context = otel_context_with_span($span);
     defer { $span->end(); };
-
-    $self->cookie($self->user_cookie_name, 0);
-    $self->cookie("login_state",           0);
-    $self->cookie("xs",                    '');
 
     my $session_token = $self->plain_cookie($self->user_cookie_name);
     if ($session_token) {
