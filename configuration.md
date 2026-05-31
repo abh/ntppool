@@ -304,8 +304,10 @@ policies=monitor-{environment}
 
 The NTP Pool uses a custom AppRole-based authentication system for monitoring services:
 
-#### Vault Perl Interface (`lib/NP/Vault.pm`)
-- **Vault API**: `https://vault-active.ntpvault.svc:8200/v1`
+#### Vault Interface (Go CAPI)
+Monitor role and secret management lives in the Go API layer (`../go/ntp/api`),
+consumed from Perl via `lib/NP/CAPI/*.pm`. The former `lib/NP/Vault.pm` Perl
+interface was removed once its callers moved to the Go CAPI.
 - **Authentication**: Token-based with TLS client certificates
 - **Role Management**: Automatic creation/deletion of monitoring roles
 - **Secret Management**: Key-value store for monitoring configuration
