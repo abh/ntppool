@@ -71,19 +71,18 @@ sub get_all_settings {
     }
 
     my %settings;
+
+    # system_settings.value is a jsonb column, so every value arrives
+    # JSON-encoded: objects ({...}), numbers (120), and quoted scalars ("prod").
+    # allow_nonref lets us decode the top-level scalars too. Any legacy
+    # un-encoded value falls back to its raw string.
+    my $json = JSON::XS->new->utf8->allow_nonref;
     for my $setting (@{$result->{data}{settings}}) {
         my $raw_value = $setting->{value};
-        my $value;
 
-        # Only decode if it looks like JSON (starts with { or [)
-        if ($raw_value =~ /^\s*[\{\[]/) {
-            $value = eval { decode_json($raw_value) };
-            if ($@) {
-                warn "Failed to decode JSON for setting '$setting->{key}': $@\n";
-                next;
-            }
-        } else {
-            # Plain string value
+        my $value = eval { $json->decode($raw_value) };
+        if ($@) {
+            warn "Failed to decode JSON for setting '$setting->{key}': $@\n";
             $value = $raw_value;
         }
 
