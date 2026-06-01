@@ -1,5 +1,27 @@
 [% page.js.push(combust.static_group("manage.js")) %]
 
+[% UNLESS combust.user_is_staff %]
+[% IF account.deletion_on %]
+<div class="alert alert-danger" role="alert">
+    <h4 class="alert-heading">Account scheduled for deletion</h4>
+    <p>
+        This account is scheduled for permanent deletion on
+        <b>[% account.deletion_on.split('T').0 | html %]</b>.
+        Account members will keep any other account memberships they have.
+    </p>
+    <form action="[% combust.manage_url('/manage/account/dissolve') %]"
+          method="post" accept-charset="utf-8" class="mb-0">
+        <input type="hidden" name="auth_token" value="[% combust.auth_token %]">
+        <input type="hidden" name="a" value="[% account.id_token %]">
+        <input type="hidden" name="cancel" value="1">
+        <button class="btn btn-danger" type="submit">
+            Cancel scheduled deletion
+        </button>
+    </form>
+</div>
+[% END %]
+[% END %]
+
 <div class="row">
     <div class="col-md-6">
 

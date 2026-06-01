@@ -236,7 +236,17 @@ sub manage_dispatch {
         return $self->render_user_delete($target_token, $is_self);
     }
     elsif ($self->request->uri =~ m!^/manage/account/dissolve$!) {
-        return 403 unless $self->user_is_staff;
+
+        # Staff can do everything (view confirmation, schedule, cancel).
+        # Any account member may POST a cancel to stop a scheduled deletion;
+        # reaching here means current_account already authorized access to
+        # this account. The GET confirmation page and the schedule POST stay
+        # staff-only. The Go CancelAccountDeletion is the real enforcement.
+        my $member_cancel =
+             $self->request->method eq 'post'
+          && $self->req_param('cancel');
+
+        return 403 unless $self->user_is_staff || $member_cancel;
         return $self->render_account_dissolve($account);
     }
 
