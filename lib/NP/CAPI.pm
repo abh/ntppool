@@ -16,7 +16,7 @@ BEGIN {
 }
 
 use Exporter 'import';
-our @EXPORT_OK = qw(connect_rpc);
+our @EXPORT_OK = qw(connect_rpc result_http_status);
 
 our $VERSION = '0.1.0';
 
@@ -333,6 +333,48 @@ sub connect_rpc {
     }
 
     return \%result;
+}
+
+=head2 result_http_status($result)
+
+Map a result hashref (from L</connect_rpc>, or the compatible structure
+returned by L<NP::IntAPI>) to the HTTP status a web controller should return
+when the record it wanted is absent.
+
+Distinguishes a deterministic client outcome from an unreachable or failing
+backend, so a transient outage isn't reported to clients (or cached) as a 404:
+
+=over 4
+
+=item * C<connect_code> 'not_found', or a clean response with no error => B<404>
+
+=item * an explicit HTTP 4xx from the API => B<that 4xx> (e.g. permission_denied)
+
+=item * API unreachable (C<code> 0 / 'unavailable'), a 5xx, or any other RPC
+error => B<503>
+
+=back
+
+B<Returns:> C<($status, $transient)>, where C<$transient> is true for the 503
+case so the caller can disable caching of the failure.
+
+=cut
+
+sub result_http_status {
+    my ($result) = @_;
+
+    my $connect_code = $result->{connect_code} || '';
+    my $code         = $result->{code}         || 0;
+
+    return (404, 0) if $connect_code eq 'not_found';    # genuine "not found"
+    return (404, 0) if !$result->{error};               # clean response, no record
+
+    # A deterministic client error (4xx) is the API's real answer, not a
+    # transient failure.
+    return ($code, 0) if $code >= 400 && $code < 500;
+
+    # API unreachable, a 5xx, or any other RPC error: a transient failure.
+    return (503, 1);
 }
 
 =head2 _parse_connect_response (internal)

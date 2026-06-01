@@ -23,6 +23,7 @@ use experimental qw( defer );
 use NP::I18N;
 use NP::Version;
 use NP::Settings;
+use NP::CAPI       ();
 use NP::CAPI::Zone qw(list_zones);
 
 my $version = NP::Version->new;
@@ -451,6 +452,24 @@ sub cache_control {
     my $self = shift;
     return $self->{cache_control} unless @_;
     return $self->{cache_control} = shift;
+}
+
+# Map a CAPI/IntAPI result to an HTTP status when the record we wanted is
+# absent. The not-found-vs-transient logic lives in NP::CAPI::result_http_status;
+# here we add the controller-only concern of not letting an upstream cache
+# (Fastly) store a transient failure under the page's s-maxage header.
+#
+#   $have_data  truthy when the response carried the record the caller needs
+#
+# Returns undef when $have_data is set (success - the caller proceeds).
+sub capi_error_status {
+    my ($self, $result, $have_data) = @_;
+
+    return undef if $have_data;    # success
+
+    my ($status, $transient) = NP::CAPI::result_http_status($result);
+    $self->cache_control('s-maxage=0,max-age=0,no-store') if $transient;
+    return $status;
 }
 
 sub plausible_props {

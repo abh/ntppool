@@ -31,7 +31,9 @@ sub render {
 
     return 404 unless $p;
     my $result = get_server(ip => $p);
-    return 404 if $result->{error} || !$result->{data}{server};
+    if (my $status = $self->capi_error_status($result, $result->{data}{server})) {
+        return $status;
+    }
     my $server = NP::Data::Server->new(%{$result->{data}{server}});
     return 404 if $server->deleted;
 

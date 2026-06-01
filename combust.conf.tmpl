@@ -43,16 +43,11 @@ work_path = /var/ntppool/
 
 use_cronolog = 0
 
-[database-ntppool]
-# configure database access for use with the db_open() function
-data_source = {{ getenv "db_dsn" }}
-user        = {{ getenv "db_user" }}
-password    = {{ getenv "db_pass" }}
-time_zone   = UTC
-default=1
-
-[database-combust]
-alias = ntppool
+# No database is configured here on purpose.
+#
+# This frontend no longer accesses a database directly: all data access
+# goes through the Go API (ConnectRPC via NP::CAPI::*). Do not re-add a
+# [database-*] section.
 
 # "Apache" configuration, also supported with the Plack setup
 [apache]

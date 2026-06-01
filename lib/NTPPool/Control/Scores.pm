@@ -4,9 +4,9 @@ use strict;
 # include ::Login since the manage site use this controller, too
 use parent            qw(NTPPool::Control::Login NTPPool::Control);
 use Combust::Constant qw(OK DECLINED);
-use List::Util   qw(min);
-use JSON         ();
-use experimental qw( defer );
+use List::Util        qw(min);
+use JSON              ();
+use experimental      qw( defer );
 use Syntax::Keyword::Dynamically;
 use OpenTelemetry::Constants qw( SPAN_KIND_INTERNAL SPAN_STATUS_ERROR SPAN_STATUS_OK );
 use OpenTelemetry -all;
@@ -47,7 +47,9 @@ sub render {
 
     if (my $ip = ($self->req_param('ip') || $self->req_param('server_ip'))) {
         my $result = $self->server_data($ip);
-        return 404 if $result->{error} || !$result->{data}{server};
+        if (my $status = $self->capi_error_status($result, $result->{data}{server})) {
+            return $status;
+        }
         return $self->redirect('/scores/' . $result->{data}{server}{ip});
     }
 
@@ -60,10 +62,14 @@ sub render {
 
     if ($self->request->uri =~ m!^/s/([^/]+)!) {
         my $result = $self->server_data($1);
-        return 404 if $result->{error} || !$result->{data}{server};
+        if (my $status = $self->capi_error_status($result, $result->{data}{server})) {
+            return $status;
+        }
         my $server = NP::Data::Server->new(%{$result->{data}{server}});
         $self->cache_control('max-age=14400, s-maxage=7200');
-        if ($server->deletion_on && $server->deletion_on < DateTime->now->subtract(years => 3)) {
+        if (   $server->deletion_on
+            && $server->deletion_on < DateTime->now->subtract(years => 3))
+        {
             return 404;
         }
         return $self->redirect('/scores/' . $server->ip, 301);
@@ -73,7 +79,9 @@ sub render {
         ($self->request->uri =~ m!^/scores/graph/(\d+)-(score|offset).png!))
     {
         my $result = $self->server_data($id);
-        return 404 if $result->{error} || !$result->{data}{server};
+        if (my $status = $self->capi_error_status($result, $result->{data}{server})) {
+            return $status;
+        }
         my $server = NP::Data::Server->new(%{$result->{data}{server}});
         $self->cache_control('max-age=14400, s-maxage=7200');
         my $uri = $server->graph_uri('offset') or return 404;
@@ -94,10 +102,14 @@ sub render {
             # Fetch server data from CAPI
             my $server_result = $self->server_data($p);
 
-            if ($server_result->{error} || !$server_result->{data}{server}) {
+            if (my $status =
+                $self->capi_error_status($server_result, $server_result->{data}{server}))
+            {
                 warn "Failed to fetch server data: "
-                  . ($server_result->{error} || 'no server data');
-                return 404;
+                  . ($server_result->{error} || 'no server data')
+                  . " [trace: "
+                  . ($server_result->{trace_id} || 'none') . "]";
+                return $status;
             }
 
             my $server_data = $server_result->{data}{server};
@@ -132,10 +144,15 @@ sub render {
 
         # For other modes, use CAPI
         my $server_result = $self->server_data($p);
-        return 404 if $server_result->{error} || !$server_result->{data}{server};
+        if (my $status =
+            $self->capi_error_status($server_result, $server_result->{data}{server}))
+        {
+            return $status;
+        }
         my $server = NP::Data::Server->new(%{$server_result->{data}{server}});
 
-        if ($public && $server->deletion_on
+        if (   $public
+            && $server->deletion_on
             && $server->deletion_on < DateTime->now->subtract(years => 3))
         {
             return 404;
@@ -146,8 +163,10 @@ sub render {
         $self->request->header_out('Vary', undef);
 
         if ($mode eq 'monitors') {
+
             # TODO: Implement GetServerMonitorScores CAPI endpoint
-            return 501, $json->encode({error => 'monitors endpoint temporarily unavailable'}),
+            return 501,
+              $json->encode({error => 'monitors endpoint temporarily unavailable'}),
               'application/json';
         }
         elsif ($mode eq 'log' or $self->req_param('log') or $mode eq 'json') {
