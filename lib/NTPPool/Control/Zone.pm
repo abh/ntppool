@@ -100,14 +100,13 @@ sub render {
         context => $self->_get_request_context(),
     );
 
-    if ($zone_result->{error}) {
-        warn "Zone API error: $zone_result->{error} (trace: $zone_result->{trace_id})";
-        return 404 if $zone_result->{code} == 404;
-        return 500;
+    if (my $status = $self->capi_error_status($zone_result, $zone_result->{data}{zone})) {
+        warn "Zone API error: $zone_result->{error} (trace: $zone_result->{trace_id})"
+          if $zone_result->{error};
+        return $status;
     }
 
     my $zone = $zone_result->{data}{zone};
-    return 404 unless $zone;
 
     $self->tpl_param('zone' => $zone);
 

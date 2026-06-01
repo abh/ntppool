@@ -11,24 +11,6 @@ sub uri_username {
     $username || '';
 }
 
-sub get_redirect_url {
-    my $self = shift;
-    return $self->{_redirect_url} if exists $self->{_redirect_url};
-
-    my $username = $self->uri_username;
-    return $self->{_redirect_url} = undef unless $username;
-
-    my $result = get_public_account_by_username(username => $username);
-
-    if ($result->{error}) {
-        warn "GetPublicAccountByUsername failed for '$username': $result->{error}";
-        return $self->{_redirect_url} = undef;
-    }
-
-    $self->{_redirect_url} = $result->{data}{redirect_url};
-    return $self->{_redirect_url};
-}
-
 sub account_data {
     my $self       = shift;
     my $url_slug   = shift;
@@ -67,9 +49,18 @@ sub render {
 # legacy urls, redirecting to new account pages when possible
 sub render_user {
     my $self = shift;
-    my $redirect_url = $self->get_redirect_url;
-    return 404 unless $redirect_url;
-    return $self->redirect($redirect_url);
+
+    my $username = $self->uri_username;
+    return 404 unless $username;
+
+    my $result = get_public_account_by_username(username => $username);
+    if (my $status = $self->capi_error_status($result, $result->{data}{redirect_url})) {
+        warn "GetPublicAccountByUsername failed for '$username': "
+          . ($result->{error} || 'no redirect_url')
+          if $result->{error};
+        return $status;
+    }
+    return $self->redirect($result->{data}{redirect_url});
 }
 
 # overridden in the manage version
@@ -92,10 +83,10 @@ sub render_account {
     # Fetch account data from CAPI
     my $account_result = $self->account_data($account_slug);
 
-    if ($account_result->{error} || !$account_result->{data}) {
+    if (my $status = $self->capi_error_status($account_result, $account_result->{data})) {
         warn "Failed to fetch account data: " . ($account_result->{error} || 'no data');
-        $self->cache_control('max-age=60');
-        return 404;
+        $self->cache_control('max-age=60') if $status == 404;
+        return $status;
     }
 
     my $account_data = $account_result->{data}{account};

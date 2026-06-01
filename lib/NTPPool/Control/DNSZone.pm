@@ -46,11 +46,10 @@ sub render {
         origin => $origin,
     );
 
-    if ($zone_result->{error}) {
-        warn "DNSZone API error: $zone_result->{error} [trace: $zone_result->{trace_id}]";
-
-        # Return 404 for not found, 500 for other errors
-        return $zone_result->{code} == 404 ? 404 : 500;
+    if (my $status = $self->capi_error_status($zone_result, $zone_result->{data})) {
+        warn "DNSZone API error: $zone_result->{error} [trace: $zone_result->{trace_id}]"
+          if $zone_result->{error};
+        return $status;
     }
 
     # Build DNS zone data using API response

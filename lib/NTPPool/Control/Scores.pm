@@ -47,7 +47,9 @@ sub render {
 
     if (my $ip = ($self->req_param('ip') || $self->req_param('server_ip'))) {
         my $result = $self->server_data($ip);
-        if (my $status = $self->_server_data_error($result)) { return $status; }
+        if (my $status = $self->capi_error_status($result, $result->{data}{server})) {
+            return $status;
+        }
         return $self->redirect('/scores/' . $result->{data}{server}{ip});
     }
 
@@ -60,7 +62,9 @@ sub render {
 
     if ($self->request->uri =~ m!^/s/([^/]+)!) {
         my $result = $self->server_data($1);
-        if (my $status = $self->_server_data_error($result)) { return $status; }
+        if (my $status = $self->capi_error_status($result, $result->{data}{server})) {
+            return $status;
+        }
         my $server = NP::Data::Server->new(%{$result->{data}{server}});
         $self->cache_control('max-age=14400, s-maxage=7200');
         if (   $server->deletion_on
@@ -75,7 +79,9 @@ sub render {
         ($self->request->uri =~ m!^/scores/graph/(\d+)-(score|offset).png!))
     {
         my $result = $self->server_data($id);
-        if (my $status = $self->_server_data_error($result)) { return $status; }
+        if (my $status = $self->capi_error_status($result, $result->{data}{server})) {
+            return $status;
+        }
         my $server = NP::Data::Server->new(%{$result->{data}{server}});
         $self->cache_control('max-age=14400, s-maxage=7200');
         my $uri = $server->graph_uri('offset') or return 404;
@@ -96,7 +102,9 @@ sub render {
             # Fetch server data from CAPI
             my $server_result = $self->server_data($p);
 
-            if (my $status = $self->_server_data_error($server_result)) {
+            if (my $status =
+                $self->capi_error_status($server_result, $server_result->{data}{server}))
+            {
                 warn "Failed to fetch server data: "
                   . ($server_result->{error} || 'no server data')
                   . " [trace: "
@@ -136,7 +144,11 @@ sub render {
 
         # For other modes, use CAPI
         my $server_result = $self->server_data($p);
-        if (my $status = $self->_server_data_error($server_result)) { return $status; }
+        if (my $status =
+            $self->capi_error_status($server_result, $server_result->{data}{server}))
+        {
+            return $status;
+        }
         my $server = NP::Data::Server->new(%{$server_result->{data}{server}});
 
         if (   $public
@@ -186,23 +198,6 @@ sub render {
 
     # if we didn't match on any URL, return 404
     return 404;
-}
-
-# Map a failed server_data() result to an HTTP status.
-# Returns undef when the lookup succeeded.
-#   - 'not_found' (or HTTP 200 with no server) => 404
-#   - API unreachable / failing                => 503 (and disable caching)
-sub _server_data_error {
-    my ($self, $result) = @_;
-
-    return undef if $result->{data} && $result->{data}{server};       # success
-    return 404   if ($result->{connect_code} || '') eq 'not_found';
-    return 404 unless $result->{error};    # 200 OK, no such server
-
-    # API unreachable or erroring: don't let the s-maxage header set in
-    # render() cache this transient failure.
-    $self->cache_control('s-maxage=0,max-age=0,no-store');
-    return 503;
 }
 
 sub server_data {

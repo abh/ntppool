@@ -225,8 +225,9 @@ sub manage_dispatch {
                     $self->api_auth_params,
                     id_token => $u_token,
                 );
-                return NOT_FOUND if $lookup->{error};
-                return NOT_FOUND unless $lookup->{data}{user};
+                if (my $status = $self->capi_error_status($lookup, $lookup->{data}{user})) {
+                    return $status;
+                }
 
                 $target_token = $u_token;
                 $is_self      = 0;
@@ -311,8 +312,8 @@ sub handle_invitation {
             for_user => 1,                     # Get invites for the current user
         );
 
-        if ($invites_result->{error}) {
-            return 404;
+        if (my $status = $self->capi_error_status($invites_result, $invites_result->{data})) {
+            return $status;
         }
 
         # Find the invite with matching code
@@ -535,10 +536,10 @@ sub render_account_edit {
         account => $id_token,
     );
 
-    if ($result->{error}) {
-        warn "Failed to get account via API: " . $result->{error};
+    if (my $status = $self->capi_error_status($result, $result->{data}{account})) {
+        warn "Failed to get account via API: " . $result->{error} if $result->{error};
         warn "Trace ID: " . $result->{trace_id} if $result->{trace_id};
-        return 404;
+        return $status;
     }
 
     my $account_obj = $result->{data}{account};
@@ -638,9 +639,11 @@ sub render_download {
             traceid => $traceid,
         );
 
-        return NOT_FOUND if $result->{error};
+        if (my $status = $self->capi_error_status($result, $result->{data}{task})) {
+            return $status;
+        }
         my $task = $result->{data}{task};
-        return NOT_FOUND unless $task && $task->{status_url};
+        return NOT_FOUND unless $task->{status_url};
 
         # Verify filename matches what's in the download_url
         return NOT_FOUND unless $task->{download_url} && $task->{download_url} =~ /\Q$filename\E$/;

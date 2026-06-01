@@ -770,13 +770,13 @@ sub render_admin {
             context  => $self->_get_request_context(),
         );
 
-        if ($result->{error}) {
+        if (my $status = $self->capi_error_status($result, $result->{data}{zone})) {
             warn "API error getting vendor zone for admin: "
               . $result->{error}
               . " (trace: "
-              . ($result->{trace_id} || 'none') . ")";
-            return 404 if $result->{code} == 404;
-            return $result->{code};
+              . ($result->{trace_id} || 'none') . ")"
+              if $result->{error};
+            return $status;
         }
 
         my $zone = $result->{data}{zone};
