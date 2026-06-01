@@ -4,9 +4,9 @@ use strict;
 # include ::Login since the manage site use this controller, too
 use parent            qw(NTPPool::Control::Login NTPPool::Control);
 use Combust::Constant qw(OK DECLINED);
-use List::Util   qw(min);
-use JSON         ();
-use experimental qw( defer );
+use List::Util        qw(min);
+use JSON              ();
+use experimental      qw( defer );
 use Syntax::Keyword::Dynamically;
 use OpenTelemetry::Constants qw( SPAN_KIND_INTERNAL SPAN_STATUS_ERROR SPAN_STATUS_OK );
 use OpenTelemetry -all;
@@ -47,7 +47,7 @@ sub render {
 
     if (my $ip = ($self->req_param('ip') || $self->req_param('server_ip'))) {
         my $result = $self->server_data($ip);
-        return 404 if $result->{error} || !$result->{data}{server};
+        if (my $status = $self->_server_data_error($result)) { return $status; }
         return $self->redirect('/scores/' . $result->{data}{server}{ip});
     }
 
@@ -60,10 +60,12 @@ sub render {
 
     if ($self->request->uri =~ m!^/s/([^/]+)!) {
         my $result = $self->server_data($1);
-        return 404 if $result->{error} || !$result->{data}{server};
+        if (my $status = $self->_server_data_error($result)) { return $status; }
         my $server = NP::Data::Server->new(%{$result->{data}{server}});
         $self->cache_control('max-age=14400, s-maxage=7200');
-        if ($server->deletion_on && $server->deletion_on < DateTime->now->subtract(years => 3)) {
+        if (   $server->deletion_on
+            && $server->deletion_on < DateTime->now->subtract(years => 3))
+        {
             return 404;
         }
         return $self->redirect('/scores/' . $server->ip, 301);
@@ -73,7 +75,7 @@ sub render {
         ($self->request->uri =~ m!^/scores/graph/(\d+)-(score|offset).png!))
     {
         my $result = $self->server_data($id);
-        return 404 if $result->{error} || !$result->{data}{server};
+        if (my $status = $self->_server_data_error($result)) { return $status; }
         my $server = NP::Data::Server->new(%{$result->{data}{server}});
         $self->cache_control('max-age=14400, s-maxage=7200');
         my $uri = $server->graph_uri('offset') or return 404;
@@ -94,10 +96,12 @@ sub render {
             # Fetch server data from CAPI
             my $server_result = $self->server_data($p);
 
-            if ($server_result->{error} || !$server_result->{data}{server}) {
+            if (my $status = $self->_server_data_error($server_result)) {
                 warn "Failed to fetch server data: "
-                  . ($server_result->{error} || 'no server data');
-                return 404;
+                  . ($server_result->{error} || 'no server data')
+                  . " [trace: "
+                  . ($server_result->{trace_id} || 'none') . "]";
+                return $status;
             }
 
             my $server_data = $server_result->{data}{server};
@@ -132,10 +136,11 @@ sub render {
 
         # For other modes, use CAPI
         my $server_result = $self->server_data($p);
-        return 404 if $server_result->{error} || !$server_result->{data}{server};
+        if (my $status = $self->_server_data_error($server_result)) { return $status; }
         my $server = NP::Data::Server->new(%{$server_result->{data}{server}});
 
-        if ($public && $server->deletion_on
+        if (   $public
+            && $server->deletion_on
             && $server->deletion_on < DateTime->now->subtract(years => 3))
         {
             return 404;
@@ -146,8 +151,10 @@ sub render {
         $self->request->header_out('Vary', undef);
 
         if ($mode eq 'monitors') {
+
             # TODO: Implement GetServerMonitorScores CAPI endpoint
-            return 501, $json->encode({error => 'monitors endpoint temporarily unavailable'}),
+            return 501,
+              $json->encode({error => 'monitors endpoint temporarily unavailable'}),
               'application/json';
         }
         elsif ($mode eq 'log' or $self->req_param('log') or $mode eq 'json') {
@@ -179,6 +186,23 @@ sub render {
 
     # if we didn't match on any URL, return 404
     return 404;
+}
+
+# Map a failed server_data() result to an HTTP status.
+# Returns undef when the lookup succeeded.
+#   - 'not_found' (or HTTP 200 with no server) => 404
+#   - API unreachable / failing                => 503 (and disable caching)
+sub _server_data_error {
+    my ($self, $result) = @_;
+
+    return undef if $result->{data} && $result->{data}{server};       # success
+    return 404   if ($result->{connect_code} || '') eq 'not_found';
+    return 404 unless $result->{error};    # 200 OK, no such server
+
+    # API unreachable or erroring: don't let the s-maxage header set in
+    # render() cache this transient failure.
+    $self->cache_control('s-maxage=0,max-age=0,no-store');
+    return 503;
 }
 
 sub server_data {
