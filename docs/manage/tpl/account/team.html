@@ -40,6 +40,17 @@
 
         </form>
 
+        [% IF resend_success %]
+        <div class="alert alert-success" role="alert">
+            <span class="badge badge-success">Sent</span> Invitation email resent.
+        </div>
+        [% END %]
+        [% IF errors and errors.resend %]
+        <div class="alert alert-warning" role="alert">
+            [% errors.resend | html %]
+        </div>
+        [% END %]
+
         [% IF invites && invites.size > 0 %]
         <h4>Account invitations</h4>
         <table class="table">
@@ -48,6 +59,7 @@
                 <th>Status</th>
                 <th>Invited by</th>
                 <th>On</th>
+                <th></th>
             </tr>
             [% FOR inv = invites %]
             <tr>
@@ -55,6 +67,23 @@
                 <td>[% inv.status | html %]</td>
                 <td>[% inv.sent_by.email | html %]</td>
                 <td>[% inv.created_on | html %]</td>
+                <td>
+                    [% IF inv.status == 'pending' %]
+                        [% IF inv.can_resend %]
+                        <form action="/manage/account/team?a=[% account.id_token %]" method="post" accept-charset="utf-8" class="d-inline">
+                            <input type="hidden" name="a" value="[% account.id_token %]" />
+                            <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
+                            <input type="hidden" name="resend_invite_id" value="[% inv.invite_id %]" />
+                            <button type="submit" class="btn btn-sm btn-outline-primary">Resend</button>
+                        </form>
+                        [% ELSE %]
+                        <button type="button" class="btn btn-sm btn-outline-secondary" disabled>Resend</button>
+                        [% IF inv.resend_available_at %]
+                        <small class="text-muted">available after [% inv.resend_available_at | html %]</small>
+                        [% END %]
+                        [% END %]
+                    [% END %]
+                </td>
             </tr>
             [% END %]
         </table>

@@ -1572,6 +1572,10 @@ Hashref with structure:
                 code => ...,  # string - code is the invitation code (only for pending invites)
                 expires_on => ...,  # string - expires_on is when the invite expires
                 created_on => ...,  # string - created_on is when the invite was created
+                last_sent_on => ...,  # string - last_sent_on is when the invite email was last sent (ISO 8601)
+                sent_count => ...,  # int - sent_count is the number of times the invite email has been sent
+                can_resend => ...,  # bool - can_resend is true when the invite may be resent right now
+                resend_available_at => ...,  # string - resend_available_at is when resend becomes available (ISO 8601); empty when can_resend is true
             },
             # ... more items
         ],  # arrayref[hashref (AccountInvite)] - invites is the list of account invitations

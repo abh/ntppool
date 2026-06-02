@@ -201,6 +201,10 @@ sub manage_dispatch {
             return $self->render_users_invite($account, $self->req_param('invite_email'))
               if $self->req_param('invite_email');
 
+            if (my $resend_id = $self->req_param('resend_invite_id')) {
+                return $self->render_resend_invite($account, $resend_id);
+            }
+
             my $delete_user_id = $self->req_param('user_id');
             if ($delete_user_id
                 and ($self->user_is_staff or $self->user->{user_id} != $delete_user_id))
@@ -447,6 +451,51 @@ sub render_users_invite {
 
     # Success - invitation created and email sent by Go API
     # Note: Logging is handled by Go API (audit log)
+    return $self->render_users($account);
+}
+
+sub render_resend_invite {
+    my ($self, $account, $invite_id) = @_;
+
+    # The Go API enforces the rate limit (minimum gap between sends and a cap
+    # per 24h window) and extends the invitation expiry; it also writes the
+    # audit log. Perl just relays the result.
+    my $result = resend_account_invite(
+        $self->api_auth_params,
+        account   => $account->{id_token},
+        invite_id => 0 + int($invite_id),
+    );
+
+    if ($result->{error}) {
+        my $code = $result->{connect_code} // 'internal';
+        my %errors = ();
+
+        if ($code eq 'resource_exhausted') {
+            $errors{resend} =
+              $result->{error} || 'Too many invitation emails sent recently';
+        }
+        elsif ($code eq 'failed_precondition') {
+            $errors{resend} =
+              $result->{error} || 'This invitation can no longer be resent';
+        }
+        elsif ($code eq 'permission_denied') {
+            $errors{resend} =
+              "You don't have permission to manage invites for this account";
+        }
+        elsif ($code eq 'not_found') {
+            $errors{resend} = 'Invitation not found';
+        }
+        else {
+            $errors{resend} =
+              "Failed to resend invitation: " . ($result->{error} // 'Unknown error');
+        }
+
+        $self->tpl_param(errors => \%errors);
+        return $self->render_users($account);
+    }
+
+    # Success - email resent by Go API
+    $self->tpl_param(resend_success => 1);
     return $self->render_users($account);
 }
 
