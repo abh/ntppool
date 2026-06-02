@@ -560,30 +560,33 @@ sub handle_delete {
             # Validate date format (YYYY-MM-DD)
             my @date = split /-/, $date;
             if ($date[1]) {
-                eval {
-                    my $dt = DateTime->new(
+                my $dt = eval {
+                    DateTime->new(
                         year      => $date[0],
                         month     => $date[1],
                         day       => $date[2],
                         time_zone => 'UTC'
                     );
-                    if ($dt > DateTime->now) {
-
-                        # Call Go API to schedule deletion (includes audit logging)
-                        my $result = NP::CAPI::ServerManagement::delete_server(
-                            ip            => $server->ip,
-                            deletion_date => $date,
-                        );
-
-                        if ($result->{data}) {
-
-                            # Reload server from database to get updated deletion_on
-                            $server->load(speculative => 1);
-                        }
-                    }
                 };
-                if ($@) {
-                    warn "Failed to schedule server deletion: $@";
+                if ($dt && $dt > DateTime->now) {
+
+                    # Call Go API to schedule deletion (includes audit logging)
+                    my $result = NP::CAPI::ServerManagement::delete_server(
+                        $self->api_auth_params,
+                        account       => $self->current_account->{id_token},
+                        ip            => $server->ip,
+                        deletion_date => $date,
+                    );
+
+                    if ($result->{error}) {
+                        $self->tpl_param('error',    $result->{error});
+                        $self->tpl_param('trace_id', $result->{trace_id});
+                    }
+                    else {
+                        # Redirect so the page re-fetches server state via CAPI
+                        return $self->redirect(
+                            $self->manage_url($server->manage_url));
+                    }
                 }
             }
         }
@@ -598,20 +601,18 @@ sub handle_delete {
             }
 
             # Call Go API to cancel deletion (includes audit logging)
-            eval {
-                my $result = NP::CAPI::ServerManagement::delete_server(
-                    ip     => $server->ip,
-                    cancel => 1,
-                );
+            my $result = NP::CAPI::ServerManagement::delete_server(
+                $self->api_auth_params,
+                account => $self->current_account->{id_token},
+                ip      => $server->ip,
+                cancel  => 1,
+            );
 
-                if ($result->{data}) {
-
-                    # Reload server from database to get cleared deletion_on
-                    $server->load(speculative => 1);
-                }
-            };
-            if ($@) {
-                warn "Failed to cancel server deletion: $@";
+            if ($result->{error}) {
+                $self->tpl_param('error',    $result->{error});
+                $self->tpl_param('trace_id', $result->{trace_id});
+                return OK,
+                  $self->evaluate_template('tpl/manage/delete_set.html');
             }
 
             return $self->redirect($self->manage_url($server->manage_url));
