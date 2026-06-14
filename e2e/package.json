@@ -1,0 +1,14 @@
+{
+  "name": "ntppool-e2e",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Playwright E2E tests for the NTP Pool dev site",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0",
+    "dotenv": "^16.4.5"
+  }
+}
