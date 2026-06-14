@@ -4,8 +4,9 @@
   "version": "0.0.0",
   "description": "Playwright E2E tests for the NTP Pool dev site",
   "scripts": {
-    "test": "playwright test",
-    "test:headed": "playwright test --headed"
+    "test": "NODE_OPTIONS=--no-deprecation playwright test",
+    "test:headed": "NODE_OPTIONS=--no-deprecation playwright test --headed",
+    "report": "playwright show-report"
   },
   "dependencies": {
     "pg": "^8.13.1"

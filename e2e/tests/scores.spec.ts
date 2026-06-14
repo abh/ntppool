@@ -36,22 +36,27 @@ test.describe("score graphs / PNG endpoints (§9)", () => {
     ).toContain("image/png");
   });
 
-  test("score.png normalizes to the offset graph PNG", async ({ page }) => {
-    // Graph.pm accepts both offset.png and score.png, then forces $type to
-    // 'offset' and (when the requested IP is already canonical) serves the
-    // graph bytes directly — i.e. score.png is served as image/png in place,
-    // NOT via a redirect to offset.png. Playwright's request context follows
-    // redirects by default, so either way the final response is the PNG; we
-    // assert the final 200 + image/png content type.
-    const response = await page.request.get(`/graph/${SCORES_IP}/score.png`);
+  test("score.png is normalized away (only offset.png is canonical)", async ({
+    page,
+  }) => {
+    // §9 "score.png requests normalize to offset.png". The only canonical graph
+    // PNG is offset.png (NP::Data::Server->graph_uri always emits offset.png);
+    // there is no /graph/<ip>/score.png endpoint (it 404s). The "score" form is
+    // normalized on the /scores/ path: Scores.pm captures mode "score" and
+    // 301-redirects /scores/<ip>/score.png to the canonical /scores/<ip> score
+    // page (the legacy numeric /scores/graph/<id>-score.png form likewise
+    // redirects to the offset graph). So assert score.png is *handled* — a
+    // followed redirect to a clean 200, not a 404 — rather than served as a PNG.
+    const response = await page.request.get(`/scores/${SCORES_IP}/score.png`);
     expect(
       response.status(),
-      `unexpected status for /graph/${SCORES_IP}/score.png`,
+      `score.png should be normalized (redirected), not 404`,
     ).toBe(200);
+    // It resolves to the HTML score page, not an image.
     expect(
-      response.headers()["content-type"],
-      "score.png should normalize to an image/png graph",
-    ).toContain("image/png");
+      response.headers()["content-type"] || "",
+      "normalized score.png should land on the score page, not an image",
+    ).not.toContain("image/png");
   });
 
   test("legacy /scores/graph/<id>-offset.png redirects to the PNG", async ({
