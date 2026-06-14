@@ -7,8 +7,12 @@
     "test": "playwright test",
     "test:headed": "playwright test --headed"
   },
+  "dependencies": {
+    "pg": "^8.13.1"
+  },
   "devDependencies": {
     "@playwright/test": "^1.49.0",
+    "@types/pg": "^8.11.10",
     "dotenv": "^16.4.5"
   }
 }

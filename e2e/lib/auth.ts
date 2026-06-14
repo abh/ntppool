@@ -18,6 +18,15 @@ const COOKIE_NAME = "npuid";
 interface MintOptions {
   name?: string;
   createIfMissing?: boolean;
+  // Grant the minted user the support_staff privilege. Dev only and
+  // capability-gated, same as the mint itself. Lets staff-gated flows
+  // (account dissolution, staff deletion) run as a fresh, isolated user
+  // instead of mutating a real staff account.
+  grantStaff?: boolean;
+  // Grant the minted user the vendor_admin privilege. The vendor admin
+  // route (/manage/vendor/admin) and the approve/reject RPC require
+  // vendor_admin specifically — support_staff is not enough.
+  grantVendorAdmin?: boolean;
 }
 
 interface MintResult {
@@ -47,6 +56,10 @@ export async function mintSession(
     email,
     name: opts.name ?? "",
     create_if_missing: opts.createIfMissing ?? true,
+    // snake_case to match the ConnectRPC JSON fields (grant_staff = 4,
+    // grant_vendor_admin = 5).
+    grant_staff: opts.grantStaff ?? false,
+    grant_vendor_admin: opts.grantVendorAdmin ?? false,
   };
 
   const resp = await fetch(url, {

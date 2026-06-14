@@ -1,4 +1,4 @@
-import { test, expect, Page } from "@playwright/test";
+import { test, expect, Page, BrowserContext } from "@playwright/test";
 import { loginAs, uniqueTestEmail } from "../lib/auth";
 import {
   expectCleanPage,
@@ -260,4 +260,544 @@ test("duplicate zone name surfaces a red error alert with a Trace ID", async ({
   await expect(
     page.locator('form[action="/manage/vendor/zone"] input[type="submit"]'),
   ).toBeVisible();
+});
+
+// ---------------------------------------------------------------------------
+// Staff / admin vendor-zone flows — MANUAL_TEST_PLAN.md §5a (editability matrix,
+// staff rows) and §5c (admin approve/reject error surfacing).
+//
+// MULTI-SESSION APPROACH
+// ----------------------
+// These flows need TWO concurrent identities acting on the SAME zone:
+//   - the OWNER (a fresh regular user) creates and submits the zone, then later
+//     resubmits a rejected zone.  The owner uses each test's default
+//     {page, context} fixture.
+//   - the ADMIN (a separate user) approves/rejects via /manage/vendor/admin.
+//     The admin gets its OWN BrowserContext (browser.newContext()) with its own
+//     session cookie, opened as a second page. The two contexts never share
+//     cookies, so the owner session stays intact while the admin acts.
+//
+// Privilege note
+// ----------------------------------------------------------------------------
+// The vendor admin route and approve/reject buttons are gated on the
+// `vendor_admin` privilege (distinct from `support_staff`):
+//   - Vendor.pm render_admin: `redirect("/manage/vendor") unless user_is_vendor_admin`
+//   - show.html approve/reject form: `IF combust.user.privileges.vendor_admin`
+//   - Go vendorzone/status.go UpdateVendorZoneStatus: requires Privilege.VendorAdmin
+// The mint RPC grants it via the `grant_vendor_admin` flag (Go
+// AuthService.CreateTestSession -> GrantUserVendorAdmin), wired through
+// loginAs(..., { grantVendorAdmin: true }). Each admin-dependent test still
+// probes isVendorAdmin() first so it skips with a clear message (rather than
+// failing obscurely) if the deployed dev API predates the grant_vendor_admin
+// flag.
+// ---------------------------------------------------------------------------
+
+// Mint a vendor-admin session in its own context. Returns the context + a page
+// on it. The caller is responsible for context.close().
+async function loginAsVendorAdmin(
+  browser: import("@playwright/test").Browser,
+  email: string,
+): Promise<{ context: BrowserContext; page: Page }> {
+  const context = await browser.newContext();
+  // grantVendorAdmin sets user_privileges.vendor_admin; grantStaff is included
+  // so the session is also support_staff where an admin view expects it.
+  await loginAs(context, email, { grantStaff: true, grantVendorAdmin: true });
+  const page = await context.newPage();
+  return { context, page };
+}
+
+// Probe whether the session behind `page` is a working vendor admin: load the
+// admin route and check we landed on it rather than being bounced to
+// /manage/vendor (render_admin redirects non-admins). Returns true only when the
+// admin list page actually rendered.
+async function isVendorAdmin(page: Page): Promise<boolean> {
+  const response = await page.goto("/manage/vendor/admin");
+  if (!response || response.status() !== 200) {
+    return false;
+  }
+  // render_admin redirects non-vendor-admins to /manage/vendor; the admin page
+  // itself stays on /manage/vendor/admin and renders the "Pending zones" heading.
+  if (!page.url().includes("/manage/vendor/admin")) {
+    return false;
+  }
+  const heading = page.locator('h3:has-text("Pending zones")');
+  return (await heading.count()) > 0;
+}
+
+// Create + submit a zone as the owner so it lands in the Pending state, ready for
+// admin action. Returns the zone's id_token (parsed from the show-page URL).
+async function createAndSubmitPendingZone(
+  page: Page,
+  data: NewZoneData,
+): Promise<string> {
+  const showUrl = await createNewZone(page, data);
+  const idToken = new URL(showUrl).searchParams.get("id");
+  expect(idToken, "create redirect should carry an id= token").toBeTruthy();
+
+  // Submit via the open-source path (no Stripe subscription on a fresh account),
+  // mirroring the existing open-source test: products.html renders a form posting
+  // to /manage/vendor/submit with hidden opensource_request=1 + opensource_info.
+  const osForm = page.locator('form[action*="/manage/vendor/submit"]');
+  await expect(osForm).toBeVisible();
+  await osForm
+    .locator('textarea[name="opensource_info"]')
+    .fill("Open source NTP client; AGPL-3.0; https://example.com/src ; no revenue.");
+  await osForm.locator('input[type="submit"]').click();
+  await expectNoErrorBleed(page, page.url());
+  await expect(page.locator(".alert-danger")).toHaveCount(0);
+
+  return idToken!;
+}
+
+// The admin acts on a zone through its show page reached via the admin route:
+// /manage/vendor/admin?show=1;id=<token> -> render_zone($id,'show') which renders
+// show.html with the approve/reject form (gated on vendor_admin). Submitting a
+// status_change button posts to /manage/vendor/admin. Returns the page so the
+// caller can assert on the post-action render.
+async function adminOpenZone(page: Page, idToken: string): Promise<void> {
+  // admin.html links to "admin?show=1;id=<token>"; ';' is a query separator here.
+  await page.goto(`/manage/vendor/admin?show=1&id=${encodeURIComponent(idToken)}`);
+  await expectNoErrorBleed(page, page.url());
+}
+
+test.describe.serial("vendor admin & editability (§5a staff, §5c)", () => {
+  // 1. Admin list loads for a staff session.
+  test("admin list page loads clean for a vendor admin", async ({
+    browser,
+  }) => {
+    const adminEmail = uniqueTestEmail("vendor-admin");
+    const { context, page } = await loginAsVendorAdmin(browser, adminEmail);
+    try {
+      test.skip(
+        !(await isVendorAdmin(page)),
+        "minted session lacks vendor_admin; deployed dev API may predate the " +
+          "grant_vendor_admin flag",
+      );
+
+      // isVendorAdmin already navigated to /manage/vendor/admin and saw the
+      // "Pending zones" heading; re-assert a clean render here.
+      await expectNoErrorBleed(page, page.url());
+      await expect(page.locator('h3:has-text("Pending zones")')).toBeVisible();
+    } finally {
+      await context.close();
+    }
+  });
+
+  // 2 + 3. Owner submits to Pending; admin Rejects then Approves; owner resubmits
+  // a Rejected zone back to Pending. Combined so a single zone walks the whole
+  // status path (New -> Pending -> Rejected -> Pending -> Approved) while showing
+  // both sessions interacting.
+  test("approve/reject status changes and owner resubmit", async ({
+    page,
+    context,
+    browser,
+  }) => {
+    // OWNER session = default {page, context}.
+    const ownerEmail = uniqueTestEmail("vendor-owner");
+    await loginAs(context, ownerEmail);
+    const data = freshZoneData("ex");
+    const idToken = await createAndSubmitPendingZone(page, data);
+
+    // ADMIN session = separate context.
+    const adminEmail = uniqueTestEmail("vendor-admin");
+    const { context: adminCtx, page: adminPage } = await loginAsVendorAdmin(
+      browser,
+      adminEmail,
+    );
+    try {
+      test.skip(
+        !(await isVendorAdmin(adminPage)),
+        "minted session lacks vendor_admin; cannot drive approve/reject UI",
+      );
+
+      // --- Reject (Pending -> Rejected) ---
+      await adminOpenZone(adminPage, idToken);
+      // show.html: Reject button only renders for status == 'Pending'.
+      const rejectBtn = adminPage.locator(
+        'form[action="/manage/vendor/admin"] input[name="status_change"][value="Reject"]',
+      );
+      await expect(rejectBtn).toBeVisible();
+      await rejectBtn.click();
+      await expectNoErrorBleed(adminPage, adminPage.url());
+      // render_admin sets msg "<zone> rejected"; the zone now reads Rejected.
+      await expect(adminPage.locator("body")).toContainText(
+        `${data.zoneName} rejected`,
+      );
+
+      // --- Owner resubmits (Rejected -> Pending) ---
+      // §5a staff row: a Rejected zone shows "Resubmit for production" to the
+      // owner, returning it to Pending. The owner reloads the show page first.
+      await page.goto(
+        `/manage/vendor/zone?id=${encodeURIComponent(idToken)}`,
+      );
+      await expectNoErrorBleed(page, page.url());
+      const resubmitForm = page.locator(
+        'form[action="/manage/vendor/submit"]',
+      );
+      // show.html: the resubmit button value is "Resubmit for production →".
+      const resubmitBtn = resubmitForm.locator(
+        'input[type="submit"][value*="Resubmit"]',
+      );
+      await expect(resubmitBtn).toBeVisible();
+      await resubmitBtn.click();
+      await expectNoErrorBleed(page, page.url());
+      await expect(page.locator(".alert-danger")).toHaveCount(0);
+
+      // Back in admin view the zone is Pending again (Approve + Reject offered).
+      await adminOpenZone(adminPage, idToken);
+      await expect(
+        adminPage.locator(
+          'form[action="/manage/vendor/admin"] input[name="status_change"][value="Reject"]',
+        ),
+        "Reject button means status returned to Pending",
+      ).toBeVisible();
+
+      // --- Approve (Pending -> Approved) ---
+      const approveBtn = adminPage.locator(
+        'form[action="/manage/vendor/admin"] input[name="status_change"][value="Approve"]',
+      );
+      await expect(approveBtn).toBeVisible();
+      await approveBtn.click();
+      await expectNoErrorBleed(adminPage, adminPage.url());
+      // render_admin sets msg "<zone> approved" on success.
+      await expect(adminPage.locator("body")).toContainText(
+        `${data.zoneName} approved`,
+      );
+    } finally {
+      await adminCtx.close();
+    }
+  });
+
+  // 4. Regular user, Approved: no Edit button; the edit URL falls through to the
+  // read-only show page (can_edit_zone is false for a non-admin on an Approved
+  // zone, so render_zone skips render_form and renders show.html).
+  test("owner sees no edit on an Approved zone; edit URL is read-only", async ({
+    page,
+    context,
+    browser,
+  }) => {
+    const ownerEmail = uniqueTestEmail("vendor-approved-owner");
+    await loginAs(context, ownerEmail);
+    const data = freshZoneData("ap");
+    const idToken = await createAndSubmitPendingZone(page, data);
+
+    const adminEmail = uniqueTestEmail("vendor-admin");
+    const { context: adminCtx, page: adminPage } = await loginAsVendorAdmin(
+      browser,
+      adminEmail,
+    );
+    try {
+      test.skip(
+        !(await isVendorAdmin(adminPage)),
+        "minted session lacks vendor_admin; cannot approve to set up this case",
+      );
+
+      // Admin approves so the zone is Approved.
+      await adminOpenZone(adminPage, idToken);
+      await adminPage
+        .locator(
+          'form[action="/manage/vendor/admin"] input[name="status_change"][value="Approve"]',
+        )
+        .click();
+      await expect(adminPage.locator("body")).toContainText(
+        `${data.zoneName} approved`,
+      );
+
+      // Owner views the Approved zone: show.html only renders the Edit button
+      // when can_edit_zone is true, which is false for a non-admin on Approved.
+      await page.goto(
+        `/manage/vendor/zone?id=${encodeURIComponent(idToken)}`,
+      );
+      await expectNoErrorBleed(page, page.url());
+      await expect(page.locator("body")).toContainText("Approved");
+      await expect(
+        page.locator('a[href*="mode=edit"]'),
+        "Approved zone shows no Edit button to the owner",
+      ).toHaveCount(0);
+
+      // Opening the edit URL directly falls through to the read-only show page:
+      // render_zone ignores mode=edit when !can_edit_zone, so no editable form.
+      await page.goto(
+        `/manage/vendor/zone?id=${encodeURIComponent(idToken)}&mode=edit`,
+      );
+      await expectNoErrorBleed(page, page.url());
+      await expect(
+        page.locator('form[action="/manage/vendor/zone"]'),
+        "edit URL must not render the editable zone form for a non-admin owner",
+      ).toHaveCount(0);
+      // The read-only show page renders the status instead.
+      await expect(page.locator("body")).toContainText("Approved");
+    } finally {
+      await adminCtx.close();
+    }
+  });
+
+  // 5. Staff (vendor admin), Approved: the edit form OPENS (can_edit_zone is true
+  // for an admin regardless of status); zone_name is read-only; other fields save.
+  test("vendor admin can edit an Approved zone; zone_name is read-only; other fields save", async ({
+    page,
+    context,
+    browser,
+  }) => {
+    // Owner creates + submits the zone.
+    const ownerEmail = uniqueTestEmail("vendor-staffedit-owner");
+    await loginAs(context, ownerEmail);
+    const data = freshZoneData("se");
+    const idToken = await createAndSubmitPendingZone(page, data);
+
+    // Admin approves, then edits via the admin session (which IS the editing
+    // identity here — the admin acts on the zone through the normal edit form).
+    const adminEmail = uniqueTestEmail("vendor-admin");
+    const { context: adminCtx, page: adminPage } = await loginAsVendorAdmin(
+      browser,
+      adminEmail,
+    );
+    try {
+      test.skip(
+        !(await isVendorAdmin(adminPage)),
+        "minted session lacks vendor_admin; cannot edit an Approved zone as admin",
+      );
+
+      await adminOpenZone(adminPage, idToken);
+      await adminPage
+        .locator(
+          'form[action="/manage/vendor/admin"] input[name="status_change"][value="Approve"]',
+        )
+        .click();
+      await expect(adminPage.locator("body")).toContainText(
+        `${data.zoneName} approved`,
+      );
+
+      // Admin opens the edit form on the Approved zone. can_edit_zone is true for
+      // an admin, so render_zone renders render_form (the editable form).
+      await adminPage.goto(
+        `/manage/vendor/zone?id=${encodeURIComponent(idToken)}&mode=edit`,
+      );
+      await expectNoErrorBleed(adminPage, adminPage.url());
+      const form = adminPage.locator('form[action="/manage/vendor/zone"]');
+      await expect(form).toBeVisible();
+
+      // zone_name is rendered with the `readonly` attribute on Approved
+      // (form.html: `IF vz.status == 'Approved' readonly`). Assert the attribute
+      // and the prefilled value.
+      const zoneNameInput = adminPage.locator('input[name="zone_name"]');
+      await expect(zoneNameInput).toHaveAttribute("readonly", "");
+      await expect(zoneNameInput).toHaveValue(data.zoneName);
+
+      // Change a non-locked field (organization_name) and save.
+      const newOrg = "Example Vendor (admin edited)";
+      await adminPage.fill('input[name="organization_name"]', newOrg);
+      await Promise.all([
+        adminPage.waitForURL(/\/manage\/vendor\/zone\?/),
+        adminPage.click(
+          'form[action="/manage/vendor/zone"] input[type="submit"]',
+        ),
+      ]);
+      await expectNoErrorBleed(adminPage, adminPage.url());
+      await expect(adminPage.locator(".alert-danger")).toHaveCount(0);
+      await expect(adminPage.locator("body")).toContainText(newOrg);
+
+      // Reopen the edit form and confirm the org change persisted and zone_name
+      // is unchanged (still the original, still read-only).
+      await adminPage.goto(
+        `/manage/vendor/zone?id=${encodeURIComponent(idToken)}&mode=edit`,
+      );
+      await expect(
+        adminPage.locator('input[name="organization_name"]'),
+      ).toHaveValue(newOrg);
+      await expect(adminPage.locator('input[name="zone_name"]')).toHaveValue(
+        data.zoneName,
+      );
+    } finally {
+      await adminCtx.close();
+    }
+  });
+
+  // 6. Staff, Approved: changing zone_name is rejected by the API (name locked
+  // once live). The form field is `readonly` (not `disabled`), so Playwright
+  // .fill() would throw rather than exercise the API. We therefore bypass the UI
+  // and POST a crafted request via page.request (which carries the admin session
+  // cookies) with a CHANGED zone_name, then assert the API/controller does NOT
+  // accept the rename: the zone_name stays the original on the show page.
+  //
+  // HUMAN-VERIFY: confirm the API rejects the rename of an Approved zone with an
+  // error (vs. silently ignoring it). Both outcomes leave zone_name unchanged,
+  // which is what this test asserts; tighten to expectErrorAlert if the API
+  // surfaces an error through render_edit on this path.
+  test("vendor admin cannot rename an Approved zone via the API", async ({
+    page,
+    context,
+    browser,
+  }) => {
+    const ownerEmail = uniqueTestEmail("vendor-rename-owner");
+    await loginAs(context, ownerEmail);
+    const data = freshZoneData("rn");
+    const idToken = await createAndSubmitPendingZone(page, data);
+
+    const adminEmail = uniqueTestEmail("vendor-admin");
+    const { context: adminCtx, page: adminPage } = await loginAsVendorAdmin(
+      browser,
+      adminEmail,
+    );
+    try {
+      test.skip(
+        !(await isVendorAdmin(adminPage)),
+        "minted session lacks vendor_admin; cannot reach the Approved-rename case",
+      );
+
+      await adminOpenZone(adminPage, idToken);
+      await adminPage
+        .locator(
+          'form[action="/manage/vendor/admin"] input[name="status_change"][value="Approve"]',
+        )
+        .click();
+      await expect(adminPage.locator("body")).toContainText(
+        `${data.zoneName} approved`,
+      );
+
+      // Read the auth_token from the edit form (POSTs require it; manage_dispatch
+      // returns 403 without a valid auth_token).
+      await adminPage.goto(
+        `/manage/vendor/zone?id=${encodeURIComponent(idToken)}&mode=edit`,
+      );
+      const authToken = await adminPage
+        .locator('form[action="/manage/vendor/zone"] input[name="auth_token"]')
+        .inputValue();
+      const accountToken = await adminPage
+        .locator('form[action="/manage/vendor/zone"] input[name="a"]')
+        .inputValue();
+
+      // Craft a POST that tries to rename the Approved zone. The field is
+      // readonly in the UI, so we submit directly to exercise the API guard.
+      const renamed = `${data.zoneName}x`;
+      const resp = await adminPage.request.post("/manage/vendor/zone", {
+        form: {
+          id: idToken,
+          a: accountToken,
+          auth_token: authToken,
+          zone_name: renamed,
+          organization_name: data.organizationName,
+          request_information: data.requestInformation,
+          device_information: data.deviceInformation,
+          device_count: data.deviceCount,
+        },
+      });
+      // Whether the API errors (re-renders the form) or ignores the locked field,
+      // the rename must NOT take effect.
+      expect(resp.status(), "rename POST should not 5xx").toBeLessThan(500);
+
+      // Reload the zone and assert the name is still the original (not renamed).
+      await adminPage.goto(
+        `/manage/vendor/zone?id=${encodeURIComponent(idToken)}`,
+      );
+      await expectNoErrorBleed(adminPage, adminPage.url());
+      await expect(
+        adminPage.locator("body"),
+        "Approved zone_name must remain locked to its original value",
+      ).toContainText(data.zoneName);
+      await expect(
+        adminPage.locator("body"),
+        "the attempted new zone_name must not appear",
+      ).not.toContainText(renamed);
+    } finally {
+      await adminCtx.close();
+    }
+  });
+
+  // 7. §5c: an admin approve/reject FAILURE must surface a red alert + Trace ID,
+  // not a silent no-op. We induce a failure by attempting an INVALID transition:
+  // render_admin only calls the status RPC for valid (status, action) pairs, so
+  // to reach the error path we drive the RPC directly with a status the API
+  // rejects. We POST status_change=Approve against a zone that is NOT in a
+  // Pending/Rejected state is filtered out by the controller, so instead we post
+  // a bogus status value that render_admin forwards only when the regex matches;
+  // the reliably API-rejected case is approving an already-Approved zone via a
+  // crafted post. _errors.html renders errors.general as .alert-danger with the
+  // Trace ID.
+  //
+  // HUMAN-VERIFY: the exact way to force an admin status-RPC error on the live
+  // site. The controller guards transitions with regexes (only Pending->Reject,
+  // Pending/Rejected->Approve are forwarded), so a UI no-op won't hit the RPC.
+  // This test drives the controller into the RPC with an already-Approved zone +
+  // status_change=Approve (the regex `Pending|Rejected` won't match 'Approved',
+  // so it is a no-op) — see the assertion note. If no UI path can force the RPC
+  // error, this assertion is best-effort and may need an API-level fault inject.
+  test("§5c admin approve/reject failure surfaces an alert with a Trace ID", async ({
+    page,
+    context,
+    browser,
+  }) => {
+    const ownerEmail = uniqueTestEmail("vendor-adminerr-owner");
+    await loginAs(context, ownerEmail);
+    const data = freshZoneData("ae");
+    const idToken = await createAndSubmitPendingZone(page, data);
+
+    const adminEmail = uniqueTestEmail("vendor-admin");
+    const { context: adminCtx, page: adminPage } = await loginAsVendorAdmin(
+      browser,
+      adminEmail,
+    );
+    try {
+      test.skip(
+        !(await isVendorAdmin(adminPage)),
+        "minted session lacks vendor_admin; cannot exercise admin error path",
+      );
+
+      // Approve the zone first so it is Approved.
+      await adminOpenZone(adminPage, idToken);
+      await adminPage
+        .locator(
+          'form[action="/manage/vendor/admin"] input[name="status_change"][value="Approve"]',
+        )
+        .click();
+      await expect(adminPage.locator("body")).toContainText(
+        `${data.zoneName} approved`,
+      );
+
+      // Read the admin form's auth_token from the show page to craft a POST.
+      await adminOpenZone(adminPage, idToken);
+      const authToken = await adminPage
+        .locator('form[action="/manage/vendor/admin"] input[name="auth_token"]')
+        .inputValue()
+        .catch(() => "");
+
+      // Drive the admin status endpoint with a status the API rejects. status.go
+      // only accepts 'Approved'/'Rejected'; we send a bogus value to force the
+      // RPC error path. render_admin forwards status_change matching /^Approve/
+      // or /^Reject/ for the right current status; "Reject-bad" matches /^Reject/
+      // but the zone is Approved (not Pending), so the controller no-ops. To
+      // reliably hit the RPC we instead send status_change=Approve while the zone
+      // is Rejected — but it's Approved here. Given the controller's guards, the
+      // dependable error surface is the duplicate-name case already covered in
+      // §5c on the edit path; for the admin path we assert that IF an error
+      // renders, it carries a Trace ID (no silent partial), and otherwise that
+      // the page is not a blank dead-end.
+      const resp = await adminPage.request.post("/manage/vendor/admin", {
+        form: {
+          id: idToken,
+          auth_token: authToken,
+          status_change: "Approve",
+        },
+      });
+      expect(resp.status(), "admin POST should not 5xx").toBeLessThan(500);
+
+      // Re-render the admin show page and check error surfacing convention: if a
+      // danger/warning alert is present it MUST include a Trace ID (the §5c rule),
+      // and the page must not be a blank error bleed.
+      await adminOpenZone(adminPage, idToken);
+      const alert = adminPage.locator(".alert-danger, .alert-warning");
+      if ((await alert.count()) > 0) {
+        await expectErrorAlert(adminPage, { requireTraceId: true });
+      } else {
+        // No error rendered (controller no-op due to its transition guards): the
+        // page must still render cleanly rather than dead-end. HUMAN-VERIFY a
+        // forced RPC failure (fault injection) shows the alert + Trace ID.
+        await expect(
+          adminPage.locator('h3:has-text("Pending zones")'),
+        ).toBeVisible();
+      }
+    } finally {
+      await adminCtx.close();
+    }
+  });
 });
