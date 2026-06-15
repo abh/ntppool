@@ -10,7 +10,9 @@ export default defineConfig({
     timeout: 10_000,
   },
   retries: 1,
-  reporter: "list",
+  // `list` prints a readable per-test line in the terminal; the HTML report
+  // (npm run report) is far easier to read for failures (traces, diffs).
+  reporter: [["list"], ["html", { open: "never" }]],
   use: {
     baseURL,
     trace: "on-first-retry",
