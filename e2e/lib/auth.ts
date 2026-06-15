@@ -62,14 +62,26 @@ export async function mintSession(
     grant_vendor_admin: opts.grantVendorAdmin ?? false,
   };
 
-  const resp = await fetch(url, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${key}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-  });
+  let resp: Response;
+  try {
+    resp = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${key}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+  } catch (err) {
+    // Network/DNS failure — almost always a wrong or unreachable
+    // NTP_INTERNAL_API_URL (e.g. the .env.example placeholder, or Tailscale
+    // down). Surface that rather than a bare "fetch failed".
+    throw new Error(
+      `CreateTestSession request to ${url} failed (network/DNS). ` +
+        `Is NTP_INTERNAL_API_URL correct and reachable? ` +
+        `Cause: ${(err as Error).message}`,
+    );
+  }
 
   if (!resp.ok) {
     const text = await resp.text();
