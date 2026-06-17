@@ -10,12 +10,20 @@ import {
 // delete / cancel), for a REGULAR (non-staff) user. Only the reversible parts
 // are exercised here.
 //
-// Gating: the add-server flow is guarded by the `can_add_servers` permission.
-// A brand-new account must verify its existing servers before it may add more
-// (lib/NTPPool/Control/Manage/Server.pm handle_add, ~lines 144-148), and the
-// Go API may reject a non-routable RFC 5737 IP. These tests therefore degrade
-// gracefully: they assert the permission/error notice instead of failing, and
-// skip the delete/cancel flow when no server could be created.
+// Where the form lives: the add-server form is rendered on /manage/servers
+// (tpl/manage.html PROCESSes add_form.html unconditionally). /manage/server/add
+// itself is a POST-only, CSRF-protected form *action* — a bare GET returns 403
+// on the missing auth_token (Combust::Control check_auth_token), so it is never
+// navigated to directly. The page surface to load and assert is /manage/servers.
+//
+// Gating: the add flow is guarded by the `can_add_servers` permission. A
+// brand-new account must verify its existing servers before it may add more, so
+// /manage/servers renders a "...before adding more" notice alongside the form
+// (tpl/manage.html, ~line 26; the POST handler renders the same notice from
+// Server.pm handle_add ~lines 144-148). The Go API may also reject a
+// non-routable RFC 5737 IP. These tests therefore degrade gracefully: they
+// assert the permission/error notice instead of failing, and skip the
+// delete/cancel flow when no server could be created.
 //
 // NOTE: audit-log and email side-effect assertions (the API writes a log row
 // in the same transaction; a notification email is sent when a comment is
@@ -40,10 +48,14 @@ import {
 const TEST_IP = process.env.NTP_SERVER_TEST_IP || "192.0.2.123";
 const EXISTING_SERVER_IP = process.env.NTP_EXISTING_SERVER_IP;
 
-const PERMISSION_NOTICE = "Please verify your existing servers before adding more.";
+// Shared phrase of the can_add_servers notice. /manage/servers renders
+// "Please verify your servers before adding more." while the POST handler
+// renders "Please verify your existing servers before adding more." — both
+// contain this substring.
+const PERMISSION_NOTICE = "before adding more";
 
-// Returns true if the add-server page rendered the permission gate notice
-// rather than the actual add form / precheck.
+// Returns true if the current page rendered the can_add_servers permission
+// notice (account must verify existing servers before adding more).
 async function hasPermissionGate(page: Page): Promise<boolean> {
   return (await page.content()).includes(PERMISSION_NOTICE);
 }
@@ -55,22 +67,18 @@ test.describe("server add (§8)", () => {
   }) => {
     await loginAs(context, uniqueTestEmail());
 
-    await expectCleanPage(page, "/manage/server/add");
+    // The add form is rendered on the servers page, not at /manage/server/add
+    // (which is the POST target). It is present even for a fresh account.
+    await expectCleanPage(page, "/manage/servers");
 
-    // A fresh account renders EITHER the add form OR the permission notice
-    // telling the user to verify existing servers first. Assert one-of: the
-    // page is valid in both states, never broken.
-    const gated = await hasPermissionGate(page);
-    if (gated) {
-      // Permission gate: the notice is shown (handle_add early return).
-      await expect(page.locator("body")).toContainText(PERMISSION_NOTICE);
-    } else {
-      // Add form: the host input and "Add" submit button are present.
-      await expect(page.locator('input[name="host"]')).toBeVisible();
-      await expect(
-        page.locator('input[type="submit"][value="Add"]'),
-      ).toBeVisible();
-    }
+    await expect(page.locator('input[name="host"]')).toBeVisible();
+    await expect(
+      page.locator('input[type="submit"][value="Add"]'),
+    ).toBeVisible();
+
+    // A brand-new account that must verify existing servers first also shows
+    // the permission notice next to the form — both states are valid (the
+    // clean-page + visible-form assertions above hold either way).
   });
 
   test("add a server (best-effort, gated by permission + routable IP)", async ({
@@ -79,10 +87,11 @@ test.describe("server add (§8)", () => {
   }) => {
     await loginAs(context, uniqueTestEmail());
 
-    await expectCleanPage(page, "/manage/server/add");
+    await expectCleanPage(page, "/manage/servers");
 
-    // If the account can't add servers yet, assert the notice and stop — this
-    // is the expected state for a brand-new account, not a failure.
+    // If the account can't add servers yet, the servers page shows the notice.
+    // Assert it and stop — this is the expected state for a brand-new account,
+    // not a failure.
     if (await hasPermissionGate(page)) {
       await expect(page.locator("body")).toContainText(PERMISSION_NOTICE);
       test.skip(
@@ -149,7 +158,7 @@ test.describe.serial("server scheduled delete + cancel (§8a)", () => {
     }
 
     await loginAs(context, uniqueTestEmail());
-    await expectCleanPage(page, "/manage/server/add");
+    await expectCleanPage(page, "/manage/servers");
 
     if (await hasPermissionGate(page)) {
       test.skip(
