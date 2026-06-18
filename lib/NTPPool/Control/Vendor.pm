@@ -69,7 +69,13 @@ sub manage_dispatch {
         context => $self->_get_request_context(),
     );
 
-    unless ($zones_result->{data} && @{$zones_result->{data}{zones}}) {
+    # On API error, show it - don't fall through to the "create your first
+    # zone" redirect, which would mislead a vendor who already has zones.
+    if (my $status = $self->capi_error_status($zones_result, $zones_result->{data})) {
+        return $status;
+    }
+
+    unless (@{$zones_result->{data}{zones}}) {
         return $self->redirect($self->manage_url('/manage/vendor/new'));
     }
 
@@ -159,23 +165,28 @@ sub render_zones {
         account => $self->current_account->{id_token},
         context => $self->_get_request_context(),
     );
-    $self->tpl_param('vendor_zones',
-        ($zones_result->{data} && $zones_result->{data}{zones}) || []);
+    if (my $status = $self->capi_error_status($zones_result, $zones_result->{data})) {
+        return $status;
+    }
+    $self->tpl_param('vendor_zones', $zones_result->{data}{zones} || []);
 
     # have_subscription was combust.current_account.have_live_subscription (an
     # ORM method); fetch it from the subscription status API instead. Used only
     # to label a Pending zone as "Processing".
     my $status_result = get_account_subscription_status($self->api_auth_params,
         account => $self->current_account->{id_token},);
-    my $status_data =
-      ($status_result->{data} && !$status_result->{error})
-      ? $status_result->{data}
-      : {};
+    if (my $status = $self->capi_error_status($status_result, $status_result->{data})) {
+        return $status;
+    }
+    my $status_data = $status_result->{data};
     $self->tpl_param('have_subscription', $status_data->{has_live_subscription} ? 1 : 0);
 
     my $subs_result = get_account_subscriptions($self->api_auth_params,
         account => $self->current_account->{id_token},);
-    if ($subs_result->{data} && $subs_result->{data}{subscriptions}) {
+    if (my $status = $self->capi_error_status($subs_result, $subs_result->{data})) {
+        return $status;
+    }
+    if ($subs_result->{data}{subscriptions}) {
         my @live =
           grep { $_->{live_subscription} } @{$subs_result->{data}{subscriptions}};
         $self->tpl_param('subscriptions', \@live);
@@ -733,7 +744,10 @@ sub render_subscription {
 
     my $subs_result = get_account_subscriptions($self->api_auth_params,
         account => $self->current_account->{id_token},);
-    if ($subs_result->{data} && $subs_result->{data}{subscriptions}) {
+    if (my $status = $self->capi_error_status($subs_result, $subs_result->{data})) {
+        return $status;
+    }
+    if ($subs_result->{data}{subscriptions}) {
         $self->tpl_param('subscriptions', $subs_result->{data}{subscriptions});
     }
 

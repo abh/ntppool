@@ -411,7 +411,8 @@ sub count_by_continent {
     my $result = list_zones();
 
     if ($result->{error}) {
-        warn "Failed to fetch zones from API: $result->{error} (TraceID: $result->{trace_id})";
+        warn
+          "Failed to fetch zones from API: $result->{error} (TraceID: $result->{trace_id})";
         return [];
     }
 
@@ -456,8 +457,13 @@ sub cache_control {
 
 # Map a CAPI/IntAPI result to an HTTP status when the record we wanted is
 # absent. The not-found-vs-transient logic lives in NP::CAPI::result_http_status;
-# here we add the controller-only concern of not letting an upstream cache
-# (Fastly) store a transient failure under the page's s-maxage header.
+# here we add the controller-only concerns of (a) not letting an upstream cache
+# (Fastly) store a transient failure under the page's s-maxage header and
+# (b) surfacing the error message so templates (error_alert.html) can show it.
+#
+# This is the single CAPI/IntAPI error helper; NTPPool::Control::Manage's
+# _handle_capi_error is a thin adapter over it for callers that use the
+# legacy "200-on-success" return convention.
 #
 #   $have_data  truthy when the response carried the record the caller needs
 #
@@ -469,6 +475,12 @@ sub capi_error_status {
 
     my ($status, $transient) = NP::CAPI::result_http_status($result);
     $self->cache_control('s-maxage=0,max-age=0,no-store') if $transient;
+
+    # Surface the error for the page, without clobbering one a caller already set.
+    $self->tpl_param('error', $result->{error})
+      if $result->{error} && !$self->tpl_param('error');
+    $self->tpl_param('code', $status);
+
     return $status;
 }
 
@@ -562,7 +574,7 @@ sub post_process {
         ['Referrer-Policy'        => 'origin-when-cross-origin'],
 
         # HTMX CORS support
-        ['Access-Control-Allow-Headers' => 'HX-Request'],
+        ['Access-Control-Allow-Headers'  => 'HX-Request'],
         ['Access-Control-Expose-Headers' => 'HX-Redirect, TraceID, Request-ID'],
 
         # ntppool version / build
