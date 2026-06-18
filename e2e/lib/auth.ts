@@ -6,7 +6,9 @@ import { BrowserContext } from "@playwright/test";
 // Source: lib/NTPPool/Control.pm `plain_cookie` and
 // lib/NTPPool/Control/Login.pm `_set_session_cookie`:
 //   - name:     npuid
-//   - value:    "{session_token};{unix_seconds}"
+//   - value:    "{session_token};{unix_seconds}", URL-encoded as Plack's
+//               Cookie::Baker bakes it (the ";" stored as "%3B"); see loginAs
+
 //   - domain:   site cookie_domain, else the request host (we use the
 //               NTP_BASE_URL host, which is what the dev site serves under)
 //   - path:     /
@@ -101,10 +103,17 @@ export async function mintSession(
   return data.session_token;
 }
 
-function baseHost(): string {
-  const base = process.env.NTP_BASE_URL || "https://web.askdev.grundclock.com";
+// The authenticated app (/manage) is a separate Combust site served from the
+// manage host, NOT the public web host. The session cookie is host-scoped
+// (the deployed config sets no cookie_domain, so plain_cookie falls back to the
+// request host), so it must be installed for the manage host or it never
+// reaches the app under test.
+export const MANAGE_URL =
+  process.env.NTP_MANAGE_URL || "https://manage.askdev.grundclock.com";
+
+function manageHost(): string {
   // hostname (not host) so a non-default port never leaks into the cookie domain.
-  return new URL(base).hostname;
+  return new URL(MANAGE_URL).hostname;
 }
 
 /**
@@ -117,13 +126,22 @@ export async function loginAs(
   opts: MintOptions = {},
 ): Promise<{ email: string; sessionToken: string }> {
   const sessionToken = await mintSession(email, opts);
-  const value = `${sessionToken};${Math.floor(Date.now() / 1000)}`;
+  // The Perl value is "{session_token};{unix_seconds}", but that is never what
+  // the browser actually stores: Plack bakes the Set-Cookie header through
+  // Cookie::Baker, which URL-encodes the value (the ";" becomes "%3B"), and
+  // crush_cookie URL-decodes it back on the next request. So we install the
+  // encoded form — both to faithfully mirror a real login and because Chrome's
+  // CDP (Storage.setCookies) rejects a raw ";" in a cookie value as an
+  // "Invalid cookie fields" error.
+  const value = encodeURIComponent(
+    `${sessionToken};${Math.floor(Date.now() / 1000)}`,
+  );
 
   await context.addCookies([
     {
       name: COOKIE_NAME,
       value,
-      domain: baseHost(),
+      domain: manageHost(),
       path: "/",
       secure: true,
       httpOnly: true,
