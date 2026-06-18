@@ -18,7 +18,9 @@ test("minted user lands on the manage dashboard", async ({ page, context }) => {
   // This selector may need adjusting against the live site, but it must
   // stay a genuine "authenticated" marker. Do NOT weaken this to something
   // that also renders on the logged-out / empty dead-end page.
-  const logout = page.locator("a.nav-link", { hasText: "Logout" });
+  // The manage layout renders the sidebar twice (a desktop copy and a hidden
+  // #mobile-nav copy), so scope to the visible Logout link.
+  const logout = page.locator("a.nav-link:visible", { hasText: "Logout" });
   await expect(logout).toBeVisible();
   await expect(logout).toContainText(email);
 });
@@ -93,7 +95,7 @@ test("logout then log back in restores the same account", async ({
   // First login.
   await loginAs(context, email);
   await page.goto("/manage");
-  const logout = page.locator("a.nav-link", { hasText: "Logout" });
+  const logout = page.locator("a.nav-link:visible", { hasText: "Logout" });
   await expect(logout).toContainText(email);
 
   // Visit the logout route (/manage/logout per Manage.pm render). It clears the

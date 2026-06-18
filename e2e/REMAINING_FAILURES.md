@@ -16,13 +16,12 @@ green). #2 and #3 turned out to be real product/API gaps, not test bugs — both
 fixed in the Go api repo (commits `23da38c` and `08cb4b6`) and will pass once the
 dev API is redeployed. See each section for details.
 
-Update: groups 4 and 5 are now root-caused (not yet fixed). #4 is a **Perl-side
-bug**: the Go admin-only guard on `device_information`/`contact_information` is
-working as intended, but the new-zone form still renders an editable
-`device_information` field (and the controller always sends both as `''`), which
-trips the guard for non-admin users. `device_information` should be admin-only /
-historical (like `contact_information`, which is already gated in the form), so the
-fix is to stop collecting and sending it for regular users.
+Update: group 4 is now FIXED (Go + Perl), pending dev redeploy. The Go create guard
+rejected non-admins from setting `device_information`, but that field **is** collected
+from everyone (only its visibility is admin-only). Narrowed the guard so only
+`contact_information` is `vendor_admin`-only on create, and stopped the Perl from
+sending blank `device_information`/`contact_information` (an empty string still
+unmarshals to a non-nil field in Go and tripped the guard). No template change.
 #5 turned out to be a **real Perl bug** (not a harness artifact): `Login::logout`
 called `delete_session` without `auth`, so the Go session-auth middleware rejected it
 401 and the session was never deleted — logout left the token valid for ~45 days.
@@ -174,94 +173,67 @@ waiting for navigation until "load"
 
 (`createNewZone` at `vendor.spec.ts:65` — `page.waitForURL(/\/manage\/vendor\/zone\?/)`)
 
-**Cause (confirmed) — Perl-side bug; the Go guard is working as intended**
+**Cause (confirmed) — FIXED (Go guard + Perl); device_information stays user-settable**
 
 All five tests funnel through the `createNewZone` helper (`vendor.spec.ts:53-71`),
-which POSTs the new-zone form to `/manage/vendor/zone`. The POST hits a
-`permission_denied` error, so the controller re-renders the form (HTTP 200, no
-redirect) and the page stays on `/manage/vendor/zone` with no query string — exactly
+which POSTs the new-zone form to `/manage/vendor/zone`. The POST hit a
+`permission_denied` error, so the controller re-rendered the form (HTTP 200, no
+redirect) and the page stayed on `/manage/vendor/zone` with no query string — exactly
 the `waitForURL(/\/manage\/vendor\/zone\?/)` timeout reported.
 
-The two admin-only fields are handled inconsistently in the form, and
-`device_information`'s handling contradicts the Go guard:
+Two things combined to cause it:
 
-- **`contact_information`** was deliberately gated to "show only if already set":
-  `form.html:93` wraps it in `[% IF vz.contact_information %] ... [% END %]` (added in
-  commit `21f43235`). A new zone has no value, so the textarea isn't rendered and the
-  field isn't collected from regular users — i.e. admin-only / historical.
-- **`device_information`** was never given that treatment. It still renders an
-  editable textarea for everyone (`form.html:82-89`). Git history shows why: the field
-  began as a copy-paste of `request_information` and was only renamed to
-  `device_information` in commit `4dec6f51` — the gating was never added.
+1. **The Go create guard was too broad.** `RequestVendorZone`
+   (`../go/ntp/api/server/api/vendorzone/request.go`) rejected *any* non-nil
+   `device_information` **or** `contact_information` from a non-`vendor_admin` user.
+   But `device_information` **is** collected from all users — the form
+   (`form.html:82-89`) renders the textarea for everyone, and the test fills it
+   (`vendor.spec.ts:47,61`). So a fresh, non-admin user submitting the form was
+   rejected. (Note the create guard was also inconsistent with the **update** path,
+   `update.go`, which has no such guard — an in-account user can already set both
+   fields on update.)
+2. **The Perl always sent both fields as `''`.** `_edit_zone`
+   (`lib/NTPPool/Control/Vendor.pm`) put `device_information => req_param(...) || ''`
+   and `contact_information => req_param(...) || ''` into `%content` unconditionally
+   and forwarded them on the create path. `request_vendor_zone`
+   (`lib/NP/CAPI/VendorZone.pm:490-491`) forwards each key when present, and these are
+   proto3 `optional` fields, so a present JSON key (even `""`) unmarshals to a
+   **non-nil** `*string` in Go — tripping the guard even when the user left a field
+   blank. `contact_information` is gated in the form (`form.html:93`,
+   `[% IF vz.contact_information %]`), so a regular user never sees it, yet Perl still
+   sent `contact_information => ''`.
 
-So the form is still actively collecting `device_information` from all users, while
-the Go API forbids non-admins from setting it. That contradiction is the bug. Intent
-(per the maintainer): `device_information` should follow the `contact_information`
-model — admin-only / historical, not collected on new applications. The Go guard and
-the field's "only visible to NTP Pool admins" label both align with that.
+`render_edit` (`Vendor.pm:449-457`) re-renders the form on error instead of
+redirecting, hence the missing query string. The edit / open-source / duplicate-name
+/ approve-reject tests (`vendor.spec.ts:122,161,217,390`) all call `createNewZone`
+first, so they failed at the create POST before reaching their own assertions.
 
-Mechanism:
+**Fix (applied, two repos)**
 
-- The form (`form.html:89`) renders the `device_information` textarea
-  unconditionally, and the test fills it (`vendor.spec.ts:47,61`).
-- `_edit_zone` (`lib/NTPPool/Control/Vendor.pm:488-495`) *always* puts **both**
-  `device_information => req_param(...) || ''` (line 492) and
-  `contact_information => req_param(...) || ''` (line 493) into `%content`, then
-  passes `%content` to `request_vendor_zone` on the create path (line 513).
-- `request_vendor_zone` (`lib/NP/CAPI/VendorZone.pm:490-491`) forwards each key
-  whenever it exists, and `connect_rpc` JSON-encodes it verbatim. These are proto3
-  `optional` fields, so a present JSON key (even `""`) unmarshals to a **non-nil**
-  `*string` in Go.
-- `RequestVendorZone` (`../go/ntp/api/server/api/vendorzone/request.go:46-51`)
-  rejects any non-nil `DeviceInformation`/`ContactInformation` unless the user is
-  `vendor_admin`:
-  ```go
-  if req.Msg.DeviceInformation != nil || req.Msg.ContactInformation != nil {
-      if !user.Privilege.VendorAdmin.Bool {
-          return ... PermissionDenied("only vendor_admin can set device_information or contact_information")
-      }
-  }
-  ```
-  This guard is **intentional and correct** — these fields are admin-only. The e2e
-  tests log in as fresh, non-admin users, so the create returns `permission_denied`.
-  `_edit_zone` returns `{general, trace_id}` and `render_edit` (`Vendor.pm:449-457`)
-  re-renders the form instead of redirecting — hence the missing query string.
+1. **Go** (`../go/ntp/api/server/api/vendorzone/request.go`) — narrowed the create
+   guard so only `contact_information` is `vendor_admin`-only; `device_information` is
+   now accepted from any requester (it is still shown only to admins, but anyone may
+   provide it). Persistence (`request.go:90-110`) and read-back
+   (`buildVendorZone`, `vendorzone.go:114-118`) already return `device_information`
+   whenever set, for the zone owner — no read-side filtering. Go build/vet/tests pass.
+2. **Perl** (`lib/NTPPool/Control/Vendor.pm`, `_edit_zone`) — on the create path,
+   copy `%content` and drop `device_information`/`contact_information` when blank
+   before calling `request_vendor_zone`, so an empty `contact_information` no longer
+   reaches the (now contact-only) guard and an empty `device_information` stores unset
+   rather than `""`. The update path is unchanged (it sends all fields, which is fine
+   — no guard there, and blanking a field to clear it still works).
 
-The cascade: the edit / open-source / duplicate-name / approve-reject tests
-(`vendor.spec.ts:122,161,217,390`) all call `createNewZone` (directly or via
-`createAndSubmitPendingZone` at line 399) as their first step, so they fail at the
-create POST before reaching their own assertions. The `UpdateVendorZone` path
-(`update.go`) has no such guard, so this is strictly a create-path problem.
-
-This is **not** a test selector/field-name issue — the field names all match the
-form. No Go API change is needed; the guard stays.
-
-**Fix (Perl/template, two parts)**
-
-1. **`docs/manage/tpl/vendor/form.html`** — gate the `device_information` textarea
-   the same way `contact_information` is already gated, so new applications don't
-   collect it and it only appears (read-only or for admins) when a value exists:
-   wrap lines 82-89 in `[% IF vz.device_information %] ... [% END %]` to match the
-   `contact_information` block at 93-103.
-2. **`lib/NTPPool/Control/Vendor.pm`** (`_edit_zone`, ~line 488-495) — stop sending
-   blank `device_information`/`contact_information`. Only add each key to `%content`
-   when there's a non-empty value, so a non-admin's empty fields never reach the Go
-   guard. (Sending `''` is what trips it even when the form omits the input.)
-
-   This is the load-bearing fix: gating the form alone is not enough, because
-   `req_param('device_information')` returns undef → `''`, and the `|| ''` still puts
-   the key into `%content`. The key must be *absent*, not empty.
-
-After the fix, fresh users can submit a new zone; the duplicate-name test
-(`vendor.spec.ts:217`) will then exercise its intended path (it currently fails on
-the first `createNewZone` permission error, not on the duplicate name).
+No template change was needed: `device_information` correctly remains collected from
+everyone.
 
 **Verification**
 
-- Manual: load `/manage/vendor/new` as a fresh non-admin user, confirm the
-  device-information textarea is gone, fill + submit, and confirm it redirects to
-  `/manage/vendor/zone?...`.
-- Then run the `vendor.spec.ts` suite.
+- Go: `go build ./...`, `go vet ./server/api/vendorzone/`, and
+  `go test ./server/api/vendorzone/` all pass.
+- Pending: run `vendor.spec.ts` against dev once the Go API is redeployed. The
+  duplicate-name test (`vendor.spec.ts:217`) will then exercise its intended path
+  (it previously failed on the first `createNewZone` permission error, not on the
+  duplicate name).
 
 ---
 

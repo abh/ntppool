@@ -62,17 +62,26 @@ test.describe("score graphs / PNG endpoints (§9)", () => {
   test("legacy /scores/graph/<id>-offset.png redirects to the PNG", async ({
     page,
   }) => {
-    // The score page template links the graph as /scores/graph/<id>-offset.png;
+    // The score page links the legacy graph as /scores/graph/<id>-offset.png;
     // Scores.pm 301-redirects that to /graph/<ip>/offset.png. We can't know the
-    // numeric server id from the IP without an API call, so drive it the way a
-    // browser does: load the score page and follow the rendered <img src>.
+    // numeric server id from the IP without an API call, so drive it the way the
+    // page does. The <img src="...-offset.png"> lives inside <noscript>, so a
+    // JS-enabled browser never exposes it in the DOM; the same legacy URL is
+    // carried as a data attribute on the real #legacy-graphs element, so read it
+    // from there.
     await page.goto(`/scores/${SCORES_IP}`);
     const graphSrc = await page
-      .locator('img[src*="-offset.png"], img[src*="/offset.png"]')
-      .first()
-      .getAttribute("src");
-    expect(graphSrc, "score page should render an offset graph img").toBeTruthy();
+      .locator("#legacy-graphs")
+      .getAttribute("data-offset-graph-url");
+    expect(
+      graphSrc,
+      "score page should expose a legacy offset graph url",
+    ).toBeTruthy();
+    expect(graphSrc, "legacy graph url should be the -offset.png form").toContain(
+      "-offset.png",
+    );
 
+    // request.get follows the 301 to /graph/<ip>/offset.png by default.
     const response = await page.request.get(graphSrc!);
     expect(response.status(), `unexpected status for ${graphSrc}`).toBe(200);
     expect(
