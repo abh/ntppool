@@ -509,8 +509,16 @@ sub _edit_zone {
         $result = update_vendor_zone(%auth, id_token => $id, content => \%content);
     }
     else {
-        # request_vendor_zone keeps its flat shape (proto unchanged)
-        $result = request_vendor_zone(%auth, %content);
+        # request_vendor_zone keeps its flat shape (proto unchanged). Only send
+        # the optional info fields when they have a value: an empty
+        # contact_information would trip the vendor_admin-only guard for a
+        # regular user creating a zone, and an empty device_information would
+        # store "" instead of leaving the field unset.
+        my %request = %content;
+        for my $field (qw(device_information contact_information)) {
+            delete $request{$field} unless length($request{$field} // '');
+        }
+        $result = request_vendor_zone(%auth, %request);
     }
 
     if ($result->{error}) {
