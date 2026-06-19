@@ -152,8 +152,12 @@ sub logout {
     if ($session_token) {
         $self->plain_cookie($self->user_cookie_name, '', {expires => -1});
 
-        # Delete session via ConnectRPC
+        # Delete session via ConnectRPC. DeleteSession is gated by the session
+        # auth middleware, so the session token must be sent as `auth` (the
+        # Authorization: Bearer header) in addition to the request body —
+        # without it the RPC is rejected 401 and the session is never deleted.
         my $result = delete_session(
+            auth          => $session_token,
             session_token => $session_token,
             context       => $self->_get_request_context(),
         );
