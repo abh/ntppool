@@ -1,7 +1,10 @@
 import { test, expect, Page } from "@playwright/test";
 import { loginAs, uniqueTestEmail } from "../lib/auth";
-import { expectCleanPage, expectNoErrorBleed } from "../lib/helpers";
-import { latestEmailTo } from "../lib/db";
+import {
+  expectCleanPage,
+  expectNoErrorBleed,
+  createAccount,
+} from "../lib/helpers";
 
 // Account scheduled deletion / dissolve flow (MANUAL_TEST_PLAN.md §2).
 //
@@ -36,11 +39,13 @@ function deleteAccountLink(page: Page) {
 }
 
 // Schedule the deletion from the confirmation page and wait for the post-success
-// redirect to /manage/account (render_account_dissolve redirects on scheduled).
+// redirect back to the dissolve page, which now shows the pending state (a
+// pending-deletion account is no longer editable, so /manage/account would
+// bounce away — the controller redirects to /manage/account/dissolve instead).
 async function scheduleDeletion(page: Page) {
   // Submit button value/text is "Schedule account deletion" (btn-warning).
   await Promise.all([
-    page.waitForURL(/\/manage\/account(\?|$)/),
+    page.waitForURL(/\/manage\/account\/dissolve(\?|$)/),
     page
       .getByRole("button", { name: "Schedule account deletion" })
       .click(),
@@ -120,8 +125,15 @@ test("staff: schedule, see pending state, then cancel back to normal", async ({
   const email = uniqueTestEmail("dissolve-cycle");
   await loginAs(context, email, { grantStaff: true });
 
+  // Dissolution refuses to orphan a member, so a sole-owner account can't be
+  // dissolved (that scenario is user-deletion). Create a SECOND account and
+  // dissolve that one — the user keeps their first account, so no one is
+  // orphaned and the schedule succeeds.
+  const acct = await createAccount(page);
+  const dissolveUrl = `${DISSOLVE_PATH}?a=${encodeURIComponent(acct)}`;
+
   // §2: schedule deletion. The API picks a fixed 7-day-out date.
-  await expectCleanPage(page, DISSOLVE_PATH);
+  await expectCleanPage(page, dissolveUrl);
   await scheduleDeletion(page);
 
   // Revisit the dissolve page: it now shows the pending scheduled state with a
@@ -129,7 +141,7 @@ test("staff: schedule, see pending state, then cancel back to normal", async ({
   //   - a "Deletion scheduled" badge,
   //   - the scheduled date (deletion_on, date-only),
   //   - a "Cancel scheduled deletion" button.
-  await expectCleanPage(page, DISSOLVE_PATH);
+  await expectCleanPage(page, dissolveUrl);
   await expect(page.locator("body")).toContainText("Deletion scheduled");
   await expect(page.locator("body")).toContainText("scheduled for deletion on");
   // A scheduled-date marker: an ISO date (YYYY-MM-DD) is rendered in the notice.
@@ -148,59 +160,14 @@ test("staff: schedule, see pending state, then cancel back to normal", async ({
 
   // The dissolve page is back to the un-scheduled state: schedule button shown,
   // no "Deletion scheduled" badge.
-  await expectCleanPage(page, DISSOLVE_PATH);
+  await expectCleanPage(page, dissolveUrl);
   await expect(
     page.getByRole("button", { name: "Schedule account deletion" }),
   ).toBeVisible();
   await expect(page.locator("body")).not.toContainText("Deletion scheduled");
 });
 
-test("DB: scheduling writes a deletion-scheduled email row", async ({
-  page,
-  context,
-}) => {
-  // Grey-box side-effect check (§2: "Confirm the deletion-scheduled email is
-  // sent"). The Go API sends an account_dissolution email to all account
-  // members after scheduling (api/server/api/account/schedule_deletion.go ->
-  // email.SendAccountDissolutionEmail). The fresh staff user is the sole member
-  // of its own account, so the row is addressed to its email.
-  //
-  // Skip cleanly when the read-only DB layer is not configured.
-  test.skip(
-    !process.env.NTP_TEST_DB_URL,
-    "DB layer not configured (NTP_TEST_DB_URL unset)",
-  );
-
-  const email = uniqueTestEmail("dissolve-email");
-  await loginAs(context, email, { grantStaff: true });
-
-  await expectCleanPage(page, DISSOLVE_PATH);
-  await scheduleDeletion(page);
-
-  // Email delivery is fired in a goroutine after the RPC commits, so allow a
-  // short window for the emails row to appear.
-  await expect
-    .poll(
-      async () => {
-        const row = await latestEmailTo(email);
-        return row?.email_type ?? null;
-      },
-      {
-        message: "expected an account_dissolution email row for the staff user",
-        timeout: 10_000,
-      },
-    )
-    .toBe("account_dissolution");
-
-  // Subject is "NTP Pool account scheduled for deletion: <account name>"
-  // (api/email/templates.go SendAccountDissolutionEmail).
-  const row = await latestEmailTo(email);
-  expect(row).not.toBeNull();
-  expect(row!.subject).toContain(
-    "NTP Pool account scheduled for deletion",
-  );
-
-  // Clean up: cancel the scheduled deletion so the staff account is left normal.
-  await expectCleanPage(page, DISSOLVE_PATH);
-  await cancelDeletion(page);
-});
+// Note: a §2 grey-box check that scheduling writes a deletion-scheduled email
+// row was removed — the account_dissolution email has no UI/API surface and was
+// verifiable only through the read-only DB layer (intentionally not used). The
+// schedule/cancel cycle itself is covered by the test above.

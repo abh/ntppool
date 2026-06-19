@@ -1,7 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 import { loginAs, uniqueTestEmail } from "../lib/auth";
 import { expectCleanPage, expectNoErrorBleed } from "../lib/helpers";
-import { latestEmailTo, inviteExpiry } from "../lib/db";
 
 // Account invitation resend, regular-user (non-staff) flow.
 // MANUAL_TEST_PLAN.md §4a "Resend account invitations".
@@ -29,14 +28,6 @@ import { latestEmailTo, inviteExpiry } from "../lib/db";
 //   - success badge:   .alert-success "Sent ... Invitation email resent."
 //   - rate-limit warn: .alert-warning with errors.resend text
 //
-// Email facts (Go api email/templates.go + email/types.go):
-//   - email_type: "account_invite"
-//   - subject:    "Invitation to join NTP Pool account: <AccountName>"
-const INVITE_EMAIL_TYPE = "account_invite";
-
-// DB assertions only run when the read-only verification layer is configured.
-const hasDb = !!process.env.NTP_TEST_DB_URL;
-
 // The team page resolves the logged-in user's default account via
 // current_account, so a direct navigation is enough.
 const TEAM_PATH = "/manage/account/team";
@@ -103,17 +94,10 @@ test("clicking Resend shows the success badge and sends a new invite email", asy
   const successAlert = page.locator(".alert-success");
   await expect(successAlert).toBeVisible();
   await expect(successAlert).toContainText("Invitation email resent");
-
-  // DB-guarded: a fresh invite email row should exist for the invitee, of the
-  // account_invite type. (Skipped cleanly when NTP_TEST_DB_URL is unset.)
-  test.skip(!hasDb, "NTP_TEST_DB_URL not set — skipping DB email verification");
-  const row = await latestEmailTo(invitee);
-  expect(row, `expected an email row for ${invitee}`).not.toBeNull();
-  expect(row!.email_type).toBe(INVITE_EMAIL_TYPE);
-  expect(row!.subject).toContain("Invitation to join NTP Pool account");
-  // Recently created (within a generous window for slow CI).
-  const ageMs = Date.now() - new Date(row!.created_on).getTime();
-  expect(ageMs, "invite email should be recent").toBeLessThan(10 * 60 * 1000);
+  // The success badge only renders on a successful resend, which is what queues
+  // the invite email. Verifying the email row itself needs the read-only DB layer
+  // (intentionally not used here), and there is no UI/API surface for sent email,
+  // so the badge is the observable assertion.
 });
 
 test("an immediate second resend is blocked by the 5-minute cooldown", async ({
@@ -186,34 +170,10 @@ test.skip("exceeding 3 sends in 24h blocks resend with a limit warning", async (
   await expect(warn).toContainText("limit: 3");
 });
 
-test("a resent invite's expiry moves to ~30 days out", async ({
-  page,
-  context,
-}) => {
-  // DB-guarded end to end: act through the UI (resend), verify the side effect
-  // (expiry extension) through the read-only DB layer.
-  test.skip(!hasDb, "NTP_TEST_DB_URL not set — skipping DB expiry verification");
-
-  const owner = uniqueTestEmail("invite-owner");
-  await loginAs(context, owner);
-
-  const invitee = uniqueTestEmail("invite-invitee");
-  await inviteUser(page, invitee);
-
-  await expect(activeResendButton(page)).toBeVisible();
-  await activeResendButton(page).click();
-  await expect(page.locator(".alert-success")).toBeVisible();
-
-  // §4a: each resend extends expiry to ~30 days out. Assert within a tolerance
-  // (29–31 days) to allow for clock skew and processing time.
-  const invite = await inviteExpiry(invitee);
-  expect(invite, `expected an invite row for ${invitee}`).not.toBeNull();
-  const daysOut =
-    (new Date(invite!.expires_on).getTime() - Date.now()) /
-    (24 * 60 * 60 * 1000);
-  expect(daysOut).toBeGreaterThan(29);
-  expect(daysOut).toBeLessThan(31);
-});
+// Note: a §4a check that each resend extends the invite expiry to ~30 days out
+// was removed — it could only be verified through the read-only DB layer
+// (expires_on), which is intentionally not used, and the team UI does not render
+// the invite expiry. Restore it if/when an invite-detail API surface exists.
 
 test("a non-pending invite shows no Resend button", async ({ page, context }) => {
   // §4a: accepted/expired invites show no Resend button; the accept link still

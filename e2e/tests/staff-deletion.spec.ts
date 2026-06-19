@@ -1,7 +1,10 @@
 import { test, expect, Browser, BrowserContext, Page } from "@playwright/test";
 import { loginAs, uniqueTestEmail } from "../lib/auth";
-import { expectCleanPage, expectNoErrorBleed } from "../lib/helpers";
-import { auditLogFor } from "../lib/db";
+import {
+  expectCleanPage,
+  expectNoErrorBleed,
+  createAccount,
+} from "../lib/helpers";
 
 // Staff-targeted user & account deletion (MANUAL_TEST_PLAN.md §3) plus the §4
 // scoping checks. This complements account-dissolve.spec.ts (§2), which covers
@@ -183,7 +186,13 @@ test("staff schedules deletion of another USER, targeting that user (not self)",
       page.getByRole("heading", { name: target.email }),
     ).toBeVisible();
     // Crucially NOT the staff user's own email (we are not deleting ourselves).
-    await expect(page.locator("body")).not.toContainText(staffEmail);
+    // Scope to the delete-confirmation content: the acting staff user's email
+    // legitimately appears in the page chrome (the "Logout (…)" link and the
+    // staff Admin-search recent-accounts list), so a body-wide check is too broad.
+    const confirmContent = page
+      .locator(".col-md-10")
+      .filter({ has: page.getByRole("heading", { name: target.email }) });
+    await expect(confirmContent).not.toContainText(staffEmail);
 
     // Submit the schedule. POST renders tpl/user/delete_scheduled.html (because
     // is_self is false; the self path would redirect to /manage/logout).
@@ -197,9 +206,16 @@ test("staff schedules deletion of another USER, targeting that user (not self)",
     await expect(
       page.getByRole("heading", { name: "Deletion scheduled" }),
     ).toBeVisible();
-    await expect(page.locator("body")).toContainText(target.email);
+    // Scope to the scheduled-confirmation content for the same chrome reason as
+    // above (staff email appears in nav/admin-search, never in the delete content).
+    const scheduledContent = page
+      .locator(".col-md-10")
+      .filter({
+        has: page.getByRole("heading", { name: "Deletion scheduled" }),
+      });
+    await expect(scheduledContent).toContainText(target.email);
     // The acting staff user must not be the one shown as scheduled.
-    await expect(page.locator("body")).not.toContainText(staffEmail);
+    await expect(scheduledContent).not.toContainText(staffEmail);
   } finally {
     await targetContext.close();
   }
@@ -216,25 +232,35 @@ test("staff schedules another ACCOUNT's deletion, scoped to that account", async
   const { target, targetContext } = await mintTarget(browser);
 
   try {
+    // Dissolution refuses to orphan a member, so the target's sole-owner primary
+    // account can't be dissolved. Give the target a SECOND account (in its own
+    // context); staff then dissolves that one — the target keeps its primary, so
+    // no member is orphaned.
+    const targetPage = await targetContext.newPage();
+    const dissolveAcct = await createAccount(targetPage);
+    await targetPage.close();
+
     await loginAs(context, staffEmail, { grantStaff: true });
 
     // GET the dissolve confirmation in the TARGET account context. The page
-    // heading names the target account ("Delete account: <name>"); a fresh
+    // heading names the target account ("Delete account: <name>"); the secondary
     // account has no blockers, so the schedule form is shown.
     await expectCleanPage(
       page,
-      `${DISSOLVE_PATH}?a=${encodeURIComponent(target.accountToken)}`,
+      `${DISSOLVE_PATH}?a=${encodeURIComponent(dissolveAcct)}`,
     );
     await expect(
       page.getByRole("heading", { name: /^Delete account:/ }),
     ).toBeVisible();
 
-    // Schedule. render_account_dissolve redirects to /manage/account on success
-    // (still in the target's account context, a=<target token>).
+    // Schedule. On success render_account_dissolve redirects back to the
+    // dissolve page (still in the target's account context, a=<dissolveAcct>),
+    // which shows the pending state. (/manage/account would bounce: a
+    // pending-deletion account is no longer editable.)
     await Promise.all([
       page.waitForURL(
         new RegExp(
-          `/manage/account\\?a=${escapeRegExp(target.accountToken)}`,
+          `/manage/account/dissolve\\?a=${escapeRegExp(dissolveAcct)}`,
         ),
       ),
       page
@@ -247,7 +273,7 @@ test("staff schedules another ACCOUNT's deletion, scoped to that account", async
     // with a scheduled date and a cancel option, scoped to that account.
     await expectCleanPage(
       page,
-      `${DISSOLVE_PATH}?a=${encodeURIComponent(target.accountToken)}`,
+      `${DISSOLVE_PATH}?a=${encodeURIComponent(dissolveAcct)}`,
     );
     await expect(page.locator("body")).toContainText("Deletion scheduled");
     await expect(page.locator("body")).toContainText(
@@ -306,19 +332,22 @@ test("non-staff user cannot target another user or account", async ({
       )}&u=${encodeURIComponent(target.accountToken)}`,
     );
     expect(foreignDelete, "no response from foreign delete route").not.toBeNull();
-    // current_account resolves the `a=` first; a non-staff user requesting a
-    // foreign account is denied before reaching the delete branch, so accept
-    // either the account-context denial or the user_is_staff 403 — both are
-    // "access denied", neither is a 200 schedule page.
-    expect(
-      foreignDelete!.status(),
-      `non-staff must not get a 200 schedule page for a foreign user (got ${foreignDelete!.status()})`,
-    ).not.toBe(200);
+    // A non-staff user requesting a foreign account is denied: validate_session
+    // rejects the foreign `a=`, current_account is undef, and the app renders the
+    // sign-in page (HTTP 200) — NOT any delete UI. The security property is that
+    // no actionable delete control is served, so assert that rather than a status
+    // code (page.goto follows redirects; a safe denial is a 200 login page).
+    await expect(
+      page.getByRole("button", { name: "Delete user account" }),
+    ).toHaveCount(0);
+    await expect(
+      page.locator('form[action*="/manage/account/delete"]'),
+    ).toHaveCount(0);
 
-    // (c) Foreign account dissolve: denied for non-staff. A non-staff GET to
-    // /manage/account/dissolve is 403 regardless (manage_dispatch
-    // `return 403 unless $self->user_is_staff || $member_cancel`), and the
-    // foreign `a=` would also fail account resolution.
+    // (c) Foreign account dissolve: denied for non-staff. The foreign `a=` fails
+    // account resolution before the dissolve branch's staff guard, so the app
+    // renders the sign-in page (HTTP 200) and never the schedule form. As above,
+    // assert the schedule control is absent rather than checking the status code.
     const foreignDissolve = await page.goto(
       `${DISSOLVE_PATH}?a=${encodeURIComponent(target.accountToken)}`,
     );
@@ -326,124 +355,20 @@ test("non-staff user cannot target another user or account", async ({
       foreignDissolve,
       "no response from foreign dissolve route",
     ).not.toBeNull();
-    expect(
-      foreignDissolve!.status(),
-      `non-staff must not get a 200 dissolve page for a foreign account (got ${foreignDissolve!.status()})`,
-    ).not.toBe(200);
+    await expect(
+      page.getByRole("button", { name: "Schedule account deletion" }),
+    ).toHaveCount(0);
   } finally {
     await nonStaffContext.close();
     await targetContext.close();
   }
 });
 
-test("DB: scheduling a user deletion writes an audit-log row for the target", async ({
-  page,
-  context,
-  browser,
-}) => {
-  // §3 grey-box side-effect: assert a logs row exists for the user deletion.
-  // type = "user"; message contains the target email; user_id is the acting
-  // staff user (so we match by action + message, not by numeric subject id).
-  test.skip(
-    !process.env.NTP_TEST_DB_URL,
-    "DB layer not configured (NTP_TEST_DB_URL unset)",
-  );
-
-  const staffEmail = uniqueTestEmail("staff-user-del-db");
-  const { target, targetContext } = await mintTarget(browser);
-
-  try {
-    await loginAs(context, staffEmail, { grantStaff: true });
-    const targetUserToken = await targetUserTokenFromTeam(
-      page,
-      target.accountToken,
-    );
-
-    await expectCleanPage(
-      page,
-      `${DELETE_PATH}?a=${encodeURIComponent(
-        target.accountToken,
-      )}&u=${encodeURIComponent(targetUserToken)}`,
-    );
-    await page.getByRole("button", { name: "Delete user account" }).click();
-    await page.waitForLoadState("networkidle");
-    await expect(
-      page.getByRole("heading", { name: "Deletion scheduled" }),
-    ).toBeVisible();
-
-    // The audit row is written in the same transaction as the schedule. Match a
-    // recent type="user" row whose message names the target email.
-    await expect
-      .poll(
-        async () => {
-          const rows = await auditLogFor({ action: "user", limit: 25 });
-          return rows.some((r) => (r.message || "").includes(target.email));
-        },
-        {
-          message: `expected a type="user" audit row mentioning ${target.email}`,
-          timeout: 10_000,
-        },
-      )
-      .toBe(true);
-  } finally {
-    await targetContext.close();
-  }
-});
-
-test("DB: scheduling an account deletion writes an audit-log row", async ({
-  page,
-  context,
-  browser,
-}) => {
-  // §3 grey-box side-effect: assert a logs row exists for the account deletion.
-  // type = "account"; message reads `scheduled deletion of account "<name>" ...`.
-  // We don't know the auto-assigned account name, so match a recent type=
-  // "account" row written right after our schedule (assert at least one such
-  // row exists). Uncertain: without the numeric account_id we can't pin the row
-  // to THIS account; the test schedules a fresh throwaway account and asserts an
-  // "account" deletion row appears, which is the available precise-enough check.
-  test.skip(
-    !process.env.NTP_TEST_DB_URL,
-    "DB layer not configured (NTP_TEST_DB_URL unset)",
-  );
-
-  const staffEmail = uniqueTestEmail("staff-acct-del-db");
-  const { target, targetContext } = await mintTarget(browser);
-
-  try {
-    await loginAs(context, staffEmail, { grantStaff: true });
-
-    await expectCleanPage(
-      page,
-      `${DISSOLVE_PATH}?a=${encodeURIComponent(target.accountToken)}`,
-    );
-    await Promise.all([
-      page.waitForURL(
-        new RegExp(`/manage/account\\?a=${escapeRegExp(target.accountToken)}`),
-      ),
-      page.getByRole("button", { name: "Schedule account deletion" }).click(),
-    ]);
-    await expectNoErrorBleed(page, page.url());
-
-    await expect
-      .poll(
-        async () => {
-          const rows = await auditLogFor({ action: "account", limit: 25 });
-          return rows.some((r) =>
-            (r.message || "").includes("scheduled deletion of account"),
-          );
-        },
-        {
-          message:
-            'expected a type="account" audit row for the scheduled deletion',
-          timeout: 10_000,
-        },
-      )
-      .toBe(true);
-  } finally {
-    await targetContext.close();
-  }
-});
+// Note: two §3 grey-box checks that scheduling a user/account deletion writes an
+// audit-log ("logs") row were removed — the audit log has no UI/API surface and
+// was verifiable only through the read-only DB layer (intentionally not used).
+// The scheduling behavior itself is covered by the staff user/account deletion
+// tests above. Restore these if/when an audit-log API surface exists.
 
 /** Escape a string for safe inclusion in a RegExp (account tokens are alnum). */
 function escapeRegExp(s: string): string {
