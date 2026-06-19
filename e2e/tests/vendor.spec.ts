@@ -106,7 +106,9 @@ test("create a New vendor zone request", async ({ page, context }) => {
   // products/open-source picker rather than a status line, so assert on the
   // zone identity and the absence of errors instead.
   await expectNoErrorBleed(page, page.url());
-  await expect(page.locator("h3")).toContainText(data.zoneName);
+  // The zone-title h3 is first; the always-ask open-source form adds its own
+  // "Open Source" h3 below, so scope to the first heading.
+  await expect(page.locator("h3").first()).toContainText(data.zoneName);
   await expect(page.locator(".alert-danger")).toHaveCount(0);
 
   // The list page now shows the zone (no longer redirects to /new).
@@ -425,21 +427,24 @@ test.describe.serial("vendor admin & editability (§5a staff, §5c)", () => {
       );
 
       // --- Owner resubmits (Rejected -> Pending) ---
-      // §5a staff row: a Rejected zone shows "Resubmit for production" to the
-      // owner, returning it to Pending. The owner reloads the show page first.
+      // §5a staff row: a Rejected zone returns to the open-source justification
+      // form (the always-ask-open-source submission workflow). Re-supplying the
+      // justification and submitting returns the zone to Pending. The owner
+      // reloads the show page first.
       await page.goto(
         `/manage/vendor/zone?id=${encodeURIComponent(idToken)}`,
       );
       await expectNoErrorBleed(page, page.url());
+      // _opensource.html posts to /manage/vendor/submit?id=...#opensource, so
+      // match on a substring rather than the exact action.
       const resubmitForm = page.locator(
-        'form[action="/manage/vendor/submit"]',
+        'form[action*="/manage/vendor/submit"]',
       );
-      // show.html: the resubmit button value is "Resubmit for production →".
-      const resubmitBtn = resubmitForm.locator(
-        'input[type="submit"][value*="Resubmit"]',
-      );
-      await expect(resubmitBtn).toBeVisible();
-      await resubmitBtn.click();
+      await expect(resubmitForm).toBeVisible();
+      await resubmitForm
+        .locator('textarea[name="opensource_info"]')
+        .fill("Open source NTP client; AGPL-3.0; https://example.com/src ; no revenue.");
+      await resubmitForm.locator('input[type="submit"]').click();
       await expectNoErrorBleed(page, page.url());
       await expect(page.locator(".alert-danger")).toHaveCount(0);
 

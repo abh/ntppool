@@ -35,6 +35,66 @@ export async function expectNoErrorBleed(page: Page, label = page.url()) {
 }
 
 /**
+ * Create an additional account for the page's logged-in user via the sidebar
+ * "New account" form (POST /manage/account with a=new) and return the new
+ * account's id_token (acc_…).
+ *
+ * The user keeps their existing account(s), so the returned account is safely
+ * *dissolvable*: account dissolution refuses to orphan a member, so a sole-owner
+ * account can't be dissolved (that path is user-deletion). Tests that exercise
+ * dissolution use this to set up an account whose owner has somewhere else to go.
+ */
+export async function createAccount(page: Page): Promise<string> {
+  await page.goto("/manage/account");
+  const before = await accountTokensOnPage(page);
+
+  // The New-account form lives in a collapsed Bootstrap dropdown; submit it
+  // directly rather than toggling the menu open. (This runs via CDP, not an
+  // inline page script, so it doesn't touch the page CSP.) The form carries its
+  // own auth_token, a=new and new_form=1 hidden inputs.
+  // The sidebar (and this form) is rendered twice — desktop + mobile nav — and
+  // lives in a collapsed dropdown, so target the first match and check it's
+  // attached rather than visible.
+  const form = page
+    .locator('form[action="/manage/account"]')
+    .filter({ has: page.locator('input[name="a"][value="new"]') })
+    .first();
+  await expect(form, "sidebar New-account form not found").toBeAttached();
+  await Promise.all([
+    page.waitForNavigation({ waitUntil: "load" }),
+    form.evaluate((f) => (f as HTMLFormElement).submit()),
+  ]);
+  await expectNoErrorBleed(page, "/manage/account (after New account)");
+
+  const after = await accountTokensOnPage(page);
+  const fresh = after.filter((t) => !before.includes(t));
+  expect(
+    fresh.length,
+    `expected exactly one new account token (before=${JSON.stringify(
+      before,
+    )}, after=${JSON.stringify(after)})`,
+  ).toBe(1);
+  return fresh[0];
+}
+
+/** Distinct account id_tokens (acc_…) referenced by `a=` links on the page. */
+async function accountTokensOnPage(page: Page): Promise<string[]> {
+  const hrefs = await page
+    .locator("a[href]")
+    .evaluateAll((els) =>
+      els.map((e) => (e as HTMLAnchorElement).getAttribute("href") || ""),
+    );
+  const tokens = new Set<string>();
+  for (const h of hrefs) {
+    const m = h.match(/[?&]a=(acc_[a-z0-9]+)/i);
+    if (m) {
+      tokens.add(m[1]);
+    }
+  }
+  return [...tokens];
+}
+
+/**
  * Extract a rendered "Trace ID: <hex>" value from an error alert, if present.
  * Error pages surface the OpenTelemetry trace id alongside the message
  * (see CLAUDE.md error-surfacing patterns). Returns null when none is shown.
