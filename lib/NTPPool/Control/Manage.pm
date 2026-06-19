@@ -191,7 +191,14 @@ sub current_account {
     # 3. Check permissions
     # 4. Return account context + permissions
     my $id_token = $self->req_param('a');
-    my %params   = $self->api_auth_params;
+
+    # 'a=new' is the "create a new account" sentinel (see Manage/Account.pm
+    # manage_dispatch), not an account id_token. Passing it to validate_session
+    # fails to resolve and caches the session as invalid, which breaks new-account
+    # creation (no user -> empty name) and renders the page as logged-out.
+    undef $id_token if defined $id_token && $id_token eq 'new';
+
+    my %params = $self->api_auth_params;
 
     # Only include id_token if defined (avoid undef causing parameter shift)
     $params{id_token} = $id_token if defined $id_token;
