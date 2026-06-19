@@ -88,14 +88,14 @@ sub manage_dispatch {
 }
 
 # _get_id: read the 'id' request param and pass it through to the CAPI calls
-# unchanged. Accept a token (vz-...) or a purely numeric id (the Go API may
+# unchanged. Accept a token (vz_...) or a purely numeric id (the Go API may
 # resolve numerics later); anything else returns undef and callers redirect to
 # /manage/vendor.
 sub _get_id {
     my $self = shift;
     my $id   = $self->req_param('id');
     return undef unless defined $id;
-    return $id if $id =~ m/^vz-/ || $id =~ m/^\d+$/;
+    return $id if $id =~ m/^vz_/ || $id =~ m/^\d+$/;
     return undef;
 }
 
