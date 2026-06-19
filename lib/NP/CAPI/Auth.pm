@@ -5,13 +5,14 @@
 package NP::CAPI::Auth;
 use strict;
 use warnings;
-use NP::CAPI qw(connect_rpc);
+use NP::CAPI       qw(connect_rpc);
 use NP::CAPI::Util qw(validate_key_value_args);
 use Exporter 'import';
 
 our @EXPORT_OK = qw(
     process_auth0_login
     get_oauth_login_url
+    create_test_session
 );
 
 =head1 NAME
@@ -20,7 +21,7 @@ NP::CAPI::Auth - ConnectRPC client for AuthService
 
 =head1 SYNOPSIS
 
-    use NP::CAPI::Auth qw(process_auth0_login get_oauth_login_url);
+    use NP::CAPI::Auth qw(process_auth0_login get_oauth_login_url create_test_session);
     # ProcessAuth0Login handles the Auth0 authorization code callback.
 It validates the authorization code with Auth0, creates or updates user and identity records,
 creates a session, and returns the session token for cookie storage.
@@ -36,6 +37,16 @@ This removes OAuth provider configuration from Perl, centralizing it in the Go A
 The URL includes the environment-specific audience parameter and CSRF state token.
 Authentication: None required (this starts the authentication flow).
     my $result = get_oauth_login_url(
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
+    );
+
+    # CreateTestSession mints a real browser session token for a given email so an
+automated E2E test suite can log in without driving the Auth0 flow.
+This is a dev-only endpoint: it only works in the devel deploy environment and
+requires a service key carrying the test-session-api audience.
+Authentication: service key with the test-session-api audience.
+    my $result = create_test_session(
         $self->api_auth_params,      # Provides auth and context
         account => $account->{id_token},
     );
@@ -247,19 +258,20 @@ sub process_auth0_login {
 
     # Extract request fields from args
     my %request = ();
-    $request{'authorization_code'} = delete $args{'authorization_code'} if exists $args{'authorization_code'};
-    $request{'state'} = delete $args{'state'} if exists $args{'state'};
-    $request{'redirect_uri'} = delete $args{'redirect_uri'} if exists $args{'redirect_uri'};
+    $request{'authorization_code'} = delete $args{'authorization_code'}
+      if exists $args{'authorization_code'};
+    $request{'state'}        = delete $args{'state'} if exists $args{'state'};
+    $request{'redirect_uri'} = delete $args{'redirect_uri'}
+      if exists $args{'redirect_uri'};
     $request{'client_site'} = delete $args{'client_site'} if exists $args{'client_site'};
 
     return connect_rpc(
-        service     => 'ntppool.auth.v1.AuthService',
-        method      => 'ProcessAuth0Login',
-        request     => \%request,
-        %args  # Pass through auth, account, context
+        service => 'ntppool.auth.v1.AuthService',
+        method  => 'ProcessAuth0Login',
+        request => \%request,
+        %args    # Pass through auth, account, context
     );
 }
-
 
 =head2 get_oauth_login_url
 
@@ -325,19 +337,104 @@ sub get_oauth_login_url {
 
     # Extract request fields from args
     my %request = ();
-    $request{'redirect_uri'} = delete $args{'redirect_uri'} if exists $args{'redirect_uri'};
-    $request{'state'} = delete $args{'state'} if exists $args{'state'};
+    $request{'redirect_uri'} = delete $args{'redirect_uri'}
+      if exists $args{'redirect_uri'};
+    $request{'state'}       = delete $args{'state'}       if exists $args{'state'};
     $request{'client_site'} = delete $args{'client_site'} if exists $args{'client_site'};
 
     return connect_rpc(
-        service     => 'ntppool.auth.v1.AuthService',
-        method      => 'GetOAuthLoginURL',
-        request     => \%request,
-        %args  # Pass through auth, account, context
+        service => 'ntppool.auth.v1.AuthService',
+        method  => 'GetOAuthLoginURL',
+        request => \%request,
+        %args    # Pass through auth, account, context
     );
 }
 
+=head2 create_test_session
 
+CreateTestSession mints a real browser session token for a given email so an
+automated E2E test suite can log in without driving the Auth0 flow.
+This is a dev-only endpoint: it only works in the devel deploy environment and
+requires a service key carrying the test-session-api audience.
+Authentication: service key with the test-session-api audience.
+
+B<Arguments:>
+
+    my $result = create_test_session(
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
+        email => $value,       # string - email is the address of the user to create a session for. Required.
+        name => $value,       # string - name is used when the user has to be created (create_if_missing).
+        create_if_missing => $value,       # bool - create_if_missing controls whether a missing user is provisioned (user and
+ default account) before minting the session. When false and the user does
+ not exist, the request fails with NotFound.
+        grant_staff => $value,       # bool - grant_staff, when true, grants the support_staff privilege to the minted
+ user. Dev-only (honored under the same devel guard as the rest of this
+ RPC); used to unblock staff-gated E2E tests.
+        grant_vendor_admin => $value,       # bool - grant_vendor_admin, when true, grants the vendor_admin privilege to the
+ minted user. Dev-only (honored under the same devel guard as the rest of
+ this RPC); used to unblock vendor-admin-gated E2E tests.
+    );
+
+B<Returns:>
+
+Hashref with structure:
+
+    {
+        code         => 200,         # HTTP status code
+        status_line  => "200 OK",    # HTTP status text
+        connect_code => undef,       # ConnectRPC error code (or undef)
+        data         => {            # Response data
+            session_token => ...,  # string - session_token is the session key to set as the npuid cookie.
+ Format: "nps_{key}_{checksum}"
+        },
+        error        => undef,       # Error message (if any)
+        trace_id     => "...",       # OpenTelemetry trace ID
+    }
+
+B<ConnectRPC Error Codes:>
+
+    unauthenticated, permission_denied, internal, invalid_argument, etc.
+
+B<Example:>
+
+    my $result = create_test_session(
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
+    );
+
+    if ($result->{error}) {
+        warn "Error: $result->{error}";
+    } else {
+        my $data = $result->{data};
+        # Use response fields...
+    }
+
+=cut
+
+sub create_test_session {
+    my $validation_error = validate_key_value_args('create_test_session', @_);
+    return $validation_error if $validation_error;
+
+    my %args = @_;
+
+    # Extract request fields from args
+    my %request = ();
+    $request{'email'}             = delete $args{'email'} if exists $args{'email'};
+    $request{'name'}              = delete $args{'name'}  if exists $args{'name'};
+    $request{'create_if_missing'} = delete $args{'create_if_missing'}
+      if exists $args{'create_if_missing'};
+    $request{'grant_staff'} = delete $args{'grant_staff'} if exists $args{'grant_staff'};
+    $request{'grant_vendor_admin'} = delete $args{'grant_vendor_admin'}
+      if exists $args{'grant_vendor_admin'};
+
+    return connect_rpc(
+        service => 'ntppool.auth.v1.AuthService',
+        method  => 'CreateTestSession',
+        request => \%request,
+        %args    # Pass through auth, account, context
+    );
+}
 
 1;
 

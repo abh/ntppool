@@ -1,7 +1,16 @@
 import "dotenv/config";
 import { defineConfig, devices } from "@playwright/test";
 
-const baseURL = process.env.NTP_BASE_URL || "https://web.askdev.grundclock.com";
+// Public pages live on the web host; the authenticated /manage app is a
+// separate Combust site on the manage host. Each project pins its own baseURL
+// so specs keep using relative goto() paths.
+const webURL = process.env.NTP_BASE_URL || "https://web.askdev.grundclock.com";
+const manageURL =
+  process.env.NTP_MANAGE_URL || "https://manage.askdev.grundclock.com";
+
+// Specs that exercise public, unauthenticated pages on the web host. Everything
+// else is an authenticated /manage flow and runs against the manage host.
+const WEB_SPECS = ["**/scores.spec.ts", "**/i18n.spec.ts"];
 
 export default defineConfig({
   testDir: "./tests",
@@ -17,13 +26,18 @@ export default defineConfig({
   // (npm run report) is far easier to read for failures (traces, diffs).
   reporter: [["list"], ["html", { open: "never" }]],
   use: {
-    baseURL,
     trace: "on-first-retry",
   },
   projects: [
     {
-      name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      name: "web",
+      testMatch: WEB_SPECS,
+      use: { ...devices["Desktop Chrome"], baseURL: webURL },
+    },
+    {
+      name: "manage",
+      testIgnore: WEB_SPECS,
+      use: { ...devices["Desktop Chrome"], baseURL: manageURL },
     },
   ],
 });

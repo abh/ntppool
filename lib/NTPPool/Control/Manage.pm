@@ -1,6 +1,6 @@
 package NTPPool::Control::Manage;
 use strict;
-use parent qw(NTPPool::Control::Login NTPPool::Control);
+use parent            qw(NTPPool::Control::Login NTPPool::Control);
 use Combust::Constant qw(OK NOT_FOUND SERVER_ERROR);
 use Socket            qw(inet_ntoa);
 use Socket6;
@@ -62,7 +62,12 @@ Handle API errors by setting template parameters and returning HTTP status codes
     my $http_code = $self->_handle_capi_error($result);
     return $http_code if $http_code != 200;
 
-Returns HTTP status code (200 for success, or Combust constant for errors).
+Returns HTTP status code (200 for success, or a status code for errors).
+
+Thin adapter over C<capi_error_status> (NTPPool::Control) for the legacy
+"200-on-success" return convention. C<capi_error_status> is the single source
+of truth: it derives the status, suppresses caching of transient failures, and
+surfaces the error message for templates.
 
 Note: Does not log errors (NP::CAPI already logs all errors with trace IDs).
 
@@ -71,24 +76,13 @@ Note: Does not log errors (NP::CAPI already logs all errors with trace IDs).
 sub _handle_capi_error {
     my ($self, $result) = @_;
 
-    my $code = $result->{code};
-    return $code if $code >= 200 && $code < 300;
+    my $code    = $result->{code} || 0;
+    my $success = $code >= 200 && $code < 300;
 
-    $self->cache_control('private, max-age=0, no-cache');
-    $self->tpl_param('error', $result->{error}) unless $self->tpl_param('error');
-    $self->tpl_param('code',  $code);
+    my $status = $self->capi_error_status($result, $success);
 
-    if ($code == 404) {
-        return NOT_FOUND;
-    }
-    elsif ($code >= 400 && $code < 500) {
-        return $code;
-    }
-    elsif ($code >= 500) {
-        return SERVER_ERROR;
-    }
-
-    return NOT_FOUND;    # fallback
+    return $code if $success;    # legacy contract: 2xx code on success
+    return $status;
 }
 
 my $base36 = Math::BaseCalc->new(digits => ['a' .. 'k', 'm' .. 'z', 2 .. 9]);
@@ -368,7 +362,7 @@ sub handle_login {
         authorization_code => $code,
         state              => $state,
         redirect_uri       => $self->callback_url,
-        client_site        => "" . $self->site,    # Force to string: 'manage', 'www', etc.
+        client_site        => "" . $self->site,   # Force to string: 'manage', 'www', etc.
         context            => $self->_get_request_context(),
     );
 
@@ -641,7 +635,7 @@ sub staff_zone_edit {
     # Handle CAPI errors
     if (my $status = $self->capi_error_status($server_result, $server_result->{data})) {
         warn "GetServer error: " . $server_result->{error} if $server_result->{error};
-        warn "Trace ID: " . $server_result->{trace_id} if $server_result->{trace_id};
+        warn "Trace ID: " . $server_result->{trace_id}     if $server_result->{trace_id};
         return $status, $status == 404 ? "Server not found" : "Service unavailable";
     }
 
