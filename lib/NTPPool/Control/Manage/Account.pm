@@ -167,9 +167,15 @@ sub manage_dispatch {
 
     # check access
     # Note: Account hashrefs from current_account() include permissions
+    #
+    # A frozen (pending-deletion) account has can_edit == 0, but its staff/owner
+    # must still reach the dissolve page to see the scheduled state and cancel
+    # it. The dissolve route enforces its own staff/member-cancel access below.
+    my $is_dissolve = $self->request->uri =~ m!^/manage/account/dissolve$!;
     return $self->redirect("/manage/")
       unless ($account->{account_id} == 0
-          or $account->{permissions}{can_edit});
+          or $account->{permissions}{can_edit}
+          or $is_dissolve);
 
     if ($self->request->method eq 'post') {
         return 403 unless $self->check_auth_token;
@@ -924,8 +930,15 @@ sub render_account_dissolve {
         my $data = $result->{data} || {};
 
         if ($data->{scheduled}) {
+
+            # Land on the dissolve page so the just-scheduled pending state (and
+            # the cancel option) is shown. Redirecting to /manage/account would
+            # bounce: a pending-deletion account has permissions.can_edit == 0,
+            # so render_account_form sends it back to /manage/ -> /manage/servers.
             return $self->redirect(
-                $self->manage_url('/manage/account', {a => $account->{id_token}}));
+                $self->manage_url(
+                    '/manage/account/dissolve', {a => $account->{id_token}}
+                ));
         }
 
         # Blockers: surface them on the confirmation page. The API also
