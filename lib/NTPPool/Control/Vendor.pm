@@ -403,8 +403,8 @@ sub render_submit {
     my $opensource =
       $self->req_param('opensource_request') ? JSON::XS::true : JSON::XS::false;
     my $submit_result = submit_vendor_zone(
-        auth     => $self->plain_cookie($self->user_cookie_name),
-        context  => $self->_get_request_context(),
+        $self->api_auth_params,
+        account  => $self->current_account->{id_token},
         id_token => $id,
         content  => {
             opensource      => $opensource,

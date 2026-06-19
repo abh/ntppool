@@ -82,14 +82,12 @@
     [% END %]
     <a class="btn btn-secondary btn-sm" href="[% combust.manage_url('/manage/vendor') %]">Back to list</a>
 
+    [% # Submitting a zone always asks for the open-source justification (the
+       # non-revenue production workflow). The commercial/subscription products
+       # are shown below only when a subscription is required (need_subscription).
+    %]
     [% IF (vz.status == 'New' || vz.status == 'Rejected') && !need_subscription %]
-      <form method="post" class="form-inline btn-inline" action="/manage/vendor/submit">
-          <input type="hidden" name="id" value="[% vz.id_token %]" />
-          <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
-          <input type="hidden" name="a" value="[% combust.current_account.id_token %]">
-          <input type="submit" class="btn btn-primary"
-              value="[% vz.status == 'Rejected' ? 'Resubmit for production &rarr;' : 'Submit for production &rarr;' %]" />
-      </form>
+      [% PROCESS tpl/vendor/_opensource.html %]
     [% END %]
 
     [% IF combust.user.privileges.vendor_admin %]
