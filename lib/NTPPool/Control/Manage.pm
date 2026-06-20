@@ -664,8 +664,9 @@ sub staff_zone_edit {
         # Call CAPI to update zones
         my $result = NP::CAPI::ServerManagement::update_server(
             $self->api_auth_params,
-            ip    => $server_ip,
-            zones => \@zones,
+            account => $self->current_account->{id_token},
+            ip      => $server_ip,
+            zones   => \@zones,
         );
 
         # Handle CAPI errors
