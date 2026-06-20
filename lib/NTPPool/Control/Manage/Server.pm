@@ -659,6 +659,7 @@ sub handle_move {
     my $result = NP::CAPI::Account::get_related_accounts(
         auth             => $self->plain_cookie($self->user_cookie_name),
         context          => $self->_get_request_context(),
+        account          => $self->current_account->{id_token},
         account_id_token => $self->current_account->{id_token},
     );
 
@@ -702,6 +703,7 @@ sub handle_move {
             my $result = move_server(
                 auth                    => $self->plain_cookie($self->user_cookie_name),
                 context                 => $self->_get_request_context(),
+                account                 => $self->current_account->{id_token},
                 server_ips              => \@servers_to_move,
                 target_account_id_token => $new_account_code,
             );
