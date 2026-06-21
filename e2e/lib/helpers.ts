@@ -106,6 +106,20 @@ export async function getTraceId(page: Page): Promise<string | null> {
 }
 
 /**
+ * Locate genuine error/warning alerts, excluding the persistent "Development
+ * Site" / "Beta Site" banner that `development_notice.html` renders on every
+ * non-prod page. That banner is an `.alert-warning` and never carries a Trace
+ * ID, so a naive `.alert-danger, .alert-warning` selector would always match it
+ * and mistake it for a surfaced API error. The banner is the only alert that
+ * contains "Live site:", so filtering on that text reliably excludes it.
+ */
+export function errorAlerts(page: Page) {
+  return page
+    .locator(".alert-danger, .alert-warning")
+    .filter({ hasNotText: "Live site:" });
+}
+
+/**
  * Assert an error alert is visible. When `requireTraceId` is true, also assert a
  * Trace ID is rendered with it (the project convention for surfaced API errors).
  */
@@ -113,7 +127,7 @@ export async function expectErrorAlert(
   page: Page,
   opts: { requireTraceId?: boolean } = {},
 ) {
-  const alert = page.locator(".alert-danger, .alert-warning").first();
+  const alert = errorAlerts(page).first();
   await expect(alert, "expected a visible error alert").toBeVisible();
   if (opts.requireTraceId) {
     const traceId = await getTraceId(page);
