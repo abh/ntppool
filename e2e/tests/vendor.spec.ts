@@ -1,6 +1,7 @@
 import { test, expect, Page, BrowserContext } from "@playwright/test";
 import { loginAs, uniqueTestEmail } from "../lib/auth";
 import {
+  errorAlerts,
   expectCleanPage,
   expectErrorAlert,
   expectNoErrorBleed,
@@ -363,6 +364,38 @@ async function adminOpenZone(page: Page, idToken: string): Promise<void> {
 }
 
 test.describe.serial("vendor admin & editability (§5a staff, §5c)", () => {
+  // Loud preflight: prove the dev API can actually mint a vendor_admin session
+  // BEFORE the admin tests run. Every test below otherwise self-skips via
+  // `test.skip(!isVendorAdmin(...))`, so if the deployed dev API lost (or never
+  // had) the grant_vendor_admin flag, ALL admin coverage would vanish silently —
+  // six green-looking skips hiding a real regression. This beforeAll turns that
+  // into ONE obvious failure: if a freshly minted vendor_admin session can't
+  // reach /manage/vendor/admin, the whole describe block fails here with a clear
+  // message. The per-test skips remain as defensive backstops (they will not
+  // trigger once this preflight passes, since the capability is dev-API-wide).
+  test.beforeAll(async ({ browser }) => {
+    const { context, page } = await loginAsVendorAdmin(
+      browser,
+      uniqueTestEmail("vendor-admin-preflight"),
+    );
+    try {
+      const ok = await isVendorAdmin(page);
+      if (!ok) {
+        throw new Error(
+          "vendor_admin preflight FAILED: a freshly minted session could not " +
+            "reach /manage/vendor/admin. The dev API must honor " +
+            "CreateTestSession's grant_vendor_admin flag (Go " +
+            "AuthService.CreateTestSession -> GrantUserVendorAdmin). Without it " +
+            "all §5a/§5c admin tests would silently skip — failing loudly here " +
+            "instead so the missing grant is one obvious check, not six dropped " +
+            "tests.",
+        );
+      }
+    } finally {
+      await context.close();
+    }
+  });
+
   // 1. Admin list loads for a staff session.
   test("admin list page loads clean for a vendor admin", async ({
     browser,
@@ -709,25 +742,27 @@ test.describe.serial("vendor admin & editability (§5a staff, §5c)", () => {
     }
   });
 
-  // 7. §5c: an admin approve/reject FAILURE must surface a red alert + Trace ID,
-  // not a silent no-op. We induce a failure by attempting an INVALID transition:
-  // render_admin only calls the status RPC for valid (status, action) pairs, so
-  // to reach the error path we drive the RPC directly with a status the API
-  // rejects. We POST status_change=Approve against a zone that is NOT in a
-  // Pending/Rejected state is filtered out by the controller, so instead we post
-  // a bogus status value that render_admin forwards only when the regex matches;
-  // the reliably API-rejected case is approving an already-Approved zone via a
-  // crafted post. _errors.html renders errors.general as .alert-danger with the
-  // Trace ID.
+  // 7. §5c: an invalid admin transition must be a SAFE no-op — it must not
+  // dead-end, corrupt the zone, or leak a Perl/ORM error — and IF it ever does
+  // surface an alert, that alert must carry a Trace ID (the project convention).
   //
-  // HUMAN-VERIFY: the exact way to force an admin status-RPC error on the live
-  // site. The controller guards transitions with regexes (only Pending->Reject,
-  // Pending/Rejected->Approve are forwarded), so a UI no-op won't hit the RPC.
-  // This test drives the controller into the RPC with an already-Approved zone +
-  // status_change=Approve (the regex `Pending|Rejected` won't match 'Approved',
-  // so it is a no-op) — see the assertion note. If no UI path can force the RPC
-  // error, this assertion is best-effort and may need an API-level fault inject.
-  test("§5c admin approve/reject failure surfaces an alert with a Trace ID", async ({
+  // We deliberately do NOT claim to force the admin status-RPC error here,
+  // because no UI/HTTP path can: render_admin re-fetches the zone's LIVE status
+  // and only forwards the RPC for `status eq 'Pending'` (Reject) or
+  // `status =~ /(Pending|Rejected)/` (Approve). Those guards exactly mirror the
+  // Go API's SQL precondition (`UPDATE ... WHERE status IN ('Pending','Rejected')`
+  // in sql/vendor_zones.sql), so every call the controller forwards is one the
+  // API accepts. Re-posting Approve against an already-Approved zone is therefore
+  // a controller no-op, never an RPC error. Proving the admin-path Trace-ID
+  // convention end-to-end would need an app change (test-only fault injection);
+  // that gap is written up in FINDINGS-error-surfacing.md (task 2). The
+  // duplicate-name edit case (~line 220) already proves the Trace-ID convention
+  // end-to-end on the regular-user edit path.
+  //
+  // So this test asserts what IS reachable: the no-op is safe, and the
+  // conditional Trace-ID check below is a free regression net for the day a
+  // forced-failure path exists.
+  test("§5c invalid admin transition is a safe no-op (and any alert carries a Trace ID)", async ({
     page,
     context,
     browser,
@@ -766,17 +801,12 @@ test.describe.serial("vendor admin & editability (§5a staff, §5c)", () => {
         .inputValue()
         .catch(() => "");
 
-      // Drive the admin status endpoint with a status the API rejects. status.go
-      // only accepts 'Approved'/'Rejected'; we send a bogus value to force the
-      // RPC error path. render_admin forwards status_change matching /^Approve/
-      // or /^Reject/ for the right current status; "Reject-bad" matches /^Reject/
-      // but the zone is Approved (not Pending), so the controller no-ops. To
-      // reliably hit the RPC we instead send status_change=Approve while the zone
-      // is Rejected — but it's Approved here. Given the controller's guards, the
-      // dependable error surface is the duplicate-name case already covered in
-      // §5c on the edit path; for the admin path we assert that IF an error
-      // renders, it carries a Trace ID (no silent partial), and otherwise that
-      // the page is not a blank dead-end.
+      // Re-post status_change=Approve against the now-Approved zone. render_admin
+      // re-fetches the live status and its guard `status =~ /(Pending|Rejected)/`
+      // does NOT match 'Approved', so the controller no-ops without forwarding
+      // the RPC — exercising the controller's transition guard, not the API error
+      // path (which is unreachable from here; see the test's header comment and
+      // FINDINGS-error-surfacing.md). We assert the no-op is safe.
       const resp = await adminPage.request.post("/manage/vendor/admin", {
         form: {
           id: idToken,
@@ -790,16 +820,20 @@ test.describe.serial("vendor admin & editability (§5a staff, §5c)", () => {
       // danger/warning alert is present it MUST include a Trace ID (the §5c rule),
       // and the page must not be a blank error bleed.
       await adminOpenZone(adminPage, idToken);
-      const alert = adminPage.locator(".alert-danger, .alert-warning");
+      const alert = errorAlerts(adminPage);
       if ((await alert.count()) > 0) {
         await expectErrorAlert(adminPage, { requireTraceId: true });
       } else {
-        // No error rendered (controller no-op due to its transition guards): the
-        // page must still render cleanly rather than dead-end. HUMAN-VERIFY a
-        // forced RPC failure (fault injection) shows the alert + Trace ID.
+        // Expected path: controller no-op due to its transition guards.
+        // adminOpenZone lands on the single-zone admin show page, which must
+        // still render cleanly rather than dead-end. Assert the zone heading is
+        // present and the status is unchanged (still Approved) — i.e. the no-op
+        // POST left the zone intact. Forcing the alert + Trace ID would require
+        // test-only fault injection in the Go API (see FINDINGS-error-surfacing.md).
         await expect(
-          adminPage.locator('h3:has-text("Pending zones")'),
+          adminPage.locator(`h3:has-text("${data.zoneName}")`),
         ).toBeVisible();
+        await expect(adminPage.locator("body")).toContainText("Approved");
       }
     } finally {
       await adminCtx.close();

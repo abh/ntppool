@@ -1,6 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 import { loginAs, uniqueTestEmail } from "../lib/auth";
-import { expectCleanPage, expectNoErrorBleed } from "../lib/helpers";
+import { errorAlerts, expectCleanPage, expectNoErrorBleed } from "../lib/helpers";
 
 // Account invitation resend, regular-user (non-staff) flow.
 // MANUAL_TEST_PLAN.md §4a "Resend account invitations".
@@ -148,7 +148,9 @@ test.skip("exceeding 3 sends in 24h blocks resend with a limit warning", async (
   // SKIPPED: the 5-minute cooldown between sends makes reaching 3 sends in a
   // single test run impractical through the UI without time-travel or a DB
   // write to backdate the prior sends — both deliberately out of scope for the
-  // read-only harness. Deferred until a time-control hook exists. The assertion
+  // read-only harness. Closing this needs a test-only backdate RPC in the Go API
+  // (dev-only + service-audience guarded, like CreateTestSession); the exact
+  // shape is written up in FINDINGS-error-surfacing.md (task 5). The assertion
   // shape below is kept ready for that day.
   const owner = uniqueTestEmail("invite-owner");
   await loginAs(context, owner);
@@ -165,7 +167,8 @@ test.skip("exceeding 3 sends in 24h blocks resend with a limit warning", async (
   await activeResendButton(page).click();
 
   // The blocked resend surfaces the API limit message in a warning alert.
-  const warn = page.locator(".alert-warning");
+  // errorAlerts() excludes the persistent dev-site banner (also .alert-warning).
+  const warn = errorAlerts(page);
   await expect(warn).toBeVisible();
   await expect(warn).toContainText("limit: 3");
 });

@@ -48,6 +48,14 @@ import {
 const TEST_IP = process.env.NTP_SERVER_TEST_IP || "192.0.2.123";
 const EXISTING_SERVER_IP = process.env.NTP_EXISTING_SERVER_IP;
 
+// A real server that the test user does NOT own — for the authenticated-but-
+// unauthorized authz case. Prefer an explicitly-configured existing server;
+// otherwise reuse the known-good seeded dev server the public scores tests rely
+// on (NTP_SCORES_TEST_IP). It belongs to some other account, never the fresh
+// per-run test user, so it is a genuine cross-account authorization target.
+const OTHER_OWNED_IP =
+  EXISTING_SERVER_IP || process.env.NTP_SCORES_TEST_IP || "216.239.35.4";
+
 // Shared phrase of the can_add_servers notice. /manage/servers renders
 // "Please verify your servers before adding more." while the POST handler
 // renders "Please verify your existing servers before adding more." — both
@@ -288,17 +296,84 @@ test.describe("server delete error surfacing (§8a)", () => {
     expect(body).not.toContain("has been scheduled for deletion");
 
     const url = page.url();
-    const bounced = url.includes("/login") || !url.includes("/manage/server/delete");
+    // An unauthenticated request may bounce to login, or render the login form
+    // in-place at the same URL (HTTP 200) — both demand a sign-in rather than
+    // acting on the request.
+    const promptsLogin =
+      url.includes("/login") ||
+      !url.includes("/manage/server/delete") ||
+      body.includes("Sign in to the NTP Pool");
 
     // Acceptable outcomes for an unauthenticated request:
     //   - bounced to login / away from the delete page, OR
+    //   - an in-place login prompt at the same URL, OR
     //   - a non-200 status (e.g. NOT_FOUND because no server is in context), OR
     //   - the page rendered an error alert.
     // Any of these proves the attempt did not silently succeed.
-    if (!bounced && response!.status() === 200) {
+    if (!promptsLogin && response!.status() === 200) {
       await expectErrorAlert(page);
     } else {
-      expect(bounced || response!.status() !== 200).toBeTruthy();
+      expect(promptsLogin || response!.status() !== 200).toBeTruthy();
     }
+  });
+
+  test("a logged-in user cannot schedule deletion of a server they don't own", async ({
+    page,
+    context,
+  }) => {
+    // Authz, not just authentication: the unauthenticated test above proves a
+    // signed-out request can't schedule a deletion. This proves a FULLY
+    // authenticated user — a fresh user with their own valid account — still
+    // cannot schedule deletion of a server in someone ELSE's account.
+    //
+    // req_server() (Server.pm) calls get_server with require_edit_permission, so
+    // the Go API denies edit access to a server outside the user's account and
+    // handle_delete returns NOT_FOUND. The user owns no servers, so OTHER_OWNED_IP
+    // is necessarily not theirs; if it is a real seeded server (the default),
+    // this is an unambiguous cross-account denial rather than a "doesn't exist"
+    // 404. Were authorization broken so any logged-in user could edit any server,
+    // the GET would return 200 with the date-picker and this test would fail.
+    await loginAs(context, uniqueTestEmail("server-authz"));
+
+    const deletePath = `/manage/server/delete?server=${encodeURIComponent(OTHER_OWNED_IP)}`;
+    const response = await page.goto(deletePath);
+    expect(response, `no response from ${deletePath}`).not.toBeNull();
+
+    // Must not reach the scheduling UI or the scheduled state.
+    const body = await page.content();
+    expect(
+      body,
+      "an unauthorized user must not see the scheduled-deletion confirmation",
+    ).not.toContain("has been scheduled for deletion");
+    await expect(
+      page.locator('select[name="deletion_date"]'),
+      "no deletion date-picker should render for a server the user can't edit",
+    ).toHaveCount(0);
+
+    // The denial signal: handle_delete returns NOT_FOUND (non-200) when
+    // req_server is refused. An owner would instead get 200 + the date-picker.
+    expect(
+      response!.status(),
+      `expected a non-200 (NOT_FOUND) for a server the logged-in user can't edit, got ${response!.status()}`,
+    ).not.toBe(200);
+
+    // A direct POST attempt (bypassing the missing UI) must also be denied and
+    // must never report success. req_server is checked before the auth_token, so
+    // this 404s on the unauthorized server rather than scheduling anything.
+    const postResp = await page.request.post(deletePath, {
+      form: {
+        deletion_date: "2030-01-01",
+        submitbtn: "Schedule Deletion",
+      },
+    });
+    expect(
+      postResp.status(),
+      "a crafted schedule POST for an unowned server must not succeed (200)",
+    ).not.toBe(200);
+    const postBody = await postResp.text();
+    expect(
+      postBody,
+      "a crafted schedule POST must not report a scheduled deletion",
+    ).not.toContain("has been scheduled for deletion");
   });
 });
