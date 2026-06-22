@@ -27,6 +27,8 @@
 
     <h3>Account information</h3>
 
+    [% PROCESS tpl/common/error_alert.html %]
+
     <form id="account-form" action="/manage/account?a=[% account.id_token %]" method="post" accept-charset="utf-8">
         <input type="hidden" name="a" value="[% account.account_id ? account.id_token : 'new' %]" />
         <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
