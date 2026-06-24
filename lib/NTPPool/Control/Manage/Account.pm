@@ -646,8 +646,18 @@ sub render_account_edit {
             # Extract user-friendly error message if available
             my $error_msg =
               $data->{error} || 'Failed to update account. Please try again.';
-            $self->tpl_param('error', $error_msg);
-            return $self->render_account_form($account);
+            $self->tpl_param('error',    $error_msg);
+            $self->tpl_param('trace_id', $data->{trace_id}) if $data->{trace_id};
+
+            # Re-render with the values the user submitted so their input isn't
+            # discarded on a validation error (e.g. a bad/reserved/duplicate slug).
+            my %submitted = %$account;
+            for my $f (qw(name organization_name organization_url url_slug)) {
+                my $v = $self->req_param($f);
+                $submitted{$f} = $v if defined $v;
+            }
+            $submitted{public_profile} = $self->req_param('public_profile') ? 1 : 0;
+            return $self->render_account_form(\%submitted);
         }
 
         # Use the updated account returned by the API (no need for second call)
