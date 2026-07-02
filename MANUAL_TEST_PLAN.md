@@ -70,11 +70,16 @@ Covers features touched in `ntppool` (Perl web) and `../go/ntp/api` (Go API) sin
 
 ## 5. Vendor zones (migrated to CAPI)
 
-- [ ] `/manage/vendor` — zone list loads from the API (no ORM/DB errors).
-- [ ] `/manage/vendor/new` — request form renders with API-provided metadata.
-- [ ] Submit a new vendor zone request — validation works, success path completes.
-- [ ] View a single zone (`/manage/vendor/<id>`) — details correct, edit form id correct.
-- [ ] As **staff**, `/manage/vendor/admin` — admin list loads; approve/reject status change works.
+> §5–5d are e2e-covered end to end by `e2e/tests/vendor.spec.ts`, including the
+> issue #31 ORM-removal surface: `dns_root_origin` display on both the new-zone
+> and edit forms (Vendor.pm render_form), and `id_token`-based edit/create
+> routing (form.html + `_get_id`).
+
+- [x] `/manage/vendor` — zone list loads from the API (no ORM/DB errors). (`e2e/tests/vendor.spec.ts`)
+- [x] `/manage/vendor/new` — request form renders with API-provided metadata, incl. `dns_root_origin`. (`e2e/tests/vendor.spec.ts`)
+- [x] Submit a new vendor zone request — validation works, success path completes. (`e2e/tests/vendor.spec.ts`)
+- [x] View a single zone (`/manage/vendor/<id>`) — details correct, edit form id correct. (`e2e/tests/vendor.spec.ts`)
+- [x] As **staff**, `/manage/vendor/admin` — admin list loads; approve/reject status change works. (`e2e/tests/vendor.spec.ts`)
 - [ ] Subscription/plan checks on vendor pages still work (no redundant account fetch errors).
 
 ### 5a. Editability matrix (status × role)
@@ -113,9 +118,16 @@ Covers features touched in `ntppool` (Perl web) and `../go/ntp/api` (Go API) sin
 
 ## 6. DNS zone generation (Go API)
 
+> `/api/dns-zone` (`NTPPool::Control::DNSZone`) requires a "dns"-type service
+> bearer token — infrastructure-provisioned, not something the e2e harness's
+> dev-only `CreateTestSession` (user sessions only) can mint. Its auth guard
+> (missing/malformed/invalid token → 403) is e2e-covered:
+> `e2e/tests/dns-zone.spec.ts`. Everything below needs a real dns service
+> token and stays manual.
+
 - [ ] Generated DNS zone data pulls active servers via the Go API (`GetDnsZoneData` / `GetZoneActiveServers`).
 - [ ] Spot-check a zone's server list matches expected active servers for that zone.
-- [ ] DNS service auth required — request without service token is rejected.
+- [x] DNS service auth required — request without service token is rejected. (`e2e/tests/dns-zone.spec.ts`)
 - [ ] Vendor/custom zone tokens resolve and produce correct zone output.
 
 ## 7. Subscriptions / Stripe (CAPI + SubscriptionService)

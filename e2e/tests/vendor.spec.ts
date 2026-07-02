@@ -54,6 +54,15 @@ function freshZoneData(prefix: string): NewZoneData {
 async function createNewZone(page: Page, data: NewZoneData): Promise<string> {
   await expectCleanPage(page, "/manage/vendor/new");
 
+  // form.html renders the DNS root origin next to the zone-name field as
+  // "([name].<origin>)". On this new-zone path it comes straight from
+  // get_vendor_zone_form_metadata's dns_roots (Vendor.pm render_form, issue
+  // #31 commit 1 removed the NP::Model->dns_root ORM fallback here), so a
+  // real domain must render, not a blank/undef.
+  await expect(
+    page.getByText(/\[name\]\.[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?\)/i),
+  ).toBeVisible();
+
   // Real selectors from form.html.
   await page.fill('input[name="zone_name"]', data.zoneName);
   await page.fill('input[name="organization_name"]', data.organizationName);
@@ -136,6 +145,13 @@ test("edit a New/Pending zone and persist a changed field", async ({
   // (/manage/vendor/zone?id=...&mode=edit -> render_form(zone)).
   await page.click('a[href*="mode=edit"]');
   await expectNoErrorBleed(page, page.url());
+
+  // Edit path: form.html reads vz.dns_root_origin straight off the API zone
+  // hashref (Vendor.pm render_form's edit branch, issue #31 commit 1 removed
+  // the NP::Model->dns_root->fetch ORM read here). Confirm it still renders.
+  await expect(
+    page.getByText(/\[name\]\.[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?\)/i),
+  ).toBeVisible();
 
   // The edit form is prefilled with the existing organization name.
   const orgField = page.locator('input[name="organization_name"]');
