@@ -274,7 +274,7 @@ sub reload_server_via_capi {
         return undef;
     }
 
-    return $result->{data};
+    return $result->{data}{server};
 }
 
 sub current_url {
@@ -640,13 +640,15 @@ sub staff_zone_edit {
       NP::CAPI::Server::get_server($self->api_auth_params, ip => $server_ip,);
 
     # Handle CAPI errors
-    if (my $status = $self->capi_error_status($server_result, $server_result->{data})) {
+    if (my $status =
+        $self->capi_error_status($server_result, $server_result->{data}{server}))
+    {
         warn "GetServer error: " . $server_result->{error} if $server_result->{error};
         warn "Trace ID: " . $server_result->{trace_id}     if $server_result->{trace_id};
         return $status, $status == 404 ? "Server not found" : "Service unavailable";
     }
 
-    my $server = $server_result->{data};
+    my $server = $server_result->{data}{server};
 
     # Determine if this is edit or save
     my $is_save = $self->request->uri =~ m{/save/?$};
