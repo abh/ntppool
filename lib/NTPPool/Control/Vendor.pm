@@ -172,21 +172,19 @@ sub render_zones {
 
     # have_subscription was combust.current_account.have_live_subscription (an
     # ORM method); fetch it from the subscription status API instead. Used only
-    # to label a Pending zone as "Processing".
+    # to label a Pending zone as "Processing", so degrade gracefully: on a
+    # transient API error, default to false and still render the zone list.
     my $status_result = get_account_subscription_status($self->api_auth_params,
         account => $self->current_account->{id_token},);
-    if (my $status = $self->capi_error_status($status_result, $status_result->{data})) {
-        return $status;
-    }
-    my $status_data = $status_result->{data};
+    my $status_data =
+      ($status_result->{data} && !$status_result->{error}) ? $status_result->{data} : {};
     $self->tpl_param('have_subscription', $status_data->{has_live_subscription} ? 1 : 0);
 
+    # Live subscriptions drive the optional billing block; also decorative, so
+    # degrade gracefully rather than failing the whole page on error.
     my $subs_result = get_account_subscriptions($self->api_auth_params,
         account => $self->current_account->{id_token},);
-    if (my $status = $self->capi_error_status($subs_result, $subs_result->{data})) {
-        return $status;
-    }
-    if ($subs_result->{data}{subscriptions}) {
+    if ($subs_result->{data} && $subs_result->{data}{subscriptions}) {
         my @live =
           grep { $_->{live_subscription} } @{$subs_result->{data}{subscriptions}};
         $self->tpl_param('subscriptions', \@live);
@@ -750,12 +748,11 @@ sub render_subscription {
 
     warn "customer id: ", $account->{stripe_customer_id};
 
+    # Decorative: degrade gracefully rather than replacing the plan page with a
+    # bare error response on a transient blip.
     my $subs_result = get_account_subscriptions($self->api_auth_params,
         account => $self->current_account->{id_token},);
-    if (my $status = $self->capi_error_status($subs_result, $subs_result->{data})) {
-        return $status;
-    }
-    if ($subs_result->{data}{subscriptions}) {
+    if ($subs_result->{data} && $subs_result->{data}{subscriptions}) {
         $self->tpl_param('subscriptions', $subs_result->{data}{subscriptions});
     }
 
