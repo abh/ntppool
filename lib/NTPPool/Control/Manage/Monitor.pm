@@ -7,6 +7,7 @@ use JSON              ();
 use MIME::Base64      qw(encode_base64);
 use Data::Dump        qw(pp);
 use NP::IntAPI        qw(int_api);
+use NP::CAPI::Monitor qw(get_monitor list_monitors);
 use OpenTelemetry::Trace;
 use OpenTelemetry -all;
 use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
@@ -94,22 +95,18 @@ sub _fetch_monitor_details {
         return undef, NOT_FOUND;
     }
 
-    my $data = int_api(
-        'get',
-        'monitor/manage/monitor',
-        {   name => $name,
-            user => $self->plain_cookie($self->user_cookie_name),
-            a    => $self->current_account->{id_token},
-        },
-        $self->_get_request_context()
+    my $result = get_monitor(
+        $self->api_auth_params,
+        account => $self->current_account->{id_token},
+        name    => $name,
     );
 
-    if ($data->{code} >= 300) {
-        my $code = $self->_handle_capi_error($data);
+    if ($result->{code} >= 300) {
+        my $code = $self->_handle_capi_error($result);
         return undef, $code;
     }
 
-    return $data, undef;
+    return $result->{data}->{monitor}, undef;
 }
 
 sub render_monitor {
@@ -123,12 +120,17 @@ sub render_monitor {
     defer { $span->end(); };
 
     my $name = $self->req_param('name');
-    my ($data, $error_code) = $self->_fetch_monitor_details($name);
+    my ($mon, $error_code) = $self->_fetch_monitor_details($name);
     return $error_code if $error_code;
 
-    my @monitor = _monitor_list($data->{data}->{Monitors} || {});
-    $self->tpl_param('mon',  $monitor[0]);
-    $self->tpl_param('data', $data->{data} || {});
+    $self->tpl_param('mon', $mon);
+
+    # The admin status form (show.html) still posts to the int_api status
+    # route (slice 3). The old REST read returned the allowed statuses
+    # alongside the monitor; get_monitor does not, so supply the fixed enum
+    # here until the status RPC owns it.
+    $self->tpl_param('status_options',
+        [qw(pending testing active paused deleted)]);
 
     # Fetch metrics for this specific monitor
     my $metrics = $self->monitor_metrics(names => $name);
@@ -234,23 +236,16 @@ sub render_monitors {
     dynamically otel_current_context = otel_context_with_span($span);
     defer { $span->end(); };
 
-    my $data = int_api(
-        'get',
-        'monitor/manage/',
-        {   account_id => $self->current_account->{account_id},
-            a          => $self->current_account->{id_token},
-
-            user => $self->plain_cookie($self->user_cookie_name),
-        },
-        $self->_get_request_context()
+    my $result = list_monitors(
+        $self->api_auth_params,
+        account => $self->current_account->{id_token},
     );
 
-    if ($data->{code} >= 300) {
-        return $self->_handle_capi_error($data);
+    if ($result->{code} >= 300) {
+        return $self->_handle_capi_error($result);
     }
 
-    my @monitors = _monitor_list($data->{data}->{Monitors} || {});
-    $self->tpl_param('monitors', \@monitors);
+    $self->tpl_param('monitors', $result->{data}->{monitors} || []);
 
     # Fetch metrics for all monitors in this account
     my $metrics = $self->monitor_metrics(id_token => $self->current_account->{id_token});
@@ -269,21 +264,16 @@ sub render_admin_list {
     dynamically otel_current_context = otel_context_with_span($span);
     defer { $span->end(); };
 
-    my $data = int_api(
-        'get',
-        'monitor/manage/',
-        {   all_accounts => 1,
-            user         => $self->plain_cookie($self->user_cookie_name),
-        },
-        $self->_get_request_context()
+    my $result = list_monitors(
+        $self->api_auth_params,
+        all_accounts => JSON::XS::true,
     );
 
-    if ($data->{code} >= 300) {
-        return $self->_handle_capi_error($data);
+    if ($result->{code} >= 300) {
+        return $self->_handle_capi_error($result);
     }
 
-    my @monitors = _monitor_list($data->{data}->{Monitors} || {});
-    $self->tpl_param('monitors',   \@monitors);
+    $self->tpl_param('monitors',   $result->{data}->{monitors} || []);
     $self->tpl_param('admin_list', 1);
 
     # Fetch metrics for all accounts (admin view)
@@ -345,11 +335,10 @@ sub render_confirm_delete {
     }
 
     # Get monitor details for display using shared method
-    my ($data, $error_code) = $self->_fetch_monitor_details($name);
+    my ($mon, $error_code) = $self->_fetch_monitor_details($name);
     return $error_code if $error_code;
 
-    my @monitor = _monitor_list($data->{data}->{Monitors} || {});
-    $self->tpl_param('monitor', $monitor[0]);
+    $self->tpl_param('monitor', $mon);
     return OK, $self->evaluate_template('tpl/monitors/confirm_delete_modal.html');
 }
 
@@ -565,25 +554,6 @@ sub monitor_metrics {
             trace_id => $data->{trace_id}
         };
     }
-}
-
-sub _monitor_list {
-    my $monitors = shift;
-    my @monitors =
-      sort {
-             $a->{Account}->{ID} <=> $b->{Account}->{ID}
-          or $a->{TLSName} cmp $b->{TLSName}
-          or ($a->{IPv4} && $b->{IPv4} && $a->{IPv4}->{IP} cmp $b->{IPv4}->{IP})
-          or ($a->{IPv6} && $b->{IPv6} && $a->{IPv6}->{IP} cmp $b->{IPv6}->{IP})
-      }
-      map {
-          my $display_name =
-          $_->{Name} || $_->{TLSName} || $_->{IPv4}->{IP} || $_->{IPv6}->{IP};
-          $display_name =~ s{\.[^.]+\.mon\.ntppool\.dev}{};
-          $_->{display_name} = $display_name;
-          $_
-      } values %$monitors;
-    return @monitors;
 }
 
 1;

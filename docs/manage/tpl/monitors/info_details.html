@@ -1,31 +1,31 @@
-<h5 class="card-subtitle">[% mon.IP %]</h5>
+<h5 class="card-subtitle">[% mon.ip %]</h5>
 
 [% IF show_status %]
-<span class="badge rounded-pill text-bg-[% mon.StatusColor | html %]">
-    Status [% mon.Status | html %]</span>
+<span class="badge rounded-pill text-bg-[% mon.status_color | html %]">
+    Status [% mon.status | html %]</span>
 [% END %]
 
-[% IF mon.Status != "pending" %]
+[% IF mon.status != "pending" %]
 [% IF show_connection %]
-<span class="badge rounded-pill text-bg-[% mon.LastSeenStatus.Class %]">
-    Connection [% mon.LastSeenStatus.Text | html %]
+<span class="badge rounded-pill text-bg-[% mon.last_seen_status.class %]">
+    Connection [% mon.last_seen_status.text | html %]
 </span>
 [% END %]
 [% END %]
 <br>
 
-[% IF !mon.TLSName && mon.Location %]
-Location: [% mon.Location | html %]<br>
+[% IF !mon.tls_name && mon.location %]
+Location: [% mon.location | html %]<br>
 [% END %]
 
-[% IF mon.TLSName %]
-<!-- <code>[% mon.TLSName | html %]</code><br> -->
+[% IF mon.tls_name %]
+<!-- <code>[% mon.tls_name | html %]</code><br> -->
 [% END %]
 
-[% IF show_client_version AND mon.ClientVersion %]
-[% mon.ClientVersion | html %]<br>
+[% IF show_client_version AND mon.client_version %]
+[% mon.client_version | html %]<br>
 [% END %]
 
 [% IF show_details %]
-(#[% mon.ID %], [% mon.IDToken %])<br>
+(#[% mon.id %], [% mon.id_token %])<br>
 [% END %]

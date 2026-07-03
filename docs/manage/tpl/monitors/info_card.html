@@ -4,8 +4,8 @@
 
         [% UNLESS show_details %]
         [% details_link = combust.manage_url('/manage/monitors/monitor',
-                            a    => mon.Account.IDToken,
-                            name => mon.TLSName,
+                            a    => mon.account.id_token,
+                            name => mon.tls_name,
                         )
         %]
         [% END %]
@@ -13,52 +13,52 @@
         <div class="card-header">
             <h5 class="card-title">
                 [% IF show_details %]
-                    [% mon.display_name || mon.TLSName | html %]
+                    [% mon.display_name || mon.tls_name | html %]
                 [% ELSE %]
                 <a href="[% details_link %]">
-                    [% mon.display_name || mon.TLSName | html %]
+                    [% mon.display_name || mon.tls_name | html %]
                 </a>
                 [% END %]
             </h5>
-            [% IF mon.Hostname %][% mon.Hostname | html %][% END %]
+            [% IF mon.hostname %][% mon.hostname | html %][% END %]
         </div>
 
 
         <ul class="list-group list-group-flush">
 
-            [% IF mon.CombinedStatus OR mon.CombinedLastSeen %]
+            [% IF mon.combined_status OR mon.combined_last_seen %]
 
             <li class="list-group-item">
                 [% INCLUDE tpl/monitors/info_details.html,
                 mon = mon,
-                show_status = mon.CombinedStatus,
-                show_connection = mon.CombinedLastSeen,
+                show_status = mon.combined_status,
+                show_connection = mon.combined_last_seen,
                 show_client_version = 0,
                 %]
             </li>
 
             [% END %]
 
-            [% FOR v = [ "IPv4", "IPv6" ] %]
-            [% IF mon.$v AND mon.$v.IP %]
+            [% FOR v = [ "ipv4", "ipv6" ] %]
+            [% IF mon.$v AND mon.$v.ip %]
 
             <li class="list-group-item">
 
                 [% INCLUDE tpl/monitors/info_details.html,
                 mon = mon.$v,
                 ip_version = "$v",
-                show_status = !mon.CombinedStatus,
-                show_connection = !mon.CombinedLastSeen,
-                show_client_version = !mon.ClientVersion,
+                show_status = !mon.combined_status,
+                show_connection = !mon.combined_last_seen,
+                show_client_version = !mon.client_version,
                 %]
             </li>
             [% END %]
             [% END %]
 
 
-            [% IF mon.ClientVersion %]
+            [% IF mon.client_version %]
             <li class="list-group-item">
-                <small>[% mon.ClientVersion | html %]</small><br>
+                <small>[% mon.client_version | html %]</small><br>
             </li>
 
             [% END %]
