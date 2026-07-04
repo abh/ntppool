@@ -54,11 +54,54 @@ proto and move `_format_metrics_breakdown` into Go so the API returns display-re
 Perl `_format_metrics_breakdown` helper. Prometheus-dependent — preserve the graceful
 "metrics unavailable" degradation as a non-error empty result.
 
-**C — registration.** Add `GetRegistrationData` + `AcceptRegistration` RPCs (logic
-lives in `monitorreg`; either a second ConnectRPC service or a monitorreg-backed
-service — decide at implementation). Model the precheck / duplicate-handling / location
-structures. Port `render_confirm_monitor` (lines 161, 198). Then `Monitor.pm` is
-`int_api`-free: drop `use NP::IntAPI`, delete leftover `Monitor.pm.bak`.
+**C — registration.** The big one. Ports `render_confirm_monitor` (lines 161, 198),
+which call `NP::IntAPI::get_monitoring_registration_data` (GET
+`monitor/registration/data`) and `accept_monitoring_registration` (POST
+`monitor/registration/accept`). Both are backed by `monitorreg`'s
+`ConfirmDataHandler` / `UserAcceptanceHandler`.
+
+Why this slice is larger and riskier than A/B:
+- **HTTP-status semantics.** The flow signals state through status codes —
+  200 pending (show form), 201 completed, 202 accepted, 409 precheck conflict,
+  410 gone — and the Perl branches on `$data->{code} == 201/202`. ConnectRPC
+  success is always 200, so the response must carry an explicit
+  `RegistrationState` enum and Perl/templates branch on that, not the HTTP code.
+- **Response shape.** `ConfirmDataHandler` returns a loose `map[string]any`:
+  status, client, hostname, tls_name, ip4, ip6, `precheck` (a
+  `RegistrationPrecheck{ code: DuplicateHandlingCode(text), message, monitors:
+  []ntpdb.Monitor, delete_monitors, new_ips }`), and `locations` (airport list).
+  Templates read `data.precheck.code` ("None"/"ResetName"/"ResetKey"/"Add"),
+  `data.precheck.monitors.0.tls_name`, `data.locations`, etc. All of this needs
+  strict proto modeling — including a trimmed Monitor sub-message for the
+  precheck list.
+- **Echo coupling.** `ConfirmDataHandler` / `UserAcceptanceHandler` are deeply
+  echo-coupled (`c.FormValue("token")`, `c.JSON(status, …)`, transaction
+  management). They must be refactored into transport-agnostic core functions
+  returning `(result, RegistrationState)` before a ConnectRPC handler can reuse
+  them without duplicating the TOFU/precheck/vault logic.
+- **Templates.** `confirm_form.html`, `confirm_status.html`, `confirm_accept.html`
+  will need updates to branch on `RegistrationState` instead of the numeric `code`.
+- **Local-verification gap.** The Perl+template side can't be compiled/run in this
+  workspace (no Combust config / CPAN deps), so the Go contract has to be exactly
+  right the first time and the Perl side verified on the dev site.
+
+**Service placement (decision):** registration logic lives in the `monitorreg`
+package, not `monitoradmin` where `MonitorService` is. Recommended: a **new
+`MonitorRegistrationService`** ConnectRPC service in `monitorreg` (its own
+handler wiring), rather than bolting these RPCs onto `MonitorService` and forcing
+a cross-package dependency. Proto can still live under `ntppool/monitor/v1` or a
+new `ntppool/monitorreg/v1`.
+
+After C, `Monitor.pm` is `int_api`-free: drop `use NP::IntAPI`, delete leftover
+`lib/NTPPool/Control/Manage/Monitor.pm.bak`. (Phase-4 non-monitor callers —
+`Manage.pm:507` search, `Account.pm:1026` account-config — remain out of #28's
+Monitor.pm scope and can be a follow-up before deleting `lib/NP/IntAPI.pm`.)
+
+## Status
+
+- **Slice A (write path)** — done. Go `56f1c12`, Perl `bd4cc0c0`.
+- **Slice B (metrics)** — done. Go `ce8da00`, Perl `42c31876`.
+- **Slice C (registration)** — designed above, not yet implemented.
 
 ## Context
 
