@@ -12,6 +12,7 @@ use Exporter 'import';
 our @EXPORT_OK = qw(
     get_monitor
     list_monitors
+    update_monitor_status
 );
 
 =head1 NAME
@@ -20,7 +21,7 @@ NP::CAPI::Monitor - ConnectRPC client for MonitorService
 
 =head1 SYNOPSIS
 
-    use NP::CAPI::Monitor qw(get_monitor list_monitors);
+    use NP::CAPI::Monitor qw(get_monitor list_monitors update_monitor_status);
     # GetMonitor returns a single monitor by TLS name.
 Authentication: Required via session middleware (sessions.RequireUser).
 Authorization: monitor_admin OR the monitor's account member (enforced in SQL).
@@ -33,6 +34,16 @@ Authorization: monitor_admin OR the monitor's account member (enforced in SQL).
 accounts when all_accounts is set (monitor_admin only).
 Authentication: Required via session middleware (sessions.RequireUser / RequireAccount).
     my $result = list_monitors(
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
+    );
+
+    # UpdateMonitorStatus sets the status of one or more monitors (identified by
+id_token, all sharing the given TLS name). Delete is status="deleted".
+Authentication: Required via session middleware (sessions.RequireUser).
+Authorization: monitor_admin may set any status; account members may only
+set "deleted" on monitors they own (enforced in q.UpdateMonitorStatus).
+    my $result = update_monitor_status(
         $self->api_auth_params,      # Provides auth and context
         account => $account->{id_token},
     );
@@ -304,6 +315,80 @@ sub list_monitors {
     return connect_rpc(
         service     => 'ntppool.monitor.v1.MonitorService',
         method      => 'ListMonitors',
+        request     => \%request,
+        %args  # Pass through auth, account, context
+    );
+}
+
+
+=head2 update_monitor_status
+
+UpdateMonitorStatus sets the status of one or more monitors (identified by
+id_token, all sharing the given TLS name). Delete is status="deleted".
+Authentication: Required via session middleware (sessions.RequireUser).
+Authorization: monitor_admin may set any status; account members may only
+set "deleted" on monitors they own (enforced in q.UpdateMonitorStatus).
+
+B<Arguments:>
+
+    my $result = update_monitor_status(
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
+        name => $value,       # string
+        ids => $value,       # arrayref[string]
+        status => $value,       # string
+    );
+
+B<Returns:>
+
+Hashref with structure:
+
+    {
+        code         => 200,         # HTTP status code
+        status_line  => "200 OK",    # HTTP status text
+        connect_code => undef,       # ConnectRPC error code (or undef)
+        data         => {            # Response data
+            deleted => ...,  # bool
+        },
+        error        => undef,       # Error message (if any)
+        trace_id     => "...",       # OpenTelemetry trace ID
+    }
+
+B<ConnectRPC Error Codes:>
+
+    unauthenticated, permission_denied, internal, invalid_argument, etc.
+
+B<Example:>
+
+    my $result = update_monitor_status(
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
+    );
+
+    if ($result->{error}) {
+        warn "Error: $result->{error}";
+    } else {
+        my $data = $result->{data};
+        # Use response fields...
+    }
+
+=cut
+
+sub update_monitor_status {
+    my $validation_error = validate_key_value_args('update_monitor_status', @_);
+    return $validation_error if $validation_error;
+
+    my %args = @_;
+
+    # Extract request fields from args
+    my %request = ();
+    $request{'name'} = delete $args{'name'} if exists $args{'name'};
+    $request{'ids'} = delete $args{'ids'} if exists $args{'ids'};
+    $request{'status'} = delete $args{'status'} if exists $args{'status'};
+
+    return connect_rpc(
+        service     => 'ntppool.monitor.v1.MonitorService',
+        method      => 'UpdateMonitorStatus',
         request     => \%request,
         %args  # Pass through auth, account, context
     );

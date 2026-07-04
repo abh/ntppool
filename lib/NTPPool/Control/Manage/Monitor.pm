@@ -7,7 +7,7 @@ use JSON              ();
 use MIME::Base64      qw(encode_base64);
 use Data::Dump        qw(pp);
 use NP::IntAPI        qw(int_api);
-use NP::CAPI::Monitor qw(get_monitor list_monitors);
+use NP::CAPI::Monitor qw(get_monitor list_monitors update_monitor_status);
 use OpenTelemetry::Trace;
 use OpenTelemetry -all;
 use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
@@ -125,10 +125,9 @@ sub render_monitor {
 
     $self->tpl_param('mon', $mon);
 
-    # The admin status form (show.html) still posts to the int_api status
-    # route (slice 3). The old REST read returned the allowed statuses
-    # alongside the monitor; get_monitor does not, so supply the fixed enum
-    # here until the status RPC owns it.
+    # The admin status form (show.html) posts to render_admin_status, which
+    # calls update_monitor_status. get_monitor does not return the allowed
+    # statuses, so supply the fixed enum here.
     $self->tpl_param('status_options',
         [qw(pending testing active paused deleted)]);
 
@@ -294,28 +293,24 @@ sub render_admin_status {
     dynamically otel_current_context = otel_context_with_span($span);
     defer { $span->end(); };
 
-    my $data = int_api(
-        'post',
-        'monitor/manage/status',
-        {   a      => $self->current_account->{id_token},
-            name   => $self->req_param('name')                     || '',
-            id     => $self->req_param('id')                       || '',
-            status => $self->req_param('status')                   || '',
-            user   => $self->plain_cookie($self->user_cookie_name) || '',
-        },
-        $self->_get_request_context()
+    my $name = $self->req_param('name') || '';
+    my $result = update_monitor_status(
+        $self->api_auth_params,
+        account => $self->current_account->{id_token},
+        name    => $name,
+        ids     => [split /,/, ($self->req_param('id') || '')],
+        status  => $self->req_param('status') || '',
     );
-    if ($data->{code} >= 300) {
-        return $self->_handle_capi_error($data);
+    if ($result->{code} >= 300) {
+        return $self->_handle_capi_error($result);
     }
 
-    # no content, monitor was deleted
-    if ($data->{code} == 204) {
+    # deletion returns to the admin list; other status changes to the monitor page
+    if ($result->{data}->{deleted}) {
         return $self->redirect($self->manage_url('/manage/monitors/admin'));
     }
 
-    my $redirect =
-      $self->manage_url('/manage/monitors/monitor', {name => $self->req_param('name')});
+    my $redirect = $self->manage_url('/manage/monitors/monitor', {name => $name});
     return $self->redirect($redirect);
 
 }
@@ -360,22 +355,15 @@ sub render_delete_monitor {
         return $self->redirect($self->manage_url('/manage/monitors/'));
     }
 
-    my $data = int_api(
-        'post',
-        'monitor/manage/status',
-        {   name   => $name,
-            id     => $id,
-            status => 'deleted',
-            user   => $self->plain_cookie($self->user_cookie_name),
-            a      => $self->current_account->{id_token},
-        },
-        $self->_get_request_context()
+    my $result = update_monitor_status(
+        $self->api_auth_params,
+        account => $self->current_account->{id_token},
+        name    => $name,
+        ids     => [split /,/, $id],
+        status  => 'deleted',
     );
 
-    # Log exact API response for debugging
-    warn "Delete monitor API response for $name: " . Data::Dump::pp($data);
-
-    if ($data->{code} == 204) {
+    if ($result->{code} < 300) {
 
         # Successful deletion - redirect to monitor list
         if ($self->is_htmx) {
@@ -389,18 +377,18 @@ sub render_delete_monitor {
     }
     else {
         # Error case - use actual API error message
-        my $error_msg = $data->{error}
+        my $error_msg = $result->{error}
           || 'Unable to delete monitor - please try again or contact support';
 
         if ($self->is_htmx) {
             $self->tpl_param('error',    $error_msg);
-            $self->tpl_param('trace_id', $data->{trace_id}) if $data->{trace_id};
+            $self->tpl_param('trace_id', $result->{trace_id}) if $result->{trace_id};
             return OK, $self->evaluate_template('tpl/monitors/delete_error.html');
         }
 
         # For non-HTMX, render the monitor page with error
         $self->tpl_param('error',    $error_msg);
-        $self->tpl_param('trace_id', $data->{trace_id}) if $data->{trace_id};
+        $self->tpl_param('trace_id', $result->{trace_id}) if $result->{trace_id};
 
         # Call render_monitor to show the page with error
         return $self->render_monitor();
