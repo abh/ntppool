@@ -7,7 +7,8 @@ use JSON              ();
 use MIME::Base64      qw(encode_base64);
 use Data::Dump        qw(pp);
 use NP::IntAPI        qw(int_api);
-use NP::CAPI::Monitor qw(get_monitor list_monitors update_monitor_status);
+use NP::CAPI::Monitor
+  qw(get_monitor list_monitors update_monitor_status get_monitor_metrics_summary);
 use OpenTelemetry::Trace;
 use OpenTelemetry -all;
 use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
@@ -395,153 +396,61 @@ sub render_delete_monitor {
     }
 }
 
-sub _format_metrics_breakdown {
-    my ($self, $period_data) = @_;
-    return '' unless $period_data && ref $period_data eq 'HASH';
-
-    my @metric_types = (
-        {key => 'ok',                   label => 'ok'},
-        {key => 'timeout',              label => 'timeout'},
-        {key => 'offset',               label => 'offset'},
-        {key => 'signature_validation', label => 'signature'},
-        {key => 'batch_out_of_order',   label => 'batch'}
-    );
-
-    my @components;
-    my @non_ok_components;
-    my $ok_value     = 0;
-    my $ok_component = '';
-
-    for my $type (@metric_types) {
-        my $value = $period_data->{$type->{key}};
-        next unless defined $value && $value > 0;
-
-        my $formatted_value =
-          $value > 1 ? sprintf('%.1f', $value) : sprintf('%.2f', $value);
-        my $component_text = "$formatted_value $type->{label}";
-
-        if ($type->{key} eq 'ok') {
-            $ok_value     = $value;
-            $ok_component = $component_text;
-        }
-        else {
-            push @non_ok_components, $component_text;
-        }
-    }
-
-    # Only show 'ok' if there are other components to show
-    if (@non_ok_components && $ok_value > 0) {
-        push @components, $ok_component;
-    }
-    push @components, @non_ok_components;
-
-    return @components ? '(' . join(', ', @components) . ')' : '';
-}
-
 sub monitor_metrics {
     my $self   = shift;
     my %params = @_;
 
-    my $api_params = {
-        user => $self->plain_cookie($self->user_cookie_name),
-        a    => $self->current_account->{id_token},
-    };
-
-    # Determine the actual parameters and cache key
-    my $actual_id_token;
+    # Determine the query mode + cache key. The Go API scopes by names, by the
+    # X-Account header (account query), or across all accounts (admin).
+    my $account_token;
     my $actual_names;
     my $all_accounts = 0;
+    my %request;
 
     if ($params{id_token}) {
-
-        # Use 'a' parameter for account token per API specification
-        $api_params->{a} = $params{id_token};
-        $actual_id_token = $params{id_token};
+        $account_token = $params{id_token};
     }
     elsif ($params{names}) {
-        $api_params->{names} = $params{names};
         $actual_names = $params{names};
+        $request{names} = [split /,/, $params{names}];
     }
     elsif ($params{all_accounts}) {
-        $api_params->{all_accounts} = 'true';
         $all_accounts = 1;
+        $request{all_accounts} = JSON::XS::true;
     }
     else {
-        # Default to current account using id_token with 'a' parameter
-        $actual_id_token = $self->current_account->{id_token};
-        $api_params->{a} = $actual_id_token;
+        $account_token = $self->current_account->{id_token};
     }
 
     # Request-scoped caching to avoid multiple API calls
     my $cache_key =
         "_monitor_metrics_"
-      . ($actual_id_token || '') . '_'
-      . ($actual_names    || '') . '_'
+      . ($account_token || '') . '_'
+      . ($actual_names  || '') . '_'
       . ($all_accounts ? 'all' : '');
     return $self->{$cache_key} if exists $self->{$cache_key};
 
-    my $data = int_api(
-        'get',       'monitor/manage/metrics/summary',
-        $api_params, $self->_get_request_context()
+    my $result = get_monitor_metrics_summary(
+        $self->api_auth_params,
+        ($account_token ? (account => $account_token) : ()),
+        %request,
     );
 
-    # Handle different response codes with graceful degradation
-    if ($data->{code} == 200) {
+    if ($result->{code} == 200) {
 
-        # The API returns data.data.monitors, so we need to extract the inner data
-        my $metrics_data = $data->{data}->{data} || $data->{data};
-
-        # Add formatted breakdown strings to monitor data
-        if ($metrics_data->{monitors}) {
-            for my $monitor_name (keys %{$metrics_data->{monitors}}) {
-                my $monitor = $metrics_data->{monitors}->{$monitor_name};
-                if ($monitor->{tests_per_minute_1h}) {
-                    $monitor->{breakdown_1h} =
-                      $self->_format_metrics_breakdown($monitor->{tests_per_minute_1h});
-                }
-                if ($monitor->{tests_per_minute_24h}) {
-                    $monitor->{breakdown_24h} =
-                      $self->_format_metrics_breakdown($monitor->{tests_per_minute_24h});
-                }
-            }
-        }
-
-        # Add formatted breakdown for account totals
-        if ($metrics_data->{account_totals}) {
-            if ($metrics_data->{account_totals}->{tests_per_minute_1h}) {
-                $metrics_data->{account_totals}->{breakdown_1h} =
-                  $self->_format_metrics_breakdown(
-                      $metrics_data->{account_totals}->{tests_per_minute_1h});
-            }
-            if ($metrics_data->{account_totals}->{tests_per_minute_24h}) {
-                $metrics_data->{account_totals}->{breakdown_24h} =
-                  $self->_format_metrics_breakdown(
-                      $metrics_data->{account_totals}->{tests_per_minute_24h});
-            }
-        }
-
+        # breakdown_1h/breakdown_24h strings are pre-computed by the Go API.
         return $self->{$cache_key} = {
             success => 1,
-            data    => $metrics_data
+            data    => $result->{data},
         };
     }
-    elsif ($data->{code} == 404) {
 
-        # No metrics available for these monitors
-        return $self->{$cache_key} = {
-            success  => 0,
-            error    => 'No metrics available',
-            trace_id => $data->{trace_id}
-        };
-    }
-    else {
-        # API error - return error info for display
-        return $self->{$cache_key} = {
-            success  => 0,
-            error    => $data->{error} || 'Metrics temporarily unavailable',
-            trace_id => $data->{trace_id}
-        };
-    }
+    # Graceful degradation: the page still renders with a metrics warning.
+    return $self->{$cache_key} = {
+        success  => 0,
+        error    => $result->{error} || 'Metrics temporarily unavailable',
+        trace_id => $result->{trace_id},
+    };
 }
 
 1;

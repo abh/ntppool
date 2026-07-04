@@ -13,6 +13,7 @@ our @EXPORT_OK = qw(
     get_monitor
     list_monitors
     update_monitor_status
+    get_monitor_metrics_summary
 );
 
 =head1 NAME
@@ -21,7 +22,7 @@ NP::CAPI::Monitor - ConnectRPC client for MonitorService
 
 =head1 SYNOPSIS
 
-    use NP::CAPI::Monitor qw(get_monitor list_monitors update_monitor_status);
+    use NP::CAPI::Monitor qw(get_monitor list_monitors update_monitor_status get_monitor_metrics_summary);
     # GetMonitor returns a single monitor by TLS name.
 Authentication: Required via session middleware (sessions.RequireUser).
 Authorization: monitor_admin OR the monitor's account member (enforced in SQL).
@@ -44,6 +45,17 @@ Authentication: Required via session middleware (sessions.RequireUser).
 Authorization: monitor_admin may set any status; account members may only
 set "deleted" on monitors they own (enforced in q.UpdateMonitorStatus).
     my $result = update_monitor_status(
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
+    );
+
+    # GetMonitorMetricsSummary returns tests-per-minute metrics (1h/24h, with a
+per-result breakdown and a pre-formatted breakdown string) for monitors by
+TLS name, for the authenticated account, or across all accounts.
+Authentication: Required via session middleware (sessions.RequireUser).
+Authorization: names/account queries are scoped to what the user may see;
+all_accounts requires monitor_admin.
+    my $result = get_monitor_metrics_summary(
         $self->api_auth_params,      # Provides auth and context
         account => $account->{id_token},
     );
@@ -389,6 +401,109 @@ sub update_monitor_status {
     return connect_rpc(
         service     => 'ntppool.monitor.v1.MonitorService',
         method      => 'UpdateMonitorStatus',
+        request     => \%request,
+        %args  # Pass through auth, account, context
+    );
+}
+
+
+=head2 get_monitor_metrics_summary
+
+GetMonitorMetricsSummary returns tests-per-minute metrics (1h/24h, with a
+per-result breakdown and a pre-formatted breakdown string) for monitors by
+TLS name, for the authenticated account, or across all accounts.
+Authentication: Required via session middleware (sessions.RequireUser).
+Authorization: names/account queries are scoped to what the user may see;
+all_accounts requires monitor_admin.
+
+B<Arguments:>
+
+    my $result = get_monitor_metrics_summary(
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
+        names => $value,       # arrayref[string]
+        all_accounts => $value,       # bool
+    );
+
+B<Returns:>
+
+Hashref with structure:
+
+    {
+        code         => 200,         # HTTP status code
+        status_line  => "200 OK",    # HTTP status text
+        connect_code => undef,       # ConnectRPC error code (or undef)
+        data         => {            # Response data
+            monitors => {
+                key => ...,  # string
+                value => ...,  # hashref (MonitorMetrics)
+            },  # hashref (MonitorsEntry)
+            account_totals => {
+                tests_per_minute_1h => ...,  # hashref (MetricsBreakdown)
+                tests_per_minute_24h => ...,  # hashref (MetricsBreakdown)
+                breakdown_1h => ...,  # string
+                breakdown_24h => ...,  # string
+            },  # hashref (AccountMetrics)
+            accounts => {
+                key => ...,  # string
+                value => ...,  # hashref (AccountMetrics)
+            },  # hashref (AccountsEntry)
+        },
+        error        => undef,       # Error message (if any)
+        trace_id     => "...",       # OpenTelemetry trace ID
+    }
+
+B<Response Data Structure:>
+
+The C<data> field contains:
+
+=over 4
+
+=item * B<monitors> (hashref (MonitorsEntry))
+
+
+=item * B<account_totals> (hashref (AccountMetrics))
+
+
+=item * B<accounts> (hashref (AccountsEntry))
+
+
+=back
+
+B<ConnectRPC Error Codes:>
+
+    unauthenticated, permission_denied, internal, invalid_argument, etc.
+
+B<Example:>
+
+    my $result = get_monitor_metrics_summary(
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
+    );
+
+    if ($result->{error}) {
+        warn "Error: $result->{error}";
+    } else {
+        my $data = $result->{data};
+        # Use response fields...
+    }
+
+=cut
+
+sub get_monitor_metrics_summary {
+    my $validation_error = validate_key_value_args('get_monitor_metrics_summary', @_);
+    return $validation_error if $validation_error;
+
+    my %args = @_;
+
+    # Extract request fields from args
+    my %request = ();
+    $request{'names'} = delete $args{'names'} if exists $args{'names'};
+    $request{'all_accounts'} = delete $args{'all_accounts'} if exists $args{'all_accounts'};
+
+    return connect_rpc(
+        service     => 'ntppool.monitor.v1.MonitorService',
+        method      => 'GetMonitorMetricsSummary',
         request     => \%request,
         %args  # Pass through auth, account, context
     );
