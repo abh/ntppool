@@ -15,7 +15,6 @@ use JSON::XS qw(encode_json decode_json);
 use Net::DNS;
 use Math::BaseCalc             qw();
 use Math::Random::Secure       qw(irand);
-use NP::IntAPI                 qw(int_api);
 use NP::CAPI::Account          qw(get_related_accounts);
 use NP::CAPI::Server           qw(get_account_servers get_server);
 use NP::CAPI::ServerManagement qw(
@@ -24,6 +23,7 @@ use NP::CAPI::ServerManagement qw(
     complete_server_verification
     get_server_verification
     move_server
+    update_server
 );
 use NP::CAPI::Zone   qw(list_zones);
 use NP::Data::Server ();
@@ -382,15 +382,11 @@ sub handle_update_netspeed {
 
         return 400 unless $netspeed =~ m/^\d+$/;
 
-        # Call internal API
-        my $api_response = int_api(
-            'post',
-            'server/netspeed',
-            {   server_ip => $server->ip,
-                netspeed  => int($netspeed),
-                user      => $self->plain_cookie($self->user_cookie_name),
-                a         => $self->current_account->{id_token},
-            }
+        my $api_response = update_server(
+            $self->api_auth_params,
+            account  => $self->current_account->{id_token},
+            ip       => $server->ip,
+            netspeed => int($netspeed),
         );
 
         # For non-HTMX requests, redirect after processing
@@ -398,55 +394,25 @@ sub handle_update_netspeed {
             return $self->redirect('/manage/servers');
         }
 
-        # Set common template parameters
-        # Refresh server data from database for success cases
-        if ($api_response->{code} == 200) {
-            $server = $self->req_server;
+        # Refresh server data for success cases
+        if (!$api_response->{error} && $api_response->{data}{server}) {
+            $server = NP::Data::Server->new(%{$api_response->{data}{server}});
         }
         $self->tpl_param('server', $server);
 
-        # Handle API response codes
-        if ($api_response->{code} == 200) {
-
-            # Success - return updated server template fragment
-            return OK, $self->evaluate_template('tpl/manage/server.html');
-        }
-        elsif ($api_response->{code} == 403) {
-
-            # Verification required
+        if ($api_response->{error}) {
+            my %fallback_message = (
+                failed_precondition =>
+                  "Please verify your server before increasing the netspeed",
+                not_found => "Server not found or access denied",
+            );
             $self->tpl_param('error',
-                     $api_response->{message}
-                  || $api_response->{error}
-                  || "Please verify your server before increasing the netspeed");
-            return OK, $self->evaluate_template('tpl/manage/server.html');
-        }
-        elsif ($api_response->{code} == 404) {
-
-            # Server not found
-            $self->tpl_param('error',
-                     $api_response->{message}
-                  || $api_response->{error}
-                  || "Server not found or access denied");
-            return OK, $self->evaluate_template('tpl/manage/server.html');
-        }
-        elsif ($api_response->{code} == 409) {
-
-            # Conflict - don't show trace ID
-            $self->tpl_param('error',
-                     ($api_response->{data} && $api_response->{data}->{message})
-                  || $api_response->{message}
-                  || $api_response->{error}
-                  || 'Conflict updating netspeed');
-            return OK, $self->evaluate_template('tpl/manage/server.html');
-        }
-        else {
-            # Other errors
-            $self->tpl_param('error',
-                     $api_response->{message}
-                  || $api_response->{error}
+                     $api_response->{error}
+                  || $fallback_message{$api_response->{connect_code} || ''}
                   || 'Failed to update netspeed');
-            return OK, $self->evaluate_template('tpl/manage/server.html');
         }
+
+        return OK, $self->evaluate_template('tpl/manage/server.html');
     }
 
     # For non-HTMX requests without netspeed parameter, redirect

@@ -24,17 +24,17 @@
 
     [% last_account = 0 %]
     [% FOR mon = monitors %]
-    [% IF last_account != mon.Account.ID %]
+    [% IF last_account != mon.account.id %]
       [% IF last_account != 0 %]
       </div>
       [% END %]
       <h2>
         [% IF admin_list %]
-          <a href="[% combust.manage_url('/manage/monitors', { a => mon.Account.IDToken }) %]">
-            [% mon.Account.Name || "Account " _ (mon.Account.IDToken || mon.Account.ID) | html %]
+          <a href="[% combust.manage_url('/manage/monitors', { a => mon.account.id_token }) %]">
+            [% mon.account.name || "Account " _ (mon.account.id_token || mon.account.id) | html %]
           </a>
         [% ELSE %]
-          [% mon.Account.Name || "Account " _ (mon.Account.IDToken || mon.Account.ID) | html %]
+          [% mon.account.name || "Account " _ (mon.account.id_token || mon.account.id) | html %]
         [% END %]
         [% INCLUDE tpl/monitors/account_flags_badge.html %]
       </h2>
@@ -42,7 +42,7 @@
       [% PROCESS account_totals %]
 
 <div class="row row-cols-1 row-cols-md-2 g-4">
-      [% last_account = mon.Account.ID %]
+      [% last_account = mon.account.id %]
     [% END %]
 
     [% INCLUDE tpl/monitors/info_card.html %]

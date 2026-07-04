@@ -10,7 +10,11 @@ const manageURL =
 
 // Specs that exercise public, unauthenticated pages on the web host. Everything
 // else is an authenticated /manage flow and runs against the manage host.
-const WEB_SPECS = ["**/scores.spec.ts", "**/i18n.spec.ts"];
+const WEB_SPECS = [
+  "**/scores.spec.ts",
+  "**/i18n.spec.ts",
+  "**/dns-zone.spec.ts",
+];
 
 export default defineConfig({
   testDir: "./tests",

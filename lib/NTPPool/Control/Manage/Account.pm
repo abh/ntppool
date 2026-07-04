@@ -837,26 +837,11 @@ sub render_user_delete {
               $self->evaluate_template('tpl/user/delete_confirmation.html');
         }
 
-        # Use the updated user data from API response
+        # Use the updated user data from API response. The Go API enqueues the
+        # user_tasks delete row itself (in the same transaction that sets
+        # deletion_on), so there is no second call and no Perl-computed timestamp
+        # to drift from deletion_on (issue #40).
         my $updated_user = $result->{data}{user};
-
-        # The user_tasks worker triggers on execute_on <= NOW(); pick a value
-        # >= the API's scheduled deletion_on so the task fires no earlier than
-        # the real deletion time.
-        my $data = create_user_task(
-            $self->api_auth_params,
-            task_type       => 'delete',
-            status          => '',
-            execute_on_unix => DateTime->now->add(days => 7)->epoch,
-        );
-
-        if ($data->{error}) {
-            warn "Failed to create delete task via API: " . $data->{error};
-            warn "Trace ID: " . $data->{trace_id} if $data->{trace_id};
-
-            # Don't fail the deletion, just log the error
-            # The user is already marked for deletion
-        }
 
         my $param = {
             user     => $updated_user,
