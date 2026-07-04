@@ -101,7 +101,22 @@ Monitor.pm scope and can be a follow-up before deleting `lib/NP/IntAPI.pm`.)
 
 - **Slice A (write path)** — done. Go `56f1c12`, Perl `bd4cc0c0`.
 - **Slice B (metrics)** — done. Go `ce8da00`, Perl `42c31876`.
-- **Slice C (registration)** — designed above, not yet implemented.
+- **Slice C (registration)** — Go side done: `MonitorRegistrationService`
+  (`GetRegistrationData` + `AcceptRegistration`) implemented in the `monitorreg`
+  package, wired into the authenticated RPC group, unit + integration tested;
+  the accept transaction is shared with the REST `UserAcceptanceHandler` via
+  `runAcceptRegistration`. Go `6910eb4` (proto was `b228260`). The generated
+  `NP::CAPI::MonitorRegistration` wrapper is committed here. **Remaining
+  (follow-up):** port `render_confirm_monitor` (Monitor.pm lines 161/198) to the
+  wrapper, branch on `registration_state`/`code`, update the confirm templates,
+  then drop `use NP::IntAPI` from Monitor.pm and delete `Monitor.pm.bak`.
+
+## Follow-ups (out of #28 Monitor.pm scope)
+
+- Perl port of slice C (above) — the reviewed follow-up.
+- Retire `NP::IntAPI` entirely: `Manage.pm:507` (`get search`) and
+  `Account.pm:1026` (`patch monitor/admin/account-config`), then delete
+  `lib/NP/IntAPI.pm`.
 
 ## Context
 
