@@ -100,8 +100,8 @@
                     END;
                     %]
                     [% FOR locode = data.locations %]
-                    <option [% IF (first OR (location_code==locode.Code)); "selected" ; END %]
-                        value="[% locode.Code | html %]">[% locode.Code | html %] ([% locode.Name | html %])</option>
+                    <option [% IF (first OR (location_code==locode.code)); "selected" ; END %]
+                        value="[% locode.code | html %]">[% locode.code | html %] ([% locode.name | html %])</option>
                     [% first = 0 %]
                     [% END %]
                 </select>

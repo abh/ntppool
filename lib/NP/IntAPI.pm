@@ -177,49 +177,4 @@ sub _parse_message {
     return %r;
 }
 
-sub _int_api_get {
-    _int_api('get', @_);
-}
-
-sub _int_api_post {
-    _int_api('post', @_);
-}
-
-sub get_monitoring_registration_data {
-    my $validation_token = shift;
-    my $user_cookie      = shift;
-    my $id_token         = shift;
-    my $request_context  = shift;
-
-    my $data = _int_api_get(
-        "monitor/registration/data",
-        {   token => $validation_token,
-            user  => $user_cookie,
-            a     => $id_token,
-        },
-        $request_context
-    );
-    return $data;
-}
-
-sub accept_monitoring_registration {
-    my $validation_token = shift;
-    my $user_cookie      = shift;
-    my $id_token         = shift;
-    my $location         = shift;
-    my $request_context  = shift;
-
-    my $data = _int_api_post(
-        "monitor/registration/accept",
-        {   token    => $validation_token,
-            user     => $user_cookie,
-            a        => $id_token,
-            location => $location,
-
-        },
-        $request_context
-    );
-    return $data;
-}
-
 1;
