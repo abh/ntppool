@@ -6,9 +6,9 @@ use Combust::Constant qw(OK NOT_FOUND FORBIDDEN SERVER_ERROR);
 use JSON              ();
 use MIME::Base64      qw(encode_base64);
 use Data::Dump        qw(pp);
-use NP::IntAPI        qw(int_api);
 use NP::CAPI::Monitor
   qw(get_monitor list_monitors update_monitor_status get_monitor_metrics_summary);
+use NP::CAPI::MonitorRegistration qw(get_registration_data accept_registration);
 use OpenTelemetry::Trace;
 use OpenTelemetry -all;
 use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
@@ -16,12 +16,6 @@ use experimental             qw( defer );
 use Syntax::Keyword::Dynamically;
 
 my $json = JSON::XS->new->pretty->utf8->convert_blessed;
-
-sub _get_request_context {
-    my $self            = shift;
-    my $x_forwarded_for = $self->request->header_in('X-Forwarded-For');
-    return $x_forwarded_for ? {x_forwarded_for => $x_forwarded_for} : undef;
-}
 
 sub manage_dispatch {
     my $self = shift;
@@ -139,6 +133,23 @@ sub render_monitor {
     return OK, $self->evaluate_template('tpl/monitors/show.html');
 }
 
+sub _tpl_param_registration_result {
+    my $self   = shift;
+    my $result = shift;
+
+    # ConnectRPC transport is always 200 on success; the semantic status the
+    # templates branch on lives in data.code (see handoff doc).
+    my $rdata = $result->{data} || {};
+    my $code  = $result->{error} ? $result->{code} : $rdata->{code};
+
+    $self->tpl_param('error',    $result->{error})    if $result->{error};
+    $self->tpl_param('trace_id', $result->{trace_id}) if $result->{trace_id};
+    $self->tpl_param('code',     $code);
+    $self->tpl_param('data',     $rdata);
+
+    return ($rdata, $code);
+}
+
 sub render_confirm_monitor {
     my $self             = shift;
     my $validation_token = shift;
@@ -158,56 +169,38 @@ sub render_confirm_monitor {
     }
     else {
         # GET request
-        my $data = NP::IntAPI::get_monitoring_registration_data(
-            $validation_token,
-            $self->plain_cookie($self->user_cookie_name),
-            $self->current_account->{id_token},
-            $self->_get_request_context(),
+        my $result = get_registration_data(
+            $self->api_auth_params,
+            account => $self->current_account->{id_token},
+            token   => $validation_token,
         );
-        if ($data->{error}) {
-            $self->tpl_param('error', $data->{error});
-        }
-        $self->tpl_param('message', $data->{message});
-        $self->tpl_param('code',    $data->{code});
-        $self->tpl_param('data',    $data->{data});
-        $self->tpl_param('error',   $data->{error});
+
+        my ($rdata, $code) = $self->_tpl_param_registration_result($result);
 
         if ($status_check) {
             return OK, $self->evaluate_template('tpl/monitors/confirm_status.html');
         }
 
-        # Check if registration is already completed or accepted
-        if ($data->{code} == 201    # StatusCreated - monitor has been setup
-            || $data->{code}
-            == 202 # StatusAccepted - user accepted registration; waiting for monitor to confirm
-            || (   $data->{data}
-                && $data->{data}->{status}
-                && $data->{data}->{status} ne 'pending')
-          )
+        if (   $code == 201
+            || $code == 202
+            || ($rdata->{status} && $rdata->{status} ne 'pending'))
         {
-            # Show status page instead of form for non-pending registrations
             return OK, $self->evaluate_template('tpl/monitors/confirm_status.html');
         }
-
         return OK, $self->evaluate_template('tpl/monitors/confirm_form.html');
     }
 
     unless ($self->request->method eq 'post') {
         return NOT_FOUND;
     }
-    my $data = NP::IntAPI::accept_monitoring_registration(
-        $validation_token,
-        $self->plain_cookie($self->user_cookie_name),
-        $self->current_account->{id_token},
-        $self->req_param("location_code"),
-        $self->_get_request_context(),
+    my $result = accept_registration(
+        $self->api_auth_params,
+        account       => $self->current_account->{id_token},
+        token         => $validation_token,
+        location_code => $self->req_param("location_code"),
     );
-    if ($data->{error}) {
-        $self->tpl_param('error', $data->{error});
-    }
-    $self->tpl_param('message', $data->{message});
-    $self->tpl_param('code',    delete $data->{code});
-    $self->tpl_param('data',    $data->{data});
+
+    $self->_tpl_param_registration_result($result);
 
     return OK, $self->evaluate_template('tpl/monitors/confirm_accept.html');
 
