@@ -232,9 +232,18 @@ sub render_zone {
       )
       : undef;
     my $sub_data = ($sub_status && !$sub_status->{error}) ? $sub_status->{data} : {};
+
+    # $limits_ok drives need_subscription (the upgrade path) only. It is not a
+    # coverage signal: the API leaves limits_exceeded false for an account with
+    # no subscription at all, so it is true for uncovered vendors too.
     my $limits_ok =
       ($account_token && !$sub_data->{limits_exceeded}) ? 1 : 0;    # fail closed
-    $self->tpl_param('have_subscription', $limits_ok);
+
+    # Coverage is has_live_subscription, matching render_zones. The submit
+    # control routes on this, so conflating it with $limits_ok would offer
+    # uncovered vendors a plain production submit (#39).
+    $self->tpl_param('have_subscription',
+        ($account_token && $sub_data->{has_live_subscription}) ? 1 : 0);
 
     $self->tpl_param('can_edit_zone',   $self->can_edit_zone($zone));
     $self->tpl_param('is_vendor_admin', $self->user_is_vendor_admin ? 1 : 0);
@@ -363,8 +372,15 @@ sub render_submit {
       : undef;
     my $sub_data = ($sub_status && !$sub_status->{error}) ? $sub_status->{data} : {};
 
-    # Basic validation happens in the API, but check subscription requirements client-side
-    my $ok = ($account_token && !$sub_data->{limits_exceeded}) ? 1 : 0;    # fail closed
+    # Gate production submission on real coverage: a live subscription that is
+    # within limits. limits_exceeded alone is false for an account with NO
+    # subscription, so keying off it would let an uncovered vendor submit
+    # straight to production with no claim (#39). The opensource_request block
+    # below is the other way to pass this gate.
+    my $ok =
+      (      $account_token
+          && $sub_data->{has_live_subscription}
+          && !$sub_data->{limits_exceeded}) ? 1 : 0;    # fail closed
     $self->tpl_param('have_subscription', $ok);
     my $errors;
     my $opensource_info = '';
@@ -398,15 +414,15 @@ sub render_submit {
     }
 
     # Submit zone via API
-    my $opensource =
+    my $opensource_requested =
       $self->req_param('opensource_request') ? JSON::XS::true : JSON::XS::false;
     my $submit_result = submit_vendor_zone(
         $self->api_auth_params,
         account  => $self->current_account->{id_token},
         id_token => $id,
         content  => {
-            opensource      => $opensource,
-            opensource_info => $opensource_info,
+            opensource_requested => $opensource_requested,
+            opensource_info      => $opensource_info,
         },
     );
 
@@ -807,12 +823,20 @@ sub render_admin {
         if (my $status_param = $self->req_param('status_change')) {
             if ($zone->{status} eq 'Pending' and $status_param =~ m/^Reject/) {
 
+                # Send undef (not '') for a blank reason so the API leaves
+                # rejection_reason NULL rather than storing an empty string.
+                my $rejection_reason = $self->req_param('rejection_reason');
+                $rejection_reason = undef
+                  unless defined $rejection_reason && length $rejection_reason;
+
                 # Reject zone via API
                 my $update_result = update_vendor_zone_status(
-                    auth     => $self->plain_cookie($self->user_cookie_name),
-                    context  => $self->_get_request_context(),
-                    id_token => $id,
-                    status   => 'Rejected',
+                    auth                => $self->plain_cookie($self->user_cookie_name),
+                    context             => $self->_get_request_context(),
+                    id_token            => $id,
+                    status              => 'Rejected',
+                    opensource_approved => JSON::XS::false,
+                    rejection_reason    => $rejection_reason,
                 );
 
                 if ($update_result->{error}) {
@@ -837,10 +861,13 @@ sub render_admin {
             {
                 # Approve zone via API
                 my $update_result = update_vendor_zone_status(
-                    auth     => $self->plain_cookie($self->user_cookie_name),
-                    context  => $self->_get_request_context(),
-                    id_token => $id,
-                    status   => 'Approved',
+                    auth                => $self->plain_cookie($self->user_cookie_name),
+                    context             => $self->_get_request_context(),
+                    id_token            => $id,
+                    status              => 'Approved',
+                    opensource_approved => $self->req_param('opensource_grant')
+                    ? JSON::XS::true
+                    : JSON::XS::false,
                 );
 
                 if ($update_result->{error}) {
