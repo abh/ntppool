@@ -233,6 +233,65 @@ test("open-source submit retains justification and edits without error", async (
   await expect(page.locator("body")).toContainText(justification);
 });
 
+// Issue #39 regression guard.
+//
+// The bug: show.html used to route the New/Rejected submit control on a single
+// `!need_subscription` guard, so ANY vendor whose zone did not need a
+// subscription was handed the open-source justification form
+// (tpl/vendor/_opensource.html -> textarea[name="opensource_info"] + hidden
+// opensource_request=1). Submitting it set the vendor's open-source CLAIM, so a
+// subscription-covered vendor was silently marked open source.
+//
+// The fix routes on coverage (have_subscription, now derived from
+// has_live_subscription in Vendor.pm render_zone): a covered vendor gets a plain
+// "Submit for production →" and is NOT marked open source; an uncovered vendor
+// gets the open-source justification form, which is how they apply for the
+// non-revenue plan.
+//
+// WHAT THIS TEST GUARDS (and the fixture gap it lives with)
+// ---------------------------------------------------------------------------
+// The harness cannot mint a live subscription: CreateTestSession grants
+// privileges only (grant_staff / grant_vendor_admin — see lib/auth.ts), there is
+// no Stripe fixture, and the suite deliberately has no DB write layer
+// (e2e/.env.example). So the COVERED direction of #39 is guarded by the Go
+// integration test TestSubmitVendorZone_DoesNotForceOpensource instead.
+//
+// What e2e CAN reach is a fresh, uncovered vendor — and the subtle failure this
+// plan nearly shipped was the routing fix removing the open-source path for
+// exactly that vendor. This test pins that path open: an uncovered New zone must
+// still offer the justification form and must NOT be handed a plain production
+// submit (which would let an uncovered vendor reach production with neither a
+// plan nor an open-source claim).
+test("uncovered vendor submit page shows the open-source form, not a plain submit", async ({
+  page,
+  context,
+}) => {
+  const email = uniqueTestEmail("vendor-uncovered");
+  await loginAs(context, email);
+
+  const data = freshZoneData("uc");
+  await createNewZone(page, data);
+  await expectNoErrorBleed(page, page.url());
+
+  // A fresh account has no live subscription, so the zone renders uncovered:
+  // the open-source justification form (its textarea carries the claim) is
+  // offered so the vendor can apply for the non-revenue plan.
+  await expect(
+    page.locator('textarea[name="opensource_info"]'),
+    "uncovered vendor must still be offered the open-source justification form (#39)",
+  ).toBeVisible();
+
+  // The plain production submit must NOT be offered here — that control is for a
+  // subscription-covered vendor only. Its absence is what stops an uncovered
+  // vendor from reaching production without a plan or an open-source claim.
+  await expect(
+    page.getByRole("button", {
+      name: /Submit for production|Resubmit for production/,
+    }),
+    "uncovered vendor must not get a plain production submit button (#39)",
+  ).toHaveCount(0);
+});
+
 test("duplicate zone name surfaces a red error alert with a Trace ID", async ({
   page,
   context,

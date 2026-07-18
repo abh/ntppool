@@ -82,12 +82,24 @@
     [% END %]
     <a class="btn btn-secondary btn-sm" href="[% combust.manage_url('/manage/vendor') %]">Back to list</a>
 
-    [% # Submitting a zone always asks for the open-source justification (the
-       # non-revenue production workflow). The commercial/subscription products
-       # are shown below only when a subscription is required (need_subscription).
+    [% # Submit control for a New/Rejected zone. need_subscription (below)
+       # handles the over-limits upgrade case. Here: a vendor covered by a live
+       # subscription gets a plain production submit that does NOT mark the zone
+       # open source (#39); an uncovered vendor gets the open-source
+       # justification form, which is how they apply for the non-revenue plan.
     %]
     [% IF (vz.status == 'New' || vz.status == 'Rejected') && !need_subscription %]
-      [% PROCESS tpl/vendor/_opensource.html %]
+      [% IF have_subscription %]
+        <form method="post" class="form-inline btn-inline" action="/manage/vendor/submit">
+            <input type="hidden" name="id" value="[% vz.id_token %]" />
+            <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
+            <input type="hidden" name="a" value="[% combust.current_account.id_token %]">
+            <input type="submit" class="btn btn-primary"
+                value="[% vz.status == 'Rejected' ? 'Resubmit for production &rarr;' : 'Submit for production &rarr;' %]" />
+        </form>
+      [% ELSE %]
+        [% PROCESS tpl/vendor/_opensource.html %]
+      [% END %]
     [% END %]
 
     [% IF combust.user.privileges.vendor_admin %]
@@ -97,10 +109,19 @@
         <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
         <input type="hidden" name="a" value="[% combust.current_account.id_token %]">
         [% IF vz.status == 'Pending' or vz.status == 'Rejected' %]
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" name="opensource_grant" value="1"
+                 id="opensource_grant"[% IF vz.opensource_requested %] checked[% END %]>
+          <label class="form-check-label" for="opensource_grant">Grant open-source (non-revenue) plan</label>
+        </div>
         <input class="btn btn-success" type="submit" name="status_change" value="Approve" />
         [% END %]
         [% IF vz.status == 'Pending' %]
-        <br><br><input class="btn btn-info btn-sm" type="submit" name="status_change" value="Reject" />
+        <div class="mt-3">
+          <textarea class="form-control mb-2" name="rejection_reason" rows="2"
+                    placeholder="Reason for rejection (e.g. not open source)"></textarea>
+          <input class="btn btn-info btn-sm" type="submit" name="status_change" value="Reject" />
+        </div>
         [% END %]
     </form>
     [% END %]

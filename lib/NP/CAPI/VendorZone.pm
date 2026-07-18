@@ -203,11 +203,13 @@ Hashref with structure:
                 device_information => ...,  # string - device_information is implementation details (admin-only)
                 contact_information => ...,  # string - contact_information is NOC/engineering contacts (admin-only)
                 client_type => ...,  # string - client_type is the NTP client type (sntp, ntp, legacy)
-                opensource => ...,  # bool - opensource indicates if using opensource exception
                 opensource_info => ...,  # string - opensource_info is justification for opensource
                 rt_ticket => ...,  # int - rt_ticket is optional admin tracking number
                 dns_root_origin => ...,  # string - dns_root_origin is the DNS root domain (e.g., "pool.ntp.org")
                 account_token => ...,  # string - account_token identifies the owning account
+                opensource_requested => ...,  # bool - opensource_requested is the vendor's claim ("applying as open source").
+                opensource_approved => ...,  # bool - opensource_approved is staff's determination (unset = undecided).
+                rejection_reason => ...,  # string - rejection_reason is free-text why a zone was rejected (e.g. "not open source").
             },
             # ... more items
         ],  # arrayref[hashref (VendorZone)] - zones is the list of vendor zones
@@ -305,11 +307,13 @@ Hashref with structure:
                 device_information => ...,  # string - device_information is implementation details (admin-only)
                 contact_information => ...,  # string - contact_information is NOC/engineering contacts (admin-only)
                 client_type => ...,  # string - client_type is the NTP client type (sntp, ntp, legacy)
-                opensource => ...,  # bool - opensource indicates if using opensource exception
                 opensource_info => ...,  # string - opensource_info is justification for opensource
                 rt_ticket => ...,  # int - rt_ticket is optional admin tracking number
                 dns_root_origin => ...,  # string - dns_root_origin is the DNS root domain (e.g., "pool.ntp.org")
                 account_token => ...,  # string - account_token identifies the owning account
+                opensource_requested => ...,  # bool - opensource_requested is the vendor's claim ("applying as open source").
+                opensource_approved => ...,  # bool - opensource_approved is staff's determination (unset = undecided).
+                rejection_reason => ...,  # string - rejection_reason is free-text why a zone was rejected (e.g. "not open source").
             },  # hashref (VendorZone) - zone contains the complete vendor zone details
         },
         error        => undef,       # Error message (if any)
@@ -416,11 +420,13 @@ Hashref with structure:
                 device_information => ...,  # string - device_information is implementation details (admin-only)
                 contact_information => ...,  # string - contact_information is NOC/engineering contacts (admin-only)
                 client_type => ...,  # string - client_type is the NTP client type (sntp, ntp, legacy)
-                opensource => ...,  # bool - opensource indicates if using opensource exception
                 opensource_info => ...,  # string - opensource_info is justification for opensource
                 rt_ticket => ...,  # int - rt_ticket is optional admin tracking number
                 dns_root_origin => ...,  # string - dns_root_origin is the DNS root domain (e.g., "pool.ntp.org")
                 account_token => ...,  # string - account_token identifies the owning account
+                opensource_requested => ...,  # bool - opensource_requested is the vendor's claim ("applying as open source").
+                opensource_approved => ...,  # bool - opensource_approved is staff's determination (unset = undecided).
+                rejection_reason => ...,  # string - rejection_reason is free-text why a zone was rejected (e.g. "not open source").
             },  # hashref (VendorZone) - zone contains the complete vendor zone details
         },
         error        => undef,       # Error message (if any)
@@ -540,11 +546,13 @@ Hashref with structure:
                 device_information => ...,  # string - device_information is implementation details (admin-only)
                 contact_information => ...,  # string - contact_information is NOC/engineering contacts (admin-only)
                 client_type => ...,  # string - client_type is the NTP client type (sntp, ntp, legacy)
-                opensource => ...,  # bool - opensource indicates if using opensource exception
                 opensource_info => ...,  # string - opensource_info is justification for opensource
                 rt_ticket => ...,  # int - rt_ticket is optional admin tracking number
                 dns_root_origin => ...,  # string - dns_root_origin is the DNS root domain (e.g., "pool.ntp.org")
                 account_token => ...,  # string - account_token identifies the owning account
+                opensource_requested => ...,  # bool - opensource_requested is the vendor's claim ("applying as open source").
+                opensource_approved => ...,  # bool - opensource_approved is staff's determination (unset = undecided).
+                rejection_reason => ...,  # string - rejection_reason is free-text why a zone was rejected (e.g. "not open source").
             },  # hashref (VendorZone) - zone contains the updated vendor zone
         },
         error        => undef,       # Error message (if any)
@@ -623,7 +631,7 @@ B<Arguments:>
         account => $account->{id_token},  # Optional: Account selection token
         id_token => $value,       # string - id_token identifies the zone (required, format: "vz_{token}")
         content => $value,       # hashref (VendorZoneContent) - content holds any final edits to apply before submission (optional).
- opensource / opensource_info live here.
+ opensource_requested / opensource_info live here.
     );
 
 B<Returns:>
@@ -653,11 +661,13 @@ Hashref with structure:
                 device_information => ...,  # string - device_information is implementation details (admin-only)
                 contact_information => ...,  # string - contact_information is NOC/engineering contacts (admin-only)
                 client_type => ...,  # string - client_type is the NTP client type (sntp, ntp, legacy)
-                opensource => ...,  # bool - opensource indicates if using opensource exception
                 opensource_info => ...,  # string - opensource_info is justification for opensource
                 rt_ticket => ...,  # int - rt_ticket is optional admin tracking number
                 dns_root_origin => ...,  # string - dns_root_origin is the DNS root domain (e.g., "pool.ntp.org")
                 account_token => ...,  # string - account_token identifies the owning account
+                opensource_requested => ...,  # bool - opensource_requested is the vendor's claim ("applying as open source").
+                opensource_approved => ...,  # bool - opensource_approved is staff's determination (unset = undecided).
+                rejection_reason => ...,  # string - rejection_reason is free-text why a zone was rejected (e.g. "not open source").
             },  # hashref (VendorZone) - zone contains the complete vendor zone details (for email template)
             email_sent => ...,  # bool - email_sent indicates if the notification email was sent successfully
             user_email => ...,  # string - user_email is the zone owner's email address
@@ -759,6 +769,8 @@ B<Arguments:>
         id_token => $value,       # string - id_token identifies the zone (required, format: "vz_{token}")
         status => $value,       # string - status is the new status (Approved, Rejected) (required)
         rt_ticket => $value,       # int - rt_ticket is optional admin tracking number
+        opensource_approved => $value,       # bool - opensource_approved records whether the open-source exemption was granted.
+        rejection_reason => $value,       # string - rejection_reason is free-text shown to the vendor on rejection.
     );
 
 B<Returns:>
@@ -787,11 +799,13 @@ Hashref with structure:
                 device_information => ...,  # string - device_information is implementation details (admin-only)
                 contact_information => ...,  # string - contact_information is NOC/engineering contacts (admin-only)
                 client_type => ...,  # string - client_type is the NTP client type (sntp, ntp, legacy)
-                opensource => ...,  # bool - opensource indicates if using opensource exception
                 opensource_info => ...,  # string - opensource_info is justification for opensource
                 rt_ticket => ...,  # int - rt_ticket is optional admin tracking number
                 dns_root_origin => ...,  # string - dns_root_origin is the DNS root domain (e.g., "pool.ntp.org")
                 account_token => ...,  # string - account_token identifies the owning account
+                opensource_requested => ...,  # bool - opensource_requested is the vendor's claim ("applying as open source").
+                opensource_approved => ...,  # bool - opensource_approved is staff's determination (unset = undecided).
+                rejection_reason => ...,  # string - rejection_reason is free-text why a zone was rejected (e.g. "not open source").
             },  # hashref (VendorZone) - zone contains the complete vendor zone details (for email template)
             user_email => ...,  # string - user_email is the zone owner's email address (for approval emails)
             email_sent => ...,  # bool - email_sent indicates if the notification email was sent successfully
@@ -864,6 +878,8 @@ sub update_vendor_zone_status {
     $request{'id_token'} = delete $args{'id_token'} if exists $args{'id_token'};
     $request{'status'} = delete $args{'status'} if exists $args{'status'};
     $request{'rt_ticket'} = delete $args{'rt_ticket'} if exists $args{'rt_ticket'};
+    $request{'opensource_approved'} = delete $args{'opensource_approved'} if exists $args{'opensource_approved'};
+    $request{'rejection_reason'} = delete $args{'rejection_reason'} if exists $args{'rejection_reason'};
 
     return connect_rpc(
         service     => 'ntppool.vendorzone.v1.VendorZoneService',
