@@ -15,7 +15,19 @@ our @EXPORT_OK = qw(
     update_account_stripe_customer
     get_account_subscription_status
     get_account_subscriptions
+    SUBMIT_STATE_UNSPECIFIED
+    SUBMIT_STATE_COVERED
+    SUBMIT_STATE_NEEDS_SUBSCRIPTION
+    SUBMIT_STATE_OVER_LIMIT
 );
+
+# Enum constants
+use constant {
+    SUBMIT_STATE_UNSPECIFIED => 'SUBMIT_STATE_UNSPECIFIED',
+    SUBMIT_STATE_COVERED => 'SUBMIT_STATE_COVERED',
+    SUBMIT_STATE_NEEDS_SUBSCRIPTION => 'SUBMIT_STATE_NEEDS_SUBSCRIPTION',
+    SUBMIT_STATE_OVER_LIMIT => 'SUBMIT_STATE_OVER_LIMIT',
+};
 
 =head1 NAME
 
@@ -405,6 +417,7 @@ Hashref with structure:
             existing_zones => ...,  # int
             max_devices => ...,  # int
             max_zones => ...,  # int
+            submit_state => ...,  # string (enum: SubmitState)
         },
         error        => undef,       # Error message (if any)
         trace_id     => "...",       # OpenTelemetry trace ID

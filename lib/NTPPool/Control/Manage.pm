@@ -12,10 +12,10 @@ use Math::BaseCalc       qw();
 use Math::Random::Secure qw(irand);
 use URI::URL             ();
 use NP::UA;
-use NP::IntAPI qw(int_api);
 use NP::CAPI::Account
   qw(get_account_status validate_session get_user_accounts get_account_invites);
 use NP::CAPI::Auth             qw(get_oauth_login_url process_auth0_login);
+use NP::CAPI::Search           qw(search);
 use NP::CAPI::Server           qw(get_server);
 use NP::CAPI::ServerManagement qw(update_server);
 use NP::Data::Server;
@@ -503,24 +503,16 @@ sub staff_search {
         return OK, $self->evaluate_template('tpl/admin/search_results.html');
     }
 
-    # Call the new internal API search endpoint
-    my $data = int_api(
-        'get', 'search',
-        {   q               => $q,
-            user            => $self->plain_cookie($self->user_cookie_name),
-            include_deleted => $include_deleted ? 'true' : 'false',
-        },
-        $self->_get_request_context()
+    # Call the search ConnectRPC API
+    my $data = search(
+        $self->api_auth_params,
+        query           => $q,
+        include_deleted => $include_deleted ? JSON::XS::true : JSON::XS::false,
     );
 
     my $results = {};
-    if ($data->{code} == 200) {
+    if (!$data->{error}) {
         $results = $data->{data} || {};
-    }
-    elsif ($data->{code} == 404) {
-
-        # No results found - return empty results
-        $results = {accounts => []};
     }
     else {
         # API error - log and return empty results for degraded experience
