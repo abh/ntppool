@@ -285,7 +285,7 @@ sub handle_add {
             my $msg = $self->evaluate_template('tpl/manage/add_email.txt');
             my $email =
               Email::Stuffer->from(NP::Email::address("sender"))
-              ->to(NP::Email::address("notifications"))
+              ->to(NP::Email::address("support"))
               ->reply_to($self->user->{email})
               ->text_body($msg);
 
