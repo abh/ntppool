@@ -1,4 +1,4 @@
-[% IF combust.user.privileges.monitor_admin %]
+[% IF combust.user.privileges.monitor_admin && monitor_config %]
 <div id="monitor-config-section" class="mt-4">
     <h4>Monitor Configuration <small class="text-muted">(Admin Only)</small></h4>
 
@@ -55,7 +55,7 @@
                 <div class="col-md-4">
                     <div class="d-flex justify-content-between align-items-center">
                         <span><strong>Monitors per Server:</strong></span>
-                        <span class="text-primary font-weight-bold">[% monitor_config.monitors_per_server %]</span>
+                        <span class="text-primary font-weight-bold">[% monitor_config.monitors_per_server_limit %]</span>
                     </div>
                 </div>
             </div>

@@ -505,7 +505,6 @@ kubectl exec -it deployment/ntppool -- env | grep -E "(deployment_mode|hostname|
 ### Environment Variable Debugging
 ```perl
 # Perl code to debug configuration (in application)
-use NP::IntAPI;
 my $config = Combust::Config->new;
 warn "Deployment mode: " . $config->site->{ntppool}->{deployment_mode};
 warn "Web hostname: " . $config->site->{ntppool}->{web_hostname};

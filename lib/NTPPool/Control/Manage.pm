@@ -4,7 +4,7 @@ use parent            qw(NTPPool::Control::Login NTPPool::Control);
 use Combust::Constant qw(OK NOT_FOUND SERVER_ERROR);
 use Socket            qw(inet_ntoa);
 use Socket6;
-use JSON::XS   qw(encode_json decode_json);
+use JSON::XS   qw(encode_json);
 use Data::Dump qw(pp);
 use Net::DNS;
 use Net::IP;
@@ -13,7 +13,7 @@ use Math::Random::Secure qw(irand);
 use URI::URL             ();
 use NP::UA;
 use NP::CAPI::Account
-  qw(get_account_status validate_session get_user_accounts get_account_invites);
+  qw(get_account_status validate_session get_user_accounts get_account_invites get_account);
 use NP::CAPI::Auth             qw(get_oauth_login_url process_auth0_login);
 use NP::CAPI::Search           qw(search);
 use NP::CAPI::Server           qw(get_server);
@@ -850,55 +850,32 @@ sub account_monitor_config {
     # Use passed account or fall back to current_account
     $account ||= $self->current_account;
 
-    # Create a cache key that includes the account ID
-    my $cache_key =
-      '_account_monitor_config_' . ($account ? $account->{account_id} : 'none');
+    return undef unless $account;
+
+    my $cache_key = '_account_monitor_config_' . $account->{account_id};
 
     if (exists $self->{$cache_key}) {
         return $self->{$cache_key};
     }
 
-    # Default values if account not available
-    unless ($account) {
-        return $self->{$cache_key} = {
-            monitor_enabled     => 0,
-            monitor_limit       => 3,
-            monitors_per_server => 1,
-        };
+    # The API owns the monitor_config defaults (stored 0 -> 3 / 1; -1 means
+    # disabled) - Perl just displays what it returns.
+    my $result = get_account(
+        $self->api_auth_params,
+        account                => $account->{id_token},
+        include_monitor_config => JSON::XS::true,
+    );
+
+    if ($result->{error}) {
+        warn "GetAccount (monitor config) error: " . $result->{error};
+        warn "Trace ID: " . $result->{trace_id} if $result->{trace_id};
+
+        # Cache the failure too: a request that renders the config twice
+        # shouldn't retry (and re-log) a call that already failed.
+        return $self->{$cache_key} = undef;
     }
 
-    # Parse account flags from API-provided account hashref
-    my $config = {};
-
-    if ($account->{flags}) {
-
-        # Check if flags is already a hash reference or a JSON string
-        if (ref($account->{flags}) eq 'HASH') {
-            $config = $account->{flags};
-        }
-        else {
-            eval { $config = decode_json($account->{flags}); };
-            if ($@) {
-                $config = {};
-            }
-            else {
-            }
-        }
-    }
-    else {
-    }
-
-    # Set defaults and user-friendly values
-    my $monitor_config = {
-        monitor_enabled     => $config->{monitor_enabled} ? 1 : 0,
-        monitor_limit       => $config->{monitor_limit}             || 3,
-        monitors_per_server => $config->{monitors_per_server_limit} || 1,
-    };
-
-    # Handle special case where monitor_limit is 0 (use default)
-    $monitor_config->{monitor_limit} = 3 if $monitor_config->{monitor_limit} == 0;
-
-    return $self->{$cache_key} = $monitor_config;
+    return $self->{$cache_key} = $result->{data}{monitor_config};
 }
 
 sub user_accounts {

@@ -3,7 +3,6 @@ use strict;
 use NTPPool::Control::Manage;
 use base              qw(NTPPool::Control::Manage);
 use Combust::Constant qw(OK NOT_FOUND SERVER_ERROR);
-use NP::IntAPI        qw(int_api);
 use NP::CAPI::Account qw(
     get_account_users get_user_accounts get_account_invites
     create_account get_account update_account remove_user_from_account create_user_task
@@ -11,18 +10,16 @@ use NP::CAPI::Account qw(
     check_user_deletion_eligibility
     schedule_account_deletion cancel_account_deletion
     create_account_invite accept_account_invite resend_account_invite
+    update_account_monitor_config
 );
 use NP::CAPI::User qw(get_user schedule_user_deletion);
 use DateTime;
-use JSON::XS   qw(encode_json decode_json);
-use Data::Dump qw(pp);
+use JSON::XS qw(encode_json decode_json);
 use OpenTelemetry::Trace;
 use OpenTelemetry -all;
 use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
 use experimental             qw( defer );
 use Syntax::Keyword::Dynamically;
-
-my $json = JSON::XS->new->utf8;
 
 sub _get_request_context {
     my $self            = shift;
@@ -187,17 +184,11 @@ sub manage_dispatch {
         return $self->render_account_form($account);
     }
     elsif ($self->request->uri =~ m!^/manage/account/monitor-config$!) {
-        warn "DEBUG: monitor-config route hit, method: " . $self->request->method;
-        warn "DEBUG: request URI: " . $self->request->uri;
         return 403 unless $self->user_is_monitor_admin;
         if ($self->request->method eq 'post') {
-            warn
-              "DEBUG: Handling POST request for monitor config update (will use PATCH to API)";
             return $self->render_monitor_config_update($account);
         }
         else {
-            warn "DEBUG: Handling GET request for monitor config form";
-
             # GET request - return the edit form
             return $self->render_monitor_config_form($account);
         }
@@ -549,20 +540,13 @@ sub render_account_form {
     my ($self, $account) = @_;
     $self->tpl_param('account', $account);
 
-    # Set monitor config for admin users
+    # Set monitor config for admin users. account_monitor_config() logs and
+    # returns undef on API failure; leave the template param unset so the
+    # section (monitor_config_section.html) stays hidden rather than showing
+    # a blank config.
     if ($self->user_is_monitor_admin && $account) {
-        warn "DEBUG: Setting monitor config for admin user, account ID: "
-          . $account->{account_id};
-        warn "DEBUG: Account flags: " . ($account->{flags} || 'NULL');
         my $config = $self->account_monitor_config($account);
-        warn "DEBUG: Monitor config data: " . Data::Dump::pp($config);
-        $self->tpl_param('monitor_config', $config);
-    }
-    else {
-        warn "DEBUG: NOT setting monitor config - is_monitor_admin: "
-          . ($self->user_is_monitor_admin || 0)
-          . ", has account: "
-          . (defined $account ? 'yes' : 'no');
+        $self->tpl_param('monitor_config', $config) if $config;
     }
 
     # todo: how do you end up here without an account?
@@ -963,34 +947,27 @@ sub render_account_dissolve {
 sub render_monitor_config_form {
     my ($self, $account) = @_;
 
-    warn "DEBUG: render_monitor_config_form called for account " . $account->{account_id};
-
     # Check if this is a cancel request
     if ($self->request->header('X-Cancel')) {
-        warn "DEBUG: Cancel request detected, returning display template";
         return $self->render_monitor_config_display($account);
     }
 
     # This method returns the monitor config form for HTMX requests
     my $config = $self->account_monitor_config($account);
-    warn "DEBUG: Form config data: " . Data::Dump::pp($config);
+
+    # account_monitor_config() already logged the error; fall back to the
+    # display template so the error alert renders instead of an editable form
+    # with a blank config.
+    return $self->render_monitor_config_display($account) unless $config;
+
     $self->tpl_param('monitor_config', $config);
     $self->tpl_param('account',        $account);
 
-    warn "DEBUG: About to render monitor_config_edit_form.html template";
     return OK, $self->evaluate_template('tpl/account/monitor_config_edit_form.html');
 }
 
 sub render_monitor_config_update {
     my ($self, $account) = @_;
-
-    # Debug: Show all form parameters
-    warn "DEBUG: All form parameters: " . Data::Dump::pp($self->request->param);
-    warn "DEBUG: monitor_enabled param: "
-      . ($self->req_param('monitor_enabled') || 'UNDEF');
-    warn "DEBUG: monitor_limit param: " . ($self->req_param('monitor_limit') || 'UNDEF');
-    warn "DEBUG: monitors_per_server param: "
-      . ($self->req_param('monitors_per_server') || 'UNDEF');
 
     my %update_data = ();
 
@@ -1003,73 +980,46 @@ sub render_monitor_config_update {
     if (defined $self->req_param('monitor_limit')) {
         my $limit = $self->req_param('monitor_limit');
         if ($limit =~ /^\-?\d+$/) {
-            $update_data{monitor_limit} = $limit;
+            $update_data{monitor_limit} = 0 + $limit;
         }
     }
 
-    if (defined $self->req_param('monitors_per_server')) {
-        my $per_server = $self->req_param('monitors_per_server');
+    if (defined $self->req_param('monitors_per_server_limit')) {
+        my $per_server = $self->req_param('monitors_per_server_limit');
         if ($per_server =~ /^\d+$/ && $per_server > 0) {
-            $update_data{monitors_per_server_limit} = $per_server;
+            $update_data{monitors_per_server_limit} = 0 + $per_server;
         }
     }
 
-    # Call internal API to update account flags
-    warn "DEBUG: Update data being sent: " . Data::Dump::pp(\%update_data);
-    for my $k (qw(monitor_limit monitors_per_server_limit)) {
-        $update_data{$k} += 0 if defined $update_data{$k};
-    }
-
-    my $json_data = $json->encode(\%update_data);
-    warn "DEBUG: JSON data being sent: $json_data";
-
-    my $data = int_api(
-        'patch',
-        'monitor/admin/account-config',
-        {   a    => $account->{id_token},
-            user => $self->plain_cookie($self->user_cookie_name),
-            data => $json_data,
-        },
-        $self->_get_request_context()
+    my $result = update_account_monitor_config(
+        $self->api_auth_params,
+        account => $account->{id_token},
+        %update_data,
     );
 
-    my $updated_account;
-    if ($data->{code} == 200) {
-
-        # Success - refresh account data and clear cache
-        my $cache_key = '_account_monitor_config_' . $account->{account_id};
-        delete $self->{$cache_key};
-
-        # Note: During PostgreSQL migration, can't reload from MySQL
-        # Use the account hashref as-is
-        $updated_account = $account;
-
+    # The response carries the effective config (defaults already applied), so
+    # the display below renders the new values without a second round trip.
+    my $config;
+    unless ($self->capi_error_status($result, $result->{data}{monitor_config})) {
+        $config = $result->{data}{monitor_config};
         $self->tpl_param('success', 'Monitor configuration updated successfully');
     }
-    elsif ($data->{code} == 403) {
-        $self->tpl_param('error', 'Access denied - insufficient privileges');
-    }
-    elsif ($data->{code} == 400) {
-        $self->tpl_param('error',
-            'Invalid request - ' . ($data->{message} || 'bad request'));
-    }
-    else {
-        warn "Monitor config update API error: "
-          . ($data->{status_line} || 'unknown error');
-        $self->tpl_param('error',
-            'Unable to update monitor configuration - please try again');
-    }
 
-    return $self->render_monitor_config_display($updated_account || $account);
+    return $self->render_monitor_config_display($account, $config);
 }
 
 sub render_monitor_config_display {
-    my ($self, $account) = @_;
+    my ($self, $account, $config) = @_;
 
-    # This method returns the monitor config display section for HTMX updates
-    my $config = $self->account_monitor_config($account);
-    $self->tpl_param('monitor_config', $config);
+    # This method returns the monitor config display section for HTMX updates.
+    # The update path passes the values the API just returned; everyone else
+    # fetches them. A failed fetch leaves monitor_config unset so the template
+    # renders the error alert instead of a blank config.
+    $config ||= $self->account_monitor_config($account);
+    $self->tpl_param('monitor_config', $config) if $config;
     $self->tpl_param('account',        $account);
+    $self->tpl_param('error', 'Unable to load monitor configuration')
+      if !$config && !$self->tpl_param('error');
 
     # Use clean template for HTMX responses (no debug sections)
     return OK, $self->evaluate_template('tpl/account/monitor_config_display_clean.html');
