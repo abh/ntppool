@@ -111,12 +111,152 @@ Monitor.pm scope and can be a follow-up before deleting `lib/NP/IntAPI.pm`.)
   wrapper, branch on `registration_state`/`code`, update the confirm templates,
   then drop `use NP::IntAPI` from Monitor.pm and delete `Monitor.pm.bak`.
 
-## Follow-ups (out of #28 Monitor.pm scope)
+- **Slice C Perl port** — done. `render_confirm_monitor` uses
+  `NP::CAPI::MonitorRegistration`; `Monitor.pm` no longer references `NP::IntAPI`
+  and `Monitor.pm.bak` is gone.
+- **Slice D (search)** — done, shipped as #43 (`Manage.pm` → `NP::CAPI::Search`).
+- **Slice E (account monitor config)** — done. `AccountService.UpdateAccountMonitorConfig`
+  plus `GetAccount`'s `include_monitor_config`; `Manage.pm::account_monitor_config`
+  and `Account.pm::render_monitor_config_update` ported; the dead `/int/monitor/manage/*`
+  and `/int/monitor/admin/*` echo handlers removed; `lib/NP/IntAPI.pm` deleted.
+  Details below. **Not yet verified on the dev site** — see Verification.
 
-- Perl port of slice C (above) — the reviewed follow-up.
-- Retire `NP::IntAPI` entirely: `Manage.pm:507` (`get search`) and
-  `Account.pm:1026` (`patch monitor/admin/account-config`), then delete
-  `lib/NP/IntAPI.pm`.
+## Slice E — account monitor config, and retiring `NP::IntAPI`
+
+`lib/NTPPool/Control/Manage/Account.pm:1026` (`PATCH
+/int/monitor/admin/account-config`) is the only remaining `int_api()` caller.
+Backed by `monitoradmin.PatchAccountConfigHandler`; the matching
+`GetAccountConfigHandler` has no caller at all.
+
+Two defects in the current code that the port fixes rather than preserves:
+
+1. **Stale display after update.** On success the handler discards the API's
+   updated config and re-renders `render_monitor_config_display($account)`, which
+   recomputes from the *pre-update* `$account->{flags}`. The admin sees the old
+   values until a page reload.
+2. **Two owners of the effective-value defaults.** `Manage.pm:847`
+   (`account_monitor_config`) parses `accounts.flags` JSON in Perl and applies
+   `monitor_limit || 3` / `monitors_per_server_limit || 1`. Go owns that data.
+   `GetAccountResponse.monitor_config` and `include_monitor_config` already exist
+   in `account.proto` but are never populated by the handler.
+
+### Go — `proto/ntppool/account/v1/account.proto`
+
+`MonitorConfig` becomes the **effective** config (defaults applied), documented
+as such. Nothing populates it today, so there is no wire-compat concern.
+
+```protobuf
+service AccountService {
+  // Requires monitor_admin privileges.
+  rpc UpdateAccountMonitorConfig(UpdateAccountMonitorConfigRequest)
+      returns (UpdateAccountMonitorConfigResponse) {}
+}
+
+// Unset fields are not modified. monitor_limit = 0 or
+// monitors_per_server_limit = 0 clears the per-account override;
+// monitor_enabled = false clears the override.
+message UpdateAccountMonitorConfigRequest {
+  optional bool  monitor_enabled = 1;
+  optional int64 monitor_limit = 2;
+  optional int64 monitors_per_server_limit = 3;
+}
+
+message UpdateAccountMonitorConfigResponse {
+  MonitorConfig monitor_config = 1;  // effective values after the update
+}
+```
+
+Account resolves from the `a` parameter via `sessions.GetAccount(ctx)`, as with
+the other account RPCs.
+
+### Go — handlers (`server/api/account/`)
+
+- **`UpdateAccountMonitorConfig`.** Requires `monitor_admin`; on failure
+  `security.LogPrivilegeEscalation` + `PermissionDenied`, matching the REST
+  handler. Merge the set fields into `ntpdb.AccountConfig`, reject a request that
+  sets nothing (`InvalidArgument`), then inside `database.WithTransaction`:
+  `UpdateAccountFlags` + `q.CreateLog` (`type = "account"`, admin user id, message
+  naming the new values). Same transaction, following `mutations.go:245`.
+  Return the effective config.
+- **`GetAccount`.** Honor `include_monitor_config`: populate `MonitorConfig` from
+  `account.Flags` with `monitor_limit == 0 → 3`, `monitors_per_server_limit == 0
+  → 1`, `-1` preserved (means "disabled"). If the flag is set by a caller without
+  `monitor_admin`, return `PermissionDenied` — do not silently omit. `mode` and
+  the other `include_*` flags stay unimplemented; out of scope.
+- Effective-value logic lives in one helper shared by both RPCs.
+
+Tests: privilege matrix (monitor_admin / staff / member / outsider) on both RPCs,
+partial-update merge semantics, 0-clears-override, empty request rejected, audit
+row written in the same transaction, effective defaults incl. `-1`.
+
+### Go — REST removal
+
+Delete the echo handlers now that no consumer in this deployment remains.
+
+Precondition verified: prod `ntppool-main` is served by a build of the API
+repo's separate long-lived `mysql` branch, which still carries every one of
+these handlers. Removing them from `main` does not affect production.
+
+- `server/api/monitoradmin/account_config.go` + `account_config_test.go`
+- `monitoradmin.go`: `GetMonitorData`, `GetMonitorList`, and `getMonitorByName`
+  (only `GetMonitorData` called it). Keep `formatMonitorList`, `statusColor`,
+  `LastSeenInfo` — used by the RPCs.
+- `monitoradmin_update.go`: `UpdateStatus` (keep `q.UpdateMonitorStatus` usage in
+  `rpc_update_status.go`); the file is then empty, so delete it
+- `eligibility.go`: `GetEligibilityHandler`
+- `metrics_summary.go`: `GetMetricsSummaryHandler`, its echo-coupled helpers
+  `handleAccountQuery` / `handleMonitorNamesQuery`, and the `generate*Metrics`
+  functions those two were the only callers of. Keep `queryPrometheus*`,
+  `buildPromQLQuery`, `parsePrometheusVectorWithBreakdown`,
+  `getMonitorAccountMapping` — used by `rpc_metrics_summary.go`.
+  (An earlier draft of this list said to keep `getMonitorByName` and the
+  `generate*Metrics` set; a reference check showed all of them die with the
+  echo handlers. Go does not flag unused package-level functions, so verify
+  by grep rather than by build.)
+- `server/api/api.go`: the `monManage` and `monAdminConfig` groups
+- Re-point or delete the REST-shaped tests (`update_status_test.go`,
+  `eligibility_test.go`, and the `_integration_test.go` files that drive
+  `httptest` requests) at the RPC handlers.
+
+**Not** removed: `/int/monitor/registration/{data,accept}`. Sharing
+`runAcceptRegistration` with the REST path was deliberate and it is a separate
+route group — worth its own decision.
+
+### Perl
+
+- Regenerate `lib/NP/CAPI/Account.pm` (`make generate` in the Go repo writes
+  through the `ntppool` symlink) → `update_account_monitor_config`.
+- `Manage.pm::account_monitor_config` — drop the flags parsing and the Perl
+  defaults; call `get_account(..., account => $account->{id_token},
+  include_monitor_config => 1)` and return `$result->{data}{monitor_config}`.
+  Cache successes only; on error log the message and trace id and return undef.
+  No account → undef.
+- `Account.pm::render_monitor_config_update` — call
+  `update_account_monitor_config`, seed the request cache with
+  `$result->{data}{monitor_config}` so the display re-renders from the API's
+  authoritative values (fixes defect 1 with no second round trip). Errors go
+  through `capi_error_status` / the `error` template param.
+- `render_account_form` hides the monitor-config section when the fetch fails
+  (display degrades, error still logged); the HTMX handlers surface it.
+- Field naming: use the API's `monitors_per_server_limit` end to end — rename the
+  form field and the three template reads rather than remapping in Perl.
+  Templates: `monitor_config_edit_form.html`, `monitor_config_section.html`,
+  `monitor_config_display_clean.html`.
+- Drop `use NP::IntAPI qw(int_api)` and the now-unused `my $json` from
+  `Account.pm`; drop `decode_json` from `Manage.pm` if unused after the change.
+- Delete `lib/NP/IntAPI.pm`.
+- Remove the `warn "DEBUG: ..."` lines in the monitor-config path while touching
+  it.
+- Docs: drop the `NP::IntAPI` sections from `CLAUDE.md` and `configuration.md:508`
+  (`Makefile.old` left alone).
+
+### Verification
+
+No Perl unit tests here — verify on https://web.askdev.grundclock.com/ as a
+monitor admin: account page renders the config section; Edit → form is populated;
+save → display shows the *new* values immediately; limit `0`/`-1` round-trip
+correctly; a non-admin gets 403 on `/manage/account/monitor-config`; the audit
+entry appears in the account log. Go side: `go test ./...`.
 
 ## Context
 

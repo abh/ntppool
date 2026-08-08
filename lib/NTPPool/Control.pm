@@ -455,13 +455,13 @@ sub cache_control {
     return $self->{cache_control} = shift;
 }
 
-# Map a CAPI/IntAPI result to an HTTP status when the record we wanted is
+# Map a CAPI result to an HTTP status when the record we wanted is
 # absent. The not-found-vs-transient logic lives in NP::CAPI::result_http_status;
 # here we add the controller-only concerns of (a) not letting an upstream cache
 # (Fastly) store a transient failure under the page's s-maxage header and
 # (b) surfacing the error message so templates (error_alert.html) can show it.
 #
-# This is the single CAPI/IntAPI error helper; NTPPool::Control::Manage's
+# This is the single CAPI error helper; NTPPool::Control::Manage's
 # _handle_capi_error is a thin adapter over it for callers that use the
 # legacy "200-on-success" return convention.
 #

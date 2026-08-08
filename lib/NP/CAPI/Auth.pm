@@ -5,7 +5,7 @@
 package NP::CAPI::Auth;
 use strict;
 use warnings;
-use NP::CAPI       qw(connect_rpc);
+use NP::CAPI qw(connect_rpc);
 use NP::CAPI::Util qw(validate_key_value_args);
 use Exporter 'import';
 
@@ -258,20 +258,19 @@ sub process_auth0_login {
 
     # Extract request fields from args
     my %request = ();
-    $request{'authorization_code'} = delete $args{'authorization_code'}
-      if exists $args{'authorization_code'};
-    $request{'state'}        = delete $args{'state'} if exists $args{'state'};
-    $request{'redirect_uri'} = delete $args{'redirect_uri'}
-      if exists $args{'redirect_uri'};
+    $request{'authorization_code'} = delete $args{'authorization_code'} if exists $args{'authorization_code'};
+    $request{'state'} = delete $args{'state'} if exists $args{'state'};
+    $request{'redirect_uri'} = delete $args{'redirect_uri'} if exists $args{'redirect_uri'};
     $request{'client_site'} = delete $args{'client_site'} if exists $args{'client_site'};
 
     return connect_rpc(
-        service => 'ntppool.auth.v1.AuthService',
-        method  => 'ProcessAuth0Login',
-        request => \%request,
-        %args    # Pass through auth, account, context
+        service     => 'ntppool.auth.v1.AuthService',
+        method      => 'ProcessAuth0Login',
+        request     => \%request,
+        %args  # Pass through auth, account, context
     );
 }
+
 
 =head2 get_oauth_login_url
 
@@ -337,18 +336,18 @@ sub get_oauth_login_url {
 
     # Extract request fields from args
     my %request = ();
-    $request{'redirect_uri'} = delete $args{'redirect_uri'}
-      if exists $args{'redirect_uri'};
-    $request{'state'}       = delete $args{'state'}       if exists $args{'state'};
+    $request{'redirect_uri'} = delete $args{'redirect_uri'} if exists $args{'redirect_uri'};
+    $request{'state'} = delete $args{'state'} if exists $args{'state'};
     $request{'client_site'} = delete $args{'client_site'} if exists $args{'client_site'};
 
     return connect_rpc(
-        service => 'ntppool.auth.v1.AuthService',
-        method  => 'GetOAuthLoginURL',
-        request => \%request,
-        %args    # Pass through auth, account, context
+        service     => 'ntppool.auth.v1.AuthService',
+        method      => 'GetOAuthLoginURL',
+        request     => \%request,
+        %args  # Pass through auth, account, context
     );
 }
+
 
 =head2 create_test_session
 
@@ -420,21 +419,21 @@ sub create_test_session {
 
     # Extract request fields from args
     my %request = ();
-    $request{'email'}             = delete $args{'email'} if exists $args{'email'};
-    $request{'name'}              = delete $args{'name'}  if exists $args{'name'};
-    $request{'create_if_missing'} = delete $args{'create_if_missing'}
-      if exists $args{'create_if_missing'};
+    $request{'email'} = delete $args{'email'} if exists $args{'email'};
+    $request{'name'} = delete $args{'name'} if exists $args{'name'};
+    $request{'create_if_missing'} = delete $args{'create_if_missing'} if exists $args{'create_if_missing'};
     $request{'grant_staff'} = delete $args{'grant_staff'} if exists $args{'grant_staff'};
-    $request{'grant_vendor_admin'} = delete $args{'grant_vendor_admin'}
-      if exists $args{'grant_vendor_admin'};
+    $request{'grant_vendor_admin'} = delete $args{'grant_vendor_admin'} if exists $args{'grant_vendor_admin'};
 
     return connect_rpc(
-        service => 'ntppool.auth.v1.AuthService',
-        method  => 'CreateTestSession',
-        request => \%request,
-        %args    # Pass through auth, account, context
+        service     => 'ntppool.auth.v1.AuthService',
+        method      => 'CreateTestSession',
+        request     => \%request,
+        %args  # Pass through auth, account, context
     );
 }
+
+
 
 1;
 

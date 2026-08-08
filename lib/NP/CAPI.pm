@@ -54,9 +54,6 @@ NP::CAPI - ConnectRPC client for NTP Pool internal APIs
 ConnectRPC client library for calling internal gRPC/ConnectRPC services.
 Provides a Perl interface to Protocol Buffer-defined RPC services.
 
-This module follows similar patterns to L<NP::IntAPI> but is specifically
-designed for ConnectRPC protocol.
-
 =head1 FUNCTIONS
 
 =cut
@@ -337,9 +334,8 @@ sub connect_rpc {
 
 =head2 result_http_status($result)
 
-Map a result hashref (from L</connect_rpc>, or the compatible structure
-returned by L<NP::IntAPI>) to the HTTP status a web controller should return
-when the record it wanted is absent.
+Map a result hashref (from L</connect_rpc>) to the HTTP status a web
+controller should return when the record it wanted is absent.
 
 Distinguishes a deterministic client outcome from an unreachable or failing
 backend, so a transient outage isn't reported to clients (or cached) as a 404:
@@ -483,7 +479,7 @@ Example: C<http://localhost:4211/>
 
 =head1 SEE ALSO
 
-L<NP::IntAPI>, L<NP::CAPI::Account>
+L<NP::CAPI::Account>
 
 =head1 AUTHOR
 
