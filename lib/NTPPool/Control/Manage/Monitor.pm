@@ -123,8 +123,7 @@ sub render_monitor {
     # The admin status form (show.html) posts to render_admin_status, which
     # calls update_monitor_status. get_monitor does not return the allowed
     # statuses, so supply the fixed enum here.
-    $self->tpl_param('status_options',
-        [qw(pending testing active paused deleted)]);
+    $self->tpl_param('status_options', [qw(pending testing active paused deleted)]);
 
     # Fetch metrics for this specific monitor
     my $metrics = $self->monitor_metrics(names => $name);
@@ -229,10 +228,8 @@ sub render_monitors {
     dynamically otel_current_context = otel_context_with_span($span);
     defer { $span->end(); };
 
-    my $result = list_monitors(
-        $self->api_auth_params,
-        account => $self->current_account->{id_token},
-    );
+    my $result = list_monitors($self->api_auth_params,
+        account => $self->current_account->{id_token},);
 
     if ($result->{code} >= 300) {
         return $self->_handle_capi_error($result);
@@ -257,10 +254,7 @@ sub render_admin_list {
     dynamically otel_current_context = otel_context_with_span($span);
     defer { $span->end(); };
 
-    my $result = list_monitors(
-        $self->api_auth_params,
-        all_accounts => JSON::XS::true,
-    );
+    my $result = list_monitors($self->api_auth_params, all_accounts => JSON::XS::true,);
 
     if ($result->{code} >= 300) {
         return $self->_handle_capi_error($result);
@@ -287,7 +281,7 @@ sub render_admin_status {
     dynamically otel_current_context = otel_context_with_span($span);
     defer { $span->end(); };
 
-    my $name = $self->req_param('name') || '';
+    my $name   = $self->req_param('name') || '';
     my $result = update_monitor_status(
         $self->api_auth_params,
         account => $self->current_account->{id_token},
@@ -423,11 +417,8 @@ sub monitor_metrics {
       . ($all_accounts ? 'all' : '');
     return $self->{$cache_key} if exists $self->{$cache_key};
 
-    my $result = get_monitor_metrics_summary(
-        $self->api_auth_params,
-        ($account_token ? (account => $account_token) : ()),
-        %request,
-    );
+    my $result = get_monitor_metrics_summary($self->api_auth_params,
+        ($account_token ? (account => $account_token) : ()), %request,);
 
     if ($result->{code} == 200) {
 

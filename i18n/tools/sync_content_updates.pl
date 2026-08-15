@@ -21,26 +21,26 @@ my %colors = (
 );
 
 # Command line options
-my $dry_run = 0;
-my $backup = 1;
-my $verbose = 0;
+my $dry_run     = 0;
+my $backup      = 1;
+my $verbose     = 0;
 my $interactive = 0;
 my @target_languages;
-my $help = 0;
-my $update_hosting = 0;
+my $help             = 0;
+my $update_hosting   = 0;
 my $update_technical = 0;
-my $update_all = 0;
+my $update_all       = 0;
 
 GetOptions(
-    'dry-run|n'         => \$dry_run,
-    'no-backup'         => sub { $backup = 0 },
-    'verbose|v'         => \$verbose,
-    'interactive|i'     => \$interactive,
-    'language|l=s'      => \@target_languages,
-    'hosting'           => \$update_hosting,
-    'technical'         => \$update_technical,
-    'all'               => \$update_all,
-    'help|h'            => \$help,
+    'dry-run|n'     => \$dry_run,
+    'no-backup'     => sub { $backup = 0 },
+    'verbose|v'     => \$verbose,
+    'interactive|i' => \$interactive,
+    'language|l=s'  => \@target_languages,
+    'hosting'       => \$update_hosting,
+    'technical'     => \$update_technical,
+    'all'           => \$update_all,
+    'help|h'        => \$help,
 ) or die "Error in command line arguments\n";
 
 if ($help) {
@@ -53,61 +53,52 @@ if ($update_all) {
 }
 
 unless ($update_hosting || $update_technical) {
-    $update_hosting = $update_technical = 1;  # Default to updating everything
+    $update_hosting = $update_technical = 1;    # Default to updating everything
 }
 
 # Expected hosting providers (extracted from English source)
 my @expected_hosting_providers = (
-    {
-        name => 'Equinix',
-        url => 'https://www.equinix.com/',
+    {   name => 'Equinix',
+        url  => 'https://www.equinix.com/',
     },
-    {
-        name => 'Netactuate',
-        url => 'https://www.netactuate.com/',
+    {   name => 'Netactuate',
+        url  => 'https://www.netactuate.com/',
     },
 );
 
 # Outdated hosting providers that should be updated
 my @outdated_hosting_patterns = (
-    {
-        pattern => qr/\bPacket\b(?!\s+Clearing\s+House)/i,
+    {   pattern     => qr/\bPacket\b(?!\s+Clearing\s+House)/i,
         replacement => 'Equinix',
-        message => 'Packet → Equinix',
+        message     => 'Packet → Equinix',
     },
-    {
-        pattern => qr/\bEquinix\s+Metal\b/i,
+    {   pattern     => qr/\bEquinix\s+Metal\b/i,
         replacement => 'Equinix',
-        message => 'Equinix Metal → Equinix',
+        message     => 'Equinix Metal → Equinix',
     },
-    {
-        pattern => qr/\bDevelooper\b/i,
+    {   pattern     => qr/\bDevelooper\b/i,
         replacement => 'Equinix and Netactuate',
-        message => 'Develooper → modern hosting providers',
+        message     => 'Develooper → modern hosting providers',
     },
-    {
-        pattern => qr/\bNetActuate\b/i,  # Different capitalization
+    {   pattern     => qr/\bNetActuate\b/i,    # Different capitalization
         replacement => 'Netactuate',
-        message => 'NetActuate → Netactuate (correct capitalization)',
+        message     => 'NetActuate → Netactuate (correct capitalization)',
     },
-    {
-        pattern => qr/\bOSUOSL\b/i,
+    {   pattern     => qr/\bOSUOSL\b/i,
         replacement => 'Equinix and Netactuate',
-        message => 'OSUOSL → modern hosting providers',
+        message     => 'OSUOSL → modern hosting providers',
     },
-    {
-        pattern => qr/\bFastly\b/i,
+    {   pattern     => qr/\bFastly\b/i,
         replacement => 'Equinix and Netactuate',
-        message => 'Fastly → modern hosting providers',
+        message     => 'Fastly → modern hosting providers',
     },
 );
 
 # Technical references that should be consistent
 my %technical_updates = (
     'server_count' => {
-        outdated_patterns => [
-            qr/(?:use|more than|not more than)\s+(three|two)\s+(?:time\s*)?servers?/i,
-        ],
+        outdated_patterns =>
+          [qr/(?:use|more than|not more than)\s+(three|two)\s+(?:time\s*)?servers?/i,],
         replacement_callback => sub {
             my ($match, $lang) = @_;
             $match =~ s/(three|two)/four/i;
@@ -116,13 +107,15 @@ my %technical_updates = (
         message => 'Server count recommendation: three/two → four',
     },
     'pool_domains' => {
+
         # Ensure all four pool domains are mentioned
         validate_callback => sub {
             my ($content, $lang) = @_;
             my @found_domains = $content =~ /(\d+\.pool\.ntp\.org)/g;
-            my @expected = ('0.pool.ntp.org', '1.pool.ntp.org', '2.pool.ntp.org', '3.pool.ntp.org');
+            my @expected =
+              ('0.pool.ntp.org', '1.pool.ntp.org', '2.pool.ntp.org', '3.pool.ntp.org');
 
-            my %found = map { $_ => 1 } @found_domains;
+            my %found   = map  { $_ => 1 } @found_domains;
             my @missing = grep { !exists $found{$_} } @expected;
 
             return @missing ? "Missing pool domains: " . join(", ", @missing) : undef;
@@ -225,10 +218,10 @@ sub get_authoritative_hosting_info {
         # Extract provider names and URLs
         my @providers;
         while ($hosting_section =~ /<a href="([^"]*)"[^>]*>([^<]+)<\/a>/g) {
-            push @providers, {
-                name => $2,
-                url => $1,
-            };
+            push @providers,
+              {   name => $2,
+                  url  => $1,
+              };
         }
 
         $hosting_info{providers} = \@providers;
@@ -259,7 +252,7 @@ sub update_hosting_references {
 
     # Update outdated provider references
     for my $update (@outdated_hosting_patterns) {
-        my $pattern = $update->{pattern};
+        my $pattern     = $update->{pattern};
         my $replacement = $update->{replacement};
 
         if ($content =~ /$pattern/) {
@@ -267,35 +260,37 @@ sub update_hosting_references {
             $content =~ s/$pattern/$replacement/g;
             $changes++;
 
-            push @change_details, {
-                type => 'hosting_update',
-                from => $old_text,
-                to => $replacement,
-                message => $update->{message}
-            };
+            push @change_details,
+              {   type    => 'hosting_update',
+                  from    => $old_text,
+                  to      => $replacement,
+                  message => $update->{message}
+              };
         }
     }
 
     # Ensure current providers are mentioned if hosting section exists
     if ($content =~ /hosting|bandwidth/i) {
         my $has_hosting_section = 0;
-        my $missing_providers = [];
+        my $missing_providers   = [];
 
         for my $provider_info (@{$auth_info{providers}}) {
             my $provider = $provider_info->{name};
             if ($content =~ /\Q$provider\E/i) {
                 $has_hosting_section = 1;
-            } else {
+            }
+            else {
                 push @$missing_providers, $provider;
             }
         }
 
         if (@$missing_providers && $has_hosting_section) {
-            push @change_details, {
-                type => 'hosting_validation',
-                message => "Warning: Missing hosting providers: " . join(", ", @$missing_providers),
-                missing => $missing_providers
-            };
+            push @change_details,
+              {   type    => 'hosting_validation',
+                  message => "Warning: Missing hosting providers: "
+                  . join(", ", @$missing_providers),
+                  missing => $missing_providers
+              };
         }
     }
 
@@ -315,33 +310,33 @@ sub update_technical_references {
         for my $pattern (@{$update_info->{outdated_patterns}}) {
             if ($content =~ /$pattern/) {
                 my $old_match = $&;
-                my $new_text = $update_info->{replacement_callback}->($old_match, $lang);
+                my $new_text  = $update_info->{replacement_callback}->($old_match, $lang);
 
                 $content =~ s/\Q$old_match\E/$new_text/;
                 $changes++;
 
-                push @change_details, {
-                    type => 'technical_update',
-                    subtype => 'server_count',
-                    from => $old_match,
-                    to => $new_text,
-                    message => $update_info->{message}
-                };
+                push @change_details,
+                  {   type    => 'technical_update',
+                      subtype => 'server_count',
+                      from    => $old_match,
+                      to      => $new_text,
+                      message => $update_info->{message}
+                  };
             }
         }
     }
 
     # Validate pool domains (warning only)
     if ($file eq 'use.html' && exists $technical_updates{pool_domains}) {
-        my $update_info = $technical_updates{pool_domains};
+        my $update_info       = $technical_updates{pool_domains};
         my $validation_result = $update_info->{validate_callback}->($content, $lang);
 
         if ($validation_result) {
-            push @change_details, {
-                type => 'technical_validation',
-                subtype => 'pool_domains',
-                message => $validation_result
-            };
+            push @change_details,
+              {   type    => 'technical_validation',
+                  subtype => 'pool_domains',
+                  message => $validation_result
+              };
         }
     }
 
@@ -358,12 +353,14 @@ sub update_windows_instructions {
 
     # Check if content has outdated Windows instructions
     if ($content =~ /Control Panel/i && $content !~ /Win\+I|Settings/i) {
+
         # This is a complex update that would need careful language-specific handling
         # For now, just flag it for manual review
-        push @change_details, {
-            type => 'windows_validation',
-            message => "Windows instructions may need updating to modern Settings app format"
-        };
+        push @change_details,
+          {   type    => 'windows_validation',
+              message =>
+              "Windows instructions may need updating to modern Settings app format"
+          };
     }
 
     return ($content, $changes, \@change_details);
@@ -374,9 +371,9 @@ sub process_file {
     my ($file_path, $lang, $file) = @_;
     my %result = (
         processed => 0,
-        changes => 0,
-        errors => [],
-        details => []
+        changes   => 0,
+        errors    => [],
+        details   => []
     );
 
     return %result unless -f $file_path;
@@ -384,21 +381,24 @@ sub process_file {
     print "Processing $file_path..." if $verbose;
 
     my $original_content = read_file($file_path);
-    my $content = $original_content;
-    my $total_changes = 0;
+    my $content          = $original_content;
+    my $total_changes    = 0;
     my @all_details;
 
     # Apply updates based on options
     if ($update_hosting) {
-        my ($content1, $changes1, $details1) = update_hosting_references($content, $lang, $file);
+        my ($content1, $changes1, $details1) =
+          update_hosting_references($content, $lang, $file);
         $content = $content1;
         $total_changes += $changes1;
         push @all_details, @$details1;
     }
 
     if ($update_technical) {
-        my ($content2, $changes2, $details2) = update_technical_references($content, $lang, $file);
-        my ($content3, $changes3, $details3) = update_windows_instructions($content2, $lang, $file);
+        my ($content2, $changes2, $details2) =
+          update_technical_references($content, $lang, $file);
+        my ($content3, $changes3, $details3) =
+          update_windows_instructions($content2, $lang, $file);
 
         $content = $content3;
         $total_changes += $changes2 + $changes3;
@@ -407,17 +407,22 @@ sub process_file {
 
     # Validate that Template Toolkit syntax is preserved
     my @orig_tt_blocks = $original_content =~ /(\[%[^%]*%\])/g;
-    my @new_tt_blocks = $content =~ /(\[%[^%]*%\])/g;
+    my @new_tt_blocks  = $content          =~ /(\[%[^%]*%\])/g;
 
     if (@orig_tt_blocks != @new_tt_blocks) {
-        push @{$result{errors}}, "Template Toolkit block count changed: " .
-                                scalar(@orig_tt_blocks) . " -> " . scalar(@new_tt_blocks);
+        push @{$result{errors}},
+            "Template Toolkit block count changed: "
+          . scalar(@orig_tt_blocks) . " -> "
+          . scalar(@new_tt_blocks);
         print " $colors{red}VALIDATION FAILED$colors{reset}\n" if $verbose;
         return %result;
     }
 
     if ($total_changes > 0 || @all_details) {
-        print " $colors{green}$total_changes changes, " . scalar(@all_details) . " items$colors{reset}\n" if $verbose;
+        print " $colors{green}$total_changes changes, "
+          . scalar(@all_details)
+          . " items$colors{reset}\n"
+          if $verbose;
 
         if ($interactive) {
             print "\nChanges for $file_path:\n";
@@ -426,11 +431,13 @@ sub process_file {
                     print "  Hosting: $detail->{message}\n";
                     print "    From: $detail->{from}\n";
                     print "    To: $detail->{to}\n";
-                } elsif ($detail->{type} eq 'technical_update') {
+                }
+                elsif ($detail->{type} eq 'technical_update') {
                     print "  Technical: $detail->{message}\n";
                     print "    From: $detail->{from}\n";
                     print "    To: $detail->{to}\n";
-                } elsif ($detail->{type} =~ /_validation$/) {
+                }
+                elsif ($detail->{type} =~ /_validation$/) {
                     print "  Warning: $detail->{message}\n";
                 }
             }
@@ -447,6 +454,7 @@ sub process_file {
         }
 
         if ($total_changes > 0 && !$dry_run) {
+
             # Create backup
             if ($backup) {
                 my $backup_file = create_backup($file_path);
@@ -458,9 +466,10 @@ sub process_file {
         }
 
         $result{processed} = 1;
-        $result{changes} = $total_changes;
-        $result{details} = \@all_details;
-    } else {
+        $result{changes}   = $total_changes;
+        $result{details}   = \@all_details;
+    }
+    else {
         print " $colors{cyan}no changes needed$colors{reset}\n" if $verbose;
     }
 
@@ -471,12 +480,12 @@ sub process_file {
 sub process_language {
     my ($lang, $lang_info) = @_;
     my %report = (
-        name => $lang_info->{name},
-        testing => $lang_info->{testing} ? 1 : 0,
+        name            => $lang_info->{name},
+        testing         => $lang_info->{testing} ? 1 : 0,
         files_processed => 0,
-        total_changes => 0,
-        errors => [],
-        warnings => []
+        total_changes   => 0,
+        errors          => [],
+        warnings        => []
     );
 
     print "\n$colors{bold}Processing $lang - $lang_info->{name}$colors{reset}\n";
@@ -490,12 +499,15 @@ sub process_language {
         my %result = process_file($file_path, $lang, $file);
 
         if (@{$result{errors}}) {
-            push @{$report{errors}}, {
-                file => $file,
-                errors => $result{errors}
-            };
-            print "$colors{red}ERROR in $file: " . join(", ", @{$result{errors}}) . "$colors{reset}\n";
-        } elsif ($result{processed}) {
+            push @{$report{errors}},
+              {   file   => $file,
+                  errors => $result{errors}
+              };
+            print "$colors{red}ERROR in $file: "
+              . join(", ", @{$result{errors}})
+              . "$colors{reset}\n";
+        }
+        elsif ($result{processed}) {
             $report{files_processed}++;
             $report{total_changes} += $result{changes};
 
@@ -505,9 +517,11 @@ sub process_language {
                 for my $detail (@{$result{details}}) {
                     if ($detail->{type} eq 'hosting_update') {
                         print "    Hosting: $detail->{message}\n";
-                    } elsif ($detail->{type} eq 'technical_update') {
+                    }
+                    elsif ($detail->{type} eq 'technical_update') {
                         print "    Technical: $detail->{message}\n";
-                    } elsif ($detail->{type} =~ /_validation$/) {
+                    }
+                    elsif ($detail->{type} =~ /_validation$/) {
                         print "    Warning: $detail->{message}\n";
                         push @{$report{warnings}}, "$file: $detail->{message}";
                     }
@@ -522,35 +536,48 @@ sub process_language {
 # Generate summary report
 sub generate_summary {
     my ($all_reports) = @_;
-    my $output = "\n$colors{bold}========== CONTENT SYNC SUMMARY ==========$colors{reset}\n\n";
+    my $output =
+      "\n$colors{bold}========== CONTENT SYNC SUMMARY ==========$colors{reset}\n\n";
 
     my $total_langs = scalar(keys %$all_reports);
-    my $langs_processed = grep { $all_reports->{$_}{files_processed} > 0 } keys %$all_reports;
+    my $langs_processed =
+      grep { $all_reports->{$_}{files_processed} > 0 } keys %$all_reports;
     my $langs_with_errors = grep { @{$all_reports->{$_}{errors}} > 0 } keys %$all_reports;
-    my $langs_with_warnings = grep { @{$all_reports->{$_}{warnings}} > 0 } keys %$all_reports;
+    my $langs_with_warnings =
+      grep { @{$all_reports->{$_}{warnings}} > 0 } keys %$all_reports;
 
-    my $total_files = 0;
+    my $total_files   = 0;
     my $total_changes = 0;
 
     for my $lang (keys %$all_reports) {
         my $report = $all_reports->{$lang};
-        $total_files += $report->{files_processed};
+        $total_files   += $report->{files_processed};
         $total_changes += $report->{total_changes};
     }
 
     $output .= "Languages analyzed: $total_langs\n";
     $output .= "Languages with changes: $colors{green}$langs_processed$colors{reset}\n";
     $output .= "Languages with errors: $colors{red}$langs_with_errors$colors{reset}\n";
-    $output .= "Languages with warnings: $colors{yellow}$langs_with_warnings$colors{reset}\n";
+    $output
+      .= "Languages with warnings: $colors{yellow}$langs_with_warnings$colors{reset}\n";
     $output .= "Files processed: $colors{green}$total_files$colors{reset}\n";
     $output .= "Total changes: $colors{bold}$total_changes$colors{reset}\n";
 
     $output .= "\nUpdate types processed:\n";
-    $output .= "  - Hosting providers: " . ($update_hosting ? "$colors{green}Yes$colors{reset}" : "$colors{yellow}No$colors{reset}") . "\n";
-    $output .= "  - Technical references: " . ($update_technical ? "$colors{green}Yes$colors{reset}" : "$colors{yellow}No$colors{reset}") . "\n";
+    $output .= "  - Hosting providers: "
+      . ( $update_hosting
+          ? "$colors{green}Yes$colors{reset}"
+          : "$colors{yellow}No$colors{reset}"
+      ) . "\n";
+    $output .= "  - Technical references: "
+      . ( $update_technical
+          ? "$colors{green}Yes$colors{reset}"
+          : "$colors{yellow}No$colors{reset}"
+      ) . "\n";
 
     if ($dry_run) {
-        $output .= "\n$colors{yellow}This was a DRY RUN - no files were modified$colors{reset}\n";
+        $output
+          .= "\n$colors{yellow}This was a DRY RUN - no files were modified$colors{reset}\n";
     }
 
     if ($langs_with_warnings > 0) {
@@ -574,7 +601,8 @@ sub generate_summary {
 
             $output .= "  $lang:\n";
             for my $error (@{$report->{errors}}) {
-                $output .= "    $error->{file}: " . join(", ", @{$error->{errors}}) . "\n";
+                $output
+                  .= "    $error->{file}: " . join(", ", @{$error->{errors}}) . "\n";
             }
         }
     }
@@ -601,26 +629,28 @@ my $languages = load_languages();
 my @langs_to_process;
 if (@target_languages) {
     @langs_to_process = @target_languages;
+
     # Validate language codes
     for my $lang (@langs_to_process) {
         unless (exists $languages->{$lang}) {
             die "Unknown language code: $lang\n";
         }
     }
-} else {
+}
+else {
     @langs_to_process = sort keys %$languages;
 }
 
 print "Processing languages: " . join(", ", @langs_to_process) . "\n";
 print "Update types: ";
-print "hosting " if $update_hosting;
+print "hosting "   if $update_hosting;
 print "technical " if $update_technical;
 print "\n";
 
 # Process all specified languages
 my %all_reports;
 for my $lang (@langs_to_process) {
-    next if $lang eq 'en';  # Skip English as it's the authoritative source
+    next if $lang eq 'en';    # Skip English as it's the authoritative source
 
     my %report = process_language($lang, $languages->{$lang});
     $all_reports{$lang} = \%report;

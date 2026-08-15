@@ -1,24 +1,34 @@
-[% IF combust.user.privileges.monitor_admin %]
-    [% IF mon.account.flags %]
+[%# Per-account monitor config badges, shown beside an account name in the
+    monitor list. mon.account.flags is populated by the API for monitor
+    admins only and is unset otherwise, so the privilege check below is belt
+    and braces rather than the only gate.
+
+    The API resolves the account config before sending it -- defaults
+    applied, "is this an override" and "is registration disabled" already
+    answered -- so this template only compares booleans. Don't reintroduce
+    parsing of the stored flags here. %]
+[% IF combust.user.privileges.monitor_admin AND mon.account.flags %]
+    [% acct_flags = mon.account.flags %]
+    [% IF acct_flags.monitor_enabled
+          OR acct_flags.monitor_limit_override
+          OR acct_flags.monitors_per_server_limit_override %]
         <small class="ml-2">
-            [% IF mon.account.flags.match('monitor_enabled.*true') %]
+            [% IF acct_flags.monitor_enabled %]
                 <span class="badge badge-success" title="Monitor bypass enabled - can register without verified servers">
                     <i class="fa fa-check-circle"></i> Bypass
                 </span>
             [% END %]
-            [% IF mon.account.flags.match('monitor_limit') %]
-                [% IF mon.account.flags.match('monitor_limit.*-1') %]
-                    <span class="badge badge-danger" title="Monitor registration disabled">
-                        <i class="fa fa-ban"></i> Disabled
-                    </span>
-                [% ELSIF mon.account.flags.match('monitor_limit.*[0-9]+') %]
-                    <span class="badge badge-info" title="Custom monitor limit set">
-                        <i class="fa fa-tachometer-alt"></i> Custom Limit
-                    </span>
-                [% END %]
+            [% IF acct_flags.registration_disabled %]
+                <span class="badge badge-danger" title="Monitor registration disabled">
+                    <i class="fa fa-ban"></i> Disabled
+                </span>
+            [% ELSIF acct_flags.monitor_limit_override %]
+                <span class="badge badge-info" title="Custom monitor limit: [% acct_flags.monitor_limit | html %]">
+                    <i class="fa fa-tachometer-alt"></i> Custom Limit
+                </span>
             [% END %]
-            [% IF mon.account.flags.match('monitors_per_server') %]
-                <span class="badge badge-warning" title="Custom monitors per server limit">
+            [% IF acct_flags.monitors_per_server_limit_override %]
+                <span class="badge badge-warning" title="Custom monitors per server limit: [% acct_flags.monitors_per_server_limit | html %]">
                     <i class="fa fa-server"></i> Per-Server
                 </span>
             [% END %]

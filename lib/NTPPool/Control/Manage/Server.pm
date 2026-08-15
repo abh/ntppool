@@ -3,7 +3,7 @@ use v5.30;
 use strict;
 use warnings;
 use NTPPool::Control::Manage;
-use parent qw(NTPPool::Control::Manage);
+use parent            qw(NTPPool::Control::Manage);
 use Combust::Constant qw(OK NOT_FOUND);
 use Combust::Config   ();
 use NP::Email         ();
@@ -451,10 +451,7 @@ sub handle_verify {
     }
 
     # Single CAPI call to get verification + server data
-    my $result = get_server_verification(
-        $self->api_auth_params,
-        token => $token,
-    );
+    my $result = get_server_verification($self->api_auth_params, token => $token,);
 
     # Handle errors
     if ($result->{error}) {
@@ -462,6 +459,7 @@ sub handle_verify {
             return NOT_FOUND;
         }
         if ($result->{connect_code} && $result->{connect_code} eq 'unauthenticated') {
+
             # User not logged in - redirect to login
             return $self->redirect('/manage');
         }
@@ -550,8 +548,7 @@ sub handle_delete {
                     }
                     else {
                         # Redirect so the page re-fetches server state via CAPI
-                        return $self->redirect(
-                            $self->manage_url($server->manage_url));
+                        return $self->redirect($self->manage_url($server->manage_url));
                     }
                 }
             }
@@ -577,8 +574,7 @@ sub handle_delete {
             if ($result->{error}) {
                 $self->tpl_param('error',    $result->{error});
                 $self->tpl_param('trace_id', $result->{trace_id});
-                return OK,
-                  $self->evaluate_template('tpl/manage/delete_set.html');
+                return OK, $self->evaluate_template('tpl/manage/delete_set.html');
             }
 
             return $self->redirect($self->manage_url($server->manage_url));
@@ -606,15 +602,12 @@ sub handle_move {
     my $self = shift;
 
     # Get servers for current account via CAPI
-    my $servers_result = get_account_servers(
-        $self->api_auth_params,
-        id_token => $self->current_account->{id_token},
-    );
+    my $servers_result = get_account_servers($self->api_auth_params,
+        id_token => $self->current_account->{id_token},);
     my $servers = [];
     if (!$servers_result->{error} && $servers_result->{data}{servers}) {
-        $servers = [
-            map { NP::Data::Server->new(%$_) } @{$servers_result->{data}{servers}}
-        ];
+        $servers =
+          [map { NP::Data::Server->new(%$_) } @{$servers_result->{data}{servers}}];
     }
     $self->tpl_param('servers', $servers);
 

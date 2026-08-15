@@ -1,10 +1,11 @@
 package NP::CAPI;
 use strict;
 use warnings;
-use NP::UA qw($ua_long);
-use JSON::XS ();
+use NP::UA     qw($ua_long);
+use JSON::XS   ();
 use Data::Dump ();
 use HTTP::Request;
+
 BEGIN {
     eval {
         require OpenTelemetry::Trace;
@@ -63,9 +64,12 @@ sub ua {
     my ($request_context, $service, $method) = @_;
 
     # Use long-timeout UA for server management operations (precheck, add)
-    my $ua = ($service && $service =~ /ServerManagementService/ && $method =~ /^(AddServerPrecheck|AddServer)$/)
-        ? $NP::UA::ua_long
-        : $NP::UA::ua;
+    my $ua =
+      (      $service
+          && $service =~ /ServerManagementService/
+          && $method  =~ /^(AddServerPrecheck|AddServer)$/)
+      ? $NP::UA::ua_long
+      : $NP::UA::ua;
 
     # Add X-Forwarded-For header if request context is provided
     if ($request_context && $request_context->{x_forwarded_for}) {
@@ -187,13 +191,14 @@ B<Error Handling:>
 sub connect_rpc {
     my %args = @_;
 
-    my $service = delete $args{service} or die "service parameter required";
-    my $method  = delete $args{method}  or die "method parameter required";
-    my $request = delete $args{request} // {};
-    my $auth    = delete $args{auth};
-    my $account = delete $args{account};
-    my $context = delete $args{context};
-    my $http_method = delete $args{http_method} // 'POST';  # Allow GET for side-effect free RPCs
+    my $service     = delete $args{service} or die "service parameter required";
+    my $method      = delete $args{method}  or die "method parameter required";
+    my $request     = delete $args{request} // {};
+    my $auth        = delete $args{auth};
+    my $account     = delete $args{account};
+    my $context     = delete $args{context};
+    my $http_method = delete $args{http_method}
+      // 'POST';    # Allow GET for side-effect free RPCs
     my $prefix = delete $args{prefix} // '/int/rpc';  # Default to internal RPC API prefix
 
     my %result;
@@ -206,6 +211,7 @@ sub connect_rpc {
         my $message_json = $json->encode($request);
         require URI::Escape;
         my $encoded_message = URI::Escape::uri_escape($message_json);
+
         # Connect protocol requires connect=v1 for GET requests
         $url .= "?connect=v1&encoding=json&message=${encoded_message}";
     }
@@ -214,9 +220,11 @@ sub connect_rpc {
     if ($ENV{CAPI_DEBUG}) {
         warn "CAPI: calling connect rpc: $url\n";
         warn "CAPI: http_method = $http_method\n";
-        warn "CAPI: auth = " . ($auth // 'UNDEF') . "\n";
+        warn "CAPI: auth = " .    ($auth // 'UNDEF') . "\n";
         warn "CAPI: account = " . (defined $account ? "'$account'" : 'UNDEF') . "\n";
-        warn "CAPI: account is " . ($account ? "TRUTHY" : "FALSY") . " in boolean context\n";
+        warn "CAPI: account is "
+          . ($account ? "TRUTHY" : "FALSY")
+          . " in boolean context\n";
     }
 
     # Build HTTP request
@@ -224,10 +232,12 @@ sub connect_rpc {
 
     # Set headers based on HTTP method
     if ($http_method eq 'GET') {
+
         # For GET requests, set Accept header for ConnectRPC
         # Note: curl uses Accept: */* and it works, but application/json is more specific
         $req->header('Accept' => '*/*');
-    } else {
+    }
+    else {
         # For POST requests, set Content-Type
         $req->header('Content-Type' => 'application/json');
     }
@@ -245,8 +255,11 @@ sub connect_rpc {
     if ($account) {
         $req->header('X-Account' => $account);
         warn "CAPI: Set X-Account header to: $account\n" if $ENV{CAPI_DEBUG};
-    } else {
-        warn "CAPI: NOT setting X-Account header (account param is " . (defined $account ? "defined but falsy: '$account'" : "undefined") . ")\n" if $ENV{CAPI_DEBUG};
+    }
+    else {
+        warn "CAPI: NOT setting X-Account header (account param is "
+          . (defined $account ? "defined but falsy: '$account'" : "undefined") . ")\n"
+          if $ENV{CAPI_DEBUG};
     }
 
     # Encode request as JSON and set body (only for POST requests)
@@ -265,15 +278,15 @@ sub connect_rpc {
     }
 
     # Make request with error handling
-    my $ua = ua($context, $service, $method);
+    my $ua  = ua($context, $service, $method);
     my $res = eval { $ua->request($req) };
     if ($@ || !$res) {
         return {
-            code => 0,
-            status_line => "Network error",
+            code         => 0,
+            status_line  => "Network error",
             connect_code => "unavailable",
-            error => "Failed to connect to API: " . ($@ || "no response"),
-            data => undef,
+            error        => "Failed to connect to API: " . ($@ || "no response"),
+            data         => undef,
         };
     }
 
@@ -284,9 +297,9 @@ sub connect_rpc {
     if ($ENV{CAPI_DEBUG}) {
         warn $res->status_line, "\n";
         warn "Response headers (after decode):\n";
-        warn "  Content-Type: ", $res->header('Content-Type') || 'none', "\n";
+        warn "  Content-Type: ",     $res->header('Content-Type')     || 'none', "\n";
         warn "  Content-Encoding: ", $res->header('Content-Encoding') || 'none', "\n";
-        warn "  Content-Length: ", $res->header('Content-Length') || 'none', "\n";
+        warn "  Content-Length: ",   $res->header('Content-Length')   || 'none', "\n";
         warn substr($res->content, 0, 200), "...\n";
     }
 
@@ -297,29 +310,34 @@ sub connect_rpc {
     $result{code}        ||= $res->code;
     $result{status_line} ||= $res->status_line;
     $result{trace_id}    ||= $res->header('TraceID');
-    $result{service}     = $service;
-    $result{method}      = $method;
+    $result{service} = $service;
+    $result{method}  = $method;
 
     # Mark OpenTelemetry span as error for ConnectRPC errors
     if ($result{error} && $NP::CAPI::OTEL_AVAILABLE) {
         eval {
-            my $span = OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
+            my $span =
+              OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
             if ($span) {
                 $span->set_status(SPAN_STATUS_ERROR, $result{error});
+
                 # NOTE: record_exception creates attributes that may exceed limits
                 # We skip it here since set_status already records the error
                 # $span->record_exception($result{error});
-                $span->set_attribute("rpc.system", "connect");
+                $span->set_attribute("rpc.system",  "connect");
                 $span->set_attribute("rpc.service", $service);
-                $span->set_attribute("rpc.method", $method);
-                $span->set_attribute("rpc.grpc.status_code", $result{connect_code} || "unknown");
+                $span->set_attribute("rpc.method",  $method);
+                $span->set_attribute("rpc.grpc.status_code",
+                    $result{connect_code} || "unknown");
                 $span->set_attribute("http.status_code", $result{code});
-                $span->set_attribute("api.trace_id", $result{trace_id}) if $result{trace_id};
+                $span->set_attribute("api.trace_id",     $result{trace_id})
+                  if $result{trace_id};
             }
         };
         if ($@) {
             warn "OpenTelemetry error: $@";
         }
+
         # Log the error with trace ID
         warn "ConnectRPC error: " . $result{error};
         warn "Trace ID: " . ($result{trace_id} || 'none');
@@ -397,21 +415,24 @@ sub _parse_connect_response {
 
     # Check HTTP status FIRST - infrastructure errors (502, 503, 504) won't have JSON
     if (!$res->is_success) {
+
         # Log rate limit headers for 429 responses
         if ($res->code == 429) {
-            my $limit = $res->header('X-RateLimit-Limit') || 'unknown';
+            my $limit     = $res->header('X-RateLimit-Limit')     || 'unknown';
             my $remaining = $res->header('X-RateLimit-Remaining') || 'unknown';
-            my $reset = $res->header('X-RateLimit-Reset') || 'unknown';
-            warn "Rate limit exceeded - Limit: $limit/s, Remaining: $remaining, Reset: $reset";
+            my $reset     = $res->header('X-RateLimit-Reset')     || 'unknown';
+            warn
+              "Rate limit exceeded - Limit: $limit/s, Remaining: $remaining, Reset: $reset";
         }
 
         # HTTP 4xx/5xx error
         # Try to parse as ConnectRPC JSON error if content-type suggests it
         if ($res->content_type =~ m{^application/json}) {
             my $content = $res->content;
-            my $data = eval { $json->decode($content) };
+            my $data    = eval { $json->decode($content) };
 
             if ($data && ref($data) eq 'HASH') {
+
                 # Successfully parsed JSON error response from API
                 $result{connect_code} = $data->{code} || "unknown";
 
@@ -419,25 +440,28 @@ sub _parse_connect_response {
                 # Defense-in-depth: don't trust API to return correct types
                 my $message = $data->{message};
                 if (ref($message)) {
+
                     # API returned structured data instead of string - serialize it
-                    $message = "API error (invalid message type): " . Data::Dump::pp($message);
+                    $message =
+                      "API error (invalid message type): " . Data::Dump::pp($message);
                 }
                 $result{error} = $message || "HTTP error: " . $res->status_line;
-                $result{data} = undef;
+                $result{data}  = undef;
                 return %result;
             }
         }
 
         # Fall back to HTTP status line (502, 503, 504, or malformed JSON)
         $result{connect_code} = "unavailable";
-        $result{error} = "HTTP error: " . $res->status_line;
-        $result{data} = undef;
+        $result{error}        = "HTTP error: " . $res->status_line;
+        $result{data}         = undef;
         return %result;
     }
 
     # HTTP 2xx - success, ConnectRPC always returns JSON for successful responses
     if ($res->content_type !~ m{^application/json}) {
-        $result{error} = "Invalid response content-type for successful response: " . ($res->content_type || 'none');
+        $result{error} = "Invalid response content-type for successful response: "
+          . ($res->content_type || 'none');
         $result{connect_code} = "internal";
         warn "Content-type check failed for 2xx response: regex did not match";
         return %result;
@@ -445,18 +469,18 @@ sub _parse_connect_response {
 
     # Parse successful JSON response
     my $content = $res->content;
-    my $data = eval { $json->decode($content) };
+    my $data    = eval { $json->decode($content) };
 
     if ($@) {
-        $result{error} = "Failed to decode JSON response: $@";
+        $result{error}        = "Failed to decode JSON response: $@";
         $result{connect_code} = "internal";
         return %result;
     }
 
     # HTTP 2xx with valid JSON - success
     $result{connect_code} = undef;
-    $result{error} = undef;
-    $result{data} = $data;
+    $result{error}        = undef;
+    $result{data}         = $data;
 
     return %result;
 }

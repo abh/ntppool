@@ -1,6 +1,6 @@
 package NTPPool::Control::Zone;
 use strict;
-use parent qw(NTPPool::Control);
+use parent            qw(NTPPool::Control);
 use Combust::Constant qw(OK);
 use JSON              qw(encode_json);
 use List::Util        qw(uniq);
@@ -63,7 +63,7 @@ sub get_zone_stats {
     # Return hashref compatible with template expectations
     return {
         count_active => $stat->{count_active},
-        ago          => Time::Duration::ago($days * 86400, 2),  # days to seconds
+        ago          => Time::Duration::ago($days * 86400, 2),    # days to seconds
     };
 }
 

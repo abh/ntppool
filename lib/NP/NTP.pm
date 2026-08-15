@@ -8,12 +8,10 @@ use OpenTelemetry::Constants qw( SPAN_STATUS_ERROR );
 
 sub _record_decode_error {
     my ($source, $ip, $res, $body, $json_error) = @_;
-    my $span =
-      OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
+    my $span = OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
     return unless $span;
 
-    $span->set_status(SPAN_STATUS_ERROR,
-        "Could not decode NTP response: $json_error");
+    $span->set_status(SPAN_STATUS_ERROR, "Could not decode NTP response: $json_error");
     $span->set_attribute("ntp.check.source",          $source);
     $span->set_attribute("ntp.check.ip",              $ip);
     $span->set_attribute("http.response.status_code", $res->code);

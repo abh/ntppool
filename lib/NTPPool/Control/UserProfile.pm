@@ -1,9 +1,9 @@
 package NTPPool::Control::UserProfile;
 use strict;
-use parent qw(NTPPool::Control);
+use parent            qw(NTPPool::Control);
 use Combust::Constant qw(OK);
 use NP::CAPI::Account qw(get_public_account_by_username);
-use NP::CAPI::Server qw(get_account_servers);
+use NP::CAPI::Server  qw(get_account_servers);
 
 sub uri_username {
     my $self = shift;
@@ -12,8 +12,8 @@ sub uri_username {
 }
 
 sub account_data {
-    my $self       = shift;
-    my $url_slug   = shift;
+    my $self     = shift;
+    my $url_slug = shift;
 
     # Cache the account data per request
     my $cache_key = "_account_data_$url_slug";
@@ -90,7 +90,7 @@ sub render_account {
     }
 
     my $account_data = $account_result->{data}{account};
-    my $servers = $account_result->{data}{servers} || [];
+    my $servers      = $account_result->{data}{servers} || [];
 
     my $req_json = ($extra && $extra eq 'json');
 

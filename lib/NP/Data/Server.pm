@@ -44,6 +44,7 @@ sub trace_id {
 sub deletion_on {
     my $self = shift;
     return unless $self->{deletion_on};
+
     # Return DateTime object for compatibility with existing code
     require DateTime::Format::ISO8601;
     return DateTime::Format::ISO8601->parse_datetime($self->{deletion_on});

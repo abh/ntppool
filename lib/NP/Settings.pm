@@ -89,7 +89,7 @@ sub get_all_settings {
         $settings{$setting->{key}} = $value;
     }
 
-    $_cache = \%settings;
+    $_cache      = \%settings;
     $_cache_time = time();
     return $_cache;
 }
@@ -102,7 +102,7 @@ processes that need to refresh settings.
 =cut
 
 sub clear_cache {
-    $_cache = undef;
+    $_cache      = undef;
     $_cache_time = undef;
 }
 
