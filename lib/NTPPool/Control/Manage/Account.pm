@@ -986,7 +986,10 @@ sub render_monitor_config_update {
 
     if (defined $self->req_param('monitors_per_server_limit')) {
         my $per_server = $self->req_param('monitors_per_server_limit');
-        if ($per_server =~ /^\d+$/ && $per_server > 0) {
+
+        # 0 is meaningful: it clears the per-account override, the same way
+        # monitor_limit = 0 does. Don't reject it.
+        if ($per_server =~ /^\d+$/) {
             $update_data{monitors_per_server_limit} = 0 + $per_server;
         }
     }

@@ -71,9 +71,19 @@
                     <div class="form-group">
                         <label for="monitors_per_server_limit"><strong>Monitors per Server:</strong></label>
                         <select class="form-control" id="monitors_per_server_limit" name="monitors_per_server_limit">
-                            <option value="1" [% IF monitor_config.monitors_per_server_limit == 1 %]selected[% END %]>
-                                1 monitor (default)
+                            [%# value 0 clears the per-account override, matching
+                                monitor_limit's "Default (3)". The API returns the
+                                effective limit, so a stored 0 and a stored 1 both
+                                arrive as 1 and select this same option -- the two
+                                behave identically, so nothing is lost. %]
+                            <option value="0" [% IF monitor_config.monitors_per_server_limit == 0 || monitor_config.monitors_per_server_limit == 1 %]selected[% END %]>
+                                Default (1)
                             </option>
+                            [% IF monitor_config.monitors_per_server_limit != 0 && monitor_config.monitors_per_server_limit != 1 && monitor_config.monitors_per_server_limit != 2 && monitor_config.monitors_per_server_limit != 3 && monitor_config.monitors_per_server_limit != 4 && monitor_config.monitors_per_server_limit != 5 %]
+                            <option value="[% monitor_config.monitors_per_server_limit %]" selected>
+                                [% monitor_config.monitors_per_server_limit %] monitors (current)
+                            </option>
+                            [% END %]
                             <option value="2" [% IF monitor_config.monitors_per_server_limit == 2 %]selected[% END %]>
                                 2 monitors
                             </option>
