@@ -7,6 +7,10 @@ Covers features touched in `ntppool` (Perl web) and `../go/ntp/api` (Go API) sin
 - **Cache busting**: append `?x=12345` (random) to URLs when content looks stale.
 - Test as both a **regular logged-in user** and a **staff/admin user** where noted.
 
+Sections below that mention `int_api` or `NP::IntAPI` describe what a migration
+moved *away from*. `lib/NP/IntAPI.pm` was deleted in `a4f06c76` and no Perl call
+site remains — don't go looking for it.
+
 ---
 
 ## 1. Login & automatic account creation (Auth0)
@@ -116,6 +120,27 @@ Covers features touched in `ntppool` (Perl web) and `../go/ntp/api` (Go API) sin
 - [ ] `/manage/vendor` zone list when the subscription-status or subscriptions fetch errors — the error surfaces instead of a silently empty/partial page.
 - [ ] `/manage/vendor/plan` when the subscriptions fetch errors — error surfaces rather than a blank subscription list.
 
+### 5e. Coverage gate on submit (Go API — authoritative, issue #39 follow-up)
+
+> `SubmitVendorZone` in the Go API is now the authoritative gate: it rejects a
+> production submit from an account with **no subscription coverage and no
+> open-source claim**, returning `FailedPrecondition` with the message exactly
+> `a subscription is required, or apply as open source`. The check reads the
+> **zone's** account (a `vendor_admin` submitting for another account is gated
+> on *that* account, not the admin's), runs inside the submit transaction, and
+> applies with **no admin bypass**. The subscription-status response also gained
+> a `submit_state` enum (`COVERED` / `NEEDS_SUBSCRIPTION` / `OVER_LIMIT`).
+> **The Perl/template consumption of `submit_state` is a deferred Phase 2**, so
+> today this gate is a backstop behind the existing template — which already
+> offers a plain production submit only to covered vendors. Needs the deployed
+> Go API; the Go integration tests already cover the four cases below.
+
+- [ ] **Covered** vendor (live subscription within limits): plain production submit succeeds → Pending.
+- [ ] **Uncovered** vendor **with** an open-source claim + justification: submit still succeeds → Pending (open-source path is allowed through the gate).
+- [ ] **Uncovered** vendor **without** an open-source claim: submit is rejected with `a subscription is required, or apply as open source` (reachable via the resubmit path or a direct/admin submit, since the normal form hides the plain-submit button for uncovered vendors).
+- [ ] **Over-limit** vendor (has a subscription but exceeds zone/device limits), no open-source claim: submit is rejected with the same message (a distinct OVER_LIMIT wording is a Phase 2 decision, not a bug).
+- [ ] `vendor_admin` submitting on another account's behalf is gated on **that account's** coverage, not the admin's own.
+
 ## 6. DNS zone generation (Go API)
 
 > `/api/dns-zone` (`NTPPool::Control::DNSZone`) requires a "dns"-type service
@@ -159,6 +184,20 @@ Covers features touched in `ntppool` (Perl web) and `../go/ntp/api` (Go API) sin
 - [ ] Cancel a scheduled deletion — succeeds; the server returns to normal with no deletion date.
 - [ ] Cancel without the `can_add_servers` permission — shows the "verify active servers first" error, not a silent failure.
 - [ ] Schedule/cancel are recorded in the audit log (written by the Go API in the same transaction).
+
+### 8b. Netspeed update (`int_api` → CAPI migration, issue #35)
+
+> `handle_update_netspeed` now calls `NP::CAPI::ServerManagement::update_server`
+> instead of the legacy `int_api('post', 'server/netspeed', ...)`. The
+> verification-required and not-found conditions are detected from the
+> ConnectRPC `connect_code` instead of old REST status codes, and the
+> success path reuses the API response's server data instead of re-fetching.
+
+- [ ] Increase netspeed on a **verified** server via the HTMX select on `/manage/servers` — succeeds, updated value shown, no page reload.
+- [ ] Increase netspeed on an **unverified** server — shows "Please verify your server before increasing the netspeed" inline, value not changed.
+- [ ] Submit a non-numeric netspeed value (bypass the `<select>`, e.g. via curl) — returns **400**.
+- [ ] Submit without the CSRF auth token — returns **403**.
+- [ ] Non-HTMX request (no `HX-Request` header) — redirects to `/manage/servers` instead of rendering the fragment.
 
 ## 9. Score graphs / PNG endpoints
 
@@ -204,3 +243,57 @@ The Perl `NP::Model` ORM layer was largely removed; sanity-check core flows stil
 - [ ] Server **move** (`/manage/servers/move`) — happy path works; on a forced API error the page returns an error status (not a blank/partial move-done page).
 - [ ] **Monitor** management pages (list / delete) — load normally; a forced upstream error surfaces a 503 error page rather than a wrong 404 or blank.
 - [ ] Spot-check a public read page that uses the helper (`/scores/<ip>`, a zone page) still renders normally and returns a clean 404 for a genuinely missing record.
+
+## 13. Staff search (`int_api` → ConnectRPC, issue #43)
+
+> `staff_search` (`Manage.pm`) now calls the Go **SearchService** ConnectRPC
+> (`NP::CAPI::Search::search`) instead of the removed `int_api('get', 'search')`
+> REST endpoint. Staff-only: the handler checks `support_staff` (non-staff →
+> `PermissionDenied`). Response field names and the `tpl/admin/search_results.html`
+> layout are unchanged. No matches come back as a 200 with an empty account list
+> (never a 404); a real API failure falls to the degraded "Search temporarily
+> unavailable" path with a Trace ID. Each query type must return sane results and
+> the page/HTMX fragment must render without console errors.
+
+- [ ] As **staff**, run an **IP lookup** (known server IP) — matching servers/monitors grouped by account.
+- [ ] `id:<account-id>` lookup — returns that account with its users/servers/monitors.
+- [ ] Free-text **pattern** search (hostname or account-name substring) — matches across accounts/users/servers/monitors; highlighting on matched IPs/hostnames still renders.
+- [ ] Toggle **include deleted** on/off — deleted servers/monitors appear only when checked.
+- [ ] `monitors:` search — shows the monitors-only default view plus the "show all results" toggle.
+- [ ] `zone:<zonename>` search — shows the zone-servers-only default view for that zone.
+- [ ] A query with **no matches** renders an empty result set cleanly (no error alert, no 404 page).
+- [ ] As a **non-staff** user, the search is denied (no staff results leak through).
+
+## 14. Monitor-config "Default (1)" for monitors per server
+
+> The `monitors_per_server_limit` `<select>` on the account monitor-config form
+> now offers **Default (1)** worth `0`, which clears the per-account override —
+> matching how `monitor_limit` already offers "Default (3)" worth `0`. The old
+> `value="1"` option is gone: the API returns the *effective* limit, so a stored
+> `0` and a stored `1` both come back as `1` and behave identically. The Perl
+> guard in `render_monitor_config_update` no longer rejects `0`. Monitor admins
+> only.
+
+- [ ] As a **monitor admin**, open an account's monitor config — the per-server select shows **Default (1)** selected for an account with no override.
+- [ ] Set it to **3**, save — the display card shows 3, and reopening the form has 3 selected.
+- [ ] Set it back to **Default (1)**, save — succeeds (this is the path that was unreachable before), display card shows 1.
+- [ ] An account with a stored value outside 1–5 shows a **"(current)"** option rather than silently selecting the first entry.
+- [ ] As a **non-monitor-admin**, the form is not reachable and a direct POST is denied.
+
+## 15. Account flag badges in the monitor list
+
+> `MonitorAccount` in the monitor proto gained a `flags` message carrying the
+> account's monitor config **resolved server-side** (defaults applied,
+> override-vs-default and registration-disabled already decided). It is sent
+> only to monitor admins. `account_flags_badge.html` now compares those
+> booleans instead of regex-matching a JSON blob — before this it had never
+> rendered, because `mon.account.flags` was never populated. Needs the deployed
+> Go API.
+
+- [ ] As a **monitor admin** on `/manage/monitors` (all-accounts view), an account with `monitor_enabled` shows the green **Bypass** badge.
+- [ ] An account with `monitor_limit = -1` shows the red **Disabled** badge (and *not* "Custom Limit").
+- [ ] An account with a custom `monitor_limit` shows the blue **Custom Limit** badge, tooltip naming the number.
+- [ ] An account with a custom per-server limit shows the yellow **Per-Server** badge, tooltip naming the number.
+- [ ] An account on **all defaults** shows **no badges at all** — and no stray empty gap beside the account name.
+- [ ] Badges appear in **both** the per-account list and the admin all-accounts view.
+- [ ] As a **non-monitor-admin**, no badges render, and the `list_monitors` JSON response contains no `flags` key for the account.

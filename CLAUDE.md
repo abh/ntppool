@@ -72,7 +72,8 @@ loads automatically when working under `client/`.
 ## Project Architecture
 
 - **API Interface**: `lib/NP/CAPI/*.pm` (ConnectRPC APIs - use for all new code)
-- New database functionality should use ConnectRPC API calls via `lib/NP/CAPI/*.pm`; models use Rose::DB but prefer API calls for new features.
+- All database functionality goes through ConnectRPC calls via `lib/NP/CAPI/*.pm`.
+  This repo has no database handle of its own.
 
 ## Architecture Guidelines
 
@@ -82,20 +83,24 @@ loads automatically when working under `client/`.
 
 Read [../go/ntp/api/plans/postgres.md](../go/ntp/api/plans/postgres.md) for complete migration strategy.
 
-**Architecture Goal**: This Perl codebase is becoming a **thin web controller layer with NO direct database access**. All data operations go through Go APIs.
+**Architecture Goal**: This Perl codebase is a **thin web controller layer with
+NO direct database access**. All data operations go through Go APIs.
 
-**During Migration (Current State):**
-- **Split-Brain Scenario**: Go API writes to PostgreSQL, Perl ORM (`NP::Model`) reads from MySQL
-- **NEVER Use `NP::Model->fetch()` After API Calls**: Data written by Go won't exist in MySQL
-- **API Responses Must Be Complete**: Don't rely on database reloads for "fresh" data
+**Current state:** the Rose::DB ORM layer is gone — `lib/NP/Model.pm` and
+`lib/NP/Model/` were deleted and nothing in `lib/` references them. (Rose::DB
+still ships inside the `combust/` framework submodule, but no NTPPool code
+wires it up.) There is no database connection to fall back on, so there is no
+longer a split-brain between PostgreSQL and MySQL to reason about. MySQL is
+what `../ntppool-main` still uses; it is not this repo's concern.
 
-**Migration Rules for AI Agents:**
+**Rules for AI Agents:**
 1. ✅ **DO**: Use API response data directly without database access
 2. ✅ **DO**: Work with IDs and tokens from API responses
 3. ✅ **DO**: Request complete data from APIs (not minimal responses)
-4. ❌ **DON'T**: Add `NP::Model->fetch()` calls after API operations
-5. ❌ **DON'T**: Reload objects to "refresh" data after API calls
-6. ❌ **DON'T**: Query MySQL database for data that was just created/updated in PostgreSQL
+4. ❌ **DON'T**: Reload objects to "refresh" data after API calls — the
+   response is the fresh data
+5. ❌ **DON'T**: Reach for an ORM or a database handle. If you find yourself
+   wanting one, the operation belongs in the Go API.
 
 ### API Design Principles
 
@@ -159,7 +164,7 @@ A patch that makes two sources agree "closely enough" is still the wrong layer.
 
 - **New database operations**: Implement as API calls to the internal API service, not direct database access
 - **API Integration**: `lib/NP/CAPI/*.pm` uses ConnectRPC - use for all new code
-- **Database Models**: Built on Rose::DB, but prefer API calls for new features and NEVER reload after API operations
+- **NEVER reload after an API operation**: use what the response returned
 
 ### ConnectRPC API Patterns (NP::CAPI) - USE FOR NEW CODE
 
@@ -178,7 +183,7 @@ Every method returns a hashref; see `lib/NP/CAPI.pm` for the exact shape.
 **Error Handling**:
 - Always check `$result->{error}` first
 - Log trace IDs for debugging: `$result->{trace_id}`
-- Use the API response data directly — never reload from the ORM afterwards
+- Use the API response data directly — there is nothing to reload it from
 - Return user-friendly error messages from `$result->{error}` or `$result->{data}{message}`
 
 ### API-Driven Feature Integration Patterns
