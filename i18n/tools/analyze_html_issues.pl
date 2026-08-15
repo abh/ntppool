@@ -20,10 +20,8 @@ my %colors = (
 
 # Standard HTML files that should exist for each language
 my @standard_html_files = (
-    'homepage/intro.html',
-    'join.html',
-    'join/configuration.html',
-    'tpl/server/graph_explanation.html',
+    'homepage/intro.html',     'join.html',
+    'join/configuration.html', 'tpl/server/graph_explanation.html',
     'use.html',
 );
 
@@ -120,36 +118,36 @@ sub analyze_html_file {
     return %issues unless -f $file_path;
 
     my $content = read_file($file_path);
-    my @lines = split /\n/, $content;
+    my @lines   = split /\n/, $content;
 
     # Check for deprecated <tt> tags
     my @tt_tags;
-    for my $i (0..$#lines) {
+    for my $i (0 .. $#lines) {
         my $line_num = $i + 1;
-        my $line = $lines[$i];
+        my $line     = $lines[$i];
         if ($line =~ /<tt[^>]*>/) {
-            push @tt_tags, {
-                line => $line_num,
-                content => $line,
-                match => $&
-            };
+            push @tt_tags,
+              {   line    => $line_num,
+                  content => $line,
+                  match   => $&
+              };
         }
     }
     $issues{tt_tags} = \@tt_tags if @tt_tags;
 
     # Check for HTML entities that should be UTF-8
     my @html_entities_found;
-    for my $i (0..$#lines) {
+    for my $i (0 .. $#lines) {
         my $line_num = $i + 1;
-        my $line = $lines[$i];
+        my $line     = $lines[$i];
         for my $entity (keys %html_entities) {
             if ($line =~ /\Q$entity\E/) {
-                push @html_entities_found, {
-                    line => $line_num,
-                    content => $line,
-                    entity => $entity,
-                    replacement => $html_entities{$entity}
-                };
+                push @html_entities_found,
+                  {   line        => $line_num,
+                      content     => $line,
+                      entity      => $entity,
+                      replacement => $html_entities{$entity}
+                  };
             }
         }
     }
@@ -157,89 +155,89 @@ sub analyze_html_file {
 
     # Check for spacing issues around HTML tags
     my @spacing_issues;
-    for my $i (0..$#lines) {
+    for my $i (0 .. $#lines) {
         my $line_num = $i + 1;
-        my $line = $lines[$i];
+        my $line     = $lines[$i];
 
         # Missing space before opening tag (word<tag>)
         if ($line =~ /\w<[a-zA-Z]/) {
-            push @spacing_issues, {
-                line => $line_num,
-                content => $line,
-                issue => "Missing space before opening tag",
-                match => $&
-            };
+            push @spacing_issues,
+              {   line    => $line_num,
+                  content => $line,
+                  issue   => "Missing space before opening tag",
+                  match   => $&
+              };
         }
 
         # Missing space after closing tag (</tag>word)
         if ($line =~ /<\/[a-zA-Z][^>]*>\w/) {
-            push @spacing_issues, {
-                line => $line_num,
-                content => $line,
-                issue => "Missing space after closing tag",
-                match => $&
-            };
+            push @spacing_issues,
+              {   line    => $line_num,
+                  content => $line,
+                  issue   => "Missing space after closing tag",
+                  match   => $&
+              };
         }
     }
     $issues{spacing_issues} = \@spacing_issues if @spacing_issues;
 
     # Check for broken HTML (basic validation)
     my @broken_html;
-    for my $i (0..$#lines) {
+    for my $i (0 .. $#lines) {
         my $line_num = $i + 1;
-        my $line = $lines[$i];
+        my $line     = $lines[$i];
 
         # Unclosed opening tags (simple heuristic)
         if ($line =~ /<a\s[^>]*[^>\/]$/) {
-            push @broken_html, {
-                line => $line_num,
-                content => $line,
-                issue => "Potentially unclosed <a> tag"
-            };
+            push @broken_html,
+              {   line    => $line_num,
+                  content => $line,
+                  issue   => "Potentially unclosed <a> tag"
+              };
         }
 
         # Malformed href attributes
         if ($line =~ /<a\s[^>]*href="[^"]*[^"]$/) {
-            push @broken_html, {
-                line => $line_num,
-                content => $line,
-                issue => "Unclosed href attribute"
-            };
+            push @broken_html,
+              {   line    => $line_num,
+                  content => $line,
+                  issue   => "Unclosed href attribute"
+              };
         }
 
         # Missing closing angle bracket
         if ($line =~ /<[a-zA-Z][^<>]*$/ && $line !~ /<[a-zA-Z][^<>]*\/$/) {
-            push @broken_html, {
-                line => $line_num,
-                content => $line,
-                issue => "Missing closing angle bracket"
-            };
+            push @broken_html,
+              {   line    => $line_num,
+                  content => $line,
+                  issue   => "Missing closing angle bracket"
+              };
         }
     }
     $issues{broken_html} = \@broken_html if @broken_html;
 
     # Check for Template Toolkit syntax issues
     my @tt_syntax_issues;
-    for my $i (0..$#lines) {
+    for my $i (0 .. $#lines) {
         my $line_num = $i + 1;
-        my $line = $lines[$i];
+        my $line     = $lines[$i];
 
         # Unclosed TT blocks
         if ($line =~ /\[%\s*(?!.*%\])/) {
-            push @tt_syntax_issues, {
-                line => $line_num,
-                content => $line,
-                issue => "Unclosed Template Toolkit block"
-            };
+            push @tt_syntax_issues,
+              {   line    => $line_num,
+                  content => $line,
+                  issue   => "Unclosed Template Toolkit block"
+              };
         }
 
         # Malformed TT syntax
         if ($line =~ /\[%[^%]*$/) {
-            push @tt_syntax_issues, {
-                line => $line_num,
-                content => $line,
-                issue => "Incomplete Template Toolkit syntax"
-            };
+            push @tt_syntax_issues,
+              {   line    => $line_num,
+                  content => $line,
+                  issue   => "Incomplete Template Toolkit syntax"
+              };
         }
     }
     $issues{tt_syntax_issues} = \@tt_syntax_issues if @tt_syntax_issues;
@@ -253,34 +251,34 @@ sub compare_with_english {
     my %comparison;
 
     my $lang_file = "docs/ntppool/$lang/$file";
-    my $en_file = "docs/ntppool/en/$file";
+    my $en_file   = "docs/ntppool/en/$file";
 
     return %comparison unless -f $lang_file && -f $en_file;
 
     my $lang_content = read_file($lang_file);
-    my $en_content = read_file($en_file);
+    my $en_content   = read_file($en_file);
 
     # Compare Template Toolkit blocks
     my @lang_tt_blocks = $lang_content =~ /\[%[^%]*%\]/g;
-    my @en_tt_blocks = $en_content =~ /\[%[^%]*%\]/g;
+    my @en_tt_blocks   = $en_content   =~ /\[%[^%]*%\]/g;
 
     if (@lang_tt_blocks != @en_tt_blocks) {
         $comparison{tt_block_count_mismatch} = {
             lang_count => scalar(@lang_tt_blocks),
-            en_count => scalar(@en_tt_blocks)
+            en_count   => scalar(@en_tt_blocks)
         };
     }
 
     # Compare major HTML sections
     my @lang_h3_headers = $lang_content =~ /<h3[^>]*>([^<]*)<\/h3>/g;
-    my @en_h3_headers = $en_content =~ /<h3[^>]*>([^<]*)<\/h3>/g;
+    my @en_h3_headers   = $en_content   =~ /<h3[^>]*>([^<]*)<\/h3>/g;
 
     if (@lang_h3_headers != @en_h3_headers) {
         $comparison{h3_count_mismatch} = {
-            lang_count => scalar(@lang_h3_headers),
-            en_count => scalar(@en_h3_headers),
+            lang_count   => scalar(@lang_h3_headers),
+            en_count     => scalar(@en_h3_headers),
             lang_headers => \@lang_h3_headers,
-            en_headers => \@en_h3_headers
+            en_headers   => \@en_h3_headers
         };
     }
 
@@ -302,6 +300,7 @@ sub check_hosting_refs {
     my ($en_hosting) = $en_content =~ /(Hosting and bandwidth.*?<\/p>)/s;
 
     if ($en_hosting) {
+
         # Extract current providers from English
         my @en_providers;
         while ($en_hosting =~ /<a href="[^"]*">([^<]+)<\/a>/g) {
@@ -310,11 +309,14 @@ sub check_hosting_refs {
 
         # Check if translation has outdated references
         if ($content =~ /Packet(?!\s+Clearing\s+House)/i && $content !~ /Equinix/i) {
-            push @issues, "Outdated: 'Packet' should be updated to current providers: " . join(", ", @en_providers);
+            push @issues, "Outdated: 'Packet' should be updated to current providers: "
+              . join(", ", @en_providers);
         }
 
         if ($content =~ /Develooper/i && $content !~ /Equinix|Netactuate/i) {
-            push @issues, "Outdated: 'Develooper' should be updated to current providers: " . join(", ", @en_providers);
+            push @issues,
+              "Outdated: 'Develooper' should be updated to current providers: "
+              . join(", ", @en_providers);
         }
 
         # Check if translation is missing modern providers
@@ -327,7 +329,8 @@ sub check_hosting_refs {
         }
 
         unless ($has_modern_providers) {
-            push @issues, "Missing current hosting providers. English has: " . join(", ", @en_providers);
+            push @issues, "Missing current hosting providers. English has: "
+              . join(", ", @en_providers);
         }
     }
 
@@ -357,7 +360,8 @@ sub format_file_report {
 
     # Deprecated <tt> tags
     if ($issues->{tt_tags}) {
-        $output .= "    $colors{red}Deprecated <tt> tags:$colors{reset} " . scalar(@{$issues->{tt_tags}}) . "\n";
+        $output .= "    $colors{red}Deprecated <tt> tags:$colors{reset} "
+          . scalar(@{$issues->{tt_tags}}) . "\n";
         for my $issue (@{$issues->{tt_tags}}) {
             $output .= "      Line $issue->{line}: $issue->{match}\n";
         }
@@ -365,19 +369,22 @@ sub format_file_report {
 
     # HTML entities
     if ($issues->{html_entities}) {
-        $output .= "    $colors{yellow}HTML entities to convert:$colors{reset} " . scalar(@{$issues->{html_entities}}) . "\n";
+        $output .= "    $colors{yellow}HTML entities to convert:$colors{reset} "
+          . scalar(@{$issues->{html_entities}}) . "\n";
         my %entity_counts;
         for my $issue (@{$issues->{html_entities}}) {
             $entity_counts{$issue->{entity}}++;
         }
         for my $entity (sort keys %entity_counts) {
-            $output .= "      $entity → $html_entities{$entity} ($entity_counts{$entity} occurrences)\n";
+            $output
+              .= "      $entity → $html_entities{$entity} ($entity_counts{$entity} occurrences)\n";
         }
     }
 
     # Spacing issues
     if ($issues->{spacing_issues}) {
-        $output .= "    $colors{cyan}Spacing issues:$colors{reset} " . scalar(@{$issues->{spacing_issues}}) . "\n";
+        $output .= "    $colors{cyan}Spacing issues:$colors{reset} "
+          . scalar(@{$issues->{spacing_issues}}) . "\n";
         for my $issue (@{$issues->{spacing_issues}}) {
             $output .= "      Line $issue->{line}: $issue->{issue}\n";
         }
@@ -385,7 +392,8 @@ sub format_file_report {
 
     # Broken HTML
     if ($issues->{broken_html}) {
-        $output .= "    $colors{red}Broken HTML:$colors{reset} " . scalar(@{$issues->{broken_html}}) . "\n";
+        $output .= "    $colors{red}Broken HTML:$colors{reset} "
+          . scalar(@{$issues->{broken_html}}) . "\n";
         for my $issue (@{$issues->{broken_html}}) {
             $output .= "      Line $issue->{line}: $issue->{issue}\n";
         }
@@ -393,7 +401,8 @@ sub format_file_report {
 
     # Template Toolkit syntax issues
     if ($issues->{tt_syntax_issues}) {
-        $output .= "    $colors{red}Template Toolkit syntax:$colors{reset} " . scalar(@{$issues->{tt_syntax_issues}}) . "\n";
+        $output .= "    $colors{red}Template Toolkit syntax:$colors{reset} "
+          . scalar(@{$issues->{tt_syntax_issues}}) . "\n";
         for my $issue (@{$issues->{tt_syntax_issues}}) {
             $output .= "      Line $issue->{line}: $issue->{issue}\n";
         }
@@ -402,12 +411,14 @@ sub format_file_report {
     # Content structure comparison
     if ($comparison->{tt_block_count_mismatch}) {
         my $comp = $comparison->{tt_block_count_mismatch};
-        $output .= "    $colors{yellow}TT block mismatch:$colors{reset} $comp->{lang_count} vs English $comp->{en_count}\n";
+        $output
+          .= "    $colors{yellow}TT block mismatch:$colors{reset} $comp->{lang_count} vs English $comp->{en_count}\n";
     }
 
     if ($comparison->{h3_count_mismatch}) {
         my $comp = $comparison->{h3_count_mismatch};
-        $output .= "    $colors{yellow}Header count mismatch:$colors{reset} $comp->{lang_count} vs English $comp->{en_count}\n";
+        $output
+          .= "    $colors{yellow}Header count mismatch:$colors{reset} $comp->{lang_count} vs English $comp->{en_count}\n";
     }
 
     return $output;
@@ -418,10 +429,10 @@ sub analyze_language {
     my ($lang, $lang_info) = @_;
     my %report;
 
-    $report{name} = $lang_info->{name};
+    $report{name}    = $lang_info->{name};
     $report{testing} = $lang_info->{testing} ? 1 : 0;
 
-    my $total_issues = 0;
+    my $total_issues      = 0;
     my $files_with_issues = 0;
 
     # Analyze each standard HTML file
@@ -429,7 +440,7 @@ sub analyze_language {
         my $file_path = "docs/ntppool/$lang/$file";
         next unless -f $file_path;
 
-        my %issues = analyze_html_file($file_path, $lang);
+        my %issues     = analyze_html_file($file_path, $lang);
         my %comparison = compare_with_english($lang, $file);
 
         my $file_issue_count = 0;
@@ -442,8 +453,8 @@ sub analyze_language {
 
         if ($file_issue_count > 0) {
             $report{files}{$file} = {
-                issues => \%issues,
-                comparison => \%comparison,
+                issues      => \%issues,
+                comparison  => \%comparison,
                 issue_count => $file_issue_count
             };
             $files_with_issues++;
@@ -458,7 +469,7 @@ sub analyze_language {
         $total_issues += scalar(@hosting_issues);
     }
 
-    $report{total_issues} = $total_issues;
+    $report{total_issues}      = $total_issues;
     $report{files_with_issues} = $files_with_issues;
 
     return %report;
@@ -473,20 +484,27 @@ sub format_language_report {
 
     # Header
     $output .= "\n$colors{bold}=== $lang - $report->{name} ===$colors{reset}\n";
-    $output .= "Status: " . ($report->{testing} ? "$colors{yellow}Beta/Testing$colors{reset}" : "$colors{green}Production$colors{reset}") . "\n";
-    $output .= "Total issues: $colors{red}$report->{total_issues}$colors{reset} across $report->{files_with_issues} files\n";
+    $output .= "Status: "
+      . ( $report->{testing}
+          ? "$colors{yellow}Beta/Testing$colors{reset}"
+          : "$colors{green}Production$colors{reset}"
+      ) . "\n";
+    $output
+      .= "Total issues: $colors{red}$report->{total_issues}$colors{reset} across $report->{files_with_issues} files\n";
 
     # File-specific issues
     if ($report->{files}) {
         for my $file (sort keys %{$report->{files}}) {
             my $file_data = $report->{files}{$file};
-            $output .= format_file_report($file, $lang, $file_data->{issues}, $file_data->{comparison});
+            $output .= format_file_report($file, $lang, $file_data->{issues},
+                $file_data->{comparison});
         }
     }
 
     # Hosting reference issues
     if ($report->{hosting_issues}) {
-        $output .= "\n  $colors{bold}Hosting references:$colors{reset} $colors{yellow}⚠ Outdated$colors{reset}\n";
+        $output
+          .= "\n  $colors{bold}Hosting references:$colors{reset} $colors{yellow}⚠ Outdated$colors{reset}\n";
         for my $issue (@{$report->{hosting_issues}}) {
             $output .= "    - $issue\n";
         }
@@ -498,17 +516,19 @@ sub format_language_report {
 # Generate summary statistics
 sub generate_summary {
     my ($all_reports) = @_;
-    my $output = "\n$colors{bold}========== HTML ISSUES ANALYSIS SUMMARY ==========$colors{reset}\n\n";
+    my $output =
+      "\n$colors{bold}========== HTML ISSUES ANALYSIS SUMMARY ==========$colors{reset}\n\n";
 
     my $total_langs = scalar(keys %$all_reports);
-    my $langs_with_issues = grep { $all_reports->{$_}{total_issues} > 0 } keys %$all_reports;
+    my $langs_with_issues =
+      grep { $all_reports->{$_}{total_issues} > 0 } keys %$all_reports;
     my $langs_clean = $total_langs - $langs_with_issues;
 
-    my $total_issues = 0;
-    my $total_tt_tags = 0;
-    my $total_html_entities = 0;
+    my $total_issues         = 0;
+    my $total_tt_tags        = 0;
+    my $total_html_entities  = 0;
     my $total_spacing_issues = 0;
-    my $total_broken_html = 0;
+    my $total_broken_html    = 0;
 
     for my $lang (keys %$all_reports) {
         my $report = $all_reports->{$lang};
@@ -517,10 +537,10 @@ sub generate_summary {
         if ($report->{files}) {
             for my $file (keys %{$report->{files}}) {
                 my $issues = $report->{files}{$file}{issues};
-                $total_tt_tags += scalar(@{$issues->{tt_tags} || []});
-                $total_html_entities += scalar(@{$issues->{html_entities} || []});
+                $total_tt_tags        += scalar(@{$issues->{tt_tags}        || []});
+                $total_html_entities  += scalar(@{$issues->{html_entities}  || []});
                 $total_spacing_issues += scalar(@{$issues->{spacing_issues} || []});
-                $total_broken_html += scalar(@{$issues->{broken_html} || []});
+                $total_broken_html    += scalar(@{$issues->{broken_html}    || []});
             }
         }
     }
@@ -531,25 +551,28 @@ sub generate_summary {
 
     $output .= "Issue breakdown:\n";
     $output .= "  - Deprecated <tt> tags: $colors{red}$total_tt_tags$colors{reset}\n";
-    $output .= "  - HTML entities to convert: $colors{yellow}$total_html_entities$colors{reset}\n";
+    $output
+      .= "  - HTML entities to convert: $colors{yellow}$total_html_entities$colors{reset}\n";
     $output .= "  - Spacing issues: $colors{cyan}$total_spacing_issues$colors{reset}\n";
     $output .= "  - Broken HTML: $colors{red}$total_broken_html$colors{reset}\n";
     $output .= "  - Total issues: $colors{bold}$total_issues$colors{reset}\n\n";
 
     # Priority languages (most issues first)
-    my @priority_langs = sort { $all_reports->{$b}{total_issues} <=> $all_reports->{$a}{total_issues} }
-                         grep { $all_reports->{$_}{total_issues} > 0 } keys %$all_reports;
+    my @priority_langs =
+      sort { $all_reports->{$b}{total_issues} <=> $all_reports->{$a}{total_issues} }
+      grep { $all_reports->{$_}{total_issues} > 0 } keys %$all_reports;
 
     if (@priority_langs) {
         $output .= "Priority languages (most issues first):\n";
-        for my $i (0..9) {  # Top 10
+        for my $i (0 .. 9) {    # Top 10
             last if $i >= @priority_langs;
-            my $lang = $priority_langs[$i];
+            my $lang   = $priority_langs[$i];
             my $report = $all_reports->{$lang};
             $output .= sprintf("  %2d. %s (%s) - %d issues\n",
-                $i+1, $lang, $report->{name}, $report->{total_issues});
+                $i + 1, $lang, $report->{name}, $report->{total_issues});
         }
-        $output .= "  ... and " . (@priority_langs - 10) . " more\n" if @priority_langs > 10;
+        $output .= "  ... and " . (@priority_langs - 10) . " more\n"
+          if @priority_langs > 10;
     }
 
     return $output;
@@ -567,7 +590,7 @@ chdir("$script_dir/../..") or die "Cannot change to repository root: $!";
 my $languages = load_languages();
 
 # Add English to the analysis
-$languages->{en} = { name => 'English' };
+$languages->{en} = {name => 'English'};
 
 # Analyze all languages
 my %all_reports;
@@ -583,7 +606,7 @@ print generate_summary(\%all_reports);
 print "\n$colors{bold}========== DETAILED REPORTS ==========$colors{reset}\n";
 
 for my $lang (sort keys %all_reports) {
-    my $report = $all_reports{$lang};
+    my $report    = $all_reports{$lang};
     my $formatted = format_language_report($lang, $report);
     print $formatted if $formatted;
 }

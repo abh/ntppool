@@ -32,10 +32,8 @@ sub _account_users {
     my $cache_key = '_account_users_' . $account->{account_id};
     return $self->{$cache_key} if exists $self->{$cache_key};
 
-    my $result = get_account_users(
-        $self->api_auth_params,
-        account => $account->{id_token},
-    );
+    my $result =
+      get_account_users($self->api_auth_params, account => $account->{id_token},);
 
     return $self->{$cache_key} = [] if $result->{error};
 
@@ -48,9 +46,7 @@ sub _user_accounts {
     my $cache_key = '_user_accounts_' . $user->{user_id};
     return $self->{$cache_key} if exists $self->{$cache_key};
 
-    my $result = get_user_accounts(
-        $self->api_auth_params,
-    );
+    my $result = get_user_accounts($self->api_auth_params,);
 
     return $self->{$cache_key} = [] if $result->{error};
 
@@ -80,10 +76,7 @@ sub _user_invites {
     my $cache_key = '_user_invites_' . $user->{user_id};
     return $self->{$cache_key} if exists $self->{$cache_key};
 
-    my $result = get_account_invites(
-        $self->api_auth_params,
-        for_user => JSON::XS::true,
-    );
+    my $result = get_account_invites($self->api_auth_params, for_user => JSON::XS::true,);
 
     return $self->{$cache_key} = [] if $result->{error};
 
@@ -96,10 +89,7 @@ sub _create_account {
 
     $name ||= $self->user->{name} || 'My Account';
 
-    my $data = create_account(
-        $self->api_auth_params,
-        name => $name,
-    );
+    my $data = create_account($self->api_auth_params, name => $name,);
 
     if ($data->{error}) {
         warn "Failed to create account via API: " . $data->{error};
@@ -138,6 +128,7 @@ sub manage_dispatch {
     $account = $self->current_account unless $account;
 
     unless ($account) {
+
         # A non-logged-in request can reach here with a truthy-but-invalid
         # user stub (validate_session returns valid:false at HTTP 200); send
         # those to login rather than an account error.
@@ -215,18 +206,16 @@ sub manage_dispatch {
         return $self->render_download($self->user);
     }
     elsif ($self->request->uri =~ m!^/manage/account/delete$!) {
-        my $self_token     = $self->user->{id_token};
-        my $target_token   = $self_token;
-        my $is_self        = 1;
+        my $self_token   = $self->user->{id_token};
+        my $target_token = $self_token;
+        my $is_self      = 1;
         if (my $u_token = $self->req_param('u')) {
             if ($u_token ne $self_token) {
                 return 403 unless $self->user_is_staff;
 
-                my $lookup = get_user(
-                    $self->api_auth_params,
-                    id_token => $u_token,
-                );
-                if (my $status = $self->capi_error_status($lookup, $lookup->{data}{user})) {
+                my $lookup = get_user($self->api_auth_params, id_token => $u_token,);
+                if (my $status = $self->capi_error_status($lookup, $lookup->{data}{user}))
+                {
                     return $status;
                 }
 
@@ -243,8 +232,7 @@ sub manage_dispatch {
         # reaching here means current_account already authorized access to
         # this account. The GET confirmation page and the schedule POST stay
         # staff-only. The Go CancelAccountDeletion is the real enforcement.
-        my $member_cancel =
-             $self->request->method eq 'post'
+        my $member_cancel = $self->request->method eq 'post'
           && $self->req_param('cancel');
 
         return 403 unless $self->user_is_staff || $member_cancel;
@@ -320,10 +308,12 @@ sub handle_invitation {
         # Use get_account_invites to check if this code exists and get details
         my $invites_result = get_account_invites(
             $self->api_auth_params,
-            for_user => 1,                     # Get invites for the current user
+            for_user => 1,    # Get invites for the current user
         );
 
-        if (my $status = $self->capi_error_status($invites_result, $invites_result->{data})) {
+        if (my $status =
+            $self->capi_error_status($invites_result, $invites_result->{data}))
+        {
             return $status;
         }
 
@@ -341,10 +331,7 @@ sub handle_invitation {
 
     # POST request - accept the invitation via Go API
     # The API handles transaction, adding user to account, and logging
-    my $result = accept_account_invite(
-        $self->api_auth_params,
-        code => $code,
-    );
+    my $result = accept_account_invite($self->api_auth_params, code => $code,);
 
     if ($result->{error}) {
 
@@ -380,10 +367,7 @@ sub handle_invitation {
     }
 
     # Fetch the account to get its id_token for the redirect
-    my $account_result = get_account(
-        $self->api_auth_params,
-        id => $account_id,
-    );
+    my $account_result = get_account($self->api_auth_params, id => $account_id,);
 
     if ($account_result->{error}) {
 
@@ -464,7 +448,7 @@ sub render_resend_invite {
     );
 
     if ($result->{error}) {
-        my $code = $result->{connect_code} // 'internal';
+        my $code   = $result->{connect_code} // 'internal';
         my %errors = ();
 
         if ($code eq 'resource_exhausted') {
@@ -580,14 +564,11 @@ sub render_account_edit {
     return 404 unless $id_token;
 
     # Get account from API to populate the form before updates
-    my $result = get_account(
-        $self->api_auth_params,
-        account => $id_token,
-    );
+    my $result = get_account($self->api_auth_params, account => $id_token,);
 
     if (my $status = $self->capi_error_status($result, $result->{data}{account})) {
         warn "Failed to get account via API: " . $result->{error} if $result->{error};
-        warn "Trace ID: " . $result->{trace_id} if $result->{trace_id};
+        warn "Trace ID: " . $result->{trace_id}                   if $result->{trace_id};
         return $status;
     }
 
@@ -651,8 +632,8 @@ sub render_account_edit {
 # Note: Logging moved to Go API (UpdateAccount service)
 # During PostgreSQL migration, cannot log to MySQL with account_id that only exists in PostgreSQL
 
-        # Refresh account context so sidebar shows updated account name immediately
-        # Without this, cached data persists and sidebar shows stale name until next page load
+    # Refresh account context so sidebar shows updated account name immediately
+    # Without this, cached data persists and sidebar shows stale name until next page load
         $self->refresh_account_context();
     }
 
@@ -693,10 +674,7 @@ sub render_download {
         return NOT_FOUND unless $traceid && $filename;
         warn "checking downloads for $traceid / $filename";
 
-        my $result = get_user_task(
-            $self->api_auth_params,
-            traceid => $traceid,
-        );
+        my $result = get_user_task($self->api_auth_params, traceid => $traceid,);
 
         if (my $status = $self->capi_error_status($result, $result->{data}{task})) {
             return $status;
@@ -705,7 +683,8 @@ sub render_download {
         return NOT_FOUND unless $task->{status_url};
 
         # Verify filename matches what's in the download_url
-        return NOT_FOUND unless $task->{download_url} && $task->{download_url} =~ /\Q$filename\E$/;
+        return NOT_FOUND
+          unless $task->{download_url} && $task->{download_url} =~ /\Q$filename\E$/;
 
         $self->request->header_out('Fastly-Follow' => '1');
         return $self->redirect($task->{status_url}, 302);
@@ -713,10 +692,7 @@ sub render_download {
 
     $self->tpl_param('user', $user);
 
-    my $result = list_user_tasks(
-        $self->api_auth_params,
-        task_type => 'download',
-    );
+    my $result = list_user_tasks($self->api_auth_params, task_type => 'download',);
 
     my $requests = [];
     if (!$result->{error} && $result->{data}{tasks}) {
@@ -768,10 +744,7 @@ sub render_user_delete {
         $user = $self->user;
     }
     else {
-        my $lookup = get_user(
-            $self->api_auth_params,
-            id_token => $target_id_token,
-        );
+        my $lookup = get_user($self->api_auth_params, id_token => $target_id_token,);
         return NOT_FOUND if $lookup->{error};
         $user = $lookup->{data}{user} or return NOT_FOUND;
     }
@@ -781,10 +754,10 @@ sub render_user_delete {
     # Check deletion eligibility using new consolidated API.
     # Pass id_token only when targeting another user; the API treats the
     # caller as self when id_token is omitted.
-    my $result = check_user_deletion_eligibility(
-        $self->api_auth_params,
-        ($is_self ? () : (id_token => $target_id_token)),
-    );
+    my $result =
+      check_user_deletion_eligibility($self->api_auth_params,
+          ($is_self ? () : (id_token => $target_id_token)),
+      );
 
     if ($result->{error}) {
         warn "CheckUserDeletionEligibility error: " . $result->{error};
@@ -806,10 +779,10 @@ sub render_user_delete {
 
     if ($self->request->method eq 'post') {
 
-        my $result = schedule_user_deletion(
-            $self->api_auth_params,
-            ($is_self ? () : (id_token => $target_id_token)),
-        );
+        my $result =
+          schedule_user_deletion($self->api_auth_params,
+              ($is_self ? () : (id_token => $target_id_token)),
+          );
 
         if ($result->{error}) {
             warn "Failed to schedule user deletion: " . $result->{error};
@@ -817,8 +790,7 @@ sub render_user_delete {
             $self->tpl_param('error',
                 "Failed to schedule account deletion: " . $result->{error});
             $self->tpl_param('trace_id', $result->{trace_id});
-            return OK,
-              $self->evaluate_template('tpl/user/delete_confirmation.html');
+            return OK, $self->evaluate_template('tpl/user/delete_confirmation.html');
         }
 
         # Use the updated user data from API response. The Go API enqueues the
@@ -870,10 +842,8 @@ sub render_account_dissolve {
 
     # Cancel an already-scheduled deletion
     if ($self->request->method eq 'post' and $self->req_param('cancel')) {
-        my $result = cancel_account_deletion(
-            $self->api_auth_params,
-            account_id_token => $account->{id_token},
-        );
+        my $result = cancel_account_deletion($self->api_auth_params,
+            account_id_token => $account->{id_token},);
 
         if ($result->{error}) {
             warn "Failed to cancel account deletion: " . $result->{error};
@@ -881,8 +851,7 @@ sub render_account_dissolve {
             $self->tpl_param('error',
                 "Could not cancel scheduled deletion: " . $result->{error});
             $self->tpl_param('trace_id', $result->{trace_id});
-            return OK,
-              $self->evaluate_template('tpl/account/dissolve_confirmation.html');
+            return OK, $self->evaluate_template('tpl/account/dissolve_confirmation.html');
         }
 
         return $self->redirect(
@@ -891,19 +860,15 @@ sub render_account_dissolve {
 
     # Schedule a deletion. The API picks the deletion date (fixed 7-day delay).
     if ($self->request->method eq 'post') {
-        my $result = schedule_account_deletion(
-            $self->api_auth_params,
-            account_id_token => $account->{id_token},
-        );
+        my $result = schedule_account_deletion($self->api_auth_params,
+            account_id_token => $account->{id_token},);
 
         if ($result->{error}) {
             warn "Failed to schedule account deletion: " . $result->{error};
             warn "Trace ID: " . $result->{trace_id} if $result->{trace_id};
-            $self->tpl_param('error',
-                "Could not schedule deletion: " . $result->{error});
+            $self->tpl_param('error', "Could not schedule deletion: " . $result->{error});
             $self->tpl_param('trace_id', $result->{trace_id});
-            return OK,
-              $self->evaluate_template('tpl/account/dissolve_confirmation.html');
+            return OK, $self->evaluate_template('tpl/account/dissolve_confirmation.html');
         }
 
         my $data = $result->{data} || {};
@@ -917,18 +882,17 @@ sub render_account_dissolve {
             return $self->redirect(
                 $self->manage_url(
                     '/manage/account/dissolve', {a => $account->{id_token}}
-                ));
+                )
+            );
         }
 
         # Blockers: surface them on the confirmation page. The API also
         # returns a structured details hashref but the blockers list already
         # carries the human-readable strings the template needs.
-        $self->tpl_param('blockers', $data->{blockers} || []);
-        $self->tpl_param('orphaned_emails',
-            $data->{orphaned_user_emails} || []);
+        $self->tpl_param('blockers',        $data->{blockers}             || []);
+        $self->tpl_param('orphaned_emails', $data->{orphaned_user_emails} || []);
 
-        return OK,
-          $self->evaluate_template('tpl/account/dissolve_confirmation.html');
+        return OK, $self->evaluate_template('tpl/account/dissolve_confirmation.html');
     }
 
     # GET: show pending state or scheduling form
@@ -936,12 +900,11 @@ sub render_account_dissolve {
         my $display = $account->{deletion_on};
         $display =~ s/T.*//;    # date-only display for RFC3339 input
 
-        $self->tpl_param('pending',      1);
-        $self->tpl_param('deletion_on',  $display);
+        $self->tpl_param('pending',     1);
+        $self->tpl_param('deletion_on', $display);
     }
 
-    return OK,
-      $self->evaluate_template('tpl/account/dissolve_confirmation.html');
+    return OK, $self->evaluate_template('tpl/account/dissolve_confirmation.html');
 }
 
 sub render_monitor_config_form {
@@ -1021,7 +984,7 @@ sub render_monitor_config_display {
     $config ||= $self->account_monitor_config($account);
     $self->tpl_param('monitor_config', $config) if $config;
     $self->tpl_param('account',        $account);
-    $self->tpl_param('error', 'Unable to load monitor configuration')
+    $self->tpl_param('error',          'Unable to load monitor configuration')
       if !$config && !$self->tpl_param('error');
 
     # Use clean template for HTMX responses (no debug sections)

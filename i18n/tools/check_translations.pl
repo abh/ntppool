@@ -8,13 +8,13 @@ use File::Basename;
 # Usage: perl check_translations.pl [language_codes...]
 
 my @target_languages = @ARGV ? @ARGV : qw(de da it es);
-my $base_dir = dirname(__FILE__);
-my $i18n_dir = "$base_dir/i18n";
+my $base_dir         = dirname(__FILE__);
+my $i18n_dir         = "$base_dir/i18n";
 
 print "=== NTP Pool Translation Sync Checker ===\n\n";
 
 # Read English source file
-my $en_file = "$i18n_dir/en.po";
+my $en_file   = "$i18n_dir/en.po";
 my %en_msgids = read_msgids($en_file);
 print "English source has " . scalar(keys %en_msgids) . " message IDs\n\n";
 
@@ -29,7 +29,7 @@ for my $lang (@target_languages) {
         next;
     }
 
-    my %lang_msgids = read_msgids($lang_file);
+    my %lang_msgids  = read_msgids($lang_file);
     my %lang_msgstrs = read_msgstrs($lang_file);
 
     print "Language file has " . scalar(keys %lang_msgids) . " message IDs\n";
@@ -114,7 +114,7 @@ sub read_msgids {
     my ($file) = @_;
     my %msgids;
     my $current_msgid = '';
-    my $in_msgid = 0;
+    my $in_msgid      = 0;
 
     open my $fh, '<:utf8', $file or die "Cannot open $file: $!";
     while (my $line = <$fh>) {
@@ -123,18 +123,20 @@ sub read_msgids {
         # Handle msgid start
         if ($line =~ /^msgid\s+"(.+)"$/ || $line =~ /^msgid\s+""$/) {
             $current_msgid = $1 || '';
-            $in_msgid = 1;
+            $in_msgid      = 1;
         }
+
         # Handle continuation lines for msgid (quoted strings)
         elsif ($in_msgid && $line =~ /^"(.*)"$/) {
             $current_msgid .= $1;
         }
+
         # Handle msgstr or other lines - end msgid
         elsif ($line =~ /^msgstr/ || $line =~ /^(#.*|)$/) {
             if ($in_msgid) {
                 $msgids{$current_msgid} = 1 if $current_msgid ne '';
-                $current_msgid = '';
-                $in_msgid = 0;
+                $current_msgid          = '';
+                $in_msgid               = 0;
             }
         }
     }
@@ -151,9 +153,9 @@ sub read_msgids {
 sub read_msgstrs {
     my ($file) = @_;
     my %msgstrs;
-    my $current_msgid = '';
+    my $current_msgid  = '';
     my $current_msgstr = '';
-    my $in_msgstr = 0;
+    my $in_msgstr      = 0;
 
     open my $fh, '<:utf8', $file or die "Cannot open $file: $!";
     while (my $line = <$fh>) {
@@ -161,30 +163,34 @@ sub read_msgstrs {
 
         # Handle msgid lines
         if ($line =~ /^msgid\s+"(.+)"$/ || $line =~ /^msgid\s+""$/) {
+
             # Save previous msgstr if we have one
             if ($current_msgid && $in_msgstr) {
                 $msgstrs{$current_msgid} = $current_msgstr;
             }
 
-            $current_msgid = $1 || '';
+            $current_msgid  = $1 || '';
             $current_msgstr = '';
-            $in_msgstr = 0;
+            $in_msgstr      = 0;
         }
+
         # Handle msgstr start
         elsif ($line =~ /^msgstr\s+"(.*)"$/) {
             $current_msgstr = $1 || '';
-            $in_msgstr = 1;
+            $in_msgstr      = 1;
         }
+
         # Handle continuation lines (quoted strings)
         elsif ($in_msgstr && $line =~ /^"(.*)"$/) {
             $current_msgstr .= $1;
         }
+
         # Handle empty lines or comments - end msgstr continuation
         elsif ($line =~ /^(#.*|)$/) {
             if ($current_msgid && $in_msgstr) {
                 $msgstrs{$current_msgid} = $current_msgstr;
-                $current_msgstr = '';
-                $in_msgstr = 0;
+                $current_msgstr          = '';
+                $in_msgstr               = 0;
             }
         }
     }

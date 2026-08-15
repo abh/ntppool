@@ -97,5 +97,4 @@ sub fixup_static_version {
     return $self->SUPER::fixup_static_version(@_);
 }
 
-
 1;

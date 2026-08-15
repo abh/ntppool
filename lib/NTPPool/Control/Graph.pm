@@ -2,7 +2,7 @@ package NTPPool::Control::Graph;
 use strict;
 use parent            qw(NTPPool::Control);
 use Combust::Constant qw(OK DECLINED);
-use NP::CAPI::Server qw(get_server);
+use NP::CAPI::Server  qw(get_server);
 use NP::Data::Server;
 use LWP::UserAgent qw();
 

@@ -102,8 +102,10 @@ sub render {
             # Fetch server data from CAPI
             my $server_result = $self->server_data($p);
 
-            if (my $status =
-                $self->capi_error_status($server_result, $server_result->{data}{server}))
+            if (my $status = $self->capi_error_status(
+                    $server_result, $server_result->{data}{server}
+                )
+              )
             {
                 warn "Failed to fetch server data: "
                   . ($server_result->{error} || 'no server data')

@@ -29,7 +29,7 @@ sub new_from_api {
     # Sanity check required fields from API
     croak "Missing origin from API response"  unless defined $self->{origin};
     croak "Missing ns_list from API response" unless defined $self->{ns_list};
-    croak "Missing TTL from API response"     unless defined $self->{ttl} && $self->{ttl} > 0;
+    croak "Missing TTL from API response" unless defined $self->{ttl} && $self->{ttl} > 0;
 
     return $self;
 }
