@@ -1,6 +1,7 @@
 # Issue #28: Monitor.pm — int_api → CAPI (ConnectRPC)
 
-**Status:** In progress — read path done, write/metrics/registration remaining
+**Status:** Complete (2026-08-15) — all five slices shipped, `lib/NP/IntAPI.pm`
+deleted. Dev-site smoke tests below are still unrun.
 **Gitea:** [#28](https://gitea.develooper.com/ntppool/ntppool/issues/28)
 **Related:** retires most uses of `lib/NP/IntAPI.pm`
 
@@ -95,7 +96,8 @@ new `ntppool/monitorreg/v1`.
 After C, `Monitor.pm` is `int_api`-free: drop `use NP::IntAPI`, delete leftover
 `lib/NTPPool/Control/Manage/Monitor.pm.bak`. (Phase-4 non-monitor callers —
 `Manage.pm:507` search, `Account.pm:1026` account-config — remain out of #28's
-Monitor.pm scope and can be a follow-up before deleting `lib/NP/IntAPI.pm`.)
+Monitor.pm scope and can be a follow-up before deleting `lib/NP/IntAPI.pm`.
+Both shipped: search as #43, account-config as slice E.)
 
 ## Status
 
@@ -104,8 +106,9 @@ Monitor.pm scope and can be a follow-up before deleting `lib/NP/IntAPI.pm`.)
 - **Slice C (registration)** — Go side done: `MonitorRegistrationService`
   (`GetRegistrationData` + `AcceptRegistration`) implemented in the `monitorreg`
   package, wired into the authenticated RPC group, unit + integration tested;
-  the accept transaction is shared with the REST `UserAcceptanceHandler` via
-  `runAcceptRegistration`. Go `6910eb4` (proto was `b228260`). The generated
+  the accept transaction was shared with the REST `UserAcceptanceHandler` via
+  `runAcceptRegistration` (that REST pair has since been removed — Go
+  `00cc892`). Go `6910eb4` (proto was `b228260`). The generated
   `NP::CAPI::MonitorRegistration` wrapper is committed here. **Remaining
   (follow-up):** port `render_confirm_monitor` (Monitor.pm lines 161/198) to the
   wrapper, branch on `registration_state`/`code`, update the confirm templates,
