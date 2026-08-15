@@ -21,7 +21,19 @@ out as siblings; adjust for your own layout (or note local paths in CLAUDE.local
 
 ## Development Commands
 
-- `perltidy` - Format Perl code (required before committing)
+- `perltidy` — format Perl code before committing. The rules:
+  - The tracked tree is perltidy-clean as of 2026-08-15, so tidying a whole
+    file you edited produces no unrelated churn. Two exceptions below.
+  - On a large file where a full tidy would still swamp a small change, tidy
+    only what you touched: `perltidy --line-range-tidy=START:END`.
+  - **Never tidy generated code.** `lib/NP/CAPI/*.pm` carry
+    `# GENERATED CODE - DO NOT EDIT`; their formatting belongs to
+    `cmd/protoc-gen-perl-capi` in the Go API repo. Tidying them makes the next
+    `make generate` revert it, which is where the recurring diff noise came
+    from. Regenerate instead of editing.
+  - `i18n/tools/validate_content_consistency.pl` is also excluded: perltidy
+    misparses it because the file has a syntax error (`qr/.../g` at line 61 —
+    `g` is not a valid `qr` modifier, so the tool has never compiled).
 
 ## LLM Coding Agent Guidelines
 

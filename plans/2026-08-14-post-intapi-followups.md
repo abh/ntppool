@@ -8,11 +8,10 @@ deleted `lib/NP/IntAPI.pm`, and removed the dead `/int/monitor/manage/*` and
 These are the loose ends found along the way. None of them blocked that work.
 Each is independent — pick them off in any order.
 
-**Status (2026-08-15):** 1, 2, 5, 6, 8 and 10 are done — code written, Go tests
-passing. 2 and 10 are user-visible and still need the browser check on the dev
-site (added as §14 and §15 of `MANUAL_TEST_PLAN.md`); 10 also needs the Go API
-deployed there. Still open: **3** (template dedup), **4** (perltidy policy),
-**7** (who calls `/int/monitor/registration/*`), **9** (recorded, no action).
+**Status (2026-08-15):** all ten are resolved — 9 is recorded-no-action, the
+rest are code. What is still outstanding is verification, not implementation:
+2 and 10 are user-visible and need the browser check on the dev site (§14 and
+§15 of `MANUAL_TEST_PLAN.md`); 10 also needs the Go API deployed there.
 
 ---
 
@@ -92,6 +91,21 @@ Note the asymmetry is real: `monitor_limit` *does* offer `0` as
 near-verbatim copy of `docs/manage/tpl/account/monitor_config_display_clean.html`
 **Severity:** maintenance hazard, already bit us once
 
+**DONE 2026-08-15.** Took a narrower fix than the one sketched below: the shared
+part is the card *contents* (the three columns and the edit button), now
+`monitor_config_fields.html`, `PROCESS`ed by both callers. Collapsing
+`section.html` into `display_clean.html` as originally proposed would have moved
+the alert blocks, which are the one thing the two files are right to disagree
+about — the section shows full alerts above the card and hides itself when the
+config is missing, the fragment shows a badge or an in-card alert.
+
+Verified without a browser: both templates were rendered at HEAD and after the
+change through Template Toolkit across six stashes (normal, `monitor_limit`
+`-1`, success, error, missing config, non-admin). All twelve outputs match
+after whitespace normalization, including both degradation paths. A dev-site
+pass over the account page and the HTMX edit round trip is still worth doing
+whenever this branch is deployed, but nothing about the alerts moved.
+
 Same card, same three columns, same `-1 → Disabled` logic, same edit button.
 The `monitors_per_server` → `monitors_per_server_limit` rename in #28 had to be
 made in both files; the next field change will too.
@@ -114,6 +128,26 @@ rather than a blind edit.
 ## 4. `make generate` and `perltidy` fight over the generated CAPI modules
 
 **Severity:** ongoing diff noise on every regeneration
+
+**DONE 2026-08-15.** Both halves settled, both recorded in `CLAUDE.md`.
+
+(a) Generated files are excluded from perltidy — the 14 `lib/NP/CAPI/*.pm`
+identified by their `# GENERATED CODE - DO NOT EDIT` header, not by path. The
+generator was left alone: teaching it to emit tidy output would put a perltidy
+dependency in `make generate` in the Go repo, to enforce a convention that
+nothing reads.
+
+(b) The tree was tidied in one commit (`c5febf76`, 23 files, whitespace only),
+*and* `--line-range-tidy` is documented for the case where a full-file tidy
+would still swamp a small change. Verified per file that the non-whitespace
+bytes are unchanged and that `perl -c` gives the same result before and after;
+output is stable under a repeat run.
+
+One file is excluded and stayed untidied: `i18n/tools/validate_content_consistency.pl`
+does not compile — `qr/(\d+\.pool\.ntp\.org)/g` at line 61, and `g` is not a
+valid `qr` modifier. perltidy misparses it as a result and rewrote it wrongly,
+so the change was reverted. The syntax error is pre-existing and untouched;
+the tool has never run since that line was written.
 
 Every generated wrapper drifts from `perltidy`:
 
@@ -195,6 +229,22 @@ Either delete the helper and free the ID range, or point the RPC test at it.
 
 **Where:** `../go/ntp/api/server/api/api.go:422-423`
 **Severity:** needs a decision, not a fix
+
+**DONE 2026-08-15 — removed** (Go API `00cc892`). The callers were established
+first: the only Perl still calling them is `ntppool-main`
+(`Manage/Monitor.pm:188,225` via `NP::IntAPI`), and the monitor client makes no
+`/int/` REST calls at all. `ntppool-main` does not reach this build — `api-mysql`
+is the same gitea repo on branch `mysql` and carries its own copy of the routes
+(`server/api/api.go:226-227`) — and the cutover swaps the whole stack, so the
+`main` branch never serves it.
+
+Removing the routes orphaned `ConfirmDataHandler`, `UserAcceptanceHandler` and
+their two echo-only helpers (`confirmDataNonPendingStatus`,
+`getMonitorRegistrationByToken`), all deleted. `runAcceptRegistration` and
+`getMonitorRegistrationByVerificationToken` stay: the RPC path shares them and
+already has parity on the pending-status, account and account-writable checks.
+`user_acceptance_handlers.go` holds no handlers now and was renamed. API.md
+lost the two entries, which the item 8 drift test requires.
 
 These two echo routes survived the #28 cleanup deliberately. This repo's Perl
 no longer calls them — slice C moved `render_confirm_monitor` to
