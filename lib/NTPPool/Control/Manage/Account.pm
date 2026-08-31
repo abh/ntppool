@@ -160,18 +160,38 @@ sub manage_dispatch {
     # must still reach the dissolve page to see the scheduled state and cancel
     # it. The dissolve route enforces its own staff/member-cancel access below.
     my $is_dissolve = $self->request->uri =~ m!^/manage/account/dissolve$!;
+
+    # can_edit is false for *everyone* on a frozen account, staff included
+    # (AccountWritable = !deletion_on, no staff exemption). /manage/account must
+    # still render so a member sees the "scheduled for deletion" banner and can
+    # cancel from it, and so staff sees the "deletion scheduled" link. Only that
+    # one URI is excepted; the edit POST is refused below and the Go API
+    # (ErrAccountFrozen) is the real enforcement.
+    my $is_frozen_account_page = $account->{deletion_on}
+      && $self->request->uri =~ m!^/manage/account$!;
+
     return $self->redirect("/manage/")
       unless ($account->{account_id} == 0
           or $account->{permissions}{can_edit}
-          or $is_dissolve);
+          or $is_dissolve
+          or $is_frozen_account_page);
 
     if ($self->request->method eq 'post') {
         return 403 unless $self->check_auth_token;
     }
 
     if ($self->request->uri =~ m!^/manage/account$!) {
-        return $self->render_account_edit
-          if ($self->request->method eq 'post' and !$self->req_param('new_form'));
+        if ($self->request->method eq 'post' and !$self->req_param('new_form')) {
+
+            # Everything except the frozen-account bypass just above reached
+            # here with can_edit true, so only that case needs refusing. The Go
+            # API returns FailedPrecondition for the write anyway; this turns it
+            # into a clean message instead of a raw API error.
+            return $self->render_account_edit unless $is_frozen_account_page;
+            $self->tpl_param('error',
+                'This account is scheduled for deletion and cannot be changed. Cancel the scheduled deletion first.'
+            );
+        }
         return $self->render_account_form($account);
     }
     elsif ($self->request->uri =~ m!^/manage/account/monitor-config$!) {
@@ -193,10 +213,12 @@ sub manage_dispatch {
                 return $self->render_resend_invite($account, $resend_id);
             }
 
-            my $delete_user_id = $self->req_param('user_id');
-            if ($delete_user_id
-                and ($self->user_is_staff or $self->user->{user_id} != $delete_user_id))
-            {
+            # Self-removal used to be short-circuited here, which silently
+            # no-op'd instead of telling the user why. The Go API owns the rule
+            # (RemoveUserFromAccount: "you cannot remove yourself from an
+            # account", no staff exemption), so pass it through and show the
+            # API's message.
+            if (my $delete_user_id = $self->req_param('user_id')) {
                 return $self->_remove_user_from_account($account, $delete_user_id);
             }
         }
@@ -258,7 +280,12 @@ sub _remove_user_from_account {
     if ($data->{error}) {
         warn "Failed to remove user from account via API: " . $data->{error};
         warn "Trace ID: " . $data->{trace_id} if $data->{trace_id};
-        $self->tpl_param('error', 'Failed to remove user. Please try again.');
+
+        # The API's messages are already user-facing ("you cannot remove
+        # yourself from an account", "cannot remove the last user from an
+        # account"), so show them rather than a generic retry prompt.
+        $self->tpl_param('error',    $data->{error});
+        $self->tpl_param('trace_id', $data->{trace_id});
         return $self->render_users($account);
     }
 
@@ -875,10 +902,9 @@ sub render_account_dissolve {
 
         if ($data->{scheduled}) {
 
-            # Land on the dissolve page so the just-scheduled pending state (and
-            # the cancel option) is shown. Redirecting to /manage/account would
-            # bounce: a pending-deletion account has permissions.can_edit == 0,
-            # so render_account_form sends it back to /manage/ -> /manage/servers.
+            # Land on the dissolve page so the just-scheduled pending state
+            # (and the cancel option) is shown. /manage/account renders for a
+            # frozen account too, but it only carries a link back here.
             return $self->redirect(
                 $self->manage_url(
                     '/manage/account/dissolve', {a => $account->{id_token}}
