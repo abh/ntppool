@@ -11,6 +11,10 @@ Sections below that mention `int_api` or `NP::IntAPI` describe what a migration
 moved *away from*. `lib/NP/IntAPI.pm` was deleted in `a4f06c76` and no Perl call
 site remains — don't go looking for it.
 
+A few items are marked **expected to fail today** and name the open issue that
+tracks the bug (§4b stale team list → #14). They are here so a run doesn't
+rediscover known breakage; check them off once the issue lands.
+
 ---
 
 ## 1. Login & automatic account creation (Auth0)
@@ -72,6 +76,23 @@ site remains — don't go looking for it.
 - [ ] Confirm a non-staff user **cannot** target other users/accounts (only their own).
 - [ ] `delete_scheduled` / `user_deletion_scheduled` page shows correct target + date.
 
+### 3a. Scheduled deletion actually completes (issue #40)
+
+> The failure this guards against was silent: the user was told "deletion
+> scheduled" and emailed, but the purge task failed on its first and only run and
+> was never retried, so the data was never deleted. Perl no longer computes any
+> timestamp here — `ScheduleUserDeletion` writes `users.deletion_on` and
+> `user_tasks.execute_on` from one value in one transaction
+> (`server/api/user/schedule_deletion.go`), and the purge guard compares against
+> the **database** clock via `GetDatabaseTime` (`tasks/userdelete/userdelete.go:103`)
+> rather than the runner host's. Nothing in the UI shows this, so it needs a
+> direct check against a scheduled deletion.
+
+- [ ] After scheduling a user deletion, the `user_tasks` delete row's `execute_on` equals the user's `deletion_on` **exactly** (not "about the same").
+- [ ] Let a scheduled deletion come due (or backdate one) — the task runs and lands in a terminal **succeeded** state, not `failed`.
+- [ ] Same check for a scheduled **account** deletion (`tasks/accountdelete`, same clock guard).
+- [ ] Deliberately skew the runner host's clock behind the database and re-run — the task still succeeds (this is the exact regression that stranded deletions).
+
 ## 4. Account / team management UI
 
 - [ ] Team page destructive actions (remove user, delete) are clearly marked and scoped to own account.
@@ -92,6 +113,49 @@ site remains — don't go looking for it.
 - [ ] A resent invite's **expiry moves out to ~30 days** from the resend.
 - [ ] **Accepted/expired** invites show no Resend button; the accept link still works.
 - [ ] Non-edit / wrong account context cannot resend (permission denied, no button).
+
+### 4b. Removing a user from the team (issue #14)
+
+> The removal rules themselves are covered by Go integration tests
+> (`server/api/account/mutations_integration_test.go:275`); they are listed here
+> because the UI half is unverified and e2e cannot build a two-member account
+> yet (no accept-invite helper — #46). Once that lands, most of this section
+> becomes automatable.
+>
+> The **stale-list item is a known bug** (#14): `_account_users` is
+> request-scoped cached (`Account.pm:30-33`) and `_remove_user_from_account`
+> populates that cache before calling the API, so the team page rendered
+> immediately after a removal replays the stale list.
+>
+> Error surfacing changed 2026-08-15: Perl no longer short-circuits self-removal
+> (the Go API owns that rule and always denied it), `_remove_user_from_account`
+> now passes the API's message through instead of a generic retry prompt, and
+> `team.html` actually renders it — the `error` param had no template to land in
+> before.
+
+- [ ] Remove a second member from `/manage/account/team` — they lose access to the account.
+- [ ] The removed user gets the `account_user_removed` email, CC'd to the remaining members (check dev mail).
+- [ ] **Expected to fail today:** the team page rendered right after the removal no longer lists the removed user (reload works around it).
+- [ ] The **Remove from team** button is absent on a sole-member account, and absent for your own row unless you are staff (`team.html:16-17`).
+- [ ] As **staff**, clicking **Remove from team** on your own row shows "you cannot remove yourself from an account" — not a generic "please try again".
+- [ ] A hand-crafted POST removing yourself as a **non-staff** user shows the same message (it used to silently no-op with nothing on screen).
+- [ ] Staff cannot remove the **last** member of an account — "cannot remove the last user from an account" renders on the page.
+- [ ] A forced API failure on removal shows the API's message plus a Trace ID (`team.html` now processes `tpl/common/error_alert.html`; before this the `error` param was set but never rendered).
+
+### 4c. Personal data download requests (issue #15)
+
+> The duplicate-request rule lives only in Perl
+> (`Account.pm:704-726`): while a request is pending, a POST silently falls
+> through to a plain render — no new task, no message beyond whatever
+> `pending_requests` drives in the template. There is no API-side guard, so no Go
+> test can catch a regression.
+
+- [ ] `GET /manage/account/download` renders cleanly for a user with no prior requests.
+- [ ] Submit a request — POST redirects back to the download page (POST/redirect/GET) and the new request appears in the list.
+- [ ] Submit again while the first is still pending — **no** second request is created and the pending state is shown.
+- [ ] Once a request completes, its download link works: `/manage/account/download/data/<traceid>/<filename>`.
+- [ ] A **mismatched** filename on that URL returns 404 (`Account.pm:686-687` checks the filename against the API's `download_url`).
+- [ ] The request's trace ID (UUIDv7) appears in the web logs and correlates to the background worker's log lines for the same task.
 
 ## 5. Vendor zones (migrated to CAPI)
 
@@ -120,26 +184,51 @@ site remains — don't go looking for it.
 - [ ] Staff, **Approved**: edit form opens; `zone_name` is read-only; other fields save.
 - [ ] Staff, **Approved**: attempting to change `zone_name` is rejected by the API (name locked once live).
 
-### 5b. Open-source path (regression — was silently dropped)
+### 5b. Open-source claim vs staff determination (issue #39)
 
-- [ ] Submit a zone with the **open-source** option + justification — `opensource`/`opensource_info` reach the API (zone records as open source, not blank).
-- [ ] Resubmit a **Rejected** open-source zone — open-source flag/justification still applied.
+> Rewritten 2026-08-15. The single `opensource` boolean is **gone** (migrations
+> 025/026): a submit now records the vendor's *claim* (`opensource_requested`),
+> and the open-source grant is a separate staff *determination*
+> (`opensource_approved`, the "Grant open-source (non-revenue) plan" checkbox on
+> the admin approve form). A submit can no longer set the grant.
+>
+> The routing bug this fixes: `show.html` used to send **every** New/Rejected zone
+> with `!need_subscription` through the open-source justification form, which
+> always posts a hidden `opensource_request=1` — so a paying vendor's zone was
+> silently reclassified as non-revenue open source. `show.html:83-103` now
+> branches on `have_subscription`.
+
+- [ ] **Covered** vendor (live subscription): a New/Rejected zone shows a plain "Submit for production" / "Resubmit for production" button — **no** open-source justification form, no `opensource_request` field in the posted form.
+- [ ] Submitting as a covered vendor leaves the zone's open-source claim **and** grant untouched (the zone page shows no open-source justification text).
+- [ ] **Uncovered** vendor: the same zone shows the open-source justification form instead.
+- [ ] Submit with the open-source form + justification — the **claim** and `opensource_info` reach the API; the zone is Pending, and the grant is still undecided.
+- [ ] Submitting the open-source form with an **empty** justification is rejected with "Please provide open source information".
+- [ ] Resubmit a **Rejected** open-source zone — claim + justification still applied.
 - [ ] Edit a Pending/Rejected **open-source** zone (change e.g. org name) — save succeeds and does **not** error with "opensource_info is required" or blank the stored justification.
+- [ ] As `vendor_admin`, approving with **Grant open-source** checked sets the grant; approving without it leaves the zone on the paid path regardless of the vendor's claim.
 
 ### 5c. Error surfacing (always show errors, with trace_id)
 
 - [ ] Induce an API error on edit/submit (e.g. duplicate zone name) — a red alert renders with the message and a Trace ID; the page is **not** blank and keeps the entered context.
 - [ ] Same on the admin approve/reject path — failures show the alert + Trace ID rather than a silent no-op.
 
-### 5d. Read-path error surfacing (list & subscription pages — fixed 2026-06)
+### 5d. Read-path error handling: primary fails loudly, decorative degrades (issue #42)
 
-> These read paths previously swallowed API errors: a failure rendered as an
-> empty list, or — on `/manage/vendor` — a misleading redirect to "create your
-> first zone". They now return the error via the shared `capi_error_status`.
+> Corrected 2026-08-15 — the last two items previously asserted the opposite of
+> current behaviour. The distinction is deliberate: `capi_error_status` is for
+> **primary** data calls whose failure means the page has nothing to show;
+> **decorative** calls (a subscription badge, an optional billing block) must
+> degrade gracefully, or a transient blip on an optional call takes down a page
+> whose real content was already fetched.
+>
+> Primary: `Vendor.pm:74` (zone existence) and `:168` (the zone list).
+> Decorative: `:177` / `:185` in `render_zones`, and `:769` in
+> `render_subscription`.
 
 - [ ] `/manage/vendor` while the zone-list API errors/times out — shows an error page, **not** a redirect to `/manage/vendor/new` (which would mislead a vendor who already has zones).
-- [ ] `/manage/vendor` zone list when the subscription-status or subscriptions fetch errors — the error surfaces instead of a silently empty/partial page.
-- [ ] `/manage/vendor/plan` when the subscriptions fetch errors — error surfaces rather than a blank subscription list.
+- [ ] `/manage/vendor` when the **subscription-status** call errors — the zone list still renders; `have_subscription` falls back to false, so a Pending zone simply isn't labelled "Processing". No error page.
+- [ ] `/manage/vendor` when the **subscriptions** call errors — the zone list still renders; the optional billing/subscription block is just absent.
+- [ ] `/manage/vendor/plan` when the subscriptions fetch errors — the plan page still renders and a vendor can still pick a plan; the current-subscription list is absent rather than the page being replaced by a bare error.
 
 ### 5e. Coverage gate on submit (Go API — authoritative, issue #39 follow-up)
 
@@ -249,10 +338,10 @@ site remains — don't go looking for it.
 
 The Perl `NP::Model` ORM layer was largely removed; sanity-check core flows still work:
 
-- [ ] `/manage` dashboard loads.
-- [ ] Server list + per-server pages load.
-- [ ] Account switching (multi-account users) works.
 - [ ] No 500s / "can't locate NP::Model::*" errors in logs while clicking through the above.
+- [x] `/manage` dashboard loads.
+- [x] Server list + per-server pages load.
+- [x] Account switching (multi-account users) works.
 
 ### 12a. Consolidated CAPI error helper (`capi_error_status` / `_handle_capi_error`)
 
@@ -260,6 +349,9 @@ The Perl `NP::Model` ORM layer was largely removed; sanity-check core flows stil
 > source of truth). Behaviour to spot-check: success paths unchanged; error
 > paths still return the right status, and an **upstream-down (5xx)** condition
 > now surfaces as **503** (was 500) with caching suppressed.
+>
+> The helper belongs on **primary** data calls only; decorative calls degrade
+> gracefully instead — see §5d.
 
 - [ ] Server **move** (`/manage/servers/move`) — happy path works; on a forced API error the page returns an error status (not a blank/partial move-done page).
 - [ ] **Monitor** management pages (list / delete) — load normally; a forced upstream error surfaces a 503 error page rather than a wrong 404 or blank.

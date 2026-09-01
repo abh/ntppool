@@ -15,6 +15,19 @@
 
 ---
 
+**📅 FOLLOW-UP: July 2, 2026 (issue #35, commit `7df45965`)**
+
+The "internal API" from this project was the legacy REST `int_api()` call
+(`POST /int/server/netspeed`). That call site has now been migrated to
+`NP::CAPI::ServerManagement::update_server` (ConnectRPC), the last
+`int_api()` use in `Manage/Server.pm`. Verification-required/not-found
+handling moved from REST status codes to ConnectRPC `connect_code`; the
+success path reuses the API response's server data instead of
+re-fetching. See `../../go/ntp/api/plans/active/perl-model-migration-status.md`
+for the remaining `int_api()` call-site count.
+
+---
+
 ## Original Plan Overview
 Replace the legacy jQuery-based netspeed update system with modern HTMX and update the Perl backend to use the internal API instead of direct database access.
 

@@ -213,10 +213,12 @@ sub manage_dispatch {
                 return $self->render_resend_invite($account, $resend_id);
             }
 
-            my $delete_user_id = $self->req_param('user_id');
-            if ($delete_user_id
-                and ($self->user_is_staff or $self->user->{user_id} != $delete_user_id))
-            {
+            # Self-removal used to be short-circuited here, which silently
+            # no-op'd instead of telling the user why. The Go API owns the rule
+            # (RemoveUserFromAccount: "you cannot remove yourself from an
+            # account", no staff exemption), so pass it through and show the
+            # API's message.
+            if (my $delete_user_id = $self->req_param('user_id')) {
                 return $self->_remove_user_from_account($account, $delete_user_id);
             }
         }
@@ -278,7 +280,12 @@ sub _remove_user_from_account {
     if ($data->{error}) {
         warn "Failed to remove user from account via API: " . $data->{error};
         warn "Trace ID: " . $data->{trace_id} if $data->{trace_id};
-        $self->tpl_param('error', 'Failed to remove user. Please try again.');
+
+        # The API's messages are already user-facing ("you cannot remove
+        # yourself from an account", "cannot remove the last user from an
+        # account"), so show them rather than a generic retry prompt.
+        $self->tpl_param('error',    $data->{error});
+        $self->tpl_param('trace_id', $data->{trace_id});
         return $self->render_users($account);
     }
 
