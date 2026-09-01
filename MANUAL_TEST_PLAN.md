@@ -23,10 +23,13 @@ site remains — don't go looking for it.
 
 ## 2. Account scheduled deletion / dissolve
 
-> **Staff-only feature.** Both the `/manage/account/dissolve` route (`Account.pm:238`,
-> `return 403 unless $self->user_is_staff`) and the UI link (`form.html:132`,
-> `[% IF combust.user_is_staff %]`) are gated on `support_staff`. A non-staff user gets a
-> **403** and never sees the link — this is correct, not a bug.
+> **Scheduling is staff-only; cancelling is self-service.** The
+> `/manage/account/dissolve` route
+> (`return 403 unless $self->user_is_staff || $member_cancel`) and the UI link
+> (`form.html`, `[% IF combust.user_is_staff %]`) are gated on `support_staff`
+> for viewing and scheduling. A non-staff user getting a **403** on a bare GET is
+> correct. Cancelling is a POST carrying `cancel=1` from the banner on
+> `/manage/account`, which any account member may do (#38).
 >
 > `user_is_staff` reads the `support_staff` flag from the ValidateSession privileges, which
 > come from the `user_privileges` row for the logged-in user. A user with **no
@@ -35,13 +38,31 @@ site remains — don't go looking for it.
 > `user_privileges` row with `support_staff = true`.
 
 - [x] As **staff**, the "Delete account" link is visible at the bottom of `/manage/account` (red, destructive).
-- [ ] As a **non-staff** user, the link is hidden and `/manage/account/dissolve` returns 403.
+- [ ] As a **non-staff** user with no scheduled deletion, the link is hidden and `/manage/account/dissolve` returns 403.
 - [x] Visit `/manage/account/dissolve` as staff — confirmation page renders.
 - [x] Schedule deletion — shows scheduled date (~7 days out), confirmation message.
 - [x] Revisit `/manage/account/dissolve` — shows the pending scheduled deletion with a cancel option.
 - [x] Cancel the scheduled deletion — state clears, account back to normal.
 - [ ] Confirm the deletion-scheduled email is sent (check dev mail / logs).
 - [ ] Account form (`/manage/account`) clearly labels the dissolve/delete action as destructive.
+
+#### Frozen-account UI (fixed in #38)
+
+> Once `deletion_on` is set, `permissions.can_edit` is false for **everyone**,
+> staff included (`AccountWritable` = `!DeletionOn.Valid`). `manage_dispatch`
+> excepts the `/manage/account` URI for a frozen account so the non-staff cancel
+> banner (`form.html:3-23`) and the staff "Account deletion scheduled — manage"
+> link (`form.html:156-167`) both render. The edit POST is refused there with a
+> message; the Go API returns `FailedPrecondition` regardless.
+>
+> The staff half is covered by `e2e/tests/account-dissolve.spec.ts`. The two
+> non-staff items below are manual until the accept-invite helper in #46 lands —
+> they need a second member on the account, invited *before* it is frozen.
+
+- [ ] As a **non-staff member** of a frozen account, `/manage/account` renders and shows the red "Account scheduled for deletion" banner with the scheduled date.
+- [ ] Clicking **Cancel scheduled deletion** in that banner clears the deletion and returns the account to normal.
+- [ ] As **staff** on a frozen account, `/manage/account` renders and shows the "Account deletion scheduled — manage" link pointing at the dissolve page.
+- [ ] A member of a frozen account still **cannot edit** it: submitting the account form shows "This account is scheduled for deletion and cannot be changed", not a raw API error.
 
 ## 3. Staff-targeted user & account deletion
 

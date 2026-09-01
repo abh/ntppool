@@ -8,12 +8,19 @@ import {
 
 // Account scheduled deletion / dissolve flow (MANUAL_TEST_PLAN.md §2).
 //
-// Staff-only feature. Both the route and the UI link are gated on the
-// support_staff privilege (lib/NTPPool/Control/Manage/Account.pm
-// manage_dispatch: `return 403 unless $self->user_is_staff || $member_cancel`
-// for /manage/account/dissolve; docs/manage/tpl/account/form.html:154
-// `[% IF combust.user_is_staff %]`). A non-staff user gets a 403 and never
-// sees the link — correct, not a bug.
+// Scheduling is staff-only; cancelling is not. The dissolve route
+// (lib/NTPPool/Control/Manage/Account.pm manage_dispatch:
+// `return 403 unless $self->user_is_staff || $member_cancel`) and the UI link
+// (docs/manage/tpl/account/form.html `[% IF combust.user_is_staff %]`) are
+// gated on support_staff, so a non-staff user 403s on a bare GET — correct.
+// But $member_cancel lets any member POST cancel=1, and form.html:3-23 renders
+// a "Cancel scheduled deletion" banner for exactly that.
+//
+// Reaching that banner needs /manage/account to render for a *frozen* account,
+// where permissions.can_edit is false for everyone, staff included
+// (AccountWritable = !deletion_on). manage_dispatch excepts the /manage/account
+// URI for a frozen account so both the member banner and the staff
+// "Account deletion scheduled — manage" link are reachable (issue #38).
 //
 // Routes / templates this exercises:
 //   - /manage/account              render_account_form -> tpl/account/form.html
@@ -39,9 +46,9 @@ function deleteAccountLink(page: Page) {
 }
 
 // Schedule the deletion from the confirmation page and wait for the post-success
-// redirect back to the dissolve page, which now shows the pending state (a
-// pending-deletion account is no longer editable, so /manage/account would
-// bounce away — the controller redirects to /manage/account/dissolve instead).
+// redirect back to the dissolve page, which now shows the pending state (the
+// controller lands there rather than on /manage/account so the just-scheduled
+// state and the cancel option are immediately visible).
 async function scheduleDeletion(page: Page) {
   // Submit button value/text is "Schedule account deletion" (btn-warning).
   await Promise.all([
@@ -96,7 +103,10 @@ test("non-staff user: link hidden and dissolve route returns 403", async ({
   // The staff-gated link must not render for a non-staff user.
   await expect(deleteAccountLink(page)).toHaveCount(0);
 
-  // GET /manage/account/dissolve is staff-only -> 403 (manage_dispatch).
+  // A bare GET of /manage/account/dissolve is staff-only -> 403
+  // (manage_dispatch). This stays correct after #38: what #38 changed is that a
+  // non-staff member of an already-frozen account can reach /manage/account and
+  // POST cancel=1 from the banner there, not that the GET opens up.
   const response = await page.request.get(DISSOLVE_PATH);
   expect(response.status(), "non-staff dissolve GET should be 403").toBe(403);
 });
@@ -167,6 +177,48 @@ test("staff: schedule, see pending state, then cancel back to normal", async ({
   await expect(page.locator("body")).not.toContainText("Deletion scheduled");
 });
 
+test("staff: a frozen account still renders /manage/account with the scheduled-deletion link", async ({
+  page,
+  context,
+}) => {
+  const email = uniqueTestEmail("dissolve-frozen-form");
+  await loginAs(context, email, { grantStaff: true });
+
+  // Same setup as the cycle test: dissolve a throwaway second account so no one
+  // is orphaned.
+  const acct = await createAccount(page);
+  const dissolveUrl = `${DISSOLVE_PATH}?a=${encodeURIComponent(acct)}`;
+  const accountUrl = `/manage/account?a=${encodeURIComponent(acct)}`;
+
+  await expectCleanPage(page, dissolveUrl);
+  await scheduleDeletion(page);
+
+  // #38: before the fix this redirected to /manage/ (can_edit is false for
+  // staff too on a frozen account), leaving form.html:156-167 dead. It must now
+  // render the account form.
+  await expectCleanPage(page, accountUrl);
+  await expect(page).toHaveURL(/\/manage\/account(\?|$)/);
+  await expect(
+    page.locator("a.text-danger", {
+      hasText: "Account deletion scheduled",
+    }),
+  ).toBeVisible();
+
+  // The un-scheduled "Delete account" link is replaced, not shown alongside.
+  await expect(deleteAccountLink(page)).toHaveCount(0);
+
+  // Don't leave the account frozen.
+  await expectCleanPage(page, dissolveUrl);
+  await cancelDeletion(page);
+});
+
+// Not covered here: a *non-staff member* of a frozen account seeing the red
+// "Account scheduled for deletion" banner (form.html:3-23) and cancelling from
+// it. That needs a second member on the account, and the invite has to be
+// accepted before the account is frozen (CreateAccountInvite returns
+// FailedPrecondition once deletion_on is set). Blocked on the accept-invite
+// helper in issue #46; MANUAL_TEST_PLAN.md §2 carries it as a manual check.
+//
 // Note: a §2 grey-box check that scheduling writes a deletion-scheduled email
 // row was removed — the account_dissolution email has no UI/API surface and was
 // verifiable only through the read-only DB layer (intentionally not used). The
