@@ -97,7 +97,7 @@ sub render {
         }
 
         # For main page display, use CAPI
-        if ($mode eq '' || $mode eq 'graph') {
+        if ($mode eq '') {
 
             # Fetch server data from CAPI
             my $server_result = $self->server_data($p);
