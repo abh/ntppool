@@ -1,6 +1,19 @@
 import { Page, expect } from "@playwright/test";
 
 /**
+ * Append a cache buster, per CLAUDE.local.md's dev-site guidance. A fresh
+ * browser context starts with an empty browser cache but says nothing about
+ * the CDN in front of the dev site, so explicit navigations carry `x=`.
+ *
+ * Keep this at the navigation site: the URL builders in lib/accounts.ts stay
+ * pure so they can also be used for waitForURL patterns and URL comparisons.
+ */
+export function bust(path: string): string {
+  const sep = path.includes("?") ? "&" : "?";
+  return `${path}${sep}x=${Math.random().toString(36).slice(2, 10)}`;
+}
+
+/**
  * Visit a page and assert it loaded cleanly: HTTP 200, no Perl/ORM error bleed,
  * no obvious server error. Returns the navigation response for further checks.
  *

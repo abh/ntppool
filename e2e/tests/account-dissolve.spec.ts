@@ -1,10 +1,14 @@
-import { test, expect, Page } from "@playwright/test";
+import { expect, Page } from "@playwright/test";
 import { loginAs, uniqueTestEmail } from "../lib/auth";
+import { bust, expectCleanPage, createAccount } from "../lib/helpers";
 import {
-  expectCleanPage,
-  expectNoErrorBleed,
-  createAccount,
-} from "../lib/helpers";
+  test,
+  accountFormUrl,
+  cancelAccountDeletionAsStaff,
+  DISSOLVE_PATH,
+  dissolveUrl,
+  scheduleAccountDeletion,
+} from "../lib/accounts";
 
 // Account scheduled deletion / dissolve flow (MANUAL_TEST_PLAN.md §2).
 //
@@ -36,40 +40,14 @@ import {
 // dissolve_confirmation.html. Staff users are minted fresh per test with
 // loginAs(..., { grantStaff: true }) so we dissolve a throwaway account, never
 // a real one.
-
-const DISSOLVE_PATH = "/manage/account/dissolve";
+//
+// The schedule/cancel mechanics live in lib/accounts.ts, which verifies each
+// state change on a fresh read; the tests below add the §2 UI assertions.
 
 // The destructive link on /manage/account is an <a class="text-danger"> reading
 // "Delete account" before anything is scheduled (form.html:163).
 function deleteAccountLink(page: Page) {
   return page.locator("a.text-danger", { hasText: "Delete account" });
-}
-
-// Schedule the deletion from the confirmation page and wait for the post-success
-// redirect back to the dissolve page, which now shows the pending state (the
-// controller lands there rather than on /manage/account so the just-scheduled
-// state and the cancel option are immediately visible).
-async function scheduleDeletion(page: Page) {
-  // Submit button value/text is "Schedule account deletion" (btn-warning).
-  await Promise.all([
-    page.waitForURL(/\/manage\/account\/dissolve(\?|$)/),
-    page
-      .getByRole("button", { name: "Schedule account deletion" })
-      .click(),
-  ]);
-  await expectNoErrorBleed(page, page.url());
-}
-
-// Cancel a scheduled deletion from the confirmation page; on success the
-// controller redirects back to /manage/account.
-async function cancelDeletion(page: Page) {
-  await Promise.all([
-    page.waitForURL(/\/manage\/account(\?|$)/),
-    page
-      .getByRole("button", { name: "Cancel scheduled deletion" })
-      .click(),
-  ]);
-  await expectNoErrorBleed(page, page.url());
 }
 
 test("staff sees the destructive Delete account link on /manage/account", async ({
@@ -131,6 +109,7 @@ test("staff: dissolve confirmation page renders", async ({ page, context }) => {
 test("staff: schedule, see pending state, then cancel back to normal", async ({
   page,
   context,
+  scheduledDeletions,
 }) => {
   const email = uniqueTestEmail("dissolve-cycle");
   await loginAs(context, email, { grantStaff: true });
@@ -140,37 +119,37 @@ test("staff: schedule, see pending state, then cancel back to normal", async ({
   // dissolve that one — the user keeps their first account, so no one is
   // orphaned and the schedule succeeds.
   const acct = await createAccount(page);
-  const dissolveUrl = `${DISSOLVE_PATH}?a=${encodeURIComponent(acct)}`;
+
+  // Register before scheduling, so teardown is already armed if anything below
+  // fails or times out.
+  scheduledDeletions.register(acct);
 
   // §2: schedule deletion. The API picks a fixed 7-day-out date.
-  await expectCleanPage(page, dissolveUrl);
-  await scheduleDeletion(page);
+  await scheduleAccountDeletion(page, acct);
 
   // Revisit the dissolve page: it now shows the pending scheduled state with a
   // cancel option (dissolve_confirmation.html `[% ELSIF pending %]`):
   //   - a "Deletion scheduled" badge,
   //   - the scheduled date (deletion_on, date-only),
   //   - a "Cancel scheduled deletion" button.
-  await expectCleanPage(page, dissolveUrl);
+  await expectCleanPage(page, bust(dissolveUrl(acct)));
   await expect(page.locator("body")).toContainText("Deletion scheduled");
   await expect(page.locator("body")).toContainText("scheduled for deletion on");
   // A scheduled-date marker: an ISO date (YYYY-MM-DD) is rendered in the notice.
   // The exact +7d value is the API's responsibility; asserting a date appears is
   // enough here.
-  await expect(page.locator("body")).toContainText(
-    /\d{4}-\d{2}-\d{2}/,
-  );
+  await expect(page.locator("body")).toContainText(/\d{4}-\d{2}-\d{2}/);
   await expect(
     page.getByRole("button", { name: "Cancel scheduled deletion" }),
   ).toBeVisible();
 
   // §2: cancel — state clears and the account is back to normal. Leaving the
   // staff account scheduled for deletion would be unfriendly, so always cancel.
-  await cancelDeletion(page);
+  await cancelAccountDeletionAsStaff(page, acct);
 
   // The dissolve page is back to the un-scheduled state: schedule button shown,
   // no "Deletion scheduled" badge.
-  await expectCleanPage(page, dissolveUrl);
+  await expectCleanPage(page, bust(dissolveUrl(acct)));
   await expect(
     page.getByRole("button", { name: "Schedule account deletion" }),
   ).toBeVisible();
@@ -180,6 +159,7 @@ test("staff: schedule, see pending state, then cancel back to normal", async ({
 test("staff: a frozen account still renders /manage/account with the scheduled-deletion link", async ({
   page,
   context,
+  scheduledDeletions,
 }) => {
   const email = uniqueTestEmail("dissolve-frozen-form");
   await loginAs(context, email, { grantStaff: true });
@@ -187,29 +167,39 @@ test("staff: a frozen account still renders /manage/account with the scheduled-d
   // Same setup as the cycle test: dissolve a throwaway second account so no one
   // is orphaned.
   const acct = await createAccount(page);
-  const dissolveUrl = `${DISSOLVE_PATH}?a=${encodeURIComponent(acct)}`;
-  const accountUrl = `/manage/account?a=${encodeURIComponent(acct)}`;
 
-  await expectCleanPage(page, dissolveUrl);
-  await scheduleDeletion(page);
+  // Register before scheduling, so teardown is already armed if anything below
+  // fails or times out.
+  scheduledDeletions.register(acct);
+  await scheduleAccountDeletion(page, acct);
 
   // #38: before the fix this redirected to /manage/ (can_edit is false for
   // staff too on a frozen account), leaving form.html:156-167 dead. It must now
   // render the account form.
-  await expectCleanPage(page, accountUrl);
+  await expectCleanPage(page, bust(accountFormUrl(acct)));
   await expect(page).toHaveURL(/\/manage\/account(\?|$)/);
-  await expect(
-    page.locator("a.text-danger", {
-      hasText: "Account deletion scheduled",
-    }),
-  ).toBeVisible();
+  const pendingLink = page.locator("a.text-danger", {
+    hasText: "Account deletion scheduled",
+  });
+  await expect(pendingLink).toBeVisible();
+
+  // The link must point at the dissolve page FOR THIS ACCOUNT. Asserting only
+  // that a link is visible would pass even if it targeted a different account
+  // (form.html:159-161 builds it from account.id_token).
+  const pendingHref = await pendingLink.getAttribute("href");
+  expect(pendingHref, "pending-deletion link should have an href").toBeTruthy();
+  const pendingUrl = new URL(pendingHref!, page.url());
+  expect(
+    pendingUrl.pathname,
+    `pending-deletion link should go to the dissolve page: ${pendingHref}`,
+  ).toBe(DISSOLVE_PATH);
+  expect(
+    pendingUrl.searchParams.get("a"),
+    `pending-deletion link should target the frozen account: ${pendingHref}`,
+  ).toBe(acct);
 
   // The un-scheduled "Delete account" link is replaced, not shown alongside.
   await expect(deleteAccountLink(page)).toHaveCount(0);
-
-  // Don't leave the account frozen.
-  await expectCleanPage(page, dissolveUrl);
-  await cancelDeletion(page);
 });
 
 // Not covered here: a *non-staff member* of a frozen account seeing the red

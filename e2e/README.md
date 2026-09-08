@@ -27,11 +27,6 @@ Copy `.env.example` to `.env` and fill in the values:
   trailing slash. The harness appends
   `/ntppool.auth.v1.AuthService/CreateTestSession`.
 - `NTP_TEST_SESSION_KEY` — bearer key authorizing `CreateTestSession`.
-- `NTP_TEST_DB_URL` — **read-only** Postgres URL for the grey-box DB assertions
-  (email sent, audit log, invite expiry). Use a read-only role; the harness
-  refuses any DB that isn't the devel `askntp` (see `assertDevelDatabase`).
-  Tests that assert side effects **skip** when this is unset, so the UI
-  assertions still run without it.
 - `NTP_SCORES_TEST_IP` — a real dev server IP for the public score/graph specs
   (default Google NTP). `NTP_SERVER_TEST_IP` / `NTP_EXISTING_SERVER_IP` — IPs
   for the add-server / scheduled-deletion specs (see `.env.example`).
@@ -61,6 +56,19 @@ List the tests without running them (no live site or key needed):
 npx playwright test --list
 ```
 
+## Saving validation-run logs
+
+Playwright clears its `outputDir` (`test-results/`) at the start of every run,
+so a second run deletes the first run's output and can even unlink the log
+it's currently writing. When a run's output needs to survive past the next
+run — a coverage/validation pass, for example — redirect it into
+`e2e/test-logs/` instead, which is gitignored and never touched by Playwright:
+
+```sh
+mkdir -p test-logs
+npx playwright test --project=manage --reporter=list > test-logs/run-1.log 2>&1
+```
+
 ## How login works
 
 `lib/auth.ts`:
@@ -83,7 +91,13 @@ npx playwright test --list
 
 Specs map to `MANUAL_TEST_PLAN.md` sections: `login` (§1), `regression-smoke`
 (§12), `i18n` (§10), `vendor` (§5 + §5a staff/admin), `scores` (§9), `server`
-(§8/§8a), `account-dissolve` (§2), `staff-deletion` (§3/§4), `invites` (§4a).
-Staff specs need the `grant_staff` / `grant_vendor_admin` RPC build deployed;
-DB-backed assertions need `NTP_TEST_DB_URL`. Selectors are derived from the
-templates and may need adjustment against the live site on first run.
+(§8/§8a), `account-dissolve` (§2), `staff-deletion` (§3/§4), `invites` (§4a),
+`account-frozen` (§2), `account-download` (§4c), `staff-search` (§13).
+Staff specs need the `grant_staff` / `grant_vendor_admin` RPC build deployed.
+Selectors are derived from the templates and may need adjustment against the
+live site on first run.
+
+The suite has no DB verification layer — there is no read-only Postgres
+connection anywhere in `e2e/`. State is confirmed through the UI (a fresh page
+read, as in `cancelAccountDeletionAsStaff` in `lib/accounts.ts`) or through
+authorized API calls, never by querying the database directly.

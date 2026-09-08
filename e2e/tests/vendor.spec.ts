@@ -1,6 +1,7 @@
 import { test, expect, Page, BrowserContext } from "@playwright/test";
 import { loginAs, uniqueTestEmail } from "../lib/auth";
 import {
+  bust,
   errorAlerts,
   expectCleanPage,
   expectErrorAlert,
@@ -231,6 +232,88 @@ test("open-source submit retains justification and edits without error", async (
 
   // The open-source justification still displays after the unrelated edit.
   await expect(page.locator("body")).toContainText(justification);
+});
+
+// §5b: submitting the open-source claim with an EMPTY justification must be
+// refused server-side, and the zone must not move to Pending.
+//
+// The textarea carries no `required` attribute (_opensource.html:32), so a
+// plain click reaches the server-side check in Vendor.pm:388-397 — the error
+// path returns before submit_vendor_zone is ever called.
+//
+// The message renders as <div class="error"> inside #opensource, NOT as a
+// Bootstrap alert, so errorAlerts()/expectErrorAlert() do not apply here. No
+// Trace ID is expected: the request is rejected before any RPC.
+test("open-source submit with an empty justification is refused and the zone stays New", async ({
+  page,
+  context,
+}) => {
+  const email = uniqueTestEmail("vendor-os-empty");
+  await loginAs(context, email);
+
+  const data = freshZoneData("ose");
+  // createNewZone returns the show-page URL, which carries id=<zone token>.
+  const zoneUrl = await createNewZone(page, data);
+  const zoneToken = new URL(zoneUrl).searchParams.get("id");
+  expect(zoneToken, `zone URL should carry id=: ${zoneUrl}`).toBeTruthy();
+
+  const osForm = page.locator('form[action*="/manage/vendor/submit"]');
+  await expect(osForm, "uncovered vendor should get the open-source form").toBeVisible();
+
+  const justification = osForm.locator('textarea[name="opensource_info"]');
+  // Pin the precondition: if a `required` attribute is ever added, the browser
+  // blocks the submit and this test would stop exercising the server check.
+  expect(
+    await justification.getAttribute("required"),
+    "the justification textarea must not rely on native validation",
+  ).toBeNull();
+
+  await justification.fill("");
+  await Promise.all([
+    page.waitForNavigation({ waitUntil: "load" }),
+    osForm.locator('input[type="submit"]').click(),
+  ]);
+  await expectNoErrorBleed(page, page.url());
+
+  // The error div renders inside the submit <form> itself
+  // (_opensource.html:19-34), not inside the `#opensource` id, which is only
+  // the section header (_opensource.html:1-5) and closes long before the
+  // form opens. Scope to the form, which we already have a handle on.
+  await expect(
+    osForm.locator(".error"),
+    "the empty justification should be refused with a specific message",
+  ).toHaveText("Please provide open source information");
+
+  // The zone context is retained on the re-render, not dropped.
+  await expect(page.locator("body")).toContainText(data.zoneName);
+
+  // The zone must still be New. Assert it from the list (vendor.html:15-31),
+  // where the status is rendered plainly, rather than from the show page whose
+  // first blockquote is the organization name.
+  await expectCleanPage(page, bust("/manage/vendor"));
+
+  const zoneLink = page.locator(`a[href*="id=${zoneToken}"]`);
+  await expect(zoneLink, "the zone should still be listed").toBeVisible();
+  // "Complete setup" renders only while the status is New; any other status
+  // renders "View details".
+  await expect(
+    zoneLink,
+    "a still-New zone should offer Complete setup, not View details",
+  ).toHaveText("Complete setup");
+
+  const listEntry = page.locator("p").filter({ has: zoneLink });
+  await expect(
+    listEntry.locator("i"),
+    "the zone must not have transitioned to Pending",
+  ).toHaveText("New");
+
+  // Reopen the zone by URL (not by clicking a link whose text we just
+  // asserted) and confirm it still offers the open-source form.
+  await expectCleanPage(page, bust(zoneUrl));
+  await expect(
+    page.locator('textarea[name="opensource_info"]'),
+    "the zone should still offer the open-source form",
+  ).toBeVisible();
 });
 
 // Issue #39 regression guard.
