@@ -44,10 +44,20 @@ only the single-file attribution is imprecise.
 - `GET /manage/account/download` renders cleanly for a user with no prior
   requests, and submitting creates exactly one request via POST/redirect/GET
   (`account-download.spec.ts` → "a fresh user submits one personal data
-  download request"). See §3 and §4 (defect 4) below: this test's
-  no-error-state assertion passed in both runs only because the assertion
-  window raced ahead of a backend task processor that is, as of this run,
-  failing 100% of the time it actually runs.
+  download request"). Two separately-graded things this test checks, worth
+  not conflating:
+  - **Download-request submission: WORKING.** The controller-level flow —
+    POST/redirect/GET, exactly one row created, no error bleed — passed
+    cleanly and repeatably (§3, §8 below), and is genuinely covered.
+  - **Archive generation (the background `download` task itself): BROKEN.**
+    See §4 defect 4. The request-submission test's post-submit and
+    post-reload state checks (both must show "Processing..." or "Download
+    archive," never "Error: ...") passed in every run so far only because
+    the assertion windows raced ahead of the worker actually processing the
+    task — not because the worker succeeded. Once the worker does process a
+    task, it fails 100% of the time (defect 4's live evidence). This is a
+    timing-dependent test gap, not a passing feature: given a big enough
+    window, the same test will fail on this defect.
 
 **§5b Open-source claim vs staff determination (issue #39):**
 - Submitting the open-source form with an empty justification is rejected
@@ -378,3 +388,76 @@ account is restored on a fresh read and fails an otherwise-passing test when
 it cannot, so a clean grep across both logs is the actual evidence, not an
 absence of failures alone. No accounts are left in a SCHEDULED-for-deletion
 state by this task's runs, and nothing needs to be cancelled by hand.
+
+## 8. Refinement round (2026-09-10): review findings and fixes
+
+After the validation above, an independent review of commit `5104e57e` (the
+commit covering Tasks 1-9) confirmed two implementation defects in the test
+code itself. Both are fixed here; no product code was touched.
+
+1. **Cleanup could verify the wrong account.** `readDissolveState`
+   (`e2e/lib/accounts.ts`) classified an account's deletion state from the
+   dissolve page's heading and button pattern alone — both identical in shape
+   for every account, so a dispatcher redirect to a different resolved
+   account would have been misclassified as the requested account's own
+   state. Cleanup could then report success while the real target stayed
+   frozen. Fixed by asserting both the landed-on URL's `a=` parameter and the
+   dissolve form's hidden `a=` field (which reflects the account object the
+   server actually rendered, not just what the client requested) match the
+   registered token before trusting the classification.
+2. **A download error appearing on reload could pass unnoticed.**
+   `account-download.spec.ts`'s post-reload check only counted rows, not
+   re-reading the task's state — so if the background worker processed (and
+   failed) the task in the gap between the first state check and the reload,
+   the reload step would still pass. Fixed by repeating the same state
+   assertion after the reload GET.
+
+**A correction to how cleanup's guarantee was described earlier:**
+characterizing a stranded account as "impossible" overstated it. What the
+`scheduledDeletions`/`frozen` fixtures actually guarantee is that cleanup
+runs on an assertion failure and on a timeout — Playwright fixture teardown
+runs regardless of how the test body ends, on its own time budget. They
+cannot protect against the test process being killed mid-run or the API
+being unreachable during teardown itself; no in-process fixture can cover
+either of those.
+
+The seven unrelated Perl-side leads a mis-scoped review agent surfaced during
+the original finishing pass (silent-success-on-transport-failure in
+`Manage/Monitor.pm`, the vendor `need_subscription` gate, etc.) remain
+**unreproduced and untriaged**. They stay a separate list until someone
+reproduces them — not folded into this report's findings.
+
+### Verification
+
+Both fixes were confirmed first against a targeted run — `account-download`,
+`account-dissolve`, `staff-deletion`, `account-frozen` together: 14 passed, 1
+flaky (known `CreateTestSession failed: 500`, resolved on retry), 0 failed.
+(One retry along the way surfaced a bug in the first version of fix 1 itself —
+an unscoped `form input[name="a"]` locator matched the navigation sidebar's
+own hidden `a=` field too, tripping Playwright's strict-mode check. Fixed by
+scoping to `form[action*="/manage/account/dissolve"] input[name="a"]`.)
+
+Then the full Task-9-style two-run focused protocol was repeated (fresh
+identities each time, exit code preserved, not piped through grep):
+
+- **Refinement run 1** (`test-logs/refinement-run-1.log`): exit 0. 33 tests:
+  31 passed, 2 flaky (`account-dissolve.spec.ts` "staff sees the destructive
+  Delete account link," `vendor.spec.ts` "approve/reject status changes and
+  owner resubmit" — both the known `CreateTestSession failed: 500`, resolved
+  on retry). 0 failed.
+- **Refinement run 2** (`test-logs/refinement-run-2.log`): exit 0. 33 tests:
+  29 passed, 4 flaky (`account-frozen.spec.ts` ×2, `staff-search.spec.ts`
+  ×1, `vendor.spec.ts` ×1 — all the same known infra flakiness, all resolved
+  on retry). 0 failed.
+
+Cleanup-failure check: neither log contains `CLEANUP FAILED` or
+`cleanup-failure`. No account was left scheduled for deletion by either run.
+
+**What this evidence does and doesn't show:** `account-download.spec.ts`
+passed cleanly in both refinement runs, but the worker didn't happen to
+process either run's task before the test finished — so the reload-state fix
+(item 2 above) was not actually exercised against the live archive-generation
+defect in these two runs. The fix is structurally correct (confirmed by
+direct reading and by the passing runs proving it doesn't false-positive on
+its own), but "no failure observed here" is a timing artifact consistent with
+defect 4's own description, not evidence the defect is gone.

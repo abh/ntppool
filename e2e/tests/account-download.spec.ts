@@ -113,4 +113,15 @@ test("a fresh user submits one personal data download request", async ({
     requestRows(page),
     "reloading the download page must not create a second request",
   ).toHaveCount(1);
+
+  // Re-check the task's state, not just the row count: the worker can process
+  // the task in the gap between the first check above and this reload, and a
+  // row-count-only check would still pass at 1 even if that processing failed
+  // (row count doesn't change either way). Repeating the same state assertion
+  // here is what actually proves the reload didn't silently pick up an error.
+  await expect(
+    requestRows(page).first().locator("td").nth(1),
+    "the request should still be pending or downloadable, never errored, after reload",
+  ).toHaveText(/Processing archive, check back later\.|Download archive/);
+  await expect(page.locator("body")).not.toContainText("Error:");
 });

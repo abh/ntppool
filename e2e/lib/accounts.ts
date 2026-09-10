@@ -162,24 +162,68 @@ async function readDissolveState(
   await expectCleanPage(staffPage, bust(dissolveUrl(accountToken)));
 
   // "Delete account: <name>" is the confirmation page's own heading. A login
-  // page or an error page does not have it.
+  // page or an error page does not have it — but every account's dissolve
+  // page renders the SAME heading shape and button pattern, so the heading
+  // alone does not prove this is THIS account's page. A dispatcher redirect
+  // to a different resolved account would satisfy it just as well, and this
+  // function's result drives cleanup: misclassifying the wrong account as
+  // "not-scheduled" would report cleanup as successful while the real target
+  // stays frozen. Pin the account on two independent signals before trusting
+  // the classification — the URL the browser actually landed on, and (below,
+  // once we know which form is present) the form's hidden `a=` field, which
+  // reflects the account object the server actually resolved and is
+  // therefore a check the URL alone cannot cover.
   await expect(
     staffPage.getByRole("heading", { name: /^Delete account:/ }),
     `not the dissolve confirmation page for ${accountToken}`,
   ).toBeVisible();
+  expect(
+    new URL(staffPage.url()).searchParams.get("a"),
+    `landed on the dissolve page for a different account: ${staffPage.url()}`,
+  ).toBe(accountToken);
 
   const [cancelButtons, scheduleButtons] = await Promise.all([
     staffPage.getByRole("button", { name: "Cancel scheduled deletion" }).count(),
     staffPage.getByRole("button", { name: "Schedule account deletion" }).count(),
   ]);
 
-  if (cancelButtons === 1 && scheduleButtons === 0) return "pending";
-  if (cancelButtons === 0 && scheduleButtons === 1) return "not-scheduled";
+  if (cancelButtons === 1 && scheduleButtons === 0) {
+    await expectFormTargetsAccount(staffPage, accountToken);
+    return "pending";
+  }
+  if (cancelButtons === 0 && scheduleButtons === 1) {
+    await expectFormTargetsAccount(staffPage, accountToken);
+    return "not-scheduled";
+  }
 
   throw new Error(
     `dissolve page for ${accountToken} is in an unrecognised state ` +
       `(cancel buttons: ${cancelButtons}, schedule buttons: ${scheduleButtons})`,
   );
+}
+
+/**
+ * The pending/not-scheduled forms (dissolve_confirmation.html) both carry a
+ * hidden `a=` field set from `account.id_token` — the account the SERVER
+ * actually resolved and rendered, independent of the request URL. This
+ * catches a server-side resolution bug the URL check above cannot: the URL
+ * can be exactly right while the template still renders a different
+ * account's data.
+ */
+async function expectFormTargetsAccount(
+  staffPage: Page,
+  accountToken: string,
+): Promise<void> {
+  // Scoped to the dissolve form specifically: the navigation sidebar renders
+  // its own hidden input[name="a"] (value "new", for the "create account"
+  // form) on every manage page, so an unscoped `form input[name="a"]` matches
+  // multiple elements and Playwright's strict mode rejects it.
+  await expect(
+    staffPage.locator(
+      'form[action*="/manage/account/dissolve"] input[name="a"]',
+    ),
+    `dissolve form's hidden account field should target ${accountToken}`,
+  ).toHaveValue(accountToken);
 }
 
 /**
