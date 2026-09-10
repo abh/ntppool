@@ -36,42 +36,32 @@ interface MintResult {
 }
 
 /**
- * Mint a real session token via the Go AuthService.CreateTestSession RPC.
- * Dev only: the RPC refuses to run outside the devel environment.
+ * POST a ConnectRPC method as JSON against NTP_INTERNAL_API_URL and return the
+ * parsed body. Callers supply their own auth headers and validate the response
+ * shape; everything here is transport.
+ *
+ * `label` names the procedure in error messages, and `subject` adds the thing
+ * the call was about, so failures stay as greppable as before the transport was
+ * shared (e.g. "CreateTestSession failed: 500 …").
  */
-export async function mintSession(
-  email: string,
-  opts: MintOptions = {},
-): Promise<string> {
+async function connectRpc<T>(
+  label: string,
+  procedure: string,
+  headers: Record<string, string>,
+  body: unknown,
+  subject = "",
+): Promise<T> {
   const apiBase = process.env.NTP_INTERNAL_API_URL;
   if (!apiBase) {
     throw new Error("NTP_INTERNAL_API_URL is not set");
   }
-  const key = process.env.NTP_TEST_SESSION_KEY;
-  if (!key) {
-    throw new Error("NTP_TEST_SESSION_KEY is not set");
-  }
-
-  const url = `${apiBase.replace(/\/$/, "")}/ntppool.auth.v1.AuthService/CreateTestSession`;
-
-  const body = {
-    email,
-    name: opts.name ?? "",
-    create_if_missing: opts.createIfMissing ?? true,
-    // snake_case to match the ConnectRPC JSON fields (grant_staff = 4,
-    // grant_vendor_admin = 5).
-    grant_staff: opts.grantStaff ?? false,
-    grant_vendor_admin: opts.grantVendorAdmin ?? false,
-  };
+  const url = `${apiBase.replace(/\/$/, "")}/${procedure}`;
 
   let resp: Response;
   try {
     resp = await fetch(url, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${key}`,
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json", ...headers },
       body: JSON.stringify(body),
     });
   } catch (err) {
@@ -79,7 +69,7 @@ export async function mintSession(
     // NTP_INTERNAL_API_URL (e.g. the .env.example placeholder, or Tailscale
     // down). Surface that rather than a bare "fetch failed".
     throw new Error(
-      `CreateTestSession request to ${url} failed (network/DNS). ` +
+      `${label} request to ${url} failed (network/DNS). ` +
         `Is NTP_INTERNAL_API_URL correct and reachable? ` +
         `Cause: ${(err as Error).message}`,
     );
@@ -88,12 +78,42 @@ export async function mintSession(
   if (!resp.ok) {
     const text = await resp.text();
     throw new Error(
-      `CreateTestSession failed: ${resp.status} ${resp.statusText} - ${text}`,
+      `${label} failed${subject && ` for ${subject}`}: ` +
+        `${resp.status} ${resp.statusText} - ${text}`,
     );
   }
 
-  // ConnectRPC JSON encodes the field as snake_case: session_token.
-  const data = (await resp.json()) as { session_token?: string };
+  return (await resp.json()) as T;
+}
+
+/**
+ * Mint a real session token via the Go AuthService.CreateTestSession RPC.
+ * Dev only: the RPC refuses to run outside the devel environment.
+ */
+export async function mintSession(
+  email: string,
+  opts: MintOptions = {},
+): Promise<string> {
+  const key = process.env.NTP_TEST_SESSION_KEY;
+  if (!key) {
+    throw new Error("NTP_TEST_SESSION_KEY is not set");
+  }
+
+  // ConnectRPC JSON encodes fields as snake_case, both ways.
+  const data = await connectRpc<{ session_token?: string }>(
+    "CreateTestSession",
+    "ntppool.auth.v1.AuthService/CreateTestSession",
+    { Authorization: `Bearer ${key}` },
+    {
+      email,
+      name: opts.name ?? "",
+      create_if_missing: opts.createIfMissing ?? true,
+      // grant_staff = 4, grant_vendor_admin = 5.
+      grant_staff: opts.grantStaff ?? false,
+      grant_vendor_admin: opts.grantVendorAdmin ?? false,
+    },
+  );
+
   if (!data.session_token) {
     throw new Error(
       `CreateTestSession response missing session_token: ${JSON.stringify(data)}`,
@@ -101,6 +121,49 @@ export async function mintSession(
   }
 
   return data.session_token;
+}
+
+/**
+ * Read an account's numeric `accounts.id` through AccountService.GetAccount.
+ *
+ * The staff search `id:<n>` query matches `a.id = $1` (api sql/search.sql
+ * SearchAccountByID), and that number is not rendered anywhere in the UI — the
+ * templates only ever test `account_id` for truthiness. This is the supported
+ * read for it (verified 2026-09-09, readiness handoff R5); the harness must not
+ * decode the acc_ token or reach for SQL.
+ *
+ * Auth is the USER's session token from loginAs/mintSession, not
+ * NTP_TEST_SESSION_KEY — the service key only mints sessions. Account context
+ * travels in X-Account, the same header lib/NP/CAPI.pm:256 sets.
+ */
+export async function getAccountNumericId(
+  sessionToken: string,
+  accountToken: string,
+): Promise<string> {
+  // account_id is a proto int64, so ConnectRPC JSON encodes it as a string.
+  const data = await connectRpc<{
+    account?: { account_id?: string | number };
+  }>(
+    "GetAccount",
+    "ntppool.account.v1.AccountService/GetAccount",
+    {
+      Authorization: `Bearer ${sessionToken}`,
+      "X-Account": accountToken,
+    },
+    {},
+    accountToken,
+  );
+
+  // One check covers every way this can go wrong: a missing field stringifies
+  // to "undefined"/"null"/"", and a shape change to "[object Object]" — none of
+  // which match /^\d+$/.
+  const numericId = String(data.account?.account_id ?? "");
+  if (!/^\d+$/.test(numericId)) {
+    throw new Error(
+      `GetAccount returned no usable account.account_id: ${JSON.stringify(data)}`,
+    );
+  }
+  return numericId;
 }
 
 // The authenticated app (/manage) is a separate Combust site served from the

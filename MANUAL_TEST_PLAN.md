@@ -6,6 +6,11 @@ Covers features touched in `ntppool` (Perl web) and `../go/ntp/api` (Go API) sin
 - **Dev site**: https://web.askdev.grundclock.com/
 - **Cache busting**: append `?x=12345` (random) to URLs when content looks stale.
 - Test as both a **regular logged-in user** and a **staff/admin user** where noted.
+- Items marked with a spec path and test name — e.g. (`e2e/tests/foo.spec.ts` →
+  "test name") — are covered by the automated Playwright suite in `e2e/` and
+  need no manual run. Everything else is manual.
+- Automated items assert on the returned HTML. None of them inspect backend
+  logs, so a log check (§12's "no 500s in logs" item, for example) stays manual.
 
 Sections below that mention `int_api` or `NP::IntAPI` describe what a migration
 moved *away from*. `lib/NP/IntAPI.pm` was deleted in `a4f06c76` and no Perl call
@@ -59,14 +64,16 @@ rediscover known breakage; check them off once the issue lands.
 > link (`form.html:156-167`) both render. The edit POST is refused there with a
 > message; the Go API returns `FailedPrecondition` regardless.
 >
-> The staff half is covered by `e2e/tests/account-dissolve.spec.ts`. The two
-> non-staff items below are manual until the accept-invite helper in #46 lands —
-> they need a second member on the account, invited *before* it is frozen.
+> All four items below are automated in `e2e/tests/account-frozen.spec.ts`,
+> which pairs a non-staff owner with a separate staff identity. The owner's
+> *second* account supplies the non-staff membership, so no accept-invite
+> helper is needed (this section previously said otherwise, blocking on #46).
 
-- [ ] As a **non-staff member** of a frozen account, `/manage/account` renders and shows the red "Account scheduled for deletion" banner with the scheduled date.
-- [ ] Clicking **Cancel scheduled deletion** in that banner clears the deletion and returns the account to normal.
-- [ ] As **staff** on a frozen account, `/manage/account` renders and shows the "Account deletion scheduled — manage" link pointing at the dissolve page.
-- [ ] A member of a frozen account still **cannot edit** it: submitting the account form shows "This account is scheduled for deletion and cannot be changed", not a raw API error.
+- [x] As a **non-staff member** of a frozen account, `/manage/account` renders and shows the red "Account scheduled for deletion" banner with the scheduled date. (`e2e/tests/account-frozen.spec.ts` → "a non-staff owner sees the deletion banner on a frozen account")
+- [x] Clicking **Cancel scheduled deletion** in that banner clears the deletion and returns the account to normal — the account is editable again, and the staff dissolve page offers scheduling once more. (`e2e/tests/account-frozen.spec.ts` → "the owner cancels from the banner and the account is editable again")
+- [x] As **staff** on a frozen account, `/manage/account` renders and shows the "Account deletion scheduled — manage" link, pointing at the dissolve page for that account. (`e2e/tests/account-dissolve.spec.ts` → "staff: a frozen account still renders /manage/account with the scheduled-deletion link")
+- [x] A **member** of a frozen account still cannot edit it: submitting the account form shows "This account is scheduled for deletion and cannot be changed", not a raw API error. (`e2e/tests/account-frozen.spec.ts` → "a frozen account refuses a name edit from its non-staff owner")
+- [x] **Staff** are refused the same edit with the same message — `can_edit` is false for everyone on a frozen account. (`e2e/tests/account-frozen.spec.ts` → "a frozen account refuses a name edit from staff too")
 
 ## 3. Staff-targeted user & account deletion
 
@@ -107,11 +114,12 @@ rediscover known breakage; check them off once the issue lands.
 > available" time come from the API (`can_resend` / `resend_available_at`).
 
 - [ ] Pending invite on `/manage/account/team` shows a **Resend** button (account with edit access).
-- [ ] Click **Resend** — success badge ("Invitation email resent"); a new invite email arrives.
+- [x] Click **Resend** — the success badge ("Invitation email resent") renders. (`e2e/tests/invites.spec.ts` → "clicking Resend shows the success badge")
+- [ ] A new invite email actually arrives — not observable on the dev site, which runs in `deployment_mode=devel` and logs "development mode - not sending email" instead of sending.
 - [ ] Immediately resend again — button is **disabled** with an "available after …" time, or a rate-limit warning if forced (5-minute cooldown).
 - [ ] Exceed **3 sends in 24h** — resend is blocked with a "too many … (limit: 3)" warning.
 - [ ] A resent invite's **expiry moves out to ~30 days** from the resend.
-- [ ] **Accepted/expired** invites show no Resend button; the accept link still works.
+- [ ] **Accepted/expired** invites show no Resend button; the accept link still works — needs an invite/accept flow to create a non-pending invite (`e2e/tests/invites.spec.ts` → "only a pending invite renders a Resend control" covers the pending side only).
 - [ ] Non-edit / wrong account context cannot resend (permission denied, no button).
 
 ### 4b. Removing a user from the team (issue #14)
@@ -150,23 +158,32 @@ rediscover known breakage; check them off once the issue lands.
 > `pending_requests` drives in the template. There is no API-side guard, so no Go
 > test can catch a regression.
 
-- [ ] `GET /manage/account/download` renders cleanly for a user with no prior requests.
-- [ ] Submit a request — POST redirects back to the download page (POST/redirect/GET) and the new request appears in the list.
-- [ ] Submit again while the first is still pending — **no** second request is created and the pending state is shown.
-- [ ] Once a request completes, its download link works: `/manage/account/download/data/<traceid>/<filename>`.
-- [ ] A **mismatched** filename on that URL returns 404 (`Account.pm:686-687` checks the filename against the API's `download_url`).
-- [ ] The request's trace ID (UUIDv7) appears in the web logs and correlates to the background worker's log lines for the same task.
+- [x] `GET /manage/account/download` renders cleanly for a user with no prior requests. (`e2e/tests/account-download.spec.ts` → "a fresh user submits one personal data download request")
+- [x] Submit a request — POST redirects back to the download page (POST/redirect/GET) and the new request appears in the list. (`e2e/tests/account-download.spec.ts` → "a fresh user submits one personal data download request")
+- [ ] Submit again while the first is still pending — **no** second request is created and the pending state is shown. Needs a task held pending for the duration of the test; the worker could otherwise finish between the two POSTs and make a second request legitimate.
+- [ ] Once a request completes, its download link works: `/manage/account/download/data/<traceid>/<filename>`. Needs a completed archive seeded through a supported test surface.
+- [ ] A **mismatched** filename on that URL returns 404 (`Account.pm:686-687` checks the filename against the API's `download_url`). Needs a completed archive seeded through a supported test surface.
+- [ ] The request's trace ID (UUIDv7) appears in the web logs and correlates to the background worker's log lines for the same task. Needs a completed archive seeded through a supported test surface.
+
+> Two defects in `render_download` as of 2026-09-09: the create-failure message
+> at `Account.pm:743-747` is set but never rendered (`docs/manage/tpl/user/download.html`
+> has no error output), and `list_user_tasks` errors are swallowed at
+> `Account.pm:722-726` into an empty list. An API failure therefore looks like a
+> missing row rather than an error.
 
 ## 5. Vendor zones (migrated to CAPI)
 
-> §5–5d are e2e-covered end to end by `e2e/tests/vendor.spec.ts`, including the
-> issue #31 ORM-removal surface: `dns_root_origin` display on both the new-zone
-> and edit forms (Vendor.pm render_form), and `id_token`-based edit/create
-> routing (form.html + `_get_id`).
+> `e2e/tests/vendor.spec.ts` covers the §5 items marked below plus the §5b
+> open-source claim path, including the issue #31 ORM-removal surface:
+> `dns_root_origin` display on both the new-zone and edit forms
+> (Vendor.pm render_form), and `id_token`-based edit/create routing
+> (form.html + `_get_id`). §5a, §5c, §5d and §5e are **not** covered end to end
+> — the admin invalid-transition test asserts a safe no-op, which is not
+> evidence of error rendering or of decorative-call degradation.
 
-- [x] `/manage/vendor` — zone list loads from the API (no ORM/DB errors). (`e2e/tests/vendor.spec.ts`)
+- [x] `/manage/vendor` — zone list loads from the API (no ORM/DB errors). (`e2e/tests/vendor.spec.ts` → "create a New vendor zone request")
 - [x] `/manage/vendor/new` — request form renders with API-provided metadata, incl. `dns_root_origin`. (`e2e/tests/vendor.spec.ts`)
-- [x] Submit a new vendor zone request — validation works, success path completes. (`e2e/tests/vendor.spec.ts`)
+- [x] Submit a new vendor zone request — validation works, success path completes. (`e2e/tests/vendor.spec.ts` → "create a New vendor zone request")
 - [x] View a single zone (`/manage/vendor/<id>`) — details correct, edit form id correct. (`e2e/tests/vendor.spec.ts`)
 - [x] As **staff**, `/manage/vendor/admin` — admin list loads; approve/reject status change works. (`e2e/tests/vendor.spec.ts`)
 - [ ] Subscription/plan checks on vendor pages still work (no redundant account fetch errors).
@@ -197,12 +214,17 @@ rediscover known breakage; check them off once the issue lands.
 > always posts a hidden `opensource_request=1` — so a paying vendor's zone was
 > silently reclassified as non-revenue open source. `show.html:83-103` now
 > branches on `have_subscription`.
+>
+> Known gap: a **whitespace-only** justification passes the check and submits
+> the zone — `Vendor.pm:388-397` tests `if (my $osinfo = ...)`, and `" "` is
+> truthy in Perl. The code already carries a `# todo: sanity check the data?`
+> there. Not covered by a test, because a test for it could only fail today.
 
 - [ ] **Covered** vendor (live subscription): a New/Rejected zone shows a plain "Submit for production" / "Resubmit for production" button — **no** open-source justification form, no `opensource_request` field in the posted form.
 - [ ] Submitting as a covered vendor leaves the zone's open-source claim **and** grant untouched (the zone page shows no open-source justification text).
 - [ ] **Uncovered** vendor: the same zone shows the open-source justification form instead.
 - [ ] Submit with the open-source form + justification — the **claim** and `opensource_info` reach the API; the zone is Pending, and the grant is still undecided.
-- [ ] Submitting the open-source form with an **empty** justification is rejected with "Please provide open source information".
+- [x] Submitting the open-source form with an **empty** justification is rejected with "Please provide open source information", and the zone stays New. (`e2e/tests/vendor.spec.ts` → "open-source submit with an empty justification is refused and the zone stays New")
 - [ ] Resubmit a **Rejected** open-source zone — claim + justification still applied.
 - [ ] Edit a Pending/Rejected **open-source** zone (change e.g. org name) — save succeeds and does **not** error with "opensource_info is required" or blank the stored justification.
 - [ ] As `vendor_admin`, approving with **Grant open-source** checked sets the grant; approving without it leaves the zone on the paid path regardless of the vendor's claim.
@@ -319,7 +341,8 @@ rediscover known breakage; check them off once the issue lands.
 ## 10. Internationalization
 
 - [x] Switch UI to **Thai (th)** — new language renders, key pages translated.
-- [ ] Switch to **Traditional Chinese (zh-tw)** — doc pages render, "scheduled for deletion" string present.
+- [x] Switch to **Traditional Chinese (zh-tw)** — the public doc page renders with `lang="zh-tw"` and the language switcher shows the native name. (`e2e/tests/i18n.spec.ts` → "Traditional Chinese (zh-tw): doc page renders translated")
+- [ ] The authenticated "scheduled for deletion" string renders translated in zh-tw — human check; the automated test only covers a public page.
 - [x] Spot-check Portuguese (pt) and Czech (cs) tweaks didn't break layout.
 
 ## 11. API auth & infrastructure (mostly API-side smoke checks)
@@ -367,15 +390,23 @@ The Perl `NP::Model` ORM layer was largely removed; sanity-check core flows stil
 > (never a 404); a real API failure falls to the degraded "Search temporarily
 > unavailable" path with a Trace ID. Each query type must return sane results and
 > the page/HTMX fragment must render without console errors.
+>
+> The `id:` search takes the decimal `accounts.id`, which is never rendered in
+> the UI (search results carry only `id_token`; `account_id` appears in the
+> manage templates solely inside truthiness checks). The e2e test reads it from
+> `AccountService.GetAccount` — `Authorization: Bearer <user session>` plus
+> `X-Account: <account token>` — not by decoding the `acc_…` token.
 
 - [ ] As **staff**, run an **IP lookup** (known server IP) — matching servers/monitors grouped by account.
-- [ ] `id:<account-id>` lookup — returns that account with its users/servers/monitors.
-- [ ] Free-text **pattern** search (hostname or account-name substring) — matches across accounts/users/servers/monitors; highlighting on matched IPs/hostnames still renders.
+- [x] `id:<account-id>` lookup — returns that account with its users. (`e2e/tests/staff-search.spec.ts` → "staff finds an account by exact numeric id: lookup")
+- [x] Free-text **pattern** search on an **account-name** substring — finds the account and lists its members, with result links carrying that account's `a=` token. (`e2e/tests/staff-search.spec.ts` → "staff finds an account by a unique name substring")
+- [ ] Free-text pattern search on a **hostname** substring, and highlighting on matched IPs/hostnames — needs owned server fixtures.
 - [ ] Toggle **include deleted** on/off — deleted servers/monitors appear only when checked.
 - [ ] `monitors:` search — shows the monitors-only default view plus the "show all results" toggle.
 - [ ] `zone:<zonename>` search — shows the zone-servers-only default view for that zone.
-- [ ] A query with **no matches** renders an empty result set cleanly (no error alert, no 404 page).
-- [ ] As a **non-staff** user, the search is denied (no staff results leak through).
+- [x] A query with **no matches** renders an empty result set cleanly (no error alert, no 404 page). (`e2e/tests/staff-search.spec.ts` → "a no-match query replaces earlier results with the no-results message")
+- [x] An **empty** query clears earlier results and renders nothing — not a "no results" message, which only appears for a non-empty query. (`e2e/tests/staff-search.spec.ts` → "an empty query clears earlier results without an error")
+- [x] As a **non-staff** user, the search is denied (no staff results leak through) — the outer dispatcher 404s before reaching the handler, and no staff-search navigation is offered. (`e2e/tests/staff-search.spec.ts` → "a non-staff user cannot reach staff search")
 
 ## 14. Monitor-config "Default (1)" for monitors per server
 

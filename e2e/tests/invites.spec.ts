@@ -75,7 +75,7 @@ test("pending invite shows a Resend button for an account with edit access", asy
   await expect(activeResendButton(page)).toBeVisible();
 });
 
-test("clicking Resend shows the success badge and sends a new invite email", async ({
+test("clicking Resend shows the success badge", async ({
   page,
   context,
 }) => {
@@ -178,16 +178,14 @@ test.skip("exceeding 3 sends in 24h blocks resend with a limit warning", async (
 // (expires_on), which is intentionally not used, and the team UI does not render
 // the invite expiry. Restore it if/when an invite-detail API surface exists.
 
-test("a non-pending invite shows no Resend button", async ({ page, context }) => {
-  // §4a: accepted/expired invites show no Resend button; the accept link still
-  // works.
+test("only a pending invite renders a Resend control", async ({ page, context }) => {
+  // §4a: only PENDING invites render a Resend control, so a freshly created
+  // (pending) invite is the only one with the button, and the rendered table
+  // never shows a Resend control against a non-pending status row.
   //
-  // The "accept link still works" half needs the invite code to drive the
-  // accept flow as the invitee, plus a second authenticated identity — see the
-  // skipped test below. Here we assert the feasible half: only PENDING invites
-  // render a Resend control, so a freshly created (pending) invite is the only
-  // one with the button, and the rendered table never shows a Resend control
-  // against a non-pending status row.
+  // This does not cover accepted/expired invites — creating one needs the
+  // invite code to drive the accept flow as the invitee, plus a second
+  // authenticated identity — see the skipped test below.
   const owner = uniqueTestEmail("invite-owner");
   await loginAs(context, owner);
 
