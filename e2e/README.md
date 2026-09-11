@@ -5,8 +5,10 @@ without going through Auth0. Login works by minting a real session token from
 the Go API (`AuthService/CreateTestSession`), then setting it as the browser
 `npuid` session cookie.
 
-**Dev only.** The mint RPC refuses to run outside the devel environment, so
-these tests cannot be pointed at staging or production.
+**Dev only.** Before minting a session, global setup requires the API's
+database-backed `environment` setting and the public and manage sites'
+`X-NTPPool-Environment` response headers to all report `devel`. The fixture
+RPCs repeat the API-side environment guard.
 
 ## Install
 
@@ -21,6 +23,9 @@ Copy `.env.example` to `.env` and fill in the values:
 
 - `NTP_BASE_URL` — dev site under test (default
   `https://web.askdev.grundclock.com`).
+- `NTP_MANAGE_URL` — authenticated dev management site (default
+  `https://manage.askdev.grundclock.com`). Global setup requires this value so
+  every tested surface is explicit.
 - `NTP_INTERNAL_API_URL` — base URL of the internal Go API, reachable over
   Tailscale. Must include the `/int/rpc` prefix the ConnectRPC services are
   mounted under (e.g. `http://api-internal.example.ts.net/int/rpc`), with no
@@ -53,10 +58,14 @@ tests don't skip.
 
 Deploy in this order:
 
-1. Apply `027_server_test_fixtures.sql` to the devel API database.
-2. Deploy API commit `21d49ee6172a4ac4931d7fba526eead58bc1fd6b`.
+1. Deploy API commit `b3e2b5ed76580c89f9c0db83a7abb251cf92951b` and run its
+   Goose migrations with `deployment_mode=devel`. Migration 027 creates the
+   fixture tables only in devel; test and prod record it as a no-op.
+2. Confirm the devel database reports migration version 27 and contains
+   `server_test_fixtures` and `server_test_fixture_servers`.
 3. Deploy the matching web revision containing generated `Auth.pm` commit
-   `27091be29c4ed929c85be8f71d6a5f5a385cdfc4` and the E2E suite.
+   `27091be29c4ed929c85be8f71d6a5f5a385cdfc4`, the environment response
+   header, and the E2E suite.
 4. Probe `CreateServerTestFixture`, then run the focused suite twice with
    `--retries=0`. Each run must use fresh attempt IDs and report cleanup.
 
@@ -128,6 +137,7 @@ with retries disabled, then repeat the fixture-dependent specs so the second
 run allocates and cleans fresh attempts:
 
 ```sh
+npm run test:unit
 npm run typecheck
 npx playwright test --list
 npx playwright test tests/server.spec.ts tests/server-verification.spec.ts tests/server-deletion.spec.ts tests/server-netspeed.spec.ts tests/server-scores-context.spec.ts --project=manage --retries=0

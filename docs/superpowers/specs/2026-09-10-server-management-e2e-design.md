@@ -83,7 +83,11 @@ Required fixture behavior:
 2. Authenticate fixture administration using the existing test service
    capability, and validate ownership through the fresh user's session or an
    equally strict association. No arbitrary existing account, IP, or server
-   may be claimed or mutated. Refuse non-development deployments.
+   may be claimed or mutated. Refuse non-development deployments. The Goose
+   migration for fixture storage must create its tables only when
+   `deployment_mode=devel`; test and production record the version as a no-op.
+   Before any session is minted, E2E global setup must independently require
+   `devel` from the API setting and both web deployment response headers.
 3. Keep fixtures outside public DNS publication and avoid contacting third
    party NTP servers. Reserved test addresses are appropriate for seeded
    records, subject to checking existing monitor selection behavior. Explicitly

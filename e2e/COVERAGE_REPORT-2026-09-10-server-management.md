@@ -7,10 +7,11 @@ assertion. Migration 027 and the matching API deployment are still required.
 
 ## Revisions and deployment state
 
-- API source: `21d49ee6172a4ac4931d7fba526eead58bc1fd6b`
-  (`feat(auth): add guarded server test fixtures`). This commit includes
-  `027_server_test_fixtures.sql`. It passed local integration, build and unit
-  checks. It hasn't been deployed to devel.
+- API source: `b3e2b5ed76580c89f9c0db83a7abb251cf92951b`
+  (`Guard server fixture schema by deployment`). Its Go migration 027 creates
+  fixture tables only in devel and records a no-op in test and production. It
+  passed local integration, build and unit checks. It hasn't been deployed to
+  devel.
 - Generated web client: `27091be29c4ed929c85be8f71d6a5f5a385cdfc4`
   (`feat(api): generate server fixture client methods`).
 - Browser source: `5615a015b0cb88c4f6c486c756d897858c1eeb3e`
@@ -20,9 +21,14 @@ assertion. Migration 027 and the matching API deployment are still required.
 - Live devel revision: not established as matching either source revision.
   The authenticated fixture procedure returned HTTP 404, and no live fixture
   row or server was created.
+- Environment preflight: unit tests pass. Against the current live devel
+  deployment, the API environment check passed and setup then stopped on the
+  missing web environment header before minting a session. This is expected
+  until the matching web revision is deployed.
 
 A live-passed claim requires migration 027 on the devel database, API source
-`21d49ee…`, and a web deployment containing generated client `27091be2…`.
+`b3e2b5e…`, and a web deployment containing generated client `27091be2…` plus
+the `X-NTPPool-Environment` response header.
 Run the final browser revision against those deployed components and record the
 deployed SHAs with the result.
 
@@ -230,7 +236,8 @@ stand in for them.
 
 ## Remaining acceptance work
 
-1. Apply migration 027 and deploy API `21d49ee…` to devel.
+1. Deploy API `b3e2b5e…` to devel and apply migration 027 with
+   `deployment_mode=devel`.
 2. Deploy the matching web generated client and final E2E revision.
 3. Run typecheck and discovery, then the full focused command with
    `--retries=0` and no fail-fast limit.
