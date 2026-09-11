@@ -290,12 +290,27 @@ export const test = base.extend<{ serverFixtures: ServerFixtures }>({
     await use(serverFixtures);
 
     const failures: AttemptMetadata[] = [];
+    const results = [];
     for (const attempt of [...attempts].reverse()) {
+      let cleanupStatus = "succeeded";
       try {
         await cleanupFixture(attempt.attemptId);
       } catch {
+        cleanupStatus = "failed";
         failures.push(attempt);
       }
+      results.push({
+        attemptId: attempt.attemptId,
+        accountId: attempt.accountId ?? null,
+        serverIds: attempt.serverIds ?? null,
+        cleanupStatus,
+      });
+    }
+    if (results.length) {
+      await testInfo.attach("server-fixture-cleanup-results", {
+        body: Buffer.from(JSON.stringify(results)),
+        contentType: "application/json",
+      });
     }
     if (failures.length) {
       const diagnostics = failures.map((failure) =>
