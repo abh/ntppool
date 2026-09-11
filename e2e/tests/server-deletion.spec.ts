@@ -139,7 +139,7 @@ test("another account cannot schedule the owner's server", async ({ browser, ser
   const outsiderPage = await outsiderContext.newPage();
   try {
     const outsiderAccount = await resolveDefaultAccountToken(outsiderPage);
-    const csrf = await outsiderPage.locator('form[action="/manage/server/add"] input[name="auth_token"]').inputValue();
+    const csrf = await outsiderPage.locator('form[action="/manage/server/add#add"] input[name="auth_token"]').inputValue();
     const response = await outsiderPage.request.post("/manage/server/delete", {
       form: { server: server.ip, a: outsiderAccount, auth_token: csrf, deletion_date: "2099-01-01", submitbtn: "Schedule Deletion" },
       maxRedirects: 0,

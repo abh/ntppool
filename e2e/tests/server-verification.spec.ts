@@ -293,7 +293,7 @@ test("another account cannot complete the owner's verification", async ({ browse
   try {
     const outsiderAccount = await resolveDefaultAccountToken(outsiderPage);
     expect(outsiderAccount).not.toBe(fixture.accountToken);
-    const csrf = await outsiderPage.locator('form[action="/manage/server/add"] input[name="auth_token"]').inputValue();
+    const csrf = await outsiderPage.locator('form[action="/manage/server/add#add"] input[name="auth_token"]').inputValue();
     await navigateToVerification(
       outsiderPage,
       server.verificationToken,
