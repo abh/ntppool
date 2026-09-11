@@ -13,9 +13,10 @@ assertion. Migration 027 and the matching API deployment are still required.
   checks. It hasn't been deployed to devel.
 - Generated web client: `27091be29c4ed929c85be8f71d6a5f5a385cdfc4`
   (`feat(api): generate server fixture client methods`).
-- Browser source: `7db514dfbfde21cd8e69c3428aa488789a163248`
-  (`Tighten server management browser assertions`), including the 21-scenario
-  commit `d5d272a7e747171d231067eb5acfe8ec84b1dd5a`.
+- Browser source: `5afb1328a359c47eaeddfc50c643dad57e708543`
+  (`Match the server add form action`), including
+  the 21-scenario commit `d5d272a7`, assertion-fix commit `7db514df`, and
+  verification-denial fix `12a33169`.
 - Live devel revision: not established as matching either source revision.
   The authenticated fixture procedure returned HTTP 404, and no live fixture
   row or server was created.
@@ -24,6 +25,16 @@ A live-passed claim requires migration 027 on the devel database, API source
 `21d49ee…`, and a web deployment containing generated client `27091be2…`.
 Run the final browser revision against those deployed components and record the
 deployed SHAs with the result.
+
+## Implementation decisions
+
+| Decision | Reason | Cost if wrong |
+| --- | --- | --- |
+| Use isolated temporary worktrees without another permission question. | Implementation was already authorized, and isolation preserved the current checkouts. | Changes need transferring to a preferred location. |
+| Exercise schedule API failure with a non-zero-padded date and defer arbitrary cancellation service-failure injection. | The existing validation boundary avoided a general fault framework. | This branch needs a scoped failure capability. |
+| Keep real add/re-add/DNS infrastructure and audit atomicity as documented follow-ups. | The approved fixture-first slice had no candidate address infrastructure. | Those items need another implementation and deployment scope. |
+| Implement Task 2 alongside Task 1 against the fixed shared RPC contract, then review and run acceptance after integration. | The edited files were disjoint, so this avoided idle waiting. | Interface corrections require browser rework; Task 3 remains dependent on both. |
+| Await the old netspeed fragment's detachment and assert its rendered label instead of the plan's sample selected value. | The existing template resets the select to a placeholder, while the requirement is that the updated value is shown. | Selectors need changing if the UI presentation changes. |
 
 ## Status meanings
 
@@ -92,12 +103,17 @@ backend results; they don't establish live deployment.
 
 ### Browser static checks and blocked live probe
 
-`npm run typecheck` passed. Focused discovery found 21 tests in the four new
-spec files, and fresh full discovery found 98 tests in 20 files. The first
-review corrections also passed typecheck and the same 21-test focused
-discovery; final browser source review is still underway. A synthetic
-intentional failure submitted the real verification form with a runtime-only
-sentinel token; the console diagnostic and `test-results` contained no sentinel.
+`npm ci` installed the lockfile's dependencies in the isolated worktree without
+changing the original checkout's symlink target. Plain `npm run typecheck`
+then passed with that local compiler. Focused discovery found 21 tests in the
+four new spec files, and full discovery found 98 tests in 20 files. Browser
+source `12a33169…` passed typecheck, the same 21-test focused discovery and
+`git diff --check`; its spec and quality re-review passed. The final
+`5afb1328` add-form selector correction passed typecheck, `git diff --check`
+and commit hooks without changing the 21 focused titles or 98-test full count.
+A synthetic intentional failure submitted the real verification form with a
+runtime-only sentinel token; the static console diagnostic and `test-results`
+contained no sentinel.
 
 The live probe used the focused specs with `--retries=0`, one worker and
 `--max-failures=1`. Global setup passed. Its accounting is:
@@ -121,9 +137,13 @@ results.
 
 ### Preserved regressions
 
-The pre-implementation clean add-form baseline passed live once (1 passed, 0
-failed, retried or skipped). It proves a fresh user can open the server list and
-see the add form; it doesn't exercise AddServerPrecheck or create a server.
+The pre-implementation clean add-form baseline passed live once. A first
+current-branch regression check then failed because the test selector omitted
+the existing form action's `#add` fragment; the authenticated page and product
+form were correct. After correcting that selector in `5afb1328`, the same
+command passed live in 2.7 seconds: 1 passed, 0 failed, 0 retried, 0 skipped and
+no teardown failure. It proves a fresh user can open the server list and see
+the add form; it doesn't exercise AddServerPrecheck or create a server.
 
 This documentation task ran the unchanged public scores suite with:
 

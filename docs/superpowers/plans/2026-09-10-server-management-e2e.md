@@ -220,6 +220,7 @@ Cross-account CSRF comes from a real own-account form; do not accidentally test 
 
 ```ts
 const fragment = page.locator(`#server_${server.serverId}`);
+const oldElement = await fragment.elementHandle();
 const responsePromise = page.waitForResponse(r =>
   new URL(r.url()).pathname === '/manage/server/update/netspeed' &&
   r.request().method() === 'POST');
@@ -227,8 +228,15 @@ await fragment.locator('select[name="netspeed"]').selectOption('1500');
 const response = await responsePromise;
 expect(response.request().headers()['hx-request']).toBe('true');
 expect(response.status()).toBe(200);
-await expect(page.locator(`#server_${server.serverId} select[name="netspeed"]`)).toHaveValue('1500');
+expect(oldElement).not.toBeNull();
+await expect.poll(() => oldElement!.evaluate(node => node.isConnected)).toBe(false);
+await expect(page.locator(`#netspeed_${server.serverId}`)).toHaveText('1.5 Mbit');
 ```
+
+This corrects the implementation example to match the existing UI: the
+template resets the select to a placeholder after HTMX replacement and renders
+the effective value in `#netspeed_<serverId>`. It does not change product
+semantics.
 
 Tests: `verified netspeed updates replace the HTMX fragment without navigation` (retain an old element handle and assert detached after swap; count main-frame navigation, then check fresh owner API/UI); `unverified netspeed increase shows the verification error and preserves speed` (higher select options are disabled, so craft authenticated HX-Request POST with valid CSRF instead of selecting disabled input; response fragment contains specific case-insensitive verification message and value 512; fresh read 512); `nonnumeric netspeed is rejected without mutation` (400, valid CSRF); `netspeed without CSRF is rejected without mutation` (403, numeric value); `non-HTMX netspeed update redirects and persists` (valid request, maxRedirects:0, exact 302 and Location pathname `/manage/servers`, then fresh UI with explicit a= and API value 1500). Do not assert netspeed_target changed: production UpdateServer updates netspeed; the guard compares max(current,target).
 
