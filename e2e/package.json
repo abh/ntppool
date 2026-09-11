@@ -6,6 +6,7 @@
   "scripts": {
     "test": "NODE_OPTIONS=--no-deprecation playwright test",
     "test:headed": "NODE_OPTIONS=--no-deprecation playwright test --headed",
+    "typecheck": "tsc --project tsconfig.json",
     "report": "playwright show-report"
   },
   "dependencies": {
@@ -14,6 +15,7 @@
   "devDependencies": {
     "@playwright/test": "^1.49.0",
     "@types/pg": "^8.11.10",
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "typescript": "^5.8.3"
   }
 }
