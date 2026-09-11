@@ -13,10 +13,10 @@ assertion. Migration 027 and the matching API deployment are still required.
   checks. It hasn't been deployed to devel.
 - Generated web client: `27091be29c4ed929c85be8f71d6a5f5a385cdfc4`
   (`feat(api): generate server fixture client methods`).
-- Browser source: `5afb1328a359c47eaeddfc50c643dad57e708543`
-  (`Match the server add form action`), including
-  the 21-scenario commit `d5d272a7`, assertion-fix commit `7db514df`, and
-  verification-denial fix `12a33169`.
+- Browser source: `5615a015b0cb88c4f6c486c756d897858c1eeb3e`
+  (`Retain cleanup evidence for every server fixture`), including the
+  21-scenario commit `d5d272a7` and subsequent assertion, selector and evidence
+  fixes through `cc206692`.
 - Live devel revision: not established as matching either source revision.
   The authenticated fixture procedure returned HTTP 404, and no live fixture
   row or server was created.
@@ -108,12 +108,20 @@ changing the original checkout's symlink target. Plain `npm run typecheck`
 then passed with that local compiler. Focused discovery found 21 tests in the
 four new spec files, and full discovery found 98 tests in 20 files. Browser
 source `12a33169…` passed typecheck, the same 21-test focused discovery and
-`git diff --check`; its spec and quality re-review passed. The final
-`5afb1328` add-form selector correction passed typecheck, `git diff --check`
-and commit hooks without changing the 21 focused titles or 98-test full count.
-A synthetic intentional failure submitted the real verification form with a
-runtime-only sentinel token; the static console diagnostic and `test-results`
-contained no sentinel.
+`git diff --check`; its spec and quality re-review passed. The later selector
+fixes through `cc206692` passed typecheck, `git diff --check` and commit hooks
+without changing the 21 focused titles or 98-test full count. A synthetic
+intentional failure submitted the real verification form with a runtime-only
+sentinel token; the static console diagnostic and `test-results` contained no
+sentinel.
+
+At `cc206692`, a temporary live diagnostic logged in fresh users and acquired
+CSRF from the exact authenticated add form used by both cross-account tests.
+Before the selector fix, both cases failed because the old selector matched no
+input. After the fix, both passed (2 passed in 4.9 seconds). The diagnostic
+printed no session or CSRF value and disabled traces, screenshots and video.
+It did not create a server fixture or execute either fixture-backed scenario;
+it validates only the two real authenticated token-acquisition prerequisites.
 
 The live probe used the focused specs with `--retries=0`, one worker and
 `--max-failures=1`. Global setup passed. Its accounting is:
@@ -129,6 +137,22 @@ diagnostic contained the attempt ID with `account=unknown servers=unknown` and
 no credential or session token. No acceptance run ID or successful cleanup can
 be recorded until the RPCs are deployed. The failure is a deployment blocker,
 not a server-management product result.
+
+The final browser revision now attaches `server-fixture-cleanup-results` JSON
+after every fixture teardown. Each registered attempt records only attempt,
+account and server identifiers plus `succeeded` or `failed`; failed creates use
+null for IDs that were never returned. A local fake-transport harness first
+failed on the missing evidence, then passed all 3 scenarios after the fix. It
+covered successful cleanups, failed creation with an existing test failure,
+cleanup failure after a passing test body, reverse cleanup order, the 60-second
+budget and secret exclusion. This local harness did not call the live fixture
+API and does not change the blocked-run counts above.
+
+The whole-branch final review found this missing success evidence as its sole
+Minor issue. Scoped re-review of `5615a015…` passed both spec and quality with
+no remaining Critical, Important or Minor findings. The approval is for
+implemented/unverified coverage: it does not establish live fixture or browser
+acceptance.
 
 The two required fresh-fixture acceptance runs have not run. After deployment,
 run the 21-test command twice without `--max-failures`, with `--retries=0`, and
