@@ -1,5 +1,9 @@
 import { installSession, mintSession, uniqueTestEmail } from "../lib/auth";
+import { resolveDefaultAccountToken } from "../lib/accounts";
+import { bust } from "../lib/helpers";
 import { expect, getAccountAuditLogs, getServer, serverDeleteUrl, test, type ServerFixture } from "../lib/servers";
+
+test.use({ trace: "off" });
 
 const FORM = 'form[action="/manage/server/delete"]';
 
@@ -22,7 +26,7 @@ test("scheduling deletion persists the selected date", async ({ page, context, s
   const server = fixture.servers[0];
   await installSession(context, fixture.sessionToken);
   const url = serverDeleteUrl(server, fixture.accountToken);
-  await page.goto(url);
+  await page.goto(bust(url));
   const form = page.locator(FORM);
   const picker = form.locator('select[name="deletion_date"]');
   const selectedDate = await picker.locator("option").nth(1).getAttribute("value");
@@ -35,8 +39,9 @@ test("scheduling deletion persists the selected date", async ({ page, context, s
   const location = new URL(response.headers()["location"], response.url());
   expect(location.pathname).toBe("/manage/servers");
   expect(location.searchParams.get("a")).toBe(fixture.accountToken);
+  expect(location.hash).toBe(`#s-${server.ip}`);
 
-  await page.goto(url);
+  await page.goto(bust(url));
   await expect(page.locator(".block", { has: page.locator(FORM) })).toContainText(humanDate(selectedDate!));
   await expect(page.locator(`${FORM} input[name="cancel_deletion"]`)).toBeVisible();
   await expect(page.locator(`${FORM} select[name="deletion_date"]`)).toHaveCount(0);
@@ -56,7 +61,7 @@ test("cancelling deletion clears the scheduled date", async ({ page, context, se
   const server = fixture.servers[0];
   await installSession(context, fixture.sessionToken);
   const url = serverDeleteUrl(server, fixture.accountToken);
-  await page.goto(url);
+  await page.goto(bust(url));
   const form = page.locator(FORM);
   const postResponse = page.waitForResponse((response) => new URL(response.url()).pathname === "/manage/server/delete" && response.request().method() === "POST");
   await form.locator('input[name="cancel_deletion"]').click();
@@ -65,7 +70,8 @@ test("cancelling deletion clears the scheduled date", async ({ page, context, se
   const location = new URL(response.headers()["location"], response.url());
   expect(location.pathname).toBe("/manage/servers");
   expect(location.searchParams.get("a")).toBe(fixture.accountToken);
-  await page.goto(url);
+  expect(location.hash).toBe(`#s-${server.ip}`);
+  await page.goto(bust(url));
   await expect(page.locator(`${FORM} select[name="deletion_date"]`)).toBeVisible();
   await expect(page.locator(`${FORM} input[name="cancel_deletion"]`)).toHaveCount(0);
   await assertDeletionOn(fixture, 0, "");
@@ -80,7 +86,7 @@ test("API date validation is shown on the deletion picker", async ({ page, conte
   const fixture = await serverFixtures.create([{ ipVersion: 4, verified: true }]);
   const server = fixture.servers[0];
   await installSession(context, fixture.sessionToken);
-  await page.goto(serverDeleteUrl(server, fixture.accountToken));
+  await page.goto(bust(serverDeleteUrl(server, fixture.accountToken)));
   const csrf = await page.locator(`${FORM} input[name="auth_token"]`).inputValue();
   const response = await page.request.post("/manage/server/delete", {
     form: { server: server.serverId, a: fixture.accountToken, auth_token: csrf, deletion_date: "2099-1-01", submitbtn: "Schedule Deletion" },
@@ -106,7 +112,7 @@ test("cancellation is denied with two active unverified servers", async ({ page,
   ]);
   const target = fixture.servers[0];
   await installSession(context, fixture.sessionToken);
-  await page.goto(serverDeleteUrl(target, fixture.accountToken));
+  await page.goto(bust(serverDeleteUrl(target, fixture.accountToken)));
   await page.locator(`${FORM} input[name="cancel_deletion"]`).click();
   await expect(page.locator('.alert.alert-danger[role="alert"]')).toHaveText("Please verify active servers in the account first.");
   await assertDeletionOn(fixture, 0, "2099-01-01");
@@ -132,12 +138,10 @@ test("another account cannot schedule the owner's server", async ({ browser, ser
   await installSession(outsiderContext, outsiderSession);
   const outsiderPage = await outsiderContext.newPage();
   try {
-    await outsiderPage.goto("/manage/servers");
-    const outsiderAccount = new URL(outsiderPage.url()).searchParams.get("a");
-    expect(outsiderAccount).toBeTruthy();
+    const outsiderAccount = await resolveDefaultAccountToken(outsiderPage);
     const csrf = await outsiderPage.locator('form[action="/manage/server/add"] input[name="auth_token"]').inputValue();
     const response = await outsiderPage.request.post("/manage/server/delete", {
-      form: { server: server.ip, a: outsiderAccount!, auth_token: csrf, deletion_date: "2099-01-01", submitbtn: "Schedule Deletion" },
+      form: { server: server.ip, a: outsiderAccount, auth_token: csrf, deletion_date: "2099-01-01", submitbtn: "Schedule Deletion" },
       maxRedirects: 0,
     });
     expect(response.status()).toBe(404);

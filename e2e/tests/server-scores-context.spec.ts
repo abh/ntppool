@@ -1,5 +1,8 @@
 import { installSession, mintSession, uniqueTestEmail } from "../lib/auth";
+import { bust } from "../lib/helpers";
 import { expect, getServer, test, type FixtureServer, type RpcError } from "../lib/servers";
+
+test.use({ trace: "off" });
 
 function expandIPv6(ip: string): string {
   const [left, right = ""] = ip.split("::");
@@ -22,10 +25,10 @@ test("IPv6 scores normalize to the canonical fixture address", async ({ page, co
   const expandedRead = await getServer(fixture.sessionToken, fixture.accountToken, expanded);
   expect(expandedRead.id).toBe(compressedRead.id);
   await installSession(context, fixture.sessionToken);
-  const response = await page.request.get(`/scores/${expanded}`, { maxRedirects: 0 });
+  const response = await page.request.get(bust(`/scores/${expanded}`), { maxRedirects: 0 });
   expect(response.status()).toBe(301);
   expect(new URL(response.headers()["location"], response.url()).pathname).toBe(`/scores/${server.ip}`);
-  const canonical = await page.goto(scoresPath(server, fixture.accountToken));
+  const canonical = await page.goto(bust(scoresPath(server, fixture.accountToken)));
   expect(canonical?.status()).toBe(200);
   await expect(page.locator("h3").first()).toContainText(server.ip);
 });
@@ -35,11 +38,11 @@ test("staff scores edit targets the server's account from another active account
   const server = fixture.servers[0];
   const staffSession = await mintSession(uniqueTestEmail("scores-staff"), { grantStaff: true });
   await installSession(context, staffSession);
-  await page.goto("/manage");
+  await page.goto(bust("/manage"));
   const staffAccount = new URL(page.url()).searchParams.get("a");
   expect(staffAccount).toBeTruthy();
   expect(staffAccount).not.toBe(fixture.accountToken);
-  await page.goto(scoresPath(server, staffAccount!));
+  await page.goto(bust(scoresPath(server, staffAccount!)));
   const button = page.locator("#server_header_section button[hx-get]");
   await expect(button).toBeVisible();
   const requestPromise = page.waitForRequest((request) => new URL(request.url()).pathname === "/manage/admin/hostname/edit");
@@ -57,7 +60,11 @@ test("staff scores edit targets the server's account from another active account
 test("owner scores omit staff controls", async ({ page, context, serverFixtures }) => {
   const fixture = await serverFixtures.create([{ ipVersion: 4, verified: true }]);
   await installSession(context, fixture.sessionToken);
-  await page.goto(scoresPath(fixture.servers[0], fixture.accountToken));
+  const response = await page.goto(
+    bust(scoresPath(fixture.servers[0], fixture.accountToken)),
+  );
+  expect(response?.status()).toBe(200);
+  await expect(page.locator("h3").first()).toContainText(fixture.servers[0].ip);
   await expect(page.locator("#server_header_section button[hx-get]")).toHaveCount(0);
 });
 
@@ -65,12 +72,12 @@ test("unrelated scores omit private account details and staff controls", async (
   const fixture = await serverFixtures.create([{ ipVersion: 4, verified: true }]);
   const outsider = await mintSession(uniqueTestEmail("scores-outsider"));
   await installSession(context, outsider);
-  await page.goto("/manage");
+  await page.goto(bust("/manage"));
   const outsiderAccount = new URL(page.url()).searchParams.get("a");
   expect(outsiderAccount).toBeTruthy();
   const privateAccount = (await getServer(fixture.sessionToken, fixture.accountToken, fixture.servers[0].ip)).account;
   expect(privateAccount).toBeDefined();
-  await page.goto(scoresPath(fixture.servers[0], outsiderAccount!));
+  await page.goto(bust(scoresPath(fixture.servers[0], outsiderAccount!)));
   await expect(page.locator("body")).toContainText(fixture.servers[0].ip);
   await expect(page.locator("body")).not.toContainText(fixture.email);
   await expect(page.locator("body")).not.toContainText(fixture.accountToken);
@@ -90,7 +97,7 @@ test("public scores omit private account details and staff controls", async ({ b
   try {
     const base = process.env.NTP_BASE_URL;
     expect(base).toBeTruthy();
-    const response = await page.goto(new URL(`/scores/${fixture.servers[0].ip}`, base).toString());
+    const response = await page.goto(new URL(bust(`/scores/${fixture.servers[0].ip}`), base).toString());
     expect(response?.status()).toBe(200);
     await expect(page.locator("body")).toContainText(fixture.servers[0].ip);
     await expect(page.locator("body")).not.toContainText(fixture.email);
@@ -120,7 +127,7 @@ test("GetServer enforces private account visibility and edit permission", async 
   const outsiderContext = await browser.newContext();
   await installSession(outsiderContext, outsiderSession);
   const outsiderPage = await outsiderContext.newPage();
-  await outsiderPage.goto("/manage");
+  await outsiderPage.goto(bust("/manage"));
   const outsiderAccount = new URL(outsiderPage.url()).searchParams.get("a");
   await outsiderContext.close();
   expect(outsiderAccount).toBeTruthy();

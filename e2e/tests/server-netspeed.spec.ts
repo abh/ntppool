@@ -1,11 +1,14 @@
 import type { Page } from "@playwright/test";
 import { installSession } from "../lib/auth";
+import { bust } from "../lib/helpers";
 import { expect, getServer, test, type ServerFixture } from "../lib/servers";
+
+test.use({ trace: "off" });
 
 const UPDATE_PATH = "/manage/server/update/netspeed";
 
 async function openServer(page: Page, fixture: ServerFixture) {
-  await page.goto(`/manage/servers?a=${encodeURIComponent(fixture.accountToken)}`);
+  await page.goto(bust(`/manage/servers?a=${encodeURIComponent(fixture.accountToken)}`));
   return page.locator(`#server_${fixture.servers[0].serverId}`);
 }
 
@@ -25,8 +28,9 @@ test("verified netspeed updates replace the HTMX fragment without navigation", a
   const response = await responsePromise;
   expect(response.request().headers()["hx-request"]).toBe("true");
   expect(response.status()).toBe(200);
-  await expect(page.locator(`#server_${fixture.servers[0].serverId} select[name="netspeed"]`)).toHaveValue("1500");
-  expect(await oldElement?.evaluate((node) => node.isConnected)).toBe(false);
+  expect(oldElement).not.toBeNull();
+  await expect.poll(() => oldElement!.evaluate((node) => node.isConnected)).toBe(false);
+  await expect(page.locator(`#netspeed_${fixture.servers[0].serverId}`)).toHaveText("1.5 Mbit");
   expect(navigations).toBe(0);
   expect(await currentSpeed(fixture)).toBe(1500);
   await openServer(page, fixture);
@@ -44,8 +48,17 @@ test("unverified netspeed increase shows the verification error and preserves sp
   });
   expect(response.status()).toBe(200);
   const body = await response.text();
-  expect(body).toMatch(/please verify your server before increasing the netspeed/i);
-  expect(body).toContain('value="512"');
+  const disposable = await context.newPage();
+  try {
+    await disposable.setContent(body);
+    const responseFragment = disposable.locator(
+      `#server_${fixture.servers[0].serverId}`,
+    );
+    await expect(responseFragment.locator(`#netspeed_${fixture.servers[0].serverId}`)).toHaveText("512 Kbit");
+    await expect(responseFragment.locator('.alert.alert-danger[role="alert"]')).toHaveText(/^please verify your server before increasing the netspeed$/i);
+  } finally {
+    await disposable.close();
+  }
   expect(await currentSpeed(fixture)).toBe(512);
 });
 
