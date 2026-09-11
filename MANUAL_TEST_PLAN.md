@@ -7,10 +7,13 @@ Covers features touched in `ntppool` (Perl web) and `../go/ntp/api` (Go API) sin
 - **Cache busting**: append `?x=12345` (random) to URLs when content looks stale.
 - Test as both a **regular logged-in user** and a **staff/admin user** where noted.
 - Items marked with a spec path and test name — e.g. (`e2e/tests/foo.spec.ts` →
-  "test name") — are covered by the automated Playwright suite in `e2e/` and
-  need no manual run. Everything else is manual.
-- Automated items assert on the returned HTML. None of them inspect backend
-  logs, so a log check (§12's "no 500s in logs" item, for example) stays manual.
+  "test name") — have an automated Playwright scenario in `e2e/`. A checked
+  box means that scenario has passed live. Items explicitly marked
+  **implemented; live-unverified** stay unchecked until the matching revisions
+  and fixture schema are deployed and the scenario passes.
+- Automated items assert through the browser and, where noted, authenticated
+  API reads. They don't inspect backend process logs, so a log check (§12's "no
+  500s in logs" item, for example) stays manual.
 
 Sections below that mention `int_api` or `NP::IntAPI` describe what a migration
 moved *away from*. `lib/NP/IntAPI.pm` was deleted in `a4f06c76` and no Perl call
@@ -295,13 +298,54 @@ rediscover known breakage; check them off once the issue lands.
 
 ## 8. Server verification & management
 
-- [ ] Verify-server page (`/verify`) loads server verification via CAPI (`GetServerVerification`).
-- [ ] Complete a server verification — success and audit logged by API.
-- [ ] Add a new server — full setup (scores + review schedule) done in one API call.
-- [ ] Re-add a server that was **deleted in the past** — allowed, no false "already exists".
-- [ ] Add server with a hostname — DNS validation runs on `UpdateServer`.
-- [ ] IPv6 server lookups normalize correctly; permission-aware `GetServer` hides other accounts' detail.
-- [ ] Scores page (`/scores/<ip>`) loads with correct account context for admin edit buttons.
+- [ ] **Implemented; live-unverified:** the pending-token confirmation page
+  redirects into the owner's account, shows the expected server and completes
+  verification through the real form. The same scenario reads the resulting
+  server audit event. (`e2e/tests/server-verification.spec.ts` → "pending
+  verification redirects into the owner's account and completes")
+- [ ] **Implemented; live-unverified:** invalid tokens return not found;
+  missing-CSRF and cross-account completion attempts are refused without
+  changing the owner's verification state.
+  (`e2e/tests/server-verification.spec.ts` → "invalid verification token is not
+  found", "verification without CSRF is refused and stays pending", and
+  "another account cannot complete the owner's verification")
+- [ ] Add a new server through precheck — full setup (scores + review schedule)
+  is done in one API call. **Deferred:** this needs a disposable routable
+  address and controlled NTP checks; the clean add form alone doesn't cover it.
+- [ ] Re-add a server that was **deleted in the past** — allowed, no false
+  "already exists". **Deferred** with the real add flow.
+- [ ] Add a server with a hostname through `AddServerPrecheck`. **Deferred:**
+  this needs controlled DNS and NTP infrastructure.
+- [ ] Successfully change an existing server's hostname through
+  `UpdateServer`. **Deferred:** this is a separate DNS-validation path from
+  hostname add and needs controlled DNS.
+- [ ] Acquire a verification challenge through the external NTP verification
+  infrastructure. **Deferred:** the automated confirmation scenario starts
+  with a pending token and doesn't claim challenge acquisition.
+- [ ] **Implemented; live-unverified:** expanded and compressed IPv6 forms
+  resolve the same server, and the scores route redirects to the canonical
+  address. (`e2e/tests/server-scores-context.spec.ts` → "IPv6 scores normalize
+  to the canonical fixture address")
+- [ ] **Implemented; live-unverified:** staff opening a server while another
+  account is active gets an edit request and form targeted at the server's
+  account. (`e2e/tests/server-scores-context.spec.ts` → "staff scores edit
+  targets the server's account from another active account")
+- [ ] **Implemented; live-unverified:** owner, unrelated-account and public
+  score pages omit staff controls; unrelated and public pages also omit the
+  private account's email, token, display name and public URL.
+  (`e2e/tests/server-scores-context.spec.ts` → "owner scores omit staff
+  controls", "unrelated scores omit private account details and staff
+  controls", and "public scores omit private account details and staff
+  controls")
+- [ ] **Implemented; live-unverified:** permission-aware `GetServer` returns
+  private account fields to the owner and staff, omits the account object for
+  unrelated and unauthenticated reads, and denies edit-required unrelated and
+  unauthenticated reads. (`e2e/tests/server-scores-context.spec.ts` →
+  "GetServer enforces private account visibility and edit permission")
+- [ ] Prove initial score/review scheduling is atomic, audit failure rolls back
+  each mutation, and each web action makes the exact expected RPC count.
+  **Deferred:** these need Go integration tests or server instrumentation;
+  browser success can't establish them.
 
 ### 8a. Scheduled server deletion (schedule / cancel — auth + error-surfacing fix)
 
@@ -311,11 +355,34 @@ rediscover known breakage; check them off once the issue lands.
 > cancel now pass auth, surface errors, and redirect on success so the page
 > re-fetches state via CAPI.
 
-- [ ] Schedule a server for deletion (pick a date on `/manage/server/delete`) — succeeds and the page shows the **scheduled state** (date + cancel), **not** the date-picker again.
-- [ ] Induce a schedule failure (logged-out/expired session, or an API error) — a red error alert renders on the date-picker page instead of a silent no-op.
-- [ ] Cancel a scheduled deletion — succeeds; the server returns to normal with no deletion date.
-- [ ] Cancel without the `can_add_servers` permission — shows the "verify active servers first" error, not a silent failure.
-- [ ] Schedule/cancel are recorded in the audit log (written by the Go API in the same transaction).
+- [ ] **Implemented; live-unverified:** scheduling the date offered by the UI
+  redirects and a fresh read shows that date, the cancel control and no picker.
+  (`e2e/tests/server-deletion.spec.ts` → "scheduling deletion persists the
+  selected date")
+- [ ] **Implemented; live-unverified:** an independent fixture that starts
+  scheduled can be cancelled; a fresh read shows an empty deletion date and
+  the picker. (`e2e/tests/server-deletion.spec.ts` → "cancelling deletion
+  clears the scheduled date")
+- [ ] **Implemented; live-unverified:** an authenticated, valid-CSRF schedule
+  with `2099-1-01` renders the API's exact date-format error in the destructive
+  alert and leaves state unchanged. (`e2e/tests/server-deletion.spec.ts` → "API
+  date validation is shown on the deletion picker")
+- [ ] Render an arbitrary downstream cancellation failure with otherwise-valid
+  prerequisites. **Deferred:** permission denial is covered, but controlled
+  downstream failure needs a narrowly scoped failure surface.
+- [ ] **Implemented; live-unverified:** cancellation with two active unverified
+  servers shows "Please verify active servers in the account first." and
+  preserves the scheduled date. (`e2e/tests/server-deletion.spec.ts` →
+  "cancellation is denied with two active unverified servers")
+- [ ] **Implemented; live-unverified:** missing CSRF returns 403 and a
+  valid-CSRF cross-account schedule returns 404; both preserve owner state.
+  (`e2e/tests/server-deletion.spec.ts` → "deletion without CSRF is refused
+  without mutation" and "another account cannot schedule the owner's server")
+- [ ] **Implemented; live-unverified:** successful schedule and cancellation
+  correlate the observed audit record to actor, account and server in the two
+  success scenarios above. Observing the record doesn't prove transactional
+  atomicity. `DeleteServer` still performs its mutation and best-effort audit
+  as separate operations.
 
 ### 8b. Netspeed update (`int_api` → CAPI migration, issue #35)
 
@@ -325,11 +392,23 @@ rediscover known breakage; check them off once the issue lands.
 > ConnectRPC `connect_code` instead of old REST status codes, and the
 > success path reuses the API response's server data instead of re-fetching.
 
-- [ ] Increase netspeed on a **verified** server via the HTMX select on `/manage/servers` — succeeds, updated value shown, no page reload.
-- [ ] Increase netspeed on an **unverified** server — shows "Please verify your server before increasing the netspeed" inline, value not changed.
-- [ ] Submit a non-numeric netspeed value (bypass the `<select>`, e.g. via curl) — returns **400**.
-- [ ] Submit without the CSRF auth token — returns **403**.
-- [ ] Non-HTMX request (no `HX-Request` header) — redirects to `/manage/servers` instead of rendering the fragment.
+- [ ] **Implemented; live-unverified:** increasing a verified server through the
+  HTMX select sends `HX-Request`, replaces the server fragment without document
+  navigation, and persists the selected speed. (`e2e/tests/server-netspeed.spec.ts`
+  → "verified netspeed updates replace the HTMX fragment without navigation")
+- [ ] **Implemented; live-unverified:** increasing an unverified server shows
+  "Please verify your server before increasing the netspeed" inline and keeps
+  its effective speed. (`e2e/tests/server-netspeed.spec.ts` → "unverified
+  netspeed increase shows the verification error and preserves speed")
+- [ ] **Implemented; live-unverified:** a nonnumeric value with valid CSRF
+  returns 400 and doesn't mutate the server. (`e2e/tests/server-netspeed.spec.ts`
+  → "nonnumeric netspeed is rejected without mutation")
+- [ ] **Implemented; live-unverified:** a numeric value without CSRF returns
+  403 and doesn't mutate the server. (`e2e/tests/server-netspeed.spec.ts` →
+  "netspeed without CSRF is rejected without mutation")
+- [ ] **Implemented; live-unverified:** a valid non-HTMX update redirects to
+  `/manage/servers` and persists on a fresh read. (`e2e/tests/server-netspeed.spec.ts`
+  → "non-HTMX netspeed update redirects and persists")
 
 ## 9. Score graphs / PNG endpoints
 
