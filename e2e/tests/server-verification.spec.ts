@@ -213,13 +213,25 @@ test("pending verification redirects into the owner's account and completes", as
       "verification form did not return the success redirect",
     );
   }
-  const completedLocation = new URL(
-    completed.headers()["location"],
-    completed.url(),
-  );
-  expect(completedLocation.pathname).toBe("/manage/servers");
-  expect(completedLocation.searchParams.get("a")).toBe(fixture.accountToken);
-  expect(completedLocation.hash).toBe(`#s-${server.ip}`);
+  let completedTargetMatches = false;
+  try {
+    const location = completed.headers()["location"];
+    if (location) {
+      const target = new URL(location, MANAGE_URL);
+      completedTargetMatches =
+        target.pathname === "/manage/servers" &&
+        target.searchParams.get("a") === fixture.accountToken &&
+        target.hash === `#s-${server.ip}`;
+    }
+  } catch {
+    // Report the malformed or secret-bearing target only through the static failure below.
+  }
+  if (!completedTargetMatches) {
+    await failWithoutVerificationSecret(
+      page,
+      "verification form redirected to the wrong target",
+    );
+  }
 
   expect((await getServer(fixture.sessionToken, fixture.accountToken, server.ip)).verification.verified).toBe(true);
   await navigateToVerification(page, server.verificationToken, fixture.accountToken);
@@ -292,17 +304,25 @@ test("another account cannot complete the owner's verification", async ({ browse
       path,
       server.ip,
     );
-    if (!state.present || !state.actionMatches) {
+    if (
+      !state.present ||
+      !state.actionMatches ||
+      state.accountToken !== outsiderAccount
+    ) {
       await failWithoutVerificationSecret(
         outsiderPage,
-        "cross-account verification form was missing",
+        "cross-account verification form targeted the wrong account",
       );
     }
     const form = outsiderPage.locator(
       'form[action^="/manage/server/verify/"]',
     );
     try {
-      await form.locator('input[name="auth_token"]').fill(csrf);
+      await form
+        .locator('input[name="auth_token"]')
+        .evaluate((input, value) => {
+          (input as HTMLInputElement).value = value;
+        }, csrf);
     } catch {
       await failWithoutVerificationSecret(
         outsiderPage,
