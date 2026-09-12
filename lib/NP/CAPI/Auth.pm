@@ -13,6 +13,8 @@ our @EXPORT_OK = qw(
     process_auth0_login
     get_oauth_login_url
     create_test_session
+    create_server_test_fixture
+    cleanup_server_test_fixture
 );
 
 =head1 NAME
@@ -21,7 +23,7 @@ NP::CAPI::Auth - ConnectRPC client for AuthService
 
 =head1 SYNOPSIS
 
-    use NP::CAPI::Auth qw(process_auth0_login get_oauth_login_url create_test_session);
+    use NP::CAPI::Auth qw(process_auth0_login get_oauth_login_url create_test_session create_server_test_fixture cleanup_server_test_fixture);
     # ProcessAuth0Login handles the Auth0 authorization code callback.
 It validates the authorization code with Auth0, creates or updates user and identity records,
 creates a session, and returns the session token for cookie storage.
@@ -47,6 +49,19 @@ This is a dev-only endpoint: it only works in the devel deploy environment and
 requires a service key carrying the test-session-api audience.
 Authentication: service key with the test-session-api audience.
     my $result = create_test_session(
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
+    );
+
+    # Fixture administration requires devel and the test-session-api service audience.
+Creates a fresh ordinary identity and bounded server prerequisites atomically.
+    my $result = create_server_test_fixture(
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
+    );
+
+    # Removes only the attempt's recorded servers; unknown attempts become tombstones.
+    my $result = cleanup_server_test_fixture(
         $self->api_auth_params,      # Provides auth and context
         account => $account->{id_token},
     );
@@ -428,6 +443,188 @@ sub create_test_session {
     return connect_rpc(
         service     => 'ntppool.auth.v1.AuthService',
         method      => 'CreateTestSession',
+        request     => \%request,
+        %args  # Pass through auth, account, context
+    );
+}
+
+
+=head2 create_server_test_fixture
+
+Fixture administration requires devel and the test-session-api service audience.
+Creates a fresh ordinary identity and bounded server prerequisites atomically.
+
+B<Arguments:>
+
+    my $result = create_server_test_fixture(
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
+        attempt_id => $value,       # string
+        servers => $value,       # arrayref[hashref (ServerTestFixtureSpec)]
+    );
+
+B<Returns:>
+
+Hashref with structure:
+
+    {
+        code         => 200,         # HTTP status code
+        status_line  => "200 OK",    # HTTP status text
+        connect_code => undef,       # ConnectRPC error code (or undef)
+        data         => {            # Response data
+            attempt_id => ...,  # string
+            account_token => ...,  # string
+            account_id => ...,  # int
+            user_id => ...,  # int
+            email => ...,  # string
+            session_token => ...,  # string
+            servers => [
+            {
+                server_id => ...,  # int
+                ip => ...,  # string
+                ip_version => ...,  # int
+                verification_token => ...,  # string
+                verified => ...,  # bool
+                deletion_on => ...,  # string
+                netspeed => ...,  # int
+            },
+            # ... more items
+        ],  # arrayref[hashref (ServerTestFixtureServer)]
+        },
+        error        => undef,       # Error message (if any)
+        trace_id     => "...",       # OpenTelemetry trace ID
+    }
+
+B<Response Data Structure:>
+
+The C<data> field contains:
+
+=over 4
+
+=item * B<attempt_id> (string)
+
+
+=item * B<account_token> (string)
+
+
+=item * B<account_id> (int)
+
+
+=item * B<user_id> (int)
+
+
+=item * B<email> (string)
+
+
+=item * B<session_token> (string)
+
+
+=item * B<servers> (arrayref[hashref (ServerTestFixtureServer)])
+
+
+=back
+
+B<ConnectRPC Error Codes:>
+
+    unauthenticated, permission_denied, internal, invalid_argument, etc.
+
+B<Example:>
+
+    my $result = create_server_test_fixture(
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
+    );
+
+    if ($result->{error}) {
+        warn "Error: $result->{error}";
+    } else {
+        my $data = $result->{data};
+        # Use response fields...
+    }
+
+=cut
+
+sub create_server_test_fixture {
+    my $validation_error = validate_key_value_args('create_server_test_fixture', @_);
+    return $validation_error if $validation_error;
+
+    my %args = @_;
+
+    # Extract request fields from args
+    my %request = ();
+    $request{'attempt_id'} = delete $args{'attempt_id'} if exists $args{'attempt_id'};
+    $request{'servers'} = delete $args{'servers'} if exists $args{'servers'};
+
+    return connect_rpc(
+        service     => 'ntppool.auth.v1.AuthService',
+        method      => 'CreateServerTestFixture',
+        request     => \%request,
+        %args  # Pass through auth, account, context
+    );
+}
+
+
+=head2 cleanup_server_test_fixture
+
+Removes only the attempt's recorded servers; unknown attempts become tombstones.
+
+B<Arguments:>
+
+    my $result = cleanup_server_test_fixture(
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
+        attempt_id => $value,       # string
+    );
+
+B<Returns:>
+
+Hashref with structure:
+
+    {
+        code         => 200,         # HTTP status code
+        status_line  => "200 OK",    # HTTP status text
+        connect_code => undef,       # ConnectRPC error code (or undef)
+        data         => {            # Response data
+            attempt_id => ...,  # string
+            deleted_servers => ...,  # int
+        },
+        error        => undef,       # Error message (if any)
+        trace_id     => "...",       # OpenTelemetry trace ID
+    }
+
+B<ConnectRPC Error Codes:>
+
+    unauthenticated, permission_denied, internal, invalid_argument, etc.
+
+B<Example:>
+
+    my $result = cleanup_server_test_fixture(
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
+    );
+
+    if ($result->{error}) {
+        warn "Error: $result->{error}";
+    } else {
+        my $data = $result->{data};
+        # Use response fields...
+    }
+
+=cut
+
+sub cleanup_server_test_fixture {
+    my $validation_error = validate_key_value_args('cleanup_server_test_fixture', @_);
+    return $validation_error if $validation_error;
+
+    my %args = @_;
+
+    # Extract request fields from args
+    my %request = ();
+    $request{'attempt_id'} = delete $args{'attempt_id'} if exists $args{'attempt_id'};
+
+    return connect_rpc(
+        service     => 'ntppool.auth.v1.AuthService',
+        method      => 'CleanupServerTestFixture',
         request     => \%request,
         %args  # Pass through auth, account, context
     );

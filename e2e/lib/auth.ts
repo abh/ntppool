@@ -44,7 +44,18 @@ interface MintResult {
  * the call was about, so failures stay as greppable as before the transport was
  * shared (e.g. "CreateTestSession failed: 500 …").
  */
-async function connectRpc<T>(
+export class RpcError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+    readonly code: string,
+  ) {
+    super(message);
+    this.name = "RpcError";
+  }
+}
+
+export async function connectRpc<T>(
   label: string,
   procedure: string,
   headers: Record<string, string>,
@@ -63,6 +74,7 @@ async function connectRpc<T>(
       method: "POST",
       headers: { "Content-Type": "application/json", ...headers },
       body: JSON.stringify(body),
+      signal: AbortSignal.timeout(15_000),
     });
   } catch (err) {
     // Network/DNS failure — almost always a wrong or unreachable
@@ -76,14 +88,29 @@ async function connectRpc<T>(
   }
 
   if (!resp.ok) {
-    const text = await resp.text();
-    throw new Error(
+    let code = "unknown";
+    try {
+      const errorBody = (await resp.json()) as { code?: unknown };
+      if (typeof errorBody.code === "string" && errorBody.code) {
+        code = errorBody.code;
+      }
+    } catch {
+      // An HTML/empty error response is still reported by status without
+      // attaching the body, which can contain credentials or fixture secrets.
+    }
+    throw new RpcError(
       `${label} failed${subject && ` for ${subject}`}: ` +
-        `${resp.status} ${resp.statusText} - ${text}`,
+        `${resp.status} ${resp.statusText} (Connect code: ${code})`,
+      resp.status,
+      code,
     );
   }
 
-  return (await resp.json()) as T;
+  try {
+    return (await resp.json()) as T;
+  } catch {
+    throw new Error(`${label} returned malformed JSON`);
+  }
 }
 
 /**
@@ -115,9 +142,7 @@ export async function mintSession(
   );
 
   if (!data.session_token) {
-    throw new Error(
-      `CreateTestSession response missing session_token: ${JSON.stringify(data)}`,
-    );
+    throw new Error("CreateTestSession response missing session_token");
   }
 
   return data.session_token;
@@ -159,9 +184,7 @@ export async function getAccountNumericId(
   // which match /^\d+$/.
   const numericId = String(data.account?.account_id ?? "");
   if (!/^\d+$/.test(numericId)) {
-    throw new Error(
-      `GetAccount returned no usable account.account_id: ${JSON.stringify(data)}`,
-    );
+    throw new Error("GetAccount returned no usable account.account_id");
   }
   return numericId;
 }
@@ -189,6 +212,15 @@ export async function loginAs(
   opts: MintOptions = {},
 ): Promise<{ email: string; sessionToken: string }> {
   const sessionToken = await mintSession(email, opts);
+  await installSession(context, sessionToken);
+  return { email, sessionToken };
+}
+
+/** Install an already-minted session as the manage host's browser cookie. */
+export async function installSession(
+  context: BrowserContext,
+  sessionToken: string,
+): Promise<void> {
   // The Perl value is "{session_token};{unix_seconds}", but that is never what
   // the browser actually stores: Plack bakes the Set-Cookie header through
   // Cookie::Baker, which URL-encodes the value (the ";" becomes "%3B"), and
@@ -211,8 +243,6 @@ export async function loginAs(
       sameSite: "Lax",
     },
   ]);
-
-  return { email, sessionToken };
 }
 
 /**

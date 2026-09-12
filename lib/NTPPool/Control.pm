@@ -579,6 +579,7 @@ sub post_process {
 
         # ntppool version / build
         ['X-NPV' => $version->current_release . " (" . $version->hostname . ")"],
+        ['X-NTPPool-Environment' => $self->deployment_mode],
     );
 
     for my $h (@headers) {

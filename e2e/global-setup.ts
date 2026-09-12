@@ -1,6 +1,10 @@
 import "dotenv/config";
 import { chromium } from "@playwright/test";
-import { loginAs, MANAGE_URL, uniqueTestEmail } from "./lib/auth";
+import { connectRpc, loginAs, MANAGE_URL, uniqueTestEmail } from "./lib/auth";
+import {
+  requireDevelEnvironmentHeader,
+  requireDevelSettings,
+} from "./lib/deployment";
 
 // Run once before the whole suite. Validates configuration and proves we can
 // actually mint a session, so a misconfigured run fails immediately with ONE
@@ -9,6 +13,7 @@ import { loginAs, MANAGE_URL, uniqueTestEmail } from "./lib/auth";
 export default async function globalSetup() {
   const required = [
     "NTP_BASE_URL",
+    "NTP_MANAGE_URL",
     "NTP_INTERNAL_API_URL",
     "NTP_TEST_SESSION_KEY",
   ];
@@ -34,6 +39,40 @@ export default async function globalSetup() {
     throw new Error(
       `NTP_INTERNAL_API_URL is still the placeholder (${internal}).\n` +
         `Point it at the real internal Go API (Tailscale-reachable). See e2e/README.md.`,
+    );
+  }
+
+  // Refuse to create sessions or fixtures until the API and both web surfaces
+  // independently identify themselves as the devel deployment.
+  try {
+    const settings = await connectRpc<unknown>(
+      "GetSettings",
+      "ntppool.system.v1.SystemService/GetSettings",
+      {},
+      {},
+    );
+    requireDevelSettings(settings);
+
+    const targets = [
+      { label: "public web", url: new URL("/", process.env.NTP_BASE_URL!).toString() },
+      { label: "manage web", url: new URL("/manage", MANAGE_URL).toString() },
+    ];
+    await Promise.all(
+      targets.map(async ({ label, url }) => {
+        const response = await fetch(url, {
+          signal: AbortSignal.timeout(15_000),
+        });
+        requireDevelEnvironmentHeader(
+          label,
+          response.url,
+          response.headers.get("x-ntppool-environment"),
+        );
+      }),
+    );
+  } catch (err) {
+    throw new Error(
+      `e2e environment preflight failed; refusing to run outside a verified devel deployment.\n` +
+        `Underlying error: ${(err as Error).message}`,
     );
   }
 
