@@ -298,6 +298,25 @@ test("an empty query clears earlier results without an error", async ({
   expect(pageErrors).toEqual([]);
 });
 
+test("a staff search POST without a CSRF token is refused", async ({
+  page,
+  context,
+  browser,
+}) => {
+  const target = await createSearchTarget(browser, "search-csrf");
+  await openStaffSearch(page, context, "search-csrf");
+
+  // The same request the form sends, minus auth_token. manage_dispatch
+  // checks the token for every POST under /manage/admin.
+  const response = await page.request.post(SEARCH_PATH, {
+    form: { q: target.accountName },
+    headers: { "HX-Request": "true" },
+    maxRedirects: 0,
+  });
+  expect(response.status()).toBe(403);
+  expect(await response.text()).not.toContain(target.email);
+});
+
 test("a non-staff user cannot reach staff search", async ({
   page,
   context,
