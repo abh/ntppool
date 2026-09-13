@@ -37,6 +37,34 @@ test("verified netspeed updates replace the HTMX fragment without navigation", a
   await expect(page.locator(`#netspeed_${fixture.servers[0].serverId}`)).toHaveText("1.5 Mbit");
 });
 
+test("netspeed placeholder is disabled and cannot post an empty speed", async ({ page, context, serverFixtures }) => {
+  const fixture = await serverFixtures.create([{ ipVersion: 4, verified: true }]);
+  await installSession(context, fixture.sessionToken);
+  const fragment = await openServer(page, fixture);
+  const select = fragment.locator('select[name="netspeed"]');
+  const placeholder = select.locator("option").first();
+  await expect(placeholder).toHaveText("Set connection speed");
+  await expect(placeholder).toHaveAttribute("value", "");
+  await expect(placeholder).toBeDisabled();
+  await expect(placeholder).toHaveJSProperty("selected", true);
+  const posted: string[] = [];
+  page.on("request", (request) => {
+    if (new URL(request.url()).pathname === UPDATE_PATH && request.method() === "POST") posted.push(request.postData() ?? "");
+  });
+  // Playwright 1.60 doesn't throw on a disabled option: it logs "option being
+  // selected is not enabled" and retries until the action timeout, never
+  // selecting it or firing change. The short timeout only bounds that retry.
+  await expect(select.selectOption("", { timeout: 1_000 })).rejects.toThrow(/option being selected is not enabled/);
+  await expect(placeholder).toHaveJSProperty("selected", true);
+  expect(await currentSpeed(fixture)).toBe(512);
+  // A real pick replaces a sleep for the "no POST" check: a POST from the
+  // rejected attempt would have gone out before this one.
+  const responsePromise = page.waitForResponse((response) => new URL(response.url()).pathname === UPDATE_PATH && response.request().method() === "POST");
+  await select.selectOption("1500");
+  expect((await responsePromise).status()).toBe(200);
+  expect(posted).toEqual([expect.stringMatching(/(?:^|&)netspeed=1500(?:&|$)/)]);
+});
+
 test("unverified netspeed increase shows the verification error and preserves speed", async ({ page, context, serverFixtures }) => {
   const fixture = await serverFixtures.create([{ ipVersion: 4 }]);
   await installSession(context, fixture.sessionToken);
