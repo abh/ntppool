@@ -133,6 +133,58 @@ test("monitor admin changes the per-server limit and restores Default (1)", asyn
   await expectNoErrorBleed(page, page.url());
 });
 
+test("failed save shows the HTTP status and trace ID and saves nothing", async ({
+  page,
+  context,
+}) => {
+  await loginAs(context, uniqueTestEmail("monitor-config-error"), {
+    grantMonitorAdmin: true,
+  });
+  const accountToken = await resolveDefaultAccountToken(page);
+  const accountURL = accountFormUrl(accountToken);
+  await expectCleanPage(page, bust(accountURL));
+
+  const select = perServerSelect(page);
+  await openMonitorConfigEditor(page);
+  await expect(select).toHaveValue("0");
+  await select.selectOption("3");
+
+  // A bogus CSRF token is the cheapest reliable failure: the account
+  // dispatcher answers 403 from check_auth_token before the save handler runs.
+  // openMonitorConfigEditor has already waited for the form to settle, so this
+  // edits the live form htmx will post.
+  await page
+    .locator('#monitor-config-display input[name="auth_token"]')
+    .evaluate((input: HTMLInputElement) => {
+      input.value = "bogus-auth-token";
+    });
+
+  // swapMonitorConfig asserts a 200, so wait for the failing POST directly.
+  const responsePromise = page.waitForResponse(
+    (response) =>
+      new URL(response.url()).pathname === MONITOR_CONFIG_PATH &&
+      response.request().method() === "POST",
+  );
+  await page.getByRole("button", { name: "Save Changes" }).click();
+  expect((await responsePromise).status()).toBe(403);
+
+  await expect(page.locator("#monitor-config-error")).toBeVisible();
+  await expect(page.locator("#monitor-config-error-message")).toHaveText(
+    "Permission denied (HTTP 403)",
+  );
+  await expect(page.locator("#monitor-config-error-traceid")).toHaveText(
+    /^[0-9a-f]{32}$/,
+  );
+
+  // htmx does not swap a 403, so the edit form keeps the unsaved choice.
+  await expect(select).toHaveValue("3");
+
+  await expectCleanPage(page, bust(accountURL));
+  await expect(perServerDisplay(page)).toContainText(/\b1\b/);
+  await openMonitorConfigEditor(page);
+  await expect(select).toHaveValue("0");
+});
+
 test("non-monitor-admin cannot reach or update monitor configuration", async ({
   page,
   context,
