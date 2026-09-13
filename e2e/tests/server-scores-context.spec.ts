@@ -55,6 +55,18 @@ test("staff scores edit targets the server's account from another active account
   const saveTarget = new URL((await editForm.getAttribute("hx-post"))!, page.url());
   expect(saveTarget.searchParams.get("server")).toBe(server.ip);
   expect(saveTarget.searchParams.get("a")).toBe(fixture.accountToken);
+
+  const zoneButton = page.locator("#server_edit_zones");
+  const zoneEditTarget = new URL((await zoneButton.getAttribute("hx-get"))!, page.url());
+  expect(zoneEditTarget.searchParams.get("server")).toBe(server.ip);
+  expect(zoneEditTarget.searchParams.get("a")).toBe(fixture.accountToken);
+  await zoneButton.click();
+  const zoneSaveTarget = new URL((await page.locator("#zone_list button[hx-post]").getAttribute("hx-post"))!, page.url());
+  expect(zoneSaveTarget.searchParams.get("server")).toBe(server.ip);
+  expect(zoneSaveTarget.searchParams.get("a")).toBe(fixture.accountToken);
+  const zoneCancelTarget = new URL((await page.locator("#zone_list button[hx-get]").getAttribute("hx-get"))!, page.url());
+  expect(zoneCancelTarget.searchParams.get("server")).toBe(server.ip);
+  expect(zoneCancelTarget.searchParams.get("a")).toBe(fixture.accountToken);
 });
 
 test("owner scores omit staff controls", async ({ page, context, serverFixtures }) => {

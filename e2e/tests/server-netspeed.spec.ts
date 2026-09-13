@@ -55,7 +55,9 @@ test("unverified netspeed increase shows the verification error and preserves sp
       `#server_${fixture.servers[0].serverId}`,
     );
     await expect(responseFragment.locator(`#netspeed_${fixture.servers[0].serverId}`)).toHaveText("512 Kbit");
-    await expect(responseFragment.locator('.alert.alert-danger[role="alert"]')).toHaveText(/^please verify your server before increasing the netspeed$/i);
+    const alert = responseFragment.locator('.alert.alert-danger[role="alert"]');
+    await expect(alert).toContainText(/please verify your server before increasing the netspeed/i);
+    await expect(alert).toContainText(/Trace ID: [0-9a-f]{32}/i);
   } finally {
     await disposable.close();
   }

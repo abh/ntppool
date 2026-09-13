@@ -191,7 +191,8 @@ Specs map to `MANUAL_TEST_PLAN.md` sections: `login` (§1), `regression-smoke`
 `server-netspeed` and `server-scores-context` (§8/§8a/§8b),
 `account-dissolve` (§2), `staff-deletion` (§3/§4), `invites` (§4a),
 `account-frozen` (§2), `account-download` (§4c), `staff-search` (§13),
-`monitor-config` (§14).
+`account-create` (§1 + §4), `account-team` (§4), `account-update` (§4),
+`dns-zone` (§6, auth-guard portion), `monitor-config` (§14).
 Staff specs need the `grant_staff` / `grant_vendor_admin` RPC build deployed.
 Selectors are derived from the templates and may need adjustment against the
 live site on first run.

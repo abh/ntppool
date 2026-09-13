@@ -18,7 +18,8 @@ function humanDate(isoDate: string): string {
 
 async function assertDeletionOn(fixture: ServerFixture, index: number, value: string) {
   const server = fixture.servers[index];
-  expect((await getServer(fixture.sessionToken, fixture.accountToken, server.ip)).deletionOn).toBe(value);
+  const deletionOn = (await getServer(fixture.sessionToken, fixture.accountToken, server.ip)).deletionOn;
+  expect(deletionOn).toBe(value ? `${value}T00:00:00Z` : "");
 }
 
 test("scheduling deletion persists the selected date", async ({ page, context, serverFixtures }) => {
@@ -114,7 +115,9 @@ test("cancellation is denied with two active unverified servers", async ({ page,
   await installSession(context, fixture.sessionToken);
   await page.goto(bust(serverDeleteUrl(target, fixture.accountToken)));
   await page.locator(`${FORM} input[name="cancel_deletion"]`).click();
-  await expect(page.locator('.alert.alert-danger[role="alert"]')).toHaveText("Please verify active servers in the account first.");
+  const alert = page.locator('.alert.alert-danger[role="alert"]');
+  await expect(alert).toContainText("Please verify active servers in the account first.");
+  await expect(alert).toContainText(/Trace ID: [0-9a-f]{32}/i);
   await assertDeletionOn(fixture, 0, "2099-01-01");
 });
 

@@ -10,7 +10,7 @@
 </span>
 [% IF manage_site AND combust.user_is_staff %]
    <button id="server_edit_zones"
-           hx-get="[% combust.manage_url('/manage/admin/zones/edit', { server => server.ip }) %]"
+           hx-get="[% combust.manage_url('/manage/admin/zones/edit', { server => server.ip, a => server.account.id_token }) %]"
            hx-target="#zone_list"
            hx-swap="outerHTML"
            class="btn btn-sm btn-outline-primary">Edit</button>
