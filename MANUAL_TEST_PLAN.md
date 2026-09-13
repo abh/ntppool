@@ -497,11 +497,11 @@ The Perl `NP::Model` ORM layer was largely removed; sanity-check core flows stil
 > guard in `render_monitor_config_update` no longer rejects `0`. Monitor admins
 > only.
 
-- [ ] As a **monitor admin**, open an account's monitor config — the per-server select shows **Default (1)** selected for an account with no override.
-- [ ] Set it to **3**, save — the display card shows 3, and reopening the form has 3 selected.
-- [ ] Set it back to **Default (1)**, save — succeeds (this is the path that was unreachable before), display card shows 1.
-- [ ] An account with a stored value outside 1–5 shows a **"(current)"** option rather than silently selecting the first entry.
-- [ ] As a **non-monitor-admin**, the form is not reachable and a direct POST is denied.
+- [x] As a **monitor admin**, open an account's monitor config — the per-server select shows **Default (1)** selected for an account with no override. (`e2e/tests/monitor-config.spec.ts` → "monitor admin changes the per-server limit and restores Default (1)")
+- [x] Set it to **3**, save — the display card shows 3, and reopening the form has 3 selected. (`e2e/tests/monitor-config.spec.ts` → "monitor admin changes the per-server limit and restores Default (1)")
+- [x] Set it back to **Default (1)**, save — succeeds, a fresh display shows 1, and reopening the form selects the default option. (`e2e/tests/monitor-config.spec.ts` → "monitor admin changes the per-server limit and restores Default (1)")
+- [ ] An account with a stored value outside 1–5 shows a **"(current)"** option rather than silently selecting the first entry. Needs a fixture or API-supported way to create an out-of-range legacy value.
+- [x] As a **non-monitor-admin**, the form is not reachable and direct GET and POST requests are denied. (`e2e/tests/monitor-config.spec.ts` → "non-monitor-admin cannot reach or update monitor configuration")
 
 ## 15. Account flag badges in the monitor list
 
@@ -512,6 +512,8 @@ The Perl `NP::Model` ORM layer was largely removed; sanity-check core flows stil
 > booleans instead of regex-matching a JSON blob — before this it had never
 > rendered, because `mon.account.flags` was never populated. Needs the deployed
 > Go API.
+>
+> Browser coverage still needs a bounded monitor fixture: badges are rendered inside monitor rows, while `CreateTestSession` creates only a user and default account. Do not mutate a long-lived devel monitor/account to manufacture these states.
 
 - [ ] As a **monitor admin** on `/manage/monitors` (all-accounts view), an account with `monitor_enabled` shows the green **Bypass** badge.
 - [ ] An account with `monitor_limit = -1` shows the red **Disabled** badge (and *not* "Custom Limit").
