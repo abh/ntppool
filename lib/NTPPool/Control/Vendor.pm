@@ -482,7 +482,7 @@ sub render_subscription {
                 price_id => $price_id,
                 quantity => $quantity,
 
-                environment => "devel",
+                environment => $self->deployment_mode,
                 account_id  => $account->id_token,
 
                 customer_id => $account->stripe_customer_id,
