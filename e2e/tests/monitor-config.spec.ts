@@ -50,15 +50,26 @@ function perServerSelect(page: Page) {
 }
 
 /**
- * Click a button that swaps #monitor-config-display and assert the fragment
- * request itself returned 200, so a failed swap is reported as the request
- * that failed rather than as a later missing-element timeout.
+ * Click a button that swaps #monitor-config-display, assert the fragment
+ * request itself returned 200 (so a failed swap is reported as the request
+ * that failed rather than as a later missing-element timeout), and wait until
+ * htmx has wired up the new fragment.
+ *
+ * htmx inserts the fragment immediately but only attaches its hx-get/hx-post
+ * handlers in the settle step, htmx.config.defaultSettleDelay (20ms) later.
+ * A click in that window hits a button with no handler: "Edit Configuration"
+ * sends nothing, and "Save Changes" submits the form natively instead of
+ * posting it. htmx drops the `htmx-added` class in the same task that attaches
+ * the handlers, so once it is gone the fragment is live.
  */
 async function swapMonitorConfig(
   page: Page,
   buttonName: string,
   method: "GET" | "POST",
 ) {
+  const display = page.locator("#monitor-config-display");
+  const oldDisplay = await display.elementHandle();
+  expect(oldDisplay).not.toBeNull();
   const responsePromise = page.waitForResponse(
     (response) =>
       new URL(response.url()).pathname === MONITOR_CONFIG_PATH &&
@@ -66,6 +77,12 @@ async function swapMonitorConfig(
   );
   await page.getByRole("button", { name: buttonName }).click();
   expect((await responsePromise).status()).toBe(200);
+  // The old fragment has no htmx-added class either, and the response can
+  // reach Playwright before htmx swaps, so wait for the replacement first.
+  await expect
+    .poll(() => oldDisplay!.evaluate((node) => node.isConnected))
+    .toBe(false);
+  await expect(display).not.toHaveClass(/\bhtmx-added\b/);
 }
 
 /** Replace the display card with the edit form. */
