@@ -476,7 +476,7 @@ The Perl `NP::Model` ORM layer was largely removed; sanity-check core flows stil
 > `AccountService.GetAccount` — `Authorization: Bearer <user session>` plus
 > `X-Account: <account token>` — not by decoding the `acc_…` token.
 
-- [ ] As **staff**, run an **IP lookup** (known server IP) — matching servers/monitors grouped by account.
+- [x] As **staff**, run an **IP lookup** for a fixture server — the matching server is grouped under its account, links carry that account's `a=` token, and the matched IP is highlighted. (`e2e/tests/staff-search.spec.ts` → "staff finds a fixture server by exact IP")
 - [x] `id:<account-id>` lookup — returns that account with its users. (`e2e/tests/staff-search.spec.ts` → "staff finds an account by exact numeric id: lookup")
 - [x] Free-text **pattern** search on an **account-name** substring — finds the account and lists its members, with result links carrying that account's `a=` token. (`e2e/tests/staff-search.spec.ts` → "staff finds an account by a unique name substring")
 - [ ] Free-text pattern search on a **hostname** substring, and highlighting on matched IPs/hostnames — needs owned server fixtures.
