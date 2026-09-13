@@ -353,7 +353,7 @@ sub handle_invitation {
             return $self->render_invite_error("Invitation code has been used or expired");
         }
 
-        return $self->render_user_invitations($invite);
+        return $self->render_user_invitations;
     }
 
     # POST request - accept the invitation via Go API
@@ -508,19 +508,10 @@ sub render_resend_invite {
 }
 
 sub render_user_invitations {
-    my $self   = shift;
-    my $invite = shift;
+    my $self = shift;
 
     my $user    = $self->user;
     my $invites = $self->_user_invites($user);
-
-    # Note: $invite here is still an ORM object from the invitation flow
-    # Only compare if it's an ORM object (has ->id method)
-    if ($invite && ref($invite) !~ /HASH/ && !grep { $_->{invite_id} == $invite->id }
-        @$invites)
-    {
-        push @$invites, $invite;
-    }
 
     $self->tpl_param('user',    $user);
     $self->tpl_param('invites', $invites);
