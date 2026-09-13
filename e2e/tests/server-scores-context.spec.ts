@@ -1,6 +1,7 @@
-import { installSession, mintSession, uniqueTestEmail } from "../lib/auth";
+import { installSession, mintSession, uniqueTestEmail, type RpcError } from "../lib/auth";
 import { bust } from "../lib/helpers";
-import { expect, getServer, test, type FixtureServer, type RpcError } from "../lib/servers";
+import { expect, test, type FixtureServer } from "../lib/fixtures";
+import { getServer } from "../lib/servers";
 
 test.use({ trace: "off" });
 
@@ -17,8 +18,8 @@ function scoresPath(server: FixtureServer, accountToken?: string): string {
   return `/scores/${encodeURIComponent(server.ip)}${accountToken ? `?a=${encodeURIComponent(accountToken)}` : ""}`;
 }
 
-test("IPv6 scores normalize to the canonical fixture address", async ({ page, context, serverFixtures }) => {
-  const fixture = await serverFixtures.create([{ ipVersion: 6, verified: true }]);
+test("IPv6 scores normalize to the canonical fixture address", async ({ page, context, fixtures }) => {
+  const fixture = await fixtures.create({ servers: [{ ipVersion: 6, verified: true }] });
   const server = fixture.servers[0];
   const expanded = expandIPv6(server.ip);
   const compressedRead = await getServer(fixture.sessionToken, fixture.accountToken, server.ip);
@@ -33,8 +34,8 @@ test("IPv6 scores normalize to the canonical fixture address", async ({ page, co
   await expect(page.locator("h3").first()).toContainText(server.ip);
 });
 
-test("staff scores edit targets the server's account from another active account", async ({ page, context, serverFixtures }) => {
-  const fixture = await serverFixtures.create([{ ipVersion: 4, verified: true }]);
+test("staff scores edit targets the server's account from another active account", async ({ page, context, fixtures }) => {
+  const fixture = await fixtures.create({ servers: [{ ipVersion: 4, verified: true }] });
   const server = fixture.servers[0];
   const staffSession = await mintSession(uniqueTestEmail("scores-staff"), { grantStaff: true });
   await installSession(context, staffSession);
@@ -69,8 +70,8 @@ test("staff scores edit targets the server's account from another active account
   expect(zoneCancelTarget.searchParams.get("a")).toBe(fixture.accountToken);
 });
 
-test("owner scores omit staff controls", async ({ page, context, serverFixtures }) => {
-  const fixture = await serverFixtures.create([{ ipVersion: 4, verified: true }]);
+test("owner scores omit staff controls", async ({ page, context, fixtures }) => {
+  const fixture = await fixtures.create({ servers: [{ ipVersion: 4, verified: true }] });
   await installSession(context, fixture.sessionToken);
   const response = await page.goto(
     bust(scoresPath(fixture.servers[0], fixture.accountToken)),
@@ -80,8 +81,8 @@ test("owner scores omit staff controls", async ({ page, context, serverFixtures 
   await expect(page.locator("#server_header_section button[hx-get]")).toHaveCount(0);
 });
 
-test("unrelated scores omit private account details and staff controls", async ({ page, context, serverFixtures }) => {
-  const fixture = await serverFixtures.create([{ ipVersion: 4, verified: true }]);
+test("unrelated scores omit private account details and staff controls", async ({ page, context, fixtures }) => {
+  const fixture = await fixtures.create({ servers: [{ ipVersion: 4, verified: true }] });
   const outsider = await mintSession(uniqueTestEmail("scores-outsider"));
   await installSession(context, outsider);
   await page.goto(bust("/manage"));
@@ -100,8 +101,8 @@ test("unrelated scores omit private account details and staff controls", async (
   await expect(page.locator("#server_header_section button[hx-get]")).toHaveCount(0);
 });
 
-test("public scores omit private account details and staff controls", async ({ browser, serverFixtures }) => {
-  const fixture = await serverFixtures.create([{ ipVersion: 4, verified: true }]);
+test("public scores omit private account details and staff controls", async ({ browser, fixtures }) => {
+  const fixture = await fixtures.create({ servers: [{ ipVersion: 4, verified: true }] });
   const privateAccount = (await getServer(fixture.sessionToken, fixture.accountToken, fixture.servers[0].ip)).account;
   expect(privateAccount).toBeDefined();
   const context = await browser.newContext();
@@ -124,8 +125,8 @@ test("public scores omit private account details and staff controls", async ({ b
   }
 });
 
-test("GetServer enforces private account visibility and edit permission", async ({ browser, serverFixtures }) => {
-  const fixture = await serverFixtures.create([{ ipVersion: 4, verified: true }]);
+test("GetServer enforces private account visibility and edit permission", async ({ browser, fixtures }) => {
+  const fixture = await fixtures.create({ servers: [{ ipVersion: 4, verified: true }] });
   const server = fixture.servers[0];
   const owner = await getServer(fixture.sessionToken, fixture.accountToken, server.ip);
   expect(owner.account).toEqual({

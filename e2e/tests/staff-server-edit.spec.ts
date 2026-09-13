@@ -1,13 +1,8 @@
 import type { BrowserContext, Page } from "@playwright/test";
 import { installSession, mintSession, uniqueTestEmail } from "../lib/auth";
 import { bust } from "../lib/helpers";
-import {
-  expect,
-  getAccountAuditLogs,
-  getServer,
-  test,
-  type ServerFixture,
-} from "../lib/servers";
+import { expect, test, type Fixture } from "../lib/fixtures";
+import { getAccountAuditLogs, getServer } from "../lib/servers";
 
 // Staff hostname and zone edits on the scores page.
 //
@@ -28,7 +23,7 @@ const HOSTNAME_EDIT_PATH = "/manage/admin/hostname/edit";
 const HOSTNAME_SAVE_PATH = "/manage/admin/hostname/save";
 const ZONES_SAVE_PATH = "/manage/admin/zones/save";
 
-function adminPath(path: string, fixture: ServerFixture): string {
+function adminPath(path: string, fixture: Fixture): string {
   const ip = fixture.servers[0].ip;
   return `${path}?server=${encodeURIComponent(ip)}&a=${encodeURIComponent(fixture.accountToken)}`;
 }
@@ -41,7 +36,7 @@ function adminPath(path: string, fixture: ServerFixture): string {
 async function openScoresAsStaff(
   page: Page,
   context: BrowserContext,
-  fixture: ServerFixture,
+  fixture: Fixture,
 ): Promise<string> {
   const staffSession = await mintSession(uniqueTestEmail("staff-server-edit"), { grantStaff: true });
   await installSession(context, staffSession);
@@ -79,13 +74,13 @@ async function swapFragment(
   await expect(fragment).not.toHaveClass(/\bhtmx-added\b/);
 }
 
-async function serverAuditLogCount(staffSession: string, fixture: ServerFixture): Promise<number> {
+async function serverAuditLogCount(staffSession: string, fixture: Fixture): Promise<number> {
   const logs = await getAccountAuditLogs(staffSession, fixture.accountToken);
   return logs.filter((log) => log.server?.serverId === fixture.servers[0].serverId).length;
 }
 
-test("staff hostname save through the form reaches the API", async ({ page, context, serverFixtures }) => {
-  const fixture = await serverFixtures.create([{ ipVersion: 4, verified: true }]);
+test("staff hostname save through the form reaches the API", async ({ page, context, fixtures }) => {
+  const fixture = await fixtures.create({ servers: [{ ipVersion: 4, verified: true }] });
   const staffSession = await openScoresAsStaff(page, context, fixture);
   const auditBefore = await serverAuditLogCount(staffSession, fixture);
 
@@ -104,9 +99,9 @@ test("staff hostname save through the form reaches the API", async ({ page, cont
 test("staff hostname and zone saves without a CSRF token are refused without mutation", async ({
   page,
   context,
-  serverFixtures,
+  fixtures,
 }) => {
-  const fixture = await serverFixtures.create([{ ipVersion: 4, verified: true }]);
+  const fixture = await fixtures.create({ servers: [{ ipVersion: 4, verified: true }] });
   const staffSession = await openScoresAsStaff(page, context, fixture);
   const auditBefore = await serverAuditLogCount(staffSession, fixture);
 
@@ -129,4 +124,34 @@ test("staff hostname and zone saves without a CSRF token are refused without mut
   const server = await getServer(fixture.sessionToken, fixture.accountToken, fixture.servers[0].ip);
   expect(server.hostname).toBe("");
   expect(server.zones).toEqual([]);
+});
+
+test("staff zone save shows the API error for an unknown zone and keeps the form usable", async ({
+  page,
+  context,
+  fixtures,
+}) => {
+  const fixture = await fixtures.create({ servers: [{ ipVersion: 4, verified: true }] });
+  await openScoresAsStaff(page, context, fixture);
+
+  const zoneList = page.locator("#zone_list");
+  await swapFragment(page, "#zone_list", "/manage/admin/zones/edit", "GET", () => page.locator("#server_edit_zones").click());
+  const unknownZone = `e2e-no-such-zone-${Date.now()}`;
+  await zoneList.locator('input[name="zones"]').fill(unknownZone);
+  await swapFragment(page, "#zone_list", ZONES_SAVE_PATH, "POST", () => zoneList.getByRole("button", { name: "Save" }).click());
+
+  const alert = zoneList.locator('.alert-danger[role="alert"]');
+  await expect(alert).toContainText(`zone not found: ${unknownZone}`);
+  await expect(alert).toContainText(/Trace ID: [0-9a-f]{32}/);
+  await expect(zoneList.locator('input[name="zones"]')).toHaveValue(unknownZone);
+  expect((await getServer(fixture.sessionToken, fixture.accountToken, fixture.servers[0].ip)).zones).toEqual([]);
+
+  // The re-rendered form must still point at this server: Cancel returns the
+  // read-only zone view, with exactly one Edit button. zone_view.html used to
+  // render the button outside the swapped #zone_list, so each view swap added
+  // another one.
+  await swapFragment(page, "#zone_list", "/manage/admin/zones/edit", "GET", () => zoneList.getByRole("button", { name: "Cancel" }).click());
+  await expect(page.locator("span#zone_list")).toBeVisible();
+  await expect(page.locator("#zone_list .alert-danger")).toHaveCount(0);
+  await expect(page.locator("#server_edit_zones")).toHaveCount(1);
 });

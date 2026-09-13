@@ -12,6 +12,7 @@ use NTPPool::Control::Manage::Account;
 use NTPPool::Control::Manage::Check;
 use NTPPool::Control::Manage::Server;
 use NTPPool::Control::Manage::Monitor;
+use NTPPool::Control::Manage::UserProfile;
 use NTPPool::Control::Zone;
 use NTPPool::Control::UserProfile;
 

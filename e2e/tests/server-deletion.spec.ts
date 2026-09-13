@@ -1,7 +1,8 @@
 import { installSession, mintSession, uniqueTestEmail } from "../lib/auth";
 import { resolveDefaultAccountToken } from "../lib/accounts";
 import { bust } from "../lib/helpers";
-import { expect, getAccountAuditLogs, getServer, serverDeleteUrl, test, type ServerFixture } from "../lib/servers";
+import { expect, test, type Fixture } from "../lib/fixtures";
+import { getAccountAuditLogs, getServer, serverDeleteUrl } from "../lib/servers";
 
 test.use({ trace: "off" });
 
@@ -16,14 +17,14 @@ function humanDate(isoDate: string): string {
     .format(new Date(`${isoDate}T00:00:00Z`));
 }
 
-async function assertDeletionOn(fixture: ServerFixture, index: number, value: string) {
+async function assertDeletionOn(fixture: Fixture, index: number, value: string) {
   const server = fixture.servers[index];
   const deletionOn = (await getServer(fixture.sessionToken, fixture.accountToken, server.ip)).deletionOn;
   expect(deletionOn).toBe(value ? `${value}T00:00:00Z` : "");
 }
 
-test("scheduling deletion persists the selected date", async ({ page, context, serverFixtures }) => {
-  const fixture = await serverFixtures.create([{ ipVersion: 4, verified: true }]);
+test("scheduling deletion persists the selected date", async ({ page, context, fixtures }) => {
+  const fixture = await fixtures.create({ servers: [{ ipVersion: 4, verified: true }] });
   const server = fixture.servers[0];
   await installSession(context, fixture.sessionToken);
   const url = serverDeleteUrl(server, fixture.accountToken);
@@ -57,8 +58,8 @@ test("scheduling deletion persists the selected date", async ({ page, context, s
   }));
 });
 
-test("cancelling deletion clears the scheduled date", async ({ page, context, serverFixtures }) => {
-  const fixture = await serverFixtures.create([{ ipVersion: 4, verified: true, scheduledDeletion: true }]);
+test("cancelling deletion clears the scheduled date", async ({ page, context, fixtures }) => {
+  const fixture = await fixtures.create({ servers: [{ ipVersion: 4, verified: true, scheduledDeletion: true }] });
   const server = fixture.servers[0];
   await installSession(context, fixture.sessionToken);
   const url = serverDeleteUrl(server, fixture.accountToken);
@@ -83,8 +84,8 @@ test("cancelling deletion clears the scheduled date", async ({ page, context, se
     log.account?.accountToken === fixture.accountToken)).toBe(true);
 });
 
-test("API date validation is shown on the deletion picker", async ({ page, context, serverFixtures }) => {
-  const fixture = await serverFixtures.create([{ ipVersion: 4, verified: true }]);
+test("API date validation is shown on the deletion picker", async ({ page, context, fixtures }) => {
+  const fixture = await fixtures.create({ servers: [{ ipVersion: 4, verified: true }] });
   const server = fixture.servers[0];
   await installSession(context, fixture.sessionToken);
   await page.goto(bust(serverDeleteUrl(server, fixture.accountToken)));
@@ -105,12 +106,14 @@ test("API date validation is shown on the deletion picker", async ({ page, conte
   await assertDeletionOn(fixture, 0, "");
 });
 
-test("cancellation is denied with two active unverified servers", async ({ page, context, serverFixtures }) => {
-  const fixture = await serverFixtures.create([
-    { ipVersion: 4, verified: true, scheduledDeletion: true },
-    { ipVersion: 4 },
-    { ipVersion: 6 },
-  ]);
+test("cancellation is denied with two active unverified servers", async ({ page, context, fixtures }) => {
+  const fixture = await fixtures.create({
+    servers: [
+      { ipVersion: 4, verified: true, scheduledDeletion: true },
+      { ipVersion: 4 },
+      { ipVersion: 6 },
+    ],
+  });
   const target = fixture.servers[0];
   await installSession(context, fixture.sessionToken);
   await page.goto(bust(serverDeleteUrl(target, fixture.accountToken)));
@@ -121,8 +124,8 @@ test("cancellation is denied with two active unverified servers", async ({ page,
   await assertDeletionOn(fixture, 0, "2099-01-01");
 });
 
-test("deletion without CSRF is refused without mutation", async ({ page, context, serverFixtures }) => {
-  const fixture = await serverFixtures.create([{ ipVersion: 4, verified: true }]);
+test("deletion without CSRF is refused without mutation", async ({ page, context, fixtures }) => {
+  const fixture = await fixtures.create({ servers: [{ ipVersion: 4, verified: true }] });
   const server = fixture.servers[0];
   await installSession(context, fixture.sessionToken);
   const response = await page.request.post("/manage/server/delete", {
@@ -133,8 +136,8 @@ test("deletion without CSRF is refused without mutation", async ({ page, context
   await assertDeletionOn(fixture, 0, "");
 });
 
-test("another account cannot schedule the owner's server", async ({ browser, serverFixtures }) => {
-  const fixture = await serverFixtures.create([{ ipVersion: 4, verified: true }]);
+test("another account cannot schedule the owner's server", async ({ browser, fixtures }) => {
+  const fixture = await fixtures.create({ servers: [{ ipVersion: 4, verified: true }] });
   const server = fixture.servers[0];
   const outsiderSession = await mintSession(uniqueTestEmail("deletion-outsider"));
   const outsiderContext = await browser.newContext();

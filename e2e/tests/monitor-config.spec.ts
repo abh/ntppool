@@ -2,6 +2,12 @@ import { test, expect, type Page } from "@playwright/test";
 import { loginAs, uniqueTestEmail } from "../lib/auth";
 import { accountFormUrl, resolveDefaultAccountToken } from "../lib/accounts";
 import { bust, expectCleanPage, expectNoErrorBleed } from "../lib/helpers";
+import {
+  MONITOR_CONFIG_PATH,
+  monitorConfigUrl,
+  openMonitorConfigEditor,
+  saveMonitorConfig,
+} from "../lib/monitors";
 
 // Account monitor configuration — the monitor-admin-only card on the account
 // page. MANUAL_TEST_PLAN.md §14.
@@ -29,12 +35,6 @@ import { bust, expectCleanPage, expectNoErrorBleed } from "../lib/helpers";
 // reports monitors_per_server_limit = 1 and the form selects the value-0
 // "Default (1)" option (posting 0 is what clears the override).
 
-const MONITOR_CONFIG_PATH = "/manage/account/monitor-config";
-
-function monitorConfigUrl(accountToken: string): string {
-  return `${MONITOR_CONFIG_PATH}?a=${encodeURIComponent(accountToken)}`;
-}
-
 /** The "Monitors per Server" column of the read-only display card. */
 function perServerDisplay(page: Page) {
   return page
@@ -49,54 +49,10 @@ function perServerSelect(page: Page) {
   );
 }
 
-/**
- * Click a button that swaps #monitor-config-display, assert the fragment
- * request itself returned 200 (so a failed swap is reported as the request
- * that failed rather than as a later missing-element timeout), and wait until
- * htmx has wired up the new fragment.
- *
- * htmx inserts the fragment immediately but only attaches its hx-get/hx-post
- * handlers in the settle step, htmx.config.defaultSettleDelay (20ms) later.
- * A click in that window hits a button with no handler: "Edit Configuration"
- * sends nothing, and "Save Changes" submits the form natively instead of
- * posting it. htmx drops the `htmx-added` class in the same task that attaches
- * the handlers, so once it is gone the fragment is live.
- */
-async function swapMonitorConfig(
-  page: Page,
-  buttonName: string,
-  method: "GET" | "POST",
-) {
-  const display = page.locator("#monitor-config-display");
-  const oldDisplay = await display.elementHandle();
-  expect(oldDisplay).not.toBeNull();
-  const responsePromise = page.waitForResponse(
-    (response) =>
-      new URL(response.url()).pathname === MONITOR_CONFIG_PATH &&
-      response.request().method() === method,
-  );
-  await page.getByRole("button", { name: buttonName }).click();
-  expect((await responsePromise).status()).toBe(200);
-  // The old fragment has no htmx-added class either, and the response can
-  // reach Playwright before htmx swaps, so wait for the replacement first.
-  await expect
-    .poll(() => oldDisplay!.evaluate((node) => node.isConnected))
-    .toBe(false);
-  await expect(display).not.toHaveClass(/\bhtmx-added\b/);
-}
-
-/** Replace the display card with the edit form. */
-async function openMonitorConfigEditor(page: Page) {
-  await swapMonitorConfig(page, "Edit Configuration", "GET");
-}
-
 /** Pick a per-server limit in the open edit form and save it. */
 async function savePerServerLimit(page: Page, value: string) {
   await perServerSelect(page).selectOption(value);
-  await swapMonitorConfig(page, "Save Changes", "POST");
-  await expect(
-    page.locator("#monitor-config-display .badge-success"),
-  ).toHaveText(/Updated/);
+  await saveMonitorConfig(page);
 }
 
 test("monitor admin changes the per-server limit and restores Default (1)", async ({

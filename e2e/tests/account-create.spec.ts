@@ -59,8 +59,8 @@ test("the default account is named after the user identity", async ({
   page,
   context,
 }) => {
-  // Minted test users have no profile name (CreateTestSession doesn't populate
-  // the user's name), so the name-from-Auth0-profile branch can't be exercised
+  // Minted test users have no profile name (loginAs sends `api e2e session` an
+  // empty name), so the name-from-Auth0-profile branch can't be exercised
   // here. With no name, the auto-created default account is named after the
   // user's email — a deterministic, non-empty default. (A real Auth0 login would
   // instead carry the profile name.)

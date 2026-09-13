@@ -671,15 +671,19 @@ sub staff_zone_edit {
 
         # Handle CAPI errors
         if ($result->{error}) {
-            $self->tpl_param('error', $result->{error});
-            $self->tpl_param('zones', $zones_value);
+            $self->tpl_param('server',   $server);
+            $self->tpl_param('error',    $result->{error});
+            $self->tpl_param('trace_id', $result->{trace_id});
+            $self->tpl_param('zones',    $zones_value);
             return OK, $self->evaluate_template('tpl/admin/zone_edit.html');
         }
 
         # Reload server to get updated zones using helper
         my $server_data = $self->reload_server_via_capi($server_ip);
         if (!$server_data) {
-            $self->tpl_param('error', 'Failed to reload server data');
+            $self->tpl_param('server', $server);
+            $self->tpl_param('error',  'Failed to reload server data');
+            $self->tpl_param('zones',  $zones_value);
             return OK, $self->evaluate_template('tpl/admin/zone_edit.html');
         }
 

@@ -8,7 +8,8 @@ import {
   uniqueTestEmail,
 } from "../lib/auth";
 import { bust } from "../lib/helpers";
-import { expect, getAccountAuditLogs, getServer, test } from "../lib/servers";
+import { expect, test } from "../lib/fixtures";
+import { getAccountAuditLogs, getServer } from "../lib/servers";
 
 test.use({ trace: "off" });
 
@@ -146,8 +147,8 @@ async function staffSession(): Promise<string> {
   });
 }
 
-test("pending verification redirects into the owner's account and completes", async ({ page, context, serverFixtures }) => {
-  const fixture = await serverFixtures.create([{ ipVersion: 4, pendingVerification: true }]);
+test("pending verification redirects into the owner's account and completes", async ({ page, context, fixtures }) => {
+  const fixture = await fixtures.create({ servers: [{ ipVersion: 4, pendingVerification: true }] });
   const server = fixture.servers[0];
   const path = verificationPath(server.verificationToken);
   await installSession(context, fixture.sessionToken);
@@ -252,16 +253,16 @@ test("pending verification redirects into the owner's account and completes", as
   }));
 });
 
-test("invalid verification token is not found", async ({ page, context, serverFixtures }) => {
-  const fixture = await serverFixtures.create([{ ipVersion: 4, verified: true }]);
+test("invalid verification token is not found", async ({ page, context, fixtures }) => {
+  const fixture = await fixtures.create({ servers: [{ ipVersion: 4, verified: true }] });
   await installSession(context, fixture.sessionToken);
   const response = await navigateToVerification(page, randomUUID(), fixture.accountToken);
   await redactVerificationDiagnostics(page);
   expect(response?.status()).toBe(404);
 });
 
-test("verification without CSRF is refused and stays pending", async ({ page, context, serverFixtures }) => {
-  const fixture = await serverFixtures.create([{ ipVersion: 4, pendingVerification: true }]);
+test("verification without CSRF is refused and stays pending", async ({ page, context, fixtures }) => {
+  const fixture = await fixtures.create({ servers: [{ ipVersion: 4, pendingVerification: true }] });
   const server = fixture.servers[0];
   const path = verificationPath(server.verificationToken);
   await installSession(context, fixture.sessionToken);
@@ -282,8 +283,8 @@ test("verification without CSRF is refused and stays pending", async ({ page, co
   expect((await getServer(fixture.sessionToken, fixture.accountToken, server.ip)).verification.verified).toBe(false);
 });
 
-test("another account cannot complete the owner's verification", async ({ browser, serverFixtures }) => {
-  const fixture = await serverFixtures.create([{ ipVersion: 4, pendingVerification: true }]);
+test("another account cannot complete the owner's verification", async ({ browser, fixtures }) => {
+  const fixture = await fixtures.create({ servers: [{ ipVersion: 4, pendingVerification: true }] });
   const server = fixture.servers[0];
   const path = verificationPath(server.verificationToken);
   const outsiderSession = await mintSession(uniqueTestEmail("verify-outsider"));

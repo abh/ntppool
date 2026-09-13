@@ -82,3 +82,17 @@ test("403 page support link mails the address it shows", async ({
   expect(address).toMatch(/^[^\s@]+@[^\s@]+$/);
   await expect(link).toHaveAttribute("href", `mailto:${address}`);
 });
+
+// combust's _process_status picks the error page heading by status. 400 and
+// 403 had none, so the heading read "403 - ".
+test("403 page heading names the status", async ({ page, context }) => {
+  await loginAs(context, uniqueTestEmail("regression-403-heading"));
+  const accountToken = await resolveDefaultAccountToken(page);
+  const response = await page.goto(
+    bust(`/manage/account/monitor-config?a=${encodeURIComponent(accountToken)}`),
+  );
+  expect(response?.status()).toBe(403);
+  await expect(page.locator("h3", { hasText: /^\s*403 -/ })).toHaveText(
+    "403 - Permission Denied",
+  );
+});

@@ -108,9 +108,10 @@ test("logout then log back in restores the same account", async ({
     page.locator("a.nav-link", { hasText: "Logout" }),
   ).toHaveCount(0);
 
-  // Log back in as the SAME email and confirm the dashboard renders for that
-  // same account (session restored, not a dead-end).
-  await loginAs(context, email);
+  // Log back in as the SAME user and confirm the dashboard renders for that
+  // same account (session restored, not a dead-end). Logout deleted the first
+  // session, so this mints a new one for the existing user.
+  await loginAs(context, email, { existingUser: true });
   const response = await page.goto("/manage");
   expect(response!.status()).toBe(200);
   expect(page.url()).toContain("/manage/servers");

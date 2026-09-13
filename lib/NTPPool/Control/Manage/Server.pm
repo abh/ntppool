@@ -568,7 +568,7 @@ sub handle_delete {
                 $self->api_auth_params,
                 account => $self->current_account->{id_token},
                 ip      => $server->ip,
-                cancel  => 1,
+                cancel  => JSON::XS::true,
             );
 
             if ($result->{error}) {

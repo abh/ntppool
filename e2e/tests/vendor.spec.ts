@@ -333,7 +333,7 @@ test("open-source submit with an empty justification is refused and the zone sta
 //
 // WHAT THIS TEST GUARDS (and the fixture gap it lives with)
 // ---------------------------------------------------------------------------
-// The harness cannot mint a live subscription: CreateTestSession grants
+// The harness cannot mint a live subscription: `api e2e session` grants
 // privileges only (grant_staff / grant_vendor_admin — see lib/auth.ts), there is
 // no Stripe fixture, and the suite deliberately has no DB write layer
 // (e2e/.env.example). So the COVERED direction of #39 is guarded by the Go
@@ -445,8 +445,8 @@ test("duplicate zone name surfaces a red error alert with a Trace ID", async ({
 //   - Vendor.pm render_admin: `redirect("/manage/vendor") unless user_is_vendor_admin`
 //   - show.html approve/reject form: `IF combust.user.privileges.vendor_admin`
 //   - Go vendorzone/status.go UpdateVendorZoneStatus: requires Privilege.VendorAdmin
-// The mint RPC grants it via the `grant_vendor_admin` flag (Go
-// AuthService.CreateTestSession -> GrantUserVendorAdmin), wired through
+// The mint command grants it via the `grant_vendor_admin` flag (Go
+// e2efixture.CreateSession -> GrantUserVendorAdmin), wired through
 // loginAs(..., { grantVendorAdmin: true }). Each admin-dependent test still
 // probes isVendorAdmin() first so it skips with a clear message (rather than
 // failing obscurely) if the deployed dev API predates the grant_vendor_admin
@@ -541,9 +541,9 @@ test.describe.serial("vendor admin & editability (§5a staff, §5c)", () => {
       if (!ok) {
         throw new Error(
           "vendor_admin preflight FAILED: a freshly minted session could not " +
-            "reach /manage/vendor/admin. The dev API must honor " +
-            "CreateTestSession's grant_vendor_admin flag (Go " +
-            "AuthService.CreateTestSession -> GrantUserVendorAdmin). Without it " +
+            "reach /manage/vendor/admin. The api-dev binary must honor " +
+            "`api e2e session`'s grant_vendor_admin flag (Go " +
+            "e2efixture.CreateSession -> GrantUserVendorAdmin). Without it " +
             "all §5a/§5c admin tests would silently skip — failing loudly here " +
             "instead so the missing grant is one obvious check, not six dropped " +
             "tests.",
