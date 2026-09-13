@@ -2,8 +2,7 @@
     <div class="card-body">
         <form hx-post="/manage/account/monitor-config?a=[% account.id_token %]"
               hx-target="#monitor-config-display"
-              hx-swap="outerHTML"
-              hx-on="htmx:responseError: showMonitorConfigError(event)">
+              hx-swap="outerHTML">
             <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
 
             <div class="row">
