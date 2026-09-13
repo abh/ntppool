@@ -209,10 +209,18 @@ sub server_data {
     my $cache_key = "_server_data_$ip";
     return $self->{$cache_key} if exists $self->{$cache_key};
 
-    my $result = get_server(
+    my %params = (
         ip      => $ip,
         context => $self->_get_request_context(),
     );
+
+    if ($self->can('api_auth_params')) {
+        %params = ($self->api_auth_params, ip => $ip);
+        my $account = $self->current_account;
+        $params{account} = $account->{id_token} if $account;
+    }
+
+    my $result = get_server(%params);
 
     return $self->{$cache_key} = $result;
 }
