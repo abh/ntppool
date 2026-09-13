@@ -3,7 +3,7 @@
     [% IF server.hostname %]/ [% server.hostname | html %][% END %]
     <button type="button"
             class="btn btn-sm btn-outline-primary ms-2"
-            hx-get="[% combust.manage_url('/manage/admin/hostname/edit', { server => server.ip }) %]"
+            hx-get="[% combust.manage_url('/manage/admin/hostname/edit', { server => server.ip, a => server.account.id_token }) %]"
             hx-target="#server_header_section"
             hx-swap="outerHTML swap:0ms settle:0ms">
         [% IF server.hostname %]Edit[% ELSE %]Set hostname[% END %]
