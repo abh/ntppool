@@ -130,3 +130,30 @@ test("staff hostname and zone saves without a CSRF token are refused without mut
   expect(server.hostname).toBe("");
   expect(server.zones).toEqual([]);
 });
+
+test("staff zone save shows the API error for an unknown zone and keeps the form usable", async ({
+  page,
+  context,
+  serverFixtures,
+}) => {
+  const fixture = await serverFixtures.create([{ ipVersion: 4, verified: true }]);
+  await openScoresAsStaff(page, context, fixture);
+
+  const zoneList = page.locator("#zone_list");
+  await swapFragment(page, "#zone_list", "/manage/admin/zones/edit", "GET", () => page.locator("#server_edit_zones").click());
+  const unknownZone = `e2e-no-such-zone-${Date.now()}`;
+  await zoneList.locator('input[name="zones"]').fill(unknownZone);
+  await swapFragment(page, "#zone_list", ZONES_SAVE_PATH, "POST", () => zoneList.getByRole("button", { name: "Save" }).click());
+
+  const alert = zoneList.locator('.alert-danger[role="alert"]');
+  await expect(alert).toContainText(`zone not found: ${unknownZone}`);
+  await expect(alert).toContainText(/Trace ID: [0-9a-f]{32}/);
+  await expect(zoneList.locator('input[name="zones"]')).toHaveValue(unknownZone);
+  expect((await getServer(fixture.sessionToken, fixture.accountToken, fixture.servers[0].ip)).zones).toEqual([]);
+
+  // The re-rendered form must still point at this server: Cancel returns the
+  // read-only zone view.
+  await swapFragment(page, "#zone_list", "/manage/admin/zones/edit", "GET", () => zoneList.getByRole("button", { name: "Cancel" }).click());
+  await expect(page.locator("span#zone_list")).toBeVisible();
+  await expect(page.locator("#zone_list .alert-danger")).toHaveCount(0);
+});
