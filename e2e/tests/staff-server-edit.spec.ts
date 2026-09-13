@@ -152,8 +152,11 @@ test("staff zone save shows the API error for an unknown zone and keeps the form
   expect((await getServer(fixture.sessionToken, fixture.accountToken, fixture.servers[0].ip)).zones).toEqual([]);
 
   // The re-rendered form must still point at this server: Cancel returns the
-  // read-only zone view.
+  // read-only zone view, with exactly one Edit button. zone_view.html used to
+  // render the button outside the swapped #zone_list, so each view swap added
+  // another one.
   await swapFragment(page, "#zone_list", "/manage/admin/zones/edit", "GET", () => zoneList.getByRole("button", { name: "Cancel" }).click());
   await expect(page.locator("span#zone_list")).toBeVisible();
   await expect(page.locator("#zone_list .alert-danger")).toHaveCount(0);
+  await expect(page.locator("#server_edit_zones")).toHaveCount(1);
 });
