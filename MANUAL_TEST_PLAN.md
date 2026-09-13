@@ -19,10 +19,6 @@ Sections below that mention `int_api` or `NP::IntAPI` describe what a migration
 moved *away from*. `lib/NP/IntAPI.pm` was deleted in `a4f06c76` and no Perl call
 site remains — don't go looking for it.
 
-A few items are marked **expected to fail today** and name the open issue that
-tracks the bug (§4b stale team list → #14). They are here so a run doesn't
-rediscover known breakage; check them off once the issue lands.
-
 ---
 
 ## 1. Login & automatic account creation (Auth0)
@@ -50,13 +46,13 @@ rediscover known breakage; check them off once the issue lands.
 > `user_privileges` row with `support_staff = true`.
 
 - [x] As **staff**, the "Delete account" link is visible at the bottom of `/manage/account` (red, destructive).
-- [ ] As a **non-staff** user with no scheduled deletion, the link is hidden and `/manage/account/dissolve` returns 403.
+- [x] As a **non-staff** user with no scheduled deletion, the link is hidden and `/manage/account/dissolve` returns 403. (`e2e/tests/account-dissolve.spec.ts` → "non-staff user: link hidden and dissolve route returns 403")
 - [x] Visit `/manage/account/dissolve` as staff — confirmation page renders.
 - [x] Schedule deletion — shows scheduled date (~7 days out), confirmation message.
 - [x] Revisit `/manage/account/dissolve` — shows the pending scheduled deletion with a cancel option.
 - [x] Cancel the scheduled deletion — state clears, account back to normal.
 - [ ] Confirm the deletion-scheduled email is sent (check dev mail / logs).
-- [ ] Account form (`/manage/account`) clearly labels the dissolve/delete action as destructive.
+- [x] Account form (`/manage/account`) clearly labels the dissolve/delete action as destructive. (`e2e/tests/account-dissolve.spec.ts` → "staff sees the destructive Delete account link on /manage/account")
 
 #### Frozen-account UI (fixed in #38)
 
@@ -116,27 +112,30 @@ rediscover known breakage; check them off once the issue lands.
 > extends the invite expiry to **30 days** out. The button state and the "next
 > available" time come from the API (`can_resend` / `resend_available_at`).
 
-- [ ] Pending invite on `/manage/account/team` shows a **Resend** button (account with edit access).
+- [x] Pending invite on `/manage/account/team` shows a **Resend** button (account with edit access). (`e2e/tests/invites.spec.ts` → "pending invite shows a Resend button for an account with edit access")
 - [x] Click **Resend** — the success badge ("Invitation email resent") renders. (`e2e/tests/invites.spec.ts` → "clicking Resend shows the success badge")
 - [ ] A new invite email actually arrives — not observable on the dev site, which runs in `deployment_mode=devel` and logs "development mode - not sending email" instead of sending.
-- [ ] Immediately resend again — button is **disabled** with an "available after …" time, or a rate-limit warning if forced (5-minute cooldown).
+- [x] Immediately resend again — button is **disabled** by the 5-minute cooldown. (`e2e/tests/invites.spec.ts` → "an immediate second resend is blocked by the 5-minute cooldown")
+- [ ] The cooldown state always includes the API-provided "available after …" time, or a forced resend shows a rate-limit warning. The existing test only validates the time when the UI renders it.
 - [ ] Exceed **3 sends in 24h** — resend is blocked with a "too many … (limit: 3)" warning.
 - [ ] A resent invite's **expiry moves out to ~30 days** from the resend.
-- [ ] **Accepted/expired** invites show no Resend button; the accept link still works — needs an invite/accept flow to create a non-pending invite (`e2e/tests/invites.spec.ts` → "only a pending invite renders a Resend control" covers the pending side only).
-- [ ] Non-edit / wrong account context cannot resend (permission denied, no button).
+- [x] **Accepted** invites show no Resend button; the accept link still works. (`e2e/tests/invites.spec.ts` → "accepted invite hides Resend and the accept link still works")
+- [ ] Same for an **expired** invite — needs a way to age an invite past expiry through the harness.
+- [x] A wrong-account context cannot see the owner's invite and renders no Resend control. (`e2e/tests/invites.spec.ts` → "a user without access to the account cannot resend")
+- [ ] A forced resend POST from the wrong account context is denied without mutation.
 
 ### 4b. Removing a user from the team (issue #14)
 
 > The removal rules themselves are covered by Go integration tests
-> (`server/api/account/mutations_integration_test.go:275`); they are listed here
-> because the UI half is unverified and e2e cannot build a two-member account
-> yet (no accept-invite helper — #46). Once that lands, most of this section
-> becomes automatable.
+> (`server/api/account/mutations_integration_test.go:275`); most of the UI half
+> is now automated too, via the browser-only invite/accept flow (`acceptInvite`,
+> `e2e/lib/helpers.ts` — #46).
 >
-> The **stale-list item is a known bug** (#14): `_account_users` is
-> request-scoped cached (`Account.pm:30-33`) and `_remove_user_from_account`
-> populates that cache before calling the API, so the team page rendered
-> immediately after a removal replays the stale list.
+> The **stale-list bug is fixed** (#14): `_account_users` is request-scoped
+> cached (`Account.pm:30-33`) and `_remove_user_from_account` populated that
+> cache before calling the removal API, so the team page rendered immediately
+> after a removal used to replay the stale list. `_remove_user_from_account`
+> now invalidates the cache after a successful removal, before re-rendering.
 >
 > Error surfacing changed 2026-08-15: Perl no longer short-circuits self-removal
 > (the Go API owns that rule and always denied it), `_remove_user_from_account`
@@ -144,12 +143,11 @@ rediscover known breakage; check them off once the issue lands.
 > `team.html` actually renders it — the `error` param had no template to land in
 > before.
 
-- [ ] Remove a second member from `/manage/account/team` — they lose access to the account.
-- [ ] The removed user gets the `account_user_removed` email, CC'd to the remaining members (check dev mail).
-- [ ] **Expected to fail today:** the team page rendered right after the removal no longer lists the removed user (reload works around it).
-- [ ] The **Remove from team** button is absent on a sole-member account, and absent for your own row unless you are staff (`team.html:16-17`).
+- [x] Remove a second member from `/manage/account/team` — they lose access to the account, and the team page rendered right after the removal (no reload needed) no longer lists them. (`e2e/tests/account-team.spec.ts` → "removing a second member drops them from the team and notifies them")
+- [ ] The removed user gets the `account_user_removed` email, CC'd to the remaining members (check dev mail) — not observable on the dev site (devel mode logs instead of sending).
+- [x] The **Remove from team** button is absent on a sole-member account (`e2e/tests/account-team.spec.ts` → "a sole-member account shows no Remove control"), and absent for your own row as a **non-staff** member of a 2-member account (`e2e/tests/account-team.spec.ts` → "a member cannot remove themselves from a multi-member account").
 - [ ] As **staff**, clicking **Remove from team** on your own row shows "you cannot remove yourself from an account" — not a generic "please try again".
-- [ ] A hand-crafted POST removing yourself as a **non-staff** user shows the same message (it used to silently no-op with nothing on screen).
+- [x] A hand-crafted POST removing yourself as a **non-staff** user shows that message (it used to silently no-op with nothing on screen). (`e2e/tests/account-team.spec.ts` → "a member cannot remove themselves from a multi-member account")
 - [ ] Staff cannot remove the **last** member of an account — "cannot remove the last user from an account" renders on the page.
 - [ ] A forced API failure on removal shows the API's message plus a Trace ID (`team.html` now processes `tpl/common/error_alert.html`; before this the `error` param was set but never rendered).
 
@@ -197,12 +195,15 @@ rediscover known breakage; check them off once the issue lands.
 > re-approve a Rejected zone. Editable content fields never include `id`,
 > `status`, or approval state — those move only through the admin status RPC.
 
-- [ ] Regular user, **New**: edit all fields, save persists.
-- [ ] Regular user, **Pending**: edit all fields, save persists (previously dead-ended with a blank form).
-- [ ] Regular user, **Rejected**: edit fields, then "Resubmit for production" → status returns to Pending.
-- [ ] Regular user, **Approved**: no Edit button; opening the edit URL falls through to the read-only show page.
-- [ ] Staff, **Approved**: edit form opens; `zone_name` is read-only; other fields save.
-- [ ] Staff, **Approved**: attempting to change `zone_name` is rejected by the API (name locked once live).
+- [x] Regular user, **New**: edit an ordinary content field and the save persists. (`e2e/tests/vendor.spec.ts` → "edit a New/Pending zone and persist a changed field")
+- [ ] Regular user, **New**: repeat the edit/save assertion for every other writable field.
+- [x] Regular user, **Pending**: edit an ordinary content field and the save persists without a blank form. (`e2e/tests/vendor.spec.ts` → "open-source submit retains justification and edits without error")
+- [ ] Regular user, **Pending**: repeat the edit/save assertion for every other writable field.
+- [ ] Regular user, **Rejected**: edit fields before resubmitting.
+- [x] Regular user, **Rejected**: "Resubmit for production" returns the status to Pending. (`e2e/tests/vendor.spec.ts` → "approve/reject status changes and owner resubmit")
+- [x] Regular user, **Approved**: no Edit button; opening the edit URL falls through to the read-only show page. (`e2e/tests/vendor.spec.ts` → "owner sees no edit on an Approved zone; edit URL is read-only")
+- [x] Staff, **Approved**: edit form opens; `zone_name` is read-only; another content field saves. (`e2e/tests/vendor.spec.ts` → "vendor admin can edit an Approved zone; zone_name is read-only; other fields save")
+- [ ] Staff, **Approved**: attempting to change `zone_name` is explicitly rejected by the API (name locked once live). The existing test proves the name stays unchanged but does not distinguish rejection from silently ignoring the field.
 
 ### 5b. Open-source claim vs staff determination (issue #39)
 
@@ -225,16 +226,20 @@ rediscover known breakage; check them off once the issue lands.
 
 - [ ] **Covered** vendor (live subscription): a New/Rejected zone shows a plain "Submit for production" / "Resubmit for production" button — **no** open-source justification form, no `opensource_request` field in the posted form.
 - [ ] Submitting as a covered vendor leaves the zone's open-source claim **and** grant untouched (the zone page shows no open-source justification text).
-- [ ] **Uncovered** vendor: the same zone shows the open-source justification form instead.
-- [ ] Submit with the open-source form + justification — the **claim** and `opensource_info` reach the API; the zone is Pending, and the grant is still undecided.
+- [x] **Uncovered** vendor: the same zone shows the open-source justification form instead. (`e2e/tests/vendor.spec.ts` → "uncovered vendor submit page shows the open-source form, not a plain submit")
+- [x] Submit with the open-source form + justification — the claim and `opensource_info` reach the API and the zone becomes Pending. (`e2e/tests/vendor.spec.ts` → "open-source submit retains justification and edits without error")
+- [ ] Confirm separately that the staff open-source grant remains undecided after the vendor submits its claim.
 - [x] Submitting the open-source form with an **empty** justification is rejected with "Please provide open source information", and the zone stays New. (`e2e/tests/vendor.spec.ts` → "open-source submit with an empty justification is refused and the zone stays New")
-- [ ] Resubmit a **Rejected** open-source zone — claim + justification still applied.
-- [ ] Edit a Pending/Rejected **open-source** zone (change e.g. org name) — save succeeds and does **not** error with "opensource_info is required" or blank the stored justification.
+- [x] Resubmit a **Rejected** open-source zone — the zone returns to Pending. (`e2e/tests/vendor.spec.ts` → "approve/reject status changes and owner resubmit")
+- [ ] Confirm the open-source claim and justification remain applied after that Rejected-to-Pending resubmit.
+- [x] Edit a Pending **open-source** zone (change e.g. org name) — save succeeds and does **not** error with "opensource_info is required" or blank the stored justification. (`e2e/tests/vendor.spec.ts` → "open-source submit retains justification and edits without error")
+- [ ] Repeat the open-source edit assertion while the zone is **Rejected**.
 - [ ] As `vendor_admin`, approving with **Grant open-source** checked sets the grant; approving without it leaves the zone on the paid path regardless of the vendor's claim.
 
 ### 5c. Error surfacing (always show errors, with trace_id)
 
-- [ ] Induce an API error on edit/submit (e.g. duplicate zone name) — a red alert renders with the message and a Trace ID; the page is **not** blank and keeps the entered context.
+- [x] Induce an API error on create/edit (duplicate zone name) — a red alert renders with a Trace ID and the request form remains usable rather than going blank. (`e2e/tests/vendor.spec.ts` → "duplicate zone name surfaces a red error alert with a Trace ID")
+- [ ] The duplicate-zone error page repopulates the user's entered context; the current create path does not echo the submitted `zone_name` back into the form.
 - [ ] Same on the admin approve/reject path — failures show the alert + Trace ID rather than a silent no-op.
 
 ### 5d. Read-path error handling: primary fails loudly, decorative degrades (issue #42)
@@ -412,9 +417,9 @@ rediscover known breakage; check them off once the issue lands.
 
 ## 9. Score graphs / PNG endpoints
 
-- [ ] `/scores/<ip>/offset.png` renders a graph.
+- [x] The canonical `/graph/<ip>/offset.png` endpoint renders a graph (200, `image/png`). (`e2e/tests/scores.spec.ts` → "offset.png returns a PNG image")
 - [x] An unmatched/legacy graph path returns **404** (not a broken/blank image).
-- [ ] `score.png` requests normalize to `offset.png` as expected.
+- [ ] Graph `score.png` requests normalize to `offset.png` as expected. The existing `/scores/<ip>/score.png` test only proves that the scores-page alias resolves cleanly rather than 404ing.
 - [ ] Graph score-offset thresholds visually match the monitor scorer values.
 
 ## 10. Internationalization
@@ -457,7 +462,7 @@ The Perl `NP::Model` ORM layer was largely removed; sanity-check core flows stil
 
 - [ ] Server **move** (`/manage/servers/move`) — happy path works; on a forced API error the page returns an error status (not a blank/partial move-done page).
 - [ ] **Monitor** management pages (list / delete) — load normally; a forced upstream error surfaces a 503 error page rather than a wrong 404 or blank.
-- [ ] Spot-check a public read page that uses the helper (`/scores/<ip>`, a zone page) still renders normally and returns a clean 404 for a genuinely missing record.
+- [x] Spot-check a public read page that uses the helper: `/scores/<ip>` renders normally and a genuinely missing server returns a clean 404. (`e2e/tests/scores.spec.ts` → "/scores/<ip> renders the public score page" and "missing record on the scores page returns a clean 404")
 
 ## 13. Staff search (`int_api` → ConnectRPC, issue #43)
 

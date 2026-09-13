@@ -295,6 +295,12 @@ sub _remove_user_from_account {
     # Note: No need to reload during PostgreSQL migration
     # Account data already in hashref from API
 
+    # _account_users cached the pre-removal list above (line 269) to validate
+    # $user_id; render_users below calls it again for the same account, so
+    # without invalidating here it would replay that stale list instead of
+    # reflecting the removal.
+    delete $self->{'_account_users_' . $account->{account_id}};
+
     my $param = {
         account      => $account,
         user_removed => $user,
