@@ -39,9 +39,12 @@ export interface ServerFixtures {
 export interface ServerRead {
   id: string;
   ip: string;
+  hostname: string;
   netspeed: number;
   deletionOn: string;
   verification: { verified: boolean };
+  /** Zone names, excluding the root '.' zone. */
+  zones: string[];
   account?: {
     idToken: string;
     displayName: string;
@@ -216,12 +219,16 @@ export async function getServer(
   ), "GetServer response");
   const server = record(raw.server, "GetServer server");
   const verification = record(server.verification ?? {}, "GetServer verification");
+  const zones = server.zones ?? [];
+  if (!Array.isArray(zones)) throw new Error("GetServer server.zones is malformed");
   const result: ServerRead = {
     id: idField(server.id, "GetServer server.id"),
     ip: stringField(server.ip, "GetServer server.ip"),
+    hostname: stringField(server.hostname ?? "", "GetServer server.hostname", true),
     netspeed: intField(server.netspeed, "GetServer server.netspeed"),
     deletionOn: stringField(server.deletion_on ?? "", "GetServer server.deletion_on", true),
     verification: { verified: boolField(verification.verified, "GetServer verification.verified") },
+    zones: zones.map((zone, index) => stringField(record(zone, `GetServer zone ${index}`).name, `GetServer zone ${index} name`)),
   };
   if (server.account !== undefined) {
     const account = record(server.account, "GetServer account");

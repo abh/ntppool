@@ -29,6 +29,10 @@ interface MintOptions {
   // route (/manage/vendor/admin) and the approve/reject RPC require
   // vendor_admin specifically — support_staff is not enough.
   grantVendorAdmin?: boolean;
+  // Grant the minted user the monitor_admin privilege. The account
+  // monitor-config route (/manage/account/monitor-config) checks
+  // monitor_admin specifically — support_staff is not enough.
+  grantMonitorAdmin?: boolean;
 }
 
 interface MintResult {
@@ -135,9 +139,10 @@ export async function mintSession(
       email,
       name: opts.name ?? "",
       create_if_missing: opts.createIfMissing ?? true,
-      // grant_staff = 4, grant_vendor_admin = 5.
+      // grant_staff = 4, grant_vendor_admin = 5, grant_monitor_admin = 6.
       grant_staff: opts.grantStaff ?? false,
       grant_vendor_admin: opts.grantVendorAdmin ?? false,
+      grant_monitor_admin: opts.grantMonitorAdmin ?? false,
     },
   );
 

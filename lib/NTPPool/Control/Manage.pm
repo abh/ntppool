@@ -448,6 +448,12 @@ sub manage_dispatch {
     # .../servers and .../account have their own handlers
 
     if ($self->user_is_staff) {
+        if (    $self->request->method eq 'post'
+            and $self->request->uri =~ m{^/manage/admin(/|$)})
+        {
+            return 403 unless $self->check_auth_token;
+        }
+
         if ($self->request->uri =~ m{/manage/admin/?$}) {
             return $self->show_staff;
         }

@@ -369,8 +369,18 @@ function extractErrorDetails(xhr: XMLHttpRequest): ErrorDetails {
     Traceid: xhr.getResponseHeader('Traceid')
   });
 
-  // Default error message
-  let message = 'Server error occurred';
+  // Default to a message based on the HTTP status: our error pages are HTML,
+  // and statusText is empty over HTTP/2
+  let message = `Request failed (HTTP ${xhr.status})`;
+  if (xhr.status === 400) {
+    message = 'Bad request (HTTP 400)';
+  } else if (xhr.status === 403) {
+    message = 'Permission denied (HTTP 403)';
+  } else if (xhr.status === 404) {
+    message = 'Not found (HTTP 404)';
+  } else if (xhr.status >= 500 && xhr.status <= 599) {
+    message = `Server error (HTTP ${xhr.status})`;
+  }
 
   // Try to parse JSON response for more detailed error
   try {
@@ -381,10 +391,7 @@ function extractErrorDetails(xhr: XMLHttpRequest): ErrorDetails {
       message = response.message;
     }
   } catch (e) {
-    // If not JSON, use status text or default message
-    if (xhr.statusText) {
-      message = xhr.statusText;
-    }
+    // Not JSON; keep the status-based message
   }
 
   return { message, traceid };

@@ -1,6 +1,12 @@
 import { test, expect, Page } from "@playwright/test";
 import { loginAs, uniqueTestEmail } from "../lib/auth";
-import { errorAlerts, expectCleanPage, expectNoErrorBleed } from "../lib/helpers";
+import {
+  acceptInvite,
+  errorAlerts,
+  expectCleanPage,
+  expectNoErrorBleed,
+  inviteUser,
+} from "../lib/helpers";
 
 // Account invitation resend, regular-user (non-staff) flow.
 // MANUAL_TEST_PLAN.md §4a "Resend account invitations".
@@ -42,22 +48,6 @@ function activeResendButton(page: Page) {
 
 function disabledResendButton(page: Page) {
   return page.locator("button[disabled]", { hasText: "Resend" });
-}
-
-// Invite a fresh invitee from the team page. Returns the invitee email.
-// The owner must already be logged in on `page`'s context.
-async function inviteUser(page: Page, invitee: string): Promise<void> {
-  await expectCleanPage(page, TEAM_PATH);
-
-  // The invite-create form (team.html) — submitting the rendered form carries
-  // the hidden auth_token (CSRF) and a= account token along with it.
-  await page.fill('input[name="invite_email"]', invitee);
-  await page.click('input[type="submit"][value="Send invite"]');
-
-  await expectNoErrorBleed(page, page.url());
-
-  // The new pending invite shows up in the "Account invitations" table.
-  await expect(page.locator("body")).toContainText(invitee);
 }
 
 test("pending invite shows a Resend button for an account with edit access", async ({
@@ -207,33 +197,38 @@ test("only a pending invite renders a Resend control", async ({ page, context })
   await expect(resendControls).toHaveCount(1);
 });
 
-test.skip("accepted invite hides Resend and the accept link still works", async ({
-  page,
-  context,
+test("accepted invite hides Resend and the accept link still works", async ({
+  browser,
 }) => {
   // §4a, harder half: accept the invite as the invitee, then confirm the
   // accepted invite no longer offers Resend, while the accept link itself
   // worked.
   //
-  // SKIPPED: driving the accept flow needs the invite `code` (only available
-  // via the DB or the invite email body) to hit
-  // /manage/account/invite/<code>, AND a separate authenticated identity for
-  // the invitee. That cross-identity, code-dependent flow is deferred. The
-  // assertion shape is kept ready: after acceptance the invite status is no
-  // longer 'pending' and team.html renders no Resend control for it.
+  // Driving the accept flow needs the invite `code` and a separate
+  // authenticated identity for the invitee. Neither needs the DB or an email
+  // body: get_account_invites(for_user => 1) serves the code straight to
+  // whichever user is logged in, and a second BrowserContext is a second real
+  // identity (see lib/helpers.ts's acceptInvite).
+  const ownerContext = await browser.newContext();
+  const ownerPage = await ownerContext.newPage();
   const owner = uniqueTestEmail("invite-owner");
-  await loginAs(context, owner);
+  await loginAs(ownerContext, owner);
 
   const invitee = uniqueTestEmail("invite-invitee");
-  await inviteUser(page, invitee);
+  await inviteUser(ownerPage, invitee);
 
-  // … obtain invite code (DB/email), log in as invitee, GET
-  //   /manage/account/invite/<code>, accept … (deferred)
+  const inviteeContext = await browser.newContext();
+  const inviteePage = await inviteeContext.newPage();
+  await loginAs(inviteeContext, invitee);
+  await acceptInvite(inviteePage);
 
   // Back on the owner's team page the accepted invite shows no Resend control.
-  await expectCleanPage(page, TEAM_PATH);
-  await expect(activeResendButton(page)).toHaveCount(0);
-  await expect(disabledResendButton(page)).toHaveCount(0);
+  await expectCleanPage(ownerPage, TEAM_PATH);
+  await expect(activeResendButton(ownerPage)).toHaveCount(0);
+  await expect(disabledResendButton(ownerPage)).toHaveCount(0);
+
+  await ownerContext.close();
+  await inviteeContext.close();
 });
 
 test("a user without access to the account cannot resend", async ({

@@ -1,4 +1,5 @@
-import { test, expect, Browser, BrowserContext, Page } from "@playwright/test";
+import type { Browser, BrowserContext, Page } from "@playwright/test";
+import { test, expect } from "../lib/servers";
 import {
   loginAs,
   uniqueTestEmail,
@@ -18,13 +19,14 @@ import {
 // (:482-612). Template: docs/manage/tpl/staff.html (the form) and
 // tpl/admin/search_results.html (the HTMX fragment swapped into #users).
 //
-// This slice covers account-NAME pattern matching and the `id:<numeric>`
-// lookup. The numeric accounts.id is not reachable from the browser (search
-// results carry only id_token, and account_id is never rendered as text), so
-// the id: test reads it through AccountService.GetAccount as the target itself.
+// This slice covers account-NAME pattern matching, the `id:<numeric>` lookup,
+// and exact-IP lookup against the bounded server fixture. The numeric
+// accounts.id is not reachable from the browser (search results carry only
+// id_token, and account_id is never rendered as text), so the id: test reads
+// it through AccountService.GetAccount as the target itself.
 //
-// IP lookup, hostname highlighting, include-deleted, `monitors:` and `zone:`
-// all need controlled server/monitor fixtures and stay deferred.
+// Hostname highlighting, include-deleted, `monitors:` and `zone:` searches
+// still need controlled fixtures and stay deferred.
 
 const ADMIN_PATH = "/manage/admin";
 const SEARCH_PATH = "/manage/admin/search";
@@ -197,6 +199,46 @@ test("staff finds an account by exact numeric id: lookup", async ({
   expect(pageErrors).toEqual([]);
 });
 
+test("staff finds a fixture server by exact IP", async ({
+  page,
+  context,
+  serverFixtures,
+}) => {
+  const fixture = await serverFixtures.create([
+    { ipVersion: 4, verified: true },
+  ]);
+  const server = fixture.servers[0];
+  const pageErrors = await openStaffSearch(page, context, "search-ip");
+
+  const response = await runSearch(page, server.ip);
+  expect(response.status()).toBe(200);
+
+  const results = page.locator("#users");
+  // staff_search wraps the matched field in <b>, so this covers both "the
+  // server came back" and "the match is highlighted" in one assertion.
+  await expect(
+    results.locator("b", { hasText: server.ip }),
+    "the matched IP should be rendered and highlighted",
+  ).toBeVisible();
+
+  // Checked after the first awaited assertion: the fragment is in the DOM by
+  // now, so this reads the swapped-in results and not the pre-swap page.
+  await expectNoErrorBleed(page, `${SEARCH_PATH} (${server.ip})`);
+
+  // One href carries both halves of the grouping claim — this is the fixture
+  // server's own row, and it is rendered under the fixture's account. Two
+  // separately scoped checks would also pass with the row under some OTHER
+  // account, which is exactly what this test is meant to rule out.
+  await expect(
+    results.locator(
+      `a[href*="/scores/${server.ip}"][href*="a=${fixture.accountToken}"]`,
+    ),
+    "the server result should link to its score page in the fixture account",
+  ).toBeVisible();
+  await expect(results.locator(".alert-danger")).toHaveCount(0);
+  expect(pageErrors).toEqual([]);
+});
+
 test("a no-match query replaces earlier results with the no-results message", async ({
   page,
   context,
@@ -254,6 +296,25 @@ test("an empty query clears earlier results without an error", async ({
   await expect(results).not.toContainText("No results found");
   await expect(results.locator(".alert-danger")).toHaveCount(0);
   expect(pageErrors).toEqual([]);
+});
+
+test("a staff search POST without a CSRF token is refused", async ({
+  page,
+  context,
+  browser,
+}) => {
+  const target = await createSearchTarget(browser, "search-csrf");
+  await openStaffSearch(page, context, "search-csrf");
+
+  // The same request the form sends, minus auth_token. manage_dispatch
+  // checks the token for every POST under /manage/admin.
+  const response = await page.request.post(SEARCH_PATH, {
+    form: { q: target.accountName },
+    headers: { "HX-Request": "true" },
+    maxRedirects: 0,
+  });
+  expect(response.status()).toBe(403);
+  expect(await response.text()).not.toContain(target.email);
 });
 
 test("a non-staff user cannot reach staff search", async ({

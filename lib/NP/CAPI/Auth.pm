@@ -388,6 +388,9 @@ B<Arguments:>
         grant_vendor_admin => $value,       # bool - grant_vendor_admin, when true, grants the vendor_admin privilege to the
  minted user. Dev-only (honored under the same devel guard as the rest of
  this RPC); used to unblock vendor-admin-gated E2E tests.
+        grant_monitor_admin => $value,       # bool - grant_monitor_admin, when true, grants the monitor_admin privilege to the
+ minted user. Dev-only (honored under the same devel guard as the rest of
+ this RPC); used to unblock monitor-admin-gated E2E tests.
     );
 
 B<Returns:>
@@ -439,6 +442,7 @@ sub create_test_session {
     $request{'create_if_missing'} = delete $args{'create_if_missing'} if exists $args{'create_if_missing'};
     $request{'grant_staff'} = delete $args{'grant_staff'} if exists $args{'grant_staff'};
     $request{'grant_vendor_admin'} = delete $args{'grant_vendor_admin'} if exists $args{'grant_vendor_admin'};
+    $request{'grant_monitor_admin'} = delete $args{'grant_monitor_admin'} if exists $args{'grant_monitor_admin'};
 
     return connect_rpc(
         service     => 'ntppool.auth.v1.AuthService',

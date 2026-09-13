@@ -90,6 +90,58 @@ export async function createAccount(page: Page): Promise<string> {
   return fresh[0];
 }
 
+/**
+ * Invite `invitee` to the account team the page's logged-in user manages.
+ * The inviter must already be logged in on `page`'s context.
+ *
+ * Returns once the pending invite is visible in the "Account invitations"
+ * table (docs/manage/tpl/account/team.html).
+ */
+export async function inviteUser(page: Page, invitee: string): Promise<void> {
+  await expectCleanPage(page, "/manage/account/team");
+
+  // The invite-create form (team.html) — submitting the rendered form carries
+  // the hidden auth_token (CSRF) and a= account token along with it.
+  await page.fill('input[name="invite_email"]', invitee);
+  await page.click('input[type="submit"][value="Send invite"]');
+
+  await expectNoErrorBleed(page, page.url());
+
+  // The new pending invite shows up in the "Account invitations" table.
+  await expect(page.locator("body")).toContainText(invitee);
+}
+
+/**
+ * Accept the current user's first pending invite, entirely through the
+ * browser: no DB access, no email body. `/manage/account/invites/` (see
+ * render_user_invitations, lib/NTPPool/Control/Manage/Account.pm) lists the
+ * logged-in user's pending invites with the invite `code` already rendered
+ * into each row's Accept form (docs/manage/tpl/user/invites.html), so a
+ * second `loginAs` in a second BrowserContext is all a test needs to drive
+ * this as a real second identity.
+ *
+ * Gotcha: the route match is `m!^/manage/account/invites/!` — the trailing
+ * slash is required. `/manage/account/invites` (no slash) falls through to
+ * the account-lookup dispatch and 404s.
+ *
+ * On success the controller redirects — to the joined account's team page
+ * normally, but to /manage (which itself redirects on to /manage/servers)
+ * when the invitee had no current_account yet, i.e. a brand-new user whose
+ * first-ever action is accepting this invite (handle_invitation's POST
+ * branch, the "didn't have an account yet" case). Callers that need to land
+ * on the team page should navigate there explicitly afterward rather than
+ * assume the redirect target.
+ */
+export async function acceptInvite(page: Page): Promise<void> {
+  await expectCleanPage(page, "/manage/account/invites/");
+
+  await Promise.all([
+    page.waitForNavigation({ waitUntil: "load" }),
+    page.getByRole("button", { name: "Accept" }).click(),
+  ]);
+  await expectNoErrorBleed(page, page.url());
+}
+
 /** Distinct account id_tokens (acc_…) referenced by `a=` links on the page. */
 async function accountTokensOnPage(page: Page): Promise<string[]> {
   const hrefs = await page

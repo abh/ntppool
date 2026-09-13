@@ -143,6 +143,7 @@ npx playwright test --list
 npx playwright test tests/server.spec.ts tests/server-verification.spec.ts tests/server-deletion.spec.ts tests/server-netspeed.spec.ts tests/server-scores-context.spec.ts --project=manage --retries=0
 npx playwright test tests/server-verification.spec.ts tests/server-deletion.spec.ts tests/server-netspeed.spec.ts tests/server-scores-context.spec.ts --project=manage --retries=0
 npx playwright test tests/scores.spec.ts --project=web --retries=0
+npx playwright test tests/monitor-config.spec.ts --project=manage --retries=0
 ```
 
 Ordinary suite runs keep the retries configured in `playwright.config.ts`.
@@ -175,8 +176,10 @@ npx playwright test --project=manage --reporter=list > test-logs/run-1.log 2>&1
   (`lib/NTPPool/Control.pm` and `lib/NTPPool/Control/Login.pm`): value
   `"{session_token};{unix_seconds}"`, path `/`, `secure`, `httpOnly`,
   `SameSite=Lax`, domain = the `NTP_BASE_URL` host. `opts.grantStaff` /
-  `opts.grantVendorAdmin` mint a staff / vendor-admin user (dev-only, via the
-  RPC's `grant_staff` / `grant_vendor_admin` flags) for the staff specs.
+  `opts.grantVendorAdmin` / `opts.grantMonitorAdmin` mint a staff /
+  vendor-admin / monitor-admin user (dev-only, via the RPC's `grant_staff` /
+  `grant_vendor_admin` / `grant_monitor_admin` flags) for the staff and
+  monitor-admin-gated specs.
 - `uniqueTestEmail(prefix?)` — fresh per-run email so each run gets an
   isolated new user.
 
@@ -187,7 +190,10 @@ Specs map to `MANUAL_TEST_PLAN.md` sections: `login` (§1), `regression-smoke`
 (§8 add-form baseline), `server-verification`, `server-deletion`,
 `server-netspeed` and `server-scores-context` (§8/§8a/§8b),
 `account-dissolve` (§2), `staff-deletion` (§3/§4), `invites` (§4a),
-`account-frozen` (§2), `account-download` (§4c), `staff-search` (§13).
+`account-frozen` (§2), `account-download` (§4c), `staff-search` (§13),
+`staff-server-edit` (§8, staff hostname and zone edits and their CSRF check),
+`account-create` (§1 + §4), `account-team` (§4), `account-update` (§4),
+`dns-zone` (§6, auth-guard portion), `monitor-config` (§14).
 Staff specs need the `grant_staff` / `grant_vendor_admin` RPC build deployed.
 Selectors are derived from the templates and may need adjustment against the
 live site on first run.

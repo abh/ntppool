@@ -27,6 +27,7 @@ node_modules
 
 # Ignore DevSpace cache and log folder
 .devspace/
+/devspace.yaml
 
 # Vite/Node build artifacts
 dist/

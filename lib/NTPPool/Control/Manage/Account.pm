@@ -295,6 +295,12 @@ sub _remove_user_from_account {
     # Note: No need to reload during PostgreSQL migration
     # Account data already in hashref from API
 
+    # _account_users cached the pre-removal list above (line 269) to validate
+    # $user_id; render_users below calls it again for the same account, so
+    # without invalidating here it would replay that stale list instead of
+    # reflecting the removal.
+    delete $self->{'_account_users_' . $account->{account_id}};
+
     my $param = {
         account      => $account,
         user_removed => $user,
@@ -353,7 +359,7 @@ sub handle_invitation {
             return $self->render_invite_error("Invitation code has been used or expired");
         }
 
-        return $self->render_user_invitations($invite);
+        return $self->render_user_invitations;
     }
 
     # POST request - accept the invitation via Go API
@@ -508,19 +514,10 @@ sub render_resend_invite {
 }
 
 sub render_user_invitations {
-    my $self   = shift;
-    my $invite = shift;
+    my $self = shift;
 
     my $user    = $self->user;
     my $invites = $self->_user_invites($user);
-
-    # Note: $invite here is still an ORM object from the invitation flow
-    # Only compare if it's an ORM object (has ->id method)
-    if ($invite && ref($invite) !~ /HASH/ && !grep { $_->{invite_id} == $invite->id }
-        @$invites)
-    {
-        push @$invites, $invite;
-    }
 
     $self->tpl_param('user',    $user);
     $self->tpl_param('invites', $invites);

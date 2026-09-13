@@ -63,13 +63,6 @@ sub render_user {
     return $self->redirect($result->{data}{redirect_url});
 }
 
-# overridden in the manage version
-sub profile_visible {
-    my $self    = shift;
-    my $account = shift;
-    return $account->public_profile;
-}
-
 sub render_account {
     my $self = shift;
 

@@ -1,3 +1,6 @@
+# Copy this file to devspace.yaml, then adjust the image registry and
+# hostnames for your development environment.
+
 version: v2beta1
 name: ntppool
 pipelines:
@@ -41,20 +44,22 @@ deployments:
     ntppool:
         helm:
             chart:
-                name: ../ntppool-charts/pub/charts/ntppool
+                name: ntppool
                 repo: https://charts.ntppool.org
             values:
                 config:
-                    #CAPI_DEBUG: "1"
-                    httpd_maxclients: "6"
-                    manage_hostname: manage.askdev.grundclock.com
-                    pool_domain: ntp.askdev.grundclock.com
+                    deployment_mode: devel
+                    httpd_maxclients: "4"
+                    manage_hostname: manage.ntp.test
+                    manage_tls: "no"
+                    pool_domain: ntp.test
                     static_base: /static/
-                    web_hostname: web.askdev.grundclock.com
+                    web_hostname: web.ntp.test
+                    web_tls: "no"
                 image:
                     image: harbor.ntppool.org/ntpdev/ntppool-dev
-            valuesFiles:
-                - /Users/ask/src/ntppool-k8s/devel/dev-values-ewr1.yaml
+                ingress:
+                    enabled: false
 
 dev:
     sync-0:
