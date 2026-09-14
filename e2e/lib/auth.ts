@@ -43,6 +43,9 @@ export class RpcError extends Error {
     message: string,
     readonly status: number,
     readonly code: string,
+    // The Connect error JSON's `message`. It stays out of `message`, so it
+    // only shows up in a report when a test asserts on it.
+    readonly connectMessage?: string,
   ) {
     super(message);
     this.name = "RpcError";
@@ -92,10 +95,14 @@ export async function connectRpc<T>(
 
   if (!resp.ok) {
     let code = "unknown";
+    let connectMessage: string | undefined;
     try {
-      const errorBody = (await resp.json()) as { code?: unknown };
+      const errorBody = (await resp.json()) as { code?: unknown; message?: unknown };
       if (typeof errorBody.code === "string" && errorBody.code) {
         code = errorBody.code;
+      }
+      if (typeof errorBody.message === "string") {
+        connectMessage = errorBody.message;
       }
     } catch {
       // An HTML/empty error response is still reported by status without
@@ -106,6 +113,7 @@ export async function connectRpc<T>(
         `${resp.status} ${resp.statusText} (Connect code: ${code})`,
       resp.status,
       code,
+      connectMessage,
     );
   }
 

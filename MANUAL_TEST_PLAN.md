@@ -174,20 +174,24 @@ site remains — don't go looking for it.
 
 ## 5. Vendor zones (migrated to CAPI)
 
-> `e2e/tests/vendor.spec.ts` covers the §5 items marked below plus the §5b
-> open-source claim path, including the issue #31 ORM-removal surface:
-> `dns_root_origin` display on both the new-zone and edit forms
-> (Vendor.pm render_form), and `id_token`-based edit/create routing
-> (form.html + `_get_id`). §5a, §5c, §5d and §5e are **not** covered end to end
-> — the admin invalid-transition test asserts a safe no-op, which is not
-> evidence of error rendering or of decorative-call degradation.
+> `e2e/tests/vendor.spec.ts` covers fresh, uncovered vendors and vendor
+> admins, including the issue #31 ORM-removal surface: `dns_root_origin`
+> display on both the new-zone and edit forms (Vendor.pm render_form), and
+> `id_token`-based edit/create routing (form.html + `_get_id`).
+> `e2e/tests/vendor-coverage.spec.ts` covers vendors with a live subscription,
+> which `api e2e fixture create` seeds. Together they cover §5a, §5b and §5e.
+> §5c's admin failure row and §5d need a failure-injection hook in a network
+> handler, which the E2E fixture rule forbids, so they stay manual; the admin
+> invalid-transition test asserts a safe no-op, which isn't evidence of error
+> rendering. Design:
+> `docs/superpowers/specs/2026-09-14-vendor-zone-e2e-coverage-design.md`.
 
 - [x] `/manage/vendor` — zone list loads from the API (no ORM/DB errors). (`e2e/tests/vendor.spec.ts` → "create a New vendor zone request")
 - [x] `/manage/vendor/new` — request form renders with API-provided metadata, incl. `dns_root_origin`. (`e2e/tests/vendor.spec.ts`)
 - [x] Submit a new vendor zone request — validation works, success path completes. (`e2e/tests/vendor.spec.ts` → "create a New vendor zone request")
 - [x] View a single zone (`/manage/vendor/<id>`) — details correct, edit form id correct. (`e2e/tests/vendor.spec.ts`)
 - [x] As **staff**, `/manage/vendor/admin` — admin list loads; approve/reject status change works. (`e2e/tests/vendor.spec.ts`)
-- [ ] Subscription/plan checks on vendor pages still work (no redundant account fetch errors).
+- [x] Subscription/plan checks on vendor pages still work (no redundant account fetch errors). `/manage/vendor/plan` is blank until a product is chosen; the subscription shows on `/manage/vendor` as "Current plan" with its limits, and a Pending zone reads "Processing". (`e2e/tests/vendor-coverage.spec.ts` → "a covered vendor gets a plain submit and stays off the open-source path")
 
 ### 5a. Editability matrix (status × role)
 
@@ -196,14 +200,14 @@ site remains — don't go looking for it.
 > `status`, or approval state — those move only through the admin status RPC.
 
 - [x] Regular user, **New**: edit an ordinary content field and the save persists. (`e2e/tests/vendor.spec.ts` → "edit a New/Pending zone and persist a changed field")
-- [ ] Regular user, **New**: repeat the edit/save assertion for every other writable field.
+- [x] Regular user, **New**: repeat the edit/save assertion for every other writable field (`zone_name`, `request_information`, `device_count`, `device_information`; a regular user never sees `contact_information`). (`e2e/tests/vendor.spec.ts` → "every writable field saves on a New zone")
 - [x] Regular user, **Pending**: edit an ordinary content field and the save persists without a blank form. (`e2e/tests/vendor.spec.ts` → "open-source submit retains justification and edits without error")
-- [ ] Regular user, **Pending**: repeat the edit/save assertion for every other writable field.
-- [ ] Regular user, **Rejected**: edit fields before resubmitting.
+- [x] Regular user, **Pending**: repeat the edit/save assertion for every other writable field. (`e2e/tests/vendor.spec.ts` → "every writable field saves on a Pending zone")
+- [x] Regular user, **Rejected**: edit fields before resubmitting. (`e2e/tests/vendor.spec.ts` → "approve/reject status changes and owner resubmit")
 - [x] Regular user, **Rejected**: "Resubmit for production" returns the status to Pending. (`e2e/tests/vendor.spec.ts` → "approve/reject status changes and owner resubmit")
 - [x] Regular user, **Approved**: no Edit button; opening the edit URL falls through to the read-only show page. (`e2e/tests/vendor.spec.ts` → "owner sees no edit on an Approved zone; edit URL is read-only")
 - [x] Staff, **Approved**: edit form opens; `zone_name` is read-only; another content field saves. (`e2e/tests/vendor.spec.ts` → "vendor admin can edit an Approved zone; zone_name is read-only; other fields save")
-- [ ] Staff, **Approved**: attempting to change `zone_name` is explicitly rejected by the API (name locked once live). The existing test proves the name stays unchanged but does not distinguish rejection from silently ignoring the field.
+- [x] Staff, **Approved**: attempting to change `zone_name` is explicitly rejected by the API (name locked once live): the form re-renders with "zone name cannot be changed after approval" and a Trace ID, and the stored name is unchanged. (`e2e/tests/vendor.spec.ts` → "renaming an Approved zone shows the API's refusal")
 
 ### 5b. Open-source claim vs staff determination (issue #39)
 
@@ -219,28 +223,29 @@ site remains — don't go looking for it.
 > silently reclassified as non-revenue open source. `show.html:83-103` now
 > branches on `have_subscription`.
 >
-> Known gap: a **whitespace-only** justification passes the check and submits
-> the zone — `Vendor.pm:388-397` tests `if (my $osinfo = ...)`, and `" "` is
-> truthy in Perl. The code already carries a `# todo: sanity check the data?`
-> there. Not covered by a test, because a test for it could only fail today.
+> A covered submit sends an empty justification, so it clears one stored by an
+> earlier open-source submit: a Rejected open-source zone resubmitted with a
+> subscription loses its claim and its justification. That's current
+> behavior; whether it's intended is still to be decided, so no test pins it.
 
-- [ ] **Covered** vendor (live subscription): a New/Rejected zone shows a plain "Submit for production" / "Resubmit for production" button — **no** open-source justification form, no `opensource_request` field in the posted form.
-- [ ] Submitting as a covered vendor leaves the zone's open-source claim **and** grant untouched (the zone page shows no open-source justification text).
+- [x] **Covered** vendor (live subscription): a New/Rejected zone shows a plain "Submit for production" / "Resubmit for production" button — **no** open-source justification form, no `opensource_request` field in the posted form. (`e2e/tests/vendor-coverage.spec.ts` → "a covered vendor gets a plain submit and stays off the open-source path" and "a vendor admin submits for a covered account, and the owner resubmits after a rejection")
+- [x] Submitting as a covered vendor leaves the open-source claim false **and** the grant undecided (the zone page shows no open-source justification text). (`e2e/tests/vendor-coverage.spec.ts` → "a covered vendor gets a plain submit and stays off the open-source path")
 - [x] **Uncovered** vendor: the same zone shows the open-source justification form instead. (`e2e/tests/vendor.spec.ts` → "uncovered vendor submit page shows the open-source form, not a plain submit")
 - [x] Submit with the open-source form + justification — the claim and `opensource_info` reach the API and the zone becomes Pending. (`e2e/tests/vendor.spec.ts` → "open-source submit retains justification and edits without error")
-- [ ] Confirm separately that the staff open-source grant remains undecided after the vendor submits its claim.
+- [x] Confirm separately that the staff open-source grant remains undecided after the vendor submits its claim. (`e2e/tests/vendor.spec.ts` → "approve/reject status changes and owner resubmit")
 - [x] Submitting the open-source form with an **empty** justification is rejected with "Please provide open source information", and the zone stays New. (`e2e/tests/vendor.spec.ts` → "open-source submit with an empty justification is refused and the zone stays New")
+- [x] Submitting the open-source form with a **whitespace-only** justification is refused by the API with "opensource_info must contain non-whitespace characters" and a Trace ID, and the zone stays New. (`e2e/tests/vendor.spec.ts` → "a whitespace-only justification is refused by the API and the zone stays New")
 - [x] Resubmit a **Rejected** open-source zone — the zone returns to Pending. (`e2e/tests/vendor.spec.ts` → "approve/reject status changes and owner resubmit")
-- [ ] Confirm the open-source claim and justification remain applied after that Rejected-to-Pending resubmit.
+- [x] Confirm the open-source claim and justification remain applied after that Rejected-to-Pending resubmit (the new justification is stored and the grant resets to undecided). (`e2e/tests/vendor.spec.ts` → "approve/reject status changes and owner resubmit")
 - [x] Edit a Pending **open-source** zone (change e.g. org name) — save succeeds and does **not** error with "opensource_info is required" or blank the stored justification. (`e2e/tests/vendor.spec.ts` → "open-source submit retains justification and edits without error")
-- [ ] Repeat the open-source edit assertion while the zone is **Rejected**.
-- [ ] As `vendor_admin`, approving with **Grant open-source** checked sets the grant; approving without it leaves the zone on the paid path regardless of the vendor's claim.
+- [x] Repeat the open-source edit assertion while the zone is **Rejected**. (`e2e/tests/vendor.spec.ts` → "approve/reject status changes and owner resubmit")
+- [x] As `vendor_admin`, approving with **Grant open-source** checked sets the grant; approving without it leaves the zone on the paid path regardless of the vendor's claim. (`e2e/tests/vendor.spec.ts` → "approve/reject status changes and owner resubmit" and "approving with Grant unchecked leaves the zone on the paid path")
 
 ### 5c. Error surfacing (always show errors, with trace_id)
 
 - [x] Induce an API error on create/edit (duplicate zone name) — a red alert renders with a Trace ID and the request form remains usable rather than going blank. (`e2e/tests/vendor.spec.ts` → "duplicate zone name surfaces a red error alert with a Trace ID")
 - [ ] The duplicate-zone error page repopulates the user's entered context; the current create path does not echo the submitted `zone_name` back into the form.
-- [ ] Same on the admin approve/reject path — failures show the alert + Trace ID rather than a silent no-op.
+- [ ] Same on the admin approve/reject path — failures show the alert + Trace ID rather than a silent no-op. Stays manual: making the status RPC fail needs a failure-injection hook in a network handler, which the E2E fixture rule forbids.
 
 ### 5d. Read-path error handling: primary fails loudly, decorative degrades (issue #42)
 
@@ -254,6 +259,9 @@ site remains — don't go looking for it.
 > Primary: `Vendor.pm:74` (zone existence) and `:168` (the zone list).
 > Decorative: `:177` / `:185` in `render_zones`, and `:769` in
 > `render_subscription`.
+>
+> These rows stay manual: forcing a read to fail needs a failure-injection
+> hook in a network handler, which the E2E fixture rule forbids.
 
 - [ ] `/manage/vendor` while the zone-list API errors/times out — shows an error page, **not** a redirect to `/manage/vendor/new` (which would mislead a vendor who already has zones).
 - [ ] `/manage/vendor` when the **subscription-status** call errors — the zone list still renders; `have_subscription` falls back to false, so a Pending zone simply isn't labelled "Processing". No error page.
@@ -273,13 +281,17 @@ site remains — don't go looking for it.
 > **The Perl/template consumption of `submit_state` is a deferred Phase 2**, so
 > today this gate is a backstop behind the existing template — which already
 > offers a plain production submit only to covered vendors. Needs the deployed
-> Go API; the Go integration tests already cover the four cases below.
+> Go API; the Go integration tests already cover the first four cases below
+> (the over-limit case only for the device limit).
+>
+> E2E checks both layers: the Perl gate in the browser, and the Go gate through
+> a direct `SubmitVendorZone` call.
 
-- [ ] **Covered** vendor (live subscription within limits): plain production submit succeeds → Pending.
-- [ ] **Uncovered** vendor **with** an open-source claim + justification: submit still succeeds → Pending (open-source path is allowed through the gate).
-- [ ] **Uncovered** vendor **without** an open-source claim: submit is rejected with `a subscription is required, or apply as open source` (reachable via the resubmit path or a direct/admin submit, since the normal form hides the plain-submit button for uncovered vendors).
-- [ ] **Over-limit** vendor (has a subscription but exceeds zone/device limits), no open-source claim: submit is rejected with the same message (a distinct OVER_LIMIT wording is a Phase 2 decision, not a bug).
-- [ ] `vendor_admin` submitting on another account's behalf is gated on **that account's** coverage, not the admin's own.
+- [x] **Covered** vendor (live subscription within limits): plain production submit succeeds → Pending. (`e2e/tests/vendor-coverage.spec.ts` → "a covered vendor gets a plain submit and stays off the open-source path")
+- [x] **Uncovered** vendor **with** an open-source claim + justification: submit still succeeds → Pending (open-source path is allowed through the gate). (`e2e/tests/vendor.spec.ts` → "open-source submit retains justification and edits without error")
+- [x] **Uncovered** vendor **without** an open-source claim: submit is rejected with `a subscription is required, or apply as open source` (reachable via the resubmit path or a direct/admin submit, since the normal form hides the plain-submit button for uncovered vendors). (`e2e/tests/vendor.spec.ts` → "an uncovered plain submit is refused by the site and by the API")
+- [x] **Over-limit** vendor (has a subscription but exceeds zone/device limits), no open-source claim: submit is rejected with the same message (a distinct OVER_LIMIT wording is a Phase 2 decision, not a bug). (`e2e/tests/vendor-coverage.spec.ts` → "a covered vendor over the device limit is refused by the site and by the API" and "a covered vendor at the zone limit is refused by the site and by the API")
+- [x] `vendor_admin` submitting on another account's behalf is gated on **that account's** coverage, not the admin's own. (`e2e/tests/vendor-coverage.spec.ts` → "a vendor admin submits for a covered account, and the owner resubmits after a rejection")
 
 ## 6. DNS zone generation (Go API)
 

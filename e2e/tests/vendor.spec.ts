@@ -1,4 +1,4 @@
-import { test, expect, Page, BrowserContext } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import { loginAs, uniqueTestEmail } from "../lib/auth";
 import {
   bust,
@@ -7,8 +7,27 @@ import {
   expectErrorAlert,
   expectNoErrorBleed,
 } from "../lib/helpers";
+import {
+  adminOpenZone,
+  approveZone,
+  createAndSubmitPendingZone,
+  createNewZone,
+  editZone,
+  expectSubmitRefused,
+  freshZoneData,
+  getVendorZone,
+  isVendorAdmin,
+  loginAsVendorAdmin,
+  type NewZoneData,
+  OPEN_SOURCE_JUSTIFICATION,
+  rejectZone,
+  zonePath,
+  zoneUrlParams,
+} from "../lib/vendor";
 
-// Vendor zone flow, regular-user (non-staff) portions only.
+// Vendor zone flows for fresh, uncovered vendors, plus the vendor admin block
+// at the end of the file. MANUAL_TEST_PLAN.md §5, §5a, §5b, §5c and §5e.
+// Vendors with a live subscription are in vendor-coverage.spec.ts.
 //
 // Routes / templates this exercises (see lib/NTPPool/Control/Vendor.pm):
 //   - /manage/vendor          render_zones / redirect to /new when no zones
@@ -18,67 +37,49 @@ import {
 //   - /manage/vendor/zone?id=&mode=edit  render_form(zone) (prefilled)
 //   - POST /manage/vendor/submit render_submit -> Pending (open-source path here)
 //
-// Field names below come from docs/manage/tpl/vendor/form.html and
-// docs/manage/tpl/vendor/products.html (the open-source form). The new-zone
-// form POSTs to /manage/vendor/zone with a hidden id="new".
-//
-// Admin approve/reject and the Approved/Rejected transitions are staff-gated
-// and intentionally out of scope here.
+// A fresh account has no subscription, so a New or Rejected zone's show page
+// renders the open-source form (show.html:91-103). Helpers live in
+// lib/vendor.ts.
 
-// A fresh account has no Stripe subscription, so a brand-new zone is created in
-// the "New" state and the show page renders the product/open-source picker
-// (show.html: `IF vz.status == 'New' && need_subscription`).
+const MISSING_PLAN = "Please choose a subscription plan or choose open source below";
 
-interface NewZoneData {
-  zoneName: string;
-  organizationName: string;
-  requestInformation: string;
-  deviceCount: string; // value attribute of a <select> option, e.g. "5000"
-  deviceInformation: string;
-}
-
-function freshZoneData(prefix: string): NewZoneData {
-  // Zone names are lowercased and stripped to [a-z0-9-] server-side
-  // (_edit_zone), so keep the value within that charset for a stable round-trip.
-  const rand = Math.random().toString(36).slice(2, 8);
-  return {
-    zoneName: `${prefix}${rand}`,
-    organizationName: "Example Vendor",
-    requestInformation: "Embedded appliances polling a few times per hour.",
-    deviceCount: "5000",
-    deviceInformation: "Example NTP client devices, hourly polling.",
-  };
-}
-
-// Fill the new-zone request form (/manage/vendor/new) and submit it. Returns
-// the show-page URL the create redirects to (carries id= and a= params).
-async function createNewZone(page: Page, data: NewZoneData): Promise<string> {
-  await expectCleanPage(page, "/manage/vendor/new");
-
-  // form.html renders the DNS root origin next to the zone-name field as
-  // "([name].<origin>)". On this new-zone path it comes straight from
-  // get_vendor_zone_form_metadata's dns_roots (Vendor.pm render_form, issue
-  // #31 commit 1 removed the NP::Model->dns_root ORM fallback here), so a
-  // real domain must render, not a blank/undef.
+// The list page (vendor.html) renders each zone's status plainly, and
+// "Complete setup" shows only while a zone is New.
+async function expectZoneListedAsNew(page: Page, idToken: string) {
+  await expectCleanPage(page, bust("/manage/vendor"));
+  const zoneLink = page.locator(`a[href*="id=${idToken}"]`);
+  await expect(zoneLink, "the zone should still be listed").toBeVisible();
+  await expect(zoneLink, "a still-New zone should offer Complete setup, not View details").toHaveText("Complete setup");
   await expect(
-    page.getByText(/\[name\]\.[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?\)/i),
-  ).toBeVisible();
+    page.locator("p").filter({ has: zoneLink }).locator("i"),
+    "the zone must not have moved to Pending",
+  ).toHaveText("New");
+}
 
-  // Real selectors from form.html.
-  await page.fill('input[name="zone_name"]', data.zoneName);
-  await page.fill('input[name="organization_name"]', data.organizationName);
-  await page.fill('textarea[name="request_information"]', data.requestInformation);
-  await page.selectOption('select[name="device_count"]', data.deviceCount);
-  await page.fill('textarea[name="device_information"]', data.deviceInformation);
+// Change every field a regular user can write, then check the show page and
+// the reopened form. organization_name has its own test, and form.html only
+// renders contact_information when the zone already has one, which a regular
+// user can't set. The show page formats device_count, so the form's select
+// value is checked instead.
+async function expectEveryFieldSaves(page: Page, idToken: string, prefix: string) {
+  const changed = {
+    zoneName: freshZoneData(prefix).zoneName,
+    requestInformation: "Edited: set-top boxes polling once a day.",
+    deviceCount: "25000",
+    deviceInformation: "Edited: vendor firmware 2.x with an SNTP client.",
+  };
+  await editZone(page, idToken, changed);
 
-  // Submit button value is "Continue →".
-  await Promise.all([
-    page.waitForURL(/\/manage\/vendor\/zone\?/),
-    page.click('form[action="/manage/vendor/zone"] input[type="submit"]'),
-  ]);
+  await expect(page.locator("h3").first()).toContainText(changed.zoneName);
+  await expect(page.locator("body")).toContainText(changed.requestInformation);
+  await expect(page.locator("body")).toContainText(changed.deviceInformation);
 
-  await expectNoErrorBleed(page, page.url());
-  return page.url();
+  await expectCleanPage(page, bust(zonePath(idToken, "edit")));
+  const form = page.locator('form[action="/manage/vendor/zone"]');
+  await expect(form.locator('input[name="zone_name"]')).toHaveValue(changed.zoneName);
+  await expect(form.locator('textarea[name="request_information"]')).toHaveValue(changed.requestInformation);
+  await expect(form.locator('select[name="device_count"]')).toHaveValue(changed.deviceCount);
+  await expect(form.locator('textarea[name="device_information"]')).toHaveValue(changed.deviceInformation);
 }
 
 test("vendor list and new-zone form load clean for a fresh user", async ({
@@ -178,6 +179,43 @@ test("edit a New/Pending zone and persist a changed field", async ({
   );
 });
 
+// §5a regular user, New.
+test("every writable field saves on a New zone", async ({ page, context }) => {
+  await loginAs(context, uniqueTestEmail("vendor-fields-new"));
+  const { idToken } = zoneUrlParams(await createNewZone(page, freshZoneData("fn")));
+  await expectEveryFieldSaves(page, idToken, "fn");
+});
+
+// §5a regular user, Pending (after an open-source submit).
+test("every writable field saves on a Pending zone", async ({ page, context }) => {
+  const { sessionToken } = await loginAs(context, uniqueTestEmail("vendor-fields-pending"));
+  const idToken = await createAndSubmitPendingZone(page, freshZoneData("fp"));
+  expect((await getVendorZone(sessionToken, idToken)).status, "the zone is Pending before the edits").toBe("Pending");
+  await expectEveryFieldSaves(page, idToken, "fp");
+});
+
+// §5b: Perl's check is a truthiness test, so "   " reaches the API, whose
+// validateOpensourceInfo refuses it before any write. render_submit shows the
+// Connect message in the _errors.html alert with a Trace ID.
+test("a whitespace-only justification is refused by the API and the zone stays New", async ({ page, context }) => {
+  await loginAs(context, uniqueTestEmail("vendor-os-blank"));
+  const { idToken } = zoneUrlParams(await createNewZone(page, freshZoneData("osb")));
+
+  const osForm = page.locator('form[action*="/manage/vendor/submit"]');
+  await osForm.locator('textarea[name="opensource_info"]').fill("   ");
+  await Promise.all([
+    page.waitForNavigation({ waitUntil: "load" }),
+    osForm.locator('input[type="submit"]').click(),
+  ]);
+  await expectNoErrorBleed(page, page.url());
+  await expectErrorAlert(page, { requireTraceId: true });
+  await expect(errorAlerts(page).first()).toContainText(
+    "opensource_info must contain non-whitespace characters",
+  );
+
+  await expectZoneListedAsNew(page, idToken);
+});
+
 test("open-source submit retains justification and edits without error", async ({
   page,
   context,
@@ -191,8 +229,7 @@ test("open-source submit retains justification and edits without error", async (
   // The show page for a New zone (no subscription) renders the open-source form
   // from products.html: hidden opensource_request=1 + an opensource_info
   // textarea, posting to /manage/vendor/submit.
-  const justification =
-    "Open source NTP client; AGPL-3.0; https://example.com/src ; no revenue.";
+  const justification = OPEN_SOURCE_JUSTIFICATION;
   const osForm = page.locator(
     'form[action*="/manage/vendor/submit"]',
   );
@@ -287,25 +324,8 @@ test("open-source submit with an empty justification is refused and the zone sta
   // The zone context is retained on the re-render, not dropped.
   await expect(page.locator("body")).toContainText(data.zoneName);
 
-  // The zone must still be New. Assert it from the list (vendor.html:15-31),
-  // where the status is rendered plainly, rather than from the show page whose
-  // first blockquote is the organization name.
-  await expectCleanPage(page, bust("/manage/vendor"));
-
-  const zoneLink = page.locator(`a[href*="id=${zoneToken}"]`);
-  await expect(zoneLink, "the zone should still be listed").toBeVisible();
-  // "Complete setup" renders only while the status is New; any other status
-  // renders "View details".
-  await expect(
-    zoneLink,
-    "a still-New zone should offer Complete setup, not View details",
-  ).toHaveText("Complete setup");
-
-  const listEntry = page.locator("p").filter({ has: zoneLink });
-  await expect(
-    listEntry.locator("i"),
-    "the zone must not have transitioned to Pending",
-  ).toHaveText("New");
+  // The zone must still be New.
+  await expectZoneListedAsNew(page, zoneToken!);
 
   // Reopen the zone by URL (not by clicking a link whose text we just
   // asserted) and confirm it still offers the open-source form.
@@ -333,11 +353,9 @@ test("open-source submit with an empty justification is refused and the zone sta
 //
 // WHAT THIS TEST GUARDS (and the fixture gap it lives with)
 // ---------------------------------------------------------------------------
-// The harness cannot mint a live subscription: `api e2e session` grants
-// privileges only (grant_staff / grant_vendor_admin — see lib/auth.ts), there is
-// no Stripe fixture, and the suite deliberately has no DB write layer
-// (e2e/.env.example). So the COVERED direction of #39 is guarded by the Go
-// integration test TestSubmitVendorZone_DoesNotForceOpensource instead.
+// The covered direction of #39 is in vendor-coverage.spec.ts, which seeds a
+// live subscription through `api e2e fixture create`, and in the Go
+// integration test TestSubmitVendorZone_DoesNotForceOpensource.
 //
 // What e2e CAN reach is a fresh, uncovered vendor — and the subtle failure this
 // plan nearly shipped was the routing fix removing the open-source path for
@@ -453,74 +471,6 @@ test("duplicate zone name surfaces a red error alert with a Trace ID", async ({
 // flag.
 // ---------------------------------------------------------------------------
 
-// Mint a vendor-admin session in its own context. Returns the context + a page
-// on it. The caller is responsible for context.close().
-async function loginAsVendorAdmin(
-  browser: import("@playwright/test").Browser,
-  email: string,
-): Promise<{ context: BrowserContext; page: Page }> {
-  const context = await browser.newContext();
-  // grantVendorAdmin sets user_privileges.vendor_admin; grantStaff is included
-  // so the session is also support_staff where an admin view expects it.
-  await loginAs(context, email, { grantStaff: true, grantVendorAdmin: true });
-  const page = await context.newPage();
-  return { context, page };
-}
-
-// Probe whether the session behind `page` is a working vendor admin: load the
-// admin route and check we landed on it rather than being bounced to
-// /manage/vendor (render_admin redirects non-admins). Returns true only when the
-// admin list page actually rendered.
-async function isVendorAdmin(page: Page): Promise<boolean> {
-  const response = await page.goto("/manage/vendor/admin");
-  if (!response || response.status() !== 200) {
-    return false;
-  }
-  // render_admin redirects non-vendor-admins to /manage/vendor; the admin page
-  // itself stays on /manage/vendor/admin and renders the "Pending zones" heading.
-  if (!page.url().includes("/manage/vendor/admin")) {
-    return false;
-  }
-  const heading = page.locator('h3:has-text("Pending zones")');
-  return (await heading.count()) > 0;
-}
-
-// Create + submit a zone as the owner so it lands in the Pending state, ready for
-// admin action. Returns the zone's id_token (parsed from the show-page URL).
-async function createAndSubmitPendingZone(
-  page: Page,
-  data: NewZoneData,
-): Promise<string> {
-  const showUrl = await createNewZone(page, data);
-  const idToken = new URL(showUrl).searchParams.get("id");
-  expect(idToken, "create redirect should carry an id= token").toBeTruthy();
-
-  // Submit via the open-source path (no Stripe subscription on a fresh account),
-  // mirroring the existing open-source test: products.html renders a form posting
-  // to /manage/vendor/submit with hidden opensource_request=1 + opensource_info.
-  const osForm = page.locator('form[action*="/manage/vendor/submit"]');
-  await expect(osForm).toBeVisible();
-  await osForm
-    .locator('textarea[name="opensource_info"]')
-    .fill("Open source NTP client; AGPL-3.0; https://example.com/src ; no revenue.");
-  await osForm.locator('input[type="submit"]').click();
-  await expectNoErrorBleed(page, page.url());
-  await expect(page.locator(".alert-danger")).toHaveCount(0);
-
-  return idToken!;
-}
-
-// The admin acts on a zone through its show page reached via the admin route:
-// /manage/vendor/admin?show=1;id=<token> -> render_zone($id,'show') which renders
-// show.html with the approve/reject form (gated on vendor_admin). Submitting a
-// status_change button posts to /manage/vendor/admin. Returns the page so the
-// caller can assert on the post-action render.
-async function adminOpenZone(page: Page, idToken: string): Promise<void> {
-  // admin.html links to "admin?show=1;id=<token>"; ';' is a query separator here.
-  await page.goto(`/manage/vendor/admin?show=1&id=${encodeURIComponent(idToken)}`);
-  await expectNoErrorBleed(page, page.url());
-}
-
 test.describe.serial("vendor admin & editability (§5a staff, §5c)", () => {
   // Loud preflight: prove the dev API can actually mint a vendor_admin session
   // BEFORE the admin tests run. Every test below otherwise self-skips via
@@ -576,91 +526,150 @@ test.describe.serial("vendor admin & editability (§5a staff, §5c)", () => {
     }
   });
 
-  // 2 + 3. Owner submits to Pending; admin Rejects then Approves; owner resubmits
-  // a Rejected zone back to Pending. Combined so a single zone walks the whole
-  // status path (New -> Pending -> Rejected -> Pending -> Approved) while showing
-  // both sessions interacting.
+  // §5e uncovered without a claim. The normal form hides a plain submit from
+  // an uncovered vendor, so the site gate is reached by removing the hidden
+  // opensource_request input, and the Go gate by calling SubmitVendorZone.
+  test("an uncovered plain submit is refused by the site and by the API", async ({
+    page,
+    context,
+    browser,
+  }) => {
+    const { sessionToken: ownerSession } = await loginAs(context, uniqueTestEmail("vendor-uncovered-submit"));
+    const { idToken, accountToken } = zoneUrlParams(await createNewZone(page, freshZoneData("ups")));
+
+    const admin = await loginAsVendorAdmin(browser, uniqueTestEmail("vendor-admin"));
+    try {
+      test.skip(
+        !(await isVendorAdmin(admin.page)),
+        "minted session lacks vendor_admin; cannot submit as a vendor admin",
+      );
+
+      // Site gate. locator.evaluate runs through CDP, so the page CSP doesn't apply.
+      const osForm = page.locator('form[action*="/manage/vendor/submit"]');
+      await osForm.locator('input[name="opensource_request"]').evaluate((el) => el.remove());
+      await osForm.locator('textarea[name="opensource_info"]').fill("Plain submit without the open-source flag.");
+      await Promise.all([
+        page.waitForNavigation({ waitUntil: "load" }),
+        osForm.locator('input[type="submit"]').click(),
+      ]);
+      await expectNoErrorBleed(page, page.url());
+      await expect(page.locator("div.text-danger").filter({ hasText: MISSING_PLAN })).toBeVisible();
+      await expectZoneListedAsNew(page, idToken);
+
+      // Go gate, as the owner and as a vendor admin with their own account.
+      await expectSubmitRefused(ownerSession, accountToken, idToken, "the owner");
+      await adminOpenZone(admin.page, idToken);
+      const adminAccount = await admin.page.locator('form[action="/manage/vendor/admin"] input[name="a"]').inputValue();
+      expect(adminAccount, "the vendor admin's own account").not.toBe(accountToken);
+      await expectSubmitRefused(admin.sessionToken, adminAccount, idToken, "a vendor admin");
+
+      expect((await getVendorZone(ownerSession, idToken)).status).toBe("New");
+    } finally {
+      await admin.context.close();
+    }
+  });
+
+  // One zone walks New -> Pending -> Rejected -> Pending -> Approved. §5a
+  // Rejected; §5b grant undecided, claim kept after resubmit, Rejected edit,
+  // and the checked half of the Grant row.
   test("approve/reject status changes and owner resubmit", async ({
     page,
     context,
     browser,
   }) => {
-    // OWNER session = default {page, context}.
-    const ownerEmail = uniqueTestEmail("vendor-owner");
-    await loginAs(context, ownerEmail);
+    test.setTimeout(90_000);
+    const { sessionToken: ownerSession } = await loginAs(context, uniqueTestEmail("vendor-owner"));
     const data = freshZoneData("ex");
     const idToken = await createAndSubmitPendingZone(page, data);
 
-    // ADMIN session = separate context.
-    const adminEmail = uniqueTestEmail("vendor-admin");
-    const { context: adminCtx, page: adminPage } = await loginAsVendorAdmin(
-      browser,
-      adminEmail,
-    );
+    const admin = await loginAsVendorAdmin(browser, uniqueTestEmail("vendor-admin"));
     try {
       test.skip(
-        !(await isVendorAdmin(adminPage)),
+        !(await isVendorAdmin(admin.page)),
         "minted session lacks vendor_admin; cannot drive approve/reject UI",
       );
 
-      // --- Reject (Pending -> Rejected) ---
-      await adminOpenZone(adminPage, idToken);
-      // show.html: Reject button only renders for status == 'Pending'.
-      const rejectBtn = adminPage.locator(
-        'form[action="/manage/vendor/admin"] input[name="status_change"][value="Reject"]',
-      );
-      await expect(rejectBtn).toBeVisible();
-      await rejectBtn.click();
-      await expectNoErrorBleed(adminPage, adminPage.url());
-      // render_admin sets msg "<zone> rejected"; the zone now reads Rejected.
-      await expect(adminPage.locator("body")).toContainText(
-        `${data.zoneName} rejected`,
-      );
+      await test.step("the open-source submit records the claim and leaves the grant undecided", async () => {
+        const zone = await getVendorZone(ownerSession, idToken);
+        expect(zone.status).toBe("Pending");
+        expect(zone.opensourceRequested).toBe(true);
+        expect(zone.opensourceApproved, "the grant is undecided").toBeUndefined();
+      });
 
-      // --- Owner resubmits (Rejected -> Pending) ---
-      // §5a staff row: a Rejected zone returns to the open-source justification
-      // form (the always-ask-open-source submission workflow). Re-supplying the
-      // justification and submitting returns the zone to Pending. The owner
-      // reloads the show page first.
-      await page.goto(
-        `/manage/vendor/zone?id=${encodeURIComponent(idToken)}`,
-      );
-      await expectNoErrorBleed(page, page.url());
-      // _opensource.html posts to /manage/vendor/submit?id=...#opensource, so
-      // match on a substring rather than the exact action.
-      const resubmitForm = page.locator(
-        'form[action*="/manage/vendor/submit"]',
-      );
-      await expect(resubmitForm).toBeVisible();
-      await resubmitForm
-        .locator('textarea[name="opensource_info"]')
-        .fill("Open source NTP client; AGPL-3.0; https://example.com/src ; no revenue.");
-      await resubmitForm.locator('input[type="submit"]').click();
-      await expectNoErrorBleed(page, page.url());
-      await expect(page.locator(".alert-danger")).toHaveCount(0);
+      await test.step("Reject records the grant as false", async () => {
+        await rejectZone(admin.page, idToken, data.zoneName);
+        const zone = await getVendorZone(ownerSession, idToken);
+        expect(zone.status).toBe("Rejected");
+        expect(zone.opensourceApproved).toBe(false);
+      });
 
-      // Back in admin view the zone is Pending again (Approve + Reject offered).
-      await adminOpenZone(adminPage, idToken);
-      await expect(
-        adminPage.locator(
-          'form[action="/manage/vendor/admin"] input[name="status_change"][value="Reject"]',
-        ),
-        "Reject button means status returned to Pending",
-      ).toBeVisible();
+      await test.step("the owner edits the Rejected zone", async () => {
+        const edited = {
+          organizationName: "Example Vendor (rejected edit)",
+          requestInformation: "Edited while Rejected: appliances polling hourly.",
+        };
+        await editZone(page, idToken, edited);
+        const body = page.locator("body");
+        await expect(body).not.toContainText("opensource_info");
+        await expect(body).toContainText(edited.organizationName);
+        await expect(body).toContainText(edited.requestInformation);
+        await expect(body, "the stored justification still shows").toContainText(OPEN_SOURCE_JUSTIFICATION);
+      });
 
-      // --- Approve (Pending -> Approved) ---
-      const approveBtn = adminPage.locator(
-        'form[action="/manage/vendor/admin"] input[name="status_change"][value="Approve"]',
-      );
-      await expect(approveBtn).toBeVisible();
-      await approveBtn.click();
-      await expectNoErrorBleed(adminPage, adminPage.url());
-      // render_admin sets msg "<zone> approved" on success.
-      await expect(adminPage.locator("body")).toContainText(
-        `${data.zoneName} approved`,
-      );
+      const resubmitted = "Resubmitted: open source NTP client; BSD-2-Clause; https://example.com/src ; no revenue.";
+      await test.step("the owner resubmits with a new justification", async () => {
+        await expectCleanPage(page, bust(zonePath(idToken)));
+        const form = page.locator('form[action*="/manage/vendor/submit"]');
+        await form.locator('textarea[name="opensource_info"]').fill(resubmitted);
+        await Promise.all([
+          page.waitForNavigation({ waitUntil: "load" }),
+          form.locator('input[type="submit"]').click(),
+        ]);
+        await expectNoErrorBleed(page, page.url());
+        await expect(errorAlerts(page)).toHaveCount(0);
+        const zone = await getVendorZone(ownerSession, idToken);
+        expect(zone.status).toBe("Pending");
+        expect(zone.opensourceRequested).toBe(true);
+        expect(zone.opensourceInfo).toBe(resubmitted);
+        expect(zone.opensourceApproved, "a resubmit resets the grant to undecided").toBeUndefined();
+      });
+
+      await test.step("Approve with Grant left checked records the grant", async () => {
+        await adminOpenZone(admin.page, idToken);
+        await expect(admin.page.locator("#opensource_grant"), "Grant is pre-checked for a zone with a claim").toBeChecked();
+        await approveZone(admin.page, idToken, data.zoneName, { grant: true });
+        const zone = await getVendorZone(ownerSession, idToken);
+        expect(zone.status).toBe("Approved");
+        expect(zone.opensourceApproved).toBe(true);
+      });
     } finally {
-      await adminCtx.close();
+      await admin.context.close();
+    }
+  });
+
+  // §5b, the unchecked half of the Grant row.
+  test("approving with Grant unchecked leaves the zone on the paid path", async ({
+    page,
+    context,
+    browser,
+  }) => {
+    const { sessionToken: ownerSession } = await loginAs(context, uniqueTestEmail("vendor-nogrant-owner"));
+    const data = freshZoneData("ng");
+    const idToken = await createAndSubmitPendingZone(page, data);
+
+    const admin = await loginAsVendorAdmin(browser, uniqueTestEmail("vendor-admin"));
+    try {
+      test.skip(
+        !(await isVendorAdmin(admin.page)),
+        "minted session lacks vendor_admin; cannot approve",
+      );
+      await approveZone(admin.page, idToken, data.zoneName, { grant: false });
+      const zone = await getVendorZone(ownerSession, idToken);
+      expect(zone.status).toBe("Approved");
+      expect(zone.opensourceApproved).toBe(false);
+      expect(zone.opensourceRequested, "the vendor's claim is kept").toBe(true);
+    } finally {
+      await admin.context.close();
     }
   });
 
@@ -689,21 +698,11 @@ test.describe.serial("vendor admin & editability (§5a staff, §5c)", () => {
       );
 
       // Admin approves so the zone is Approved.
-      await adminOpenZone(adminPage, idToken);
-      await adminPage
-        .locator(
-          'form[action="/manage/vendor/admin"] input[name="status_change"][value="Approve"]',
-        )
-        .click();
-      await expect(adminPage.locator("body")).toContainText(
-        `${data.zoneName} approved`,
-      );
+      await approveZone(adminPage, idToken, data.zoneName, { grant: true });
 
       // Owner views the Approved zone: show.html only renders the Edit button
       // when can_edit_zone is true, which is false for a non-admin on Approved.
-      await page.goto(
-        `/manage/vendor/zone?id=${encodeURIComponent(idToken)}`,
-      );
+      await page.goto(zonePath(idToken));
       await expectNoErrorBleed(page, page.url());
       await expect(page.locator("body")).toContainText("Approved");
       await expect(
@@ -713,9 +712,7 @@ test.describe.serial("vendor admin & editability (§5a staff, §5c)", () => {
 
       // Opening the edit URL directly falls through to the read-only show page:
       // render_zone ignores mode=edit when !can_edit_zone, so no editable form.
-      await page.goto(
-        `/manage/vendor/zone?id=${encodeURIComponent(idToken)}&mode=edit`,
-      );
+      await page.goto(zonePath(idToken, "edit"));
       await expectNoErrorBleed(page, page.url());
       await expect(
         page.locator('form[action="/manage/vendor/zone"]'),
@@ -754,21 +751,11 @@ test.describe.serial("vendor admin & editability (§5a staff, §5c)", () => {
         "minted session lacks vendor_admin; cannot edit an Approved zone as admin",
       );
 
-      await adminOpenZone(adminPage, idToken);
-      await adminPage
-        .locator(
-          'form[action="/manage/vendor/admin"] input[name="status_change"][value="Approve"]',
-        )
-        .click();
-      await expect(adminPage.locator("body")).toContainText(
-        `${data.zoneName} approved`,
-      );
+      await approveZone(adminPage, idToken, data.zoneName, { grant: true });
 
       // Admin opens the edit form on the Approved zone. can_edit_zone is true for
       // an admin, so render_zone renders render_form (the editable form).
-      await adminPage.goto(
-        `/manage/vendor/zone?id=${encodeURIComponent(idToken)}&mode=edit`,
-      );
+      await adminPage.goto(zonePath(idToken, "edit"));
       await expectNoErrorBleed(adminPage, adminPage.url());
       const form = adminPage.locator('form[action="/manage/vendor/zone"]');
       await expect(form).toBeVisible();
@@ -795,9 +782,7 @@ test.describe.serial("vendor admin & editability (§5a staff, §5c)", () => {
 
       // Reopen the edit form and confirm the org change persisted and zone_name
       // is unchanged (still the original, still read-only).
-      await adminPage.goto(
-        `/manage/vendor/zone?id=${encodeURIComponent(idToken)}&mode=edit`,
-      );
+      await adminPage.goto(zonePath(idToken, "edit"));
       await expect(
         adminPage.locator('input[name="organization_name"]'),
       ).toHaveValue(newOrg);
@@ -809,94 +794,50 @@ test.describe.serial("vendor admin & editability (§5a staff, §5c)", () => {
     }
   });
 
-  // 6. Staff, Approved: changing zone_name is rejected by the API (name locked
-  // once live). The form field is `readonly` (not `disabled`), so Playwright
-  // .fill() would throw rather than exercise the API. We therefore bypass the UI
-  // and POST a crafted request via page.request (which carries the admin session
-  // cookies) with a CHANGED zone_name, then assert the API/controller does NOT
-  // accept the rename: the zone_name stays the original on the show page.
-  //
-  // HUMAN-VERIFY: confirm the API rejects the rename of an Approved zone with an
-  // error (vs. silently ignoring it). Both outcomes leave zone_name unchanged,
-  // which is what this test asserts; tighten to expectErrorAlert if the API
-  // surfaces an error through render_edit on this path.
-  test("vendor admin cannot rename an Approved zone via the API", async ({
+  // §5a staff, Approved. zone_name is readonly in the form, which is only a
+  // browser hint, so the test removes the attribute and submits the real
+  // form. UpdateVendorZone refuses the rename (update.go:224-234), and
+  // render_edit re-renders the form with the alert instead of redirecting.
+  test("renaming an Approved zone shows the API's refusal", async ({
     page,
     context,
     browser,
   }) => {
-    const ownerEmail = uniqueTestEmail("vendor-rename-owner");
-    await loginAs(context, ownerEmail);
+    await loginAs(context, uniqueTestEmail("vendor-rename-owner"));
     const data = freshZoneData("rn");
     const idToken = await createAndSubmitPendingZone(page, data);
 
-    const adminEmail = uniqueTestEmail("vendor-admin");
-    const { context: adminCtx, page: adminPage } = await loginAsVendorAdmin(
-      browser,
-      adminEmail,
-    );
+    const admin = await loginAsVendorAdmin(browser, uniqueTestEmail("vendor-admin"));
     try {
       test.skip(
-        !(await isVendorAdmin(adminPage)),
+        !(await isVendorAdmin(admin.page)),
         "minted session lacks vendor_admin; cannot reach the Approved-rename case",
       );
+      await approveZone(admin.page, idToken, data.zoneName, { grant: true });
 
-      await adminOpenZone(adminPage, idToken);
-      await adminPage
-        .locator(
-          'form[action="/manage/vendor/admin"] input[name="status_change"][value="Approve"]',
-        )
-        .click();
-      await expect(adminPage.locator("body")).toContainText(
-        `${data.zoneName} approved`,
-      );
+      await expectCleanPage(admin.page, bust(zonePath(idToken, "edit")));
+      const form = admin.page.locator('form[action="/manage/vendor/zone"]');
+      const zoneName = form.locator('input[name="zone_name"]');
+      await expect(zoneName).toHaveAttribute("readonly", "");
+      // locator.evaluate runs through CDP, so the page CSP doesn't apply.
+      await zoneName.evaluate((el) => el.removeAttribute("readonly"));
+      await zoneName.fill(`${data.zoneName}x`);
+      await Promise.all([
+        admin.page.waitForNavigation({ waitUntil: "load" }),
+        form.locator('input[type="submit"]').click(),
+      ]);
+      await expectNoErrorBleed(admin.page, admin.page.url());
 
-      // Read the auth_token from the edit form (POSTs require it; manage_dispatch
-      // returns 403 without a valid auth_token).
-      await adminPage.goto(
-        `/manage/vendor/zone?id=${encodeURIComponent(idToken)}&mode=edit`,
-      );
-      const authToken = await adminPage
-        .locator('form[action="/manage/vendor/zone"] input[name="auth_token"]')
-        .inputValue();
-      const accountToken = await adminPage
-        .locator('form[action="/manage/vendor/zone"] input[name="a"]')
-        .inputValue();
+      expect(new URL(admin.page.url()).search, "a refused edit re-renders the form, not the show page").toBe("");
+      await expectErrorAlert(admin.page, { requireTraceId: true });
+      await expect(errorAlerts(admin.page).first()).toContainText("zone name cannot be changed after approval");
+      const reRendered = admin.page.locator('form[action="/manage/vendor/zone"] input[name="zone_name"]');
+      await expect(reRendered, "the form shows the stored name").toHaveValue(data.zoneName);
+      await expect(reRendered).toHaveAttribute("readonly", "");
 
-      // Craft a POST that tries to rename the Approved zone. The field is
-      // readonly in the UI, so we submit directly to exercise the API guard.
-      const renamed = `${data.zoneName}x`;
-      const resp = await adminPage.request.post("/manage/vendor/zone", {
-        form: {
-          id: idToken,
-          a: accountToken,
-          auth_token: authToken,
-          zone_name: renamed,
-          organization_name: data.organizationName,
-          request_information: data.requestInformation,
-          device_information: data.deviceInformation,
-          device_count: data.deviceCount,
-        },
-      });
-      // Whether the API errors (re-renders the form) or ignores the locked field,
-      // the rename must NOT take effect.
-      expect(resp.status(), "rename POST should not 5xx").toBeLessThan(500);
-
-      // Reload the zone and assert the name is still the original (not renamed).
-      await adminPage.goto(
-        `/manage/vendor/zone?id=${encodeURIComponent(idToken)}`,
-      );
-      await expectNoErrorBleed(adminPage, adminPage.url());
-      await expect(
-        adminPage.locator("body"),
-        "Approved zone_name must remain locked to its original value",
-      ).toContainText(data.zoneName);
-      await expect(
-        adminPage.locator("body"),
-        "the attempted new zone_name must not appear",
-      ).not.toContainText(renamed);
+      expect((await getVendorZone(admin.sessionToken, idToken)).zoneName).toBe(data.zoneName);
     } finally {
-      await adminCtx.close();
+      await admin.context.close();
     }
   });
 
@@ -942,15 +883,7 @@ test.describe.serial("vendor admin & editability (§5a staff, §5c)", () => {
       );
 
       // Approve the zone first so it is Approved.
-      await adminOpenZone(adminPage, idToken);
-      await adminPage
-        .locator(
-          'form[action="/manage/vendor/admin"] input[name="status_change"][value="Approve"]',
-        )
-        .click();
-      await expect(adminPage.locator("body")).toContainText(
-        `${data.zoneName} approved`,
-      );
+      await approveZone(adminPage, idToken, data.zoneName, { grant: true });
 
       // Read the admin form's auth_token from the show page to craft a POST.
       await adminOpenZone(adminPage, idToken);
