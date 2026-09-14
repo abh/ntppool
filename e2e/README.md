@@ -62,19 +62,59 @@ NTP_API_CLI=../../go/ntp/api/api-e2e --config ../../go/ntp/api/database.yaml
   binary. The child inherits the environment, so a local binary can get
   `deployment_mode` and `DATABASE_URI` from `e2e/.env`.
 - `api e2e session` only accepts emails at `example.com`, `example.net`,
-  `example.org` and `ntppool.test`, whether the user is new or existing. It
-  creates a new user; an existing email fails unless the request sets
-  `existing_user` (`opts.existingUser` in `loginAs`). Use `uniqueTestEmail()`
-  for new users.
+  `example.org` and `ntppool.test`, whether the user is new or existing.
+  It creates a new user named with the run's tag (see "Runs and cleanup");
+  an existing email fails unless the request sets `existing_user`
+  (`opts.existingUser` in `loginAs`), which only works for a user the same
+  run created. Use `uniqueTestEmail()` for new users.
 - The login preflight in global setup catches a CLI pointed at a different
   database than the site under test, because the minted session won't log in.
+
+## Runs and cleanup
+
+Global setup generates a run ID, prints `e2e run <id>` and sets
+`E2E_RUN_ID`; it refuses to start if `E2E_RUN_ID` is already set. Every user
+`api e2e session` and `api e2e fixture create` create for the run is named
+`E2E run <id>`.
+
+Global teardown runs `api e2e run finish` for that ID. In one transaction the
+API schedules the run's users for deletion through the normal user deletion
+task (they're purged 7 days later) and deletes their sessions, then teardown
+prints `flagged_users`, `already_pending` and `deleted_sessions`. Teardown
+also runs after a failed global setup and after the first Ctrl-C. If it fails,
+the run fails.
+
+Trace zips in `test-results/` and `playwright-report/` hold `npuid` session
+cookies. Those sessions stop working when the run finishes.
+
+If teardown never ran (the process was killed), finish the run by hand with
+the printed ID. Finishing a run twice is harmless:
+
+```sh
+node --input-type=module - "<run id>" <<'NODE'
+import "dotenv/config";
+import { runApiCli } from "./lib/apicli.ts";
+
+const runId = process.argv[2];
+if (!runId) throw new Error("missing run ID");
+const result = await runApiCli(
+  "e2e run finish",
+  ["e2e", "run", "finish"],
+  { run_id: runId },
+  runId,
+  process.cwd(),
+);
+if (result.run_id !== runId) throw new Error("run finish returned a different run ID");
+console.log(result);
+NODE
+```
 
 ## Fixture deployment
 
 The verification, deletion, netspeed, scores-context, staff-search,
-staff-server-edit and monitor-badges specs use `api e2e fixture create` and
-`api e2e fixture cleanup`. A command failure is a setup failure; the tests
-don't skip.
+staff-server-edit, monitor-badges and vendor-coverage specs use
+`api e2e fixture create` and `api e2e fixture cleanup`. A command failure is a
+setup failure; the tests don't skip.
 
 Deploy in this order:
 
@@ -93,7 +133,8 @@ Deploy in this order:
    attempt IDs and report cleanup.
 
 Each create call owns a fresh ordinary user, a private account, zero to four
-servers and at most one monitor, and needs at least one server or monitor.
+servers, at most one monitor and at most one subscription, and needs at least
+one of them.
 Fresh accounts can add servers; `can_add_servers` turns false after two active
 unverified servers (scheduled servers don't count as active for that check).
 Servers use `198.51.100.0/24`, `203.0.113.0/24` and `2001:db8::/32`; monitors
@@ -127,12 +168,25 @@ DELETE FROM server_scores
  WHERE monitor_id IN (<monitor ids>) AND status = 'candidate' AND score_ts IS NULL;
 ```
 
+A subscription seed adds one `account_subscriptions` row to the fixture
+account: status `active`, name `E2E fixture`, the requested `max_zones` and
+`max_devices`, and `stripe_subscription_id` `e2e_<attempt_id>`. The account's
+`stripe_customer_id` stays empty. The harness sends the `subscription` key
+only for a seed that has one, because an api-dev image from before the seed
+rejects unknown fields; deploy an image with the seed before running
+`vendor-coverage.spec.ts`. Neither the account nor the user deletion task
+removes subscription rows, and the row's account foreign key doesn't cascade,
+so don't combine the seed with account or user deletion flows.
+
 Cleanup uses the attempt ID recorded before create. It deletes only the
 fixture's recorded server and monitor IDs and the servers' related rows,
-clears any scheduled deletion with the server rows, and leaves the generated
-user/account plus the fixture tombstone as inert identities. It refuses, and
-leaves the attempt uncleaned, when a recorded server or monitor has moved to
-another account or a fixture monitor has score, log-score or API-key rows.
+clears any scheduled deletion with the server rows, deletes the subscription
+row whose `stripe_subscription_id` is `e2e_<attempt_id>`, and leaves the
+generated user/account plus the fixture tombstone as inert identities. It
+never deletes subscriptions by account. It refuses, and leaves the attempt
+uncleaned, when a recorded server or monitor or the seeded subscription has
+moved to another account, or a fixture monitor has score, log-score or
+API-key rows.
 Cleanup is idempotent. Cleaning an unknown attempt creates a tombstone, so a
 delayed create with that ID can't add data. If a test loses the create
 response or teardown fails, run this from `e2e/`. Replace the example UUID
@@ -156,8 +210,23 @@ const result = await runApiCli(
   process.cwd(),
 );
 if (result.attempt_id !== attemptId) throw new Error("cleanup returned a different attempt ID");
-console.log(`cleaned ${attemptId}; deleted_servers=${result.deleted_servers} deleted_monitors=${result.deleted_monitors}`);
+console.log(`cleaned ${attemptId}; deleted_servers=${result.deleted_servers} deleted_monitors=${result.deleted_monitors} deleted_subscriptions=${result.deleted_subscriptions}`);
 NODE
+```
+
+Cleanup finds a seeded subscription only by its `stripe_subscription_id`,
+`e2e_<attempt_id>`. If that column is edited by hand, cleanup locks and
+deletes nothing, then tombstones the attempt, which can't be cleaned again.
+The active row stays behind, and the harness fails the cleanup because it
+requires exactly one deleted subscription. To find leftover seeded rows, list
+`e2e_` rows on accounts whose attempt is already cleaned, then delete them by
+ID:
+
+```sql
+SELECT s.id, s.stripe_subscription_id, f.attempt_id
+  FROM account_subscriptions s JOIN e2e_fixtures f ON f.account_id = s.account_id
+ WHERE s.stripe_subscription_id LIKE 'e2e\_%' AND f.cleaned_on IS NOT NULL;
+DELETE FROM account_subscriptions WHERE id IN (<subscription ids>);
 ```
 
 ## Run
@@ -181,8 +250,8 @@ run allocates and cleans fresh attempts:
 npm run test:unit
 npm run typecheck
 npx playwright test --list
-npx playwright test tests/server.spec.ts tests/server-verification.spec.ts tests/server-deletion.spec.ts tests/server-netspeed.spec.ts tests/server-scores-context.spec.ts tests/staff-search.spec.ts tests/staff-server-edit.spec.ts tests/monitor-badges.spec.ts --project=manage --retries=0
-npx playwright test tests/server-verification.spec.ts tests/server-deletion.spec.ts tests/server-netspeed.spec.ts tests/server-scores-context.spec.ts tests/staff-search.spec.ts tests/staff-server-edit.spec.ts tests/monitor-badges.spec.ts --project=manage --retries=0
+npx playwright test tests/server.spec.ts tests/server-verification.spec.ts tests/server-deletion.spec.ts tests/server-netspeed.spec.ts tests/server-scores-context.spec.ts tests/staff-search.spec.ts tests/staff-server-edit.spec.ts tests/monitor-badges.spec.ts tests/vendor-coverage.spec.ts --project=manage --retries=0
+npx playwright test tests/server-verification.spec.ts tests/server-deletion.spec.ts tests/server-netspeed.spec.ts tests/server-scores-context.spec.ts tests/staff-search.spec.ts tests/staff-server-edit.spec.ts tests/monitor-badges.spec.ts tests/vendor-coverage.spec.ts --project=manage --retries=0
 npx playwright test tests/scores.spec.ts --project=web --retries=0
 npx playwright test tests/monitor-config.spec.ts --project=manage --retries=0
 ```
@@ -209,10 +278,10 @@ npx playwright test --project=manage --reporter=list > test-logs/run-1.log 2>&1
 `lib/auth.ts`:
 
 - `mintSession(email, opts?)` — runs `api e2e session` through `runApiCli`
-  (`lib/apicli.ts`) with `{ email, name, existing_user, grant_staff,
+  (`lib/apicli.ts`) with `{ email, run_id, existing_user, grant_staff,
   grant_vendor_admin, grant_monitor_admin }` on stdin and returns
   `session_token`. `opts.existingUser` mints another session for a user an
-  earlier mint created, for example to log back in after logout.
+  earlier mint in the same run created, for example to log back in after logout.
 - `loginAs(context, email, opts?)` — mints a session and sets the `npuid`
   cookie. The cookie attributes mirror the Perl side
   (`lib/NTPPool/Control.pm` and `lib/NTPPool/Control/Login.pm`): value
@@ -228,16 +297,18 @@ npx playwright test --project=manage --reporter=list > test-logs/run-1.log 2>&1
 ## Coverage
 
 Specs map to `MANUAL_TEST_PLAN.md` sections: `login` (§1), `regression-smoke`
-(§12), `i18n` (§10), `vendor` (§5 + §5a staff/admin), `scores` (§9), `server`
-(§8 add-form baseline), `server-verification`, `server-deletion`,
-`server-netspeed` and `server-scores-context` (§8/§8a/§8b), `account-dissolve`
-(§2), `staff-deletion` (§3/§4), `invites` (§4a), `account-frozen` (§2),
-`account-download` (§4c), `staff-search` (§13), `staff-server-edit` (§8, staff
-hostname and zone edits and their CSRF check), `account-create` (§1 + §4),
-`account-team` (§4), `account-update` (§4), `dns-zone` (§6, auth-guard
-portion), `monitor-config` (§14), `monitor-badges` (§15 account flag badges,
-§16 dual-stack monitor cards).
-Staff specs rely on the `grant_staff` / `grant_vendor_admin` flags of `api e2e session`; `monitor-config` and `monitor-badges` use `grant_monitor_admin`.
+(§12), `i18n` (§10), `vendor` (§5, §5a, §5b, §5c, §5e), `vendor-coverage` (§5,
+§5b, §5e), `scores` (§9), `server` (§8 add-form baseline),
+`server-verification`, `server-deletion`, `server-netspeed` and
+`server-scores-context` (§8/§8a/§8b), `account-dissolve` (§2), `staff-deletion`
+(§3/§4), `invites` (§4a), `account-frozen` (§2), `account-download` (§4c),
+`staff-search` (§13), `staff-server-edit` (§8, staff hostname and zone edits and
+their CSRF check), `account-create` (§1 + §4), `account-team` (§4),
+`account-update` (§4), `dns-zone` (§6, auth-guard portion), `monitor-config`
+(§14), `monitor-badges` (§15 account flag badges, §16 dual-stack monitor cards).
+Staff specs rely on the `grant_staff` / `grant_vendor_admin` flags of
+`api e2e session`; `monitor-config` and `monitor-badges` use
+`grant_monitor_admin`.
 Selectors are derived from the templates and may need adjustment against the
 live site on first run.
 

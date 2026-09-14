@@ -4,8 +4,6 @@ import { bust } from "../lib/helpers";
 import { expect, test, type Fixture } from "../lib/fixtures";
 import { getAccountAuditLogs, getServer, serverDeleteUrl } from "../lib/servers";
 
-test.use({ trace: "off" });
-
 const FORM = 'form[action="/manage/server/delete"]';
 
 async function staffSession(): Promise<string> {

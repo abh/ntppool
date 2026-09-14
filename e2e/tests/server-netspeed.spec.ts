@@ -4,8 +4,6 @@ import { bust } from "../lib/helpers";
 import { expect, test, type Fixture } from "../lib/fixtures";
 import { getServer } from "../lib/servers";
 
-test.use({ trace: "off" });
-
 const UPDATE_PATH = "/manage/server/update/netspeed";
 
 async function openServer(page: Page, fixture: Fixture) {

@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { randomUUID } from "node:crypto";
 import { chromium } from "@playwright/test";
 import { connectRpc, loginAs, MANAGE_URL, uniqueTestEmail } from "./lib/auth";
 import {
@@ -11,6 +12,17 @@ import {
 // actionable error instead of every login-dependent test throwing an opaque
 // "fetch failed".
 export default async function globalSetup() {
+  // Global teardown finishes whichever run E2E_RUN_ID names, so it must be
+  // the ID generated below. An inherited value is cleared, leaving teardown
+  // nothing to finish, and the run stops.
+  if (process.env.E2E_RUN_ID) {
+    delete process.env.E2E_RUN_ID;
+    throw new Error(
+      "E2E_RUN_ID is already set; global setup generates a fresh run ID for every run. " +
+        "Remove it from the environment and from e2e/.env.",
+    );
+  }
+
   const required = [
     "NTP_BASE_URL",
     "NTP_MANAGE_URL",
@@ -75,6 +87,12 @@ export default async function globalSetup() {
         `Underlying error: ${(err as Error).message}`,
     );
   }
+
+  // Every user this run creates is tagged with the run ID, and global
+  // teardown finishes the run. Workers inherit process.env from here. The ID
+  // isn't secret; it's printed so an interrupted run can be finished by hand.
+  process.env.E2E_RUN_ID = randomUUID();
+  console.log(`e2e run ${process.env.E2E_RUN_ID}`);
 
   // Preflight: mint a throwaway session AND prove it actually authenticates a
   // browser against the manage app. This catches the whole login path in one

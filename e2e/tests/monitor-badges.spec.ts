@@ -48,9 +48,6 @@ import {
 // own. The "Connection" pill isn't asserted: for a monitor that never connected
 // it renders with empty text (see the spec's Out of scope).
 
-// Traces would hold fixture and monitor-admin session cookies.
-test.use({ trace: "off" });
-
 type ListView = "account" | "admin";
 const VIEWS: ListView[] = ["account", "admin"];
 

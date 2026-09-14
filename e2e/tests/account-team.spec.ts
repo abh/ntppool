@@ -1,4 +1,5 @@
 import { test, expect, Browser, BrowserContext, Page } from "@playwright/test";
+import { resolveDefaultAccountToken } from "../lib/accounts";
 import { loginAs, uniqueTestEmail } from "../lib/auth";
 import {
   acceptInvite,
@@ -53,6 +54,36 @@ function removeButtons(page: Page) {
 
 function memberRows(page: Page) {
   return memberForm(page).locator("table.table tr");
+}
+
+// The Remove control on one member's row. A member's numeric user_id is only
+// ever exposed as this button's value (team.html), so this doubles as the way
+// to read it.
+function removeButtonFor(page: Page, email: string) {
+  return memberRows(page)
+    .filter({ hasText: email })
+    .locator('button[name="user_id"]');
+}
+
+/**
+ * Force a removal POST the UI does not offer: inject a hidden user_id into the
+ * member form — which still carries the account token and the CSRF auth_token —
+ * and submit. This proves the Go API's server-side guard rather than just the
+ * absence of a button.
+ */
+async function forceRemovalPost(page: Page, userId: string): Promise<void> {
+  await Promise.all([
+    page.waitForNavigation({ waitUntil: "load" }),
+    memberForm(page).evaluate((form, id) => {
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = "user_id";
+      input.value = id;
+      (form as HTMLFormElement).appendChild(input);
+      (form as HTMLFormElement).submit();
+    }, userId),
+  ]);
+  await expectNoErrorBleed(page, page.url());
 }
 
 test("team page renders and lists the logged-in user as a member", async ({
@@ -128,6 +159,10 @@ test("an outsider cannot view another account's team members", async ({
  * Build a 2-member account: `owner` invites `invitee` and `invitee` accepts,
  * for real, through the browser-only invite/accept flow. Returns the two
  * contexts (caller must close them) plus their pages, already logged in.
+ * `ownerLoginOptions` is passed to the owner's loginAs; the invitee is always
+ * an ordinary user. Only `grantStaff` is honoured: the other MintOptions
+ * either contradict this helper (`existingUser` — it always mints a fresh
+ * owner) or have no bearing on team.html.
  * `inviteePage` is wherever the post-accept redirect landed — NOT necessarily
  * the team page, since a brand-new invitee with no prior account redirects
  * through /manage instead (see acceptInvite) — so callers that need the team
@@ -136,6 +171,7 @@ test("an outsider cannot view another account's team members", async ({
 async function buildTwoMemberAccount(
   browser: Browser,
   prefix: string,
+  ownerLoginOptions: { grantStaff?: boolean } = {},
 ): Promise<{
   ownerContext: BrowserContext;
   ownerPage: Page;
@@ -147,7 +183,7 @@ async function buildTwoMemberAccount(
   const ownerContext = await browser.newContext();
   const ownerPage = await ownerContext.newPage();
   const owner = uniqueTestEmail(`${prefix}-owner`);
-  await loginAs(ownerContext, owner);
+  await loginAs(ownerContext, owner, ownerLoginOptions);
 
   const invitee = uniqueTestEmail(`${prefix}-invitee`);
   await inviteUser(ownerPage, invitee);
@@ -215,33 +251,141 @@ test("a member cannot remove themselves from a multi-member account", async ({
   // the invitee's row. ownerPage is still showing its pre-accept render (built
   // by inviteUser, before the invitee accepted), so reload it first.
   await expectCleanPage(ownerPage, TEAM_PATH);
-  const inviteeUserId = await memberRows(ownerPage)
-    .filter({ hasText: invitee })
-    .locator('button[name="user_id"]')
-    .getAttribute("value");
-  expect(inviteeUserId, "expected the invitee's user_id on the owner's page").not.toBeNull();
+  const inviteeUserId = await removeButtonFor(ownerPage, invitee).getAttribute(
+    "value",
+  );
+  expect(
+    inviteeUserId,
+    "expected the invitee's user_id on the owner's page",
+  ).toMatch(/^\d+$/);
 
-  // Force what the UI never offers: inject a hidden user_id input targeting
-  // yourself and submit. This proves the Go API's server-side guard, not just
-  // the hidden button.
-  await Promise.all([
-    inviteePage.waitForNavigation({ waitUntil: "load" }),
-    memberForm(inviteePage).evaluate((form, userId) => {
-      const input = document.createElement("input");
-      input.type = "hidden";
-      input.name = "user_id";
-      input.value = userId;
-      (form as HTMLFormElement).appendChild(input);
-      (form as HTMLFormElement).submit();
-    }, inviteeUserId!),
-  ]);
-  await expectNoErrorBleed(inviteePage, inviteePage.url());
+  // Target yourself with the removal the UI never offers.
+  await forceRemovalPost(inviteePage, inviteeUserId!);
 
   await expect(errorAlerts(inviteePage)).toContainText(/yourself/i);
   await expect(memberRows(inviteePage)).toHaveCount(2);
 
   await ownerContext.close();
   await inviteeContext.close();
+});
+
+test("staff clicking Remove on their own row is refused with the self-removal message", async ({
+  browser,
+}) => {
+  // §4b: team.html renders "Remove from team" on a staff user's OWN row too
+  // (`combust.user_is_staff OR combust.user.user_id != user.user_id`), unlike
+  // the non-staff case above. The Go API refuses self-removal with no staff
+  // exemption (RemoveUserFromAccount: "you cannot remove yourself from an
+  // account"), and _remove_user_from_account shows that message rather than
+  // the old generic "Failed to remove user. Please try again.".
+  const { ownerContext, ownerPage, inviteeContext, owner, invitee } =
+    await buildTwoMemberAccount(browser, "staff-self-remove", {
+      grantStaff: true,
+    });
+
+  // ownerPage still shows inviteUser's pre-accept render; load a fresh one so
+  // both members are listed.
+  await expectCleanPage(ownerPage, TEAM_PATH);
+  await expect(memberRows(ownerPage)).toHaveCount(2);
+
+  // Staff gets a Remove button on every row, their own included (a non-staff
+  // member sees only 1 here).
+  await expect(removeButtons(ownerPage)).toHaveCount(2);
+  const ownRemove = removeButtonFor(ownerPage, owner);
+  await expect(ownRemove).toHaveCount(1);
+
+  await Promise.all([
+    // The refusal re-renders team.html at the same URL, so wait for the
+    // navigation itself rather than a URL change.
+    ownerPage.waitForNavigation({ waitUntil: "load" }),
+    ownRemove.click(),
+  ]);
+  await expectNoErrorBleed(ownerPage, ownerPage.url());
+
+  // Exactly one alert, carrying the API's message rather than the generic
+  // "Failed to remove user. Please try again." this replaced. (For staff,
+  // log_table.html adds an .alert-warning only when the audit-log fetch
+  // failed.)
+  const alerts = errorAlerts(ownerPage);
+  await expect(alerts).toHaveCount(1);
+  await expect(alerts).toContainText(
+    /you cannot remove yourself from an account/i,
+  );
+
+  // Nobody was removed.
+  await expect(memberRows(ownerPage)).toHaveCount(2);
+  await expect(memberForm(ownerPage)).toContainText(owner);
+  await expect(memberForm(ownerPage)).toContainText(invitee);
+
+  await ownerContext.close();
+  await inviteeContext.close();
+});
+
+test("staff cannot remove the last member of an account", async ({
+  browser,
+}) => {
+  // §4b: RemoveUserFromAccount checks self-removal BEFORE counting members
+  // (mutations.go), so "cannot remove the last user from an account" is only
+  // reachable by an editor who isn't the remaining member: a non-member staff
+  // user on someone else's account via the ?a= override. The UI never renders
+  // Remove on a one-member account (team.html: users.size > 1), and a member's
+  // numeric user_id only appears as a Remove button's value. So: build a
+  // 2-member account, read the owner's user_id while both buttons exist,
+  // remove the invitee for real, then force the POST for the owner.
+  const { ownerContext, ownerPage, inviteeContext, owner, invitee } =
+    await buildTwoMemberAccount(browser, "staff-lastmember");
+
+  const ownerToken = await resolveDefaultAccountToken(ownerPage);
+
+  const staffContext = await browser.newContext();
+  const staffPage = await staffContext.newPage();
+  await loginAs(staffContext, uniqueTestEmail("staff-lastmember-actor"), {
+    grantStaff: true,
+  });
+
+  await expectCleanPage(
+    staffPage,
+    `${TEAM_PATH}?a=${encodeURIComponent(ownerToken)}`,
+  );
+  await expect(memberRows(staffPage)).toHaveCount(2);
+  await expect(removeButtons(staffPage)).toHaveCount(2);
+
+  const ownerUserId = await removeButtonFor(staffPage, owner).getAttribute(
+    "value",
+  );
+  expect(ownerUserId, "expected the owner's user_id on the staff page").toMatch(
+    /^\d+$/,
+  );
+
+  // Get down to one member through the ordinary removal path.
+  await Promise.all([
+    staffPage.waitForNavigation({ waitUntil: "load" }),
+    removeButtonFor(staffPage, invitee).click(),
+  ]);
+  await expectNoErrorBleed(staffPage, staffPage.url());
+  await expect(errorAlerts(staffPage)).toHaveCount(0);
+  await expect(memberRows(staffPage)).toHaveCount(1);
+  await expect(memberForm(staffPage)).not.toContainText(invitee);
+
+  // One member left: no Remove control for anyone, staff included.
+  await expect(removeButtons(staffPage)).toHaveCount(0);
+
+  // Target the sole remaining member, which the UI no longer offers.
+  await forceRemovalPost(staffPage, ownerUserId!);
+
+  const alerts = errorAlerts(staffPage);
+  await expect(alerts).toHaveCount(1);
+  await expect(alerts).toContainText(
+    /cannot remove the last user from an account/i,
+  );
+
+  // The owner is still the account's member.
+  await expect(memberRows(staffPage)).toHaveCount(1);
+  await expect(memberForm(staffPage)).toContainText(owner);
+
+  await ownerContext.close();
+  await inviteeContext.close();
+  await staffContext.close();
 });
 
 // First distinct a=acc_ token referenced on the current page, or null.

@@ -59,11 +59,9 @@ test("the default account is named after the user identity", async ({
   page,
   context,
 }) => {
-  // Minted test users have no profile name (loginAs sends `api e2e session` an
-  // empty name), so the name-from-Auth0-profile branch can't be exercised
-  // here. With no name, the auto-created default account is named after the
-  // user's email — a deterministic, non-empty default. (A real Auth0 login would
-  // instead carry the profile name.)
+  // The API names the auto-created default account after the user's email, a
+  // deterministic, non-empty default. A minted user's own name is its run tag
+  // (`E2E run <run id>`), which the account doesn't use.
   const email = uniqueTestEmail("acct-create-named");
   await loginAs(context, email);
 
@@ -87,9 +85,9 @@ test('the "New account" button creates an additional account', async ({
   const second = await createAccount(page);
   expect(second).not.toBe(original);
 
-  // The new account is editable. The sidebar form sends no name, and the minted
-  // user has no profile name, so _create_account falls back to "My Account"
-  // (name ||= $self->user->{name} || 'My Account').
+  // The new account is editable. The sidebar form sends no name, and the session
+  // user hash (from validate_session) has no name key, so _create_account falls
+  // back to "My Account" (name ||= $self->user->{name} || 'My Account').
   await expectCleanPage(page, `${ACCOUNT_PATH}?a=${encodeURIComponent(second)}`);
   await expect(nameInput(page)).toHaveValue("My Account");
 

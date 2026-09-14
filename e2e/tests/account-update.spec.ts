@@ -74,9 +74,7 @@ function uniqueSlug(prefix = "e2e"): string {
 }
 
 test("update account name saves and persists", async ({ page, context }) => {
-  await loginAs(context, uniqueTestEmail("acct-update-name"), {
-    name: "Original Name",
-  });
+  await loginAs(context, uniqueTestEmail("acct-update-name"));
 
   await expectCleanPage(page, accountUrl());
   const newName = `Renamed ${Date.now()}`;

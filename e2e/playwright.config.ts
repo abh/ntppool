@@ -21,6 +21,9 @@ export default defineConfig({
   // Validate config + prove a session can be minted before running anything,
   // so a misconfigured run fails fast with one clear message.
   globalSetup: "./global-setup.ts",
+  // Finish the run: the API schedules the run's users for deletion and
+  // deletes their sessions.
+  globalTeardown: "./global-teardown.ts",
   timeout: 30_000,
   expect: {
     timeout: 10_000,
