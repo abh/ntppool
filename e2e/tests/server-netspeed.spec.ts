@@ -1,23 +1,24 @@
 import type { Page } from "@playwright/test";
 import { installSession } from "../lib/auth";
 import { bust } from "../lib/helpers";
-import { expect, getServer, test, type ServerFixture } from "../lib/servers";
+import { expect, test, type Fixture } from "../lib/fixtures";
+import { getServer } from "../lib/servers";
 
 test.use({ trace: "off" });
 
 const UPDATE_PATH = "/manage/server/update/netspeed";
 
-async function openServer(page: Page, fixture: ServerFixture) {
+async function openServer(page: Page, fixture: Fixture) {
   await page.goto(bust(`/manage/servers?a=${encodeURIComponent(fixture.accountToken)}`));
   return page.locator(`#server_${fixture.servers[0].serverId}`);
 }
 
-async function currentSpeed(fixture: ServerFixture): Promise<number> {
+async function currentSpeed(fixture: Fixture): Promise<number> {
   return (await getServer(fixture.sessionToken, fixture.accountToken, fixture.servers[0].ip)).netspeed;
 }
 
-test("verified netspeed updates replace the HTMX fragment without navigation", async ({ page, context, serverFixtures }) => {
-  const fixture = await serverFixtures.create([{ ipVersion: 4, verified: true }]);
+test("verified netspeed updates replace the HTMX fragment without navigation", async ({ page, context, fixtures }) => {
+  const fixture = await fixtures.create({ servers: [{ ipVersion: 4, verified: true }] });
   await installSession(context, fixture.sessionToken);
   const fragment = await openServer(page, fixture);
   const oldElement = await fragment.elementHandle();
@@ -37,8 +38,8 @@ test("verified netspeed updates replace the HTMX fragment without navigation", a
   await expect(page.locator(`#netspeed_${fixture.servers[0].serverId}`)).toHaveText("1.5 Mbit");
 });
 
-test("netspeed placeholder is disabled and cannot post an empty speed", async ({ page, context, serverFixtures }) => {
-  const fixture = await serverFixtures.create([{ ipVersion: 4, verified: true }]);
+test("netspeed placeholder is disabled and cannot post an empty speed", async ({ page, context, fixtures }) => {
+  const fixture = await fixtures.create({ servers: [{ ipVersion: 4, verified: true }] });
   await installSession(context, fixture.sessionToken);
   const fragment = await openServer(page, fixture);
   const select = fragment.locator('select[name="netspeed"]');
@@ -65,8 +66,8 @@ test("netspeed placeholder is disabled and cannot post an empty speed", async ({
   expect(posted).toEqual([expect.stringMatching(/(?:^|&)netspeed=1500(?:&|$)/)]);
 });
 
-test("unverified netspeed increase shows the verification error and preserves speed", async ({ page, context, serverFixtures }) => {
-  const fixture = await serverFixtures.create([{ ipVersion: 4 }]);
+test("unverified netspeed increase shows the verification error and preserves speed", async ({ page, context, fixtures }) => {
+  const fixture = await fixtures.create({ servers: [{ ipVersion: 4 }] });
   await installSession(context, fixture.sessionToken);
   const fragment = await openServer(page, fixture);
   const csrf = await fragment.locator('input[name="auth_token"]').inputValue();
@@ -92,8 +93,8 @@ test("unverified netspeed increase shows the verification error and preserves sp
   expect(await currentSpeed(fixture)).toBe(512);
 });
 
-test("nonnumeric netspeed is rejected without mutation", async ({ page, context, serverFixtures }) => {
-  const fixture = await serverFixtures.create([{ ipVersion: 4, verified: true }]);
+test("nonnumeric netspeed is rejected without mutation", async ({ page, context, fixtures }) => {
+  const fixture = await fixtures.create({ servers: [{ ipVersion: 4, verified: true }] });
   await installSession(context, fixture.sessionToken);
   const fragment = await openServer(page, fixture);
   const csrf = await fragment.locator('input[name="auth_token"]').inputValue();
@@ -105,8 +106,8 @@ test("nonnumeric netspeed is rejected without mutation", async ({ page, context,
   expect(await currentSpeed(fixture)).toBe(512);
 });
 
-test("netspeed without CSRF is rejected without mutation", async ({ page, context, serverFixtures }) => {
-  const fixture = await serverFixtures.create([{ ipVersion: 4, verified: true }]);
+test("netspeed without CSRF is rejected without mutation", async ({ page, context, fixtures }) => {
+  const fixture = await fixtures.create({ servers: [{ ipVersion: 4, verified: true }] });
   await installSession(context, fixture.sessionToken);
   await openServer(page, fixture);
   const response = await page.request.post(UPDATE_PATH, {
@@ -117,8 +118,8 @@ test("netspeed without CSRF is rejected without mutation", async ({ page, contex
   expect(await currentSpeed(fixture)).toBe(512);
 });
 
-test("non-HTMX netspeed update redirects and persists", async ({ page, context, serverFixtures }) => {
-  const fixture = await serverFixtures.create([{ ipVersion: 4, verified: true }]);
+test("non-HTMX netspeed update redirects and persists", async ({ page, context, fixtures }) => {
+  const fixture = await fixtures.create({ servers: [{ ipVersion: 4, verified: true }] });
   await installSession(context, fixture.sessionToken);
   const fragment = await openServer(page, fixture);
   const csrf = await fragment.locator('input[name="auth_token"]').inputValue();

@@ -1,5 +1,5 @@
 import type { Browser, BrowserContext, Page } from "@playwright/test";
-import { test, expect } from "../lib/servers";
+import { test, expect } from "../lib/fixtures";
 import {
   loginAs,
   uniqueTestEmail,
@@ -202,11 +202,11 @@ test("staff finds an account by exact numeric id: lookup", async ({
 test("staff finds a fixture server by exact IP", async ({
   page,
   context,
-  serverFixtures,
+  fixtures,
 }) => {
-  const fixture = await serverFixtures.create([
-    { ipVersion: 4, verified: true },
-  ]);
+  const fixture = await fixtures.create({
+    servers: [{ ipVersion: 4, verified: true }],
+  });
   const server = fixture.servers[0];
   const pageErrors = await openStaffSearch(page, context, "search-ip");
 
