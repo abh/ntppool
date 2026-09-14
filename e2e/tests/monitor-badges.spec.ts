@@ -6,6 +6,7 @@ import { bust, expectCleanPage } from "../lib/helpers";
 import {
   ADMIN_MONITOR_LIST_PATH,
   listMonitors,
+  MONITOR_LIST_PATH,
   monitorListUrl,
   openMonitorConfigEditor,
   saveMonitorConfig,
@@ -47,6 +48,9 @@ import {
 // own. The "Connection" pill isn't asserted: for a monitor that never connected
 // it renders with empty text (see the spec's Out of scope).
 
+// Traces would hold fixture and monitor-admin session cookies.
+test.use({ trace: "off" });
+
 type ListView = "account" | "admin";
 const VIEWS: ListView[] = ["account", "admin"];
 
@@ -54,6 +58,12 @@ const VIEWS: ListView[] = ["account", "admin"];
 async function openAccountHeading(page: Page, view: ListView, fixture: Fixture): Promise<Locator> {
   const path = view === "account" ? monitorListUrl(fixture.accountToken) : ADMIN_MONITOR_LIST_PATH;
   await expectCleanPage(page, bust(path));
+  if (view === "account") {
+    expect(
+      new URL(page.url()).pathname,
+      "the account monitor list redirected (the account needs a testing, active or paused monitor)",
+    ).toBe(MONITOR_LIST_PATH);
+  }
   const headings = page.locator(".block h2");
   const heading = view === "account"
     ? headings
@@ -95,13 +105,19 @@ async function expectBadges(page: Page, view: ListView, fixture: Fixture, state:
   }
   if (state.customLimit !== undefined) {
     await expect(customLimit, `Custom Limit in the ${view} list`).toHaveText(/Custom Limit/);
-    await expect(customLimit).toHaveAttribute("title", `Custom monitor limit: ${state.customLimit}`);
+    await expect(customLimit, `Custom Limit tooltip in the ${view} list`).toHaveAttribute(
+      "title",
+      `Custom monitor limit: ${state.customLimit}`,
+    );
   } else {
     await expect(customLimit, `no Custom Limit in the ${view} list`).toHaveCount(0);
   }
   if (state.perServer !== undefined) {
     await expect(perServer, `Per-Server in the ${view} list`).toHaveText(/Per-Server/);
-    await expect(perServer).toHaveAttribute("title", `Custom monitors per server limit: ${state.perServer}`);
+    await expect(perServer, `Per-Server tooltip in the ${view} list`).toHaveAttribute(
+      "title",
+      `Custom monitors per server limit: ${state.perServer}`,
+    );
   } else {
     await expect(perServer, `no Per-Server in the ${view} list`).toHaveCount(0);
   }
@@ -186,6 +202,10 @@ function exactText(value: string): RegExp {
 /** Load the fixture account's list and return the fixture monitor's card. */
 async function openMonitorCard(page: Page, fixture: Fixture): Promise<Locator> {
   await expectCleanPage(page, bust(monitorListUrl(fixture.accountToken)));
+  expect(
+    new URL(page.url()).pathname,
+    "the account monitor list redirected (the account needs a testing, active or paused monitor)",
+  ).toBe(MONITOR_LIST_PATH);
   const card = page
     .locator(".card")
     .filter({ has: page.locator(".card-header", { hasText: `fixture-${fixture.attemptId}` }) });
@@ -227,4 +247,5 @@ test("dual-stack monitor cards show per-family or combined status", async ({ pag
   await expect(statusPills(combinedCard), "one combined status pill").toHaveCount(1);
   await expect(statusPills(combinedCard)).toHaveText(/Status paused/);
   await expect(statusPills(addressItem(page, combinedCard, combinedV4.ip))).toHaveCount(0);
+  await expect(statusPills(addressItem(page, combinedCard, combinedV6.ip))).toHaveCount(0);
 });

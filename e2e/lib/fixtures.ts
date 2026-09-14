@@ -28,8 +28,8 @@ export interface FixtureServer {
   netspeed: number;
 }
 
-export type MonitorStatus = "pending" | "testing" | "active" | "paused";
-const MONITOR_STATUSES: readonly string[] = ["pending", "testing", "active", "paused"];
+export const MONITOR_STATUSES = ["pending", "testing", "active", "paused"] as const;
+export type MonitorStatus = (typeof MONITOR_STATUSES)[number];
 
 export const MONITOR_FAMILIES = ["ipv4", "ipv6"] as const;
 export type MonitorFamilyName = (typeof MONITOR_FAMILIES)[number];
@@ -110,7 +110,7 @@ function normalizeMonitors(seeds: MonitorSeed[]): NormalizedMonitor[] {
       const family = seed[name];
       if (!family) continue;
       const status = family.status ?? "pending";
-      if (!MONITOR_STATUSES.includes(status)) {
+      if (!(MONITOR_STATUSES as readonly string[]).includes(status)) {
         throw new Error(`monitor seed ${index} ${name} has unsupported status`);
       }
       normalized[name] = status;
@@ -238,6 +238,7 @@ interface AttemptMetadata {
   accountId?: string;
   serverIds?: string[];
   monitorIds?: string[];
+  cleanupError?: string;
 }
 
 export const test = base.extend<{ fixtures: Fixtures }>({
@@ -268,8 +269,9 @@ export const test = base.extend<{ fixtures: Fixtures }>({
       let cleanupStatus = "succeeded";
       try {
         await cleanupFixture(attempt.attemptId);
-      } catch {
+      } catch (err) {
         cleanupStatus = "failed";
+        attempt.cleanupError = err instanceof Error ? err.message : String(err);
         failures.push(attempt);
       }
       results.push({
@@ -278,6 +280,7 @@ export const test = base.extend<{ fixtures: Fixtures }>({
         serverIds: attempt.serverIds ?? null,
         monitorIds: attempt.monitorIds ?? null,
         cleanupStatus,
+        cleanupError: attempt.cleanupError ?? null,
       });
     }
     if (results.length) {
@@ -288,7 +291,7 @@ export const test = base.extend<{ fixtures: Fixtures }>({
     }
     if (failures.length) {
       const diagnostics = failures.map((failure) =>
-        `attempt=${failure.attemptId} account=${failure.accountId ?? "unknown"} servers=${failure.serverIds?.join(",") ?? "unknown"} monitors=${failure.monitorIds?.join(",") ?? "unknown"}`,
+        `attempt=${failure.attemptId} account=${failure.accountId ?? "unknown"} servers=${failure.serverIds?.join(",") ?? "unknown"} monitors=${failure.monitorIds?.join(",") ?? "unknown"} error=${failure.cleanupError ?? "unknown"}`,
       ).join("\n");
       await testInfo.attach("fixture-cleanup-failures", {
         body: Buffer.from(diagnostics),

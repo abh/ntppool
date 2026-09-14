@@ -5,8 +5,10 @@ import { boolField, record, stringField } from "./json";
 // Monitor list and account monitor-config helpers.
 //
 // Routes: lib/NTPPool/Control/Manage/Monitor.pm render_monitors
-// (/manage/monitors?a=<token>) and render_admin_list (/manage/monitors/admin),
-// both rendering tpl/monitors/list.html; lib/NTPPool/Control/Manage/Account.pm
+// (/manage/monitors?a=<token>), rendering tpl/monitors/list.html, and
+// render_admin_list (/manage/monitors/admin), rendering
+// tpl/monitors/admin_list.html, which PROCESSes list.html with
+// admin_list = 1; lib/NTPPool/Control/Manage/Account.pm
 // render_monitor_config_form / render_monitor_config_update
 // (/manage/account/monitor-config?a=<token>), HTMX fragments swapped into
 // #monitor-config-display. The monitor-config routes answer 403 unless the
