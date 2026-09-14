@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { test as base, expect } from "@playwright/test";
 import { connectRpc, RpcError } from "./auth";
+import { runApiCli } from "./apicli";
 
 export { expect, RpcError };
 
@@ -97,12 +98,6 @@ function boolField(value: unknown, label: string, omittedDefault = false): boole
   return value;
 }
 
-function fixtureKey(): string {
-  const key = process.env.NTP_TEST_SESSION_KEY;
-  if (!key) throw new Error("NTP_TEST_SESSION_KEY is not set");
-  return key;
-}
-
 async function createFixture(attemptId: string, seeds: ServerSeed[]): Promise<ServerFixture> {
   if (seeds.length < 1 || seeds.length > 4) {
     throw new Error("server fixture requires 1 to 4 seeds");
@@ -121,10 +116,9 @@ async function createFixture(attemptId: string, seeds: ServerSeed[]): Promise<Se
     return { ...seed, netspeed };
   });
 
-  const raw = record(await connectRpc<unknown>(
-    "CreateServerTestFixture",
-    "ntppool.auth.v1.AuthService/CreateServerTestFixture",
-    { Authorization: `Bearer ${fixtureKey()}` },
+  const raw = record(await runApiCli<unknown>(
+    "e2e server-fixture create",
+    ["e2e", "server-fixture", "create"],
     {
       attempt_id: attemptId,
       servers: normalized.map((seed) => ({
@@ -136,7 +130,7 @@ async function createFixture(attemptId: string, seeds: ServerSeed[]): Promise<Se
       })),
     },
     attemptId,
-  ), "CreateServerTestFixture response");
+  ), "e2e server-fixture create response");
 
   const responseAttempt = stringField(raw.attempt_id, "fixture attempt_id");
   if (responseAttempt !== attemptId) throw new Error("fixture response attempt_id did not match request");
@@ -184,13 +178,12 @@ async function createFixture(attemptId: string, seeds: ServerSeed[]): Promise<Se
 }
 
 async function cleanupFixture(attemptId: string): Promise<void> {
-  const raw = record(await connectRpc<unknown>(
-    "CleanupServerTestFixture",
-    "ntppool.auth.v1.AuthService/CleanupServerTestFixture",
-    { Authorization: `Bearer ${fixtureKey()}` },
+  const raw = record(await runApiCli<unknown>(
+    "e2e server-fixture cleanup",
+    ["e2e", "server-fixture", "cleanup"],
     { attempt_id: attemptId },
     attemptId,
-  ), "CleanupServerTestFixture response");
+  ), "e2e server-fixture cleanup response");
   if (stringField(raw.attempt_id, "cleanup attempt_id") !== attemptId) {
     throw new Error("cleanup response attempt_id did not match request");
   }

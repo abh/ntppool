@@ -285,7 +285,7 @@ site remains — don't go looking for it.
 
 > `/api/dns-zone` (`NTPPool::Control::DNSZone`) requires a "dns"-type service
 > bearer token — infrastructure-provisioned, not something the e2e harness's
-> dev-only `CreateTestSession` (user sessions only) can mint. Its auth guard
+> dev-only `api e2e session` command (user sessions only) can mint. Its auth guard
 > (missing/malformed/invalid token → 403) is e2e-covered:
 > `e2e/tests/dns-zone.spec.ts`. Everything below needs a real dns service
 > token and stays manual.
@@ -518,7 +518,7 @@ The Perl `NP::Model` ORM layer was largely removed; sanity-check core flows stil
 > rendered, because `mon.account.flags` was never populated. Needs the deployed
 > Go API.
 >
-> Browser coverage still needs a bounded monitor fixture: badges are rendered inside monitor rows, while `CreateTestSession` creates only a user and default account. Do not mutate a long-lived devel monitor/account to manufacture these states.
+> Browser coverage still needs a bounded monitor fixture: badges are rendered inside monitor rows, while `api e2e session` creates only a user and default account. Do not mutate a long-lived devel monitor/account to manufacture these states.
 
 - [ ] As a **monitor admin** on `/manage/monitors` (all-accounts view), an account with `monitor_enabled` shows the green **Bypass** badge.
 - [ ] An account with `monitor_limit = -1` shows the red **Disabled** badge (and *not* "Custom Limit").

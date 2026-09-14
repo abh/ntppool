@@ -1,14 +1,15 @@
 # ntppool E2E tests
 
 Playwright end-to-end tests that drive the live dev site as a logged-in user
-without going through Auth0. Login works by minting a real session token from
-the Go API (`AuthService/CreateTestSession`), then setting it as the browser
-`npuid` session cookie.
+without going through Auth0. Login works by minting a real session token with
+the api-dev binary's `api e2e session` command (reached through
+`NTP_API_CLI`), then setting it as the browser `npuid` session cookie.
 
 **Dev only.** Before minting a session, global setup requires the API's
 database-backed `environment` setting and the public and manage sites'
-`X-NTPPool-Environment` response headers to all report `devel`. The fixture
-RPCs repeat the API-side environment guard.
+`X-NTPPool-Environment` response headers to all report `devel`. The `api e2e`
+commands repeat the check: they refuse to run unless `deployment_mode` and the
+database `environment` are both devel.
 
 ## Install
 
@@ -27,47 +28,65 @@ Copy `.env.example` to `.env` and fill in the values:
   `https://manage.askdev.grundclock.com`). Global setup requires this value so
   every tested surface is explicit.
 - `NTP_INTERNAL_API_URL` — base URL of the internal Go API, reachable over
-  Tailscale. Must include the `/int/rpc` prefix the ConnectRPC services are
-  mounted under (e.g. `http://api-internal.example.ts.net/int/rpc`), with no
-  trailing slash. The harness appends the AuthService procedure path.
-- `NTP_TEST_SESSION_KEY` — bearer key authorizing `CreateTestSession` and the
-  server fixture RPCs.
+  Tailscale, for API reads (`GetSettings`, `GetServer`, `GetAccountAuditLogs`,
+  `GetAccount`). Must include the `/int/rpc` prefix the ConnectRPC services
+  are mounted under (e.g. `http://api-internal.example.ts.net/int/rpc`), with
+  no trailing slash. The harness appends the procedure path.
+- `NTP_API_CLI` — command prefix that runs the api-dev binary for test
+  sessions and server fixtures. See "Reaching the API CLI".
 - `NTP_SCORES_TEST_IP` — a real dev server IP for the public score/graph specs
   (default Google NTP). The isolated server-management specs allocate their
   own addresses and don't accept an existing server or caller-selected IP.
 
-## Provisioning the test session key
+## Reaching the API CLI
 
-The key is a service token granted the `test-session-api` capability. Create
-it from the Go API repo with the `--test-session` flag:
+Test sessions and server fixtures come from `api e2e` subcommands that are
+only compiled into the api-dev image (build tag `e2efixtures`). The harness
+runs them through `NTP_API_CLI`: it splits the value on whitespace, starts it
+without a shell from the `e2e/` directory, appends the subcommand, writes a
+JSON request on stdin and reads one JSON object from stdout.
 
 ```sh
-cd ../go/ntp/api
-go run . service create e2e-test-session --test-session
+# remote devel (needs exec access to the devel API pod)
+NTP_API_CLI=kubectl --context dala -n askntp exec -i deploy/api-internal -c main -- /ko-app/api
+
+# local docker container
+NTP_API_CLI=docker exec -i ntp-api /app/api
+
+# local binary, built in the API repo with: go build -tags e2efixtures -o api-e2e .
+NTP_API_CLI=../../go/ntp/api/api-e2e --config ../../go/ntp/api/database.yaml
 ```
 
-This prints an `npd_…` API key. Put that value in `NTP_TEST_SESSION_KEY`.
+- Each call through `kubectl exec` takes about 1 s.
+- `go run` would recompile on every call, so the local example uses a built
+  binary. The child inherits the environment, so a local binary can get
+  `deployment_mode` and `DATABASE_URI` from `e2e/.env`.
+- `api e2e session` only accepts emails at `example.com`, `example.net`,
+  `example.org` and `ntppool.test`, whether the user is new or existing. It
+  creates a new user; an existing email fails unless the request sets
+  `existing_user` (`opts.existingUser` in `loginAs`). Use `uniqueTestEmail()`
+  for new users.
+- The login preflight in global setup catches a CLI pointed at a different
+  database than the site under test, because the minted session won't log in.
 
 ## Server fixture deployment
 
 The verification, deletion, netspeed and scores-context specs use
-`CreateServerTestFixture` and `CleanupServerTestFixture`. Both RPCs refuse to
-run unless the API is in the devel environment and the bearer key has the
-`test-session-api` audience. A missing capability is a setup failure; the
-tests don't skip.
+`api e2e server-fixture create` and `api e2e server-fixture cleanup`. A
+command failure is a setup failure; the tests don't skip.
 
 Deploy in this order:
 
-1. Deploy API commit `b3e2b5ed76580c89f9c0db83a7abb251cf92951b` and run its
-   Goose migrations with `deployment_mode=devel`. Migration 027 creates the
-   fixture tables only in devel; test and prod record it as a no-op.
-2. Confirm the devel database reports migration version 27 and contains
-   `server_test_fixtures` and `server_test_fixture_servers`.
-3. Deploy the matching web revision containing generated `Auth.pm` commit
-   `27091be29c4ed929c85be8f71d6a5f5a385cdfc4`, the environment response
-   header, and the E2E suite.
-4. Probe `CreateServerTestFixture`, then run the focused suite twice with
-   `--retries=0`. Each run must use fresh attempt IDs and report cleanup.
+1. Deploy an api-dev image with the `api e2e` commands and run its Goose
+   migrations with `deployment_mode=devel`. Migration 027 creates the fixture
+   tables only in devel; test and prod record it as a no-op.
+2. Confirm the devel database reports migration version 28 or later and
+   contains `server_test_fixtures` and `server_test_fixture_servers`.
+3. Deploy the matching web revision with the environment response header and
+   the E2E suite.
+4. Confirm `api e2e --help` through `NTP_API_CLI` lists `server-fixture`, then
+   run the focused suite twice with `--retries=0`. Each run must use fresh
+   attempt IDs and report cleanup.
 
 Each create call owns a fresh ordinary user, a private account and one to four
 servers. Fresh accounts can add servers; `can_add_servers` turns false after
@@ -89,31 +108,26 @@ fixture's recorded server IDs and related rows, clears any scheduled deletion
 with the server rows, and leaves the generated user/account plus the fixture
 tombstone as inert identities. Cleanup is idempotent. Cleaning an unknown
 attempt creates a tombstone, so a delayed create with that ID can't add data.
-If a test loses the create response or teardown fails, run this from `e2e/`
-with `.env` already loaded. Replace the example UUID with the attempt printed
-in the failure. The script sends only `attempt_id` in the request body and
-doesn't print request headers or credentials.
+If a test loses the create response or teardown fails, run this from `e2e/`.
+Replace the example UUID with the attempt printed in the failure. The script
+loads `.env`, sends only `attempt_id`, and calls the harness's own
+`runApiCli`, so `NTP_API_CLI` is split the same way as in tests (zsh doesn't
+word-split `$NTP_API_CLI` in a shell command).
 
 ```sh
 node --input-type=module - 00000000-0000-4000-8000-000000000000 <<'NODE'
-const attemptId = process.argv[2];
-const apiBase = process.env.NTP_INTERNAL_API_URL;
-const key = process.env.NTP_TEST_SESSION_KEY;
-if (!apiBase || !key || !attemptId) throw new Error("missing API URL, key, or attempt ID");
+import "dotenv/config";
+import { runApiCli } from "./lib/apicli.ts";
 
-const response = await fetch(
-  `${apiBase.replace(/\/$/, "")}/ntppool.auth.v1.AuthService/CleanupServerTestFixture`,
-  {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${key}`,
-    },
-    body: JSON.stringify({ attempt_id: attemptId }),
-  },
+const attemptId = process.argv[2];
+if (!attemptId) throw new Error("missing attempt ID");
+const result = await runApiCli(
+  "e2e server-fixture cleanup",
+  ["e2e", "server-fixture", "cleanup"],
+  { attempt_id: attemptId },
+  attemptId,
+  process.cwd(),
 );
-if (!response.ok) throw new Error(`cleanup failed: HTTP ${response.status}`);
-const result = await response.json();
 if (result.attempt_id !== attemptId) throw new Error("cleanup returned a different attempt ID");
 console.log(`cleaned ${attemptId}; deleted_servers=${result.deleted_servers ?? 0}`);
 NODE
@@ -126,7 +140,7 @@ npm test            # headless
 npm run test:headed # headed
 ```
 
-List the tests without running them (no live site or key needed):
+List the tests without running them (no live site or API CLI needed):
 
 ```sh
 npx playwright test --list
@@ -167,17 +181,18 @@ npx playwright test --project=manage --reporter=list > test-logs/run-1.log 2>&1
 
 `lib/auth.ts`:
 
-- `mintSession(email, opts?)` — POSTs to
-  `${NTP_INTERNAL_API_URL}/ntppool.auth.v1.AuthService/CreateTestSession`
-  with `Authorization: Bearer ${NTP_TEST_SESSION_KEY}` and a JSON body of
-  `{ email, name, create_if_missing: true }`. Returns the `session_token`.
+- `mintSession(email, opts?)` — runs `api e2e session` through `runApiCli`
+  (`lib/apicli.ts`) with `{ email, name, existing_user, grant_staff,
+  grant_vendor_admin, grant_monitor_admin }` on stdin and returns
+  `session_token`. `opts.existingUser` mints another session for a user an
+  earlier mint created, for example to log back in after logout.
 - `loginAs(context, email, opts?)` — mints a session and sets the `npuid`
   cookie. The cookie attributes mirror the Perl side
   (`lib/NTPPool/Control.pm` and `lib/NTPPool/Control/Login.pm`): value
   `"{session_token};{unix_seconds}"`, path `/`, `secure`, `httpOnly`,
   `SameSite=Lax`, domain = the `NTP_BASE_URL` host. `opts.grantStaff` /
   `opts.grantVendorAdmin` / `opts.grantMonitorAdmin` mint a staff /
-  vendor-admin / monitor-admin user (dev-only, via the RPC's `grant_staff` /
+  vendor-admin / monitor-admin user (dev-only, via the command's `grant_staff` /
   `grant_vendor_admin` / `grant_monitor_admin` flags) for the staff and
   monitor-admin-gated specs.
 - `uniqueTestEmail(prefix?)` — fresh per-run email so each run gets an
@@ -194,7 +209,7 @@ Specs map to `MANUAL_TEST_PLAN.md` sections: `login` (§1), `regression-smoke`
 `staff-server-edit` (§8, staff hostname and zone edits and their CSRF check),
 `account-create` (§1 + §4), `account-team` (§4), `account-update` (§4),
 `dns-zone` (§6, auth-guard portion), `monitor-config` (§14).
-Staff specs need the `grant_staff` / `grant_vendor_admin` RPC build deployed.
+Staff specs rely on the `grant_staff` / `grant_vendor_admin` flags of `api e2e session`.
 Selectors are derived from the templates and may need adjustment against the
 live site on first run.
 

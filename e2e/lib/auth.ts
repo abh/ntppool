@@ -1,4 +1,5 @@
 import { BrowserContext } from "@playwright/test";
+import { runApiCli } from "./apicli";
 
 // The browser session cookie. Attributes below are mirrored from the Perl
 // side so the live dev site treats the minted session like a real login.
@@ -19,11 +20,9 @@ const COOKIE_NAME = "npuid";
 
 interface MintOptions {
   name?: string;
-  createIfMissing?: boolean;
-  // Grant the minted user the support_staff privilege. Dev only and
-  // capability-gated, same as the mint itself. Lets staff-gated flows
-  // (account dissolution, staff deletion) run as a fresh, isolated user
-  // instead of mutating a real staff account.
+  // Grant the minted user the support_staff privilege. Dev only, same as the
+  // mint itself. Lets staff-gated flows (account dissolution, staff deletion)
+  // run as a fresh, isolated user instead of mutating a real staff account.
   grantStaff?: boolean;
   // Grant the minted user the vendor_admin privilege. The vendor admin
   // route (/manage/vendor/admin) and the approve/reject RPC require
@@ -33,21 +32,12 @@ interface MintOptions {
   // monitor-config route (/manage/account/monitor-config) checks
   // monitor_admin specifically — support_staff is not enough.
   grantMonitorAdmin?: boolean;
+  // Mint another session for the user an earlier mint created for this email,
+  // instead of creating a user. Without it an email that already belongs to a
+  // user fails, so two tests that pick the same address never share a user.
+  existingUser?: boolean;
 }
 
-interface MintResult {
-  sessionToken: string;
-}
-
-/**
- * POST a ConnectRPC method as JSON against NTP_INTERNAL_API_URL and return the
- * parsed body. Callers supply their own auth headers and validate the response
- * shape; everything here is transport.
- *
- * `label` names the procedure in error messages, and `subject` adds the thing
- * the call was about, so failures stay as greppable as before the transport was
- * shared (e.g. "CreateTestSession failed: 500 …").
- */
 export class RpcError extends Error {
   constructor(
     message: string,
@@ -59,6 +49,15 @@ export class RpcError extends Error {
   }
 }
 
+/**
+ * POST a ConnectRPC method as JSON against NTP_INTERNAL_API_URL and return the
+ * parsed body. Callers supply their own auth headers and validate the response
+ * shape; everything here is transport.
+ *
+ * `label` names the procedure in error messages, and `subject` adds the thing
+ * the call was about, so failures stay as greppable as before the transport was
+ * shared (e.g. "GetServer failed for 192.0.2.1: 404 …").
+ */
 export async function connectRpc<T>(
   label: string,
   procedure: string,
@@ -118,36 +117,33 @@ export async function connectRpc<T>(
 }
 
 /**
- * Mint a real session token via the Go AuthService.CreateTestSession RPC.
- * Dev only: the RPC refuses to run outside the devel environment.
+ * Mint a real session token through `api e2e session` (NTP_API_CLI). The
+ * command creates a new user, so `email` must not belong to an existing user
+ * unless `opts.existingUser` is set; uniqueTestEmail() gives a fresh one. It
+ * only accepts example.com, example.net, example.org and ntppool.test
+ * addresses. Dev only: the command refuses to run unless the API and its
+ * database are devel.
  */
 export async function mintSession(
   email: string,
   opts: MintOptions = {},
 ): Promise<string> {
-  const key = process.env.NTP_TEST_SESSION_KEY;
-  if (!key) {
-    throw new Error("NTP_TEST_SESSION_KEY is not set");
-  }
-
-  // ConnectRPC JSON encodes fields as snake_case, both ways.
-  const data = await connectRpc<{ session_token?: string }>(
-    "CreateTestSession",
-    "ntppool.auth.v1.AuthService/CreateTestSession",
-    { Authorization: `Bearer ${key}` },
+  const data = await runApiCli<{ session_token?: unknown }>(
+    "e2e session",
+    ["e2e", "session"],
     {
       email,
       name: opts.name ?? "",
-      create_if_missing: opts.createIfMissing ?? true,
-      // grant_staff = 4, grant_vendor_admin = 5, grant_monitor_admin = 6.
+      existing_user: opts.existingUser ?? false,
       grant_staff: opts.grantStaff ?? false,
       grant_vendor_admin: opts.grantVendorAdmin ?? false,
       grant_monitor_admin: opts.grantMonitorAdmin ?? false,
     },
+    email,
   );
 
-  if (!data.session_token) {
-    throw new Error("CreateTestSession response missing session_token");
+  if (typeof data.session_token !== "string" || !data.session_token) {
+    throw new Error("e2e session response missing session_token");
   }
 
   return data.session_token;
@@ -162,8 +158,7 @@ export async function mintSession(
  * read for it (verified 2026-09-09, readiness handoff R5); the harness must not
  * decode the acc_ token or reach for SQL.
  *
- * Auth is the USER's session token from loginAs/mintSession, not
- * NTP_TEST_SESSION_KEY — the service key only mints sessions. Account context
+ * Auth is the USER's session token from loginAs/mintSession. Account context
  * travels in X-Account, the same header lib/NP/CAPI.pm:256 sets.
  */
 export async function getAccountNumericId(

@@ -15,7 +15,7 @@ export default async function globalSetup() {
     "NTP_BASE_URL",
     "NTP_MANAGE_URL",
     "NTP_INTERNAL_API_URL",
-    "NTP_TEST_SESSION_KEY",
+    "NTP_API_CLI",
   ];
   const missing = required.filter((k) => !process.env[k]);
   if (missing.length) {
@@ -113,7 +113,8 @@ export default async function globalSetup() {
     throw new Error(
       `e2e preflight failed: could not establish a logged-in session.\n` +
         `Checked:\n` +
-        `  - mint via ${internal} (Tailscale up? correct host/port/path? key valid? CreateTestSession deployed?)\n` +
+        `  - mint via NTP_API_CLI: exec access to the API? ` +
+        `api-dev image with \`api e2e\` deployed? same database as ${MANAGE_URL}?\n` +
         `  - logged-in load of ${MANAGE_URL}/manage (correct NTP_MANAGE_URL?)\n` +
         `Underlying error: ${(err as Error).message}`,
     );

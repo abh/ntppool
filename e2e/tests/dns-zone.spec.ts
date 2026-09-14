@@ -7,7 +7,7 @@ import { test, expect } from "@playwright/test";
 // who_am_i() resolves to auth_type=service with a "dns"-type service attached
 // (see lib/NTPPool/Control/DNSZone.pm). Minting a real "dns" service token
 // needs infrastructure-level provisioning that isn't available to this test
-// harness (unlike CreateTestSession's dev-only user-session minting), so a
+// harness (unlike `api e2e session`'s dev-only user-session minting), so a
 // happy-path zone-JSON check is a manual step — see MANUAL_TEST_PLAN.md §6.
 //
 // What IS coverable here, and worth covering: the auth guard itself

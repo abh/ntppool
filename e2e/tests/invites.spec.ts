@@ -138,8 +138,8 @@ test.skip("exceeding 3 sends in 24h blocks resend with a limit warning", async (
   // SKIPPED: the 5-minute cooldown between sends makes reaching 3 sends in a
   // single test run impractical through the UI without time-travel or a DB
   // write to backdate the prior sends — both deliberately out of scope for the
-  // read-only harness. Closing this needs a test-only backdate RPC in the Go API
-  // (dev-only + service-audience guarded, like CreateTestSession); the exact
+  // read-only harness. Closing this needs a test-only `api e2e invite backdate`
+  // command in the Go API (api-dev build only, like `api e2e session`); the exact
   // shape is written up in FINDINGS-error-surfacing.md (task 5). The assertion
   // shape below is kept ready for that day.
   const owner = uniqueTestEmail("invite-owner");
