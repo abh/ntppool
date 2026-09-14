@@ -518,12 +518,26 @@ The Perl `NP::Model` ORM layer was largely removed; sanity-check core flows stil
 > rendered, because `mon.account.flags` was never populated. Needs the deployed
 > Go API.
 >
-> Browser coverage still needs a bounded monitor fixture: badges are rendered inside monitor rows, while `api e2e session` creates only a user and default account. Do not mutate a long-lived devel monitor/account to manufacture these states.
+> Browser coverage creates a fresh account with one paused monitor through
+> `api e2e fixture create`; a separately minted monitor admin views it. A
+> pending monitor alone isn't enough: `/manage/monitors` sends an account
+> without a testing, active or paused monitor to the setup instructions. Do not
+> mutate a long-lived devel monitor/account to manufacture these states.
 
-- [ ] As a **monitor admin** on `/manage/monitors` (all-accounts view), an account with `monitor_enabled` shows the green **Bypass** badge.
-- [ ] An account with `monitor_limit = -1` shows the red **Disabled** badge (and *not* "Custom Limit").
-- [ ] An account with a custom `monitor_limit` shows the blue **Custom Limit** badge, tooltip naming the number.
-- [ ] An account with a custom per-server limit shows the yellow **Per-Server** badge, tooltip naming the number.
-- [ ] An account on **all defaults** shows **no badges at all** — and no stray empty gap beside the account name.
-- [ ] Badges appear in **both** the per-account list and the admin all-accounts view.
-- [ ] As a **non-monitor-admin**, no badges render, and the `list_monitors` JSON response contains no `flags` key for the account.
+- [x] As a **monitor admin** on `/manage/monitors/admin` (all-accounts view), an account with `monitor_enabled` shows the green **Bypass** badge. (`e2e/tests/monitor-badges.spec.ts` → "monitor admin sees account flag badges in both monitor lists")
+- [x] An account with `monitor_limit = -1` shows the red **Disabled** badge (and *not* "Custom Limit"). (`e2e/tests/monitor-badges.spec.ts` → "monitor admin sees account flag badges in both monitor lists")
+- [x] An account with a custom `monitor_limit` shows the blue **Custom Limit** badge, tooltip naming the number. (`e2e/tests/monitor-badges.spec.ts` → "monitor admin sees account flag badges in both monitor lists")
+- [x] An account with a custom per-server limit shows the yellow **Per-Server** badge, tooltip naming the number. (`e2e/tests/monitor-badges.spec.ts` → "monitor admin sees account flag badges in both monitor lists")
+- [x] An account on **all defaults** shows **no badges at all** — and no stray empty gap beside the account name. (`e2e/tests/monitor-badges.spec.ts` → "monitor admin sees account flag badges in both monitor lists")
+- [x] Badges appear in **both** the per-account list and the admin all-accounts view. (`e2e/tests/monitor-badges.spec.ts` → "monitor admin sees account flag badges in both monitor lists")
+- [x] As a **non-monitor-admin**, no badges render, and the `list_monitors` JSON response contains no `flags` key for the account. (`e2e/tests/monitor-badges.spec.ts` → "non-monitor-admin sees no badges, gets no flags, and can't open the admin list")
+
+## 16. Dual-stack monitor cards
+
+> A monitor with an IPv4 and an IPv6 row sharing one TLS name renders as one
+> card. When both rows have the same status the card shows it once; otherwise
+> each address shows its own status. Browser coverage uses a dual-stack
+> monitor from `api e2e fixture create`.
+
+- [x] A dual-stack monitor whose addresses have **different statuses** shows each address with its own status. (`e2e/tests/monitor-badges.spec.ts` → "dual-stack monitor cards show per-family or combined status")
+- [x] A dual-stack monitor whose addresses share a status shows **one combined status**. (`e2e/tests/monitor-badges.spec.ts` → "dual-stack monitor cards show per-family or combined status")

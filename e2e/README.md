@@ -33,14 +33,14 @@ Copy `.env.example` to `.env` and fill in the values:
   are mounted under (e.g. `http://api-internal.example.ts.net/int/rpc`), with
   no trailing slash. The harness appends the procedure path.
 - `NTP_API_CLI` — command prefix that runs the api-dev binary for test
-  sessions and server fixtures. See "Reaching the API CLI".
+  sessions and fixtures. See "Reaching the API CLI".
 - `NTP_SCORES_TEST_IP` — a real dev server IP for the public score/graph specs
   (default Google NTP). The isolated server-management specs allocate their
   own addresses and don't accept an existing server or caller-selected IP.
 
 ## Reaching the API CLI
 
-Test sessions and server fixtures come from `api e2e` subcommands that are
+Test sessions and fixtures come from `api e2e` subcommands that are
 only compiled into the api-dev image (build tag `e2efixtures`). The harness
 runs them through `NTP_API_CLI`: it splits the value on whitespace, starts it
 without a shell from the `e2e/` directory, appends the subcommand, writes a
@@ -69,32 +69,37 @@ NTP_API_CLI=../../go/ntp/api/api-e2e --config ../../go/ntp/api/database.yaml
 - The login preflight in global setup catches a CLI pointed at a different
   database than the site under test, because the minted session won't log in.
 
-## Server fixture deployment
+## Fixture deployment
 
-The verification, deletion, netspeed and scores-context specs use
-`api e2e server-fixture create` and `api e2e server-fixture cleanup`. A
-command failure is a setup failure; the tests don't skip.
+The verification, deletion, netspeed, scores-context, staff-search,
+staff-server-edit and monitor-badges specs use `api e2e fixture create` and
+`api e2e fixture cleanup`. A command failure is a setup failure; the tests
+don't skip.
 
 Deploy in this order:
 
-1. Deploy an api-dev image with the `api e2e` commands and run its Goose
-   migrations with `deployment_mode=devel`. Migration 027 creates the fixture
-   tables only in devel; test and prod record it as a no-op.
-2. Confirm the devel database reports migration version 28 or later and
-   contains `server_test_fixtures` and `server_test_fixture_servers`.
+1. Deploy an api-dev image with the `api e2e fixture` commands and run its
+   Goose migrations with `deployment_mode=devel`. In devel, migration 029
+   replaces the migration-027 `server_test_fixtures` tables with
+   `e2e_fixtures`, `e2e_fixture_servers` and `e2e_fixture_monitors`, and
+   refuses to run while an old attempt is uncleaned. Test and prod record
+   027 and 029 as no-ops.
+2. Confirm the devel database reports migration version 29 or later and
+   contains the three `e2e_fixture*` tables.
 3. Deploy the matching web revision with the environment response header and
    the E2E suite.
-4. Confirm `api e2e --help` through `NTP_API_CLI` lists `server-fixture`, then
-   run the focused suite twice with `--retries=0`. Each run must use fresh
+4. Confirm `api e2e --help` through `NTP_API_CLI` lists `fixture`, then run
+   the focused suite twice with `--retries=0`. Each run must use fresh
    attempt IDs and report cleanup.
 
-Each create call owns a fresh ordinary user, a private account and one to four
-servers. Fresh accounts can add servers; `can_add_servers` turns false after
-two active unverified servers (scheduled servers don't count as active for
-that check). The fixture uses `198.51.100.0/24`, `203.0.113.0/24` and
-`2001:db8::/32`, with allocation locks and uniqueness checks across active
-attempts. It seeds no zones, score rows, log-score rows or monitor-review rows,
-and both publication flags are off.
+Each create call owns a fresh ordinary user, a private account, zero to four
+servers and at most one monitor, and needs at least one server or monitor.
+Fresh accounts can add servers; `can_add_servers` turns false after two active
+unverified servers (scheduled servers don't count as active for that check).
+Servers use `198.51.100.0/24`, `203.0.113.0/24` and `2001:db8::/32`; monitors
+use `192.0.2.0/24` and `2001:db8::/32`. Allocation locks and uniqueness checks
+cover active attempts. Server fixtures seed no zones, score rows, log-score
+rows or monitor-review rows, and both publication flags are off.
 
 That initial state keeps fixtures out of the normal monitor and selector
 queues, but it isn't a permanent no-probe barrier. A concurrent devel monitor
@@ -103,16 +108,38 @@ servers of the same address family, including these reserved addresses. Use a
 quiesced devel monitor environment or verified egress policy when a strict
 no-probe guarantee is required.
 
+A fixture monitor is an IPv4 row, an IPv6 row, or both sharing the TLS name
+`fixture-<attempt>.devel.mon.ntppool.dev`. Each row starts as `pending` (the
+default), `testing`, `active` or `paused`, with no API key, so it can't
+connect and starts with no score rows. Non-pending fixture monitors count
+toward the devel account and global monitor limits while they exist. Two
+things give a fixture monitor score rows, and cleanup then refuses: the
+monitor admin status control (moving it to testing or active), and any
+server added or restored on devel while the fixture monitor is `testing` or
+`active`. The suite only creates `pending` and `paused` fixture monitors;
+don't use the status control on them. If cleanup refuses because of a
+candidate row that was never scored, remove those rows for the attempt's
+monitors and clean up again (read the monitor IDs from the
+`fixture-cleanup-failures` attachment):
+
+```sql
+DELETE FROM server_scores
+ WHERE monitor_id IN (<monitor ids>) AND status = 'candidate' AND score_ts IS NULL;
+```
+
 Cleanup uses the attempt ID recorded before create. It deletes only the
-fixture's recorded server IDs and related rows, clears any scheduled deletion
-with the server rows, and leaves the generated user/account plus the fixture
-tombstone as inert identities. Cleanup is idempotent. Cleaning an unknown
-attempt creates a tombstone, so a delayed create with that ID can't add data.
-If a test loses the create response or teardown fails, run this from `e2e/`.
-Replace the example UUID with the attempt printed in the failure. The script
-loads `.env`, sends only `attempt_id`, and calls the harness's own
-`runApiCli`, so `NTP_API_CLI` is split the same way as in tests (zsh doesn't
-word-split `$NTP_API_CLI` in a shell command).
+fixture's recorded server and monitor IDs and the servers' related rows,
+clears any scheduled deletion with the server rows, and leaves the generated
+user/account plus the fixture tombstone as inert identities. It refuses, and
+leaves the attempt uncleaned, when a recorded server or monitor has moved to
+another account or a fixture monitor has score, log-score or API-key rows.
+Cleanup is idempotent. Cleaning an unknown attempt creates a tombstone, so a
+delayed create with that ID can't add data. If a test loses the create
+response or teardown fails, run this from `e2e/`. Replace the example UUID
+with the attempt printed in the failure. The script loads `.env`, sends only
+`attempt_id`, and calls the harness's own `runApiCli`, so `NTP_API_CLI` is
+split the same way as in tests (zsh doesn't word-split `$NTP_API_CLI` in a
+shell command).
 
 ```sh
 node --input-type=module - 00000000-0000-4000-8000-000000000000 <<'NODE'
@@ -122,14 +149,14 @@ import { runApiCli } from "./lib/apicli.ts";
 const attemptId = process.argv[2];
 if (!attemptId) throw new Error("missing attempt ID");
 const result = await runApiCli(
-  "e2e server-fixture cleanup",
-  ["e2e", "server-fixture", "cleanup"],
+  "e2e fixture cleanup",
+  ["e2e", "fixture", "cleanup"],
   { attempt_id: attemptId },
   attemptId,
   process.cwd(),
 );
 if (result.attempt_id !== attemptId) throw new Error("cleanup returned a different attempt ID");
-console.log(`cleaned ${attemptId}; deleted_servers=${result.deleted_servers ?? 0}`);
+console.log(`cleaned ${attemptId}; deleted_servers=${result.deleted_servers} deleted_monitors=${result.deleted_monitors}`);
 NODE
 ```
 
@@ -154,8 +181,8 @@ run allocates and cleans fresh attempts:
 npm run test:unit
 npm run typecheck
 npx playwright test --list
-npx playwright test tests/server.spec.ts tests/server-verification.spec.ts tests/server-deletion.spec.ts tests/server-netspeed.spec.ts tests/server-scores-context.spec.ts --project=manage --retries=0
-npx playwright test tests/server-verification.spec.ts tests/server-deletion.spec.ts tests/server-netspeed.spec.ts tests/server-scores-context.spec.ts --project=manage --retries=0
+npx playwright test tests/server.spec.ts tests/server-verification.spec.ts tests/server-deletion.spec.ts tests/server-netspeed.spec.ts tests/server-scores-context.spec.ts tests/staff-search.spec.ts tests/staff-server-edit.spec.ts tests/monitor-badges.spec.ts --project=manage --retries=0
+npx playwright test tests/server-verification.spec.ts tests/server-deletion.spec.ts tests/server-netspeed.spec.ts tests/server-scores-context.spec.ts tests/staff-search.spec.ts tests/staff-server-edit.spec.ts tests/monitor-badges.spec.ts --project=manage --retries=0
 npx playwright test tests/scores.spec.ts --project=web --retries=0
 npx playwright test tests/monitor-config.spec.ts --project=manage --retries=0
 ```
@@ -203,13 +230,14 @@ npx playwright test --project=manage --reporter=list > test-logs/run-1.log 2>&1
 Specs map to `MANUAL_TEST_PLAN.md` sections: `login` (§1), `regression-smoke`
 (§12), `i18n` (§10), `vendor` (§5 + §5a staff/admin), `scores` (§9), `server`
 (§8 add-form baseline), `server-verification`, `server-deletion`,
-`server-netspeed` and `server-scores-context` (§8/§8a/§8b),
-`account-dissolve` (§2), `staff-deletion` (§3/§4), `invites` (§4a),
-`account-frozen` (§2), `account-download` (§4c), `staff-search` (§13),
-`staff-server-edit` (§8, staff hostname and zone edits and their CSRF check),
-`account-create` (§1 + §4), `account-team` (§4), `account-update` (§4),
-`dns-zone` (§6, auth-guard portion), `monitor-config` (§14).
-Staff specs rely on the `grant_staff` / `grant_vendor_admin` flags of `api e2e session`.
+`server-netspeed` and `server-scores-context` (§8/§8a/§8b), `account-dissolve`
+(§2), `staff-deletion` (§3/§4), `invites` (§4a), `account-frozen` (§2),
+`account-download` (§4c), `staff-search` (§13), `staff-server-edit` (§8, staff
+hostname and zone edits and their CSRF check), `account-create` (§1 + §4),
+`account-team` (§4), `account-update` (§4), `dns-zone` (§6, auth-guard
+portion), `monitor-config` (§14), `monitor-badges` (§15 account flag badges,
+§16 dual-stack monitor cards).
+Staff specs rely on the `grant_staff` / `grant_vendor_admin` flags of `api e2e session`; `monitor-config` and `monitor-badges` use `grant_monitor_admin`.
 Selectors are derived from the templates and may need adjustment against the
 live site on first run.
 
