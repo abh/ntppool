@@ -6,6 +6,12 @@ the **deployed** dev API, so any such addition is only exercised after it ships
 to dev — and should be gated behind a capability probe (like the existing
 `isVendorAdmin()` skip) so the suite stays green before the deploy lands.
 
+**Rule (2026-09-13):** test-only setup goes in `api e2e` subcommands in the
+api-dev build, never in handlers reachable over the network. See
+`docs/superpowers/specs/2026-09-13-e2e-fixtures-cli-design.md`. The invite
+proposal below follows it; the Task 2 fault-injection idea doesn't and is kept
+only as a record.
+
 Both are documented here rather than left as best-effort assertions in the specs.
 
 ---
@@ -45,8 +51,9 @@ error renders `.alert-danger` + a Trace ID. What's missing is only the
 transition is a SAFE no-op (no dead-end, no error bleed, status unchanged) — and
 keeps a conditional Trace-ID check as a free regression net.
 
-**To close the gap (option a), the Go API would need test-only fault injection**,
-mirroring `CreateTestSession`'s dev-only + service-audience guards:
+**To close the gap (option a), the Go API would need test-only fault injection.**
+Every shape below puts a hook in a network-reachable handler, which the rule
+above forbids:
 
 - A devel-only way to make a specific RPC return an error on demand. Lowest-churn
   shape: have `UpdateVendorZoneStatus` (and/or a thin test RPC) recognize a
@@ -61,8 +68,8 @@ mirroring `CreateTestSession`'s dev-only + service-audience guards:
   requireTraceId: true })` — gated behind a capability probe that skips when the
   deployed dev API predates the hook.
 
-This was **not implemented**: it adds a dev-only error-injection surface and a
-Perl+Go+proto change to re-prove a convention already verified on the edit path.
+This was **not implemented**: it conflicts with the rule above, and it would add
+a Perl+Go+proto change to re-prove a convention already verified on the edit path.
 The cost/benefit favors documenting it here.
 
 ---
@@ -79,19 +86,21 @@ real minutes or backdating the prior sends. The harness is read-only (no DB
 writes), so it can't backdate them itself. The cooldown itself IS covered (the
 "immediate second resend is blocked by the 5-minute cooldown" test).
 
-**To close the gap, the Go API would need a test-only backdate RPC**, same spirit
-as `CreateTestSession` (dev-only + service-audience):
+**To close the gap, the Go API would need a test-only `api e2e invite backdate`
+command**, built like `api e2e session`:
 
-- e.g. `BackdateInviteSends(account_token | invite_id, count, age)` that rewrites
-  the recorded send timestamps for a pending invite to N minutes/hours ago, so
-  the cooldown is satisfied while the 24h counter still reflects the prior sends.
-- Guards: `api.Env == depenv.DeployDevel` and the test-session service audience,
-  identical to `CreateTestSession`.
+- e.g. `api e2e invite backdate` reading `{account_token | invite_id, count, age}`
+  on stdin and rewriting the recorded send timestamps for a pending invite to N
+  minutes/hours ago, so the cooldown is satisfied while the 24h counter still
+  reflects the prior sends.
+- Guards: build tag `e2efixtures` (api-dev image only) plus the devel check
+  every `api e2e` command runs (`deployment_mode` and the database
+  `environment` both devel).
 - The test would then: invite → resend → backdate(2 sends, >5min ago) → resend
   (now 3 total) → backdate again → attempt a 4th resend and assert the
   `resource_exhausted` "limit: 3" warning via
   `errorAlerts(page)` + `"limit: 3"`.
 
-Until that RPC exists and is deployed, the test stays skipped (its assertion
+Until that command exists and is deployed, the test stays skipped (its assertion
 shape is kept ready in `invites.spec.ts`). The cooldown half is the reachable
 portion and is asserted today.
