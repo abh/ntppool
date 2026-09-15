@@ -1,15 +1,17 @@
 import { randomUUID } from "node:crypto";
 import { test as base, expect } from "@playwright/test";
 import { runApiCli } from "./apicli";
+import { runId } from "./run";
 import { boolField, idField, intField, record, stringField } from "./json";
 
 export { expect };
 
 // Isolated fixtures from `api e2e fixture create|cleanup` (api-dev build only).
-// One attempt owns a fresh user and private account, 0 to 4 servers, at most
-// one monitor and at most one subscription, and needs at least one of them.
-// Cleanup removes the servers, monitors and subscription and leaves the
-// identity behind.
+// One attempt owns a fresh user (named with the run's tag, so global teardown
+// flags it for deletion) and private account, 0 to 4 servers, at most one
+// monitor and at most one subscription, and needs at least one of them. Cleanup
+// removes the servers, monitors and subscription and leaves the identity
+// behind.
 
 export interface ServerSeed {
   ipVersion: 4 | 6;
@@ -237,6 +239,7 @@ async function createFixture(attemptId: string, seed: FixtureSeed): Promise<Fixt
 
   const request: Record<string, unknown> = {
     attempt_id: attemptId,
+    run_id: runId(),
     servers: servers.map((server) => ({
       ip_version: server.ipVersion,
       verified: server.verified ?? false,

@@ -17,8 +17,6 @@ import { getAccountAuditLogs, getServer } from "../lib/servers";
 // Fixtures are never put in a real zone: an unknown zone name reaches the API
 // and fails there without touching zone membership.
 
-test.use({ trace: "off" });
-
 const HOSTNAME_EDIT_PATH = "/manage/admin/hostname/edit";
 const HOSTNAME_SAVE_PATH = "/manage/admin/hostname/save";
 const ZONES_SAVE_PATH = "/manage/admin/zones/save";

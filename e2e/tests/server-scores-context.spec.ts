@@ -3,8 +3,6 @@ import { bust } from "../lib/helpers";
 import { expect, test, type FixtureServer } from "../lib/fixtures";
 import { getServer } from "../lib/servers";
 
-test.use({ trace: "off" });
-
 function expandIPv6(ip: string): string {
   const [left, right = ""] = ip.split("::");
   const leftParts = left ? left.split(":") : [];

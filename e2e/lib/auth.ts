@@ -1,5 +1,6 @@
 import { BrowserContext } from "@playwright/test";
 import { runApiCli } from "./apicli";
+import { runId } from "./run";
 
 // The browser session cookie. Attributes below are mirrored from the Perl
 // side so the live dev site treats the minted session like a real login.
@@ -19,7 +20,6 @@ import { runApiCli } from "./apicli";
 const COOKIE_NAME = "npuid";
 
 interface MintOptions {
-  name?: string;
   // Grant the minted user the support_staff privilege. Dev only, same as the
   // mint itself. Lets staff-gated flows (account dissolution, staff deletion)
   // run as a fresh, isolated user instead of mutating a real staff account.
@@ -32,7 +32,7 @@ interface MintOptions {
   // monitor-config route (/manage/account/monitor-config) checks
   // monitor_admin specifically — support_staff is not enough.
   grantMonitorAdmin?: boolean;
-  // Mint another session for the user an earlier mint created for this email,
+  // Mint another session for the user an earlier mint in this run created
   // instead of creating a user. Without it an email that already belongs to a
   // user fails, so two tests that pick the same address never share a user.
   existingUser?: boolean;
@@ -126,11 +126,12 @@ export async function connectRpc<T>(
 
 /**
  * Mint a real session token through `api e2e session` (NTP_API_CLI). The
- * command creates a new user, so `email` must not belong to an existing user
- * unless `opts.existingUser` is set; uniqueTestEmail() gives a fresh one. It
- * only accepts example.com, example.net, example.org and ntppool.test
- * addresses. Dev only: the command refuses to run unless the API and its
- * database are devel.
+ * command creates a new user named with this run's tag, so `email` must not
+ * belong to an existing user unless `opts.existingUser` is set, and then only
+ * to a user this run created; uniqueTestEmail() gives a fresh one. It only
+ * accepts example.com, example.net, example.org and ntppool.test addresses.
+ * Dev only: the command refuses to run unless the API and its database are
+ * devel.
  */
 export async function mintSession(
   email: string,
@@ -141,7 +142,7 @@ export async function mintSession(
     ["e2e", "session"],
     {
       email,
-      name: opts.name ?? "",
+      run_id: runId(),
       existing_user: opts.existingUser ?? false,
       grant_staff: opts.grantStaff ?? false,
       grant_vendor_admin: opts.grantVendorAdmin ?? false,

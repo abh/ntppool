@@ -315,17 +315,16 @@ site remains — don't go looking for it.
 
 ## 8. Server verification & management
 
-- [ ] **Implemented; live-unverified:** the pending-token confirmation page
-  redirects into the owner's account, shows the expected server and completes
-  verification through the real form. The same scenario reads the resulting
-  server audit event. (`e2e/tests/server-verification.spec.ts` → "pending
-  verification redirects into the owner's account and completes")
-- [ ] **Implemented; live-unverified:** invalid tokens return not found;
-  missing-CSRF and cross-account completion attempts are refused without
-  changing the owner's verification state.
-  (`e2e/tests/server-verification.spec.ts` → "invalid verification token is not
-  found", "verification without CSRF is refused and stays pending", and
-  "another account cannot complete the owner's verification")
+- [x] The pending-token confirmation page redirects into the owner's account,
+  shows the expected server and completes verification through the real form.
+  The same scenario reads the resulting server audit event.
+  (`e2e/tests/server-verification.spec.ts` → "pending verification redirects
+  into the owner's account and completes")
+- [x] Invalid tokens return not found; missing-CSRF and cross-account
+  completion attempts are refused without changing the owner's verification
+  state. (`e2e/tests/server-verification.spec.ts` → "invalid verification
+  token is not found", "verification without CSRF is refused and stays
+  pending", and "another account cannot complete the owner's verification")
 - [ ] Add a new server through precheck — full setup (scores + review schedule)
   is done in one API call. **Deferred:** this needs a disposable routable
   address and controlled NTP checks; the clean add form alone doesn't cover it.
@@ -339,22 +338,22 @@ site remains — don't go looking for it.
 - [ ] Acquire a verification challenge through the external NTP verification
   infrastructure. **Deferred:** the automated confirmation scenario starts
   with a pending token and doesn't claim challenge acquisition.
-- [ ] **Implemented; live-unverified:** expanded and compressed IPv6 forms
+- [x] Expanded and compressed IPv6 forms
   resolve the same server, and the scores route redirects to the canonical
   address. (`e2e/tests/server-scores-context.spec.ts` → "IPv6 scores normalize
   to the canonical fixture address")
-- [ ] **Implemented; live-unverified:** staff opening a server while another
+- [x] Staff opening a server while another
   account is active gets an edit request and form targeted at the server's
   account. (`e2e/tests/server-scores-context.spec.ts` → "staff scores edit
   targets the server's account from another active account")
-- [ ] **Implemented; live-unverified:** owner, unrelated-account and public
+- [x] Owner, unrelated-account and public
   score pages omit staff controls; unrelated and public pages also omit the
   private account's email, token, display name and public URL.
   (`e2e/tests/server-scores-context.spec.ts` → "owner scores omit staff
   controls", "unrelated scores omit private account details and staff
   controls", and "public scores omit private account details and staff
   controls")
-- [ ] **Implemented; live-unverified:** permission-aware `GetServer` returns
+- [x] Permission-aware `GetServer` returns
   private account fields to the owner and staff, omits the account object for
   unrelated and unauthenticated reads, and denies edit-required unrelated and
   unauthenticated reads. (`e2e/tests/server-scores-context.spec.ts` →
@@ -372,30 +371,30 @@ site remains — don't go looking for it.
 > cancel now pass auth, surface errors, and redirect on success so the page
 > re-fetches state via CAPI.
 
-- [ ] **Implemented; live-unverified:** scheduling the date offered by the UI
+- [x] Scheduling the date offered by the UI
   redirects and a fresh read shows that date, the cancel control and no picker.
   (`e2e/tests/server-deletion.spec.ts` → "scheduling deletion persists the
   selected date")
-- [ ] **Implemented; live-unverified:** an independent fixture that starts
+- [x] An independent fixture that starts
   scheduled can be cancelled; a fresh read shows an empty deletion date and
   the picker. (`e2e/tests/server-deletion.spec.ts` → "cancelling deletion
   clears the scheduled date")
-- [ ] **Implemented; live-unverified:** an authenticated, valid-CSRF schedule
+- [x] An authenticated, valid-CSRF schedule
   with `2099-1-01` renders the API's exact date-format error in the destructive
   alert and leaves state unchanged. (`e2e/tests/server-deletion.spec.ts` → "API
   date validation is shown on the deletion picker")
 - [ ] Render an arbitrary downstream cancellation failure with otherwise-valid
   prerequisites. **Deferred:** permission denial is covered, but controlled
   downstream failure needs a narrowly scoped failure surface.
-- [ ] **Implemented; live-unverified:** cancellation with two active unverified
+- [x] Cancellation with two active unverified
   servers shows "Please verify active servers in the account first." and
   preserves the scheduled date. (`e2e/tests/server-deletion.spec.ts` →
   "cancellation is denied with two active unverified servers")
-- [ ] **Implemented; live-unverified:** missing CSRF returns 403 and a
+- [x] Missing CSRF returns 403 and a
   valid-CSRF cross-account schedule returns 404; both preserve owner state.
   (`e2e/tests/server-deletion.spec.ts` → "deletion without CSRF is refused
   without mutation" and "another account cannot schedule the owner's server")
-- [ ] **Implemented; live-unverified:** successful schedule and cancellation
+- [x] Successful schedule and cancellation
   correlate the observed audit record to actor, account and server in the two
   success scenarios above. Observing the record doesn't prove transactional
   atomicity. `DeleteServer` still performs its mutation and best-effort audit
@@ -409,21 +408,21 @@ site remains — don't go looking for it.
 > ConnectRPC `connect_code` instead of old REST status codes, and the
 > success path reuses the API response's server data instead of re-fetching.
 
-- [ ] **Implemented; live-unverified:** increasing a verified server through the
+- [x] Increasing a verified server through the
   HTMX select sends `HX-Request`, replaces the server fragment without document
   navigation, and persists the selected speed. (`e2e/tests/server-netspeed.spec.ts`
   → "verified netspeed updates replace the HTMX fragment without navigation")
-- [ ] **Implemented; live-unverified:** increasing an unverified server shows
+- [x] Increasing an unverified server shows
   "Please verify your server before increasing the netspeed" inline and keeps
   its effective speed. (`e2e/tests/server-netspeed.spec.ts` → "unverified
   netspeed increase shows the verification error and preserves speed")
-- [ ] **Implemented; live-unverified:** a nonnumeric value with valid CSRF
+- [x] A nonnumeric value with valid CSRF
   returns 400 and doesn't mutate the server. (`e2e/tests/server-netspeed.spec.ts`
   → "nonnumeric netspeed is rejected without mutation")
-- [ ] **Implemented; live-unverified:** a numeric value without CSRF returns
+- [x] A numeric value without CSRF returns
   403 and doesn't mutate the server. (`e2e/tests/server-netspeed.spec.ts` →
   "netspeed without CSRF is rejected without mutation")
-- [ ] **Implemented; live-unverified:** a valid non-HTMX update redirects to
+- [x] A valid non-HTMX update redirects to
   `/manage/servers` and persists on a fresh read. (`e2e/tests/server-netspeed.spec.ts`
   → "non-HTMX netspeed update redirects and persists")
 

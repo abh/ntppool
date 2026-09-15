@@ -62,12 +62,52 @@ NTP_API_CLI=../../go/ntp/api/api-e2e --config ../../go/ntp/api/database.yaml
   binary. The child inherits the environment, so a local binary can get
   `deployment_mode` and `DATABASE_URI` from `e2e/.env`.
 - `api e2e session` only accepts emails at `example.com`, `example.net`,
-  `example.org` and `ntppool.test`, whether the user is new or existing. It
-  creates a new user; an existing email fails unless the request sets
-  `existing_user` (`opts.existingUser` in `loginAs`). Use `uniqueTestEmail()`
-  for new users.
+  `example.org` and `ntppool.test`, whether the user is new or existing.
+  It creates a new user named with the run's tag (see "Runs and cleanup");
+  an existing email fails unless the request sets `existing_user`
+  (`opts.existingUser` in `loginAs`), which only works for a user the same
+  run created. Use `uniqueTestEmail()` for new users.
 - The login preflight in global setup catches a CLI pointed at a different
   database than the site under test, because the minted session won't log in.
+
+## Runs and cleanup
+
+Global setup generates a run ID, prints `e2e run <id>` and sets
+`E2E_RUN_ID`; it refuses to start if `E2E_RUN_ID` is already set. Every user
+`api e2e session` and `api e2e fixture create` create for the run is named
+`E2E run <id>`.
+
+Global teardown runs `api e2e run finish` for that ID. In one transaction the
+API schedules the run's users for deletion through the normal user deletion
+task (they're purged 7 days later) and deletes their sessions, then teardown
+prints `flagged_users`, `already_pending` and `deleted_sessions`. Teardown
+also runs after a failed global setup and after the first Ctrl-C. If it fails,
+the run fails.
+
+Trace zips in `test-results/` and `playwright-report/` hold `npuid` session
+cookies. Those sessions stop working when the run finishes.
+
+If teardown never ran (the process was killed), finish the run by hand with
+the printed ID. Finishing a run twice is harmless:
+
+```sh
+node --input-type=module - "<run id>" <<'NODE'
+import "dotenv/config";
+import { runApiCli } from "./lib/apicli.ts";
+
+const runId = process.argv[2];
+if (!runId) throw new Error("missing run ID");
+const result = await runApiCli(
+  "e2e run finish",
+  ["e2e", "run", "finish"],
+  { run_id: runId },
+  runId,
+  process.cwd(),
+);
+if (result.run_id !== runId) throw new Error("run finish returned a different run ID");
+console.log(result);
+NODE
+```
 
 ## Fixture deployment
 
@@ -238,10 +278,10 @@ npx playwright test --project=manage --reporter=list > test-logs/run-1.log 2>&1
 `lib/auth.ts`:
 
 - `mintSession(email, opts?)` — runs `api e2e session` through `runApiCli`
-  (`lib/apicli.ts`) with `{ email, name, existing_user, grant_staff,
+  (`lib/apicli.ts`) with `{ email, run_id, existing_user, grant_staff,
   grant_vendor_admin, grant_monitor_admin }` on stdin and returns
   `session_token`. `opts.existingUser` mints another session for a user an
-  earlier mint created, for example to log back in after logout.
+  earlier mint in the same run created, for example to log back in after logout.
 - `loginAs(context, email, opts?)` — mints a session and sets the `npuid`
   cookie. The cookie attributes mirror the Perl side
   (`lib/NTPPool/Control.pm` and `lib/NTPPool/Control/Login.pm`): value

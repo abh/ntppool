@@ -9,5 +9,5 @@
     "skipLibCheck": true,
     "types": ["node"]
   },
-  "include": ["lib/**/*.ts", "tests/**/*.ts", "playwright.config.ts", "global-setup.ts"]
+  "include": ["lib/**/*.ts", "tests/**/*.ts", "playwright.config.ts", "global-setup.ts", "global-teardown.ts"]
 }

@@ -11,8 +11,6 @@ import { bust } from "../lib/helpers";
 import { expect, test } from "../lib/fixtures";
 import { getAccountAuditLogs, getServer } from "../lib/servers";
 
-test.use({ trace: "off" });
-
 const REDACTED_VERIFICATION_PATH = "/manage/server/verify/redacted";
 
 function verificationPath(token: string, accountToken?: string): string {

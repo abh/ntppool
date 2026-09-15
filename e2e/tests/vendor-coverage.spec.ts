@@ -40,9 +40,6 @@ import {
 // admin steps fail, rather than skip, when a minted vendor admin can't reach
 // /manage/vendor/admin.
 
-// Traces would hold the fixture's and the vendor admin's session cookies.
-test.use({ trace: "off" });
-
 // A fixture create, an admin mint and many page loads don't fit in 30 s.
 test.describe.configure({ timeout: 90_000 });
 
