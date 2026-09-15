@@ -76,11 +76,13 @@ site remains — don't go looking for it.
 
 ## 3. Staff-targeted user & account deletion
 
-- [ ] As **staff**, open another account's team page (`/manage/account/team` with account context).
-- [ ] Delete/schedule deletion for another **user** via `u=` — targets the correct user, not yourself.
-- [ ] Schedule another **account's** deletion as staff — works and is scoped to that account.
-- [ ] Confirm a non-staff user **cannot** target other users/accounts (only their own).
-- [ ] `delete_scheduled` / `user_deletion_scheduled` page shows correct target + date.
+> Covered end-to-end by `e2e/tests/staff-deletion.spec.ts`.
+
+- [x] As **staff**, open another account's team page (`/manage/account/team` with account context). (`e2e/tests/staff-deletion.spec.ts` → "staff can open another account's team page and see the target user")
+- [x] Delete/schedule deletion for another **user** via `u=` — targets the correct user, not yourself. (`e2e/tests/staff-deletion.spec.ts` → "staff schedules deletion of another USER, targeting that user (not self)")
+- [x] Schedule another **account's** deletion as staff — works and is scoped to that account. (`e2e/tests/staff-deletion.spec.ts` → "staff schedules another ACCOUNT's deletion, scoped to that account")
+- [x] Confirm a non-staff user **cannot** target other users/accounts (only their own). (`e2e/tests/staff-deletion.spec.ts` → "non-staff user cannot target another user or account")
+- [x] `delete_scheduled` / `user_deletion_scheduled` page shows correct target + date. (`e2e/tests/staff-deletion.spec.ts` → "staff schedules deletion of another USER, targeting that user (not self)" and "staff schedules another ACCOUNT's deletion, scoped to that account")
 
 ### 3a. Scheduled deletion actually completes (issue #40)
 
@@ -146,9 +148,9 @@ site remains — don't go looking for it.
 - [x] Remove a second member from `/manage/account/team` — they lose access to the account, and the team page rendered right after the removal (no reload needed) no longer lists them. (`e2e/tests/account-team.spec.ts` → "removing a second member drops them from the team and notifies them")
 - [ ] The removed user gets the `account_user_removed` email, CC'd to the remaining members (check dev mail) — not observable on the dev site (devel mode logs instead of sending).
 - [x] The **Remove from team** button is absent on a sole-member account (`e2e/tests/account-team.spec.ts` → "a sole-member account shows no Remove control"), and absent for your own row as a **non-staff** member of a 2-member account (`e2e/tests/account-team.spec.ts` → "a member cannot remove themselves from a multi-member account").
-- [ ] As **staff**, clicking **Remove from team** on your own row shows "you cannot remove yourself from an account" — not a generic "please try again".
+- [x] As **staff**, clicking **Remove from team** on your own row shows "you cannot remove yourself from an account" — not a generic "please try again". (`e2e/tests/account-team.spec.ts` → "staff clicking Remove on their own row is refused with the self-removal message")
 - [x] A hand-crafted POST removing yourself as a **non-staff** user shows that message (it used to silently no-op with nothing on screen). (`e2e/tests/account-team.spec.ts` → "a member cannot remove themselves from a multi-member account")
-- [ ] Staff cannot remove the **last** member of an account — "cannot remove the last user from an account" renders on the page.
+- [x] Staff cannot remove the **last** member of an account — "cannot remove the last user from an account" renders on the page. (`e2e/tests/account-team.spec.ts` → "staff cannot remove the last member of an account")
 - [ ] A forced API failure on removal shows the API's message plus a Trace ID (`team.html` now processes `tpl/common/error_alert.html`; before this the `error` param was set but never rendered).
 
 ### 4c. Personal data download requests (issue #15)
