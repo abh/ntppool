@@ -5,6 +5,7 @@ import { bust, errorAlerts, expectCleanPage, expectNoErrorBleed } from "../lib/h
 import {
   approveZone,
   createNewZone,
+  currentPlanCard,
   expectSubmitRefused,
   expectSubmitted,
   freshZoneData,
@@ -120,10 +121,7 @@ test("a covered vendor gets a plain submit and stays off the open-source path", 
   await expectCleanPage(page, bust("/manage/vendor"));
   const zoneLink = page.locator(`a[href*="id=${idToken}"]`);
   await expect(page.locator("p").filter({ has: zoneLink }).locator("i"), "a covered Pending zone").toHaveText("Processing");
-  await expect(page.getByRole("heading", { name: "Current plan" })).toBeVisible();
-  // billing.html: one <div class="col"> per live subscription, with the plan
-  // name in <b> and the limits in <ul class="product-details">.
-  const plan = page.locator("div.col").filter({ has: page.locator(".product-details") });
+  const plan = await currentPlanCard(page);
   await expect(plan.locator("b")).toHaveText("E2E fixture");
   await expect(plan.locator(".product-details li")).toHaveText(["Up to 1 DNS zones", "Up to 10,000 client devices"]);
 

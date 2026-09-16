@@ -19,6 +19,7 @@ export default async function globalTeardown() {
   delete process.env.E2E_RUN_ID;
   console.log(
     `e2e run ${id} finished: flagged_users=${run.flaggedUsers} ` +
-      `already_pending=${run.alreadyPending} deleted_sessions=${run.deletedSessions}`,
+      `already_pending=${run.alreadyPending} deleted_sessions=${run.deletedSessions} ` +
+      `canceled_subscriptions=${run.canceledSubscriptions} reset_zones=${run.resetZones}`,
   );
 }

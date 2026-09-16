@@ -23,7 +23,6 @@ use NP::CAPI::Subscription qw(
     get_account_subscriptions
     get_account_subscription_status
     update_account_stripe_customer
-    create_or_update_subscription
 );
 use JSON::XS ();
 
@@ -233,15 +232,18 @@ sub render_zone {
       : undef;
     my $sub_data = ($sub_status && !$sub_status->{error}) ? $sub_status->{data} : {};
 
-    # $limits_ok drives need_subscription (the upgrade path) only. It is not a
-    # coverage signal: the API leaves limits_exceeded false for an account with
-    # no subscription at all, so it is true for uncovered vendors too.
+    # $limits_ok drives need_subscription, which hides the zone detail and the
+    # submit control. It stays keyed off limits_exceeded alone: an uncovered
+    # vendor must keep reaching the open-source form, which sits in the ELSE of
+    # that submit control (show.html, _opensource.html). The product picker has
+    # its own gate below.
     my $limits_ok =
       ($account_token && !$sub_data->{limits_exceeded}) ? 1 : 0;    # fail closed
 
-    # Coverage is has_live_subscription, matching render_zones. The submit
-    # control routes on this, so conflating it with $limits_ok would offer
-    # uncovered vendors a plain production submit (#39).
+    # have_subscription is has_live_subscription alone, matching render_zones.
+    # The submit control and the Pending wording route on it, so it stays
+    # separate from $limits_ok above, which additionally requires the zone to
+    # fit inside the plan (#39).
     $self->tpl_param('have_subscription',
         ($account_token && $sub_data->{has_live_subscription}) ? 1 : 0);
 
@@ -279,6 +281,16 @@ sub render_zone {
             $self->tpl_param('products_by_group',  $groups);
             $self->tpl_param('product_group_list', $group_list);
         }
+
+        # show_products gates the plan picker on its own. limits_exceeded is
+        # false for an account with no subscription at all (AccountCoverage
+        # returns early on !HasLive), so $limits_ok alone left an uncovered
+        # vendor with no way to buy a plan. An uncovered vendor now gets both
+        # the picker and the open-source form; @subs decides which of the two
+        # branches inside the picker block renders.
+        $self->tpl_param('show_products' => 1)
+          if $account_token
+          && (!$sub_data->{has_live_subscription} || $sub_data->{limits_exceeded});
 
         unless ($limits_ok) {
             $self->tpl_param('need_subscription' => 1);
@@ -559,63 +571,30 @@ sub _edit_zone {
 sub _update_subscription {
     my ($self, $account, $session_id) = @_;
 
-    warn "looking up session $session_id";
-    my $session = NP::Stripe::get_session($session_id);
-    warn "SESSION: ", Data::Dump::pp(\$session);
+    my $result = NP::Stripe::complete_checkout($session_id);
 
-    my $customer_id = $session->{customer_id};
-    my $subscription_id =
-      $session->{subscription} && $session->{subscription}->{id};
-
-    warn "customer_id:     $customer_id";
-    warn "subscription_id: $subscription_id";
-
-    if ($subscription_id) {
-
-        # Handle max_devices fallback from max_clients
-        my $max_devices =
-             $session->{subscription}->{max_devices}
-          || $session->{subscription}->{max_clients}
-          || 10000000;
-
-        my $result = create_or_update_subscription(
-            $self->api_auth_params,
-            account                => $account->{id_token},
-            stripe_subscription_id => $subscription_id,
-            stripe_customer_id     => $customer_id,
-            status                 => $session->{subscription}->{status},
-            name                   => $session->{subscription}->{name}      || '',
-            max_zones              => $session->{subscription}->{max_zones} || 1,
-            max_devices            => $max_devices,
-            created_on_unix        => time(),
-        );
-
-        if ($result->{error}) {
-            warn "Failed to create/update subscription: $result->{error}";
-            warn "Trace ID: $result->{trace_id}" if $result->{trace_id};
-            return 500, "Failed to process subscription";
-        }
-
-        my $subscription = $result->{data}{subscription};
-        if ($subscription && $subscription->{live_subscription}) {
-            warn "got live subscription";
-            return $self->render_submit();
-        }
-        else {
-            warn "sub status: ", ($subscription ? $subscription->{status} : 'unknown');
-        }
+    if ($result->{error}) {
+        warn "Failed to complete checkout: $result->{error}";
+        return 500, "Failed to process subscription";
     }
 
-    # Also update stripe_customer_id if needed
-    if ($customer_id && !$account->{stripe_customer_id}) {
-        my $update_result = update_account_stripe_customer(
-            $self->api_auth_params,
-            account            => $account->{id_token},
-            stripe_customer_id => $customer_id,
-        );
-        if ($update_result->{error}) {
-            warn "Failed to update stripe_customer_id: $update_result->{error}";
-        }
+    my $subscription = $result->{subscription};
+
+    if ($subscription && $subscription->{live_subscription}) {
+
+        # Display guard, not enforcement: stripe-gw has already saved the
+        # subscription to the account Stripe named, so a session_id belonging
+        # to someone else cannot land on this account's rows. This only decides
+        # whether to render this account's zone as submitted, and fails closed
+        # so a missing account_token never compares equal.
+        my $token = $result->{account_token} // '';
+        return $self->render_submit()
+          if $token && $token eq ($account->{id_token} // '');
+        warn
+          "checkout session $session_id belongs to account $token, not $account->{id_token}";
+    }
+    else {
+        warn "sub status: ", ($subscription ? $subscription->{status} : 'none');
     }
 
     return 200, "finished processing session";
@@ -626,6 +605,15 @@ sub render_subscription {
 
     my $account = $self->current_account;
     return FORBIDDEN unless $account && $account->{permissions}{can_edit};
+
+    $self->tpl_param('account' => $account);
+
+    if (my $session_id = $self->req_param('session_id')) {
+
+        # we are returning from the checkout session; render_submit fetches the
+        # zone itself, so don't pay for it here.
+        return $self->_update_subscription($account, $session_id);
+    }
 
     my $id = $self->_get_id;
     my $zone;
@@ -649,14 +637,6 @@ sub render_subscription {
         else {
             $zone = $result->{data}{zone};
         }
-    }
-
-    $self->tpl_param('account' => $account);
-
-    if (my $session_id = $self->req_param('session_id')) {
-
-        # we are returning from the checkout session
-        return $self->_update_subscription($account, $session_id);
     }
 
     my $return_url = $self->manage_url(
@@ -694,8 +674,9 @@ sub render_subscription {
         {
             my ($plan) = grep { $_->{ID} eq $price_id } @{$product->{Plans}};
 
-            # Use current_account instead of zone->account
-            my $account = $self->current_account;
+            # A frozen account (deletion_on set) never reaches here: the
+            # can_edit gate at the top of this sub is the API's
+            # !deletion_on (AccountWritable), so checkout is already refused.
 
             # TODO:
             #  - take parameters to create session for the right price
@@ -717,28 +698,42 @@ sub render_subscription {
                     account_url =>
                       $self->manage_url('/manage/vendor', {a => $account->{id_token}}),
                 );
-                if ($customer && $customer->{id}) {
-                    my $update_result = update_account_stripe_customer(
-                        $self->api_auth_params,
-                        account            => $account->{id_token},
-                        stripe_customer_id => $customer->{id},
-                    );
-                    if ($update_result->{error}) {
-                        warn
-                          "Failed to update stripe_customer_id: $update_result->{error}";
-                    }
-                    else {
-                        # Update local copy for immediate use
-                        $account->{stripe_customer_id} = $customer->{id};
-                    }
+
+                # Without a saved customer id Stripe would mint a second,
+                # unlinked customer and checkout/complete would fail after the
+                # vendor has paid, so both failures stop here instead.
+                unless ($customer && $customer->{id}) {
+                    warn "Failed to create stripe customer: ",
+                      (($customer && $customer->{error}) || 'no id returned');
+                    return OK,
+                      $json->encode(
+                          {error => "Could not start checkout; please try again."});
                 }
+
+                my $update_result = update_account_stripe_customer(
+                    $self->api_auth_params,
+                    account            => $account->{id_token},
+                    stripe_customer_id => $customer->{id},
+                );
+                if ($update_result->{error}) {
+                    warn "Failed to update stripe_customer_id: "
+                      . $update_result->{error}
+                      . " (trace: "
+                      . ($update_result->{trace_id} || 'none') . ")";
+                    return OK,
+                      $json->encode(
+                          {error => "Could not start checkout; please try again."});
+                }
+
+                # Update local copy for immediate use
+                $account->{stripe_customer_id} = $customer->{id};
             }
 
             my %args = (
                 price_id => $price_id,
                 quantity => $quantity,
 
-                environment => "devel",
+                environment => $self->deployment_mode,
                 account_id  => $account->{id_token},
 
                 customer_id => $account->{stripe_customer_id},

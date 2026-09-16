@@ -20,6 +20,8 @@ export interface FinishedRun {
   flaggedUsers: number;
   alreadyPending: number;
   deletedSessions: number;
+  canceledSubscriptions: number;
+  resetZones: number;
 }
 
 /** Run `api e2e run finish` for a run and return its counts. */
@@ -35,5 +37,7 @@ export async function finishRun(id: string): Promise<FinishedRun> {
     flaggedUsers: intField(raw.flagged_users, "run finish flagged_users"),
     alreadyPending: intField(raw.already_pending, "run finish already_pending"),
     deletedSessions: intField(raw.deleted_sessions, "run finish deleted_sessions"),
+    canceledSubscriptions: intField(raw.canceled_subscriptions, "run finish canceled_subscriptions"),
+    resetZones: intField(raw.reset_zones, "run finish reset_zones"),
   };
 }

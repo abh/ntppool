@@ -74,9 +74,9 @@ sub create_session {
     return $r;
 }
 
-sub get_session {
+sub complete_checkout {
     my $sid = shift;
-    my $r   = _gw_get_api('checkout/session_data', {session_id => $sid});
+    my $r   = _gw_post_api('checkout/complete', {session_id => $sid});
     return $r;
 }
 

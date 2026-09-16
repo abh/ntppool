@@ -2192,9 +2192,12 @@ Hashref with structure:
  User-friendly messages suitable for UI display
             details => {
                 active_servers_count => ...,  # int - active_servers_count is the number of servers not scheduled for deletion
-                vendor_zones_count => ...,  # int - vendor_zones_count is the number of vendor zones (any status)
+                vendor_zones_count => ...,  # int - vendor_zones_count is the number of Approved vendor zones. Zones in any
+ other status are deleted with the account.
                 active_monitors_count => ...,  # int - active_monitors_count is the number of monitors with status != 'deleted'
                 has_other_users => ...,  # bool - has_other_users indicates if account has other non-deleted users
+                active_subscriptions_count => ...,  # int - active_subscriptions_count is the number of subscriptions whose status is
+ not canceled, incomplete_expired or ended.
             },  # hashref (DeletionBlockDetails) - details provides structured information about deletion blockers
         },
         error        => undef,       # Error message (if any)
@@ -2296,9 +2299,12 @@ Hashref with structure:
             blockers => [...]  # arrayref[string],  # arrayref[string] - Human-readable blockers when scheduled=false.
             details => {
                 active_servers_count => ...,  # int - active_servers_count is the number of servers not scheduled for deletion
-                vendor_zones_count => ...,  # int - vendor_zones_count is the number of vendor zones (any status)
+                vendor_zones_count => ...,  # int - vendor_zones_count is the number of Approved vendor zones. Zones in any
+ other status are deleted with the account.
                 active_monitors_count => ...,  # int - active_monitors_count is the number of monitors with status != 'deleted'
                 has_other_users => ...,  # bool - has_other_users indicates if account has other non-deleted users
+                active_subscriptions_count => ...,  # int - active_subscriptions_count is the number of subscriptions whose status is
+ not canceled, incomplete_expired or ended.
             },  # hashref (DeletionBlockDetails) - Structured details for UI (reuse DeletionBlockDetails).
             orphaned_user_emails => [...]  # arrayref[string],  # arrayref[string] - Emails of members who would be orphaned by deletion.
             deletion_on => ...,  # string - RFC3339 deletion_on timestamp when scheduled=true.
@@ -2481,8 +2487,11 @@ Hashref with structure:
                 account_name => ...,  # string
                 user_is_sole_owner => ...,  # bool - True if user is the only non-deleted user on this account
                 active_servers_count => ...,  # int - Blocker details (only populated if user_is_sole_owner = true)
-                vendor_zones_count => ...,  # int
+                vendor_zones_count => ...,  # int - vendor_zones_count is the number of Approved vendor zones. Zones in any
+ other status are deleted with the account.
                 active_monitors_count => ...,  # int
+                active_subscriptions_count => ...,  # int - active_subscriptions_count counts subscriptions that are not canceled,
+ incomplete_expired or ended.
             },
             # ... more items
         ],  # arrayref[hashref (AccountDeletionStatus)] - affected_accounts lists all accounts where user is sole owner

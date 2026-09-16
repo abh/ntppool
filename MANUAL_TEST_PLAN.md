@@ -312,8 +312,13 @@ site remains — don't go looking for it.
 ## 7. Subscriptions / Stripe (CAPI + SubscriptionService)
 
 - [ ] Subscription summary appears in session/account context after login.
-- [ ] Subscription management screens read/write via CAPI (create/update subscription).
-- [ ] Stripe-gateway service path works end to end (checkout → subscription recorded).
+- [ ] Subscription management screens read through CAPI
+  (`get_account_subscriptions`). Perl no longer writes subscriptions — stripe-gw
+  owns that path, checked by the spec below.
+- [x] Stripe-gateway service path works end to end (checkout → subscription
+  recorded). A real sandbox checkout, the browser write path and the webhook
+  path, through cancellation (`e2e/tests/stripe-checkout.spec.ts` → "a vendor
+  buys a plan and the webhook reports its cancellation").
 
 ## 8. Server verification & management
 

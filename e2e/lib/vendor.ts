@@ -1,4 +1,4 @@
-import { expect, type Browser, type BrowserContext, type Page } from "@playwright/test";
+import { expect, type Browser, type BrowserContext, type Locator, type Page } from "@playwright/test";
 import { connectRpc, loginAs, RpcError } from "./auth";
 import { bust, errorAlerts, expectCleanPage, expectNoErrorBleed } from "./helpers";
 import { idField, record, stringField } from "./json";
@@ -129,6 +129,17 @@ export async function isVendorAdmin(page: Page): Promise<boolean> {
 export async function expectSubmitted(page: Page, zoneName: string): Promise<void> {
   await expect(page.getByRole("heading", { name: "Vendor Zone Application Submitted" })).toBeVisible();
   await expect(page.locator(".block tt")).toHaveText(zoneName);
+}
+
+/**
+ * The "Current plan" card on /manage/vendor, once the heading is up. billing.html
+ * renders one <div class="col"> per live subscription, the plan name in <b> and
+ * the limits in <ul class="product-details">; vendor.html includes it only when
+ * the account has a subscription, so a match proves the section rendered.
+ */
+export async function currentPlanCard(page: Page): Promise<Locator> {
+  await expect(page.getByRole("heading", { name: "Current plan" })).toBeVisible();
+  return page.locator("div.col").filter({ has: page.locator(".product-details") });
 }
 
 // Create + submit a zone as the owner so it lands in the Pending state, ready for
