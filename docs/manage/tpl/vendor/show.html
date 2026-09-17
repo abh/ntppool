@@ -135,6 +135,20 @@
     <div class="col-md-12">
       [% IF need_upgrade %]
         <div>
+        [%# vz.account_token must be truthy as well as equal: TT's == is eq, so two missing tokens would otherwise match and offer a button the upgrade route refuses. %]
+        [% IF coverage.upgrade && vz.account_token && vz.account_token == combust.current_account.id_token && !upgrade_refused %]
+        <p>
+            <br>
+            Your plan covers [% coverage.max_devices | format_number %] devices; this zone brings the account to [% coverage.required_devices | format_number %].
+        </p>
+        <form method="post" class="form-inline btn-inline" action="/manage/vendor/plan/upgrade">
+            <input type="hidden" name="id" value="[% vz.id_token %]" />
+            <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
+            <input type="hidden" name="a" value="[% combust.current_account.id_token %]">
+            <input type="submit" class="btn btn-primary"
+                value="Update plan to [% coverage.upgrade.quantity | format_number %] devices &rarr;" />
+        </form>
+        [% ELSE %]
         <p>
             <br>
             The current subscription plan doesn't support adding the new DNS zone.
@@ -143,8 +157,7 @@
             <a href="mailto:[% "vendors" | email %]?subject=NTP Pool DNS zone [% vz.zone_name | html %] - subscription change"
                 >Email to change the plan or with other questions</a>.
         </p>
-            <!-- waiting for subscription_update_confirm to be available
-                https://stripe.com/docs/customer-management/portal-deep-links -->
+        [% END %]
         </div>
       [% ELSE %]
         [% PROCESS tpl/vendor/products.html %]

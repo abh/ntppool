@@ -293,6 +293,7 @@ site remains — don't go looking for it.
 - [x] **Uncovered** vendor **with** an open-source claim + justification: submit still succeeds → Pending (open-source path is allowed through the gate). (`e2e/tests/vendor.spec.ts` → "open-source submit retains justification and edits without error")
 - [x] **Uncovered** vendor **without** an open-source claim: submit is rejected with `a subscription is required, or apply as open source` (reachable via the resubmit path or a direct/admin submit, since the normal form hides the plain-submit button for uncovered vendors). (`e2e/tests/vendor.spec.ts` → "an uncovered plain submit is refused by the site and by the API")
 - [x] **Over-limit** vendor (has a subscription but exceeds zone/device limits), no open-source claim: submit is rejected with the same message (a distinct OVER_LIMIT wording is a Phase 2 decision, not a bug). (`e2e/tests/vendor-coverage.spec.ts` → "a covered vendor over the device limit is refused by the site and by the API" and "a covered vendor at the zone limit is refused by the site and by the API")
+- [x] **Over-limit on a tiered plan** (device overage, one live tiered subscription with a known quantity): the zone page offers "Update plan to N devices" for the devices the account needs instead of the email text, and a refused portal session falls back to the email text. The offer is only for the zone's own account: a vendor admin on their own account gets the email text and a 403 from `/manage/vendor/plan/upgrade`, and gets the button after switching into the zone's account with `a=`. A flat plan or a zone overage gets no offer. (`e2e/tests/vendor-coverage.spec.ts` → "a covered vendor on a tiered plan over the device limit is offered an upgrade"; the no-offer cases in the two over-limit tests above)
 - [x] `vendor_admin` submitting on another account's behalf is gated on **that account's** coverage, not the admin's own. (`e2e/tests/vendor-coverage.spec.ts` → "a vendor admin submits for a covered account, and the owner resubmits after a rejection")
 
 ## 6. DNS zone generation (Go API)
@@ -319,6 +320,12 @@ site remains — don't go looking for it.
   recorded). A real sandbox checkout, the browser write path and the webhook
   path, through cancellation (`e2e/tests/stripe-checkout.spec.ts` → "a vendor
   buys a plan and the webhook reports its cancellation").
+- [x] A tiered plan is bought for the devices the account needs and upgraded
+  through the billing portal: Production for 5,000 devices stores 5,000, a
+  zone that brings the account to 10,000 gets the upgrade offer, the portal
+  confirms it, and the return syncs the subscription so the zone submits as
+  covered (`e2e/tests/stripe-checkout.spec.ts` → "a vendor upgrades a tiered
+  plan through the billing portal").
 
 ## 8. Server verification & management
 

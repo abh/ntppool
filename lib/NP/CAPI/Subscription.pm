@@ -146,6 +146,9 @@ B<Arguments:>
         name => $value,       # string
         max_zones => $value,       # int
         max_devices => $value,       # int
+        quantity => $value,       # int - quantity is the subscription item's quantity. It and tiered are
+ required whenever name, max_zones or max_devices is sent.
+        tiered => $value,       # bool - tiered is whether the item's price has tiers.
     );
 
 B<Returns:>
@@ -237,6 +240,8 @@ sub process_stripe_webhook {
     $request{'name'} = delete $args{'name'} if exists $args{'name'};
     $request{'max_zones'} = delete $args{'max_zones'} if exists $args{'max_zones'};
     $request{'max_devices'} = delete $args{'max_devices'} if exists $args{'max_devices'};
+    $request{'quantity'} = delete $args{'quantity'} if exists $args{'quantity'};
+    $request{'tiered'} = delete $args{'tiered'} if exists $args{'tiered'};
 
     return connect_rpc(
         service     => 'ntppool.subscription.v1.SubscriptionService',
@@ -343,10 +348,65 @@ Hashref with structure:
             max_devices => ...,  # int
             max_zones => ...,  # int
             submit_state => ...,  # string (enum: SubmitState)
+            required_devices => ...,  # int - required_devices is the approved devices on the account plus the
+ requested device_count: the number the device limit is checked against.
+ Set in every state.
+            upgrade => {
+                stripe_subscription_id => ...,  # string
+                quantity => ...,  # int - quantity is the new quantity: the response's required_devices.
+            },  # hashref (SubscriptionUpgrade) - upgrade is set only when the account is over its device limit (its zone
+ count fits) on exactly one live subscription, and that subscription is
+ tiered with a known quantity.
         },
         error        => undef,       # Error message (if any)
         trace_id     => "...",       # OpenTelemetry trace ID
     }
+
+B<Response Data Structure:>
+
+The C<data> field contains:
+
+=over 4
+
+=item * B<has_live_subscription> (bool)
+
+
+=item * B<limits_exceeded> (bool)
+
+
+=item * B<limits_error> (string)
+
+
+=item * B<existing_devices> (int)
+
+
+=item * B<existing_zones> (int)
+
+
+=item * B<max_devices> (int)
+
+
+=item * B<max_zones> (int)
+
+
+=item * B<submit_state> (string (enum: SubmitState))
+
+
+=item * B<required_devices> (int)
+
+required_devices is the approved devices on the account plus the
+ requested device_count: the number the device limit is checked against.
+ Set in every state.
+
+
+=item * B<upgrade> (hashref (SubscriptionUpgrade))
+
+upgrade is set only when the account is over its device limit (its zone
+ count fits) on exactly one live subscription, and that subscription is
+ tiered with a known quantity.
+
+
+=back
 
 B<ConnectRPC Error Codes:>
 

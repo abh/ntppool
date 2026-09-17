@@ -80,6 +80,18 @@ sub complete_checkout {
     return $r;
 }
 
+sub upgrade_session {
+    my %args = @_;
+    my $r    = _gw_post_api('subscription/upgrade_session', \%args);
+    return $r;
+}
+
+sub sync_subscription {
+    my %args = @_;
+    my $r    = _gw_post_api('subscription/sync', \%args);
+    return $r;
+}
+
 sub create_customer {
     my %args = @_;
     my $r    = _gw_post_api('customer/create', \%args);

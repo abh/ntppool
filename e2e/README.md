@@ -180,13 +180,15 @@ DELETE FROM server_scores
 
 A subscription seed adds one `account_subscriptions` row to the fixture
 account: status `active`, name `E2E fixture`, the requested `max_zones` and
-`max_devices`, and `stripe_subscription_id` `e2e_<attempt_id>`. The account's
-`stripe_customer_id` stays empty. The harness sends the `subscription` key
-only for a seed that has one, because an api-dev image from before the seed
-rejects unknown fields; deploy an image with the seed before running
-`vendor-coverage.spec.ts`. Neither the account nor the user deletion task
-removes subscription rows, and the row's account foreign key doesn't cascade,
-so don't combine the seed with account or user deletion flows.
+`max_devices`, optionally `quantity` and `tiered` (both or neither; the
+harness sends them only when set), and `stripe_subscription_id`
+`e2e_<attempt_id>`. The account's `stripe_customer_id` stays empty. The
+harness sends the `subscription` key only for a seed that has one, because an
+api-dev image from before the seed rejects unknown fields; deploy an image
+with the seed before running `vendor-coverage.spec.ts`. Neither the account
+nor the user deletion task removes subscription rows, and the row's account
+foreign key doesn't cascade, so don't combine the seed with account or user
+deletion flows.
 
 Cleanup uses the attempt ID recorded before create. It deletes only the
 fixture's recorded server and monitor IDs and the servers' related rows,

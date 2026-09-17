@@ -16,6 +16,25 @@ export const SUBSCRIPTION_REQUIRED = "a subscription is required, or apply as op
 /** show.html's need_upgrade text: a live subscription the zone would exceed. */
 export const UPGRADE_MESSAGE = "The current subscription plan doesn't support adding the new DNS zone.";
 
+/**
+ * show.html's upgrade offer: a device overage on the account's one tiered
+ * subscription. format_number renders thousands separators.
+ */
+export function upgradeOfferText(maxDevices: number, requiredDevices: number): string {
+  return (
+    `Your plan covers ${maxDevices.toLocaleString("en-US")} devices; ` +
+    `this zone brings the account to ${requiredDevices.toLocaleString("en-US")}.`
+  );
+}
+
+/** The upgrade offer's button, which posts to /manage/vendor/plan/upgrade. */
+export function upgradeButtonName(quantity: number): string {
+  return `Update plan to ${quantity.toLocaleString("en-US")} devices`;
+}
+
+/** Any upgrade offer button, for asserting there is none. */
+export const UPGRADE_BUTTON = /Update plan to/;
+
 /** The justification createAndSubmitPendingZone submits. */
 export const OPEN_SOURCE_JUSTIFICATION = "Open source NTP client; AGPL-3.0; https://example.com/src ; no revenue.";
 
