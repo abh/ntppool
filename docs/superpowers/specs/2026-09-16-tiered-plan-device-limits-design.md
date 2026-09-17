@@ -10,8 +10,8 @@ Repos and branches:
 - api: `~/src/go/ntp/api`, branch `main`
 - Perl: `~/src/ntppool`, branch `postgres`
 
-stripe-gw's `go.mod` still has `replace go.ntppool.org/api => ../api` until the
-api commit is pushed.
+Both Go repos are pushed as of 2026-09-16 (stripe-gw `d890222`, api `0cdd722`),
+and stripe-gw's `go.mod` pins that api commit, with no `replace`.
 
 ## Problem
 
@@ -93,6 +93,8 @@ From live Stripe and production MySQL. Production still runs the MySQL
 6. **Upgrades charge the prorated difference immediately** (`always_invoice`).
 7. **Existing rows get no special migration.** One resync at cutover brings
    them in line.
+8. **Anyone with `can_edit` on the zone's account can upgrade**, including
+   staff who switched into it.
 
 ## Design
 
@@ -155,14 +157,18 @@ isn't in production, so there is no compatibility period.
   Returned in every state.
 - `upgrade { stripe_subscription_id, quantity }`, set only when:
   - the state is `OVER_LIMIT` because of devices (the zone count fits),
-  - the account has exactly one live subscription, and
-  - that row has `tiered = true` and a non-NULL `quantity`.
+  - the account has exactly one live subscription,
+  - that row has `tiered = true` and a non-NULL `quantity`, and
+  - `required_devices` is greater than that stored `quantity`.
 
-  `quantity` is `required_devices`. With one subscription that is always an
-  increase: required devices > `max_devices` >= the quantity bought.
+  `quantity` is `required_devices`. The last condition matters only for a
+  quantity set by hand in Stripe above the table's top (bought 1,200,000 on
+  Production, stored `max_devices` 1,000,000): without it the API would offer a
+  lower quantity.
 
 Everything else that is over the limit (zone count, several live subscriptions,
-a flat plan, a row not yet resynced) gets no `upgrade` block.
+a flat plan, a row not yet resynced, a required count not above the stored
+quantity) gets no `upgrade` block.
 
 `max_devices` stays summed across live subscriptions. The other readers
 (`account/sessions.go:256`, `billing.html`) are unchanged.
@@ -179,15 +185,25 @@ keep quantity 1. `render_subscription` fetches the status for the zone's
 account to get it. A tiered checkout without a zone is refused; the picker's
 forms always send one.
 
-**Zone page, over the limit** (`show.html:136`). With an `upgrade` block:
-"Your plan covers {max_devices} devices; this zone brings the account to
-{required_devices}." and a POST button "Update plan to {quantity} devices" to
-`/manage/vendor/plan/upgrade`. Without one: today's email text.
+**Zone page, over the limit** (`show.html:136`). With an `upgrade` block, and
+the zone's `account_token` equal to `current_account`'s: "Your plan covers
+{max_devices} devices; this zone brings the account to {required_devices}." and
+a POST button "Update plan to {quantity} devices" to
+`/manage/vendor/plan/upgrade`. Otherwise: today's email text.
 
-**`/manage/vendor/plan/upgrade`** (Perl, POST, `can_edit`, CSRF token). Fetches
+**Staff.** `ValidateSession` lets staff switch into any account with `a=`, with
+`can_edit` like a member, and `manage_url` carries `a=` in zone links. So
+`current_account` is normally the zone's account for staff too, and the upgrade
+works for anyone with `can_edit` on it, staff included. The account match above
+covers a zone URL without the zone's `a=`, where `current_account` falls back
+to the viewer's own first account (the case the comment at `Vendor.pm:224`
+describes).
+
+**`/manage/vendor/plan/upgrade`** (Perl, POST, `can_edit`, CSRF token). Returns
+FORBIDDEN when the zone's `account_token` is not `current_account`'s. Fetches
 the zone and the status again and uses that response's `upgrade` block; the
-quantity never comes from the form. If the block is gone, redirect to the zone
-page. Otherwise call stripe-gw `POST /api/v1/subscription/upgrade_session` with
+quantity never comes from the form, and the Stripe customer id is
+`current_account`'s. If the block is gone, redirect to the zone page. Otherwise call stripe-gw `POST /api/v1/subscription/upgrade_session` with
 the account's `stripe_customer_id`, the subscription id, the quantity, the
 return URL (`/manage/vendor/plan/upgraded`) and the zone page URL for cancel,
 then redirect to the portal. On a refusal, show the email text.
@@ -211,6 +227,10 @@ zone page for backing out.
 customer id; stripe-gw checks the subscription belongs to that customer and runs
 `syncSubscription`, the same code the webhook uses, so the page doesn't wait on
 the webhook. Idempotent with the webhook. Perl then redirects to the zone page.
+If the sync call fails, Perl does what `_update_subscription` does when
+checkout completion fails (`Vendor.pm:571`): it warns with the error and trace
+id and returns an error response, whose message says the payment went through
+and the plan will update shortly. The webhook still corrects the row.
 
 **Stripe setup, sandbox and live.**
 
@@ -272,7 +292,9 @@ Production, at the PostgreSQL cutover:
   `upgrade_session`: one test per refusal. `sync`: refuses a customer mismatch.
 - **api, integration:** coverage returns an `upgrade` block for a device
   overage on one tiered subscription, and none for a zone overage, two live
-  subscriptions, a flat subscription or a NULL quantity. `required_devices` is
+  subscriptions, a flat subscription, a NULL quantity, or a stored quantity at
+  or above `required_devices` (quantity 1,200,000, `max_devices` 1,000,000,
+  1,100,000 required). `required_devices` is
   right in each state. `ProcessStripeWebhook` saves `quantity` and `tiered` and
   refuses limits without them.
 - **E2E, devel sandbox:** checkout, over-limit zone, upgrade button, portal
