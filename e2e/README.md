@@ -37,6 +37,10 @@ Copy `.env.example` to `.env` and fill in the values:
 - `NTP_SCORES_TEST_IP` — a real dev server IP for the public score/graph specs
   (default Google NTP). The isolated server-management specs allocate their
   own addresses and don't accept an existing server or caller-selected IP.
+- `NTP_SKIP_STRIPE_CHECKOUT` — set to any value to skip
+  `tests/stripe-checkout.spec.ts`. That spec buys a real subscription in the
+  Stripe sandbox, so it needs outbound access to `checkout.stripe.com` and a
+  devel stripe-gw running with a Stripe test key.
 
 ## Reaching the API CLI
 
@@ -80,9 +84,15 @@ Global setup generates a run ID, prints `e2e run <id>` and sets
 Global teardown runs `api e2e run finish` for that ID. In one transaction the
 API schedules the run's users for deletion through the normal user deletion
 task (they're purged 7 days later) and deletes their sessions, then teardown
-prints `flagged_users`, `already_pending` and `deleted_sessions`. Teardown
-also runs after a failed global setup and after the first Ctrl-C. If it fails,
-the run fails.
+prints `flagged_users`, `already_pending`, `deleted_sessions`,
+`canceled_subscriptions` and `reset_zones`. Teardown also runs after a failed
+global setup and after the first Ctrl-C. If it fails, the run fails.
+
+`run finish` also cleans up what a checkout leaves behind. Before it schedules
+the users it cancels the run's unfinished Stripe subscriptions through
+stripe-gw (nothing happens when there are none), and in the transaction it
+moves the run's Approved vendor zones back to Pending so account deletion can
+remove them 7 days later.
 
 Trace zips in `test-results/` and `playwright-report/` hold `npuid` session
 cookies. Those sessions stop working when the run finishes.
@@ -170,13 +180,15 @@ DELETE FROM server_scores
 
 A subscription seed adds one `account_subscriptions` row to the fixture
 account: status `active`, name `E2E fixture`, the requested `max_zones` and
-`max_devices`, and `stripe_subscription_id` `e2e_<attempt_id>`. The account's
-`stripe_customer_id` stays empty. The harness sends the `subscription` key
-only for a seed that has one, because an api-dev image from before the seed
-rejects unknown fields; deploy an image with the seed before running
-`vendor-coverage.spec.ts`. Neither the account nor the user deletion task
-removes subscription rows, and the row's account foreign key doesn't cascade,
-so don't combine the seed with account or user deletion flows.
+`max_devices`, optionally `quantity` and `tiered` (both or neither; the
+harness sends them only when set), and `stripe_subscription_id`
+`e2e_<attempt_id>`. The account's `stripe_customer_id` stays empty. The
+harness sends the `subscription` key only for a seed that has one, because an
+api-dev image from before the seed rejects unknown fields; deploy an image
+with the seed before running `vendor-coverage.spec.ts`. Neither the account
+nor the user deletion task removes subscription rows, and the row's account
+foreign key doesn't cascade, so don't combine the seed with account or user
+deletion flows.
 
 Cleanup uses the attempt ID recorded before create. It deletes only the
 fixture's recorded server and monitor IDs and the servers' related rows,

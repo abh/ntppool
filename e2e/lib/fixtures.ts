@@ -45,10 +45,16 @@ export interface MonitorFamilySeed {
 /** One logical monitor: an IPv4 row, an IPv6 row, or both sharing a TLS name. */
 export type MonitorSeed = Partial<Record<MonitorFamilyName, MonitorFamilySeed>>;
 
-/** One live subscription on the fixture account (status active). */
+/**
+ * One live subscription on the fixture account (status active). quantity and
+ * tiered are what the item bought: set both for a synced row, or neither for
+ * a row not synced since they were added.
+ */
 export interface SubscriptionSeed {
   maxZones: number;
   maxDevices: number;
+  quantity?: number;
+  tiered?: boolean;
 }
 
 export interface FixtureSeed {
@@ -77,6 +83,10 @@ export interface FixtureSubscription {
   status: "active";
   maxZones: number;
   maxDevices: number;
+  /** null when the seed left it unset. */
+  quantity: number | null;
+  /** null when the seed left it unset. */
+  tiered: boolean | null;
 }
 
 export interface Fixture {
@@ -150,7 +160,13 @@ function normalizeSubscription(seed: SubscriptionSeed | undefined): Subscription
       throw new Error(`subscription seed ${name} must be an integer of at least 1`);
     }
   }
-  return { maxZones: seed.maxZones, maxDevices: seed.maxDevices };
+  if ((seed.quantity === undefined) !== (seed.tiered === undefined)) {
+    throw new Error("subscription seed quantity and tiered go together");
+  }
+  if (seed.quantity !== undefined && (!Number.isInteger(seed.quantity) || seed.quantity < 1)) {
+    throw new Error("subscription seed quantity must be an integer of at least 1");
+  }
+  return { maxZones: seed.maxZones, maxDevices: seed.maxDevices, quantity: seed.quantity, tiered: seed.tiered };
 }
 
 function parseServer(value: unknown, index: number, want: NormalizedServer): FixtureServer {
@@ -220,12 +236,20 @@ function parseSubscription(value: unknown, attemptId: string, want: Subscription
   if (maxZones !== want.maxZones || maxDevices !== want.maxDevices) {
     throw new Error(`${label} limits mismatched`);
   }
+  // An api-dev image from before the tiered seed omits both; treat that as null.
+  const quantity = item.quantity == null ? null : intField(item.quantity, `${label} quantity`);
+  const tiered = item.tiered == null ? null : boolField(item.tiered, `${label} tiered`);
+  if (quantity !== (want.quantity ?? null) || tiered !== (want.tiered ?? null)) {
+    throw new Error(`${label} quantity or tiered mismatched`);
+  }
   return {
     subscriptionId: idField(item.subscription_id, `${label} subscription_id`),
     stripeSubscriptionId,
     status: "active",
     maxZones,
     maxDevices,
+    quantity,
+    tiered,
   };
 }
 
@@ -251,11 +275,19 @@ async function createFixture(attemptId: string, seed: FixtureSeed): Promise<Fixt
       MONITOR_FAMILIES.filter((name) => monitor[name]).map((name) => [name, { status: monitor[name] }]),
     )),
   };
-  // Only a seed with a subscription sends the key. The CLI rejects unknown
-  // fields, so specs without one keep working against an api-dev image from
-  // before the seed.
+  // Only a seed with a subscription sends the key, and only a tiered seed
+  // sends quantity and tiered. The CLI rejects unknown fields, so specs
+  // without them keep working against an older api-dev image.
   if (subscription) {
-    request.subscription = { max_zones: subscription.maxZones, max_devices: subscription.maxDevices };
+    const seeded: Record<string, unknown> = {
+      max_zones: subscription.maxZones,
+      max_devices: subscription.maxDevices,
+    };
+    if (subscription.quantity !== undefined) {
+      seeded.quantity = subscription.quantity;
+      seeded.tiered = subscription.tiered;
+    }
+    request.subscription = seeded;
   }
 
   const raw = record(await runApiCli<unknown>(

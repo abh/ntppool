@@ -3,8 +3,10 @@ import { installSession, uniqueTestEmail } from "../lib/auth";
 import { expect, test, type Fixture } from "../lib/fixtures";
 import { bust, errorAlerts, expectCleanPage, expectNoErrorBleed } from "../lib/helpers";
 import {
+  adminOpenZone,
   approveZone,
   createNewZone,
+  currentPlanCard,
   expectSubmitRefused,
   expectSubmitted,
   freshZoneData,
@@ -13,7 +15,10 @@ import {
   loginAsVendorAdmin,
   rejectZone,
   SUBSCRIPTION_REQUIRED,
+  UPGRADE_BUTTON,
   UPGRADE_MESSAGE,
+  upgradeButtonName,
+  upgradeOfferText,
   zonePath,
   zoneUrlParams,
 } from "../lib/vendor";
@@ -32,9 +37,10 @@ import {
 //
 // show.html gives a covered New or Rejected zone one plain "Submit for
 // production" / "Resubmit for production" button (:91-99), and an over-limit
-// New zone the upgrade message with no submit control (:132-148). Perl
-// refuses before calling the API, so the Go gate is checked with a direct
-// SubmitVendorZone call.
+// New zone either the upgrade offer (a device overage on one tiered
+// subscription) or the upgrade message, with no submit control (:132-160).
+// Perl refuses before calling the API, so the Go gate is checked with a
+// direct SubmitVendorZone call.
 //
 // vendor.spec.ts's vendor_admin preflight doesn't run for this file, so the
 // admin steps fail, rather than skip, when a minted vendor admin can't reach
@@ -77,6 +83,7 @@ async function plainSubmit(page: Page, zoneName: string, button: RegExp) {
 async function expectOverLimitRefusal(page: Page, fixture: Fixture, idToken: string) {
   await expectCleanPage(page, bust(zonePath(idToken)));
   await expect(page.getByText(UPGRADE_MESSAGE)).toBeVisible();
+  await expect(page.getByRole("button", { name: UPGRADE_BUTTON }), "no upgrade offer").toHaveCount(0);
   await expect(page.getByRole("button", { name: SUBMIT_CONTROL })).toHaveCount(0);
   await expect(page.locator('form[action*="/manage/vendor/submit"]')).toHaveCount(0);
   await expect(page.locator('textarea[name="opensource_info"]')).toHaveCount(0);
@@ -120,10 +127,7 @@ test("a covered vendor gets a plain submit and stays off the open-source path", 
   await expectCleanPage(page, bust("/manage/vendor"));
   const zoneLink = page.locator(`a[href*="id=${idToken}"]`);
   await expect(page.locator("p").filter({ has: zoneLink }).locator("i"), "a covered Pending zone").toHaveText("Processing");
-  await expect(page.getByRole("heading", { name: "Current plan" })).toBeVisible();
-  // billing.html: one <div class="col"> per live subscription, with the plan
-  // name in <b> and the limits in <ul class="product-details">.
-  const plan = page.locator("div.col").filter({ has: page.locator(".product-details") });
+  const plan = await currentPlanCard(page);
   await expect(plan.locator("b")).toHaveText("E2E fixture");
   await expect(plan.locator(".product-details li")).toHaveText(["Up to 1 DNS zones", "Up to 10,000 client devices"]);
 
@@ -146,6 +150,71 @@ test("a covered vendor over the device limit is refused by the site and by the A
   const { idToken } = zoneUrlParams(await createNewZone(page, { ...freshZoneData("od"), deviceCount: "10000" }));
 
   await expectOverLimitRefusal(page, fixture, idToken);
+});
+
+// §5e over-limit, device limit, on a tiered plan: the upgrade offer. The
+// fixture's e2e_ subscription doesn't exist in Stripe, so stripe-gw can't
+// open a portal session for it and the page falls back to the email text.
+// The real portal is stripe-checkout.spec.ts. The offer is for the zone's own
+// account: a vendor admin on their own account gets the email text and a 403
+// from the upgrade route, and gets the button after switching into the
+// zone's account with a=.
+test("a covered vendor on a tiered plan over the device limit is offered an upgrade", async ({
+  page,
+  context,
+  browser,
+  fixtures,
+}) => {
+  const fixture = await fixtures.create({
+    subscription: { maxZones: 1, maxDevices: 5000, quantity: 5000, tiered: true },
+  });
+  await installSession(context, fixture.sessionToken);
+  const { idToken } = zoneUrlParams(await createNewZone(page, { ...freshZoneData("ou"), deviceCount: "10000" }));
+
+  await expectCleanPage(page, bust(zonePath(idToken)));
+  await expect(page.getByText(upgradeOfferText(5000, 10000))).toBeVisible();
+  await expect(page.getByText(UPGRADE_MESSAGE), "the offer replaces the email text").toHaveCount(0);
+  await expect(page.getByRole("button", { name: SUBMIT_CONTROL })).toHaveCount(0);
+
+  const admin = await loginAsVendorAdmin(browser, uniqueTestEmail("vendor-coverage-admin"));
+  try {
+    expect(await isVendorAdmin(admin.page), VENDOR_ADMIN_REQUIRED).toBe(true);
+
+    // The admin route renders the zone with the admin's own account current.
+    await adminOpenZone(admin.page, idToken);
+    await expect(admin.page.getByText(UPGRADE_MESSAGE), "another account's zone gets the email text").toBeVisible();
+    await expect(admin.page.getByRole("button", { name: UPGRADE_BUTTON })).toHaveCount(0);
+
+    // show.html's admin form carries the admin's own a= and auth_token.
+    const adminForm = admin.page.locator('form[action="/manage/vendor/admin"]');
+    const refused = await admin.page.request.post("/manage/vendor/plan/upgrade", {
+      form: {
+        id: idToken,
+        a: await adminForm.locator('input[name="a"]').inputValue(),
+        auth_token: await adminForm.locator('input[name="auth_token"]').inputValue(),
+      },
+      maxRedirects: 0,
+    });
+    expect(refused.status(), "the upgrade route refuses a zone of another account").toBe(403);
+
+    // Staff who switch into the zone's account may upgrade like a member.
+    await expectCleanPage(admin.page, bust(`${zonePath(idToken)}&a=${encodeURIComponent(fixture.accountToken)}`));
+    await expect(admin.page.getByRole("button", { name: upgradeButtonName(10000) })).toBeVisible();
+  } finally {
+    await admin.context.close();
+  }
+
+  await Promise.all([
+    page.waitForNavigation({ waitUntil: "load" }),
+    page.getByRole("button", { name: upgradeButtonName(10000) }).click(),
+  ]);
+  await expectNoErrorBleed(page, page.url());
+  await expect(page.getByText(UPGRADE_MESSAGE), "a refused portal session shows the email text").toBeVisible();
+  await expect(page.getByRole("button", { name: UPGRADE_BUTTON })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: SUBMIT_CONTROL })).toHaveCount(0);
+
+  await expectSubmitRefused(fixture.sessionToken, fixture.accountToken, idToken, "the owner");
+  expect((await getVendorZone(fixture.sessionToken, idToken)).status).toBe("New");
 });
 
 // §5e over-limit, zone limit. max_devices is large, so only the zone count can

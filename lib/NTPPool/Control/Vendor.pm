@@ -23,7 +23,6 @@ use NP::CAPI::Subscription qw(
     get_account_subscriptions
     get_account_subscription_status
     update_account_stripe_customer
-    create_or_update_subscription
 );
 use JSON::XS ();
 
@@ -52,6 +51,13 @@ sub manage_dispatch {
     return $self->render_submit
       if (    $self->request->uri =~ m!^/manage/vendor/submit$!
           and $self->request->method eq 'post');
+
+    return $self->render_plan_upgrade
+      if (    $self->request->uri eq '/manage/vendor/plan/upgrade'
+          and $self->request->method eq 'post');
+
+    return $self->render_plan_upgraded
+      if $self->request->uri eq '/manage/vendor/plan/upgraded';
 
     return $self->render_subscription
       if $self->request->uri =~ m!^/manage/vendor/plan!;
@@ -233,15 +239,22 @@ sub render_zone {
       : undef;
     my $sub_data = ($sub_status && !$sub_status->{error}) ? $sub_status->{data} : {};
 
-    # $limits_ok drives need_subscription (the upgrade path) only. It is not a
-    # coverage signal: the API leaves limits_exceeded false for an account with
-    # no subscription at all, so it is true for uncovered vendors too.
+    # The over-limit block in show.html reads max_devices, required_devices
+    # and the upgrade offer straight from the API's answer.
+    $self->tpl_param('coverage', $sub_data);
+
+    # $limits_ok drives need_subscription, which hides the zone detail and the
+    # submit control. It stays keyed off limits_exceeded alone: an uncovered
+    # vendor must keep reaching the open-source form, which sits in the ELSE of
+    # that submit control (show.html, _opensource.html). The product picker has
+    # its own gate below.
     my $limits_ok =
       ($account_token && !$sub_data->{limits_exceeded}) ? 1 : 0;    # fail closed
 
-    # Coverage is has_live_subscription, matching render_zones. The submit
-    # control routes on this, so conflating it with $limits_ok would offer
-    # uncovered vendors a plain production submit (#39).
+    # have_subscription is has_live_subscription alone, matching render_zones.
+    # The submit control and the Pending wording route on it, so it stays
+    # separate from $limits_ok above, which additionally requires the zone to
+    # fit inside the plan (#39).
     $self->tpl_param('have_subscription',
         ($account_token && $sub_data->{has_live_subscription}) ? 1 : 0);
 
@@ -251,8 +264,6 @@ sub render_zone {
     # For edit mode, render the form when editable (API enforces the details)
     return $self->render_form($zone)
       if $mode eq 'edit' && $self->can_edit_zone($zone);
-
-    my $device_count = $zone->{device_count} || 0;
 
     # Get subscriptions from zone's account (not current account, which might be admin)
     my @subs = ();
@@ -267,18 +278,41 @@ sub render_zone {
 
     if ($zone->{status} eq 'New') {
 
-        # todo: only load if we need to show this
-        my ($products, $groups, $group_list) =
-          NP::Stripe::product_groups(1, $device_count);
-        if ($products->{error}) {
-            warn "stripe gw error: ", $products->{error};
+        # The plan picker prices what the account needs: its approved devices
+        # plus this zone, as the API computed them. Without the API's answer
+        # there is nothing to price, so the picker lists no plans; the
+        # open-source form below it still renders.
+        if (defined $sub_data->{required_devices}) {
+            my ($products, $groups, $group_list) =
+              NP::Stripe::product_groups(1, $sub_data->{required_devices});
+            if ($products->{error}) {
+                warn "stripe gw error: ", $products->{error};
 
-            # todo: show error?
+                # todo: show error?
+            }
+            else {
+                $self->tpl_param('products_by_group',  $groups);
+                $self->tpl_param('product_group_list', $group_list);
+            }
         }
         else {
-            $self->tpl_param('products_by_group',  $groups);
-            $self->tpl_param('product_group_list', $group_list);
+            warn "no required_devices for zone $zone->{id_token}; listing no plans"
+              . ( ($sub_status && $sub_status->{error})
+                  ? " (API error: $sub_status->{error}, trace: "
+                  . ($sub_status->{trace_id} || 'none') . ")"
+                  : ""
+              );
         }
+
+        # show_products gates the plan picker on its own. limits_exceeded is
+        # false for an account with no subscription at all (AccountCoverage
+        # returns early on !HasLive), so $limits_ok alone left an uncovered
+        # vendor with no way to buy a plan. An uncovered vendor now gets both
+        # the picker and the open-source form; @subs decides which of the two
+        # branches inside the picker block renders.
+        $self->tpl_param('show_products' => 1)
+          if $account_token
+          && (!$sub_data->{has_live_subscription} || $sub_data->{limits_exceeded});
 
         unless ($limits_ok) {
             $self->tpl_param('need_subscription' => 1);
@@ -559,63 +593,30 @@ sub _edit_zone {
 sub _update_subscription {
     my ($self, $account, $session_id) = @_;
 
-    warn "looking up session $session_id";
-    my $session = NP::Stripe::get_session($session_id);
-    warn "SESSION: ", Data::Dump::pp(\$session);
+    my $result = NP::Stripe::complete_checkout($session_id);
 
-    my $customer_id = $session->{customer_id};
-    my $subscription_id =
-      $session->{subscription} && $session->{subscription}->{id};
-
-    warn "customer_id:     $customer_id";
-    warn "subscription_id: $subscription_id";
-
-    if ($subscription_id) {
-
-        # Handle max_devices fallback from max_clients
-        my $max_devices =
-             $session->{subscription}->{max_devices}
-          || $session->{subscription}->{max_clients}
-          || 10000000;
-
-        my $result = create_or_update_subscription(
-            $self->api_auth_params,
-            account                => $account->{id_token},
-            stripe_subscription_id => $subscription_id,
-            stripe_customer_id     => $customer_id,
-            status                 => $session->{subscription}->{status},
-            name                   => $session->{subscription}->{name}      || '',
-            max_zones              => $session->{subscription}->{max_zones} || 1,
-            max_devices            => $max_devices,
-            created_on_unix        => time(),
-        );
-
-        if ($result->{error}) {
-            warn "Failed to create/update subscription: $result->{error}";
-            warn "Trace ID: $result->{trace_id}" if $result->{trace_id};
-            return 500, "Failed to process subscription";
-        }
-
-        my $subscription = $result->{data}{subscription};
-        if ($subscription && $subscription->{live_subscription}) {
-            warn "got live subscription";
-            return $self->render_submit();
-        }
-        else {
-            warn "sub status: ", ($subscription ? $subscription->{status} : 'unknown');
-        }
+    if ($result->{error}) {
+        warn "Failed to complete checkout: $result->{error}";
+        return 500, "Failed to process subscription";
     }
 
-    # Also update stripe_customer_id if needed
-    if ($customer_id && !$account->{stripe_customer_id}) {
-        my $update_result = update_account_stripe_customer(
-            $self->api_auth_params,
-            account            => $account->{id_token},
-            stripe_customer_id => $customer_id,
-        );
-        if ($update_result->{error}) {
-            warn "Failed to update stripe_customer_id: $update_result->{error}";
-        }
+    my $subscription = $result->{subscription};
+
+    if ($subscription && $subscription->{live_subscription}) {
+
+        # Display guard, not enforcement: stripe-gw has already saved the
+        # subscription to the account Stripe named, so a session_id belonging
+        # to someone else cannot land on this account's rows. This only decides
+        # whether to render this account's zone as submitted, and fails closed
+        # so a missing account_token never compares equal.
+        my $token = $result->{account_token} // '';
+        return $self->render_submit()
+          if $token && $token eq ($account->{id_token} // '');
+        warn
+          "checkout session $session_id belongs to account $token, not $account->{id_token}";
+    }
+    else {
+        warn "sub status: ", ($subscription ? $subscription->{status} : 'none');
     }
 
     return 200, "finished processing session";
@@ -626,6 +627,15 @@ sub render_subscription {
 
     my $account = $self->current_account;
     return FORBIDDEN unless $account && $account->{permissions}{can_edit};
+
+    $self->tpl_param('account' => $account);
+
+    if (my $session_id = $self->req_param('session_id')) {
+
+        # we are returning from the checkout session; render_submit fetches the
+        # zone itself, so don't pay for it here.
+        return $self->_update_subscription($account, $session_id);
+    }
 
     my $id = $self->_get_id;
     my $zone;
@@ -651,14 +661,6 @@ sub render_subscription {
         }
     }
 
-    $self->tpl_param('account' => $account);
-
-    if (my $session_id = $self->req_param('session_id')) {
-
-        # we are returning from the checkout session
-        return $self->_update_subscription($account, $session_id);
-    }
-
     my $return_url = $self->manage_url(
         '/manage/vendor/plan',
         {   ($zone ? (id => $zone->{id_token}) : ()),
@@ -675,9 +677,60 @@ sub render_subscription {
     # choosing a product
     if ($product_id) {
 
-        my $device_count = $zone ? ($zone->{device_count} || 0) : 0;
+        # Checkout buys what the account needs: its approved devices plus
+        # this zone, as the API computes them. Without a zone there is no
+        # such number, and only a flat price can be bought (below).
+        my $required_devices = 0;
+        if ($zone) {
+
+            # The session charges the current account's Stripe customer, so
+            # the zone it is priced for has to be that account's. A zone URL
+            # without the zone's own a= leaves current_account as the
+            # viewer's own account -- staff reach any zone that way -- and
+            # the subscription would land on the wrong account. Fail closed,
+            # as render_plan_upgrade does: a missing token on either side
+            # never compares equal.
+            unless ($zone->{account_token}
+                and $zone->{account_token} eq ($account->{id_token} // ''))
+            {
+                warn "refusing checkout for zone "
+                  . ($zone->{id_token} // 'none')
+                  . " of account "
+                  . ($zone->{account_token} // 'none')
+                  . " from account "
+                  . ($account->{id_token} // 'none');
+                return FORBIDDEN;
+            }
+
+            my $status = get_account_subscription_status(
+                $self->api_auth_params,
+                account      => $zone->{account_token},
+                device_count => $zone->{device_count},
+            );
+            if ($status->{error}) {
+                warn "API error getting subscription status for checkout: "
+                  . $status->{error}
+                  . " (trace: "
+                  . ($status->{trace_id} || 'none') . ")";
+                return OK,
+                  $json->encode({error => "Could not start checkout; please try again."});
+            }
+            $required_devices = $status->{data}{required_devices};
+
+            # An answer without the number is not one to price a tiered
+            # checkout from: 0 + undef would quietly buy a quantity of 0.
+            # render_zone makes the same check before listing plans.
+            unless (defined $required_devices) {
+                warn "no required_devices for zone "
+                  . ($zone->{id_token} // 'none')
+                  . "; refusing checkout";
+                return OK,
+                  $json->encode({error => "Could not start checkout; please try again."});
+            }
+        }
+
         my ($products, $groups, $group_list) =
-          NP::Stripe::product_groups(1, $device_count);
+          NP::Stripe::product_groups(1, $required_devices);
 
         warn "STRIPE: ", Data::Dump::pp($products);
         if ($products->{error}) {
@@ -692,19 +745,33 @@ sub render_subscription {
         if (   $price_id
             && $self->request->uri eq '/manage/vendor/plan/create_session')
         {
-            my ($plan) = grep { $_->{ID} eq $price_id } @{$product->{Plans}};
+            my ($plan) =
+              grep { $_->{ID} eq $price_id } @{$product ? $product->{Plans} : []};
+            unless ($plan) {
+                warn "price $price_id is not a plan of product $product_id";
+                return OK, $json->encode({error => "Unknown plan; please choose again."});
+            }
 
-            # Use current_account instead of zone->account
-            my $account = $self->current_account;
+            # A frozen account (deletion_on set) never reaches here: the
+            # can_edit gate at the top of this sub is the API's
+            # !deletion_on (AccountWritable), so checkout is already refused.
 
             # TODO:
             #  - take parameters to create session for the right price
             #  - set the right urls for cancel, etc
             #  - set the right customer ID if one exists
 
-            my $quantity = $zone ? ($zone->{device_count} || 1) : 1;
-            if ($plan->{TiersMode} eq "") {
-                $quantity = 1;
+            # A flat price is bought once. A tiered price is bought for the
+            # devices the account needs, which takes a zone; the plan
+            # picker's forms always send one.
+            my $quantity = 1;
+            if ($plan->{TiersMode} ne "") {
+                unless ($zone) {
+                    warn "refusing tiered checkout for price $price_id without a zone";
+                    return OK,
+                      $json->encode({error => "Choose a plan from the zone's page."});
+                }
+                $quantity = 0 + $required_devices;
             }
 
             unless ($account->{stripe_customer_id}) {
@@ -717,28 +784,42 @@ sub render_subscription {
                     account_url =>
                       $self->manage_url('/manage/vendor', {a => $account->{id_token}}),
                 );
-                if ($customer && $customer->{id}) {
-                    my $update_result = update_account_stripe_customer(
-                        $self->api_auth_params,
-                        account            => $account->{id_token},
-                        stripe_customer_id => $customer->{id},
-                    );
-                    if ($update_result->{error}) {
-                        warn
-                          "Failed to update stripe_customer_id: $update_result->{error}";
-                    }
-                    else {
-                        # Update local copy for immediate use
-                        $account->{stripe_customer_id} = $customer->{id};
-                    }
+
+                # Without a saved customer id Stripe would mint a second,
+                # unlinked customer and checkout/complete would fail after the
+                # vendor has paid, so both failures stop here instead.
+                unless ($customer && $customer->{id}) {
+                    warn "Failed to create stripe customer: ",
+                      (($customer && $customer->{error}) || 'no id returned');
+                    return OK,
+                      $json->encode(
+                          {error => "Could not start checkout; please try again."});
                 }
+
+                my $update_result = update_account_stripe_customer(
+                    $self->api_auth_params,
+                    account            => $account->{id_token},
+                    stripe_customer_id => $customer->{id},
+                );
+                if ($update_result->{error}) {
+                    warn "Failed to update stripe_customer_id: "
+                      . $update_result->{error}
+                      . " (trace: "
+                      . ($update_result->{trace_id} || 'none') . ")";
+                    return OK,
+                      $json->encode(
+                          {error => "Could not start checkout; please try again."});
+                }
+
+                # Update local copy for immediate use
+                $account->{stripe_customer_id} = $customer->{id};
             }
 
             my %args = (
                 price_id => $price_id,
                 quantity => $quantity,
 
-                environment => "devel",
+                environment => $self->deployment_mode,
                 account_id  => $account->{id_token},
 
                 customer_id => $account->{stripe_customer_id},
@@ -774,6 +855,128 @@ sub render_subscription {
 
     return OK, $self->evaluate_template('tpl/vendor/subscription.html');
 
+}
+
+# render_plan_upgrade sends the vendor to Stripe's billing portal to raise
+# the quantity on their tiered subscription. The subscription and quantity
+# come from the API's upgrade offer, fetched again here; the form only names
+# the zone. Anyone who can edit the current account may upgrade, staff who
+# switched into it included, but only for a zone of that account: the Stripe
+# customer is the current account's.
+sub render_plan_upgrade {
+    my $self = shift;
+
+    my $account = $self->current_account;
+    return FORBIDDEN unless $account && $account->{permissions}{can_edit};
+
+    my $id = $self->_get_id
+      or return $self->redirect($self->manage_url('/manage/vendor'));
+
+    my $result = get_vendor_zone(
+        auth     => $self->plain_cookie($self->user_cookie_name),
+        id_token => $id,
+        context  => $self->_get_request_context(),
+    );
+    if ($result->{error}) {
+        warn "API error getting vendor zone for upgrade: "
+          . $result->{error}
+          . " (trace: "
+          . ($result->{trace_id} || 'none') . ")";
+        return $self->redirect($self->manage_url('/manage/vendor'));
+    }
+    my $zone = $result->{data}{zone};
+
+    # The offer describes the zone's account and the portal session uses the
+    # current account's Stripe customer, so the two must be the same account.
+    # Fail closed, as _update_subscription does: a zone with no account (the
+    # API returns an empty token for one) must never match an account whose
+    # own token is missing.
+    unless ($zone->{account_token}
+        and $zone->{account_token} eq ($account->{id_token} // ''))
+    {
+        warn "refusing upgrade for zone "
+          . ($zone->{id_token} // 'none')
+          . " of account "
+          . ($zone->{account_token} // 'none')
+          . " from account "
+          . ($account->{id_token} // 'none');
+        return FORBIDDEN;
+    }
+
+    my $zone_url = $self->manage_url('/manage/vendor/zone', {id => $zone->{id_token}});
+
+    my $status = get_account_subscription_status(
+        $self->api_auth_params,
+        account      => $zone->{account_token},
+        device_count => $zone->{device_count},
+    );
+    if ($status->{error}) {
+        warn "API error getting subscription status for upgrade: "
+          . $status->{error}
+          . " (trace: "
+          . ($status->{trace_id} || 'none') . ")";
+        return $self->redirect($zone_url);
+    }
+
+    # No offer any more (the zone changed, or the plan already covers it):
+    # the zone page shows what applies now.
+    my $upgrade = $status->{data}{upgrade}
+      or return $self->redirect($zone_url);
+
+    my $session = NP::Stripe::upgrade_session(
+        customer_id     => $account->{stripe_customer_id} // '',
+        subscription_id => $upgrade->{stripe_subscription_id},
+        quantity        => $upgrade->{quantity},
+        return_url      => $self->manage_url(
+            '/manage/vendor/plan/upgraded',
+            {   id              => $zone->{id_token},
+                subscription_id => $upgrade->{stripe_subscription_id},
+            }
+        ),
+        cancel_url => $zone_url,
+    );
+    unless ($session->{url} && !$session->{error}) {
+        warn "stripe-gw refused the upgrade for zone $zone->{id_token}: "
+          . ($session->{error} || 'no url returned');
+        $self->tpl_param('upgrade_refused' => 1);
+        return $self->render_zone($zone->{id_token});
+    }
+
+    return $self->redirect($session->{url});
+}
+
+# render_plan_upgraded is where the billing portal sends the vendor after a
+# confirmed upgrade. stripe-gw syncs the subscription with the webhook's own
+# code, so the zone page shows the new limits without waiting for the
+# webhook. A failed sync is an error response, as a failed checkout is in
+# _update_subscription; the payment has gone through and the webhook writes
+# the same row when it arrives.
+sub render_plan_upgraded {
+    my $self = shift;
+
+    my $account = $self->current_account;
+    return FORBIDDEN unless $account && $account->{permissions}{can_edit};
+
+    my $id = $self->_get_id
+      or return $self->redirect($self->manage_url('/manage/vendor'));
+
+    my $subscription_id = $self->req_param('subscription_id') // '';
+    unless ($subscription_id =~ m/^sub_\w+$/) {
+        warn "upgrade return for zone $id without a valid subscription_id";
+        return 400, "Invalid upgrade return link";
+    }
+
+    # NP::Stripe's error carries stripe-gw's request id.
+    my $r = NP::Stripe::sync_subscription(
+        subscription_id => $subscription_id,
+        customer_id     => $account->{stripe_customer_id} // '',
+    );
+    if ($r->{error}) {
+        warn "Failed to sync upgraded subscription $subscription_id: $r->{error}";
+        return 500, "Your payment went through. Your plan will update shortly.";
+    }
+
+    return $self->redirect($self->manage_url('/manage/vendor/zone', {id => $id}));
 }
 
 sub render_billing {

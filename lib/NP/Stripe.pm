@@ -74,9 +74,21 @@ sub create_session {
     return $r;
 }
 
-sub get_session {
+sub complete_checkout {
     my $sid = shift;
-    my $r   = _gw_get_api('checkout/session_data', {session_id => $sid});
+    my $r   = _gw_post_api('checkout/complete', {session_id => $sid});
+    return $r;
+}
+
+sub upgrade_session {
+    my %args = @_;
+    my $r    = _gw_post_api('subscription/upgrade_session', \%args);
+    return $r;
+}
+
+sub sync_subscription {
+    my %args = @_;
+    my $r    = _gw_post_api('subscription/sync', \%args);
     return $r;
 }
 

@@ -11,7 +11,6 @@ use Exporter 'import';
 
 our @EXPORT_OK = qw(
     process_stripe_webhook
-    create_or_update_subscription
     update_account_stripe_customer
     get_account_subscription_status
     get_account_subscriptions
@@ -35,15 +34,9 @@ NP::CAPI::Subscription - ConnectRPC client for SubscriptionService
 
 =head1 SYNOPSIS
 
-    use NP::CAPI::Subscription qw(process_stripe_webhook create_or_update_subscription update_account_stripe_customer get_account_subscription_status get_account_subscriptions);
+    use NP::CAPI::Subscription qw(process_stripe_webhook update_account_stripe_customer get_account_subscription_status get_account_subscriptions);
     # Call ProcessStripeWebhook RPC method
     my $result = process_stripe_webhook(
-        $self->api_auth_params,      # Provides auth and context
-        account => $account->{id_token},
-    );
-
-    # Call CreateOrUpdateSubscription RPC method
-    my $result = create_or_update_subscription(
         $self->api_auth_params,      # Provides auth and context
         account => $account->{id_token},
     );
@@ -153,6 +146,9 @@ B<Arguments:>
         name => $value,       # string
         max_zones => $value,       # int
         max_devices => $value,       # int
+        quantity => $value,       # int - quantity is the subscription item's quantity. It and tiered are
+ required whenever name, max_zones or max_devices is sent.
+        tiered => $value,       # bool - tiered is whether the item's price has tiers.
     );
 
 B<Returns:>
@@ -167,10 +163,46 @@ Hashref with structure:
             success => ...,  # bool
             error => ...,  # string
             account_token => ...,  # string
+            subscription => {
+                subscription_id => ...,  # int
+                stripe_subscription_id => ...,  # string
+                status => ...,  # string
+                name => ...,  # string
+                max_zones => ...,  # int
+                max_devices => ...,  # int
+                live_subscription => ...,  # bool
+                created_on => ...,  # string
+                ended_on => ...,  # string
+                stripe_dashboard_link => ...,  # string
+            },  # hashref (AccountSubscription) - subscription is the row as saved, including live_subscription. Unset when
+ success is false.
         },
         error        => undef,       # Error message (if any)
         trace_id     => "...",       # OpenTelemetry trace ID
     }
+
+B<Response Data Structure:>
+
+The C<data> field contains:
+
+=over 4
+
+=item * B<success> (bool)
+
+
+=item * B<error> (string)
+
+
+=item * B<account_token> (string)
+
+
+=item * B<subscription> (hashref (AccountSubscription))
+
+subscription is the row as saved, including live_subscription. Unset when
+ success is false.
+
+
+=back
 
 B<ConnectRPC Error Codes:>
 
@@ -208,114 +240,12 @@ sub process_stripe_webhook {
     $request{'name'} = delete $args{'name'} if exists $args{'name'};
     $request{'max_zones'} = delete $args{'max_zones'} if exists $args{'max_zones'};
     $request{'max_devices'} = delete $args{'max_devices'} if exists $args{'max_devices'};
+    $request{'quantity'} = delete $args{'quantity'} if exists $args{'quantity'};
+    $request{'tiered'} = delete $args{'tiered'} if exists $args{'tiered'};
 
     return connect_rpc(
         service     => 'ntppool.subscription.v1.SubscriptionService',
         method      => 'ProcessStripeWebhook',
-        request     => \%request,
-        %args  # Pass through auth, account, context
-    );
-}
-
-
-=head2 create_or_update_subscription
-
-Call CreateOrUpdateSubscription RPC method
-
-B<Arguments:>
-
-    my $result = create_or_update_subscription(
-        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
-        account => $account->{id_token},  # Optional: Account selection token
-        stripe_subscription_id => $value,       # string
-        stripe_customer_id => $value,       # string
-        status => $value,       # string
-        name => $value,       # string
-        max_zones => $value,       # int
-        max_devices => $value,       # int
-        created_on_unix => $value,       # int
-    );
-
-B<Returns:>
-
-Hashref with structure:
-
-    {
-        code         => 200,         # HTTP status code
-        status_line  => "200 OK",    # HTTP status text
-        connect_code => undef,       # ConnectRPC error code (or undef)
-        data         => {            # Response data
-            success => ...,  # bool
-            subscription => {
-                subscription_id => ...,  # int
-                stripe_subscription_id => ...,  # string
-                status => ...,  # string
-                name => ...,  # string
-                max_zones => ...,  # int
-                max_devices => ...,  # int
-                live_subscription => ...,  # bool
-                created_on => ...,  # string
-                ended_on => ...,  # string
-                stripe_dashboard_link => ...,  # string
-            },  # hashref (AccountSubscription)
-        },
-        error        => undef,       # Error message (if any)
-        trace_id     => "...",       # OpenTelemetry trace ID
-    }
-
-B<Response Data Structure:>
-
-The C<data> field contains:
-
-=over 4
-
-=item * B<success> (bool)
-
-
-=item * B<subscription> (hashref (AccountSubscription))
-
-
-=back
-
-B<ConnectRPC Error Codes:>
-
-    unauthenticated, permission_denied, internal, invalid_argument, etc.
-
-B<Example:>
-
-    my $result = create_or_update_subscription(
-        $self->api_auth_params,           # Provides auth and context
-        account => $account->{id_token},  # Account from hashref
-    );
-
-    if ($result->{error}) {
-        warn "Error: $result->{error}";
-    } else {
-        my $data = $result->{data};
-        # Use response fields...
-    }
-
-=cut
-
-sub create_or_update_subscription {
-    my $validation_error = validate_key_value_args('create_or_update_subscription', @_);
-    return $validation_error if $validation_error;
-
-    my %args = @_;
-
-    # Extract request fields from args
-    my %request = ();
-    $request{'stripe_subscription_id'} = delete $args{'stripe_subscription_id'} if exists $args{'stripe_subscription_id'};
-    $request{'stripe_customer_id'} = delete $args{'stripe_customer_id'} if exists $args{'stripe_customer_id'};
-    $request{'status'} = delete $args{'status'} if exists $args{'status'};
-    $request{'name'} = delete $args{'name'} if exists $args{'name'};
-    $request{'max_zones'} = delete $args{'max_zones'} if exists $args{'max_zones'};
-    $request{'max_devices'} = delete $args{'max_devices'} if exists $args{'max_devices'};
-    $request{'created_on_unix'} = delete $args{'created_on_unix'} if exists $args{'created_on_unix'};
-
-    return connect_rpc(
-        service     => 'ntppool.subscription.v1.SubscriptionService',
-        method      => 'CreateOrUpdateSubscription',
         request     => \%request,
         %args  # Pass through auth, account, context
     );
@@ -418,10 +348,65 @@ Hashref with structure:
             max_devices => ...,  # int
             max_zones => ...,  # int
             submit_state => ...,  # string (enum: SubmitState)
+            required_devices => ...,  # int - required_devices is the approved devices on the account plus the
+ requested device_count: the number the device limit is checked against.
+ Set in every state.
+            upgrade => {
+                stripe_subscription_id => ...,  # string
+                quantity => ...,  # int - quantity is the new quantity: the response's required_devices.
+            },  # hashref (SubscriptionUpgrade) - upgrade is set only when the account is over its device limit (its zone
+ count fits) on exactly one live subscription, and that subscription is
+ tiered with a known quantity.
         },
         error        => undef,       # Error message (if any)
         trace_id     => "...",       # OpenTelemetry trace ID
     }
+
+B<Response Data Structure:>
+
+The C<data> field contains:
+
+=over 4
+
+=item * B<has_live_subscription> (bool)
+
+
+=item * B<limits_exceeded> (bool)
+
+
+=item * B<limits_error> (string)
+
+
+=item * B<existing_devices> (int)
+
+
+=item * B<existing_zones> (int)
+
+
+=item * B<max_devices> (int)
+
+
+=item * B<max_zones> (int)
+
+
+=item * B<submit_state> (string (enum: SubmitState))
+
+
+=item * B<required_devices> (int)
+
+required_devices is the approved devices on the account plus the
+ requested device_count: the number the device limit is checked against.
+ Set in every state.
+
+
+=item * B<upgrade> (hashref (SubscriptionUpgrade))
+
+upgrade is set only when the account is over its device limit (its zone
+ count fits) on exactly one live subscription, and that subscription is
+ tiered with a known quantity.
+
+
+=back
 
 B<ConnectRPC Error Codes:>
 
