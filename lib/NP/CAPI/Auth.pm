@@ -166,6 +166,9 @@ Hashref with structure:
                 deletion_on => ...,  # string - deletion_on is the RFC3339 timestamp when the account is scheduled for
  deletion by the accountdelete background task. Unset when no deletion
  is scheduled.
+                stripe_customer_id => ...,  # string - stripe_customer_id is the account's Stripe customer. Unset until the
+ account's first checkout. Callers bill this customer for the account's
+ subscription; deriving one of their own mints a duplicate.
                 subscription_summary => ...,  # hashref (SubscriptionSummary) - Subscription summary (computed from account_subscriptions)
             },  # hashref (AccountContext) - account is the user's default account (or auto-created account).
  Omitted if user has no accounts (meaning they have pending invitations).
