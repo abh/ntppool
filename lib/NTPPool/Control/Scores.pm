@@ -67,11 +67,6 @@ sub render {
         }
         my $server = NP::Data::Server->new(%{$result->{data}{server}});
         $self->cache_control('max-age=14400, s-maxage=7200');
-        if (   $server->deletion_on
-            && $server->deletion_on < DateTime->now->subtract(years => 3))
-        {
-            return 404;
-        }
         return $self->redirect('/scores/' . $server->ip, 301);
     }
 
@@ -148,13 +143,6 @@ sub render {
             return $status;
         }
         my $server = NP::Data::Server->new(%{$server_result->{data}{server}});
-
-        if (   $public
-            && $server->deletion_on
-            && $server->deletion_on < DateTime->now->subtract(years => 3))
-        {
-            return 404;
-        }
 
         return $self->redirect('/scores/' . $server->ip, 301) unless $p eq $server->ip;
 
