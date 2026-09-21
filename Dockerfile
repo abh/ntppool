@@ -10,11 +10,10 @@ RUN cpanm -v https://tmp.askask.com/2024/12/Net-Async-HTTP-Server-0.14bis4.tar.g
 ENV CBCONFIG=
 
 WORKDIR /ntppool
-VOLUME /ntppool/data
 
 ADD . /ntppool
 
-RUN mkdir /var/ntppool && chown ntppool data /var/ntppool
+RUN mkdir -p data /var/ntppool && chown ntppool data /var/ntppool
 RUN rm -fr docs/ntppool/_syndicate && \
   mkdir -p data/syndicate && \
   ln -s /ntppool/data/syndicate docs/ntppool/_syndicate && \
