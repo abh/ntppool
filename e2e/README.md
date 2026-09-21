@@ -308,16 +308,7 @@ npx playwright test --project=manage --reporter=list > test-logs/run-1.log 2>&1
 
 ## Coverage
 
-Specs map to `MANUAL_TEST_PLAN.md` sections: `login` (§1), `regression-smoke`
-(§12), `i18n` (§10), `vendor` (§5, §5a, §5b, §5c, §5e), `vendor-coverage` (§5,
-§5b, §5e), `scores` (§9), `server` (§8 add-form baseline),
-`server-verification`, `server-deletion`, `server-netspeed` and
-`server-scores-context` (§8/§8a/§8b), `account-dissolve` (§2), `staff-deletion`
-(§3/§4), `invites` (§4a), `account-frozen` (§2), `account-download` (§4c),
-`staff-search` (§13), `staff-server-edit` (§8, staff hostname and zone edits and
-their CSRF check), `account-create` (§1 + §4), `account-team` (§4),
-`account-update` (§4), `dns-zone` (§6, auth-guard portion), `monitor-config`
-(§14), `monitor-badges` (§15 account flag badges, §16 dual-stack monitor cards).
+Specs are named for the area they cover; see `e2e/tests/`.
 Staff specs rely on the `grant_staff` / `grant_vendor_admin` flags of
 `api e2e session`; `monitor-config` and `monitor-badges` use
 `grant_monitor_admin`.

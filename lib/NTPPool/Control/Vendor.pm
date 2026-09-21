@@ -254,7 +254,7 @@ sub render_zone {
     # have_subscription is has_live_subscription alone, matching render_zones.
     # The submit control and the Pending wording route on it, so it stays
     # separate from $limits_ok above, which additionally requires the zone to
-    # fit inside the plan (#39).
+    # fit inside the plan.
     $self->tpl_param('have_subscription',
         ($account_token && $sub_data->{has_live_subscription}) ? 1 : 0);
 
@@ -409,7 +409,7 @@ sub render_submit {
     # Gate production submission on real coverage: a live subscription that is
     # within limits. limits_exceeded alone is false for an account with NO
     # subscription, so keying off it would let an uncovered vendor submit
-    # straight to production with no claim (#39). The opensource_request block
+    # straight to production with no claim. The opensource_request block
     # below is the other way to pass this gate.
     my $ok =
       (      $account_token

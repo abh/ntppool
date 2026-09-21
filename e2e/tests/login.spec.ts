@@ -29,8 +29,8 @@ test("new user lands on a next step, not the invitations dead-end", async ({
   page,
   context,
 }) => {
-  // MANUAL_TEST_PLAN.md §1: a brand-new identity auto-creates a user + account
-  // and must not dead-end on the empty "No pending account invitations." page.
+  // A brand-new identity auto-creates a user + account and must not dead-end on
+  // the empty "No pending account invitations." page.
   const email = uniqueTestEmail();
   await loginAs(context, email);
 
@@ -86,10 +86,9 @@ test("logout then log back in restores the same account", async ({
   page,
   context,
 }) => {
-  // MANUAL_TEST_PLAN.md §1: log out and back in — session restored, no
-  // duplicate account created. "No duplicate account" is best verified at the
-  // DB layer (Round 2); here we assert the same email lands on a working
-  // dashboard both times.
+  // Log out and back in — session restored, no duplicate account created.
+  // "No duplicate account" is best verified at the DB layer (Round 2); here we
+  // assert the same email lands on a working dashboard both times.
   const email = uniqueTestEmail();
 
   // First login.

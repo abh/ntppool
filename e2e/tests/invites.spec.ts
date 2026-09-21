@@ -9,7 +9,6 @@ import {
 } from "../lib/helpers";
 
 // Account invitation resend, regular-user (non-staff) flow.
-// MANUAL_TEST_PLAN.md §4a "Resend account invitations".
 //
 // Routes / templates this exercises (see lib/NTPPool/Control/Manage/Account.pm
 // and docs/manage/tpl/account/team.html):
@@ -60,8 +59,8 @@ test("pending invite shows a Resend button for an account with edit access", asy
   const invitee = uniqueTestEmail("invite-invitee");
   await inviteUser(page, invitee);
 
-  // §4a: a fresh pending invite is immediately resendable (can_resend true),
-  // so the active Resend submit button renders.
+  // A fresh pending invite is immediately resendable (can_resend true), so the
+  // active Resend submit button renders.
   await expect(activeResendButton(page)).toBeVisible();
 });
 
@@ -78,8 +77,8 @@ test("clicking Resend shows the success badge", async ({
   await expect(activeResendButton(page)).toBeVisible();
   await activeResendButton(page).click();
 
-  // §4a: success badge — team.html renders .alert-success with the "Sent" badge
-  // and the copy "Invitation email resent.".
+  // Success badge — team.html renders .alert-success with the "Sent" badge and
+  // the copy "Invitation email resent.".
   await expectNoErrorBleed(page, page.url());
   const successAlert = page.locator(".alert-success");
   await expect(successAlert).toBeVisible();
@@ -105,12 +104,12 @@ test("an immediate second resend is blocked by the 5-minute cooldown", async ({
   await activeResendButton(page).click();
   await expect(page.locator(".alert-success")).toBeVisible();
 
-  // §4a: immediately resending again hits the 5-minute cooldown. The API now
-  // reports can_resend=false, so team.html renders the DISABLED Resend button
-  // (with an "available after …" hint when resend_available_at is set). The
-  // active resend form should no longer be present.
+  // Immediately resending again hits the 5-minute cooldown. The API now reports
+  // can_resend=false, so team.html renders the DISABLED Resend button (with an
+  // "available after …" hint when resend_available_at is set). The active
+  // resend form should no longer be present.
   //
-  // Two render paths are acceptable per the plan:
+  // Two render paths are acceptable:
   //   (a) the page already re-rendered with can_resend=false (disabled button), or
   //   (b) a forced resend POST is rejected with a rate-limit .alert-warning.
   // After a successful resend the page is freshly rendered, so we assert (a):
@@ -131,7 +130,7 @@ test.skip("exceeding 3 sends in 24h blocks resend with a limit warning", async (
   page,
   context,
 }) => {
-  // §4a: the initial send counts as 1; after 2 more resends (3 total) the next
+  // The initial send counts as 1; after 2 more resends (3 total) the next
   // resend is blocked with a "too many … (limit: 3)" warning surfaced from the
   // API's resource_exhausted error via errors.resend (.alert-warning).
   //
@@ -163,13 +162,13 @@ test.skip("exceeding 3 sends in 24h blocks resend with a limit warning", async (
   await expect(warn).toContainText("limit: 3");
 });
 
-// Note: a §4a check that each resend extends the invite expiry to ~30 days out
-// was removed — it could only be verified through the read-only DB layer
+// Note: a check that each resend extends the invite expiry to ~30 days out was
+// removed — it could only be verified through the read-only DB layer
 // (expires_on), which is intentionally not used, and the team UI does not render
 // the invite expiry. Restore it if/when an invite-detail API surface exists.
 
 test("only a pending invite renders a Resend control", async ({ page, context }) => {
-  // §4a: only PENDING invites render a Resend control, so a freshly created
+  // Only PENDING invites render a Resend control, so a freshly created
   // (pending) invite is the only one with the button, and the rendered table
   // never shows a Resend control against a non-pending status row.
   //
@@ -200,9 +199,8 @@ test("only a pending invite renders a Resend control", async ({ page, context })
 test("accepted invite hides Resend and the accept link still works", async ({
   browser,
 }) => {
-  // §4a, harder half: accept the invite as the invitee, then confirm the
-  // accepted invite no longer offers Resend, while the accept link itself
-  // worked.
+  // Harder half: accept the invite as the invitee, then confirm the accepted
+  // invite no longer offers Resend, while the accept link itself worked.
   //
   // Driving the accept flow needs the invite `code` and a separate
   // authenticated identity for the invitee. Neither needs the DB or an email
@@ -234,7 +232,7 @@ test("accepted invite hides Resend and the accept link still works", async ({
 test("a user without access to the account cannot resend", async ({
   browser,
 }) => {
-  // §4a: non-edit / wrong account context cannot resend (permission denied, no
+  // Non-edit / wrong account context cannot resend (permission denied, no
   // button).
   //
   // Owner (context A) creates a pending invite. A separate, unrelated user

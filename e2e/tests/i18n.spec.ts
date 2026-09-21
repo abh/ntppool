@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { expectCleanPage, expectNoErrorBleed } from "../lib/helpers";
 
-// MANUAL_TEST_PLAN.md §10 — Internationalization.
+// Internationalization.
 //
 // Black-box, no login: these are public pages. We exercise the language
 // selection without depending on Varnish (the dev site has none).
@@ -33,7 +33,7 @@ const NATIVE_NAME = {
   cs: "Čeština",
 } as const;
 
-test.describe("internationalization (§10)", () => {
+test.describe("internationalization", () => {
   test("Thai (th): site root renders translated and clean", async ({
     page,
   }) => {
@@ -63,11 +63,12 @@ test.describe("internationalization (§10)", () => {
 
     await expect(page.locator("html")).toHaveAttribute("lang", "zh-tw");
 
-    // General zh-tw marker (native name in the switcher). The plan also mentions
-    // a "scheduled for deletion" string, but that lives behind the
-    // authenticated /manage account flow, not on this public doc page — so we
-    // assert the language marker instead. HUMAN VERIFY: if a public zh-tw page
-    // with that exact translated string is identified, add a direct assertion.
+    // General zh-tw marker (native name in the switcher). A
+    // "scheduled for deletion" string is another candidate, but that lives
+    // behind the authenticated /manage account flow, not on this public doc
+    // page — so we assert the language marker instead. HUMAN VERIFY: if a
+    // public zh-tw page with that exact translated string is identified, add a
+    // direct assertion.
     await expect(
       page.locator("body"),
       "expected Traditional Chinese native name in the rendered page",

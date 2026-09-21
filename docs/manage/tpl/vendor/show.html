@@ -85,7 +85,7 @@
     [% # Submit control for a New/Rejected zone. need_subscription (below)
        # handles the over-limits upgrade case. Here: a vendor covered by a live
        # subscription gets a plain production submit that does NOT mark the zone
-       # open source (#39); an uncovered vendor gets the open-source
+       # open source; an uncovered vendor gets the open-source
        # justification form, which is how they apply for the non-revenue plan.
     %]
     [% IF (vz.status == 'New' || vz.status == 'Rejected') && !need_subscription %]

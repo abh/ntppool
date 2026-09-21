@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-// MANUAL_TEST_PLAN.md §6 — DNS zone generation (Go API), auth-guard portion.
+// DNS zone generation (Go API), auth-guard portion.
 //
 // /api/dns-zone (NTPPool::Control::DNSZone->render, apache/sites/ntppool.tmpl)
 // is a PUBLIC route on the web host, but requires a service bearer token whose
@@ -8,12 +8,12 @@ import { test, expect } from "@playwright/test";
 // (see lib/NTPPool/Control/DNSZone.pm). Minting a real "dns" service token
 // needs infrastructure-level provisioning that isn't available to this test
 // harness (unlike `api e2e session`'s dev-only user-session minting), so a
-// happy-path zone-JSON check is a manual step — see MANUAL_TEST_PLAN.md §6.
+// happy-path zone-JSON check stays a manual step.
 //
 // What IS coverable here, and worth covering: the auth guard itself
 // (lib/NTPPool/Control/DNSZone.pm:15-37) survived the NP::Model::DnsRoot ->
-// NP::DNSZone::Root rename (issue #31, commit c0f15f22) without regressing.
-test.describe("DNS zone endpoint auth guard (§6)", () => {
+// NP::DNSZone::Root rename without regressing.
+test.describe("DNS zone endpoint auth guard", () => {
   test("rejects a request with no Authorization header", async ({ page }) => {
     const response = await page.request.get("/api/dns-zone?origin=example.com");
     expect(response.status()).toBe(403);

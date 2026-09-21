@@ -15,7 +15,7 @@ out as siblings; adjust for your own layout (or note local paths in CLAUDE.local
   controller layer with no direct database access.
 - **Go API** (`../go/ntp/api`) — Go + PostgreSQL backend. All new database
   operations live here, exposed via ConnectRPC (consumed in Perl through
-  `lib/NP/CAPI/*.pm`). See its `plans/postgres.md` for migration strategy.
+  `lib/NP/CAPI/*.pm`).
 - **ntppool-main** (`../ntppool-main`) — the pre-migration Perl/MySQL version,
   kept for reference and occasional sync of non-migration changes.
 
@@ -89,8 +89,6 @@ loads automatically when working under `client/`.
 ### Database and API
 
 **CRITICAL - PostgreSQL Migration in Progress:**
-
-Read [../go/ntp/api/plans/postgres.md](../go/ntp/api/plans/postgres.md) for complete migration strategy.
 
 **Architecture Goal**: This Perl codebase is a **thin web controller layer with
 NO direct database access**. All data operations go through Go APIs.

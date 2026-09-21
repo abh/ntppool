@@ -13,7 +13,7 @@ import {
   updateAccountMonitorConfig,
 } from "../lib/monitors";
 
-// Account flag badges in the monitor lists. MANUAL_TEST_PLAN.md §15.
+// Account flag badges in the monitor lists.
 //
 // tpl/monitors/list.html renders one <h2> per account group inside
 // <div class="block">, with tpl/monitors/account_flags_badge.html in it. The
@@ -39,14 +39,14 @@ import {
 // ordinary member. The lists can show a metrics warning when devel Prometheus
 // is unavailable; these tests don't assert on it.
 //
-// Dual-stack cards (MANUAL_TEST_PLAN.md §16), tpl/monitors/info_card.html and
-// info_details.html: an IPv4 and an IPv6 row sharing a TLS name make one card
-// whose header shows the TLS name minus the monitor domain. Each address gets a
-// list item with an <h5 class="card-subtitle"> holding its IP. With equal
-// statuses (combined_status) one "Status <status>" pill renders in an extra
-// list item and none in the address items; otherwise each address item has its
-// own. The "Connection" pill isn't asserted: for a monitor that never connected
-// it renders with empty text (see the spec's Out of scope).
+// Dual-stack cards, tpl/monitors/info_card.html and info_details.html: an IPv4
+// and an IPv6 row sharing a TLS name make one card whose header shows the TLS
+// name minus the monitor domain. Each address gets a list item with an
+// <h5 class="card-subtitle"> holding its IP. With equal statuses
+// (combined_status) one "Status <status>" pill renders in an extra list item
+// and none in the address items; otherwise each address item has its own. The
+// "Connection" pill isn't asserted: for a monitor that never connected it
+// renders with empty text.
 
 type ListView = "account" | "admin";
 const VIEWS: ListView[] = ["account", "admin"];
@@ -129,7 +129,8 @@ test("monitor admin sees account flag badges in both monitor lists", async ({ pa
   // Defaults: no badges and no badge wrapper.
   for (const view of VIEWS) await expectNoBadges(page, view, fixture);
 
-  // The form sets the checkbox and the -1 limit, which §14's spec doesn't cover.
+  // The form sets the checkbox and the -1 limit, which monitor-config.spec.ts
+  // doesn't cover.
   await expectCleanPage(page, bust(accountFormUrl(fixture.accountToken)));
   await expect(page.locator("#monitor-config-section")).toBeVisible();
   await openMonitorConfigEditor(page);

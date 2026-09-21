@@ -14,10 +14,10 @@ import {
   scheduleAccountDeletion,
 } from "../lib/accounts";
 
-// Staff-targeted user & account deletion (MANUAL_TEST_PLAN.md §3) plus the §4
-// scoping checks. This complements account-dissolve.spec.ts (§2), which covers
-// a staff user dissolving its OWN account; here staff act on ANOTHER account /
-// user, and a non-staff user is confirmed to have no such reach.
+// Staff-targeted user & account deletion, plus the scoping checks. This
+// complements account-dissolve.spec.ts, which covers a staff user dissolving
+// its OWN account; here staff act on ANOTHER account / user, and a non-staff
+// user is confirmed to have no such reach.
 //
 // Controller: lib/NTPPool/Control/Manage/Account.pm manage_dispatch:
 //   - /manage/account/team   render_users -> tpl/account/team.html. Staff see a
@@ -126,8 +126,8 @@ test("staff can open another account's team page and see the target user", async
   context,
   browser,
 }) => {
-  // §3: As staff, open another account's team page (with that account's
-  // context) and confirm it renders and lists the target user.
+  // As staff, open another account's team page (with that account's context)
+  // and confirm it renders and lists the target user.
   const { target, targetContext } = await mintTarget(browser);
 
   try {
@@ -158,7 +158,7 @@ test("staff schedules deletion of another USER, targeting that user (not self)",
   context,
   browser,
 }) => {
-  // §3 + §4: schedule deletion for another user via u=<target id_token>; the
+  // Schedule deletion for another user via u=<target id_token>; the
   // deletion-scheduled page must name the TARGET, not the acting staff user.
   const staffEmail = uniqueTestEmail("staff-user-deleter");
   const { target, targetContext } = await mintTarget(browser);
@@ -166,7 +166,7 @@ test("staff schedules deletion of another USER, targeting that user (not self)",
   try {
     await loginAs(context, staffEmail, { grantStaff: true });
 
-    // Extract the target user's id_token from the staff team-page DOM (§4: the
+    // Extract the target user's id_token from the staff team-page DOM (the
     // delete link must carry the correct user's token).
     const targetUserToken = await targetUserTokenFromTeam(
       page,
@@ -225,8 +225,8 @@ test("staff schedules another ACCOUNT's deletion, scoped to that account", async
   browser,
   scheduledDeletions,
 }) => {
-  // §3: schedule another account's deletion as staff — works, scoped to the
-  // target account (the `a=` context), not the staff user's own account.
+  // Schedule another account's deletion as staff — works, scoped to the target
+  // account (the `a=` context), not the staff user's own account.
   const staffEmail = uniqueTestEmail("staff-account-deleter");
   const { target, targetContext } = await mintTarget(browser);
 
@@ -252,8 +252,8 @@ test("staff schedules another ACCOUNT's deletion, scoped to that account", async
     // going to /manage/account, which would bounce a pending-deletion account.
     await scheduleAccountDeletion(page, dissolveAcct);
 
-    // §3 + §4: Revisit the dissolve page for the TARGET account — pending state
-    // with a scheduled date and a cancel option, scoped to that account.
+    // Revisit the dissolve page for the TARGET account — pending state with a
+    // scheduled date and a cancel option, scoped to that account.
     await expectCleanPage(page, bust(dissolveUrl(dissolveAcct)));
     await expect(page.locator("body")).toContainText("Deletion scheduled");
     await expect(page.locator("body")).toContainText(
@@ -272,8 +272,8 @@ test("staff schedules another ACCOUNT's deletion, scoped to that account", async
 test("non-staff user cannot target another user or account", async ({
   browser,
 }) => {
-  // §3 + §4: a non-staff fresh user must only reach its own user/account. We
-  // verify the negative on three surfaces:
+  // A non-staff fresh user must only reach its own user/account. We verify the
+  // negative on three surfaces:
   //   (a) the staff-only "Delete user" link is absent on the team page,
   //   (b) /manage/account/delete?u=<foreign token> returns 403 (manage_dispatch
   //       `return 403 unless $self->user_is_staff`),
@@ -343,7 +343,7 @@ test("non-staff user cannot target another user or account", async ({
   }
 });
 
-// Note: two §3 grey-box checks that scheduling a user/account deletion writes an
+// Note: two grey-box checks that scheduling a user/account deletion writes an
 // audit-log ("logs") row were removed — the audit log has no UI/API surface and
 // was verifiable only through the read-only DB layer (intentionally not used).
 // The scheduling behavior itself is covered by the staff user/account deletion

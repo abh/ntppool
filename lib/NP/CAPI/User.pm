@@ -193,7 +193,7 @@ Hashref with structure:
                 email => ...,  # string - email is the user's email address
                 username => ...,  # string - username is the user's username
                 name => ...,  # string - name is the user's display name
-                public_profile => ...,  # bool - public_profile indicates if the user profile is public (LEGACY - see issue #18)
+                public_profile => ...,  # bool - public_profile indicates if the user profile is public (LEGACY - being removed)
                 deletion_on => ...,  # string - deletion_on is when the user is scheduled for deletion (RFC3339 format)
  Empty string means not scheduled for deletion
                 created_on => ...,  # string - created_on is when the user was created (RFC3339 format)
@@ -347,7 +347,7 @@ Hashref with structure:
                 email => ...,  # string - email is the user's email address
                 username => ...,  # string - username is the user's username
                 name => ...,  # string - name is the user's display name
-                public_profile => ...,  # bool - public_profile indicates if the user profile is public (LEGACY - see issue #18)
+                public_profile => ...,  # bool - public_profile indicates if the user profile is public (LEGACY - being removed)
                 deletion_on => ...,  # string - deletion_on is when the user is scheduled for deletion (RFC3339 format)
  Empty string means not scheduled for deletion
                 created_on => ...,  # string - created_on is when the user was created (RFC3339 format)
@@ -461,7 +461,7 @@ Hashref with structure:
                 email => ...,  # string - email is the user's email address
                 username => ...,  # string - username is the user's username
                 name => ...,  # string - name is the user's display name
-                public_profile => ...,  # bool - public_profile indicates if the user profile is public (LEGACY - see issue #18)
+                public_profile => ...,  # bool - public_profile indicates if the user profile is public (LEGACY - being removed)
                 deletion_on => ...,  # string - deletion_on is when the user is scheduled for deletion (RFC3339 format)
  Empty string means not scheduled for deletion
                 created_on => ...,  # string - created_on is when the user was created (RFC3339 format)
@@ -579,7 +579,7 @@ Hashref with structure:
                 email => ...,  # string - email is the user's email address
                 username => ...,  # string - username is the user's username
                 name => ...,  # string - name is the user's display name
-                public_profile => ...,  # bool - public_profile indicates if the user profile is public (LEGACY - see issue #18)
+                public_profile => ...,  # bool - public_profile indicates if the user profile is public (LEGACY - being removed)
                 deletion_on => ...,  # string - deletion_on is when the user is scheduled for deletion (RFC3339 format)
  Empty string means not scheduled for deletion
                 created_on => ...,  # string - created_on is when the user was created (RFC3339 format)

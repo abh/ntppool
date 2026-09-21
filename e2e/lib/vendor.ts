@@ -86,9 +86,9 @@ export async function createNewZone(page: Page, data: NewZoneData): Promise<stri
 
   // form.html renders the DNS root origin next to the zone-name field as
   // "([name].<origin>)". On this new-zone path it comes straight from
-  // get_vendor_zone_form_metadata's dns_roots (Vendor.pm render_form, issue
-  // #31 commit 1 removed the NP::Model->dns_root ORM fallback here), so a
-  // real domain must render, not a blank/undef.
+  // get_vendor_zone_form_metadata's dns_roots (Vendor.pm render_form, which no
+  // longer falls back to the NP::Model->dns_root ORM lookup), so a real domain
+  // must render, not a blank/undef.
   await expect(
     page.getByText(/\[name\]\.[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?\)/i),
   ).toBeVisible();

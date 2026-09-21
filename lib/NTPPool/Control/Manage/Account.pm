@@ -820,7 +820,7 @@ sub render_user_delete {
         # Use the updated user data from API response. The Go API enqueues the
         # user_tasks delete row itself (in the same transaction that sets
         # deletion_on), so there is no second call and no Perl-computed timestamp
-        # to drift from deletion_on (issue #40).
+        # to drift from deletion_on.
         my $updated_user = $result->{data}{user};
 
         my $param = {

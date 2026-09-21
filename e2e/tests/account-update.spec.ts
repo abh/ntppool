@@ -7,7 +7,7 @@ import {
   createAccount,
 } from "../lib/helpers";
 
-// Account field updates (Gitea #13; MANUAL_TEST_PLAN.md §4 account management).
+// Account field updates — account management.
 //
 // All UI-driven on the account edit form, no DB/email side effects:
 //   - GET  /manage/account[?a=<token>]   render_account_form -> tpl/account/form.html

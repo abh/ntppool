@@ -9,14 +9,14 @@ import {
   inviteUser,
 } from "../lib/helpers";
 
-// Account team / user removal (Gitea #14; MANUAL_TEST_PLAN.md §4).
+// Account team / user removal.
 //
 // A 2-member account is built with the real invite + accept flow: inviteUser
 // (send, as the owner) then acceptInvite (accept, as a second identity in a
 // second BrowserContext) — see lib/helpers.ts. Neither needs DB access or an
 // email body: get_account_invites(for_user => 1) serves the invite `code`
 // straight to whichever user is logged in and it's rendered right into the
-// Accept form (Gitea #46).
+// Accept form.
 //
 // The removal-notification email itself is not independently verified —
 // there is no email-side-effect surface in this harness (same limitation
@@ -199,10 +199,9 @@ async function buildTwoMemberAccount(
 test("removing a second member drops them from the team and notifies them", async ({
   browser,
 }) => {
-  // §4 / #14 cases 1, 3, 4: with a 2-member account, the owner removes the other
-  // member; the member table shrinks to 1 and the removed user no longer
-  // appears. (Removal-email delivery itself is not asserted — see the note at
-  // the top of this file.)
+  // With a 2-member account, the owner removes the other member; the member
+  // table shrinks to 1 and the removed user no longer appears. (Removal-email
+  // delivery itself is not asserted — see the note at the top of this file.)
   const { ownerContext, ownerPage, inviteeContext, invitee } =
     await buildTwoMemberAccount(browser, "team-remove");
 
@@ -230,12 +229,12 @@ test("removing a second member drops them from the team and notifies them", asyn
 test("a member cannot remove themselves from a multi-member account", async ({
   browser,
 }) => {
-  // §4 / #14 case 2: in a 2-member account the API blocks self-removal
-  // (RemoveUserFromAccount: "you cannot remove yourself from an account"). The
-  // non-staff UI never offers a self-remove control (team.html excludes
-  // yourself from the remove button), and a forced self-removal POST is a
-  // no-op. Acting user is the invited (non-owner) member, matching the
-  // self-removal error path this unblocks.
+  // In a 2-member account the API blocks self-removal (RemoveUserFromAccount:
+  // "you cannot remove yourself from an account"). The non-staff UI never
+  // offers a self-remove control (team.html excludes yourself from the remove
+  // button), and a forced self-removal POST is a no-op. Acting user is the
+  // invited (non-owner) member, matching the self-removal error path this
+  // unblocks.
   const { ownerContext, ownerPage, inviteeContext, inviteePage, invitee } =
     await buildTwoMemberAccount(browser, "team-self-remove");
 
@@ -272,7 +271,7 @@ test("a member cannot remove themselves from a multi-member account", async ({
 test("staff clicking Remove on their own row is refused with the self-removal message", async ({
   browser,
 }) => {
-  // §4b: team.html renders "Remove from team" on a staff user's OWN row too
+  // team.html renders "Remove from team" on a staff user's OWN row too
   // (`combust.user_is_staff OR combust.user.user_id != user.user_id`), unlike
   // the non-staff case above. The Go API refuses self-removal with no staff
   // exemption (RemoveUserFromAccount: "you cannot remove yourself from an
@@ -324,7 +323,7 @@ test("staff clicking Remove on their own row is refused with the self-removal me
 test("staff cannot remove the last member of an account", async ({
   browser,
 }) => {
-  // §4b: RemoveUserFromAccount checks self-removal BEFORE counting members
+  // RemoveUserFromAccount checks self-removal BEFORE counting members
   // (mutations.go), so "cannot remove the last user from an account" is only
   // reachable by an editor who isn't the remaining member: a non-member staff
   // user on someone else's account via the ?a= override. The UI never renders

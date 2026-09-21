@@ -1,8 +1,8 @@
 import { test, expect } from "@playwright/test";
 import { expectCleanPage, expectNoErrorBleed } from "../lib/helpers";
 
-// MANUAL_TEST_PLAN.md §9 — score graphs / PNG endpoints. These are PUBLIC
-// pages: no login / session cookie needed, so this spec does not use loginAs.
+// Score graphs / PNG endpoints. These are PUBLIC pages: no login / session
+// cookie needed, so this spec does not use loginAs.
 //
 // Server IP under test. The public scores/graph pages do a CAPI get_server
 // lookup and 404 for an unknown IP, so this MUST be a real server that exists
@@ -12,7 +12,7 @@ import { expectCleanPage, expectNoErrorBleed } from "../lib/helpers";
 // NTP_SCORES_TEST_IP to a known-good dev server IP if the default is removed.
 const SCORES_IP = process.env.NTP_SCORES_TEST_IP || "216.239.35.4";
 
-test.describe("score graphs / PNG endpoints (§9)", () => {
+test.describe("score graphs / PNG endpoints", () => {
   test("/scores/<ip> renders the public score page", async ({ page }) => {
     // 200 + no Perl/ORM error bleed. A real server renders its score page.
     await expectCleanPage(page, `/scores/${SCORES_IP}`);
@@ -39,8 +39,8 @@ test.describe("score graphs / PNG endpoints (§9)", () => {
   test("score.png is normalized away (only offset.png is canonical)", async ({
     page,
   }) => {
-    // §9 "score.png requests normalize to offset.png". The only canonical graph
-    // PNG is offset.png (NP::Data::Server->graph_uri always emits offset.png);
+    // score.png requests normalize to offset.png. The only canonical graph PNG
+    // is offset.png (NP::Data::Server->graph_uri always emits offset.png);
     // there is no /graph/<ip>/score.png endpoint (it 404s). The "score" form is
     // normalized on the /scores/ path: Scores.pm captures mode "score" and
     // 301-redirects /scores/<ip>/score.png to the canonical /scores/<ip> score
@@ -91,9 +91,9 @@ test.describe("score graphs / PNG endpoints (§9)", () => {
   });
 
   test("unmatched / invalid graph path returns 404", async ({ page }) => {
-    // §9: an unmatched/legacy graph path must return 404, not a blank/200
-    // image. Graph.pm only matches /graph/<ip>/(offset|score).png and returns
-    // 404 for any other type. A bogus type is the clearest invalid path.
+    // An unmatched/legacy graph path must return 404, not a blank/200 image.
+    // Graph.pm only matches /graph/<ip>/(offset|score).png and returns 404 for
+    // any other type. A bogus type is the clearest invalid path.
     const response = await page.request.get(`/graph/${SCORES_IP}/bogus.png`, {
       maxRedirects: 0,
     });
@@ -110,9 +110,9 @@ test.describe("score graphs / PNG endpoints (§9)", () => {
   test("missing record on the scores page returns a clean 404", async ({
     page,
   }) => {
-    // §12a: a public read page that uses capi_error_status should return a
-    // clean 404 for a genuinely missing record (an RFC 5737 documentation IP
-    // that is not a real server), with no ORM/template error bleed.
+    // A public read page that uses capi_error_status should return a clean 404
+    // for a genuinely missing record (an RFC 5737 documentation IP that is not
+    // a real server), with no ORM/template error bleed.
     const response = await page.goto("/scores/192.0.2.1", {
       waitUntil: "domcontentloaded",
     });

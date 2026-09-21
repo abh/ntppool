@@ -10,7 +10,7 @@ import {
 } from "../lib/monitors";
 
 // Account monitor configuration — the monitor-admin-only card on the account
-// page. MANUAL_TEST_PLAN.md §14.
+// page.
 //
 // Routes (lib/NTPPool/Control/Manage/Account.pm:197-204), both HTMX fragments:
 //   - GET  /manage/account/monitor-config?a=<token>  render_monitor_config_form

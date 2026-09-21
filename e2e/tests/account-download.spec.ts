@@ -7,7 +7,7 @@ import {
   errorAlerts,
 } from "../lib/helpers";
 
-// Personal data download requests (MANUAL_TEST_PLAN.md §4c, issue #15).
+// Personal data download requests.
 //
 // Controller: lib/NTPPool/Control/Manage/Account.pm render_download (:693-754).
 //   GET  /manage/account/download   lists the user's `download` tasks.

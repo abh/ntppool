@@ -10,7 +10,7 @@ import {
   scheduleAccountDeletion,
 } from "../lib/accounts";
 
-// Account scheduled deletion / dissolve flow (MANUAL_TEST_PLAN.md §2).
+// Account scheduled deletion / dissolve flow.
 //
 // Scheduling is staff-only; cancelling is not. The dissolve route
 // (lib/NTPPool/Control/Manage/Account.pm manage_dispatch:
@@ -24,7 +24,7 @@ import {
 // where permissions.can_edit is false for everyone, staff included
 // (AccountWritable = !deletion_on). manage_dispatch excepts the /manage/account
 // URI for a frozen account so both the member banner and the staff
-// "Account deletion scheduled — manage" link are reachable (issue #38).
+// "Account deletion scheduled — manage" link are reachable.
 //
 // Routes / templates this exercises:
 //   - /manage/account              render_account_form -> tpl/account/form.html
@@ -42,7 +42,7 @@ import {
 // a real one.
 //
 // The schedule/cancel mechanics live in lib/accounts.ts, which verifies each
-// state change on a fresh read; the tests below add the §2 UI assertions.
+// state change on a fresh read; the tests below add the UI assertions.
 
 // The destructive link on /manage/account is an <a class="text-danger"> reading
 // "Delete account" before anything is scheduled (form.html:163).
@@ -82,9 +82,10 @@ test("non-staff user: link hidden and dissolve route returns 403", async ({
   await expect(deleteAccountLink(page)).toHaveCount(0);
 
   // A bare GET of /manage/account/dissolve is staff-only -> 403
-  // (manage_dispatch). This stays correct after #38: what #38 changed is that a
-  // non-staff member of an already-frozen account can reach /manage/account and
-  // POST cancel=1 from the banner there, not that the GET opens up.
+  // (manage_dispatch). This stays correct after the frozen-account fix: what
+  // the fix changed is that a non-staff member of an already-frozen account can
+  // reach /manage/account and POST cancel=1 from the banner there, not that the
+  // GET opens up.
   const response = await page.request.get(DISSOLVE_PATH);
   expect(response.status(), "non-staff dissolve GET should be 403").toBe(403);
 });
@@ -124,7 +125,7 @@ test("staff: schedule, see pending state, then cancel back to normal", async ({
   // fails or times out.
   scheduledDeletions.register(acct);
 
-  // §2: schedule deletion. The API picks a fixed 7-day-out date.
+  // Schedule deletion. The API picks a fixed 7-day-out date.
   await scheduleAccountDeletion(page, acct);
 
   // Revisit the dissolve page: it now shows the pending scheduled state with a
@@ -143,8 +144,8 @@ test("staff: schedule, see pending state, then cancel back to normal", async ({
     page.getByRole("button", { name: "Cancel scheduled deletion" }),
   ).toBeVisible();
 
-  // §2: cancel — state clears and the account is back to normal. Leaving the
-  // staff account scheduled for deletion would be unfriendly, so always cancel.
+  // Cancel — state clears and the account is back to normal. Leaving the staff
+  // account scheduled for deletion would be unfriendly, so always cancel.
   await cancelAccountDeletionAsStaff(page, acct);
 
   // The dissolve page is back to the un-scheduled state: schedule button shown,
@@ -173,9 +174,9 @@ test("staff: a frozen account still renders /manage/account with the scheduled-d
   scheduledDeletions.register(acct);
   await scheduleAccountDeletion(page, acct);
 
-  // #38: before the fix this redirected to /manage/ (can_edit is false for
-  // staff too on a frozen account), leaving form.html:156-167 dead. It must now
-  // render the account form.
+  // Before the fix this redirected to /manage/ (can_edit is false for staff too
+  // on a frozen account), leaving form.html:156-167 dead. It must now render
+  // the account form.
   await expectCleanPage(page, bust(accountFormUrl(acct)));
   await expect(page).toHaveURL(/\/manage\/account(\?|$)/);
   const pendingLink = page.locator("a.text-danger", {
@@ -207,9 +208,9 @@ test("staff: a frozen account still renders /manage/account with the scheduled-d
 // it. That needs a second member on the account, and the invite has to be
 // accepted before the account is frozen (CreateAccountInvite returns
 // FailedPrecondition once deletion_on is set). Blocked on the accept-invite
-// helper in issue #46; MANUAL_TEST_PLAN.md §2 carries it as a manual check.
+// helper, so it stays a manual check.
 //
-// Note: a §2 grey-box check that scheduling writes a deletion-scheduled email
-// row was removed — the account_dissolution email has no UI/API surface and was
+// Note: a grey-box check that scheduling writes a deletion-scheduled email row
+// was removed — the account_dissolution email has no UI/API surface and was
 // verifiable only through the read-only DB layer (intentionally not used). The
 // schedule/cancel cycle itself is covered by the test above.

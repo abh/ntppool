@@ -26,8 +26,8 @@ import {
 } from "../lib/vendor";
 
 // Vendor zone flows for fresh, uncovered vendors, plus the vendor admin block
-// at the end of the file. MANUAL_TEST_PLAN.md §5, §5a, §5b, §5c and §5e.
-// Vendors with a live subscription are in vendor-coverage.spec.ts.
+// at the end of the file. Vendors with a live subscription are in
+// vendor-coverage.spec.ts.
 //
 // Routes / templates this exercises (see lib/NTPPool/Control/Vendor.pm):
 //   - /manage/vendor          render_zones / redirect to /new when no zones
@@ -149,8 +149,8 @@ test("edit a New/Pending zone and persist a changed field", async ({
   await expectNoErrorBleed(page, page.url());
 
   // Edit path: form.html reads vz.dns_root_origin straight off the API zone
-  // hashref (Vendor.pm render_form's edit branch, issue #31 commit 1 removed
-  // the NP::Model->dns_root->fetch ORM read here). Confirm it still renders.
+  // hashref (Vendor.pm render_form's edit branch, which no longer makes the
+  // NP::Model->dns_root->fetch ORM read here). Confirm it still renders.
   await expect(
     page.getByText(/\[name\]\.[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?\)/i),
   ).toBeVisible();
@@ -179,14 +179,14 @@ test("edit a New/Pending zone and persist a changed field", async ({
   );
 });
 
-// §5a regular user, New.
+// Regular user, New.
 test("every writable field saves on a New zone", async ({ page, context }) => {
   await loginAs(context, uniqueTestEmail("vendor-fields-new"));
   const { idToken } = zoneUrlParams(await createNewZone(page, freshZoneData("fn")));
   await expectEveryFieldSaves(page, idToken, "fn");
 });
 
-// §5a regular user, Pending (after an open-source submit).
+// Regular user, Pending (after an open-source submit).
 test("every writable field saves on a Pending zone", async ({ page, context }) => {
   const { sessionToken } = await loginAs(context, uniqueTestEmail("vendor-fields-pending"));
   const idToken = await createAndSubmitPendingZone(page, freshZoneData("fp"));
@@ -194,7 +194,7 @@ test("every writable field saves on a Pending zone", async ({ page, context }) =
   await expectEveryFieldSaves(page, idToken, "fp");
 });
 
-// §5b: Perl's check is a truthiness test, so "   " reaches the API, whose
+// Perl's check is a truthiness test, so "   " reaches the API, whose
 // validateOpensourceInfo refuses it before any write. render_submit shows the
 // Connect message in the _errors.html alert with a Trace ID.
 test("a whitespace-only justification is refused by the API and the zone stays New", async ({ page, context }) => {
@@ -271,8 +271,8 @@ test("open-source submit retains justification and edits without error", async (
   await expect(page.locator("body")).toContainText(justification);
 });
 
-// §5b: submitting the open-source claim with an EMPTY justification must be
-// refused server-side, and the zone must not move to Pending.
+// Submitting the open-source claim with an EMPTY justification must be refused
+// server-side, and the zone must not move to Pending.
 //
 // The textarea carries no `required` attribute (_opensource.html:32), so a
 // plain click reaches the server-side check in Vendor.pm:388-397 — the error
@@ -336,7 +336,7 @@ test("open-source submit with an empty justification is refused and the zone sta
   ).toBeVisible();
 });
 
-// Issue #39 regression guard.
+// Regression guard for the vendor submit-control routing.
 //
 // The bug: show.html used to route the New/Rejected submit control on a single
 // `!need_subscription` guard, so ANY vendor whose zone did not need a
@@ -353,16 +353,16 @@ test("open-source submit with an empty justification is refused and the zone sta
 //
 // WHAT THIS TEST GUARDS (and the fixture gap it lives with)
 // ---------------------------------------------------------------------------
-// The covered direction of #39 is in vendor-coverage.spec.ts, which seeds a
-// live subscription through `api e2e fixture create`, and in the Go
-// integration test TestSubmitVendorZone_DoesNotForceOpensource.
+// The covered direction is in vendor-coverage.spec.ts, which seeds a live
+// subscription through `api e2e fixture create`, and in the Go integration test
+// TestSubmitVendorZone_DoesNotForceOpensource.
 //
-// What e2e CAN reach is a fresh, uncovered vendor — and the subtle failure this
-// plan nearly shipped was the routing fix removing the open-source path for
-// exactly that vendor. This test pins that path open: an uncovered New zone must
-// still offer the justification form and must NOT be handed a plain production
-// submit (which would let an uncovered vendor reach production with neither a
-// plan nor an open-source claim).
+// What e2e CAN reach is a fresh, uncovered vendor — and the subtle failure that
+// nearly shipped was the routing fix removing the open-source path for exactly
+// that vendor. This test pins that path open: an uncovered New zone must still
+// offer the justification form and must NOT be handed a plain production submit
+// (which would let an uncovered vendor reach production with neither a plan nor
+// an open-source claim).
 test("uncovered vendor submit page shows the open-source form, not a plain submit", async ({
   page,
   context,
@@ -379,7 +379,7 @@ test("uncovered vendor submit page shows the open-source form, not a plain submi
   // offered so the vendor can apply for the non-revenue plan.
   await expect(
     page.locator('textarea[name="opensource_info"]'),
-    "uncovered vendor must still be offered the open-source justification form (#39)",
+    "uncovered vendor must still be offered the open-source justification form",
   ).toBeVisible();
 
   // The plain production submit must NOT be offered here — that control is for a
@@ -389,7 +389,7 @@ test("uncovered vendor submit page shows the open-source form, not a plain submi
     page.getByRole("button", {
       name: /Submit for production|Resubmit for production/,
     }),
-    "uncovered vendor must not get a plain production submit button (#39)",
+    "uncovered vendor must not get a plain production submit button",
   ).toHaveCount(0);
 });
 
@@ -442,8 +442,8 @@ test("duplicate zone name surfaces a red error alert with a Trace ID", async ({
 });
 
 // ---------------------------------------------------------------------------
-// Staff / admin vendor-zone flows — MANUAL_TEST_PLAN.md §5a (editability matrix,
-// staff rows) and §5c (admin approve/reject error surfacing).
+// Staff / admin vendor-zone flows — the editability matrix (staff rows) and
+// admin approve/reject error surfacing.
 //
 // MULTI-SESSION APPROACH
 // ----------------------
@@ -471,7 +471,7 @@ test("duplicate zone name surfaces a red error alert with a Trace ID", async ({
 // flag.
 // ---------------------------------------------------------------------------
 
-test.describe.serial("vendor admin & editability (§5a staff, §5c)", () => {
+test.describe.serial("vendor admin & editability", () => {
   // Loud preflight: prove the dev API can actually mint a vendor_admin session
   // BEFORE the admin tests run. Every test below otherwise self-skips via
   // `test.skip(!isVendorAdmin(...))`, so if the deployed dev API lost (or never
@@ -494,7 +494,7 @@ test.describe.serial("vendor admin & editability (§5a staff, §5c)", () => {
             "reach /manage/vendor/admin. The api-dev binary must honor " +
             "`api e2e session`'s grant_vendor_admin flag (Go " +
             "e2efixture.CreateSession -> GrantUserVendorAdmin). Without it " +
-            "all §5a/§5c admin tests would silently skip — failing loudly here " +
+            "all admin tests would silently skip — failing loudly here " +
             "instead so the missing grant is one obvious check, not six dropped " +
             "tests.",
         );
@@ -526,8 +526,8 @@ test.describe.serial("vendor admin & editability (§5a staff, §5c)", () => {
     }
   });
 
-  // §5e uncovered without a claim. The normal form hides a plain submit from
-  // an uncovered vendor, so the site gate is reached by removing the hidden
+  // Uncovered without a claim. The normal form hides a plain submit from an
+  // uncovered vendor, so the site gate is reached by removing the hidden
   // opensource_request input, and the Go gate by calling SubmitVendorZone.
   test("an uncovered plain submit is refused by the site and by the API", async ({
     page,
@@ -569,9 +569,9 @@ test.describe.serial("vendor admin & editability (§5a staff, §5c)", () => {
     }
   });
 
-  // One zone walks New -> Pending -> Rejected -> Pending -> Approved. §5a
-  // Rejected; §5b grant undecided, claim kept after resubmit, Rejected edit,
-  // and the checked half of the Grant row.
+  // One zone walks New -> Pending -> Rejected -> Pending -> Approved. It covers
+  // the Rejected editability row; grant undecided, claim kept after resubmit,
+  // Rejected edit, and the checked half of the Grant row.
   test("approve/reject status changes and owner resubmit", async ({
     page,
     context,
@@ -647,7 +647,7 @@ test.describe.serial("vendor admin & editability (§5a staff, §5c)", () => {
     }
   });
 
-  // §5b, the unchecked half of the Grant row.
+  // The unchecked half of the Grant row.
   test("approving with Grant unchecked leaves the zone on the paid path", async ({
     page,
     context,
@@ -794,10 +794,10 @@ test.describe.serial("vendor admin & editability (§5a staff, §5c)", () => {
     }
   });
 
-  // §5a staff, Approved. zone_name is readonly in the form, which is only a
-  // browser hint, so the test removes the attribute and submits the real
-  // form. UpdateVendorZone refuses the rename (update.go:224-234), and
-  // render_edit re-renders the form with the alert instead of redirecting.
+  // Staff, Approved. zone_name is readonly in the form, which is only a browser
+  // hint, so the test removes the attribute and submits the real form.
+  // UpdateVendorZone refuses the rename (update.go:224-234), and render_edit
+  // re-renders the form with the alert instead of redirecting.
   test("renaming an Approved zone shows the API's refusal", async ({
     page,
     context,
@@ -841,9 +841,9 @@ test.describe.serial("vendor admin & editability (§5a staff, §5c)", () => {
     }
   });
 
-  // 7. §5c: an invalid admin transition must be a SAFE no-op — it must not
-  // dead-end, corrupt the zone, or leak a Perl/ORM error — and IF it ever does
-  // surface an alert, that alert must carry a Trace ID (the project convention).
+  // 7. An invalid admin transition must be a SAFE no-op — it must not dead-end,
+  // corrupt the zone, or leak a Perl/ORM error — and IF it ever does surface an
+  // alert, that alert must carry a Trace ID (the project convention).
   //
   // We deliberately do NOT claim to force the admin status-RPC error here,
   // because no UI/HTTP path can: render_admin re-fetches the zone's LIVE status
@@ -861,7 +861,7 @@ test.describe.serial("vendor admin & editability (§5a staff, §5c)", () => {
   // So this test asserts what IS reachable: the no-op is safe, and the
   // conditional Trace-ID check below is a free regression net for the day a
   // forced-failure path exists.
-  test("§5c invalid admin transition is a safe no-op (and any alert carries a Trace ID)", async ({
+  test("invalid admin transition is a safe no-op (and any alert carries a Trace ID)", async ({
     page,
     context,
     browser,
@@ -908,8 +908,8 @@ test.describe.serial("vendor admin & editability (§5a staff, §5c)", () => {
       expect(resp.status(), "admin POST should not 5xx").toBeLessThan(500);
 
       // Re-render the admin show page and check error surfacing convention: if a
-      // danger/warning alert is present it MUST include a Trace ID (the §5c rule),
-      // and the page must not be a blank error bleed.
+      // danger/warning alert is present it MUST include a Trace ID (the project
+      // convention), and the page must not be a blank error bleed.
       await adminOpenZone(adminPage, idToken);
       const alert = errorAlerts(adminPage);
       if ((await alert.count()) > 0) {

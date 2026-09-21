@@ -2,8 +2,7 @@ import { test, expect, Page } from "@playwright/test";
 import { loginAs, uniqueTestEmail } from "../lib/auth";
 import { expectCleanPage, createAccount } from "../lib/helpers";
 
-// Account creation flow (Gitea #12; MANUAL_TEST_PLAN.md §1 automatic account
-// creation + §4 account management).
+// Account creation flow — automatic account creation and account management.
 //
 // The DB-level checks in the issue (accounts / account_users rows) are asserted
 // here through their UI equivalents, since the harness has no DB layer:

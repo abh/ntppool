@@ -24,15 +24,13 @@ import {
   uniqueAccountName,
 } from "../lib/accounts";
 
-// Frozen-account behavior from the NON-STAFF OWNER's side
-// (MANUAL_TEST_PLAN.md §2, "Frozen-account UI", issue #38).
+// Frozen-account behavior from the NON-STAFF OWNER's side.
 //
-// account-dissolve.spec.ts covers the staff half. The four checklist items
-// here need a non-staff *member* of a frozen account, which the plan
-// previously assumed required an accept-invite helper. It does not: the second
-// account from createAccount() has its creator as sole member, so the creator
-// is already a non-staff member of it. A separate staff identity freezes that
-// account; the owner never accepts an invitation.
+// account-dissolve.spec.ts covers the staff half. The tests here need a
+// non-staff *member* of a frozen account, which does not need an accept-invite
+// helper: the second account from createAccount() has its creator as sole
+// member, so the creator is already a non-staff member of it. A separate staff
+// identity freezes that account; the owner never accepts an invitation.
 //
 // Product behavior this pins (lib/NTPPool/Control/Manage/Account.pm):
 //   - :163-177  /manage/account is excepted from the can_edit redirect for a
@@ -222,8 +220,8 @@ test("a non-staff owner sees the deletion banner on a frozen account", async ({
     f.accountToken,
   );
 
-  // #38: before the fix this redirected to /manage/ (can_edit is false on a
-  // frozen account), so the member could never reach the cancel control.
+  // Before the fix this redirected to /manage/ (can_edit is false on a frozen
+  // account), so the member could never reach the cancel control.
   await expectCleanPage(f.ownerPage, bust(accountFormUrl(f.accountToken)));
 
   const banner = deletionBanner(f.ownerPage);

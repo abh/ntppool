@@ -18,8 +18,8 @@ import {
 } from "../lib/subscriptions";
 
 // A real Stripe Checkout, against the sandbox stripe-gw is configured for.
-// MANUAL_TEST_PLAN.md §7. Unlike every other spec this one talks to
-// checkout.stripe.com, so it needs outbound internet and is slower.
+// Unlike every other spec this one talks to checkout.stripe.com, so it needs
+// outbound internet and is slower.
 //
 // It checks both halves of the write path. The browser half: Stripe sends the
 // vendor back, Perl calls stripe-gw's checkout/complete, and the subscription

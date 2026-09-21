@@ -13,7 +13,7 @@ import {
   uniqueAccountName,
 } from "../lib/accounts";
 
-// Staff search (MANUAL_TEST_PLAN.md §13, issue #43).
+// Staff search.
 //
 // Route: lib/NTPPool/Control/Manage.pm manage_dispatch (:451-461) -> staff_search
 // (:482-612). Template: docs/manage/tpl/staff.html (the form) and

@@ -23,8 +23,8 @@ import {
   zoneUrlParams,
 } from "../lib/vendor";
 
-// Vendor zones for an account with a live subscription. MANUAL_TEST_PLAN.md
-// §5 (plan checks), §5b (covered rows) and §5e (coverage gate).
+// Vendor zones for an account with a live subscription — plan checks, covered
+// rows and the coverage gate.
 //
 // Each test seeds a subscription-only fixture through `api e2e fixture
 // create` (status active, plan name "E2E fixture") and logs in as its owner.
@@ -115,7 +115,7 @@ async function expectOverLimitRefusal(page: Page, fixture: Fixture, idToken: str
   expect((await getVendorZone(fixture.sessionToken, idToken)).status).toBe("New");
 }
 
-// §5 subscription row, §5b covered rows, §5e covered.
+// Subscription row, covered rows, coverage gate (covered).
 test("a covered vendor gets a plain submit and stays off the open-source path", async ({ page, context, fixtures }) => {
   const fixture = await fixtures.create({ subscription: { maxZones: 1, maxDevices: 10000 } });
   await installSession(context, fixture.sessionToken);
@@ -143,7 +143,7 @@ test("a covered vendor gets a plain submit and stays off the open-source path", 
   expect(zone.opensourceApproved, "the grant is undecided").toBeUndefined();
 });
 
-// §5e over-limit, device limit.
+// Coverage gate, over-limit, device limit.
 test("a covered vendor over the device limit is refused by the site and by the API", async ({ page, context, fixtures }) => {
   const fixture = await fixtures.create({ subscription: { maxZones: 1, maxDevices: 5000 } });
   await installSession(context, fixture.sessionToken);
@@ -152,10 +152,10 @@ test("a covered vendor over the device limit is refused by the site and by the A
   await expectOverLimitRefusal(page, fixture, idToken);
 });
 
-// §5e over-limit, device limit, on a tiered plan: the upgrade offer. The
-// fixture's e2e_ subscription doesn't exist in Stripe, so stripe-gw can't
-// open a portal session for it and the page falls back to the email text.
-// The real portal is stripe-checkout.spec.ts. The offer is for the zone's own
+// Coverage gate, over-limit, device limit, on a tiered plan: the upgrade offer.
+// The fixture's e2e_ subscription doesn't exist in Stripe, so stripe-gw can't
+// open a portal session for it and the page falls back to the email text. The
+// real portal is stripe-checkout.spec.ts. The offer is for the zone's own
 // account: a vendor admin on their own account gets the email text and a 403
 // from the upgrade route, and gets the button after switching into the
 // zone's account with a=.
@@ -217,9 +217,9 @@ test("a covered vendor on a tiered plan over the device limit is offered an upgr
   expect((await getVendorZone(fixture.sessionToken, idToken)).status).toBe("New");
 });
 
-// §5e over-limit, zone limit. max_devices is large, so only the zone count can
-// refuse. Pending zones don't count toward max_zones, so zone A is approved
-// first.
+// Coverage gate, over-limit, zone limit. max_devices is large, so only the zone
+// count can refuse. Pending zones don't count toward max_zones, so zone A is
+// approved first.
 test("a covered vendor at the zone limit is refused by the site and by the API", async ({
   page,
   context,
@@ -247,7 +247,7 @@ test("a covered vendor at the zone limit is refused by the site and by the API",
   await expectOverLimitRefusal(page, fixture, secondToken);
 });
 
-// §5e vendor admin, §5b covered resubmit of a Rejected zone.
+// Coverage gate, vendor admin, covered resubmit of a Rejected zone.
 test("a vendor admin submits for a covered account, and the owner resubmits after a rejection", async ({
   page,
   context,
