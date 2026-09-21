@@ -71,13 +71,11 @@ Account: <a href="[% server_data.account.public_url | html %]"
 </span>
 <br>
 
-[% IF server_data.deletion_on %]
-[%
-  verb = "is";
-  # deletion_on is ISO 8601 string, need to parse for comparison
-  # For now, just show it's scheduled
-%]
-This server [% verb %] <span class="deletion">scheduled for deletion</span>.
+[% IF server_data.deleted %]
+This server <span class="deletion">was deleted</span>.
+<br>
+[% ELSIF server_data.deletion_on %]
+This server is <span class="deletion">scheduled for deletion</span>.
 <br>
 [% END %]
 
@@ -92,7 +90,7 @@ This server [% verb %] <span class="deletion">scheduled for deletion</span>.
    END;
  %]
 
-[% IF show_history %]
+[% UNLESS server_data.history_hidden %]
 <p>
 [% score = server_data.score_raw | format("%.1f"); active_score = 10; %]
 [% | loc(score, active_score) %]Current score: %1 (only servers with a score higher than %2 are used in the pool)[% END %]
@@ -141,7 +139,7 @@ permyriad of the overall "netspeed" for countries configured for the server.
 [% END %]
 
 <span class="server-id"># [% server_data.id %]
-[%- IF show_history %]
+[%- UNLESS server_data.history_hidden %]
 , <a href="/scores/[% server_data.ip %]/log?limit=200&monitor=*">[% "CSV log" | l %]</a>
 
 [% UNLESS manage_site %]

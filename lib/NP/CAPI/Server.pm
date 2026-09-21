@@ -158,6 +158,9 @@ Hashref with structure:
                 verification => ...,  # hashref (ServerVerification) - verification contains verification status
                 deletion_on => ...,  # string - deletion_on is when the server is/was scheduled for deletion (ISO 8601)
  Empty if not scheduled for deletion
+                deleted => ...,  # bool - deleted is true once deletion_on has passed (deletion_on <= today, UTC)
+                history_hidden => ...,  # bool - history_hidden is true once the server has been deleted for more than
+ 6 months; clients should hide score history and graphs
             },  # hashref (Server) - server contains the complete server information
         },
         error        => undef,       # Error message (if any)
@@ -268,6 +271,9 @@ Hashref with structure:
                 verification => ...,  # hashref (ServerVerification) - verification contains verification status
                 deletion_on => ...,  # string - deletion_on is when the server is/was scheduled for deletion (ISO 8601)
  Empty if not scheduled for deletion
+                deleted => ...,  # bool - deleted is true once deletion_on has passed (deletion_on <= today, UTC)
+                history_hidden => ...,  # bool - history_hidden is true once the server has been deleted for more than
+ 6 months; clients should hide score history and graphs
             },
             # ... more items
         ],  # arrayref[hashref (Server)] - servers contains all active servers for this account

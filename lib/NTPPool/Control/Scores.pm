@@ -12,7 +12,6 @@ use OpenTelemetry::Constants qw( SPAN_KIND_INTERNAL SPAN_STATUS_ERROR SPAN_STATU
 use OpenTelemetry -all;
 use NP::CAPI::Server qw(get_server);
 use NP::Data::Server;
-use DateTime::Format::ISO8601;
 
 my $json = JSON::XS->new->utf8;
 
@@ -116,17 +115,6 @@ sub render {
             $self->tpl_param('graph_explanation' => 1)
               if $self->req_param('graph_explanation');
             $self->tpl_param('server_data' => $server_data);
-
-            # Hide history sections if server was deleted more than 6 months ago
-            my $show_history = 1;
-            if ($server_data->{deletion_on}) {
-                $self->tpl_param('now' => DateTime->now());
-                my $deletion_date =
-                  DateTime::Format::ISO8601->parse_datetime($server_data->{deletion_on});
-                my $six_months_ago = DateTime->now->subtract(months => 6);
-                $show_history = 0 if $deletion_date < $six_months_ago;
-            }
-            $self->tpl_param('show_history' => $show_history);
 
             if ($self->req_param('graph_only')) {
                 return OK, $self->evaluate_template('tpl/server_static_graph.html');

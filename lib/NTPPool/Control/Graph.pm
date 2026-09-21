@@ -34,8 +34,8 @@ sub render {
     if (my $status = $self->capi_error_status($result, $result->{data}{server})) {
         return $status;
     }
+    return 404 if $result->{data}{server}{history_hidden};
     my $server = NP::Data::Server->new(%{$result->{data}{server}});
-    return 404 if $server->deleted;
 
     # we only have one graph type now
     $type = 'offset';
