@@ -33,7 +33,8 @@ Authentication: None required (this endpoint creates authentication).
 
     # GetOAuthLoginURL generates an OAuth authorization URL for the authentication flow.
 This removes OAuth provider configuration from Perl, centralizing it in the Go API.
-The URL includes the environment-specific audience parameter and CSRF state token.
+The URL includes the CSRF state token. It has no audience parameter: only the
+ID token is used, so the Auth0 access token (which the audience controls) is not.
 Authentication: None required (this starts the authentication flow).
     my $result = get_oauth_login_url(
         $self->api_auth_params,      # Provides auth and context
@@ -268,7 +269,8 @@ sub process_auth0_login {
 
 GetOAuthLoginURL generates an OAuth authorization URL for the authentication flow.
 This removes OAuth provider configuration from Perl, centralizing it in the Go API.
-The URL includes the environment-specific audience parameter and CSRF state token.
+The URL includes the CSRF state token. It has no audience parameter: only the
+ID token is used, so the Auth0 access token (which the audience controls) is not.
 Authentication: None required (this starts the authentication flow).
 
 B<Arguments:>
@@ -294,7 +296,7 @@ Hashref with structure:
         connect_code => undef,       # ConnectRPC error code (or undef)
         data         => {            # Response data
             login_url => ...,  # string - login_url is the complete OAuth authorization URL to redirect the user to.
- Includes all necessary parameters: client_id, redirect_uri, response_type, audience, scope, state.
+ Includes all necessary parameters: client_id, redirect_uri, response_type, scope, state.
         },
         error        => undef,       # Error message (if any)
         trace_id     => "...",       # OpenTelemetry trace ID

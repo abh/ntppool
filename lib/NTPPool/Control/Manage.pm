@@ -309,6 +309,20 @@ sub render {
 
     if ($self->request->uri =~ m!^/manage/login!) {
         $self->set_span_name("manage.login");
+
+        # Auth0 redirects back with error= when it rejects the authorize
+        # request. Show the login page instead of redirecting to Auth0
+        # again, which would loop. error_description comes from the URL,
+        # so it goes to the log, not the page.
+        if (my $error = $self->req_param('error')) {
+            my $description = $self->req_param('error_description') // '';
+            warn "auth0 login error: $error: $description\n";
+            $span->set_status(SPAN_STATUS_ERROR, "auth0 login error: $error");
+            $span->set_attribute("auth0.error",             $error);
+            $span->set_attribute("auth0.error_description", $description);
+            return $self->login("Login failed. Please try again or contact support.");
+        }
+
         if ($self->req_param('code')) {
             $self->handle_login();
         }
