@@ -24,7 +24,10 @@ steps:
         semver --auto
 
   - name: docker
-    image: woodpeckerci/plugin-kaniko
+    # :latest (2.3.2) ships kaniko v1.27.6, which panics on VOLUME with
+    # cache enabled (osscontainertools/kaniko#793). Remove :next once
+    # plugin-kaniko 2.3.3 or later has been released.
+    image: woodpeckerci/plugin-kaniko:next
     settings:
       registry: harbor.ntppool.org
       repo: ntppool/ntppool
