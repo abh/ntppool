@@ -16,13 +16,16 @@
     display: inline-block;
 }
 
-// Accessibility: Provide static loading text for users with reduced motion
+// Accessibility: Provide static loading text for users with reduced motion.
+// Only for spinner indicators; indicators that already carry their own text
+// ("Updating...", "Saving...") would otherwise show two messages.
 @media (prefers-reduced-motion: reduce) {
     .htmx-indicator .spinner-border {
         display: none !important;
     }
 
-    .htmx-indicator::after {
+    .htmx-indicator.spinner-border::after,
+    .htmx-indicator:has(.spinner-border)::after {
         content: "Loading...";
         font-size: 0.875rem;
         color: currentColor;  // Use the button's text color for better contrast
@@ -30,7 +33,8 @@
     }
 
     // Ensure proper contrast on danger buttons when loading
-    .btn-outline-danger .htmx-indicator::after {
+    .btn-outline-danger .htmx-indicator.spinner-border::after,
+    .btn-outline-danger .htmx-indicator:has(.spinner-border)::after {
         color: white;
     }
 }
