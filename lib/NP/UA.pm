@@ -7,6 +7,7 @@ use Mozilla::CA    qw();
 use Exporter 'import';
 our @EXPORT_OK = qw(
     $ua
+    $ua_long
 );
 
 # Share an LWP::UserAgent across packages
@@ -23,5 +24,26 @@ our $ua = LWP::UserAgent->new(
     }
 );
 $ua->env_proxy;
+
+# Separate user agent for long-running operations (server precheck, etc.)
+our $ua_long = LWP::UserAgent->new(
+    agent             => 'ntppool/1',
+    keep_alive        => 5,
+    max_size          => (20 * 1024 * 1024),
+    protocols_allowed => ['http', 'https'],
+    timeout           => 60,
+    ssl_opts          => {
+        SSL_verify_mode => 0x02,
+        SSL_ca_file     => Mozilla::CA::SSL_ca_file()
+    }
+);
+$ua_long->env_proxy;
+
+# Enable automatic decompression - requires Compress::Zlib
+# This allows decoded_content() to automatically decompress gzip responses
+use HTTP::Message ();
+if (my $encoding = HTTP::Message::decodable()) {
+    $ua->default_header('Accept-Encoding' => $encoding);
+}
 
 1;

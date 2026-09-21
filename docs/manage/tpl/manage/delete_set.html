@@ -2,9 +2,7 @@
 
 <h3>[% server.ip %] has been scheduled for deletion</h3>
 
-[% IF error %]
-<p><span class="error">[% error | html %]</span></p>
-[% END %]
+[% PROCESS tpl/common/error_alert.html %]
 
 <p>
 [% server.ip %] will be deleted from the pool system on [%

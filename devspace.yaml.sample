@@ -1,0 +1,95 @@
+# Copy this file to devspace.yaml, then adjust the image registry and
+# hostnames for your development environment.
+
+version: v2beta1
+name: ntppool
+pipelines:
+    build:
+        run: build_images ntppool
+    deploy:
+        run: |-
+            ensure_pull_secrets ntppool
+            build_images ntppool
+            create_deployments ntppool --sequential
+    dev:
+        run: |-
+            ensure_pull_secrets ntppool
+            build_images ntppool
+            create_deployments ntppool --sequential
+
+            start_dev --all
+    purge:
+        run: |-
+            stop_dev --all
+            purge_deployments ntppool --sequential
+images:
+    ntppool:
+        image: harbor.ntppool.org/ntpdev/ntppool-dev
+        dockerfile: Dockerfile.dev
+        rebuildStrategy: default
+        kaniko:
+            cache: true
+            snapshotMode: full
+            image: gcr.io/kaniko-project/executor:v1.23.2
+            resources:
+                requests:
+                    cpu: 100m
+                    memory: 256Mi
+                limits:
+                    cpu: 2000m
+                    memory: 4096Mi
+        injectLegacyRestartHelper: true
+
+deployments:
+    ntppool:
+        helm:
+            chart:
+                name: ntppool
+                repo: https://charts.ntppool.org
+            values:
+                config:
+                    deployment_mode: devel
+                    httpd_maxclients: "4"
+                    manage_hostname: manage.ntp.test
+                    manage_tls: "no"
+                    pool_domain: ntp.test
+                    static_base: /static/
+                    web_hostname: web.ntp.test
+                    web_tls: "no"
+                image:
+                    image: harbor.ntppool.org/ntpdev/ntppool-dev
+                ingress:
+                    enabled: false
+
+dev:
+    sync-0:
+        labelSelector:
+            app: ntppool
+            tier: frontend
+        container: httpd
+        sync:
+            - path: ./:/ntppool
+              excludePaths:
+                - backup/
+                - logs/
+                - manage2/
+                - blib/
+                - .data/
+                - .vscode
+                - node_modules/
+                - perl-languageserver.log
+              downloadExcludePaths:
+                - '*'
+              onUpload: {}
+              waitInitialSync: true
+              disableDownload: true
+        restartHelper:
+            inject: false
+vars:
+    DEVSPACE_ENV_FILE:
+        value: .env
+        alwaysResolve: false
+
+pullSecrets:
+    ntppool:
+        registry: harbor.ntppool.org

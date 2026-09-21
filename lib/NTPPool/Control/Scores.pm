@@ -4,13 +4,15 @@ use strict;
 # include ::Login since the manage site use this controller, too
 use parent            qw(NTPPool::Control::Login NTPPool::Control);
 use Combust::Constant qw(OK DECLINED);
-use NP::Model;
-use List::Util   qw(min);
-use JSON         ();
-use experimental qw( defer );
+use List::Util        qw(min);
+use JSON              ();
+use experimental      qw( defer );
 use Syntax::Keyword::Dynamically;
 use OpenTelemetry::Constants qw( SPAN_KIND_INTERNAL SPAN_STATUS_ERROR SPAN_STATUS_OK );
 use OpenTelemetry -all;
+use NP::CAPI::Server qw(get_server);
+use NP::Data::Server;
+use DateTime::Format::ISO8601;
 
 my $json = JSON::XS->new->utf8;
 
@@ -44,8 +46,11 @@ sub render {
     }
 
     if (my $ip = ($self->req_param('ip') || $self->req_param('server_ip'))) {
-        my $server = NP::Model->server->find_server($ip) or return 404;
-        return $self->redirect('/scores/' . $server->ip) if $server;
+        my $result = $self->server_data($ip);
+        if (my $status = $self->capi_error_status($result, $result->{data}{server})) {
+            return $status;
+        }
+        return $self->redirect('/scores/' . $result->{data}{server}{ip});
     }
 
     # "tell me your IP" form
@@ -56,7 +61,11 @@ sub render {
     return $self->redirect('/scores/') if ($self->request->uri =~ m!^/s(cores)?/?$!);
 
     if ($self->request->uri =~ m!^/s/([^/]+)!) {
-        my $server = NP::Model->server->find_server($1) or return 404;
+        my $result = $self->server_data($1);
+        if (my $status = $self->capi_error_status($result, $result->{data}{server})) {
+            return $status;
+        }
+        my $server = NP::Data::Server->new(%{$result->{data}{server}});
         $self->cache_control('max-age=14400, s-maxage=7200');
         if (   $server->deletion_on
             && $server->deletion_on < DateTime->now->subtract(years => 3))
@@ -69,7 +78,11 @@ sub render {
     if (my ($id, $mode) =
         ($self->request->uri =~ m!^/scores/graph/(\d+)-(score|offset).png!))
     {
-        my $server = NP::Model->server->find_server($id) or return 404;
+        my $result = $self->server_data($id);
+        if (my $status = $self->capi_error_status($result, $result->{data}{server})) {
+            return $status;
+        }
+        my $server = NP::Data::Server->new(%{$result->{data}{server}});
         $self->cache_control('max-age=14400, s-maxage=7200');
         my $uri = $server->graph_uri('offset') or return 404;
         return $self->redirect($uri, 301);
@@ -83,28 +96,44 @@ sub render {
             $span->set_attribute("scores.mode", $mode);
         }
 
-        my ($server) = NP::Model->server->find_server($p);
-        return 404 unless $server;
-
-        return 404
-          if ($public and $server->deletion_on < DateTime->now->subtract(years => 3));
-
-        return $self->redirect('/scores/' . $server->ip, 301) unless $p eq $server->ip;
-
+        # For main page display, use CAPI
         if ($mode eq '') {
+
+            # Fetch server data from CAPI
+            my $server_result = $self->server_data($p);
+
+            if (my $status = $self->capi_error_status(
+                    $server_result, $server_result->{data}{server}
+                )
+              )
+            {
+                warn "Failed to fetch server data: "
+                  . ($server_result->{error} || 'no server data')
+                  . " [trace: "
+                  . ($server_result->{trace_id} || 'none') . "]";
+                return $status;
+            }
+
+            my $server_data = $server_result->{data}{server};
+
+            # Redirect if requested IP doesn't match canonical IP
+            return $self->redirect('/scores/' . $server_data->{ip}, 301)
+              unless $p eq $server_data->{ip};
 
             # regular html page
 
             $self->tpl_param('graph_explanation' => 1)
               if $self->req_param('graph_explanation');
-            $self->tpl_param('server' => $server);
+            $self->tpl_param('server_data' => $server_data);
 
             # Hide history sections if server was deleted more than 6 months ago
             my $show_history = 1;
-            if ($server->deletion_on) {
+            if ($server_data->{deletion_on}) {
                 $self->tpl_param('now' => DateTime->now());
+                my $deletion_date =
+                  DateTime::Format::ISO8601->parse_datetime($server_data->{deletion_on});
                 my $six_months_ago = DateTime->now->subtract(months => 6);
-                $show_history = 0 if $server->deletion_on < $six_months_ago;
+                $show_history = 0 if $deletion_date < $six_months_ago;
             }
             $self->tpl_param('show_history' => $show_history);
 
@@ -115,13 +144,31 @@ sub render {
             return OK, $self->evaluate_template('tpl/server.html');
         }
 
+        # For other modes, use CAPI
+        my $server_result = $self->server_data($p);
+        if (my $status =
+            $self->capi_error_status($server_result, $server_result->{data}{server}))
+        {
+            return $status;
+        }
+        my $server = NP::Data::Server->new(%{$server_result->{data}{server}});
+
+        if (   $public
+            && $server->deletion_on
+            && $server->deletion_on < DateTime->now->subtract(years => 3))
+        {
+            return 404;
+        }
+
+        return $self->redirect('/scores/' . $server->ip, 301) unless $p eq $server->ip;
+
         $self->request->header_out('Vary', undef);
 
         if ($mode eq 'monitors') {
-            $self->cache_control('s-maxage=480,max-age=240') if $public;
-            my $cutoff   = DateTime->now->subtract(days => 120);
-            my $monitors = $server->monitors($cutoff);
-            return OK, $json->convert_blessed->encode({monitors => $monitors}),
+
+            # TODO: Implement GetServerMonitorScores CAPI endpoint
+            return 501,
+              $json->encode({error => 'monitors endpoint temporarily unavailable'}),
               'application/json';
         }
         elsif ($mode eq 'log' or $self->req_param('log') or $mode eq 'json') {
@@ -155,7 +202,33 @@ sub render {
     return 404;
 }
 
-sub bc_user_class    { NP::Model->user }
-sub bc_info_required {'username,email'}
+sub server_data {
+    my ($self, $ip) = @_;
+
+    # Cache the server data per request
+    my $cache_key = "_server_data_$ip";
+    return $self->{$cache_key} if exists $self->{$cache_key};
+
+    my %params = (
+        ip      => $ip,
+        context => $self->_get_request_context(),
+    );
+
+    if ($self->can('api_auth_params')) {
+        %params = ($self->api_auth_params, ip => $ip);
+        my $account = $self->current_account;
+        $params{account} = $account->{id_token} if $account;
+    }
+
+    my $result = get_server(%params);
+
+    return $self->{$cache_key} = $result;
+}
+
+sub _get_request_context {
+    my $self            = shift;
+    my $x_forwarded_for = $self->request->header_in('X-Forwarded-For');
+    return $x_forwarded_for ? {x_forwarded_for => $x_forwarded_for} : undef;
+}
 
 1;

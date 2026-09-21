@@ -17,6 +17,9 @@
 <form method="post" action="/manage/server/add" id="add_server_form">
     <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
     <input type="hidden" name="a" value="[% account.id_token %]">
+    [% IF precheck_token %]
+    <input type="hidden" name="precheck_token" value="[% precheck_token | html %]">
+    [% END %]
 
     [% FOR server = servers %]
 
@@ -33,11 +36,7 @@
 
 
         [% IF server.error %]
-
-        <div class="alert alert-error">
-            [% server.error | html %]
-        </div>
-
+        [% PROCESS tpl/common/error_alert.html, error = server.error %]
     </div> [% # server info div %]
     [% NEXT; END %]
 
@@ -59,8 +58,8 @@
     <p>
         <div class="alert alert-warning">
             We couldn't determine which country this IP address is in, please specify:
-            <select name="explicit_zone_[% server.ip %]">
-                <option>Select country:</option>
+            <select name="explicit_zone_[% server.ip %]" class="form-control" required>
+                <option value="">Select country:</option>
                 [% FOR zone = all_zones %]
                 <option value="[% zone.name %]">[% zone.description %]</option>
                 [% END %]

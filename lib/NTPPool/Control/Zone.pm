@@ -1,7 +1,6 @@
 package NTPPool::Control::Zone;
 use strict;
-use parent qw(NTPPool::Control);
-use NP::Model;
+use parent            qw(NTPPool::Control);
 use Combust::Constant qw(OK);
 use JSON              qw(encode_json);
 use List::Util        qw(uniq);
@@ -9,6 +8,8 @@ use experimental      qw( defer );
 use Syntax::Keyword::Dynamically;
 use OpenTelemetry::Constants qw( SPAN_KIND_INTERNAL SPAN_STATUS_ERROR SPAN_STATUS_OK );
 use OpenTelemetry -all;
+use NP::CAPI::Zone qw(get_zone);
+use Time::Duration qw();
 
 sub zone_name {
     my $self = shift;
@@ -24,36 +25,52 @@ sub is_graph {
     return $self->request->path =~ m/-v6.png$/ ? 'v6' : 'v4';
 }
 
-# TODO: make the web interface actually do this
-sub sort_order {
-    my $self = shift;
-    my $sort = $self->req_param('sort') || '';
-    $sort = 'description' unless $sort eq 'server_count';
+sub _get_request_context {
+    my $self            = shift;
+    my $x_forwarded_for = $self->request->header_in('X-Forwarded-For');
+    return $x_forwarded_for ? {x_forwarded_for => $x_forwarded_for} : undef;
 }
 
-sub show_servers_access {
-    my $self = shift;
-    return $self->{_show_servers_access} if defined $self->{_show_servers_access};
-    return $self->{_show_servers_access} = 1
-      if $self->user
-      and $self->user->privileges
-      and $self->user->privileges->see_all_servers;
+sub random_subzone_ids {
+    my ($self, $count) = @_;
+    my $SUB_ZONE_COUNT = 4;
+    $count = $SUB_ZONE_COUNT if $count > $SUB_ZONE_COUNT;
+    my %ids;
 
-    return $self->{_show_servers_access} = 0;
+    do {
+        my $id = int(rand($SUB_ZONE_COUNT));
+        $ids{$id} = undef;
+    } until (keys %ids == $count);
+
+    return keys %ids;
 }
 
-sub show_servers {
-    my $self = shift;
-    return 1 if $self->req_param('show_servers') and $self->show_servers_access;
-    return 0;
+sub get_zone_stats {
+    my ($self, $historical_stats, $days, $ip_version) = @_;
+    return unless $historical_stats && ref($historical_stats) eq 'ARRAY';
+
+    # Find the HistoricalStats for the requested IP version
+    my ($hist) = grep { $_->{ip_version} eq $ip_version } @$historical_stats;
+    return unless $hist && $hist->{stats};
+
+    # Find the StatPoint with matching days_ago
+    my ($stat) = grep { $_->{days_ago} == $days } @{$hist->{stats}};
+    return unless $stat;
+
+    # Return undef if count_active is missing (API omits zero values)
+    return unless defined $stat->{count_active};
+
+    # Return hashref compatible with template expectations
+    return {
+        count_active => $stat->{count_active},
+        ago          => Time::Duration::ago($days * 86400, 2),    # days to seconds
+    };
 }
 
 sub render {
     my $self      = shift;
     my $zone_name = $self->zone_name;
     return 404 if (length($zone_name) > 100);
-    my $zone = NP::Model->zone->fetch(name => $zone_name);
-    return 404 unless $zone;
 
     # discourage trailing slashes
     if (my ($path) = ($self->request->path =~ m!^(.*)/$!)) {
@@ -67,32 +84,33 @@ sub render {
     elsif ($self->request->path =~ m!\.json$!) {
         my $limit = $self->req_param('limit') || 0;
 
-   # $self->request->header_out('Cache-Control' => 'public,max-age=86400,s-maxage=86400');
         $self->request->header_out('Fastly-Follow' => '1');
         return $self->redirect(
             $self->www_url(
-                "/api/data/zone/counts/" . $zone->name,
+                "/api/data/zone/counts/" . $zone_name,
                 {($limit ? (limit => $limit) : ())}
             ),
             301
         );
     }
 
+    # Fetch zone from CAPI
+    my $zone_result = get_zone(
+        name    => $zone_name,
+        context => $self->_get_request_context(),
+    );
+
+    if (my $status = $self->capi_error_status($zone_result, $zone_result->{data}{zone})) {
+        warn "Zone API error: $zone_result->{error} (trace: $zone_result->{trace_id})"
+          if $zone_result->{error};
+        return $status;
+    }
+
+    my $zone = $zone_result->{data}{zone};
+
     $self->tpl_param('zone' => $zone);
 
-    $self->tpl_param('is_logged_in' => $self->show_servers_access);
-    $self->tpl_param('show_servers' => $self->show_servers);
-    if ($self->show_servers) {
-        my @servers = sort { $a->ip cmp $b->ip } $zone->servers;
-        $self->tpl_param('servers', \@servers);
-    }
-
-    unless ($self->show_servers_access) {
-        $self->cache_control('s-maxage=900, max-age=1800');
-    }
-    else {
-        $self->cache_control('private');
-    }
+    $self->cache_control('s-maxage=900, max-age=1800');
 
     return OK, $self->evaluate_template('tpl/zone.html');
 }

@@ -152,7 +152,7 @@ function handleMonitorConfigError(event: HTMXEvent): void {
   } else if (isModalError) {
     handleMonitorModalError(xhr);
   } else {
-    handleLegacyMonitorConfigError(xhr);
+    handleLegacyMonitorConfigError(xhr, event.detail.target ?? element);
   }
 }
 
@@ -189,7 +189,8 @@ function handleMonitorModalError(xhr: XMLHttpRequest): void {
 }
 
 /**
- * Handle monitor deletion errors using the delete-result target
+ * Handle monitor deletion errors using the delete-result target inside the
+ * confirm-delete modal
  */
 function handleMonitorDeletionError(xhr: XMLHttpRequest): void {
   const deleteResultDiv = document.getElementById('delete-result');
@@ -202,39 +203,32 @@ function handleMonitorDeletionError(xhr: XMLHttpRequest): void {
   // Extract error message and trace ID
   const { message, traceid } = extractErrorDetails(xhr);
 
-  // Create error display HTML
-  let errorHtml = `<div class="alert alert-danger" role="alert">
-    <strong>Error:</strong> ${escapeHtml(message)}`;
-
-  if (traceid && traceid !== 'Not available') {
-    errorHtml += `<br><small>Trace ID: ${escapeHtml(traceid)} (please include this if contacting support)</small>`;
-  }
-
-  errorHtml += '</div>';
-
   // Display error in the delete-result div
-  deleteResultDiv.innerHTML = errorHtml;
+  showErrorAlert(deleteResultDiv, message, traceid);
 
   // Log for debugging
   console.log('Monitor deletion error handled:', { message, traceid });
 }
 
 /**
- * Handle legacy monitor config errors using the original elements
+ * Handle legacy monitor config errors using the original elements. Pages
+ * without them, such as the monitor confirm-status poll, get the error in
+ * the request's target instead.
  */
-function handleLegacyMonitorConfigError(xhr: XMLHttpRequest): void {
+function handleLegacyMonitorConfigError(xhr: XMLHttpRequest, fallbackTarget: HTMLElement): void {
+  // Extract error message and trace ID
+  const { message, traceid } = extractErrorDetails(xhr);
+
   // Find error display elements
   const errorDiv = document.getElementById('monitor-config-error');
   const messageSpan = document.getElementById('monitor-config-error-message');
   const traceidSpan = document.getElementById('monitor-config-error-traceid');
 
   if (!errorDiv || !messageSpan || !traceidSpan) {
-    console.error('Monitor config error elements not found');
+    showErrorAlert(fallbackTarget, message, traceid);
+    console.log('Monitor error shown in request target:', { message, traceid });
     return;
   }
-
-  // Extract error message and trace ID
-  const { message, traceid } = extractErrorDetails(xhr);
 
   // Display error
   messageSpan.textContent = message;
@@ -268,7 +262,7 @@ function handleMonitorNetworkError(event: HTMXEvent): void {
   } else if (isModalError) {
     handleMonitorModalNetworkError();
   } else {
-    handleLegacyMonitorNetworkError();
+    handleLegacyMonitorNetworkError(event.detail.target ?? element);
   }
 }
 
@@ -319,21 +313,25 @@ function handleMonitorDeletionNetworkError(): void {
 }
 
 /**
- * Handle network errors for legacy monitor config
+ * Handle network errors for legacy monitor config. Pages without the
+ * monitor config error elements get the error in the request's target.
  */
-function handleLegacyMonitorNetworkError(): void {
+function handleLegacyMonitorNetworkError(fallbackTarget: HTMLElement): void {
+  const message = 'Network error - please check your connection and try again';
+
   // Find error display elements
   const errorDiv = document.getElementById('monitor-config-error');
   const messageSpan = document.getElementById('monitor-config-error-message');
   const traceidSpan = document.getElementById('monitor-config-error-traceid');
 
   if (!errorDiv || !messageSpan || !traceidSpan) {
-    console.error('Monitor config error elements not found');
+    showErrorAlert(fallbackTarget, message, '');
+    console.log('Monitor network error shown in request target');
     return;
   }
 
   // Display network error
-  messageSpan.textContent = 'Network error - please check your connection and try again';
+  messageSpan.textContent = message;
   traceidSpan.textContent = 'N/A';
   errorDiv.classList.remove('d-none');
 
@@ -342,6 +340,23 @@ function handleLegacyMonitorNetworkError(): void {
 
   // Log for debugging
   console.log('Monitor config network error handled');
+}
+
+/**
+ * Replace a container's content with an error alert showing the message
+ * and, when there is one, the trace ID
+ */
+function showErrorAlert(container: HTMLElement, message: string, traceid: string): void {
+  let errorHtml = `<div class="alert alert-danger" role="alert">
+    <strong>Error:</strong> ${escapeHtml(message)}`;
+
+  if (traceid && traceid !== 'Not available') {
+    errorHtml += `<br><small>Trace ID: ${escapeHtml(traceid)} (please include this if contacting support)</small>`;
+  }
+
+  errorHtml += '</div>';
+
+  container.innerHTML = errorHtml;
 }
 
 /**
@@ -369,8 +384,18 @@ function extractErrorDetails(xhr: XMLHttpRequest): ErrorDetails {
     Traceid: xhr.getResponseHeader('Traceid')
   });
 
-  // Default error message
-  let message = 'Server error occurred';
+  // Default to a message based on the HTTP status: our error pages are HTML,
+  // and statusText is empty over HTTP/2
+  let message = `Request failed (HTTP ${xhr.status})`;
+  if (xhr.status === 400) {
+    message = 'Bad request (HTTP 400)';
+  } else if (xhr.status === 403) {
+    message = 'Permission denied (HTTP 403)';
+  } else if (xhr.status === 404) {
+    message = 'Not found (HTTP 404)';
+  } else if (xhr.status >= 500 && xhr.status <= 599) {
+    message = `Server error (HTTP ${xhr.status})`;
+  }
 
   // Try to parse JSON response for more detailed error
   try {
@@ -381,10 +406,7 @@ function extractErrorDetails(xhr: XMLHttpRequest): ErrorDetails {
       message = response.message;
     }
   } catch (e) {
-    // If not JSON, use status text or default message
-    if (xhr.statusText) {
-      message = xhr.statusText;
-    }
+    // Not JSON; keep the status-based message
   }
 
   return { message, traceid };

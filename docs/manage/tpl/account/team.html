@@ -2,27 +2,29 @@
     <div class="col-md-10">
         <h3>[% account.name | html %] - Account team</h3>
 
+        [% PROCESS tpl/common/error_alert.html %]
+
         <form id="account-form" action="/manage/account/team?a=[% account.id_token %]" method="post" accept-charset="utf-8">
-            <input type="hidden" name="a" value="[% account.id ? account.id_token : 'new' %]" />
+            <input type="hidden" name="a" value="[% account.account_id ? account.id_token : 'new' %]" />
             <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
 
             <table class="table">
                 [% FOR user = users %]
                 <tr>
                     <td>[% user.email  | html %][% IF user.deletion_on %] <span class="badge badge-warning">scheduled for deletion</span>[% END %]</td>
-                    <td>[% IF user.name != user.email; user.name | html; END %]</td>
-                    [% IF account.can_edit(combust.user) AND
-                         (combust.user.is_staff OR combust.user.id != user.id) %]
+                    <td>[% IF user.username && user.username != user.email; user.username | html; END %]</td>
+                    [% IF account.permissions.can_edit AND users.size > 1 AND
+                         (combust.user_is_staff OR combust.user.user_id != user.user_id) %]
                     <td>
                         <button class="btn btn-outline-warning"
-                            name="user_id" value="[% user.id %]" type="submit">
+                            name="user_id" value="[% user.user_id %]" type="submit">
                             Remove from team
                         </button>
                     </td>
                     [% ELSE %]
                     <td></td>
                     [% END %]
-                    [% IF combust.user.is_staff %]
+                    [% IF combust.user_is_staff %]
                     <td>
                         [% IF user.deletion_on %]
                         &nbsp;
@@ -40,6 +42,17 @@
 
         </form>
 
+        [% IF resend_success %]
+        <div class="alert alert-success" role="alert">
+            <span class="badge badge-success">Sent</span> Invitation email resent.
+        </div>
+        [% END %]
+        [% IF errors and errors.resend %]
+        <div class="alert alert-warning" role="alert">
+            [% errors.resend | html %]
+        </div>
+        [% END %]
+
         [% IF invites && invites.size > 0 %]
         <h4>Account invitations</h4>
         <table class="table">
@@ -48,6 +61,7 @@
                 <th>Status</th>
                 <th>Invited by</th>
                 <th>On</th>
+                <th></th>
             </tr>
             [% FOR inv = invites %]
             <tr>
@@ -55,13 +69,30 @@
                 <td>[% inv.status | html %]</td>
                 <td>[% inv.sent_by.email | html %]</td>
                 <td>[% inv.created_on | html %]</td>
+                <td>
+                    [% IF inv.status == 'pending' %]
+                        [% IF inv.can_resend %]
+                        <form action="/manage/account/team?a=[% account.id_token %]" method="post" accept-charset="utf-8" class="d-inline">
+                            <input type="hidden" name="a" value="[% account.id_token %]" />
+                            <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
+                            <input type="hidden" name="resend_invite_id" value="[% inv.invite_id %]" />
+                            <button type="submit" class="btn btn-sm btn-outline-primary">Resend</button>
+                        </form>
+                        [% ELSE %]
+                        <button type="button" class="btn btn-sm btn-outline-secondary" disabled>Resend</button>
+                        [% IF inv.resend_available_at %]
+                        <small class="text-muted">available after [% inv.resend_available_at | html %]</small>
+                        [% END %]
+                        [% END %]
+                    [% END %]
+                </td>
             </tr>
             [% END %]
         </table>
         [% END %]
 
         <form id="account-form" action="/manage/account/team?a=[% account.id_token %]" method="post" accept-charset="utf-8">
-            <input type="hidden" name="a" value="[% account.id ? account.id_token : 'new' %]" />
+            <input type="hidden" name="a" value="[% account.account_id ? account.id_token : 'new' %]" />
             <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
             <div class="form-group">
                 <label id="name-invite_email" class="form-label" for="invite_email">Add user to account team</label>

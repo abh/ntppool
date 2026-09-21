@@ -3,103 +3,16 @@ eval 'exec $CBROOT/bin/perl $0 ${1+"$@"}'
   unless $running_under_some_shell;
 use strict;
 use warnings;
-use lib "$ENV{CBROOTLOCAL}/lib";
-use lib "$ENV{CBROOT}/lib";
-use Combust::Config;
-use Combust::Template;
 
-use NP::Model;
+print <<'EOF';
+This script has been replaced by the Go serverremoval task.
 
-use NP::Email;
-use Email::Stuffer;
-use Email::Address::XS;
+The server removal functionality has been migrated to:
+  go/ntp/api/tasks/serverremoval
 
-my $config          = Combust::Config->new;
-my $deployment_mode = $config->site->{ntppool}->{deployment_mode};
+The task runs automatically every 24 hours as part of the API service.
 
-NP::Model->dbh->selectrow_array(q[SELECT GET_LOCK("notifications", 0)]) or exit;
+If you need to manually trigger server removals, use the Go API instead.
+EOF
 
-my $servers = NP::Model->server->get_bad_servers_to_remove;
-my $tpl     = Combust::Template->new;
-
-my $i = 0;
-
-my $deletion_date = DateTime->today;
-$deletion_date->add(days => 2);
-
-sub address_name {
-    my $e = shift;
-    return $e->name || $e->phrase;
-}
-
-sub greeting {
-    my ($account, @addresses) = @_;
-
-    if (scalar(@addresses) == 1) {
-        return address_name($addresses[0]);
-    }
-    elsif (scalar(@addresses) > 5) {
-        return $account->name ? ($account->name . " admins") : "server admins";
-    }
-
-    my $last = pop @addresses;
-    my $g    = join(", ", map { address_name($_) } @addresses);
-    $g .= " and " . address_name($last);
-    return $g;
-}
-
-for my $server (@$servers) {
-
-    my $account = $server->account;
-    unless ($account) {
-        warn "Server ", $server->ip, " (id ", $server->id,
-          ") has no account; skipping\n";
-        next;
-    }
-
-    my @users     = $account->users;
-    my @addresses = map { Email::Address::XS->new($_->name, $_->email) } @users;
-
-    unless (@addresses) {
-        warn "Account ", $account->id, " has no users for server ",
-          $server->ip, "; skipping\n";
-        next;
-    }
-
-    print "Notifying of server removal: ",
-      join(", ", map { $_->email } @users),
-      " for ", $server->ip, "\n";
-
-    my $param = {
-        server   => $server,
-        account  => $account,
-        greeting => greeting($account, @addresses),
-    };
-
-    $server->deletion_on($deletion_date);
-    $server->add_logs(
-        {   user_id => undef,
-            type    => 'delete',
-            message => "Deletion scheduled for " . $deletion_date->ymd . " by the system",
-        }
-    );
-
-    my $msg =
-      $tpl->process('tpl/bad_server_removal.txt', $param, {site => 'ntppool', config => $config});
-
-    my $email =
-      Email::Stuffer->from(NP::Email::address("sender"))->to(@addresses)
-      ->reply_to(NP::Email::address("support"))
-      ->subject("NTP Pool: " . $server->ip . " has been removed from the NTP Pool")
-      ->text_body($msg);
-
-    NP::Email::sendmail($email->email);
-
-    $server->save;
-
-    if ($deployment_mode ne "prod") {
-        last if ++$i == 1;
-    }
-}
-
-1;
+exit 0;

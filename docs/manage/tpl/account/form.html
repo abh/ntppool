@@ -1,12 +1,36 @@
 [% page.js.push(combust.static_group("manage.js")) %]
 
+[% UNLESS combust.user_is_staff %]
+[% IF account.deletion_on %]
+<div class="alert alert-danger" role="alert">
+    <h4 class="alert-heading">Account scheduled for deletion</h4>
+    <p>
+        This account is scheduled for permanent deletion on
+        <b>[% account.deletion_on.split('T').0 | html %]</b>.
+        Account members will keep any other account memberships they have.
+    </p>
+    <form action="[% combust.manage_url('/manage/account/dissolve') %]"
+          method="post" accept-charset="utf-8" class="mb-0">
+        <input type="hidden" name="auth_token" value="[% combust.auth_token %]">
+        <input type="hidden" name="a" value="[% account.id_token %]">
+        <input type="hidden" name="cancel" value="1">
+        <button class="btn btn-danger" type="submit">
+            Cancel scheduled deletion
+        </button>
+    </form>
+</div>
+[% END %]
+[% END %]
+
 <div class="row">
     <div class="col-md-6">
 
     <h3>Account information</h3>
 
+    [% PROCESS tpl/common/error_alert.html %]
+
     <form id="account-form" action="/manage/account?a=[% account.id_token %]" method="post" accept-charset="utf-8">
-        <input type="hidden" name="a" value="[% account.id ? account.id_token : 'new' %]" />
+        <input type="hidden" name="a" value="[% account.account_id ? account.id_token : 'new' %]" />
         <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
         <div class="form-group">
             <label id="name-help" class="form-label" for="name">Account name</label>
@@ -99,7 +123,7 @@
     <br>
 -->
 
-                <p><input type="submit" class="btn btn-primary" value="[% account.id ? 'Update' : 'Create' %]"></p>
+                <p><input type="submit" class="btn btn-primary" value="[% account.account_id ? 'Update' : 'Create' %]"></p>
         </form>
 
         [% INCLUDE tpl/account/monitor_config_section.html %]
@@ -126,6 +150,19 @@
         [% IF combust.system_feature('user-deletion') %]
         <br>
         <a href="[% combust.manage_url('/manage/account/delete', u => combust.user.id_token) %]">Delete user</a><br>
+        [% END %]
+        [% END %]
+
+        [% IF combust.user_is_staff %]
+        <br>
+        [% IF account.deletion_on %]
+        <a href="[% combust.manage_url('/manage/account/dissolve', { a => account.id_token }) %]"
+           class="text-danger">
+           Account deletion scheduled &mdash; manage
+        </a><br>
+        [% ELSE %]
+        <a href="[% combust.manage_url('/manage/account/dissolve', { a => account.id_token }) %]"
+           class="text-danger">Delete account</a><br>
         [% END %]
         [% END %]
 

@@ -22,12 +22,12 @@
                 <td>Processing archive, check back later.</td>
                 [% ELSE %]
                 <td>
-                [% IF req.status.URL %]
+                [% IF req.status_url %]
                     <a href="[% req.download_url | html %]">
                         Download archive
                     </a>
                 [% ELSE %]
-                  [% IF req.status.Error %]
+                  [% IF req.status_error %]
                   Error: [% req.traceid %]
                   [% END %]
                 [% END %]
@@ -55,7 +55,7 @@
             <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
 
             <button class="btn btn-primary btn-sm"
-                name="user_id" value="[% user.id %]" type="submit">
+                name="user_id" value="[% user.user_id %]" type="submit">
                 Request user information download
             </button>
         </form>

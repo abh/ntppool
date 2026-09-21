@@ -1,13 +1,13 @@
 [% PROCESS tpl/monitors/metrics.html %]
 [% BLOCK status_form %]
-          <form class="monitor-form" action="/manage/monitors/monitor/status?a=[% account.id_token %]&name=[% monitor.TLSName | html %]" method="post" accept-charset="utf-8">
+          <form class="monitor-form" action="/manage/monitors/monitor/status?a=[% account.id_token %]&name=[% monitor.tls_name | html %]" method="post" accept-charset="utf-8">
           <input type="hidden" name="auth_token" value="[% combust.auth_token %]">
-          <input type="hidden" name="id" value="[% mon.IDToken | html %]">
-          <input type="hidden" name="name" value="[% mon.TLSName | html %]">
+          <input type="hidden" name="id" value="[% mon.id_token | html %]">
+          <input type="hidden" name="name" value="[% mon.tls_name | html %]">
 
           <select name="status" class="form-select form-control" aria-label="Update monitor status">
-            [% FOR status = data.StatusOptions %]
-                <option [% IF status == mon.Status; "selected"; END %] value="[% status | html %]">[% status | ucfirst | html %]</option>
+            [% FOR status = status_options %]
+                <option [% IF status == mon.status; "selected"; END %] value="[% status | html %]">[% status | ucfirst | html %]</option>
             [% END %]
           </select>
           <input type="submit" class="btn btn-primary" value="Update"></p>
@@ -16,7 +16,7 @@
 <div class="row">
     <div class="col-md-8">
 
-    <h3>Monitor [% mon.Name | html %]</h3>
+    <h3>Monitor [% mon.name | html %]</h3>
 
         [% PROCESS tpl/monitors/info_card.html
         show_details => 1,
@@ -25,15 +25,16 @@
         [% PROCESS metrics_error %]
 
         <p>
-        [% UNLESS mon.Status == "testing" OR mon.Status == "active" %]
+        [% UNLESS mon.status == "testing" OR mon.status == "active" %]
           Email <a href="mailto:[% "support" | email %]?subject=Monitor [% mon.id_token | html %] setup">[% "support" | email %]</a> to continue the setup.
         [% END %]
         </p>
 
         <!-- Delete Monitor Section -->
         <h3>Monitor Actions</h3>
+        [% IF mon.can_delete %]
         <div class="mb-3">
-            <button hx-get="/manage/monitors/monitor/confirm-delete?name=[% mon.TLSName | uri %]&id=[% mon.IDToken | uri %]"
+            <button hx-get="/manage/monitors/monitor/confirm-delete?name=[% mon.tls_name | uri %]&id=[% mon.id_token | uri %]"
                     hx-target="#modal-container"
                     hx-swap="innerHTML"
                     hx-indicator="#delete-loading"
@@ -43,42 +44,36 @@
                     <span class="visually-hidden">Loading...</span>
                 </div>
             </button>
-
-            <div id="delete-result" class="mt-2"></div>
         </div>
+        [% END %]
 
         <!-- Modal Container for HTMX-loaded content -->
         <div id="modal-container"></div>
 
-        [% IF error %]
-        <div class="alert alert-warning">
-            [% error | html %]
-            [% IF trace_id %]<small>(Trace ID: [% trace_id | html %])</small>[% END %]
-        </div>
-        [% END %]
+        [% PROCESS tpl/common/error_alert.html %]
 
-        [% IF combust.user.is_monitor_admin %]
+        [% IF mon.can_set_status %]
         <h3>Admin actions</h3>
 
         <p>
 
-          [% IF mon.CombinedStatus %]
+          [% IF mon.combined_status %]
           <div class="monitor-status">
           [% INCLUDE status_form, mon = mon %]
           </div>
           [% END %]
 
-          [% FOR v = [ "IPv4", "IPv6" ] %]
-            [% IF mon.$v AND mon.$v.IP %]
-              <div class="monitor-status [% mon.CombinedStatus ? 'hidden' : '' %]">
-              [% mon.$v.TLSName = mon.TLSName %]
-              <h4>[% mon.$v.IP | html %]</h4>
+          [% FOR v = [ "ipv4", "ipv6" ] %]
+            [% IF mon.$v AND mon.$v.ip %]
+              <div class="monitor-status [% mon.combined_status ? 'hidden' : '' %]">
+              [% mon.$v.tls_name = mon.tls_name %]
+              <h4>[% mon.$v.ip | html %]</h4>
               [% INCLUDE status_form, mon => mon.$v %]
               </div>
             [% END %]
           [% END %]
 
-          [% IF mon.CombinedStatus %]
+          [% IF mon.combined_status %]
           <button class="btn btn-secondary btn-sm"
             hx-on:click="htmx.findAll('.monitor-status').forEach(function(child) { htmx.toggleClass(child, 'hidden') })">
           Change status for both or individually</button>

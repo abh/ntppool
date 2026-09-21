@@ -1,21 +1,24 @@
 package NTPPool::Control::Manage;
 use strict;
-use parent qw(NTPPool::Control::Login NTPPool::Control);
-use NP::Model;
+use parent            qw(NTPPool::Control::Login NTPPool::Control);
 use Combust::Constant qw(OK NOT_FOUND SERVER_ERROR);
 use Socket            qw(inet_ntoa);
 use Socket6;
-use JSON::XS   qw(encode_json decode_json);
+use JSON::XS   qw(encode_json);
 use Data::Dump qw(pp);
 use Net::DNS;
-use Crypt::JWT           qw(decode_jwt);
-use LWP::UserAgent       qw();
-use Mozilla::CA          qw();
+use Net::IP;
 use Math::BaseCalc       qw();
 use Math::Random::Secure qw(irand);
 use URI::URL             ();
 use NP::UA;
-use NP::IntAPI qw(int_api);
+use NP::CAPI::Account
+  qw(get_account_status validate_session get_user_accounts get_account_invites get_account);
+use NP::CAPI::Auth             qw(get_oauth_login_url process_auth0_login);
+use NP::CAPI::Search           qw(search);
+use NP::CAPI::Server           qw(get_server);
+use NP::CAPI::ServerManagement qw(update_server);
+use NP::Data::Server;
 use OpenTelemetry::Trace;
 use OpenTelemetry -all;
 use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
@@ -29,6 +32,57 @@ sub _get_request_context {
     my $self            = shift;
     my $x_forwarded_for = $self->request->header_in('X-Forwarded-For');
     return $x_forwarded_for ? {x_forwarded_for => $x_forwarded_for} : undef;
+}
+
+=head2 api_auth_params
+
+Returns authentication and context parameters for CAPI calls.
+
+    my $result = create_account(
+        $self->api_auth_params,
+        name => "My Account",
+    );
+
+Returns: (auth => '...', context => {...})
+
+=cut
+
+sub api_auth_params {
+    my $self = shift;
+    return (
+        auth    => $self->plain_cookie($self->user_cookie_name) || '',
+        context => $self->_get_request_context(),
+    );
+}
+
+=head2 _handle_capi_error
+
+Handle API errors by setting template parameters and returning HTTP status codes.
+
+    my $http_code = $self->_handle_capi_error($result);
+    return $http_code if $http_code != 200;
+
+Returns HTTP status code (200 for success, or a status code for errors).
+
+Thin adapter over C<capi_error_status> (NTPPool::Control) for the legacy
+"200-on-success" return convention. C<capi_error_status> is the single source
+of truth: it derives the status, suppresses caching of transient failures, and
+surfaces the error message for templates.
+
+Note: Does not log errors (NP::CAPI already logs all errors with trace IDs).
+
+=cut
+
+sub _handle_capi_error {
+    my ($self, $result) = @_;
+
+    my $code    = $result->{code} || 0;
+    my $success = $code >= 200 && $code < 300;
+
+    my $status = $self->capi_error_status($result, $success);
+
+    return $code if $success;    # legacy contract: 2xx code on success
+    return $status;
 }
 
 my $base36 = Math::BaseCalc->new(digits => ['a' .. 'k', 'm' .. 'z', 2 .. 9]);
@@ -47,69 +101,180 @@ sub init {
         $self->tpl_param('bare'       => 1);
     }
 
+    # Set account/user template params first - this calls current_account() which
+    # populates both _current_account and _user caches from a single ValidateSession call
+    $self->_set_account_template_params();
+
     if ($self->is_logged_in) {
         $self->request->env->{REMOTE_USER} =
-          $self->user->username . '|' . $self->user->id_token;
+          $self->user->{username} . '|' . $self->user->{id_token};
 
         my $span =
           OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
 
+        # Set telemetry attributes
         if (my $account = $self->current_account) {
-            $self->tpl_param('account' => $account);
-            $span->set_attribute("account.id",       $account->id);
-            $span->set_attribute("account.id_token", $account->id_token);
+            $span->set_attribute("account.id",       $account->{account_id});
+            $span->set_attribute("account.id_token", $account->{id_token});
 
-            $self->request->env->{REMOTE_USER} .= '|' . $account->id_token;
+            $self->request->env->{REMOTE_USER} .= '|' . $account->{id_token};
         }
 
         if (my $user = $self->user) {
-            $span->set_attribute("user.is_staff", $user->is_staff);
-            $span->set_attribute("user.email",    $user->email);
-            $span->set_attribute("user.username", $user->username);
-            $span->set_attribute("user.id",       $user->id);
-            $span->set_attribute("user.id_token", $user->id_token);
+            $span->set_attribute("user.is_staff", $self->user_is_staff ? 1 : 0);
+            $span->set_attribute("user.email",    $user->{email});
+            $span->set_attribute("user.username", $user->{username});
+            $span->set_attribute("user.id",       $user->{user_id});
+            $span->set_attribute("user.id_token", $user->{id_token});
 
-            $self->plausible_props("user" => $user->id_token);
+            $self->plausible_props("user" => $user->{id_token});
             if (my $a = $self->current_account) {
-                $self->plausible_props("account" => $a->id_token);
+                $self->plausible_props("account" => $a->{id_token});
             }
         }
 
-        if ($self->user->deletion_on and $self->request->uri ne "/manage/logout") {
+        # Redirect users with scheduled deletion to logout page
+        if ($self->user->{deletion_on} and $self->request->uri ne "/manage/logout") {
             return $self->redirect($self->manage_url('/manage/logout'));
         }
 
+    }
+    elsif (my $err = $self->session_error) {
+
+        # API unavailable during session validation - return server error
+        return $err;
     }
 
     return OK;
 }
 
+sub _set_account_template_params {
+    my $self = shift;
+
+    if (my $account = $self->current_account) {
+        $self->tpl_param('account' => $account);
+    }
+
+    if ($self->user) {
+        $self->tpl_param('user_accounts' => $self->user_accounts());
+        $self->tpl_param('user_invites'  => $self->user_invites());
+    }
+}
+
+sub refresh_account_context {
+    my $self = shift;
+
+    # Invalidate cached account data
+    delete $self->{_current_account};
+    delete $self->{_user_accounts};
+
+    # Re-fetch and update template params
+    $self->_set_account_template_params();
+}
+
 sub current_account {
     my $self = shift;
 
+    # Return cached account if already loaded
     if (exists $self->{_current_account}) {
         return $self->{_current_account};
     }
 
-    if (my $account_token = $self->req_param('a')) {
-        my $account_id = NP::Model::Account->token_id($account_token);
-        my $account = $account_id ? NP::Model->account->fetch(id => $account_id) : undef;
-        if ($account) {
-            return $self->{_current_account} = $account
-              if $account->can_view($self->user);
+    # Get session cookie
+    my $session_token = $self->plain_cookie($self->user_cookie_name);
+    return $self->{_current_account} = undef unless $session_token;
+
+    # Call ValidateSession with optional account token
+    # Go API will:
+    # 1. Validate session
+    # 2. Resolve id_token (if provided) or use default
+    # 3. Check permissions
+    # 4. Return account context + permissions
+    my $id_token = $self->req_param('a');
+
+    # 'a=new' is the "create a new account" sentinel (see Manage/Account.pm
+    # manage_dispatch), not an account id_token. Passing it to validate_session
+    # fails to resolve and caches the session as invalid, which breaks new-account
+    # creation (no user -> empty name) and renders the page as logged-out.
+    undef $id_token if defined $id_token && $id_token eq 'new';
+
+    my %params = $self->api_auth_params;
+
+    # Only include id_token if defined (avoid undef causing parameter shift)
+    $params{id_token} = $id_token if defined $id_token;
+
+    my $result = validate_session(%params);
+
+    # Handle errors (invalid session, inaccessible account, etc.)
+    if ($result->{error}) {
+        warn "ValidateSession error: " . $result->{error};
+        warn "Trace ID: " . $result->{trace_id} if $result->{trace_id};
+
+        # API unavailable (5xx or network error): don't mask this as "no
+        # account" — that would route the user to a misleading onboarding
+        # page. Flag a session error so init() returns a real server error.
+        # (4xx means an invalid/expired session, handled as logged-out.)
+        my $code = $result->{code} || 0;
+        if ($code >= 500 || $code == 0) {
+            $self->{_session_error} = SERVER_ERROR;
         }
+
+        # Cache both _user and _current_account as undef to prevent
+        # repeated API calls when session validation fails
+        $self->{_user} = undef;
+        return $self->{_current_account} = undef;
     }
 
-    my ($accounts) = NP::Model->account->get_accounts(
-        require_objects => ['users'],
-        query           => ['users.id' => $self->user->id]
-    );
+    my $data = $result->{data};
 
-    if ($accounts && @$accounts) {
-        return $self->{_current_account} = $accounts->[0];
+    # Cache user data from ValidateSession response to avoid duplicate API call
+    # The user() method in Login.pm will use this cached data
+    $self->{_user} = $data;
+
+    # Cache user privileges for template access (backwards compatibility)
+    $self->{_user_privileges} = $data->{privileges} || {};
+
+    # Session valid but user has no accounts
+    return $self->{_current_account} = undef unless $data->{account};
+
+    # Return account as plain hashref
+    # Store permissions for template access
+    my $account = $data->{account};
+    $account->{permissions} = $data->{permissions} if $data->{permissions};
+
+    return $self->{_current_account} = $account;
+}
+
+sub user_is_staff {
+    my $self = shift;
+    $self->current_account();    # Ensure session data is loaded
+    return $self->{_user_privileges}{support_staff} || 0;
+}
+
+sub user_is_monitor_admin {
+    my $self = shift;
+    $self->current_account();    # Ensure session data is loaded
+    return $self->{_user_privileges}{monitor_admin} || 0;
+}
+
+sub user_is_vendor_admin {
+    my $self = shift;
+    $self->current_account();    # Ensure session data is loaded
+    return $self->{_user_privileges}{vendor_admin} || 0;
+}
+
+sub reload_server_via_capi {
+    my ($self, $server_ip) = @_;
+
+    my $result = NP::CAPI::Server::get_server($self->api_auth_params, ip => $server_ip,);
+
+    if ($result->{error}) {
+        warn "Failed to reload server via CAPI: " . $result->{error};
+        warn "Trace ID: " . $result->{trace_id} if $result->{trace_id};
+        return undef;
     }
 
-    return $self->{_current_account} = undef;
+    return $result->{data}{server};
 }
 
 sub current_url {
@@ -142,8 +307,6 @@ sub render {
         return $self->logout;
     }
 
-    $self->tpl_param("xs", $self->cookie("xs"));
-
     if ($self->request->uri =~ m!^/manage/login!) {
         $self->set_span_name("manage.login");
         if ($self->req_param('code')) {
@@ -168,9 +331,9 @@ sub render {
         my $account_param = $self->req_param('a');
         if (    $account_param
             and $account
-            and $account_param ne $account->id_token)
+            and $account_param ne $account->{id_token})
         {
-            return $self->redirect($self->current_url({a => $account->id_token}));
+            return $self->redirect($self->current_url({a => $account->{id_token}}));
         }
     }
 
@@ -185,255 +348,55 @@ sub handle_login {
         kind => SPAN_KIND_SERVER,
     );
     dynamically otel_current_context = otel_context_with_span($span);
+    defer { $span->end(); };
 
     my $code = $self->req_param('code');
     unless ($code) {
         $span->set_status(SPAN_STATUS_ERROR, "missing code parameter");
-        $span->end;
         return;
     }
 
     my $state = $self->req_param('state');
-    unless ($state && $state eq $self->cookie('login_state')) {
+    unless ($state && $state eq $self->plain_cookie('login_state')) {
         $span->set_status(SPAN_STATUS_ERROR, "invalid state parameter");
-        $span->end;
         return;
     }
 
-    my ($userdata, $error) = $self->_get_auth0_user($code);
-    if ($error) {
-        $span->set_status(SPAN_STATUS_ERROR, "auth0 user error: $error");
-        $span->end();
-    }
-
-    my ($identity, $user);
-
-    #$userdata = {
-    #   map { ($userdata->{$_} ? ($_ => $userdata->{$_}) : () }
-    #   qw( sub iat sid iss exp aud user_id identities
-    #       email emails email_verified name app_metadata picture
-    #       created_at updated_at)
-    #};
-
-    # check if profile exists for any of the identities
-    my $identity_id = $userdata->{sub};
-    my $identity    = NP::Model->user_identity->fetch(profile_id => $identity_id);
-
-    my $email = $userdata->{email_verified} && $userdata->{email};
-
-    my ($provider) = ($identity_id =~ m/^(.*)\|/);
-
-    if ($identity) {
-        $identity->provider($provider) if $provider;
-        $identity->data(encode_json($userdata));
-    }
-    else {
-        if (!$email) {
-            $span->end();
-            return $self->login("Email not verified");
-        }
-        $identity = NP::Model->user_identity->create(
-            profile_id => $identity_id,
-            email      => $email,
-            data       => encode_json($userdata),
-            provider   => $provider,
-            created_on => 'now',
-        );
-
-        # look for an account with a verified email address we
-        # can recognize.
-        my %uniq;
-        my @emails =
-          map { $_->{profileData}->{email} }
-          grep {
-              my $p = $_->{profileData};
-              my $ok =
-                 $p
-              && $p->{email}
-              && $p->{email_verified}
-              && !$uniq{$p->{email}}++;
-              $ok;
-          } ({profileData => $userdata}, @{$userdata->{identities}});
-
-        for my $email (@emails) {
-            my ($email_user) = NP::Model->user->fetch(email => $email);
-            if ($email_user) {
-                $user = $email_user;
-                last;
-            }
-        }
-    }
-
-    # we do this outside the identity check just in case for
-    # some reason we have an identity without a user
-    # associated.
-    $user = $user || $identity->user;
-    if (!$user) {
-        my $username = join "", map { $base36->to_base(irand) } (undef) x 3;
-        $user = NP::Model->user->create(
-            email    => $identity->email,
-            name     => $userdata->{name},
-            username => $username,
-        );
-        $user->save;
-    }
-    if ($identity->user_id != $user->id) {
-        $identity->user_id($user->id);
-    }
-
-    if ($user->deletion_on) {
-
-        my $db  = NP::Model->db;
-        my $txn = $db->begin_scoped_work;
-
-        $user->deletion_on(undef);
-        $user->save;
-
-        NP::Model->user_task->delete_user_tasks(
-            where => [
-                task    => 'delete',
-                user_id => $user->id,
-                status  => '',
-            ],
-        );
-
-        $db->commit or die "could not undelete user";
-
-        my $param = {
-            user     => $user,
-            trace_id => $span->context->hex_trace_id,
-        };
-
-        my $msg = Combust::Template->new->process('tpl/user/user_deletion_cancelled.txt',
-            $param, {site => 'manage', config => $self->config});
-
-        my $email =
-          Email::Stuffer->from(NP::Email::address("sender"))
-          ->reply_to(NP::Email::address("support"))
-          ->subject("NTP Pool user deletion cancelled")->text_body($msg);
-
-        $email->to($user->email);
-        NP::Email::sendmail($email);
-    }
-
-    $identity->save;
-
-    my $session_result = $self->setup_session($user->id);
-    unless ($session_result->{success}) {
-        $span->set_status(SPAN_STATUS_ERROR,
-            "session creation failed: " . $session_result->{error});
-        $span->end();
-
-        # Set error details for user display
-        $self->cache_control('private, max-age=0, no-cache');
-        $self->tpl_param('error',    $session_result->{error});
-        $self->tpl_param('trace_id', $span->context->hex_trace_id);
-
-        return SERVER_ERROR;
-    }
-
-    # clear legacy cookie information
-    $self->cookie($self->user_cookie_name, '');
-
-    # xss for manage page
-    $self->cookie("xs", join("", map { $base36->to_base(irand) } (undef) x 6));
-
-    $span->end();
-
-    # done with this, don't keep it around
-    $self->cookie('login_state', '');
-
-    $self->user($user);
-}
-
-sub _auth0_config {
-    my $self = shift;
-
-    return @{$self->{_auth0_config}} if $self->{_auth0_config};
-
-    my $site = $self->site;
-
-    my $auth0_domain = $self->config->site->{$site}->{auth0_domain}
-      or die "auth0_domain not configured for site $site";
-
-    my $auth0_client = $self->config->site->{$site}->{auth0_client}
-      or die "auth0_client not configured for site $site";
-
-    my $auth0_secret = $self->config->site->{$site}->{auth0_secret}
-      or die "auth0_secret not configured for site $site";
-
-    $self->{_auth0_config} = [$auth0_domain, $auth0_client, $auth0_secret];
-
-    return @{$self->{_auth0_config}};
-}
-
-sub _get_auth0_user {
-    my ($self, $code) = @_;
-
-    # https://auth0.com/docs/protocols#3-getting-the-access-token
-
-    my ($auth0_domain, $auth0_client, $auth0_secret) = $self->_auth0_config();
-
-    my $url = URI->new("https://${auth0_domain}/oauth/token");
-
-    # https://auth0.com/docs/secure/tokens/access-tokens/get-access-tokens
-    my %form = (
-        'code'          => $self->req_param('code'),
-        'client_id'     => $auth0_client,
-        'redirect_uri'  => $self->callback_url,
-        'client_secret' => $auth0_secret,
-
-        'grant_type' => 'authorization_code',
-        'scope'      => 'openid profile name email preferred_username',
-
-        # 'grant_type' => 'client_credentials',
-        'audience' => 'api-dev',
+    # Call ConnectRPC API to process Auth0 login.
+    # Audience is derived entirely by the Go API (single source of truth);
+    # Perl does not compute or send it.
+    my $result = NP::CAPI::Auth::process_auth0_login(
+        authorization_code => $code,
+        state              => $state,
+        redirect_uri       => $self->callback_url,
+        client_site        => "" . $self->site,   # Force to string: 'manage', 'www', etc.
+        context            => $self->_get_request_context(),
     );
-    my $resp = $self->ua->post($url, \%form);
 
-    # warn "token request: ", pp(\%form);
-
-    # use Data::Dump qw(pp);
-
-    unless ($resp->is_success) {
-        warn "token fetch error", pp($resp);
-        return undef, "Could not fetch oauth token";
+    if ($result->{error}) {
+        $span->set_status(SPAN_STATUS_ERROR, "auth0 login failed: " . $result->{error});
+        $self->_handle_capi_error($result);
+        return SERVER_ERROR;    # Always return server error for login failures (security)
     }
 
-    my $data = decode_json($resp->decoded_content())
-      or return undef, "Could not decode token data";
+    my $data = $result->{data};
 
-    # warn "token data: ", pp($data);
+    # Set session cookie
+    $self->_set_session_cookie($data->{session_token});
 
-#$resp =
-#  $self->ua->get("https://${auth0_domain}/userinfo/?access_token=" . $data->{access_token});
-#$resp->is_success or return undef, "Could not fetch user data";
+    # Clear login state
+    $self->plain_cookie('login_state', '', {expires => -1});
 
-    my $cache = Combust::Cache->new();
+    # Set user data from API response
+    # On the next request, validate_session will load deletion_on and privileges
+    $self->user($data);
 
-    my $jwt_keys = $cache->fetch(id => "auth0_jwks");
-    if ($jwt_keys) {
-        $jwt_keys = $jwt_keys->{data};
-    }
-    else {
-        my $resp = ua()->get("https://${auth0_domain}/.well-known/jwks.json");
-        unless ($resp->is_success) {
-            return undef, "could not fetch jwks";
-        }
-        $jwt_keys = $resp->decoded_content;
-        $cache->store(data => $jwt_keys, expires => 60 * 60 * 4);
+    # Show message if deletion was cancelled
+    if ($data->{deletion_cancelled}) {
+        return $self->login("Your account deletion has been cancelled.");
     }
 
-    my $jwt_data = decode_jwt(token => $data->{id_token}, kid_keys => $jwt_keys);
-
-    # warn "jwt: ", pp($jwt_data);
-
-    $jwt_data or return undef, "Could not decode user data";
-
-    my $user = $jwt_data;
-
-    return $user, undef;
-
+    return;    # Will redirect via parent handler
 }
 
 sub callback_url {
@@ -454,32 +417,29 @@ sub callback_url {
 sub login_url {
     my $self = shift;
 
-    my $state = $self->cookie('login_state');
+    my $state = $self->plain_cookie('login_state');
     unless ($state) {
         $state = (join "", map { $base36->to_base(irand) } (undef) x 6);
-        $self->cookie('login_state', $state);
+
+        # short TTL: only needs to survive the OAuth redirect round-trip
+        $self->plain_cookie('login_state', $state, {expires => time + 600});
     }
 
-    my ($auth0_domain, $auth0_client, $auth0_secret) = $self->_auth0_config();
-
-# https://auth0.com/docs/get-started/authentication-and-authorization-flow/add-login-auth-code-flow
-# https://community.auth0.com/t/invalid-access-token-payload-jwt-encrypted-with-a256gcm/77893
-
-    my $login_url = URI->new('https://' . $auth0_domain . "/authorize");
-    $login_url->query_form(
-        client_id     => $auth0_client,
-        redirect_uri  => $self->callback_url,
-        response_type => 'code',
-        audience      => 'api-dev',
-        scope         => 'openid name email profile preferred_username',
-        state         => $state,
+    # Call Go RPC to generate OAuth login URL
+    # This centralizes Auth0 configuration in the Go API
+    my $result = NP::CAPI::Auth::get_oauth_login_url(
+        redirect_uri => $self->callback_url,
+        state        => $state,
+        client_site  => "" . $self->site,      # Force to string: 'manage', 'www', etc.
+        context      => $self->_get_request_context(),
     );
 
-    use Data::Dump qw(pp);
+    if ($result->{error}) {
+        warn "Failed to get OAuth login URL: " . $result->{error};
+        return undef;
+    }
 
-    # warn "login_url: ", $login_url->as_string, pp($login_url);
-
-    return $login_url->as_string;
+    return $result->{data}{login_url};
 }
 
 sub manage_dispatch {
@@ -487,7 +447,13 @@ sub manage_dispatch {
 
     # .../servers and .../account have their own handlers
 
-    if ($self->user->is_staff) {
+    if ($self->user_is_staff) {
+        if (    $self->request->method eq 'post'
+            and $self->request->uri =~ m{^/manage/admin(/|$)})
+        {
+            return 403 unless $self->check_auth_token;
+        }
+
         if ($self->request->uri =~ m{/manage/admin/?$}) {
             return $self->show_staff;
         }
@@ -505,7 +471,7 @@ sub manage_dispatch {
     if ($self->request->uri eq "/" or $self->request->uri =~ m{^/manage/?$}) {
         my $account  = $self->current_account;
         my $redirect = URI->new('/manage/servers');
-        $redirect->query_param(a => $account->id_token) if $account;
+        $redirect->query_param(a => $account->{id_token}) if $account;
         return $self->redirect($redirect);
     }
 
@@ -524,7 +490,7 @@ sub staff_search {
     $self->set_span_name("manage.admin.search");
 
     # Check staff access
-    unless ($self->user && $self->user->is_staff) {
+    unless ($self->user && $self->user_is_staff) {
         return 403, "Access denied";
     }
 
@@ -543,24 +509,16 @@ sub staff_search {
         return OK, $self->evaluate_template('tpl/admin/search_results.html');
     }
 
-    # Call the new internal API search endpoint
-    my $data = int_api(
-        'get', 'search',
-        {   q               => $q,
-            user            => $self->plain_cookie($self->user_cookie_name),
-            include_deleted => $include_deleted ? 'true' : 'false',
-        },
-        $self->_get_request_context()
+    # Call the search ConnectRPC API
+    my $data = search(
+        $self->api_auth_params,
+        query           => $q,
+        include_deleted => $include_deleted ? JSON::XS::true : JSON::XS::false,
     );
 
     my $results = {};
-    if ($data->{code} == 200) {
+    if (!$data->{error}) {
         $results = $data->{data} || {};
-    }
-    elsif ($data->{code} == 404) {
-
-        # No results found - return empty results
-        $results = {accounts => []};
     }
     else {
         # API error - log and return empty results for degraded experience
@@ -668,15 +626,27 @@ sub staff_zone_edit {
     $self->cache_control('private, no-cache');
 
     # Check staff access
-    unless ($self->user && $self->user->is_staff) {
+    unless ($self->user && $self->user_is_staff) {
         return 403, "Access denied";
     }
 
     my $server_ip = $self->req_param('server') || '';
     return 400, "Server IP required" unless $server_ip;
 
-    my $server = NP::Model->server->find_server($server_ip);
-    return 404, "Server not found" unless $server;
+    # Get server via CAPI
+    my $server_result =
+      NP::CAPI::Server::get_server($self->api_auth_params, ip => $server_ip,);
+
+    # Handle CAPI errors
+    if (my $status =
+        $self->capi_error_status($server_result, $server_result->{data}{server}))
+    {
+        warn "GetServer error: " . $server_result->{error} if $server_result->{error};
+        warn "Trace ID: " . $server_result->{trace_id}     if $server_result->{trace_id};
+        return $status, $status == 404 ? "Server not found" : "Service unavailable";
+    }
+
+    my $server = $server_result->{data}{server};
 
     # Determine if this is edit or save
     my $is_save = $self->request->uri =~ m{/save/?$};
@@ -686,25 +656,45 @@ sub staff_zone_edit {
         # Save zones
         my $zones_value = $self->req_param('zones') || '';
 
-        # Call the existing API method
-        require NTPPool::API::Staff;
-        my $api = NTPPool::API::Staff->new(
-            args => {
-                user   => $self->user,
-                params => {
-                    id         => 'zone_list',
-                    server     => $server_ip,
-                    value      => $zones_value,
-                    auth_token => $self->auth_token,
-                }
-            }
+        # Parse zones from user input
+        my @zones = grep { length($_) > 0 }
+          map {s/^\s+|\s+$//gr}
+          split(/[\s,]+/, $zones_value);
+
+        # Call CAPI to update zones
+        my $result = NP::CAPI::ServerManagement::update_server(
+            $self->api_auth_params,
+            account => $self->current_account->{id_token},
+            ip      => $server_ip,
+            zones   => \@zones,
         );
 
-        my $result = $api->edit_server();
+        # Handle CAPI errors
+        if ($result->{error}) {
+            $self->tpl_param('server',   $server);
+            $self->tpl_param('error',    $result->{error});
+            $self->tpl_param('trace_id', $result->{trace_id});
+            $self->tpl_param('zones',    $zones_value);
+            return OK, $self->evaluate_template('tpl/admin/zone_edit.html');
+        }
+
+        # Reload server to get updated zones using helper
+        my $server_data = $self->reload_server_via_capi($server_ip);
+        if (!$server_data) {
+            $self->tpl_param('server', $server);
+            $self->tpl_param('error',  'Failed to reload server data');
+            $self->tpl_param('zones',  $zones_value);
+            return OK, $self->evaluate_template('tpl/admin/zone_edit.html');
+        }
+
+        my @zone_names =
+          map  { $_->{name} }
+          grep { $_->{name} ne '.' }
+          sort { $a->{name} cmp $b->{name} } @{$server_data->{zones} || []};
 
         # Return view state after save
-        $self->tpl_param('server'      => $server);
-        $self->tpl_param('zones'       => join(' ', @$result));
+        $self->tpl_param('server'      => $server_data);
+        $self->tpl_param('zones'       => join(' ', @zone_names));
         $self->tpl_param('manage_site' => 1);
         return OK, $self->evaluate_template('tpl/admin/zone_view.html');
     }
@@ -713,7 +703,11 @@ sub staff_zone_edit {
         if ($self->req_param('cancel')) {
 
             # Return to view state
-            my @zone_names = map { $_->name } $server->zones_display;
+            # Filter out root zone and extract names
+            my @zone_names =
+              map  { $_->{name} }
+              grep { $_->{name} ne '.' }
+              sort { $a->{name} cmp $b->{name} } @{$server->{zones} || []};
             $self->tpl_param('server'      => $server);
             $self->tpl_param('zones'       => join(' ', @zone_names));
             $self->tpl_param('manage_site' => 1);
@@ -721,7 +715,11 @@ sub staff_zone_edit {
         }
 
         # Show edit form
-        my @zone_names = map { $_->name } $server->zones_display;
+        # Filter out root zone and extract names
+        my @zone_names =
+          map  { $_->{name} }
+          grep { $_->{name} ne '.' }
+          sort { $a->{name} cmp $b->{name} } @{$server->{zones} || []};
         $self->tpl_param('server' => $server);
         $self->tpl_param('zones'  => join(' ', @zone_names));
         return OK, $self->evaluate_template('tpl/admin/zone_edit.html');
@@ -736,50 +734,66 @@ sub staff_hostname_edit {
     $self->cache_control('private, no-cache');
 
     # Check staff access
-    unless ($self->user && $self->user->is_staff) {
+    unless ($self->user && $self->user_is_staff) {
         return 403, "Access denied";
     }
 
     my $server_ip = $self->req_param('server') || '';
     return 400, "Server IP required" unless $server_ip;
 
-    my $server = NP::Model->server->find_server($server_ip);
-    return 404, "Server not found" unless $server;
+    # Get account context (handles ?a=... parameter)
+    my $account = $self->current_account;
+    return 403, "Account context required" unless $account;
+
+    my $lookup = get_server(
+        $self->api_auth_params,
+        account                 => $account->{id_token},
+        ip                      => $server_ip,
+        require_edit_permission => JSON::XS::true,
+    );
+    if (my $status = $self->capi_error_status($lookup, $lookup->{data}{server})) {
+        return $status, $status == 404 ? "Server not found" : "Service unavailable";
+    }
+    my $server = NP::Data::Server->new(%{$lookup->{data}{server}});
 
     # Determine if this is edit or save
     my $is_save = $self->request->uri =~ m{/save/?$};
 
     if ($is_save && $self->request->method eq 'post') {
 
-        # Save hostname
+        # Save hostname via API
         my $hostname_value = $self->req_param('hostname') || '';
 
-        # Call the existing API method
-        require NTPPool::API::Staff;
-        my $api = NTPPool::API::Staff->new(
-            args => {
-                user   => $self->user,
-                params => {
-                    id         => 'hostname',
-                    server     => $server_ip,
-                    value      => $hostname_value,
-                    auth_token => $self->auth_token,
-                }
-            }
+        # Call API to update hostname (API handles validation and normalization)
+        my $result = update_server(
+            $self->api_auth_params,
+            account  => $account->{id_token},
+            ip       => $server_ip,
+            hostname => $hostname_value,
         );
 
-        my $result = $api->edit_server();
+        # Handle API response
+        if ($result->{error}) {
 
-        # Debug logging
+            # API returned an error (validation failed or other error)
+            warn "Hostname update failed: "
+              . $result->{error}
+              . " (Trace ID: "
+              . $result->{trace_id} . ")";
 
-        # Update the server object with the returned hostname
-        if ($result && ref($result) eq 'HASH' && exists $result->{hostname}) {
-            $server->hostname($result->{hostname});
+            $self->tpl_param('server' => $server);
+            $self->tpl_param('error'  => $result->{error});
+            return OK, $self->evaluate_template('tpl/admin/hostname_view.html');
         }
 
-        # Return view state after save
+        # Success - use data from API response
+        warn "Hostname updated successfully for server "
+          . $server_ip . " to: "
+          . ($result->{data}{server}{hostname} || '(empty)');
+
+        # Wrap API response data for display
+        $server = NP::Data::Server->new(%{$result->{data}{server}});
         $self->tpl_param('server' => $server);
-        $self->tpl_param('error'  => $result->{error}) if $result->{error};
         return OK, $self->evaluate_template('tpl/admin/hostname_view.html');
     }
     else {
@@ -797,21 +811,6 @@ sub staff_hostname_edit {
     }
 }
 
-sub account_monitor_count {
-    my $self = shift;
-    return $self->{_account_monitor_count}
-      if defined $self->{_account_monitor_count};
-
-    return $self->{_account_monitor_count} = 0
-      unless $self->current_account;    # if we are being invited to a new account
-
-    my $monitor_count =
-      NP::Model->monitor->get_objects_count(
-          query => [account_id => $self->current_account->id]);
-
-    return $self->{_account_monitor_count} = $monitor_count;
-}
-
 sub monitor_eligibility {
     my $self = shift;
     return $self->{_monitor_eligibility}
@@ -826,41 +825,33 @@ sub monitor_eligibility {
         };
     }
 
-    my $data = int_api(
-        'get',
-        'monitor/manage/eligibility',
-        {   a    => $self->current_account->id_token,
-            user => $self->plain_cookie($self->user_cookie_name),
-        },
-        $self->_get_request_context()
-    );
+    # Call new ConnectRPC AccountService.GetAccountStatus
+    my $result = get_account_status($self->api_auth_params,
+        account => $self->current_account->{id_token},);
 
-    if ($data->{code} == 200) {
-        return $self->{_monitor_eligibility} = $data->{data}
-          || {enabled       => 0,
-              can_register  => 0,
-              monitor_count => 0,
-          };
+    # Handle successful response
+    if ($result->{data}) {
+        return $self->{_monitor_eligibility} = $result->{data};
     }
-    elsif ($data->{code} == 404) {
 
-        # Account not found - return safe defaults
-        return $self->{_monitor_eligibility} = {
-            enabled       => 0,
-            can_register  => 0,
-            monitor_count => 0,
-        };
-    }
-    else {
+    # Handle errors - return safe defaults for degraded experience
+    if ($result->{error}) {
+        warn
+          "ConnectRPC GetAccountStatus error: $result->{error} (code: $result->{connect_code})";
 
-        # API error - log and return safe defaults for degraded experience
-        return $self->{_monitor_eligibility} = {
-            enabled       => 0,
-            can_register  => 0,
-            monitor_count => 0,
-            error         => 'api_unavailable'
-        };
+        # Log detailed error for debugging
+        if ($result->{trace_id}) {
+            warn "  Trace ID: $result->{trace_id}";
+        }
     }
+
+    # Return safe defaults
+    return $self->{_monitor_eligibility} = {
+        enabled       => 0,
+        can_register  => 0,
+        monitor_count => 0,
+        error         => $result->{connect_code} || 'api_unavailable',
+    };
 }
 
 sub account_monitor_config {
@@ -869,54 +860,144 @@ sub account_monitor_config {
     # Use passed account or fall back to current_account
     $account ||= $self->current_account;
 
-    # Create a cache key that includes the account ID
-    my $cache_key = '_account_monitor_config_' . ($account ? $account->id : 'none');
+    return undef unless $account;
+
+    my $cache_key = '_account_monitor_config_' . $account->{account_id};
 
     if (exists $self->{$cache_key}) {
         return $self->{$cache_key};
     }
 
-    # Default values if account not available
-    unless ($account) {
-        return $self->{$cache_key} = {
-            monitor_enabled     => 0,
-            monitor_limit       => 3,
-            monitors_per_server => 1,
-        };
+    # The API owns the monitor_config defaults (stored 0 -> 3 / 1; -1 means
+    # disabled) - Perl just displays what it returns.
+    my $result = get_account(
+        $self->api_auth_params,
+        account                => $account->{id_token},
+        include_monitor_config => JSON::XS::true,
+    );
+
+    if ($result->{error}) {
+        warn "GetAccount (monitor config) error: " . $result->{error};
+        warn "Trace ID: " . $result->{trace_id} if $result->{trace_id};
+
+        # Cache the failure too: a request that renders the config twice
+        # shouldn't retry (and re-log) a call that already failed.
+        return $self->{$cache_key} = undef;
     }
 
-    # Parse account flags from database-loaded account object
-    my $config = {};
+    return $self->{$cache_key} = $result->{data}{monitor_config};
+}
 
-    if ($account->flags) {
+sub user_accounts {
+    my $self = shift;
 
-        # Check if flags is already a hash reference or a JSON string
-        if (ref($account->flags) eq 'HASH') {
-            $config = $account->flags;
+    # Return cached accounts if already loaded
+    return $self->{_user_accounts} if exists $self->{_user_accounts};
+
+    # Return empty array if no user
+    return $self->{_user_accounts} = [] unless $self->user;
+
+    # Call GetUserAccounts API
+    my $result = get_user_accounts($self->api_auth_params,);
+
+    # Handle errors - return empty array for graceful degradation
+    if ($result->{error}) {
+        warn "GetUserAccounts error: " . $result->{error};
+        warn "Trace ID: " . $result->{trace_id} if $result->{trace_id};
+        return $self->{_user_accounts} = [];
+    }
+
+    # Return account list from API
+    return $self->{_user_accounts} = $result->{data}{accounts} || [];
+}
+
+sub user_invites {
+    my $self = shift;
+
+    # Return cached invites if already loaded
+    return $self->{_user_invites} if exists $self->{_user_invites};
+
+    # Return empty array if no user
+    return $self->{_user_invites} = [] unless $self->user;
+
+    # Call GetAccountInvites API for user
+    my $result = get_account_invites($self->api_auth_params, for_user => JSON::XS::true,);
+
+    # Handle errors - return empty array for graceful degradation
+    if ($result->{error}) {
+        warn "GetAccountInvites error: " . $result->{error};
+        warn "Trace ID: " . $result->{trace_id} if $result->{trace_id};
+        return $self->{_user_invites} = [];
+    }
+
+    # Return invite list from API
+    return $self->{_user_invites} = $result->{data}{invites} || [];
+}
+
+=head2 account_logs
+
+Fetch audit logs via ConnectRPC AuditService API (eliminates N+1 query problem).
+
+    my $logs = $self->account_logs(
+        account => $account,
+        types   => ['invitation', 'server-delete'],  # optional filter
+        limit   => 50,                               # optional (default: 50)
+    );
+
+Returns arrayref of log objects compatible with log_table.html template.
+Returns empty arrayref on error (with warning logged).
+
+=cut
+
+sub account_logs {
+    my $self = shift;
+    my %args = @_;
+
+    my $account = $args{account} || $self->current_account;
+    return [] unless $account;
+
+    # Call AuditService.GetAccountAuditLogs
+    require NP::CAPI::Audit;
+    my $result = NP::CAPI::Audit::get_account_audit_logs(
+        $self->api_auth_params,
+        account => $account->{id_token},
+        ($args{types} ? (types => $args{types}) : ()),
+        ($args{limit} ? (limit => $args{limit}) : ()),
+    );
+
+    # Handle errors - return empty array for graceful degradation
+    if ($result->{error}) {
+        warn "GetAccountAuditLogs error: " . $result->{error};
+        warn "Trace ID: " . $result->{trace_id} if $result->{trace_id};
+
+        # Set error info for staff users to see
+        $self->tpl_param('logs_error',    $result->{error});
+        $self->tpl_param('logs_trace_id', $result->{trace_id}) if $result->{trace_id};
+        return [];
+    }
+
+    my $logs = $result->{data}{logs} || [];
+
+    # Transform API response to template format
+    # API returns changes as array of {field_name, new_value, old_value}
+    # Template expects hash {field_name => [new_value, old_value]}
+    for my $log (@$logs) {
+
+        # Defensive check: ensure changes is an arrayref
+        if ($log->{changes} && ref($log->{changes}) eq 'ARRAY' && @{$log->{changes}}) {
+            my %changes_hash;
+            for my $change (@{$log->{changes}}) {
+                $changes_hash{$change->{field_name}} =
+                  [$change->{new_value}, $change->{old_value},];
+            }
+            $log->{changes} = \%changes_hash;
         }
         else {
-            eval { $config = decode_json($account->flags); };
-            if ($@) {
-                $config = {};
-            }
-            else {
-            }
+            $log->{changes} = {};
         }
     }
-    else {
-    }
 
-    # Set defaults and user-friendly values
-    my $monitor_config = {
-        monitor_enabled     => $config->{monitor_enabled} ? 1 : 0,
-        monitor_limit       => $config->{monitor_limit}             || 3,
-        monitors_per_server => $config->{monitors_per_server_limit} || 1,
-    };
-
-    # Handle special case where monitor_limit is 0 (use default)
-    $monitor_config->{monitor_limit} = 3 if $monitor_config->{monitor_limit} == 0;
-
-    return $self->{$cache_key} = $monitor_config;
+    return $logs;
 }
 
 1;

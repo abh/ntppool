@@ -1,0 +1,102 @@
+<div class="row">
+    <div class="col-md-10">
+        <h3>Delete account: [% account.name | html %]</h3>
+
+        [% INCLUDE tpl/common/error_alert.html %]
+
+        [% IF blockers && blockers.size > 0 %]
+        <p>
+            <span class="badge badge-danger">Cannot schedule deletion</span>
+        </p>
+        <p>
+            The account can't be scheduled for deletion because of the
+            following:
+        </p>
+        <ul>
+            [% FOR b = blockers %]
+            <li>[% b | html %]</li>
+            [% END %]
+        </ul>
+
+        [% IF orphaned_emails && orphaned_emails.size > 0 %]
+        <p>
+            The following users would be left without any account if
+            this account were deleted:
+        </p>
+        <ul>
+            [% FOR e = orphaned_emails %]
+            <li>[% e | html %]</li>
+            [% END %]
+        </ul>
+        [% END %]
+
+        <p>
+            Resolve the items above (for example, move servers to
+            another account or assign team members elsewhere), then
+            try again.
+        </p>
+
+        <p>
+            <a class="btn btn-default"
+               href="[% combust.manage_url('/manage/account', { a => account.id_token }) %]">
+                Back to account page
+            </a>
+        </p>
+
+        [% ELSIF pending %]
+        <p>
+            <span class="badge badge-warning">Deletion scheduled</span>
+        </p>
+        <p>
+            This account is scheduled for deletion on
+            <b>[% deletion_on | html %]</b>.
+        </p>
+        <p>
+            Account members will keep any other account memberships
+            they have. You can cancel the scheduled deletion from this
+            page until the deletion runs.
+        </p>
+
+        <form action="[% combust.manage_url('/manage/account/dissolve') %]"
+              method="post" accept-charset="utf-8">
+            <input type="hidden" name="auth_token" value="[% combust.auth_token %]">
+            <input type="hidden" name="a" value="[% account.id_token %]">
+            <input type="hidden" name="cancel" value="1">
+
+            <button class="btn btn-danger" type="submit">
+                Cancel scheduled deletion
+            </button>
+            <a class="btn btn-default"
+               href="[% combust.manage_url('/manage/account', { a => account.id_token }) %]">
+                Back to account page
+            </a>
+        </form>
+
+        [% ELSE %]
+        <p>
+            This will schedule the account
+            <b>[% account.name | html %]</b> for permanent deletion in
+            7 days. Account members keep any other account
+            memberships they have.
+        </p>
+        <p>
+            You can cancel the scheduled deletion from this page any
+            time before the deletion runs.
+        </p>
+
+        <form action="[% combust.manage_url('/manage/account/dissolve') %]"
+              method="post" accept-charset="utf-8">
+            <input type="hidden" name="auth_token" value="[% combust.auth_token %]">
+            <input type="hidden" name="a" value="[% account.id_token %]">
+
+            <button class="btn btn-warning" type="submit">
+                Schedule account deletion
+            </button>
+            <a class="btn btn-default"
+               href="[% combust.manage_url('/manage/account', { a => account.id_token }) %]">
+                Back to account page
+            </a>
+        </form>
+        [% END %]
+    </div>
+</div>

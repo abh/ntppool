@@ -7,18 +7,20 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p>Are you sure you want to delete monitor <strong>[% monitor.Name | html %]</strong>?</p>
+                <p>Are you sure you want to delete monitor <strong>[% monitor.name | html %]</strong>?</p>
                 <p class="text-muted">This action cannot be undone.</p>
+                <div id="delete-result"></div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <form class="d-inline"
+                      data-monitor-delete
                       hx-post="/manage/monitors/monitor/delete?a=[% combust.current_account.id_token %]"
                       hx-target="#delete-result"
                       hx-swap="innerHTML">
                     <input type="hidden" name="auth_token" value="[% combust.auth_token %]">
-                    <input type="hidden" name="name" value="[% monitor.TLSName | html %]">
-                    <input type="hidden" name="id" value="[% monitor.IDToken | html %]">
+                    <input type="hidden" name="name" value="[% monitor.tls_name | html %]">
+                    <input type="hidden" name="id" value="[% monitor.id_token | html %]">
                     <button type="submit" class="btn btn-danger">Delete Monitor</button>
                 </form>
             </div>

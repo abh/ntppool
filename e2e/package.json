@@ -1,0 +1,22 @@
+{
+  "name": "ntppool-e2e",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Playwright E2E tests for the NTP Pool dev site",
+  "scripts": {
+    "test": "NODE_OPTIONS=--no-deprecation playwright test",
+    "test:unit": "node --no-warnings --test lib/*.test.ts",
+    "test:headed": "NODE_OPTIONS=--no-deprecation playwright test --headed",
+    "typecheck": "tsc --project tsconfig.json",
+    "report": "playwright show-report"
+  },
+  "dependencies": {
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0",
+    "@types/pg": "^8.11.10",
+    "dotenv": "^16.4.5",
+    "typescript": "^5.8.3"
+  }
+}

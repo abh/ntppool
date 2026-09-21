@@ -1,3 +1,10 @@
+[% IF logs_error %]
+<div class="alert alert-warning">
+    <strong>Audit logs temporarily unavailable:</strong> [% logs_error | html %]
+    [% IF logs_trace_id %]<br><small>Trace ID: [% logs_trace_id | html %]</small>[% END %]
+</div>
+[% END %]
+
 [% IF !logs; RETURN; END; %]
 
 <div>
@@ -5,7 +12,6 @@
         <thead>
             <tr>
                 <th scope="col">When</th>
-                <th scope="col">Account</th>
                 <th scope="col">User</th>
                 <th scope="col">Server</th>
                 <th scope="col">Type</th>
@@ -15,7 +21,6 @@
         [% FOR log IN logs %]
         <tr class="log-border">
             <td>[% log.created_on %]</td>
-            <td>[% log.account.id_token | html %]</td>
             <td>[% log.user.email | html %]</td>
             <td>[% log.server.ip | html %]</td>
             <td>[% log.type | html %]</td>
@@ -25,9 +30,10 @@
                 [% FOR k IN log.changes.keys %]
                 <tr class="log-changes">
                     <td></td>
-                    <td>[% k | html %]</td>
-                    <td colspan=2>[% log.changes.$k.0 | html %]</td>
-                    <td colspan=2><i>was: [% log.changes.$k.1 | html %]</i></td>
+                    <td colspan="4" class="text-muted small">
+                        <strong>[% k | html %]:</strong> [% log.changes.$k.0 | html %]
+                        <i>(was: [% log.changes.$k.1 | html %])</i>
+                    </td>
                 </tr>
                 [% END %]
             [% END %]

@@ -2,6 +2,8 @@
     <div class="col-md-10">
         <h3>[% user.email | html %]</h3>
 
+        [% INCLUDE tpl/common/error_alert.html %]
+
         [% IF delete_available %]
         <p>
         Click the delete button below to continue to schedule your
@@ -18,7 +20,7 @@
             <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
 
             <button class="btn btn-warning"
-                name="user_id" value="[% user.id %]" type="submit">
+                name="user_id" value="[% user.user_id %]" type="submit">
                 Delete user account
             </button>
         </form>
@@ -26,17 +28,13 @@
         [% ELSE %]
         <p>
         This user can't be deleted as it's the only user
-        associated with an account that still has
-        [% items = []; IF delete_blockers.servers; items.push("active servers"); END;
-           IF delete_blockers.vendor_zones; items.push("vendor zones"); END;
-           IF delete_blockers.monitors; items.push("active monitors"); END;
-           IF items.size; items.join(", ") | html; ELSE %]active resources[% END %].
+        associated with an account with active servers.
         </p>
 
         <p>
         To prepare the user for deletion, please make sure that
         the account either has an alternate user or
-        all associated resources have been removed.
+        all servers have been marked for deletion.
         </p>
         <p>
         If this is unexpected, please email

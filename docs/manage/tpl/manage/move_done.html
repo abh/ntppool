@@ -2,6 +2,18 @@
 
     <h3>Server move completed</h3>
 
+    [% IF partial_failure %]
+    <div class="alert alert-warning">
+        <strong>Partial Success:</strong> [% moved_count %] server(s) moved successfully, but [% failed_count %] failed.
+
+        <ul>
+            [% FOR failed IN failed_servers %]
+            <li>[% failed.ip %]: [% failed.error || "Unknown error" %]</li>
+            [% END %]
+        </ul>
+    </div>
+    [% END %]
+
     Moved from
     <a href="[% combust.manage_url('/manage/servers', a => old_account.id_token) %]">[% old_account.name | html %]</a>
     to
@@ -9,7 +21,7 @@
 
     <ul>
         [% FOR s = servers_moved %]
-        <li>[% s.ip %]</li>
+        <li>[% s %]</li>
         [% END %]
     </ul>
 

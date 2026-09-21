@@ -1,0 +1,36 @@
+<div id="opensource" class="row product-header">
+  <div class="col-sm">
+    <h3>Open Source (non-revenue)</h3>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md">
+  <p>The NTP Pool Project is an open source project built and operated by contributors from across the world for almost 2 decades. Supporting open source is crucial to the project.</p>
+  <p>If your project is open source, we will setup the DNS zone and the service without a paid subscription.</p>
+  <p>Many resources for the NTP Pool itself are provided gratis or at discounts (which we appreciate greatly!). All the same, the project has operating expenses for providing time service for the world.</p>
+  <p>Companies or projects that generate revenue we encourage to use a paid subscription. For example, the NTP Pool itself by this standard would not use the open source plan. If your staff is largely volunteers and most of your work is not revenue related, the open source plan might be appropriate. By this standard, the NTP Pool would use the open source plan.</p>
+  <p>If you have questions about this,
+    please <a href="mailto:[% "vendors" | email %]?subject=NTP Pool DNS zone [% vz.zone_name | html %] (open source)">
+    get in touch</a>.
+  </p>
+
+
+  <form method="post" class="form-inline btn-inline" action="[% combust.manage_url('/manage/vendor/submit', id => vz.id_token ) %]#opensource">
+    <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
+    <input type="hidden" name="a" value="[% combust.current_account.id_token %]">
+    <input type="hidden" name="opensource_request" value="1">
+
+    <i>
+      Briefly describe the open source, link to source code, license name
+      and (lack of 😉) business model:
+    </i><br>
+    [% IF errors.opensource_info %]
+      <div class="error">[% errors.opensource_info | html %]</div>
+    [% END %]
+    <textarea name="opensource_info" class="form-control" rows="5" cols="65"></textarea><br>
+
+    <input type="submit" class="btn btn-primary" value="Continue &rarr;" />
+  </form>
+  </div>
+</div>

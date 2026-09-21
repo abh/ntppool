@@ -1,13 +1,14 @@
 package NTPPool::Control::Manage::Monitor;
 use v5.30.0;
 use warnings;
-use parent qw(NTPPool::Control::Manage);
-use NP::Model;
+use parent            qw(NTPPool::Control::Manage);
 use Combust::Constant qw(OK NOT_FOUND FORBIDDEN SERVER_ERROR);
 use JSON              ();
 use MIME::Base64      qw(encode_base64);
 use Data::Dump        qw(pp);
-use NP::IntAPI        qw(int_api);
+use NP::CAPI::Monitor
+  qw(get_monitor list_monitors update_monitor_status get_monitor_metrics_summary);
+use NP::CAPI::MonitorRegistration qw(get_registration_data accept_registration);
 use OpenTelemetry::Trace;
 use OpenTelemetry -all;
 use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
@@ -15,40 +16,6 @@ use experimental             qw( defer );
 use Syntax::Keyword::Dynamically;
 
 my $json = JSON::XS->new->pretty->utf8->convert_blessed;
-
-sub _get_request_context {
-    my $self            = shift;
-    my $x_forwarded_for = $self->request->header_in('X-Forwarded-For');
-    return $x_forwarded_for ? {x_forwarded_for => $x_forwarded_for} : undef;
-}
-
-sub _map_api_error_code {
-    my ($self, $data, $context) = @_;
-
-    my $api_code = $data->{code};
-    return $api_code if $api_code == 200;
-
-    $self->cache_control('private, max-age=0, no-cache');
-    $self->tpl_param('error', $data->{error}) unless $self->tpl_param('error');
-    $self->tpl_param('code',  $api_code);
-
-    if ($api_code == 401) {
-        warn "API unauthorized access in $context: user "
-          . ($self->user ? $self->user->username : 'none');
-        return 401;
-    }
-    elsif ($api_code == 404) {
-        return NOT_FOUND;
-    }
-    elsif ($api_code >= 400 && $api_code < 500) {
-        return FORBIDDEN;
-    }
-    elsif ($api_code >= 500) {
-        return SERVER_ERROR;
-    }
-
-    return NOT_FOUND;    # fallback
-}
 
 sub manage_dispatch {
     my $self = shift;
@@ -123,22 +90,18 @@ sub _fetch_monitor_details {
         return undef, NOT_FOUND;
     }
 
-    my $data = int_api(
-        'get',
-        'monitor/manage/monitor',
-        {   name => $name,
-            user => $self->plain_cookie($self->user_cookie_name),
-            a    => $self->current_account->id_token,
-        },
-        $self->_get_request_context()
+    my $result = get_monitor(
+        $self->api_auth_params,
+        account => $self->current_account->{id_token},
+        name    => $name,
     );
 
-    if ($data->{code} != 200) {
-        my $code = $self->_map_api_error_code($data, "fetch_monitor_details for $name");
+    if ($result->{code} >= 300) {
+        my $code = $self->_handle_capi_error($result);
         return undef, $code;
     }
 
-    return $data, undef;
+    return $result->{data}->{monitor}, undef;
 }
 
 sub render_monitor {
@@ -152,18 +115,38 @@ sub render_monitor {
     defer { $span->end(); };
 
     my $name = $self->req_param('name');
-    my ($data, $error_code) = $self->_fetch_monitor_details($name);
+    my ($mon, $error_code) = $self->_fetch_monitor_details($name);
     return $error_code if $error_code;
 
-    my @monitor = _monitor_list($data->{data}->{Monitors} || {});
-    $self->tpl_param('mon',  $monitor[0]);
-    $self->tpl_param('data', $data->{data} || {});
+    $self->tpl_param('mon', $mon);
+
+    # The admin status form (show.html) posts to render_admin_status, which
+    # calls update_monitor_status. get_monitor does not return the allowed
+    # statuses, so supply the fixed enum here.
+    $self->tpl_param('status_options', [qw(pending testing active paused deleted)]);
 
     # Fetch metrics for this specific monitor
     my $metrics = $self->monitor_metrics(names => $name);
     $self->tpl_param('metrics', $metrics);
 
     return OK, $self->evaluate_template('tpl/monitors/show.html');
+}
+
+sub _tpl_param_registration_result {
+    my $self   = shift;
+    my $result = shift;
+
+    # ConnectRPC transport is always 200 on success; the semantic status the
+    # templates branch on lives in data.code (see handoff doc).
+    my $rdata = $result->{data} || {};
+    my $code  = $result->{error} ? $result->{code} : $rdata->{code};
+
+    $self->tpl_param('error',    $result->{error})    if $result->{error};
+    $self->tpl_param('trace_id', $result->{trace_id}) if $result->{trace_id};
+    $self->tpl_param('code',     $code);
+    $self->tpl_param('data',     $rdata);
+
+    return ($rdata, $code);
 }
 
 sub render_confirm_monitor {
@@ -185,56 +168,38 @@ sub render_confirm_monitor {
     }
     else {
         # GET request
-        my $data = NP::IntAPI::get_monitoring_registration_data(
-            $validation_token,
-            $self->plain_cookie($self->user_cookie_name),
-            $self->current_account->id_token,
-            $self->_get_request_context(),
+        my $result = get_registration_data(
+            $self->api_auth_params,
+            account => $self->current_account->{id_token},
+            token   => $validation_token,
         );
-        if ($data->{error}) {
-            $self->tpl_param('error', $data->{error});
-        }
-        $self->tpl_param('message', $data->{message});
-        $self->tpl_param('code',    $data->{code});
-        $self->tpl_param('data',    $data->{data});
-        $self->tpl_param('error',   $data->{error});
+
+        my ($rdata, $code) = $self->_tpl_param_registration_result($result);
 
         if ($status_check) {
             return OK, $self->evaluate_template('tpl/monitors/confirm_status.html');
         }
 
-        # Check if registration is already completed or accepted
-        if ($data->{code} == 201    # StatusCreated - monitor has been setup
-            || $data->{code}
-            == 202 # StatusAccepted - user accepted registration; waiting for monitor to confirm
-            || (   $data->{data}
-                && $data->{data}->{status}
-                && $data->{data}->{status} ne 'pending')
-          )
+        if (   $code == 201
+            || $code == 202
+            || ($rdata->{status} && $rdata->{status} ne 'pending'))
         {
-            # Show status page instead of form for non-pending registrations
             return OK, $self->evaluate_template('tpl/monitors/confirm_status.html');
         }
-
         return OK, $self->evaluate_template('tpl/monitors/confirm_form.html');
     }
 
     unless ($self->request->method eq 'post') {
         return NOT_FOUND;
     }
-    my $data = NP::IntAPI::accept_monitoring_registration(
-        $validation_token,
-        $self->plain_cookie($self->user_cookie_name),
-        $self->current_account->id_token,
-        $self->req_param("location_code"),
-        $self->_get_request_context(),
+    my $result = accept_registration(
+        $self->api_auth_params,
+        account       => $self->current_account->{id_token},
+        token         => $validation_token,
+        location_code => $self->req_param("location_code"),
     );
-    if ($data->{error}) {
-        $self->tpl_param('error', $data->{error});
-    }
-    $self->tpl_param('message', $data->{message});
-    $self->tpl_param('code',    delete $data->{code});
-    $self->tpl_param('data',    $data->{data});
+
+    $self->_tpl_param_registration_result($result);
 
     return OK, $self->evaluate_template('tpl/monitors/confirm_accept.html');
 
@@ -246,13 +211,6 @@ sub render_confirm_monitor {
     #         # , {id => $mon->id_token}
     #     )
     # );
-}
-
-sub _get_id {
-    my $self  = shift;
-    my $token = $self->req_param('id') or return;
-    my $id    = $token =~ m/^mon-/ ? NP::Model::Monitor->token_id($token) : $token;
-    return $id;
 }
 
 sub render_instructions {
@@ -270,27 +228,17 @@ sub render_monitors {
     dynamically otel_current_context = otel_context_with_span($span);
     defer { $span->end(); };
 
-    my $data = int_api(
-        'get',
-        'monitor/manage/',
-        {   account_id => $self->current_account->id,
-            a          => $self->current_account->id_token,
+    my $result = list_monitors($self->api_auth_params,
+        account => $self->current_account->{id_token},);
 
-            user => $self->plain_cookie($self->user_cookie_name),
-        },
-        $self->_get_request_context()
-    );
-
-    if ($data->{code} >= 400) {
-        return $self->_map_api_error_code($data, "render_monitors");
+    if ($result->{code} >= 300) {
+        return $self->_handle_capi_error($result);
     }
 
-    my @monitors = _monitor_list($data->{data}->{Monitors} || {});
-    $self->tpl_param('monitors', \@monitors);
+    $self->tpl_param('monitors', $result->{data}->{monitors} || []);
 
     # Fetch metrics for all monitors in this account
-    my $metrics =
-      $self->monitor_metrics(account_token => $self->current_account->id_token);
+    my $metrics = $self->monitor_metrics(id_token => $self->current_account->{id_token});
     $self->tpl_param('metrics', $metrics);
 
     return OK, $self->evaluate_template('tpl/monitors/list.html');
@@ -306,21 +254,13 @@ sub render_admin_list {
     dynamically otel_current_context = otel_context_with_span($span);
     defer { $span->end(); };
 
-    my $data = int_api(
-        'get',
-        'monitor/manage/',
-        {   all_accounts => 1,
-            user         => $self->plain_cookie($self->user_cookie_name),
-        },
-        $self->_get_request_context()
-    );
+    my $result = list_monitors($self->api_auth_params, all_accounts => JSON::XS::true,);
 
-    if ($data->{code} >= 400) {
-        return $self->_map_api_error_code($data, "render_admin_list");
+    if ($result->{code} >= 300) {
+        return $self->_handle_capi_error($result);
     }
 
-    my @monitors = _monitor_list($data->{data}->{Monitors} || {});
-    $self->tpl_param('monitors',   \@monitors);
+    $self->tpl_param('monitors',   $result->{data}->{monitors} || []);
     $self->tpl_param('admin_list', 1);
 
     # Fetch metrics for all accounts (admin view)
@@ -341,28 +281,24 @@ sub render_admin_status {
     dynamically otel_current_context = otel_context_with_span($span);
     defer { $span->end(); };
 
-    my $data = int_api(
-        'post',
-        'monitor/manage/status',
-        {   a      => $self->current_account->id_token,
-            name   => $self->req_param('name')                     || '',
-            id     => $self->req_param('id')                       || '',
-            status => $self->req_param('status')                   || '',
-            user   => $self->plain_cookie($self->user_cookie_name) || '',
-        },
-        $self->_get_request_context()
+    my $name   = $self->req_param('name') || '';
+    my $result = update_monitor_status(
+        $self->api_auth_params,
+        account => $self->current_account->{id_token},
+        name    => $name,
+        ids     => [split /,/, ($self->req_param('id') || '')],
+        status  => $self->req_param('status') || '',
     );
-    if ($data->{code} >= 400) {
-        return $self->_map_api_error_code($data, "render_admin_status");
+    if ($result->{code} >= 300) {
+        return $self->_handle_capi_error($result);
     }
 
-    # no content, monitor was deleted
-    if ($data->{code} == 204) {
+    # deletion returns to the admin list; other status changes to the monitor page
+    if ($result->{data}->{deleted}) {
         return $self->redirect($self->manage_url('/manage/monitors/admin'));
     }
 
-    my $redirect =
-      $self->manage_url('/manage/monitors/monitor', {name => $self->req_param('name')});
+    my $redirect = $self->manage_url('/manage/monitors/monitor', {name => $name});
     return $self->redirect($redirect);
 
 }
@@ -382,11 +318,10 @@ sub render_confirm_delete {
     }
 
     # Get monitor details for display using shared method
-    my ($data, $error_code) = $self->_fetch_monitor_details($name);
+    my ($mon, $error_code) = $self->_fetch_monitor_details($name);
     return $error_code if $error_code;
 
-    my @monitor = _monitor_list($data->{data}->{Monitors} || {});
-    $self->tpl_param('monitor', $monitor[0]);
+    $self->tpl_param('monitor', $mon);
     return OK, $self->evaluate_template('tpl/monitors/confirm_delete_modal.html');
 }
 
@@ -408,22 +343,15 @@ sub render_delete_monitor {
         return $self->redirect($self->manage_url('/manage/monitors/'));
     }
 
-    my $data = int_api(
-        'post',
-        'monitor/manage/status',
-        {   name   => $name,
-            id     => $id,
-            status => 'deleted',
-            user   => $self->plain_cookie($self->user_cookie_name),
-            a      => $self->current_account->id_token,
-        },
-        $self->_get_request_context()
+    my $result = update_monitor_status(
+        $self->api_auth_params,
+        account => $self->current_account->{id_token},
+        name    => $name,
+        ids     => [split /,/, $id],
+        status  => 'deleted',
     );
 
-    # Log exact API response for debugging
-    warn "Delete monitor API response for $name: " . Data::Dump::pp($data);
-
-    if ($data->{code} == 204) {
+    if ($result->{code} < 300) {
 
         # Successful deletion - redirect to monitor list
         if ($self->is_htmx) {
@@ -436,219 +364,77 @@ sub render_delete_monitor {
         return $self->redirect($self->manage_url('/manage/monitors/'));
     }
     else {
-        # Error case - log details, show actual API error message
-        warn "Failed to delete monitor $name: " . ($data->{error} || 'Unknown error');
-
-        # Use actual API error message or provide fallback
-        my $error_msg = $data->{error} || 'Unable to delete monitor - please try again or contact support';
+        # Error case - use actual API error message
+        my $error_msg = $result->{error}
+          || 'Unable to delete monitor - please try again or contact support';
 
         if ($self->is_htmx) {
             $self->tpl_param('error',    $error_msg);
-            $self->tpl_param('trace_id', $data->{trace_id}) if $data->{trace_id};
+            $self->tpl_param('trace_id', $result->{trace_id}) if $result->{trace_id};
             return OK, $self->evaluate_template('tpl/monitors/delete_error.html');
         }
 
         # For non-HTMX, render the monitor page with error
         $self->tpl_param('error',    $error_msg);
-        $self->tpl_param('trace_id', $data->{trace_id}) if $data->{trace_id};
+        $self->tpl_param('trace_id', $result->{trace_id}) if $result->{trace_id};
 
         # Call render_monitor to show the page with error
         return $self->render_monitor();
     }
 }
 
-sub _edit_monitor {
-    my $self = shift;
-
-    my $id = $self->_get_id;
-    $id = 0 if $id and $id eq 'new';    # 'new' isn't supported here anymore
-
-    my $mon = $id ? NP::Model->monitor->fetch(id => $id) : undef;
-
-    unless ($mon) {
-        return undef, ["Permission denied"];
-    }
-
-    if ($mon and !$mon->can_edit($self->user)) {
-        return undef, ["Permission denied"];
-    }
-
-    # todo: move this to the API and use the client to set the name?
-    my @setup_fields = qw(name);
-
-    for my $f (@setup_fields) {
-        $mon->$f($self->req_param($f) || '');
-    }
-
-    unless ($mon->validate) {
-        my $errors = $mon->validation_errors;
-        return $mon, $errors;
-    }
-
-    $mon->save;
-    return $mon;
-}
-
-sub _format_metrics_breakdown {
-    my ($self, $period_data) = @_;
-    return '' unless $period_data && ref $period_data eq 'HASH';
-
-    my @metric_types = (
-        { key => 'ok', label => 'ok' },
-        { key => 'timeout', label => 'timeout' },
-        { key => 'offset', label => 'offset' },
-        { key => 'signature_validation', label => 'signature' },
-        { key => 'batch_out_of_order', label => 'batch' }
-    );
-
-    my @components;
-    my @non_ok_components;
-    my $ok_value = 0;
-    my $ok_component = '';
-
-    for my $type (@metric_types) {
-        my $value = $period_data->{$type->{key}};
-        next unless defined $value && $value > 0;
-
-        my $formatted_value = $value > 1 ? sprintf('%.1f', $value) : sprintf('%.2f', $value);
-        my $component_text = "$formatted_value $type->{label}";
-
-        if ($type->{key} eq 'ok') {
-            $ok_value = $value;
-            $ok_component = $component_text;
-        } else {
-            push @non_ok_components, $component_text;
-        }
-    }
-
-    # Only show 'ok' if there are other components to show
-    if (@non_ok_components && $ok_value > 0) {
-        push @components, $ok_component;
-    }
-    push @components, @non_ok_components;
-
-    return @components ? '(' . join(', ', @components) . ')' : '';
-}
-
 sub monitor_metrics {
     my $self   = shift;
     my %params = @_;
 
-    my $api_params = {
-        user => $self->plain_cookie($self->user_cookie_name),
-        a    => $self->current_account->id_token,
-    };
-
-    # Determine the actual parameters and cache key
-    my $actual_account_token;
+    # Determine the query mode + cache key. The Go API scopes by names, by the
+    # X-Account header (account query), or across all accounts (admin).
+    my $account_token;
     my $actual_names;
     my $all_accounts = 0;
+    my %request;
 
-    if ($params{account_token}) {
-
-        # Use 'a' parameter for account token per API specification
-        $api_params->{a} = $params{account_token};
-        $actual_account_token = $params{account_token};
+    if ($params{id_token}) {
+        $account_token = $params{id_token};
     }
     elsif ($params{names}) {
-        $api_params->{names} = $params{names};
         $actual_names = $params{names};
+        $request{names} = [split /,/, $params{names}];
     }
     elsif ($params{all_accounts}) {
-        $api_params->{all_accounts} = 'true';
         $all_accounts = 1;
+        $request{all_accounts} = JSON::XS::true;
     }
     else {
-        # Default to current account using id_token with 'a' parameter
-        $actual_account_token = $self->current_account->id_token;
-        $api_params->{a} = $actual_account_token;
+        $account_token = $self->current_account->{id_token};
     }
 
     # Request-scoped caching to avoid multiple API calls
     my $cache_key =
         "_monitor_metrics_"
-      . ($actual_account_token || '') . '_'
-      . ($actual_names         || '') . '_'
+      . ($account_token || '') . '_'
+      . ($actual_names  || '') . '_'
       . ($all_accounts ? 'all' : '');
     return $self->{$cache_key} if exists $self->{$cache_key};
 
-    my $data = int_api(
-        'get',       'monitor/manage/metrics/summary',
-        $api_params, $self->_get_request_context()
-    );
+    my $result = get_monitor_metrics_summary($self->api_auth_params,
+        ($account_token ? (account => $account_token) : ()), %request,);
 
-    # Handle different response codes with graceful degradation
-    if ($data->{code} == 200) {
+    if ($result->{code} == 200) {
 
-        # The API returns data.data.monitors, so we need to extract the inner data
-        my $metrics_data = $data->{data}->{data} || $data->{data};
-
-        # Add formatted breakdown strings to monitor data
-        if ($metrics_data->{monitors}) {
-            for my $monitor_name (keys %{$metrics_data->{monitors}}) {
-                my $monitor = $metrics_data->{monitors}->{$monitor_name};
-                if ($monitor->{tests_per_minute_1h}) {
-                    $monitor->{breakdown_1h} = $self->_format_metrics_breakdown($monitor->{tests_per_minute_1h});
-                }
-                if ($monitor->{tests_per_minute_24h}) {
-                    $monitor->{breakdown_24h} = $self->_format_metrics_breakdown($monitor->{tests_per_minute_24h});
-                }
-            }
-        }
-
-        # Add formatted breakdown for account totals
-        if ($metrics_data->{account_totals}) {
-            if ($metrics_data->{account_totals}->{tests_per_minute_1h}) {
-                $metrics_data->{account_totals}->{breakdown_1h} =
-                    $self->_format_metrics_breakdown($metrics_data->{account_totals}->{tests_per_minute_1h});
-            }
-            if ($metrics_data->{account_totals}->{tests_per_minute_24h}) {
-                $metrics_data->{account_totals}->{breakdown_24h} =
-                    $self->_format_metrics_breakdown($metrics_data->{account_totals}->{tests_per_minute_24h});
-            }
-        }
-
+        # breakdown_1h/breakdown_24h strings are pre-computed by the Go API.
         return $self->{$cache_key} = {
             success => 1,
-            data    => $metrics_data
+            data    => $result->{data},
         };
     }
-    elsif ($data->{code} == 404) {
 
-        # No metrics available for these monitors
-        return $self->{$cache_key} = {
-            success  => 0,
-            error    => 'No metrics available',
-            trace_id => $data->{trace_id}
-        };
-    }
-    else {
-        # API error - return error info for display
-        return $self->{$cache_key} = {
-            success  => 0,
-            error    => $data->{error} || 'Metrics temporarily unavailable',
-            trace_id => $data->{trace_id}
-        };
-    }
-}
-
-sub _monitor_list {
-    my $monitors = shift;
-    my @monitors =
-      sort {
-             $a->{Account}->{ID} <=> $b->{Account}->{ID}
-          or $a->{TLSName} cmp $b->{TLSName}
-          or ($a->{IPv4} && $b->{IPv4} && $a->{IPv4}->{IP} cmp $b->{IPv4}->{IP})
-          or ($a->{IPv6} && $b->{IPv6} && $a->{IPv6}->{IP} cmp $b->{IPv6}->{IP})
-      }
-      map {
-          my $display_name =
-          $_->{Name} || $_->{TLSName} || $_->{IPv4}->{IP} || $_->{IPv6}->{IP};
-          $display_name =~ s{\.[^.]+\.mon\.ntppool\.dev}{};
-          $_->{display_name} = $display_name;
-          $_
-      } values %$monitors;
-    return @monitors;
+    # Graceful degradation: the page still renders with a metrics warning.
+    return $self->{$cache_key} = {
+        success  => 0,
+        error    => $result->{error} || 'Metrics temporarily unavailable',
+        trace_id => $result->{trace_id},
+    };
 }
 
 1;

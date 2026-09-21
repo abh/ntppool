@@ -21,9 +21,9 @@ my %colors = (
 );
 
 # Command line options
-my $dry_run = 0;
-my $backup = 1;
-my $verbose = 0;
+my $dry_run     = 0;
+my $backup      = 1;
+my $verbose     = 0;
 my $interactive = 0;
 my @target_languages;
 my $help = 0;
@@ -111,18 +111,16 @@ my %html_entities = (
 
 # HTML entities that should NOT be converted (must remain as entities for valid HTML)
 my %preserve_entities = (
-    '&amp;'  => 1,  # Only preserve in specific contexts
-    '&lt;'   => 1,  # Always preserve
-    '&gt;'   => 1,  # Always preserve
-    '&quot;' => 1,  # Preserve in attributes
+    '&amp;'  => 1,    # Only preserve in specific contexts
+    '&lt;'   => 1,    # Always preserve
+    '&gt;'   => 1,    # Always preserve
+    '&quot;' => 1,    # Preserve in attributes
 );
 
 # Standard HTML files to process
 my @standard_html_files = (
-    'homepage/intro.html',
-    'join.html',
-    'join/configuration.html',
-    'tpl/server/graph_explanation.html',
+    'homepage/intro.html',     'join.html',
+    'join/configuration.html', 'tpl/server/graph_explanation.html',
     'use.html',
 );
 
@@ -217,19 +215,19 @@ sub fix_tt_tags {
         # Create replacement
         my $new_open = $open_tag;
         $new_open =~ s/<tt/<code/;
-        my $new_close = '</code>';
+        my $new_close   = '</code>';
         my $replacement = "$new_open$inner_content$new_close";
 
         # Replace in content
         $content =~ s/\Q$full_match\E/$replacement/;
         $changes++;
 
-        push @change_details, {
-            type => 'tt_to_code',
-            from => $full_match,
-            to => $replacement,
-            inner => $inner_content
-        };
+        push @change_details,
+          {   type  => 'tt_to_code',
+              from  => $full_match,
+              to    => $replacement,
+              inner => $inner_content
+          };
     }
 
     return ($content, $changes, \@change_details);
@@ -245,27 +243,28 @@ sub fix_html_entities {
     for my $entity (keys %html_entities) {
         next if exists $preserve_entities{$entity};
 
-        my $utf8_char = $html_entities{$entity};
+        my $utf8_char   = $html_entities{$entity};
         my $old_content = $content;
 
-        # Skip entities in HTML attributes (between quotes)
-        # This is a simplified approach - real implementation would need proper HTML parsing
+      # Skip entities in HTML attributes (between quotes)
+      # This is a simplified approach - real implementation would need proper HTML parsing
         my $entity_pattern = qr/\Q$entity\E/;
 
         # Count matches before replacement
         my @matches = $content =~ /$entity_pattern/g;
 
         if (@matches) {
+
             # Replace entities not in attribute context
             $content =~ s/$entity_pattern/$utf8_char/g;
             $changes += @matches;
 
-            push @change_details, {
-                type => 'entity_to_utf8',
-                entity => $entity,
-                utf8_char => $utf8_char,
-                count => scalar(@matches)
-            };
+            push @change_details,
+              {   type      => 'entity_to_utf8',
+                  entity    => $entity,
+                  utf8_char => $utf8_char,
+                  count     => scalar(@matches)
+              };
         }
     }
 
@@ -286,11 +285,11 @@ sub fix_spacing_issues {
         $content =~ s/$space_before_pattern/$replacement/;
         $changes++;
 
-        push @change_details, {
-            type => 'space_before_tag',
-            from => "$word_char$tag",
-            to => $replacement
-        };
+        push @change_details,
+          {   type => 'space_before_tag',
+              from => "$word_char$tag",
+              to   => $replacement
+          };
     }
 
     # Fix missing space after closing tag (</tag>word)
@@ -301,11 +300,11 @@ sub fix_spacing_issues {
         $content =~ s/$space_after_pattern/$replacement/;
         $changes++;
 
-        push @change_details, {
-            type => 'space_after_tag',
-            from => "$tag$word_char",
-            to => $replacement
-        };
+        push @change_details,
+          {   type => 'space_after_tag',
+              from => "$tag$word_char",
+              to   => $replacement
+          };
     }
 
     return ($content, $changes, \@change_details);
@@ -318,11 +317,13 @@ sub validate_template_toolkit {
 
     # Extract TT blocks from both versions
     my @orig_blocks = $original =~ /(\[%[^%]*%\])/g;
-    my @mod_blocks = $modified =~ /(\[%[^%]*%\])/g;
+    my @mod_blocks  = $modified =~ /(\[%[^%]*%\])/g;
 
     if (@orig_blocks != @mod_blocks) {
-        push @issues, "Template Toolkit block count mismatch: " .
-                     scalar(@orig_blocks) . " -> " . scalar(@mod_blocks);
+        push @issues,
+            "Template Toolkit block count mismatch: "
+          . scalar(@orig_blocks) . " -> "
+          . scalar(@mod_blocks);
     }
 
     # Check for broken TT syntax
@@ -342,9 +343,9 @@ sub process_file {
     my ($file_path, $lang) = @_;
     my %result = (
         processed => 0,
-        changes => 0,
-        errors => [],
-        details => []
+        changes   => 0,
+        errors    => [],
+        details   => []
     );
 
     return %result unless -f $file_path;
@@ -352,16 +353,17 @@ sub process_file {
     print "Processing $file_path..." if $verbose;
 
     my $original_content = read_file($file_path);
-    my $content = $original_content;
-    my $total_changes = 0;
+    my $content          = $original_content;
+    my $total_changes    = 0;
     my @all_details;
 
     # Apply fixes
     my ($content1, $changes1, $details1) = fix_tt_tags($content, $file_path);
-    my ($content2, $changes2, $details2) = fix_html_entities($content1, $file_path, $lang);
+    my ($content2, $changes2, $details2) =
+      fix_html_entities($content1, $file_path, $lang);
     my ($content3, $changes3, $details3) = fix_spacing_issues($content2, $file_path);
 
-    $content = $content3;
+    $content       = $content3;
     $total_changes = $changes1 + $changes2 + $changes3;
     push @all_details, @$details1, @$details2, @$details3;
 
@@ -381,9 +383,12 @@ sub process_file {
             for my $detail (@all_details) {
                 if ($detail->{type} eq 'tt_to_code') {
                     print "  <tt> -> <code>: $detail->{inner}\n";
-                } elsif ($detail->{type} eq 'entity_to_utf8') {
-                    print "  Entity: $detail->{entity} -> $detail->{utf8_char} ($detail->{count} times)\n";
-                } elsif ($detail->{type} =~ /space_/) {
+                }
+                elsif ($detail->{type} eq 'entity_to_utf8') {
+                    print
+                      "  Entity: $detail->{entity} -> $detail->{utf8_char} ($detail->{count} times)\n";
+                }
+                elsif ($detail->{type} =~ /space_/) {
                     print "  Spacing: $detail->{from} -> $detail->{to}\n";
                 }
             }
@@ -398,6 +403,7 @@ sub process_file {
         }
 
         unless ($dry_run) {
+
             # Create backup
             if ($backup) {
                 my $backup_file = create_backup($file_path);
@@ -409,9 +415,10 @@ sub process_file {
         }
 
         $result{processed} = 1;
-        $result{changes} = $total_changes;
-        $result{details} = \@all_details;
-    } else {
+        $result{changes}   = $total_changes;
+        $result{details}   = \@all_details;
+    }
+    else {
         print " $colors{cyan}no changes needed$colors{reset}\n" if $verbose;
     }
 
@@ -422,11 +429,11 @@ sub process_file {
 sub process_language {
     my ($lang, $lang_info) = @_;
     my %report = (
-        name => $lang_info->{name},
-        testing => $lang_info->{testing} ? 1 : 0,
+        name            => $lang_info->{name},
+        testing         => $lang_info->{testing} ? 1 : 0,
         files_processed => 0,
-        total_changes => 0,
-        errors => []
+        total_changes   => 0,
+        errors          => []
     );
 
     print "\n$colors{bold}Processing $lang - $lang_info->{name}$colors{reset}\n";
@@ -438,12 +445,15 @@ sub process_language {
         my %result = process_file($file_path, $lang);
 
         if (@{$result{errors}}) {
-            push @{$report{errors}}, {
-                file => $file,
-                errors => $result{errors}
-            };
-            print "$colors{red}ERROR in $file: " . join(", ", @{$result{errors}}) . "$colors{reset}\n";
-        } elsif ($result{processed}) {
+            push @{$report{errors}},
+              {   file   => $file,
+                  errors => $result{errors}
+              };
+            print "$colors{red}ERROR in $file: "
+              . join(", ", @{$result{errors}})
+              . "$colors{reset}\n";
+        }
+        elsif ($result{processed}) {
             $report{files_processed}++;
             $report{total_changes} += $result{changes};
 
@@ -453,8 +463,10 @@ sub process_language {
                 for my $detail (@{$result{details}}) {
                     if ($detail->{type} eq 'tt_to_code') {
                         print "    <tt> -> <code>: $detail->{inner}\n";
-                    } elsif ($detail->{type} eq 'entity_to_utf8') {
-                        print "    $detail->{entity} -> $detail->{utf8_char} ($detail->{count}x)\n";
+                    }
+                    elsif ($detail->{type} eq 'entity_to_utf8') {
+                        print
+                          "    $detail->{entity} -> $detail->{utf8_char} ($detail->{count}x)\n";
                     }
                 }
             }
@@ -467,18 +479,20 @@ sub process_language {
 # Generate summary report
 sub generate_summary {
     my ($all_reports) = @_;
-    my $output = "\n$colors{bold}========== MODERNIZATION SUMMARY ==========$colors{reset}\n\n";
+    my $output =
+      "\n$colors{bold}========== MODERNIZATION SUMMARY ==========$colors{reset}\n\n";
 
     my $total_langs = scalar(keys %$all_reports);
-    my $langs_processed = grep { $all_reports->{$_}{files_processed} > 0 } keys %$all_reports;
+    my $langs_processed =
+      grep { $all_reports->{$_}{files_processed} > 0 } keys %$all_reports;
     my $langs_with_errors = grep { @{$all_reports->{$_}{errors}} > 0 } keys %$all_reports;
 
-    my $total_files = 0;
+    my $total_files   = 0;
     my $total_changes = 0;
 
     for my $lang (keys %$all_reports) {
         my $report = $all_reports->{$lang};
-        $total_files += $report->{files_processed};
+        $total_files   += $report->{files_processed};
         $total_changes += $report->{total_changes};
     }
 
@@ -489,7 +503,8 @@ sub generate_summary {
     $output .= "Total changes: $colors{bold}$total_changes$colors{reset}\n";
 
     if ($dry_run) {
-        $output .= "\n$colors{yellow}This was a DRY RUN - no files were modified$colors{reset}\n";
+        $output
+          .= "\n$colors{yellow}This was a DRY RUN - no files were modified$colors{reset}\n";
     }
 
     if ($langs_with_errors > 0) {
@@ -500,7 +515,8 @@ sub generate_summary {
 
             $output .= "  $lang:\n";
             for my $error (@{$report->{errors}}) {
-                $output .= "    $error->{file}: " . join(", ", @{$error->{errors}}) . "\n";
+                $output
+                  .= "    $error->{file}: " . join(", ", @{$error->{errors}}) . "\n";
             }
         }
     }
@@ -527,13 +543,15 @@ my $languages = load_languages();
 my @langs_to_process;
 if (@target_languages) {
     @langs_to_process = @target_languages;
+
     # Validate language codes
     for my $lang (@langs_to_process) {
         unless (exists $languages->{$lang}) {
             die "Unknown language code: $lang\n";
         }
     }
-} else {
+}
+else {
     @langs_to_process = sort keys %$languages;
 }
 

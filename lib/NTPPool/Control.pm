@@ -22,6 +22,9 @@ use experimental qw( defer );
 
 use NP::I18N;
 use NP::Version;
+use NP::Settings;
+use NP::CAPI       ();
+use NP::CAPI::Zone qw(list_zones);
 
 my $version = NP::Version->new;
 my $config  = Combust::Config->new;
@@ -115,8 +118,6 @@ sub init {
         # attributes => {url => $uri,},
     );
     dynamically otel_current_context = otel_context_with_span($span);
-
-    NP::Model->db->ping;
 
     my $trace_id = $span->context->hex_trace_id;
     $self->request->header_out('TraceID', $trace_id);
@@ -348,6 +349,15 @@ sub user {
     return;
 }
 
+sub auth_token {
+    my $self = shift;
+    return $self->{_auth_token} if exists $self->{_auth_token};
+
+    # Extract CSRF token from cached user data (validates session once if not cached)
+    my $user = $self->user or return '';
+    return $self->{_auth_token} = $user->{csrf_token} || '';
+}
+
 sub www_url {
     my $self = shift;
     return $self->_url('ntppool', @_);
@@ -359,7 +369,7 @@ sub manage_url {
     my $args = shift || {};
     if ($self->user and !$args->{a}) {
         my $account = $self->can('current_account') && $self->current_account;
-        $args->{a} = $account->id_token() if $account;
+        $args->{a} = $account->{id_token} if $account;
     }
 
     return $self->_url('manage', $url, $args);
@@ -380,12 +390,12 @@ sub system_setting {
     my $self = shift;
     my $name = shift;
 
-    my $k = "_system_setting_$name";
+    # Request-scoped cache for all settings
+    unless ($self->{_system_settings}) {
+        $self->{_system_settings} = NP::Settings->get_all_settings() || {};
+    }
 
-    return $self->{$k} if exists $self->{$k};
-
-    my $row = NP::Model->system_setting->fetch(key => $name);
-    return $self->{$k} = $row ? $row->value : undef;
+    return $self->{_system_settings}{$name};
 }
 
 sub system_feature {
@@ -396,17 +406,17 @@ sub system_feature {
 }
 
 sub count_by_continent {
-    my $self   = shift;
-    my $global = NP::Model->zone->fetch(name => '@');
-    unless ($global) {
-        warn "zones appear not to be setup, run ./bin/populate_zones!";
-        return;
+    my $self = shift;
+
+    my $result = list_zones();
+
+    if ($result->{error}) {
+        warn
+          "Failed to fetch zones from API: $result->{error} (TraceID: $result->{trace_id})";
+        return [];
     }
-    my @zones = sort { $a->description cmp $b->description } $global->zones;
-    push @zones, $global;
-    my $total = NP::Model->zone->fetch(name => '.');
-    push @zones, $total;
-    \@zones;
+
+    return $result->{data}->{zones} || [];
 }
 
 sub is_htmx {
@@ -443,6 +453,35 @@ sub cache_control {
     my $self = shift;
     return $self->{cache_control} unless @_;
     return $self->{cache_control} = shift;
+}
+
+# Map a CAPI result to an HTTP status when the record we wanted is
+# absent. The not-found-vs-transient logic lives in NP::CAPI::result_http_status;
+# here we add the controller-only concerns of (a) not letting an upstream cache
+# (Fastly) store a transient failure under the page's s-maxage header and
+# (b) surfacing the error message so templates (error_alert.html) can show it.
+#
+# This is the single CAPI error helper; NTPPool::Control::Manage's
+# _handle_capi_error is a thin adapter over it for callers that use the
+# legacy "200-on-success" return convention.
+#
+#   $have_data  truthy when the response carried the record the caller needs
+#
+# Returns undef when $have_data is set (success - the caller proceeds).
+sub capi_error_status {
+    my ($self, $result, $have_data) = @_;
+
+    return undef if $have_data;    # success
+
+    my ($status, $transient) = NP::CAPI::result_http_status($result);
+    $self->cache_control('s-maxage=0,max-age=0,no-store') if $transient;
+
+    # Surface the error for the page, without clobbering one a caller already set.
+    $self->tpl_param('error', $result->{error})
+      if $result->{error} && !$self->tpl_param('error');
+    $self->tpl_param('code', $status);
+
+    return $status;
 }
 
 sub plausible_props {
@@ -519,7 +558,7 @@ sub post_process {
                 qq[default-src 'none'; frame-ancestors 'none';],
                 qq[connect-src 'self' www.ntppool.org st.ntppool.org status.ntppool.org 8ll7xvh0qt1p.statuspage.io send.webform.dev${web_hostname};],
                 qq[font-src fonts.gstatic.com;],
-                qq[form-action 'self' send.webform.dev checkout.stripe.com;],
+                qq[form-action 'self' send.webform.dev checkout.stripe.com billing.stripe.com;],
                 qq[img-src 'self' data: $cspdomains *.mapper.ntppool.org;],
                 qq[script-src 'self' 'unsafe-eval' 'unsafe-inline' cdn.statuspage.io $cspdomains www.mapper.ntppool.org js.stripe.com send.webform.dev;],
                 qq[style-src 'self' fonts.googleapis.com fonts.gstatic.com send.webform.dev $cspdomains;],
@@ -535,11 +574,12 @@ sub post_process {
         ['Referrer-Policy'        => 'origin-when-cross-origin'],
 
         # HTMX CORS support
-        ['Access-Control-Allow-Headers' => 'HX-Request'],
+        ['Access-Control-Allow-Headers'  => 'HX-Request'],
         ['Access-Control-Expose-Headers' => 'HX-Redirect, TraceID, Request-ID'],
 
         # ntppool version / build
         ['X-NPV' => $version->current_release . " (" . $version->hostname . ")"],
+        ['X-NTPPool-Environment' => $self->deployment_mode],
     );
 
     for my $h (@headers) {

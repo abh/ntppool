@@ -2,8 +2,7 @@
     <div class="card-body">
         <form hx-post="/manage/account/monitor-config?a=[% account.id_token %]"
               hx-target="#monitor-config-display"
-              hx-swap="outerHTML"
-              hx-on="htmx:responseError: showMonitorConfigError(event)">
+              hx-swap="outerHTML">
             <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
 
             <div class="row">
@@ -69,21 +68,31 @@
 
                 <div class="col-md-4">
                     <div class="form-group">
-                        <label for="monitors_per_server"><strong>Monitors per Server:</strong></label>
-                        <select class="form-control" id="monitors_per_server" name="monitors_per_server">
-                            <option value="1" [% IF monitor_config.monitors_per_server == 1 %]selected[% END %]>
-                                1 monitor (default)
+                        <label for="monitors_per_server_limit"><strong>Monitors per Server:</strong></label>
+                        <select class="form-control" id="monitors_per_server_limit" name="monitors_per_server_limit">
+                            [%# value 0 clears the per-account override, matching
+                                monitor_limit's "Default (3)". The API returns the
+                                effective limit, so a stored 0 and a stored 1 both
+                                arrive as 1 and select this same option -- the two
+                                behave identically, so nothing is lost. %]
+                            <option value="0" [% IF monitor_config.monitors_per_server_limit == 0 || monitor_config.monitors_per_server_limit == 1 %]selected[% END %]>
+                                Default (1)
                             </option>
-                            <option value="2" [% IF monitor_config.monitors_per_server == 2 %]selected[% END %]>
+                            [% IF monitor_config.monitors_per_server_limit != 0 && monitor_config.monitors_per_server_limit != 1 && monitor_config.monitors_per_server_limit != 2 && monitor_config.monitors_per_server_limit != 3 && monitor_config.monitors_per_server_limit != 4 && monitor_config.monitors_per_server_limit != 5 %]
+                            <option value="[% monitor_config.monitors_per_server_limit %]" selected>
+                                [% monitor_config.monitors_per_server_limit %] monitors (current)
+                            </option>
+                            [% END %]
+                            <option value="2" [% IF monitor_config.monitors_per_server_limit == 2 %]selected[% END %]>
                                 2 monitors
                             </option>
-                            <option value="3" [% IF monitor_config.monitors_per_server == 3 %]selected[% END %]>
+                            <option value="3" [% IF monitor_config.monitors_per_server_limit == 3 %]selected[% END %]>
                                 3 monitors
                             </option>
-                            <option value="4" [% IF monitor_config.monitors_per_server == 4 %]selected[% END %]>
+                            <option value="4" [% IF monitor_config.monitors_per_server_limit == 4 %]selected[% END %]>
                                 4 monitors
                             </option>
-                            <option value="5" [% IF monitor_config.monitors_per_server == 5 %]selected[% END %]>
+                            <option value="5" [% IF monitor_config.monitors_per_server_limit == 5 %]selected[% END %]>
                                 5 monitors
                             </option>
                         </select>

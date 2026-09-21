@@ -22,7 +22,7 @@
 
 [%# Display account totals - works for both regular and admin views %]
 [% BLOCK account_totals %]
-  [% totals = metrics.data.account_totals || (metrics.data.accounts.item(mon.Account.IDToken)) %]
+  [% totals = metrics.data.account_totals || (metrics.data.accounts.item(mon.account.id_token)) %]
   [% IF totals && totals.tests_per_minute_1h.total > 0 %]
     <div class="alert alert-info mb-3">
       <small>
@@ -41,7 +41,7 @@
 [%# Display monitor metrics as list item %]
 [% BLOCK monitor_metrics %]
   [% IF metrics && metrics.success && metrics.data.monitors %]
-    [% mon_key = mon.TLSName %]
+    [% mon_key = mon.tls_name %]
     [% mon_metrics = metrics.data.monitors.$mon_key %]
     [% IF mon_metrics && (mon_metrics.tests_per_minute_1h.total || mon_metrics.tests_per_minute_1h) > 0 %]
       [% IF show_details %]

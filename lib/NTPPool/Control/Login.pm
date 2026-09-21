@@ -1,6 +1,6 @@
 package NTPPool::Control::Login;
 use strict;
-use Combust::Constant qw(OK);
+use Combust::Constant qw(OK SERVER_ERROR);
 use Crypt::Passphrase;
 use Crypt::Passphrase::Bcrypt;
 use JSON::XS qw(decode_json);
@@ -9,9 +9,20 @@ use OpenTelemetry -all;
 use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
 use experimental             qw( defer );
 use Syntax::Keyword::Dynamically;
+use NP::CAPI::Account qw(validate_session delete_session);
+use NP::CAPI::User    qw(cancel_user_deletion);
+
+my $api_base = $ENV{'api-internal'} || 'http://api-internal';
+$api_base =~ s{/$}{};
 
 sub user_cookie_name {
     return 'npuid';
+}
+
+sub _get_request_context {
+    my $self            = shift;
+    my $x_forwarded_for = $self->request->header_in('X-Forwarded-For');
+    return $x_forwarded_for ? {x_forwarded_for => $x_forwarded_for} : undef;
 }
 
 sub login {
@@ -19,10 +30,6 @@ sub login {
     my $msg       = shift;
     my $login_url = $self->login_url;
 
-    my ($auth0_domain, $auth0_client) = $self->_auth0_config();
-
-    $self->tpl_param('auth0_domain', $auth0_domain);
-    $self->tpl_param('auth0_client', $auth0_client);
     $self->tpl_param('login_url',    $login_url);
     $self->tpl_param('callback_url', $self->callback_url);
     $self->tpl_param('message',      $msg);
@@ -34,8 +41,6 @@ sub login {
 
     return OK, $self->evaluate_template('tpl/login.html');
 }
-
-sub bc_user_class { NP::Model->user }
 
 my $crypt = Crypt::Passphrase->new(
     encoder => {
@@ -49,79 +54,87 @@ my $crypt = Crypt::Passphrase->new(
 sub user {
     my $self = shift;
 
-    return $self->{_user} if $self->{_user};
+    # Setter must be checked first (before exists check)
     if (@_) { return $self->{_user} = $_[0] }
+
+    # Use exists to respect cached undef (when validation already failed)
+    return $self->{_user} if exists $self->{_user};
 
     # if there's no user cookie, we can't be logged in
     return
-      unless $self->plain_cookie($self->user_cookie_name)
-      or $self->cookie($self->user_cookie_name);
+      unless $self->plain_cookie($self->user_cookie_name);
 
     my $uid;
+    my $user;
 
     if (my $session_cookie = $self->plain_cookie($self->user_cookie_name)) {
-        if (my ($session_key, $checksum) =
-            ($session_cookie =~ m!^nps_([^_]+)_(\d+)(?:;\d+)?$!))
-        {
-            my $sessions = NP::Model->user_session->get_objects(
-                query   => [token_lookup => $checksum],
-                sort_by => 'last_seen desc',
-            );
-            for my $session (@$sessions) {
-                my $ok = $crypt->verify_password($session_key, $session->token_hashed);
-                if ($ok) {
-                    $uid = $session->user_id;
-                    if (  !$session->last_seen
-                        or $session->last_seen < DateTime->now->subtract(hours => 4))
-                    {
-                        # set the cookie again to update the expires time
-                        $session_cookie =~ s/;.*//;    # remove timestamp
-                        $self->_set_session_cookie($session_cookie);
-                        $session->last_seen(DateTime->now);
-                        $session->update;
-                    }
-                    last;
-                }
+
+        # Validate session using the Go API instead of database
+        my $result = validate_session(
+            auth    => $session_cookie,
+            context => $self->_get_request_context(),
+        );
+
+        if ($result->{code} == 200 && $result->{data} && $result->{data}->{valid}) {
+            my $user_data = $result->{data};
+            $uid = $user_data->{user_id};
+
+            # Return user data as hashref directly from API response
+            # Eliminates database dependency - matches account pattern
+            $user = {
+                user_id     => $user_data->{user_id},
+                id_token    => $user_data->{id_token},
+                email       => $user_data->{email},
+                username    => $user_data->{username}    || '',
+                deletion_on => $user_data->{deletion_on} || '',
+                csrf_token  => $user_data->{csrf_token}  || '',
+
+                # Privileges for authorization checks
+                privileges => $user_data->{privileges} || {},
+            };
+        }
+        else {
+            my $code = $result->{code} || 0;
+
+            # API unavailable (5xx or network error) - preserve session
+            if ($code >= 500 || $code == 0) {
+                my $trace = $result->{trace_id} ? " trace_id=$result->{trace_id}" : "";
+                warn "Session validation failed (API unavailable): ",
+                  ($result->{error} || "code=$code"), $trace;
+                $self->{_session_error} = SERVER_ERROR;
+                return;    # Return undef but DON'T clear cookies
             }
+
+            # Invalid session (4xx) - clear cookies
+            warn "Session validation failed: ", ($result->{error} || 'invalid session');
         }
     }
-    else {
 
-        # legacy cookie session support; delete some months after release
-        $uid = $self->cookie($self->user_cookie_name);
-        warn "legacy session cookie" if $uid;
+    # Legacy cookie support removed - all sessions must use validate_session API
+
+    # Only clear cookies if no API error (session_error not set)
+    unless ($uid && $user) {
+        unless ($self->{_session_error}) {
+            $self->plain_cookie($self->user_cookie_name, '', {expires => -1});
+        }
+
+        # Cache negative result to prevent repeated API calls
+        return $self->{_user} = undef;
     }
 
-    unless ($uid) {
-        $self->cookie($self->user_cookie_name, '0');
-        $self->plain_cookie($self->user_cookie_name, '', {expires => -1});
-        return;
-    }
-
-    my $user;
-    if ($self->bc_user_class->can('find')) {
-
-        # DBIx::Class
-        $user = $self->bc_user_class->find($uid);
-    }
-    elsif ($self->bc_user_class->can('fetch')) {
-
-        # RDBO with combust helpers
-        $user = $self->bc_user_class->fetch(id => $uid);
-    }
-
-    return $self->{_user} = $user if $user;
-
-    $self->cookie($self->user_cookie_name, '0');
-    $self->plain_cookie($self->user_cookie_name, '', {expires => -1});
-    return;
+    return $self->{_user} = $user;
 }
 
 sub is_logged_in {
     my $self = shift;
     my $user = $self->user;
-    return 1 if $user and $user->id;
+    return 1 if $user and $user->{user_id};
     return 0;
+}
+
+sub session_error {
+    my $self = shift;
+    return $self->{_session_error};
 }
 
 sub logout {
@@ -135,24 +148,25 @@ sub logout {
     dynamically otel_current_context = otel_context_with_span($span);
     defer { $span->end(); };
 
-    $self->cookie($self->user_cookie_name, 0);
-    $self->cookie("login_state",           0);
-    $self->cookie("xs",                    '');
-
     my $session_token = $self->plain_cookie($self->user_cookie_name);
     if ($session_token) {
         $self->plain_cookie($self->user_cookie_name, '', {expires => -1});
 
-        # todo: check if there's a current user first to validate
-        # the token before deleting it?
+        # Delete session via ConnectRPC. DeleteSession is gated by the session
+        # auth middleware, so the session token must be sent as `auth` (the
+        # Authorization: Bearer header) in addition to the request body —
+        # without it the RPC is rejected 401 and the session is never deleted.
+        my $result = delete_session(
+            auth          => $session_token,
+            session_token => $session_token,
+            context       => $self->_get_request_context(),
+        );
 
-        my ($lookup) = ($session_token =~ m/_(\d+)$/);
-
-        if ($lookup) {
-            my $resp = $self->ua->delete("http://api-internal/int/session/" . $lookup);
-            if ($resp->is_success) {
-                warn "session deleted";
-            }
+        if ($result->{error}) {
+            warn "Failed to delete session: $result->{error}";
+        }
+        elsif ($result->{data} && $result->{data}->{deleted}) {
+            warn "session deleted";
         }
     }
 
@@ -177,7 +191,7 @@ sub _here_url {
 
 sub setup_session {
     my ($self, $user_id) = @_;
-    my $resp = $self->ua->post("http://api-internal/int/session", {user_id => $user_id});
+    my $resp = $self->ua->post("$api_base/int/session", {user_id => $user_id});
     if ($resp->is_success) {
         my $data = decode_json($resp->decoded_content());
         unless ($data->{session_token}) {
@@ -186,6 +200,25 @@ sub setup_session {
         }
         else {
             $self->_set_session_cookie($data->{session_token});
+
+            # Cancel any scheduled deletion (idempotent - safe even if not scheduled)
+            # This is part of the account recovery flow - logging in cancels deletion
+            # Note: cancel_user_deletion is idempotent and succeeds even if
+            # deletion_on is not set. We call it unconditionally on every
+            # login to ensure account recovery flow works correctly.
+            my $cancel_result = cancel_user_deletion($self->api_auth_params,);
+
+            if ($cancel_result->{error}) {
+
+                # Log warning but don't fail login
+                warn "Failed to cancel user deletion on login: "
+                  . $cancel_result->{error};
+                warn "Trace ID: " . $cancel_result->{trace_id}
+                  if $cancel_result->{trace_id};
+
+                # Continue with login despite cancellation failure
+            }
+
             return {success => 1};
         }
     }
@@ -200,9 +233,10 @@ sub setup_session {
 
 sub _set_session_cookie {
     my ($self, $session_token) = @_;
+    my $cookie_value = $session_token . ";" . time;
     $self->plain_cookie(
         $self->user_cookie_name,
-        $session_token . ";" . time,    # timestamp to make it unique when set again
+        $cookie_value,    # timestamp to make it unique when set again
         {   expires  => time + (90 * 86400),
             samesite => "Lax",
         }

@@ -5,14 +5,14 @@
 <ul id="manage-sidebar" class="manage-sidebar nav nav-pills flex-column">
 
 
-    [% IF combust.user.is_staff %]
+    [% IF combust.user_is_staff %]
     <li class="nav-item">
         <a class="nav-link [% page.is_admin ? " active" : "" %]" href="[% combust.manage_url('/manage/admin') %]">Admin
             search</a>
     </li>
     [% END %]
 
-    [% IF combust.user.is_monitor_admin %]
+    [% IF combust.user.privileges.monitor_admin %]
     <li class="nav-item">
         <a class="nav-link [% page.is_admin_monitors ? " active" : "" %]" href="[% combust.manage_url('/manage/monitors/admin') %]">
             <i class="fa fa-tachometer-alt"></i> Monitor Admin
@@ -23,11 +23,11 @@
     <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle account-name" data-bs-toggle="dropdown"  href="#" role="button"
             aria-haspopup="true" aria-expanded="false">
-            <b>[% account.id ? account.name : "New account" | html %]</b>
+            <b>[% account.account_id ? account.name : "New account" | html %]</b>
         </a>
         <div class="dropdown-menu">
-            [% FOR a = combust.user.accounts %]
-            <a class="dropdown-item [% account.id == a.id ? 'active' : '' %]"
+            [% FOR a = user_accounts %]
+            <a class="dropdown-item [% account.account_id == a.account_id ? 'active' : '' %]"
                 href="[% combust.current_url(a => a.id_token) | html %]">[% a.name | html %]</a>
             [% END %]
             <div class="dropdown-divider"></div>
@@ -43,8 +43,7 @@
                     </form>
                 </div>
             </div>
-            [% user_invites = combust.user.pending_invites %]
-            [% IF user_invites.size > 0 %]
+            [% IF user_invites && user_invites.size %]
             <div class="dropdown-item">
                 <a type="button" class="btn btn-light btn-sm" href="/manage/account/invites/">
                     Invitations <span class="badge badge-primary">[% user_invites.size %]</span>

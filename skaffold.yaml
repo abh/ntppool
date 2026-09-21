@@ -1,0 +1,58 @@
+apiVersion: skaffold/v4beta13
+kind: Config
+metadata:
+  name: ntppool
+
+build:
+  artifacts:
+    - image: harbor.ntppool.org/ntpdev/ntppool-dev
+      kaniko:
+        dockerfile: Dockerfile.dev
+        cache: {}
+      sync:
+        manual:
+          # Sync key directories to /ntppool
+          - src: "lib/**/*.pm"
+            dest: /ntppool
+          - src: "docs/**/*"
+            dest: /ntppool
+          - src: "i18n/**/*"
+            dest: /ntppool
+          - src: "client/src/**/*"
+            dest: /ntppool
+          - src: "combust/**/*"
+            dest: /ntppool
+          - src: "bin/**/*"
+            dest: /ntppool
+          - src: "*.psgi"
+            dest: /ntppool
+          - src: "combust.conf.tmpl"
+            dest: /ntppool
+  cluster:
+    # Kaniko in-cluster build configuration
+    dockerConfig:
+      secretName: kaniko-docker-config
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: "2"
+        memory: 1024Mi
+  tagPolicy:
+    gitCommit:
+      prefix: dev-
+
+deploy:
+  tolerateFailuresUntilDeadline: true
+  statusCheckDeadlineSeconds: 600
+  helm:
+    releases:
+      - name: ntppool
+        chartPath: ../ntppool-charts/pub/charts/ntppool
+        valuesFiles:
+          - /Users/ask/src/ntppool-k8s/devel/dev-values-ewr1.yaml
+        setValueTemplates:
+          # Artifact name sanitized: harbor.ntppool.org/ntpdev/ntppool-dev -> harbor_ntppool_org_ntpdev_ntppool_dev
+          image.image: "{{.IMAGE_FULLY_QUALIFIED_harbor_ntppool_org_ntpdev_ntppool_dev}}"
+        upgradeOnChange: true

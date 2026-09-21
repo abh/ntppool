@@ -5,7 +5,6 @@ use Plack::Builder;
 extends 'Combust::App';
 with 'Combust::App::ApacheRouters';
 with 'Combust::Redirect';
-use NP::Model;
 use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
 use OpenTelemetry -all;
 use Syntax::Keyword::Dynamically;

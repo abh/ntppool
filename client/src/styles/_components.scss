@@ -1810,3 +1810,18 @@ div.product-group .btn {
         }
     }
 }
+
+// Admin server view: inline-edit affordances for zones/hostname
+.editable-zones {
+    cursor: pointer;
+    border-bottom: 1px dashed #999;
+
+    &:hover {
+        background-color: #f0f0f0;
+    }
+}
+
+.zone-edit-form,
+.hostname-edit-form {
+    display: inline-block;
+}

@@ -1,0 +1,353 @@
+# GENERATED CODE - DO NOT EDIT
+# Generated from: ntppool/server/v1/server.proto
+# Generator: protoc-gen-perl-capi v0.1.0
+
+package NP::CAPI::Server;
+use strict;
+use warnings;
+use NP::CAPI qw(connect_rpc);
+use NP::CAPI::Util qw(validate_key_value_args);
+use Exporter 'import';
+
+our @EXPORT_OK = qw(
+    get_server
+    get_account_servers
+);
+
+=head1 NAME
+
+NP::CAPI::Server - ConnectRPC client for ServerService
+
+=head1 SYNOPSIS
+
+    use NP::CAPI::Server qw(get_server get_account_servers);
+    # GetServer returns detailed information about a specific server.
+Authentication is optional by default - if authenticated, additional
+data may be returned based on ownership and account settings.
+Set require_edit_permission=true to enforce authentication and permission checks.
+    my $result = get_server(
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
+    );
+
+    # GetAccountServers returns all servers for an account by url_slug.
+Access control: public_profile=true OR authenticated user owns account OR user is staff.
+Returns 404 if account not found or not visible.
+    my $result = get_account_servers(
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
+    );
+
+
+=head1 DESCRIPTION
+
+Auto-generated ConnectRPC client for ntppool.server.v1.ServerService.
+
+This module provides Perl wrappers for calling ServerService RPC methods
+over HTTP using the ConnectRPC protocol.
+
+=head1 RESPONSE FORMAT
+
+All methods return a hashref with the following structure:
+
+=over 4
+
+=item * B<code> (int)
+
+HTTP status code (e.g., 200 for success, 401 for unauthenticated, 403 for permission denied, 500 for internal errors).
+
+=item * B<status_line> (string)
+
+HTTP status text (e.g., "200 OK", "401 Unauthorized").
+
+=item * B<connect_code> (string or undef)
+
+ConnectRPC error code if the request failed. Possible values include:
+
+    - unauthenticated: No valid authentication provided
+    - permission_denied: User lacks required permissions
+    - invalid_argument: Request validation failed
+    - not_found: Requested resource not found
+    - internal: Server-side error occurred
+    - unavailable: Service temporarily unavailable
+
+Will be C<undef> for successful requests.
+
+=item * B<data> (hashref or undef)
+
+Response data on success. Contains method-specific fields with the actual response payload.
+The structure and available fields vary by method - see each method's documentation below for
+the complete list of response fields, their types, and descriptions.
+
+Will be C<undef> if an error occurred.
+
+=item * B<error> (string or undef)
+
+Human-readable error message if the request failed. Will be C<undef> for successful requests.
+
+=item * B<trace_id> (string)
+
+OpenTelemetry trace ID for request tracing and debugging. Include this when reporting issues.
+
+=back
+
+=head2 Error Handling Example
+
+    my $result = some_method(...);
+
+    if ($result->{error}) {
+        warn "Request failed: $result->{error}";
+        warn "ConnectRPC code: $result->{connect_code}" if $result->{connect_code};
+        warn "Trace ID: $result->{trace_id}";
+        return;
+    }
+
+    # Success - use $result->{data}
+    my $data = $result->{data};
+
+=head1 METHODS
+
+
+=head2 get_server
+
+GetServer returns detailed information about a specific server.
+Authentication is optional by default - if authenticated, additional
+data may be returned based on ownership and account settings.
+Set require_edit_permission=true to enforce authentication and permission checks.
+
+B<Arguments:>
+
+    my $result = get_server(
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
+        ip => $value,       # string - ip is the server identifier - can be an IP address (IPv4 or IPv6)
+ or numeric server ID (e.g., "12345"). The format is auto-detected.
+        require_edit_permission => $value,       # bool - require_edit_permission enforces edit permission checks.
+ When true:
+   - Authentication is required (returns CodeUnauthenticated if not logged in)
+   - User must be staff OR own the server's account
+   - Returns CodeNotFound if permission denied (hides server existence)
+ When false (default):
+   - Authentication is optional
+   - Public access allowed for non-deleted servers
+    );
+
+B<Returns:>
+
+Hashref with structure:
+
+    {
+        code         => 200,         # HTTP status code
+        status_line  => "200 OK",    # HTTP status text
+        connect_code => undef,       # ConnectRPC error code (or undef)
+        data         => {            # Response data
+            server => {
+                id => ...,  # int - id is the database ID of the server
+                ip => ...,  # string - ip is the IP address (IPv4 or IPv6)
+                hostname => ...,  # string - hostname is the DNS hostname (may be empty)
+                ip_version => ...,  # int - ip_version is 4 or 6
+                url => ...,  # string - url is the relative URL to the server scores page (e.g., "/scores/192.0.2.1")
+                account => ...,  # hashref (AccountInfo) - account contains account information (conditionally included)
+ Included if: account.public_profile=true OR authenticated user owns server OR user is staff
+                zones => ...,  # arrayref[hashref (ZoneReference)] - zones this server is assigned to (excludes root '.' zone)
+                stratum => ...,  # int - stratum is the NTP stratum level
+                in_pool => ...,  # bool - in_pool indicates if the server is active in the pool
+                score_raw => ...,  # number - score_raw is the current raw score
+                netspeed => ...,  # int - netspeed is the configured network speed weight
+                user_urls => ...,  # arrayref[string] - user_urls are user-provided traffic/stats URLs
+                verification => ...,  # hashref (ServerVerification) - verification contains verification status
+                deletion_on => ...,  # string - deletion_on is when the server is/was scheduled for deletion (ISO 8601)
+ Empty if not scheduled for deletion
+            },  # hashref (Server) - server contains the complete server information
+        },
+        error        => undef,       # Error message (if any)
+        trace_id     => "...",       # OpenTelemetry trace ID
+    }
+
+B<Response Data Structure:>
+
+The C<data> field contains:
+
+=over 4
+
+=item * B<server> (hashref (Server))
+
+server contains the complete server information
+
+
+=back
+
+B<ConnectRPC Error Codes:>
+
+    unauthenticated, permission_denied, internal, invalid_argument, etc.
+
+B<Example:>
+
+    my $result = get_server(
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
+    );
+
+    if ($result->{error}) {
+        warn "Error: $result->{error}";
+    } else {
+        my $data = $result->{data};
+        # Use response fields...
+    }
+
+=cut
+
+sub get_server {
+    my $validation_error = validate_key_value_args('get_server', @_);
+    return $validation_error if $validation_error;
+
+    my %args = @_;
+
+    # Extract request fields from args
+    my %request = ();
+    $request{'ip'} = delete $args{'ip'} if exists $args{'ip'};
+    $request{'require_edit_permission'} = delete $args{'require_edit_permission'} if exists $args{'require_edit_permission'};
+
+    return connect_rpc(
+        service     => 'ntppool.server.v1.ServerService',
+        method      => 'GetServer',
+        request     => \%request,
+        http_method => 'GET',  # Side-effect free, use GET
+        %args  # Pass through auth, account, context
+    );
+}
+
+
+=head2 get_account_servers
+
+GetAccountServers returns all servers for an account by url_slug.
+Access control: public_profile=true OR authenticated user owns account OR user is staff.
+Returns 404 if account not found or not visible.
+
+B<Arguments:>
+
+    my $result = get_account_servers(
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
+        id_token => $value,       # string - id_token is the account's public identifier token (e.g., "21wase0")
+ Used for authenticated access with access control. Optional if url_slug is provided.
+        url_slug => $value,       # string - url_slug is the account's URL-friendly identifier (e.g., "fancytime")
+ Used for public profile access. Optional if id_token is provided.
+    );
+
+B<Returns:>
+
+Hashref with structure:
+
+    {
+        code         => 200,         # HTTP status code
+        status_line  => "200 OK",    # HTTP status text
+        connect_code => undef,       # ConnectRPC error code (or undef)
+        data         => {            # Response data
+            account => {
+                id_token => ...,  # string - id_token is the public account identifier
+                display_name => ...,  # string - display_name is the account's display name
+                public_url => ...,  # string - public_url is the URL to the account's public profile page
+                public_profile => ...,  # bool - public_profile indicates if the account profile is publicly visible
+            },  # hashref (AccountInfo) - account contains the account information
+            servers => [
+            {
+                id => ...,  # int - id is the database ID of the server
+                ip => ...,  # string - ip is the IP address (IPv4 or IPv6)
+                hostname => ...,  # string - hostname is the DNS hostname (may be empty)
+                ip_version => ...,  # int - ip_version is 4 or 6
+                url => ...,  # string - url is the relative URL to the server scores page (e.g., "/scores/192.0.2.1")
+                account => ...,  # hashref (AccountInfo) - account contains account information (conditionally included)
+ Included if: account.public_profile=true OR authenticated user owns server OR user is staff
+                zones => ...,  # hashref (ZoneReference) - zones this server is assigned to (excludes root '.' zone)
+                stratum => ...,  # int - stratum is the NTP stratum level
+                in_pool => ...,  # bool - in_pool indicates if the server is active in the pool
+                score_raw => ...,  # number - score_raw is the current raw score
+                netspeed => ...,  # int - netspeed is the configured network speed weight
+                user_urls => ...,  # string - user_urls are user-provided traffic/stats URLs
+                verification => ...,  # hashref (ServerVerification) - verification contains verification status
+                deletion_on => ...,  # string - deletion_on is when the server is/was scheduled for deletion (ISO 8601)
+ Empty if not scheduled for deletion
+            },
+            # ... more items
+        ],  # arrayref[hashref (Server)] - servers contains all active servers for this account
+        },
+        error        => undef,       # Error message (if any)
+        trace_id     => "...",       # OpenTelemetry trace ID
+    }
+
+B<Response Data Structure:>
+
+The C<data> field contains:
+
+=over 4
+
+=item * B<account> (hashref (AccountInfo))
+
+account contains the account information
+
+
+=item * B<servers> (arrayref[hashref (Server)])
+
+servers contains all active servers for this account
+
+
+=back
+
+B<ConnectRPC Error Codes:>
+
+    unauthenticated, permission_denied, internal, invalid_argument, etc.
+
+B<Example:>
+
+    my $result = get_account_servers(
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
+    );
+
+    if ($result->{error}) {
+        warn "Error: $result->{error}";
+    } else {
+        my $data = $result->{data};
+        # Use response fields...
+    }
+
+=cut
+
+sub get_account_servers {
+    my $validation_error = validate_key_value_args('get_account_servers', @_);
+    return $validation_error if $validation_error;
+
+    my %args = @_;
+
+    # Extract request fields from args
+    my %request = ();
+    $request{'id_token'} = delete $args{'id_token'} if exists $args{'id_token'};
+    $request{'url_slug'} = delete $args{'url_slug'} if exists $args{'url_slug'};
+
+    return connect_rpc(
+        service     => 'ntppool.server.v1.ServerService',
+        method      => 'GetAccountServers',
+        request     => \%request,
+        http_method => 'GET',  # Side-effect free, use GET
+        %args  # Pass through auth, account, context
+    );
+}
+
+
+
+1;
+
+__END__
+
+=head1 GENERATED
+
+This module was auto-generated by protoc-gen-perl-capi from ntppool/server/v1/server.proto.
+
+DO NOT EDIT THIS FILE MANUALLY.
+
+=head1 SEE ALSO
+
+L<NP::CAPI>
+
+=cut

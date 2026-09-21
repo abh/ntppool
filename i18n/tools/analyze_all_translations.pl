@@ -4,6 +4,7 @@ use warnings;
 use utf8;
 binmode(STDOUT, ":utf8");
 use JSON::XS qw(decode_json);
+
 # use File::Slurper qw(read_text);
 use File::Find;
 use Data::Dumper;
@@ -20,15 +21,14 @@ my %colors = (
 
 # Standard HTML files that should exist for each language
 my @standard_html_files = (
-    'homepage/intro.html',
-    'join.html',
-    'join/configuration.html',
-    'tpl/server/graph_explanation.html',
+    'homepage/intro.html',     'join.html',
+    'join/configuration.html', 'tpl/server/graph_explanation.html',
     'use.html',
 );
 
 # Required msgids for .po files
 my @required_msgids = (
+
     # Navigation & Core
     'go up', 'Translations',
 
@@ -37,11 +37,11 @@ my @required_msgids = (
     'All Pool Servers',
 
     # Index Page
-    'Introduction', 'Active Servers', 'Links', 'Terms of service',
+    'Introduction',          'Active Servers', 'Links', 'Terms of service',
     'Subscribe in a reader', 'Older news',
 
     # Forum & Community
-    'archive', 'NTP Pool Forum', 'News site', 'Discussion list', 'Development',
+    'archive',           'NTP Pool Forum', 'News site', 'Discussion list', 'Development',
     'forum_description', 'news_description', 'development_list_description',
 
     # Server Management
@@ -52,18 +52,17 @@ my @required_msgids = (
     'What do the graphs mean?', 'CSV log',
 
     # Navigation Sidebar
-    'News', 'How do I <i>use</i> pool.ntp.org?', 'How do I <i>join</i> pool.ntp.org?',
-    'Information for vendors', 'The mailing lists', 'Additional links', 'Can you translate?',
+    'News', 'How do I <i>use</i> pool.ntp.org?',    'How do I <i>join</i> pool.ntp.org?',
+    'Information for vendors', 'The mailing lists', 'Additional links',
+    'Can you translate?',
 );
 
 # Obsolete msgids that should be removed
 my @obsolete_msgids = (
-    'NTP Pool mailing lists',
-    'subscribe',
-    'Announcement list', 'Development list',
+    'NTP Pool mailing lists',        'subscribe',
+    'Announcement list',             'Development list',
     'announcement_list_description', 'discussion_list_description',
-    'irc_channel_description',
-    'Discourse forum',
+    'irc_channel_description',       'Discourse forum',
 );
 
 # Read file content
@@ -89,7 +88,7 @@ sub read_msgids {
     my ($file) = @_;
     my %msgids;
     my $current_msgid = '';
-    my $in_msgid = 0;
+    my $in_msgid      = 0;
 
     open my $fh, '<:utf8', $file or die "Cannot open $file: $!";
     while (my $line = <$fh>) {
@@ -98,19 +97,21 @@ sub read_msgids {
         # Handle msgid start
         if ($line =~ /^msgid\s+"(.+)"$/ || $line =~ /^msgid\s+""$/) {
             $current_msgid = $1 || '';
-            $in_msgid = 1;
+            $in_msgid      = 1;
         }
+
         # Handle continuation lines for msgid
         elsif ($in_msgid && $line =~ /^"(.*)"$/) {
             $current_msgid .= $1;
         }
+
         # Handle msgstr or other lines - end msgid
         elsif ($line =~ /^msgstr/ || $line =~ /^(#.*|)$/) {
             if ($in_msgid && $current_msgid ne '') {
                 $msgids{$current_msgid} = 1;
             }
             $current_msgid = '';
-            $in_msgid = 0;
+            $in_msgid      = 0;
         }
     }
     close $fh;
@@ -144,7 +145,9 @@ sub check_hosting_refs {
         my $content = read_file($intro_file);
 
         # Check for outdated references
-        if ($content =~ /Packet(?!\s+Clearing\s+House)/i && $content !~ /Equinix\s+Metal/i) {
+        if (   $content =~ /Packet(?!\s+Clearing\s+House)/i
+            && $content !~ /Equinix\s+Metal/i)
+        {
             push @issues, "Outdated: 'Packet' should be 'Equinix Metal'";
         }
         if ($content =~ /Develooper/i && $content !~ /Equinix|OSUOSL|Fastly/i) {
@@ -163,7 +166,7 @@ sub analyze_language {
     my ($lang, $lang_info) = @_;
     my %report;
 
-    $report{name} = $lang_info->{name};
+    $report{name}    = $lang_info->{name};
     $report{testing} = $lang_info->{testing} ? 1 : 0;
 
     # Check .po file
@@ -183,21 +186,23 @@ sub analyze_language {
             push @extra_msgids, $obsolete if exists $msgids{$obsolete};
         }
 
-        $report{po_exists} = 1;
+        $report{po_exists}  = 1;
         $report{po_missing} = \@missing_msgids;
-        $report{po_extra} = \@extra_msgids;
-        $report{po_status} = scalar(@missing_msgids) == 0 && scalar(@extra_msgids) == 0 ? 'synced' : 'needs_update';
-    } else {
+        $report{po_extra}   = \@extra_msgids;
+        $report{po_status}  = scalar(@missing_msgids) == 0
+          && scalar(@extra_msgids) == 0 ? 'synced' : 'needs_update';
+    }
+    else {
         $report{po_exists} = 0;
         $report{po_status} = 'missing';
     }
 
     # Check HTML files
     my %html_files = check_html_files($lang);
-    my $html_count = grep { $_ } values %html_files;
+    my $html_count = grep {$_} values %html_files;
 
-    $report{html_files} = \%html_files;
-    $report{html_count} = $html_count;
+    $report{html_files}  = \%html_files;
+    $report{html_count}  = $html_count;
     $report{html_status} = $html_count == 5 ? 'complete' : 'incomplete';
 
     # Check for hosting reference issues
@@ -214,27 +219,35 @@ sub format_language_report {
 
     # Header
     $output .= "\n$colors{bold}=== $lang - $report->{name} ===$colors{reset}\n";
-    $output .= "Status: " . ($report->{testing} ? "$colors{yellow}Beta/Testing$colors{reset}" : "$colors{green}Production$colors{reset}") . "\n";
+    $output .= "Status: "
+      . ( $report->{testing}
+          ? "$colors{yellow}Beta/Testing$colors{reset}"
+          : "$colors{green}Production$colors{reset}"
+      ) . "\n";
 
     # .po file status
     $output .= "\n$colors{bold}.po file:$colors{reset} ";
     if (!$report->{po_exists}) {
         $output .= "$colors{red}MISSING$colors{reset}\n";
-    } else {
+    }
+    else {
         if ($report->{po_status} eq 'synced') {
             $output .= "$colors{green}✓ Synced$colors{reset}\n";
-        } else {
+        }
+        else {
             $output .= "$colors{yellow}⚠ Needs update$colors{reset}\n";
 
             if (@{$report->{po_missing}}) {
-                $output .= "  Missing msgids (" . scalar(@{$report->{po_missing}}) . "):\n";
+                $output
+                  .= "  Missing msgids (" . scalar(@{$report->{po_missing}}) . "):\n";
                 for my $msgid (@{$report->{po_missing}}) {
                     $output .= "    - $msgid\n";
                 }
             }
 
             if (@{$report->{po_extra}}) {
-                $output .= "  Obsolete msgids (" . scalar(@{$report->{po_extra}}) . "):\n";
+                $output
+                  .= "  Obsolete msgids (" . scalar(@{$report->{po_extra}}) . "):\n";
                 for my $msgid (@{$report->{po_extra}}) {
                     $output .= "    - $msgid\n";
                 }
@@ -246,8 +259,10 @@ sub format_language_report {
     $output .= "\n$colors{bold}HTML files:$colors{reset} ";
     if ($report->{html_status} eq 'complete') {
         $output .= "$colors{green}✓ Complete (5/5)$colors{reset}\n";
-    } else {
-        $output .= "$colors{yellow}⚠ Incomplete ($report->{html_count}/5)$colors{reset}\n";
+    }
+    else {
+        $output
+          .= "$colors{yellow}⚠ Incomplete ($report->{html_count}/5)$colors{reset}\n";
         $output .= "  Missing files:\n";
         for my $file (@standard_html_files) {
             if (!$report->{html_files}{$file}) {
@@ -258,7 +273,8 @@ sub format_language_report {
 
     # Hosting reference issues
     if (@{$report->{hosting_issues}}) {
-        $output .= "\n$colors{bold}Hosting references:$colors{reset} $colors{yellow}⚠ Outdated$colors{reset}\n";
+        $output
+          .= "\n$colors{bold}Hosting references:$colors{reset} $colors{yellow}⚠ Outdated$colors{reset}\n";
         for my $issue (@{$report->{hosting_issues}}) {
             $output .= "  - $issue\n";
         }
@@ -270,20 +286,22 @@ sub format_language_report {
 # Generate summary statistics
 sub generate_summary {
     my ($all_reports) = @_;
-    my $output = "\n$colors{bold}========== TRANSLATION SUMMARY ==========$colors{reset}\n\n";
+    my $output =
+      "\n$colors{bold}========== TRANSLATION SUMMARY ==========$colors{reset}\n\n";
 
-    my $total_langs = scalar(keys %$all_reports);
+    my $total_langs      = scalar(keys %$all_reports);
     my $production_langs = grep { !$all_reports->{$_}{testing} } keys %$all_reports;
-    my $beta_langs = grep { $all_reports->{$_}{testing} } keys %$all_reports;
+    my $beta_langs       = grep { $all_reports->{$_}{testing} } keys %$all_reports;
 
     my $po_synced = grep { $all_reports->{$_}{po_status} eq 'synced' } keys %$all_reports;
     my $po_missing = grep { !$all_reports->{$_}{po_exists} } keys %$all_reports;
 
-    my $html_complete = grep { $all_reports->{$_}{html_status} eq 'complete' } keys %$all_reports;
+    my $html_complete =
+      grep { $all_reports->{$_}{html_status} eq 'complete' } keys %$all_reports;
     my $perfect_sync = grep {
-        $all_reports->{$_}{po_status} eq 'synced' &&
-        $all_reports->{$_}{html_status} eq 'complete' &&
-        !@{$all_reports->{$_}{hosting_issues}}
+             $all_reports->{$_}{po_status} eq 'synced'
+          && $all_reports->{$_}{html_status} eq 'complete'
+          && !@{$all_reports->{$_}{hosting_issues}}
     } keys %$all_reports;
 
     $output .= "Total languages: $total_langs\n";
@@ -304,9 +322,10 @@ sub generate_summary {
     my @needs_attention;
     for my $lang (sort keys %$all_reports) {
         my $report = $all_reports->{$lang};
-        if ($report->{po_status} ne 'synced' ||
-            $report->{html_status} ne 'complete' ||
-            @{$report->{hosting_issues}}) {
+        if (   $report->{po_status} ne 'synced'
+            || $report->{html_status} ne 'complete'
+            || @{$report->{hosting_issues}})
+        {
             push @needs_attention, $lang;
         }
     }
@@ -329,7 +348,7 @@ print "=" x 40 . "\n";
 my $languages = load_languages();
 
 # Add English to the analysis
-$languages->{en} = { name => 'English' };
+$languages->{en} = {name => 'English'};
 
 # Analyze all languages
 my %all_reports;
@@ -347,9 +366,10 @@ print "\n$colors{bold}========== DETAILED REPORTS ==========$colors{reset}\n";
 # Show languages with issues first
 for my $lang (sort keys %all_reports) {
     my $report = $all_reports{$lang};
-    if ($report->{po_status} ne 'synced' ||
-        $report->{html_status} ne 'complete' ||
-        @{$report->{hosting_issues}}) {
+    if (   $report->{po_status} ne 'synced'
+        || $report->{html_status} ne 'complete'
+        || @{$report->{hosting_issues}})
+    {
         print format_language_report($lang, $report);
     }
 }
@@ -358,9 +378,10 @@ for my $lang (sort keys %all_reports) {
 print "\n$colors{bold}========== LANGUAGES WITH PERFECT SYNC ==========$colors{reset}\n";
 for my $lang (sort keys %all_reports) {
     my $report = $all_reports{$lang};
-    if ($report->{po_status} eq 'synced' &&
-        $report->{html_status} eq 'complete' &&
-        !@{$report->{hosting_issues}}) {
+    if (   $report->{po_status} eq 'synced'
+        && $report->{html_status} eq 'complete'
+        && !@{$report->{hosting_issues}})
+    {
         print "\n$colors{green}✓ $lang - $report->{name}$colors{reset}";
         print " (Beta)" if $report->{testing};
     }

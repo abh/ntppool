@@ -1,0 +1,35 @@
+[% PROCESS tpl/manage/navigation.html %]
+
+<div class="block">
+    <h3>NTP Pool Vendor Zone</h3>
+
+    <p>
+      If you are adding NTP servers to the pool, please see <a href="[% combust.www_url("/join.html") %]">
+      information for joining the NTP Pool</a>.
+    </p>
+
+    <p>
+      You need a vendor zone if you are distributing devices or software to 3rd parties
+      or otherwise don't have them in your network and under your control.
+    </p>
+
+    <p>
+      If your devices are all under your control and management you do not need a vendor zone.
+    </p>
+
+    <p>
+      If you are distributing or testing less than 50 units (hardware or software) in the next year,
+      you don't need a vendor pool, you can just use the <a href="[% combust.www_url("/join.html") %]">
+      regular host names</a>.
+    </p>
+
+    <p>
+      You must not use the NTP Pool if your life, business or community could be harmed by your
+      systems having incorrect time. This is a service run by thousands of volunteers around the
+      world. Please see the <a href="[% combust.www_url("/tos.html") %]">terms of service</a>. Only
+      continue if you have read and agreed to them.
+    </p>
+
+    <p><a href="new">Continue</a>.</p>
+
+</div>

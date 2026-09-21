@@ -3,8 +3,7 @@ use v5.30;
 use strict;
 use warnings;
 use NTPPool::Control::Manage;
-use parent qw(NTPPool::Control::Manage);
-use NP::Model;
+use parent            qw(NTPPool::Control::Manage);
 use Combust::Constant qw(OK NOT_FOUND);
 use Combust::Config   ();
 use NP::Email         ();
@@ -14,10 +13,21 @@ use Socket            qw(inet_ntoa);
 use Socket6;
 use JSON::XS qw(encode_json decode_json);
 use Net::DNS;
-use Math::BaseCalc       qw();
-use Math::Random::Secure qw(irand);
-use NP::NTP;
-use NP::IntAPI qw(int_api);
+use Math::BaseCalc             qw();
+use Math::Random::Secure       qw(irand);
+use NP::CAPI::Account          qw(get_related_accounts);
+use NP::CAPI::Server           qw(get_account_servers get_server);
+use NP::CAPI::ServerManagement qw(
+    add_server_precheck
+    add_server
+    complete_server_verification
+    get_server_verification
+    move_server
+    update_server
+);
+use NP::CAPI::Zone   qw(list_zones);
+use NP::Data::Server ();
+use NP::Util         ();
 use OpenTelemetry -all;
 use OpenTelemetry::Constants qw( SPAN_KIND_SERVER SPAN_STATUS_ERROR SPAN_STATUS_OK );
 use experimental             qw( defer );
@@ -77,22 +87,37 @@ sub show_manage {
     my $span = NP::Tracing->tracer->create_span(name => "show_manage",);
     dynamically otel_current_context = otel_context_with_span($span);
 
-    my $servers = $self->current_account->servers;
+    my $account = $self->current_account;
+    unless ($account) {
+        return OK, $self->evaluate_template('tpl/manage.html');
+    }
+
+    # Fetch servers via ConnectRPC API
+    my $result = get_account_servers(
+        $self->api_auth_params,
+        account  => $account->{id_token},
+        id_token => $account->{id_token},
+    );
+
+    # CAPI layer already logged error, just handle degraded state
+    my $servers;
+    if ($result->{error}) {
+        $self->tpl_param('error', 'Failed to load servers');
+        $servers = [];
+    }
+    else {
+        $servers = $result->{data}{servers} || [];
+    }
     $self->tpl_param('servers', $servers);
 
-    my @server_ids = map { $_->id } @$servers;
+    my @server_ids = map { $_->{id} } @$servers;
 
-    if ($self->user->is_staff) {
-        my $logs = NP::Model->log->get_objects(
-            query => [
-                or => [
-                    account_id => [$self->current_account->id],
-                    (@server_ids ? (server_id => \@server_ids) : ()),
-                ],
-            ],
-            with_objects => [qw/account user server/],
-            limit        => 50,
-            sort_by      => "t1.created_on desc",
+    if ($self->user_is_staff) {
+
+        # Use AuditService API (eliminates N+1 query problem: ~150 queries → ~5 queries)
+        my $logs = $self->account_logs(
+            account => $account,
+            limit   => 50,
         );
         $self->tpl_param('logs', $logs);
     }
@@ -116,7 +141,7 @@ sub handle_add {
     $self->tpl_param('host', $host);
     $span->set_attribute("param.host", $host);
 
-    unless ($account->can_add_servers) {
+    unless ($account->{permissions}{can_add_servers}) {
         $span->set_attribute("request.error", "verify_existing");
         $self->tpl_param('error',
             'Please verify your existing servers before adding more.');
@@ -125,32 +150,78 @@ sub handle_add {
 
     my @servers;
 
-    my @ips = $self->_get_server_ips($host);
+    # Pass raw user input (hostname or IP) directly to API
+    # DNS resolution happens in Go API (not Perl)
+    my $precheck_result = add_server_precheck(
+        $self->api_auth_params,
+        account => $account->{id_token},
+        inputs  => [$host],                # Go API handles DNS resolution
+    );
 
-    for my $ip (@ips) {
-        my $server = $self->get_server_info($ip);
-        next unless $server;
-        unless (Net::IP->new($host)) {
-            $server->{hostname} = $host;
-            $server->{account}  = $account;
+    # Handle API errors
+    if ($precheck_result->{error}) {
+        $self->tpl_param('error', $precheck_result->{error});
+        return OK, $self->evaluate_template('tpl/manage/add_form.html');
+    }
+
+    # Transform API results to template format
+    for my $result (@{$precheck_result->{data}{results}}) {
+        my %server = (
+            ip         => $result->{ip},
+            ip_version => $result->{ip_version},
+        );
+
+        # Use hostname from API response (DNS-verified)
+        if ($result->{hostname}) {
+            $server{hostname} = $result->{hostname};
         }
-        push @servers, $server;
+
+        # Handle errors and already-exists cases
+        if ($result->{error}) {
+            $server{error} = $result->{error};
+            if ($result->{already_exists}) {
+                $server{listed} = $result->{already_exists_same_account};
+            }
+        }
+
+        # Build zones array from API response
+        if ($result->{zones} && @{$result->{zones}}) {
+
+            # API returns zones as hashrefs with name, description, url, dns
+            # Template expects similar structure - just pass through
+            $server{zones} = $result->{zones};
+
+          # Find country zone (2-letter code, not root or subdivisions)
+          # Zones are ordered child → parent (e.g., ["us-ca", "us", "north-america", "@"])
+            for my $zone (@{$result->{zones}}) {
+                if (length($zone->{name}) == 2) {
+                    $server{country_zone} = $zone;
+                    last;
+                }
+            }
+        }
+
+        # Store detected country for fallback zone logic
+        $server{geoip_country} = $result->{detected_country}
+          if $result->{detected_country};
+
+        push @servers, \%server;
     }
 
     if (!@servers) {
         return OK, $self->evaluate_template('tpl/manage/add_form.html');
     }
 
+    # Handle data_missing for servers without zones
     for my $server (@servers) {
         if (!$server->{country_zone}) {
             $server->{data_missing} ||= 'Country not specified'
               if !$server->{error} and $self->req_param('yes');
-            next;
         }
-        push my @zones, $server->{country_zone};
-        unshift @zones, $zones[0]->parent while ($zones[0]->parent);
-        $server->{zones} = \@zones;
     }
+
+    # Store precheck token for the confirmation step
+    $self->tpl_param('precheck_token', $precheck_result->{data}{precheck_token});
 
     my $allow_submit = grep { !$_->{error} } @servers;
     my $data_missing = grep { $_->{data_missing} } @servers;
@@ -160,23 +231,62 @@ sub handle_add {
     $self->tpl_param('allow_submit' => $allow_submit);
 
     if ($self->req_param('yes') and $allow_submit and !$data_missing) {
-        my $s;
-        my @added;
+
+        # Collect all servers to add in single batch
+        my @servers_to_add;
         for my $server (@servers) {
-            unless ($server->{error} or $server->{listed}) {
-                $s = $self->_add_server($server);
-                $server->{id} = $s->id;
+            next if $server->{error} or $server->{listed};
+
+            my %server_to_add = (ip => $server->{ip});
+            if (my $zone = $self->req_param('explicit_zone_' . $server->{ip})) {
+                $server_to_add{fallback_zone} = $zone;
+            }
+            push @servers_to_add, \%server_to_add;
+        }
+
+        # Make single API call for all servers
+        my $comment = $self->req_param('comment');
+        my $result  = add_server(
+            $self->api_auth_params,
+            account        => $self->current_account->{id_token},
+            servers        => \@servers_to_add,
+            precheck_token => $self->req_param('precheck_token'),
+            batch_comment  => $comment,
+        );
+
+        if ($result->{error}) {
+            warn "Failed to add servers: $result->{error} (trace: $result->{trace_id})";
+            $self->tpl_param(error => $result->{error}, trace_id => $result->{trace_id});
+            return OK, $self->evaluate_template('tpl/manage/add.html');
+        }
+
+        # Match results to original servers
+        my @added;
+        my $s;
+        my $result_idx      = 0;
+        my $base_scores_url = $self->config->base_url('ntppool') . '/scores/';
+
+        for my $server (@servers) {
+            next if $server->{error} or $server->{listed};
+
+            my $api_result = $result->{data}{results}[$result_idx++];
+            if ($api_result->{success}) {
+                $server->{id}         = $api_result->{server}{id};
+                $server->{scores_url} = $base_scores_url . $server->{ip};
+                $s                    = NP::Data::Server->new(%{$api_result->{server}});
                 push @added, $server;
             }
         }
-        $self->tpl_param(servers => \@added);
 
-        if ($self->req_param('comment')) {
+        $self->tpl_param(servers => \@added);
+        $self->tpl_param('comment', $comment);
+
+        if ($comment) {
             my $msg = $self->evaluate_template('tpl/manage/add_email.txt');
             my $email =
               Email::Stuffer->from(NP::Email::address("sender"))
               ->to(NP::Email::address("notifications"))
-              ->reply_to($self->user->email)
+              ->reply_to($self->user->{email})
               ->text_body($msg);
 
             my $subject =
@@ -194,14 +304,25 @@ sub handle_add {
         return $self->redirect($self->manage_url($next));
     }
 
-    my @all_zones = NP::Model->zone->get_zones(
-        query => [
-            name => {like => '__'},
-            dns  => 1,
-        ],
-        sort_by => 'description',
-    );
-    $self->tpl_param(all_zones => @all_zones);
+    # Fetch zones via CAPI
+    my $zones_result =
+      list_zones($self->api_auth_params, account => $account->{id_token});
+
+    my @all_zones;
+    if ($zones_result->{error}) {
+        warn "Failed to fetch zones via CAPI: " . $zones_result->{error};
+        warn "Trace ID: " . $zones_result->{trace_id} if $zones_result->{trace_id};
+        @all_zones = ();
+    }
+    else {
+        # Filter to 2-character zones (country codes) with DNS enabled
+        my @zones = grep { length($_->{name} // '') == 2 && $_->{dns} }
+          @{$zones_result->{data}{zones} || []};
+
+        # Sort by description
+        @all_zones = sort { $a->{description} cmp $b->{description} } @zones;
+    }
+    $self->tpl_param(all_zones => \@all_zones);
 
     #use Data::Dump qw(pp);
     #warn "SERVERS: ", pp(\@servers);
@@ -209,206 +330,31 @@ sub handle_add {
     return OK, $self->evaluate_template('tpl/manage/add.html');
 }
 
-sub _get_server_ips {
-    my ($self, $host) = @_;
-
-    if (my $ip = Net::IP->new($host)) {
-        return ($ip->short);
-    }
-
-    my $res = Net::DNS::Resolver->new(domain => "", defnames => 0);
-    my @ips;
-    for my $type (qw(A AAAA)) {
-        my $query = $res->query($host, $type);
-        if ($query) {
-            for my $rr ($query->answer) {
-                next unless $rr->type eq "A" or $rr->type eq "AAAA";
-                push @ips, $rr->address;
-            }
-        }
-        else {
-            warn "query failed: ", join(" ", $host, $type, $res->errorstring), "\n";
-        }
-    }
-    warn "GOT IPS: ", join ", ", @ips;
-    return @ips;
-}
-
-sub _add_server {
-    my ($self, $server) = @_;
-
-    my $comment = $self->req_param('comment');
-    $self->tpl_param('comment', $comment);
-    $self->tpl_param('scores_url',
-        $self->config->base_url('ntppool') . '/scores/' . $server->{ip});
-
-    my $s;
-
-    my $db  = NP::Model->db;
-    my $txn = $db->begin_scoped_work;
-
-    if ($s = NP::Model->server->fetch(ip => $server->{ip})) {
-        $s->setup_server;
-    }
-    else {
-        # the model calls setup_server
-        $s = NP::Model->server->create(ip => $server->{ip});
-    }
-
-    $s->hostname($server->{hostname} || '');
-    $s->ip_version($server->{ip_version});
-    $s->admin($self->user);
-    $s->account($server->{account});
-    $s->account($self->current_account);
-    $s->in_pool(1);
-    $s->deleted(0);
-    $s->deletion_on(undef);
-    $s->netspeed_target(10000);
-    $s->netspeed(10000);
-    $s->zones([]);
-
-    if (my $v = $s->server_verification) {
-
-        # move verification to history table
-        my %d = ();
-        for my $k (
-            qw(server_id user_id user_ip indirect_ip verified_on created_on modified_on)
-          )
-        {
-            $d{$k} = $v->$k;
-        }
-        my $h = NP::Model->server_verifications_history->create(%d);
-        $h->save;
-        $v->delete;
-    }
-
-    $s->join_zone($_) for @{$server->{zones}};
-    if (my $zone_name = $self->req_param('explicit_zone_' . $s->ip)) {
-        warn "user picked [$zone_name]";
-        my $explicit_zone = NP::Model->zone->get_zones(query => [name => $zone_name]);
-        $explicit_zone = $explicit_zone->[0];
-        while ($explicit_zone) {
-            $s->join_zone($explicit_zone);
-            $explicit_zone = $explicit_zone && $explicit_zone->parent;
-        }
-    }
-
-    NP::Model::Log->log_changes($self->user, "server-create",
-        "Server added." . ($comment =~ m/\S/ ? "\n\n$comment" : ""), $s,);
-
-    #local $Rose::DB::Object::Debug = $Rose::DB::Object::Manager::Debug = 1;
-    $s->save(cascade => 1);
-
-    $db->commit;
-
-    return $s;
-}
-
-sub get_server_info {
-    my ($self, $ip) = @_;
-
-    warn "getting server info for $ip";
-
-    my %server;
-
-    my $span =
-      NP::Tracing->tracer->create_span(name => "manage.servers.get_server_info",);
-    dynamically otel_current_context = otel_context_with_span($span);
-    defer {
-        if (my $err = $server{error}) {
-            $err =~ s/\n$//;
-            $span->set_attribute("server.error", $err);
-        }
-        $span->end();
-    };
-
-    $ip = Net::IP->new($ip);
-
-    $server{ip}         = $ip->short;
-    $server{ip_version} = 'v' . $ip->version;
-
-    $span->set_attribute("server.ip", $ip->short);
-
-    {
-        my $type = $ip->iptype;
-        if ($type and $type !~ m/^(PUBLIC|GLOBAL-UNICAST)/) {
-            $server{error} = "Bad IP address: $type";
-            return \%server;
-        }
-    }
-
-    if (my $s = NP::Model->server->fetch(ip => $server{ip})) {
-        my $other =
-          $s->account_id eq $self->current_account->id
-          ? ""
-          : "Please email us for help.";
-        unless ($s->deleted or $s->deletion_on) {
-            $server{listed} = 1 unless $other;
-            $server{error}  = "$server{ip} is already registered in the pool. $other\n";
-            return \%server;
-        }
-    }
-
-    my @ntp = NP::NTP::info($ip->short);
-
-    my $ntp_ok = 0;
-
-    for my $check (@ntp) {
-        next if $check->{error};
-
-        my $ntp = $check->{NTP} or next;
-
-        unless (defined $ntp->{Stratum}) {
-            $ntp->{error} = "Didn't get an NTP response from $server{ip}\n";
-        }
-
-        unless ($ntp->{Stratum} > 0 and $ntp->{Stratum} < 6) {
-            $ntp->{error} =
-              "Invalid stratum response from ${ip} (Your server is in stratum $ntp->{Stratum}).  Is your server configured properly? Is public access allowed?  If you just restarted your ntpd, then it might still be stabilizing the timesources - try again in 10-20 minutes.\n";
-        }
-
-        unless ($ntp->{error}) {
-            $ntp_ok = 1;
-            $server{ntp} = $ntp;
-        }
-    }
-
-    unless ($ntp_ok) {
-        ($server{error}) = map { $_->{error} } grep { $_->{error} } @ntp;
-    }
-
-    if ($server{error}) {
-        warn "Error: $server{error}";
-        return \%server;
-    }
-
-    my $geoip = $ENV{geoip_service} || 'geoip';
-    my $res   = $self->ua->get("http://${geoip}/api/country?ip=$server{ip}");
-    $server{geoip_country} = $res->decoded_content if $res->is_success;
-
-    my $country = $self->req_param('explicit_zone_' . $server{ip})
-      || $server{geoip_country};
-
-    $country = 'UK' if $country eq 'GB';
-    warn "Country: $country\n";
-    $server{country_zone} = $country && NP::Model->zone->fetch(name => $country);
-
-    return \%server;
-}
+# _get_server_ips removed - DNS resolution now handled by Go API
+# See add_server_precheck which accepts hostname/IP inputs
+# _add_server removed - now batching all servers in single API call (handle_add)
 
 sub req_server {
     my $self      = shift;
     my $server_id = $self->req_param('server') or return;
-    my $servers   = NP::Model->server->get_servers(
-        query        => [($server_id =~ m/[.:]/ ? 'ip' : 'id') => $server_id],
-        with_objects => ['server_verification', 'account'],
+
+    # Call Go API with permission enforcement
+    my $result = get_server(
+        $self->api_auth_params,
+        account => $self->current_account->{id_token},
+        ip      => $server_id,                           # Auto-detects IP vs numeric ID
+        require_edit_permission => JSON::XS::true,
     );
-    my ($server) = ($servers && $servers->[0]);
-    return
-          unless $server
-      and $server->account
-      and $server->account->can_edit($self->user);
-    return $server;
+
+    # Handle API errors (permission denied or not found)
+    if ($result->{error}) {
+        warn "Failed to get server: " . $result->{error};
+        warn "Trace ID: " . $result->{trace_id};
+        return;                                          # Returns undef, same as before
+    }
+
+    # Wrap in NP::Data::Server for compatibility with templates
+    return NP::Data::Server->new(%{$result->{data}{server}});
 }
 
 sub handle_update {
@@ -436,15 +382,11 @@ sub handle_update_netspeed {
 
         return 400 unless $netspeed =~ m/^\d+$/;
 
-        # Call internal API
-        my $api_response = int_api(
-            'post',
-            'server/netspeed',
-            {   server_ip => $server->ip,
-                netspeed  => int($netspeed),
-                user      => $self->plain_cookie($self->user_cookie_name),
-                a         => $self->current_account->id_token,
-            }
+        my $api_response = update_server(
+            $self->api_auth_params,
+            account  => $self->current_account->{id_token},
+            ip       => $server->ip,
+            netspeed => int($netspeed),
         );
 
         # For non-HTMX requests, redirect after processing
@@ -452,55 +394,25 @@ sub handle_update_netspeed {
             return $self->redirect('/manage/servers');
         }
 
-        # Set common template parameters
-        # Refresh server data from database for success cases
-        if ($api_response->{code} == 200) {
-            $server = $self->req_server;
+        # Refresh server data for success cases
+        if (!$api_response->{error} && $api_response->{data}{server}) {
+            $server = NP::Data::Server->new(%{$api_response->{data}{server}});
         }
         $self->tpl_param('server', $server);
 
-        # Handle API response codes
-        if ($api_response->{code} == 200) {
-
-            # Success - return updated server template fragment
-            return OK, $self->evaluate_template('tpl/manage/server.html');
-        }
-        elsif ($api_response->{code} == 403) {
-
-            # Verification required
+        if ($api_response->{error}) {
+            my %fallback_message = (
+                failed_precondition =>
+                  "Please verify your server before increasing the netspeed",
+                not_found => "Server not found or access denied",
+            );
             $self->tpl_param('error',
-                     $api_response->{message}
-                  || $api_response->{error}
-                  || "Please verify your server before increasing the netspeed");
-            return OK, $self->evaluate_template('tpl/manage/server.html');
-        }
-        elsif ($api_response->{code} == 404) {
-
-            # Server not found
-            $self->tpl_param('error',
-                     $api_response->{message}
-                  || $api_response->{error}
-                  || "Server not found or access denied");
-            return OK, $self->evaluate_template('tpl/manage/server.html');
-        }
-        elsif ($api_response->{code} == 409) {
-
-            # Conflict - don't show trace ID
-            $self->tpl_param('error',
-                     ($api_response->{data} && $api_response->{data}->{message})
-                  || $api_response->{message}
-                  || $api_response->{error}
-                  || 'Conflict updating netspeed');
-            return OK, $self->evaluate_template('tpl/manage/server.html');
-        }
-        else {
-            # Other errors
-            $self->tpl_param('error',
-                     $api_response->{message}
-                  || $api_response->{error}
+                     $api_response->{error}
+                  || $fallback_message{$api_response->{connect_code} || ''}
                   || 'Failed to update netspeed');
-            return OK, $self->evaluate_template('tpl/manage/server.html');
         }
+
+        return OK, $self->evaluate_template('tpl/manage/server.html');
     }
 
     # For non-HTMX requests without netspeed parameter, redirect
@@ -513,8 +425,6 @@ sub handle_update_netspeed {
 
 sub handle_verify {
     my $self = shift;
-    my $db   = NP::Model->db;
-    my $txn  = $db->begin_scoped_work;
 
     my ($token) = ($self->request->uri =~ m!^/manage/server/verify/(.+)!);
     unless ($token) {
@@ -540,38 +450,61 @@ sub handle_verify {
         return OK, $self->evaluate_template('tpl/manage/verify_instructions.html');
     }
 
-    my $verification = NP::Model->server_verification->fetch(token => $token);
-    return NOT_FOUND unless $verification;
-    my $server = $verification->server;
-    return 403 unless $server->account->can_edit($self->user);
+    # Single CAPI call to get verification + server data
+    my $result = get_server_verification($self->api_auth_params, token => $token,);
+
+    # Handle errors
+    if ($result->{error}) {
+        if ($result->{connect_code} && $result->{connect_code} eq 'not_found') {
+            return NOT_FOUND;
+        }
+        if ($result->{connect_code} && $result->{connect_code} eq 'unauthenticated') {
+
+            # User not logged in - redirect to login
+            return $self->redirect('/manage');
+        }
+        warn "Server verification lookup failed: " . $result->{error};
+        warn "Trace ID: " . $result->{trace_id} if $result->{trace_id};
+        return 500;
+    }
+
+    my $data   = $result->{data};
+    my $server = NP::Data::Server->new(%{$data->{server}});
 
     # If no account parameter, redirect with server's account to set proper context
     unless ($self->req_param('a')) {
         return $self->redirect(
             $self->manage_url(
                 "/manage/server/verify/$token",
-                {a => $server->account->id_token}
+                {a => $data->{server}{account}{id_token}}
             )
         );
     }
 
-    # if verified already, redirect to server on manage page
-    if ($verification->verified_on) {
+    # If verified already, redirect to server on manage page
+    if ($data->{already_verified}) {
         return $self->redirect($self->manage_url($server->manage_url));
     }
 
     $self->tpl_param(server => $server);
-    $self->tpl_param(token  => $verification->token);
+    $self->tpl_param(token  => $data->{token});
 
     if ($self->request->method eq 'post') {
         return 403 unless $self->check_auth_token;
 
-        $verification->verified_on(DateTime->now());
-        $verification->user_ip($self->request->remote_ip);
-        $verification->user_id($self->user->id);
-        $verification->token(undef);
-        $verification->save();
-        $db->commit;
+        # Call Go API to complete verification (includes audit logging)
+        my $complete_result = complete_server_verification(
+            $self->api_auth_params,
+            account => $self->current_account->{id_token},
+            token   => $data->{token},
+        );
+
+        if ($complete_result->{error}) {
+            warn "Failed to complete server verification: $complete_result->{error}";
+            warn "Trace ID: $complete_result->{trace_id}" if $complete_result->{trace_id};
+            $self->tpl_param(error_message => $complete_result->{error});
+            return OK, $self->evaluate_template('tpl/manage/verify_confirm.html');
+        }
 
         return $self->redirect($self->manage_url($server->manage_url));
     }
@@ -584,49 +517,66 @@ sub handle_delete {
     my $server = $self->req_server or return NOT_FOUND;
     $self->tpl_param(server => $server);
 
-    my $db  = NP::Model->db;
-    my $txn = $db->begin_scoped_work;
-
     if ($self->request->method eq 'post') {
         if (my $date = $self->req_param('deletion_date')) {
             return 403 unless $self->check_auth_token;
 
-            my $old = $server->get_data_hash();
-
+            # Validate date format (YYYY-MM-DD)
             my @date = split /-/, $date;
-            $date = $date[1] && DateTime->new(
-                year      => $date[0],
-                month     => $date[1],
-                day       => $date[2],
-                time_zone => 'UTC'
-            );
-            if ($date and $date > DateTime->now) {
-                $server->deletion_on($date);
-                NP::Model::Log->log_changes($self->user, "server-delete",
-                    "Deletion scheduled for " . $date->ymd,
-                    $server, $old);
-                $server->save;
-                $db->commit;
+            if ($date[1]) {
+                my $dt = eval {
+                    DateTime->new(
+                        year      => $date[0],
+                        month     => $date[1],
+                        day       => $date[2],
+                        time_zone => 'UTC'
+                    );
+                };
+                if ($dt && $dt > DateTime->now) {
+
+                    # Call Go API to schedule deletion (includes audit logging)
+                    my $result = NP::CAPI::ServerManagement::delete_server(
+                        $self->api_auth_params,
+                        account       => $self->current_account->{id_token},
+                        ip            => $server->ip,
+                        deletion_date => $date,
+                    );
+
+                    if ($result->{error}) {
+                        $self->tpl_param('error',    $result->{error});
+                        $self->tpl_param('trace_id', $result->{trace_id});
+                    }
+                    else {
+                        # Redirect so the page re-fetches server state via CAPI
+                        return $self->redirect($self->manage_url($server->manage_url));
+                    }
+                }
             }
         }
         if ($self->req_param('cancel_deletion')) {
             return 403 unless $self->check_auth_token;
 
-            unless ($self->current_account->can_add_servers) {
+            # Permission check is done by the Go API, but we show a better error here
+            unless ($self->current_account->{permissions}{can_add_servers}) {
                 $self->tpl_param('error',
                     'Please verify active servers in the account first.');
                 return OK, $self->evaluate_template('tpl/manage/delete_set.html');
             }
 
-            my $old = $server->get_data_hash;
+            # Call Go API to cancel deletion (includes audit logging)
+            my $result = NP::CAPI::ServerManagement::delete_server(
+                $self->api_auth_params,
+                account => $self->current_account->{id_token},
+                ip      => $server->ip,
+                cancel  => JSON::XS::true,
+            );
 
-            $server->deletion_on(undef);
-            NP::Model::Log->log_changes($self->user, "server-delete",
-                "Deletion cancelled by " . $self->user->who,
-                $server, $old);
-            $server->save;
+            if ($result->{error}) {
+                $self->tpl_param('error',    $result->{error});
+                $self->tpl_param('trace_id', $result->{trace_id});
+                return OK, $self->evaluate_template('tpl/manage/delete_set.html');
+            }
 
-            $db->commit;
             return $self->redirect($self->manage_url($server->manage_url));
         }
     }
@@ -651,32 +601,31 @@ sub handle_delete {
 sub handle_move {
     my $self = shift;
 
-    my $servers = $self->current_account->servers;
+    # Get servers for current account via CAPI
+    my $servers_result = get_account_servers($self->api_auth_params,
+        id_token => $self->current_account->{id_token},);
+    my $servers = [];
+    if (!$servers_result->{error} && $servers_result->{data}{servers}) {
+        $servers =
+          [map { NP::Data::Server->new(%$_) } @{$servers_result->{data}{servers}}];
+    }
     $self->tpl_param('servers', $servers);
 
     my $errors = {};
     $self->tpl_param('errors', $errors);
 
-    my $accounts;
-    if ($self->user->is_staff) {
+    # Get related accounts via CAPI (handles staff/non-staff logic and filtering)
+    my $result = NP::CAPI::Account::get_related_accounts(
+        auth             => $self->plain_cookie($self->user_cookie_name),
+        context          => $self->_get_request_context(),
+        account          => $self->current_account->{id_token},
+        account_id_token => $self->current_account->{id_token},
+    );
 
-        # get all accounts available to any user in this account
-        my ($account_users) = NP::Model->user->get_users(
-            require_objects => ['accounts'],
-            query           => ['accounts.id' => $self->current_account->id]
-        );
-        ($accounts) = NP::Model->account->get_accounts(
-            require_objects => ['users'],
-            query           => ['users.id' => [map { $_->id } @$account_users]],
-        );
-    }
-    else {
-        ($accounts) = NP::Model->account->get_accounts(
-            require_objects => ['users'],
-            query           => ['users.id' => $self->user->id]
-        );
-    }
-    $accounts = [grep { $_->id != $self->current_account->id } @$accounts];
+    my $http_code = $self->_handle_capi_error($result);
+    return $http_code if $http_code != 200;
+
+    my $accounts = $result->{data}{accounts} || [];
     $self->tpl_param('move_accounts', $accounts);
 
     if ($self->request->method eq 'post') {
@@ -691,47 +640,55 @@ sub handle_move {
 
         my $new_account_code = $self->req_param('new_account');
         my ($new_account) =
-          grep { $new_account_code eq $_->id_token } @$accounts;
+          grep { $new_account_code eq $_->{id_token} } @$accounts;
         unless ($new_account) {
             $errors->{new_account} =
               'Please select the account you are transferring the servers to';
             return OK, $self->evaluate_template('tpl/manage/move.html');
         }
 
-        warn "current account: ", $self->current_account->id_token;
-        warn "new     account: ", $new_account->id_token;
-
-        my $db  = NP::Model->db;
-        my $txn = $db->begin_scoped_work;
+        warn "current account: ", $self->current_account->{id_token};
+        warn "new     account: ", $new_account->{id_token};
 
         my @servers_to_move;
         for my $server (@$servers) {
-            warn "was server selected? ", $server->id;
             next unless $selected{$server->id};
-            warn "moving ", $server->id;
-            push @servers_to_move, $server;
+            push @servers_to_move, $server->ip;    # Collect IPs not objects
         }
 
         if ($new_account_code && @servers_to_move) {
 
-            warn "really moving ...";
+            # Move servers via CAPI
+            my $result = move_server(
+                auth                    => $self->plain_cookie($self->user_cookie_name),
+                context                 => $self->_get_request_context(),
+                account                 => $self->current_account->{id_token},
+                server_ips              => \@servers_to_move,
+                target_account_id_token => $new_account_code,
+            );
 
-            for my $server (@servers_to_move) {
-                my $old = $server->get_data_hash();
+            my $http_code = $self->_handle_capi_error($result);
+            return $http_code if $http_code != 200;
 
-                warn "changing account to token / id ", $new_account->token_id,
-                  $new_account->id;
-                $server->account_id($new_account->id);
+            my $data = $result->{data};
+            if ($data->{servers_failed_count} > 0) {
 
-                NP::Model::Log->log_changes($self->user, "server-move",
-                    "Server account change",
-                    $server, $old);
-                $server->save;
+                # Some servers failed to move
+                $self->tpl_param('partial_failure', 1);
+                $self->tpl_param('failed_count',    $data->{servers_failed_count});
+                $self->tpl_param('moved_count',     $data->{servers_moved_count});
+
+                # Show which servers failed
+                my @failed = grep { !$_->{success} } @{$data->{results}};
+                $self->tpl_param('failed_servers', \@failed);
             }
-            $db->commit;
+
+            # Get new account details for success page
+            my ($new_account_obj) =
+              grep { $new_account_code eq $_->{id_token} } @$accounts;
             $self->tpl_param('old_account',   $self->current_account);
-            $self->tpl_param('new_account',   $new_account);
-            $self->tpl_param('servers_moved', \@servers_to_move);
+            $self->tpl_param('new_account',   $new_account_obj);
+            $self->tpl_param('servers_moved', \@servers_to_move);       # IPs, not objects
             return OK, $self->evaluate_template('tpl/manage/move_done.html');
         }
     }
@@ -742,7 +699,7 @@ sub handle_move {
 
 sub netspeed_human {
     my ($self, $netspeed) = @_;
-    NP::Model::Server::_netspeed_human($netspeed);
+    NP::Util::netspeed_human($netspeed);
 }
 
 1;
