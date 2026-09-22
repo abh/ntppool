@@ -107,10 +107,6 @@ sub render {
                 )
               )
             {
-                warn "Failed to fetch server data: "
-                  . ($server_result->{error} || 'no server data')
-                  . " [trace: "
-                  . ($server_result->{trace_id} || 'none') . "]";
                 return $status;
             }
 

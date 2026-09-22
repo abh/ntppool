@@ -26,7 +26,12 @@ use OpenTelemetry::Trace;
 use Syntax::Keyword::Dynamically;
 
 use OpenTelemetry::Integration 'DBI';
-use OpenTelemetry::Integration 'LWP::UserAgent';
+
+# Forked LWP::UserAgent instrumentation, see NP::Tracing::LWP
+use LWP::UserAgent ();
+use NP::CAPI       ();
+use NP::Tracing::LWP;
+NP::Tracing::LWP->install(is_error => \&NP::CAPI::http_response_is_error);
 
 my $tracer = OpenTelemetry->tracer_provider->tracer(name => 'perl', version => '1.0');
 

@@ -23,6 +23,11 @@ our $VERSION = '0.1.0';
 
 my $json = JSON::XS->new->utf8;
 
+# ConnectRPC codes that are the API's normal answer rather than a failure.
+# Results with these codes still carry `error`, but aren't recorded as span
+# errors or warned about; the caller decides what they mean for the page.
+my %EXPECTED_CODES = (not_found => 1,);
+
 my $api_base = $ENV{'api-internal'} || 'http://api-internal/';
 $api_base =~ s{/$}{};
 
@@ -313,13 +318,15 @@ sub connect_rpc {
     $result{service} = $service;
     $result{method}  = $method;
 
+    my $expected = $result{error} && $EXPECTED_CODES{$result{connect_code} // ''};
+
     # Mark OpenTelemetry span as error for ConnectRPC errors
     if ($result{error} && $NP::CAPI::OTEL_AVAILABLE) {
         eval {
             my $span =
               OpenTelemetry::Trace->span_from_context(OpenTelemetry::Context->current);
             if ($span) {
-                $span->set_status(SPAN_STATUS_ERROR, $result{error});
+                $span->set_status(SPAN_STATUS_ERROR, $result{error}) unless $expected;
 
                 # NOTE: record_exception creates attributes that may exceed limits
                 # We skip it here since set_status already records the error
@@ -337,10 +344,11 @@ sub connect_rpc {
         if ($@) {
             warn "OpenTelemetry error: $@";
         }
+    }
 
-        # Log the error with trace ID
-        warn "ConnectRPC error: " . $result{error};
-        warn "Trace ID: " . ($result{trace_id} || 'none');
+    if ($result{error} && !$expected) {
+        warn "ConnectRPC error: $service/$method: $result{error} [trace: "
+          . ($result{trace_id} || 'none') . "]\n";
     }
 
     if ($ENV{CAPI_DEBUG}) {
@@ -391,6 +399,41 @@ sub result_http_status {
     return (503, 1);
 }
 
+=head2 http_response_is_error($response)
+
+Decide whether an L<HTTP::Response> should mark its HTTP client span as an
+error. Used as the C<is_error> hook for L<NP::Tracing::LWP>, so the rule for
+API responses lives with the rest of the ConnectRPC handling.
+
+Any 2xx is not an error. A non-2xx response from the internal API is not an
+error when its ConnectRPC code is one the API answers with in normal
+operation (currently C<not_found>). Every other non-2xx response is an error.
+
+=cut
+
+sub http_response_is_error {
+    my ($res) = @_;
+
+    return 0 if $res->is_success;
+
+    my $req = $res->request;
+    return 1 unless $req && index($req->uri, "$api_base/") == 0;
+
+    my $data = _decode_error_body($res) or return 1;
+    return $EXPECTED_CODES{$data->{code} // ''} ? 0 : 1;
+}
+
+# Decode a ConnectRPC JSON error body. Returns the hashref, or undef when the
+# response isn't a JSON object. Works before and after $res->decode().
+sub _decode_error_body {
+    my ($res) = @_;
+
+    return undef unless ($res->content_type // '') =~ m{^application/json};
+
+    my $data = eval { $json->decode($res->decoded_content(charset => 'none')) };
+    return ref($data) eq 'HASH' ? $data : undef;
+}
+
 =head2 _parse_connect_response (internal)
 
 Parse ConnectRPC HTTP response into standard result structure.
@@ -427,28 +470,23 @@ sub _parse_connect_response {
 
         # HTTP 4xx/5xx error
         # Try to parse as ConnectRPC JSON error if content-type suggests it
-        if ($res->content_type =~ m{^application/json}) {
-            my $content = $res->content;
-            my $data    = eval { $json->decode($content) };
+        if (my $data = _decode_error_body($res)) {
 
-            if ($data && ref($data) eq 'HASH') {
+            # Successfully parsed JSON error response from API
+            $result{connect_code} = $data->{code} || "unknown";
 
-                # Successfully parsed JSON error response from API
-                $result{connect_code} = $data->{code} || "unknown";
+            # Ensure error message is always a string, not a hashref/arrayref
+            # Defense-in-depth: don't trust API to return correct types
+            my $message = $data->{message};
+            if (ref($message)) {
 
-                # Ensure error message is always a string, not a hashref/arrayref
-                # Defense-in-depth: don't trust API to return correct types
-                my $message = $data->{message};
-                if (ref($message)) {
-
-                    # API returned structured data instead of string - serialize it
-                    $message =
-                      "API error (invalid message type): " . Data::Dump::pp($message);
-                }
-                $result{error} = $message || "HTTP error: " . $res->status_line;
-                $result{data}  = undef;
-                return %result;
+                # API returned structured data instead of string - serialize it
+                $message =
+                  "API error (invalid message type): " . Data::Dump::pp($message);
             }
+            $result{error} = $message || "HTTP error: " . $res->status_line;
+            $result{data}  = undef;
+            return %result;
         }
 
         # Fall back to HTTP status line (502, 503, 504, or malformed JSON)
