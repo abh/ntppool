@@ -15,7 +15,7 @@ EXPOSE 8299
 ENTRYPOINT ["./docker/entrypoint"]
 CMD ["./docker-run"]
 
-RUN mkdir /var/ntppool data && chown ntppool:ntppool data /var/ntppool
+RUN mkdir /var/ntppool data && chown ntppool:ntppool . data /var/ntppool
 RUN rm -fr docs/ntppool/_syndicate && \
     mkdir -p data/syndicate docs/ntppool && \
     ln -s /ntppool/data/syndicate docs/ntppool/_syndicate && \
@@ -23,14 +23,12 @@ RUN rm -fr docs/ntppool/_syndicate && \
 
 ADD --chown=ntppool . /ntppool
 
-# Ensure ntppool user owns the entire workdir for development
-RUN chown -R ntppool:ntppool /ntppool
-
 USER ntppool
 
 RUN rm -f Makefile MYMETA.yml MYMETA.json && \
   perl Makefile.PL && \
   make js-build && \
+  rm -rf client/node_modules && \
   mkdir -p tmp logs
 
 RUN git config --global --add safe.directory /ntppool

@@ -24,6 +24,7 @@ RUN find ./docs -type f -print0 | xargs -0 touch
 
 RUN perl Makefile.PL && \
   make js-build-prod && \
+  rm -rf client/node_modules && \
   CBCONFIG=docker/combust.build.conf bin/setup && \
   mkdir -p tmp logs && \
   chown -R ntppool tmp logs
