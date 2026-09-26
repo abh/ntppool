@@ -21,7 +21,7 @@
         on [% server.deletion_on %].
         <br />
         [% END %]
-        Current score: <b>[% server.score_raw %]</b><br />
+        Current score: <b>[% server.score_raw | format("%.1f") %]</b><br />
         [% IF server.stratum %]Stratum: <b>[% server.stratum %]</b><br />[% END %]
 
         Zones:
