@@ -102,3 +102,26 @@ export async function getAccountAuditLogs(staffSession: string, accountToken: st
     return mapped;
   });
 }
+
+/**
+ * The validation server URL the verify instructions page shows for one
+ * address family, from the API's `validation` system setting.
+ */
+export async function getValidationServer(ipVersion: 4 | 6): Promise<string> {
+  const raw = record(await connectRpc<unknown>(
+    "GetSettings",
+    "ntppool.system.v1.SystemService/GetSettings",
+    {},
+    {},
+  ), "GetSettings response");
+  if (!Array.isArray(raw.settings)) throw new Error("GetSettings settings is missing or malformed");
+  const setting = raw.settings
+    .map((value, index) => record(value, `GetSettings setting ${index}`))
+    .find((setting) => setting.key === "validation");
+  if (!setting) throw new Error("GetSettings is missing the validation setting");
+  const validation = record(
+    JSON.parse(stringField(setting.value, "GetSettings validation value")),
+    "validation setting",
+  );
+  return stringField(validation[`server_v${ipVersion}`], `validation setting server_v${ipVersion}`);
+}

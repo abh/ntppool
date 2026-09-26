@@ -21,6 +21,12 @@ sub ip {
     return $self->{ip};
 }
 
+# 4 or 6
+sub ip_version {
+    my $self = shift;
+    return $self->{ip_version};
+}
+
 sub hostname {
     my $self = shift;
     return $self->{hostname} || '';

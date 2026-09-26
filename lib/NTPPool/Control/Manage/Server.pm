@@ -434,13 +434,13 @@ sub handle_verify {
             verification_url => $config->site->{ntppool}->{verification_url});
 
         my $validate_settings = $self->system_setting('validation');
-        if ($validate_settings and %$validate_settings) {
+        unless ($validate_settings and %$validate_settings) {
             warn "validate settings not configured in system_settings";
         }
 
         warn "validation_settings: ", Data::Dump::pp($validate_settings);
 
-        my $validation_server = $validate_settings->{"server_" . $server->ip_version};
+        my $validation_server = $validate_settings->{"server_v" . $server->ip_version};
         if (!$validation_server) {
             warn "no validation server for ", $server->ip_version;
         }

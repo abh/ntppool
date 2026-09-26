@@ -7,9 +7,9 @@ import {
   mintSession,
   uniqueTestEmail,
 } from "../lib/auth";
-import { bust } from "../lib/helpers";
+import { bust, expectNoErrorBleed } from "../lib/helpers";
 import { expect, test } from "../lib/fixtures";
-import { getAccountAuditLogs, getServer } from "../lib/servers";
+import { getAccountAuditLogs, getServer, getValidationServer } from "../lib/servers";
 
 const REDACTED_VERIFICATION_PATH = "/manage/server/verify/redacted";
 
@@ -343,3 +343,21 @@ test("another account cannot complete the owner's verification", async ({ browse
   const logs = await getAccountAuditLogs(await staffSession(), fixture.accountToken);
   expect(logs.some((log) => log.type === "server" && log.message === "Server verified" && log.server?.serverId === server.serverId)).toBe(false);
 });
+
+for (const ipVersion of [4, 6] as const) {
+  test(`unverified IPv${ipVersion} server's verify link shows the instructions`, async ({ page, context, fixtures }) => {
+    const fixture = await fixtures.create({ servers: [{ ipVersion }] });
+    const server = fixture.servers[0];
+    const validationServer = await getValidationServer(ipVersion);
+    await installSession(context, fixture.sessionToken);
+
+    await page.goto(bust(`/manage/servers?a=${encodeURIComponent(fixture.accountToken)}`));
+    const link = page.locator(`#server_${server.serverId} a`, { hasText: "Unverified" });
+    const [response] = await Promise.all([page.waitForNavigation(), link.click()]);
+
+    expect(response?.status()).toBe(200);
+    await expectNoErrorBleed(page);
+    await expect(page.locator("h3", { hasText: `Verify ${server.ip}` })).toBeVisible();
+    await expect(page.locator("pre.code").first()).toContainText(`curl --interface ${server.ip} ${validationServer}`);
+  });
+}
