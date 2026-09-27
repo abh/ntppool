@@ -271,9 +271,10 @@ sub handle_add {
 
             my $api_result = $result->{data}{results}[$result_idx++];
             if ($api_result->{success}) {
-                $server->{id}         = $api_result->{server}{id};
-                $server->{scores_url} = $base_scores_url . $server->{ip};
-                $s                    = NP::Data::Server->new(%{$api_result->{server}});
+                $server->{id}                 = $api_result->{server}{id};
+                $server->{scores_url}         = $base_scores_url . $server->{ip};
+                $server->{deletion_cancelled} = $api_result->{deletion_cancelled} ? 1 : 0;
+                $s = NP::Data::Server->new(%{$api_result->{server}});
                 push @added, $server;
             }
         }
@@ -289,8 +290,17 @@ sub handle_add {
               ->reply_to($self->user->{email})
               ->text_body($msg);
 
-            my $subject =
-              "New addition to the NTP Pool: " . join(", ", map { $_->{ip} } @added);
+            # Re-adding an own server that was scheduled for deletion
+            # cancels the deletion instead of adding a server.
+            my @new       = grep { !$_->{deletion_cancelled} } @added;
+            my @cancelled = grep { $_->{deletion_cancelled} } @added;
+            my @parts;
+            push @parts,
+              "New addition to the NTP Pool: " . join(", ", map { $_->{ip} } @new)
+              if @new;
+            push @parts, "Deletion cancelled: " . join(", ", map { $_->{ip} } @cancelled)
+              if @cancelled;
+            my $subject = join("; ", @parts);
             if (grep { $_->{hostname} } @added) {
                 $subject .= " (" . join(", ", map { $_->{hostname} } @added) . ")";
             }

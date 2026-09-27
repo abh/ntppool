@@ -4,7 +4,7 @@
 [% FOR server = servers;
    NEXT IF server.error;
 %]
-IP: [% server.ip %]
+IP: [% server.ip %][% IF server.deletion_cancelled %] (already registered; scheduled deletion cancelled)[% END %]
 Zones:  [% FOR zone = server.zones;
               IF zone.name == "."; NEXT; END;
               " " _ zone.name;

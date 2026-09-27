@@ -40,6 +40,8 @@ Authorization: User must have access to account
 Accepts unlimited servers; processes first 6 NEW servers only
 Authentication: Required via session middleware
 Authorization: User must have access to account
+Requires can_add_servers (fewer than 2 unverified servers); otherwise
+PERMISSION_DENIED and nothing is added
     my $result = add_server(
         $self->api_auth_params,      # Provides auth and context
         account => $account->{id_token},
@@ -303,6 +305,8 @@ AddServer adds multiple servers to an account (all-or-nothing transaction)
 Accepts unlimited servers; processes first 6 NEW servers only
 Authentication: Required via session middleware
 Authorization: User must have access to account
+Requires can_add_servers (fewer than 2 unverified servers); otherwise
+PERMISSION_DENIED and nothing is added
 
 B<Arguments:>
 
@@ -330,6 +334,12 @@ Hashref with structure:
                 success => ...,  # bool
                 error => ...,  # string
                 server => ...,  # hashref (Server)
+                deletion_cancelled => ...,  # bool - deletion_cancelled is true when the server was already registered to
+ this account and scheduled for deletion, and AddServer cancelled the
+ deletion instead of adding it: the server keeps its verification,
+ netspeed, zones and history, and no "server added" email is sent.
+ success is true and server holds the kept server. Only set in a
+ committed result; false for a server that was added or restored.
             },
             # ... more items
         ],  # arrayref[hashref (ServerAddResult)] - results contains add result for each requested server (only first 6 new servers processed)
