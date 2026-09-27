@@ -47,13 +47,10 @@ sub trace_id {
     return $self->{trace_id} || '';
 }
 
+# YYYY-MM-DD as the API sends it, or undef when no deletion is scheduled
 sub deletion_on {
     my $self = shift;
-    return unless $self->{deletion_on};
-
-    # Return DateTime object for compatibility with existing code
-    require DateTime::Format::ISO8601;
-    return DateTime::Format::ISO8601->parse_datetime($self->{deletion_on});
+    return $self->{deletion_on} || undef;
 }
 
 sub graph_uri {
