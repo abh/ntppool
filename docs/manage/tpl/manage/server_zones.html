@@ -1,5 +1,5 @@
 <span id="zones_[% server.id %]">
-[% FOR zone = server.zones_display %]
+[% FOR zone = server.zones %]
 <a href="[% combust.www_url(zone.url) %]">[% zone.name %]</a>
 [% END  %]
 </span>
