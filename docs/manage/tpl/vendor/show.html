@@ -87,6 +87,8 @@
        # subscription gets a plain production submit that does NOT mark the zone
        # open source; an uncovered vendor gets the open-source
        # justification form, which is how they apply for the non-revenue plan.
+       # When the plan picker renders below (products.html), it carries the
+       # open-source form itself, so it's skipped here to show it only once.
     %]
     [% IF (vz.status == 'New' || vz.status == 'Rejected') && !need_subscription %]
       [% IF have_subscription %]
@@ -97,7 +99,7 @@
             <input type="submit" class="btn btn-primary"
                 value="[% vz.status == 'Rejected' ? 'Resubmit for production &rarr;' : 'Submit for production &rarr;' %]" />
         </form>
-      [% ELSE %]
+      [% ELSIF !(vz.status == 'New' && show_products && !need_upgrade) %]
         [% PROCESS tpl/vendor/_opensource.html %]
       [% END %]
     [% END %]
