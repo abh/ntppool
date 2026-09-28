@@ -129,6 +129,9 @@ function normalizeServers(seeds: ServerSeed[]): NormalizedServer[] {
     if (seed.verified && seed.pendingVerification) {
       throw new Error(`server seed ${index} cannot be verified and pending`);
     }
+    if (seed.zone === "") {
+      throw new Error(`server seed ${index} has an empty zone`);
+    }
     const netspeed = seed.netspeed ?? 512;
     if (!Number.isInteger(netspeed) || netspeed < 0) {
       throw new Error(`server seed ${index} has invalid netspeed`);
