@@ -531,7 +531,7 @@ function ye(t, e, n) {
   async function f(u) {
     if (u == "")
       throw new Error("missing server IP");
-    const s = await fetch("https://www.ntppool.org/api/data/server/dns/answers/" + u), d = await s.json();
+    const s = await fetch("/api/data/server/dns/answers/" + u), d = await s.json();
     if (s.ok) {
       let r = [], c = {
         ServerIP: u,
