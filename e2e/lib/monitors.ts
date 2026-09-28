@@ -1,5 +1,6 @@
 import { expect, type Page } from "@playwright/test";
 import { connectRpc } from "./auth";
+import { swapFragment } from "./helpers";
 import { boolField, record, stringField } from "./json";
 
 // Monitor list and account monitor-config helpers.
@@ -106,39 +107,17 @@ export async function updateAccountMonitorConfig(
 }
 
 /**
- * Click a button that swaps #monitor-config-display, assert the fragment
- * request itself returned 200 (so a failed swap is reported as the request
- * that failed rather than as a later missing-element timeout), and wait until
- * htmx has wired up the new fragment.
- *
- * htmx inserts the fragment immediately but only attaches its hx-get/hx-post
- * handlers in the settle step, htmx.config.defaultSettleDelay (20ms) later.
- * A click in that window hits a button with no handler: "Edit Configuration"
- * sends nothing, and "Save Changes" submits the form natively instead of
- * posting it. htmx drops the `htmx-added` class in the same task that attaches
- * the handlers, so once it is gone the fragment is live.
+ * Click a button that swaps #monitor-config-display and wait until htmx has
+ * wired up the new fragment; see swapFragment.
  */
 export async function swapMonitorConfig(
   page: Page,
   buttonName: string,
   method: "GET" | "POST",
 ) {
-  const display = page.locator("#monitor-config-display");
-  const oldDisplay = await display.elementHandle();
-  expect(oldDisplay).not.toBeNull();
-  const responsePromise = page.waitForResponse(
-    (response) =>
-      new URL(response.url()).pathname === MONITOR_CONFIG_PATH &&
-      response.request().method() === method,
+  await swapFragment(page, "#monitor-config-display", MONITOR_CONFIG_PATH, method, () =>
+    page.getByRole("button", { name: buttonName }).click(),
   );
-  await page.getByRole("button", { name: buttonName }).click();
-  expect((await responsePromise).status()).toBe(200);
-  // The old fragment has no htmx-added class either, and the response can
-  // reach Playwright before htmx swaps, so wait for the replacement first.
-  await expect
-    .poll(() => oldDisplay!.evaluate((node) => node.isConnected))
-    .toBe(false);
-  await expect(display).not.toHaveClass(/\bhtmx-added\b/);
 }
 
 /** Replace the display card with the edit form. */

@@ -202,10 +202,16 @@ export async function expectErrorAlert(
 
 /**
  * Run an action that swaps `selector` (outerHTML), assert the fragment request
- * returned 200, and wait for htmx to settle the replacement. A click inside
- * the settle window lands on an element whose hx-* handlers aren't attached
- * yet; see swapMonitorConfig in lib/monitors.ts. Returns a locator for the
- * new fragment.
+ * returned 200 (so a failed swap is reported as the request that failed rather
+ * than as a later missing-element timeout), and wait until htmx has wired up
+ * the replacement. Returns a locator for the new fragment.
+ *
+ * htmx inserts the fragment immediately but only attaches its hx-get/hx-post
+ * handlers in the settle step, htmx.config.defaultSettleDelay (20ms) later.
+ * A click in that window hits a button with no handler: an hx-get button
+ * sends nothing, and a submit button submits the form natively instead of
+ * posting it. htmx drops the `htmx-added` class in the same task that attaches
+ * the handlers, so once it is gone the fragment is live.
  */
 export async function swapFragment(
   page: Page,
@@ -222,6 +228,8 @@ export async function swapFragment(
   );
   await action();
   expect((await responsePromise).status()).toBe(200);
+  // The old fragment has no htmx-added class either, and the response can
+  // reach Playwright before htmx swaps, so wait for the replacement first.
   await expect.poll(() => oldFragment!.evaluate((node) => node.isConnected)).toBe(false);
   await expect(fragment).not.toHaveClass(/\bhtmx-added\b/);
   return fragment;
