@@ -2,12 +2,10 @@ import type { Page } from "@playwright/test";
 import { installSession } from "../lib/auth";
 import { bust } from "../lib/helpers";
 import { expect, test, type Fixture } from "../lib/fixtures";
-import { getServer } from "../lib/servers";
-
-const UPDATE_PATH = "/manage/server/update/netspeed";
+import { NETSPEED_UPDATE_PATH, getServer, humanDate, serverListUrl, swapNetspeed } from "../lib/servers";
 
 async function openServer(page: Page, fixture: Fixture) {
-  await page.goto(bust(`/manage/servers?a=${encodeURIComponent(fixture.accountToken)}`));
+  await page.goto(bust(serverListUrl(fixture.accountToken)));
   return page.locator(`#server_${fixture.servers[0].serverId}`);
 }
 
@@ -22,7 +20,7 @@ test("verified netspeed updates replace the HTMX fragment without navigation", a
   const oldElement = await fragment.elementHandle();
   let navigations = 0;
   page.on("framenavigated", (frame) => { if (frame === page.mainFrame()) navigations += 1; });
-  const responsePromise = page.waitForResponse((response) => new URL(response.url()).pathname === UPDATE_PATH && response.request().method() === "POST");
+  const responsePromise = page.waitForResponse((response) => new URL(response.url()).pathname === NETSPEED_UPDATE_PATH && response.request().method() === "POST");
   await fragment.locator('select[name="netspeed"]').selectOption("1500");
   const response = await responsePromise;
   expect(response.request().headers()["hx-request"]).toBe("true");
@@ -48,7 +46,7 @@ test("netspeed placeholder is disabled and cannot post an empty speed", async ({
   await expect(placeholder).toHaveJSProperty("selected", true);
   const posted: string[] = [];
   page.on("request", (request) => {
-    if (new URL(request.url()).pathname === UPDATE_PATH && request.method() === "POST") posted.push(request.postData() ?? "");
+    if (new URL(request.url()).pathname === NETSPEED_UPDATE_PATH && request.method() === "POST") posted.push(request.postData() ?? "");
   });
   // Playwright 1.60 doesn't throw on a disabled option: it logs "option being
   // selected is not enabled" and retries until the action timeout, never
@@ -58,7 +56,7 @@ test("netspeed placeholder is disabled and cannot post an empty speed", async ({
   expect(await currentSpeed(fixture)).toBe(512);
   // A real pick replaces a sleep for the "no POST" check: a POST from the
   // rejected attempt would have gone out before this one.
-  const responsePromise = page.waitForResponse((response) => new URL(response.url()).pathname === UPDATE_PATH && response.request().method() === "POST");
+  const responsePromise = page.waitForResponse((response) => new URL(response.url()).pathname === NETSPEED_UPDATE_PATH && response.request().method() === "POST");
   await select.selectOption("1500");
   expect((await responsePromise).status()).toBe(200);
   expect(posted).toEqual([expect.stringMatching(/(?:^|&)netspeed=1500(?:&|$)/)]);
@@ -69,7 +67,7 @@ test("unverified netspeed increase shows the verification error and preserves sp
   await installSession(context, fixture.sessionToken);
   const fragment = await openServer(page, fixture);
   const csrf = await fragment.locator('input[name="auth_token"]').inputValue();
-  const response = await page.request.post(UPDATE_PATH, {
+  const response = await page.request.post(NETSPEED_UPDATE_PATH, {
     form: { auth_token: csrf, server: fixture.servers[0].serverId, a: fixture.accountToken, netspeed: "1500" },
     headers: { "HX-Request": "true" }, maxRedirects: 0,
   });
@@ -96,7 +94,7 @@ test("nonnumeric netspeed is rejected without mutation", async ({ page, context,
   await installSession(context, fixture.sessionToken);
   const fragment = await openServer(page, fixture);
   const csrf = await fragment.locator('input[name="auth_token"]').inputValue();
-  const response = await page.request.post(UPDATE_PATH, {
+  const response = await page.request.post(NETSPEED_UPDATE_PATH, {
     form: { auth_token: csrf, server: fixture.servers[0].serverId, a: fixture.accountToken, netspeed: "fast" },
     headers: { "HX-Request": "true" }, maxRedirects: 0,
   });
@@ -108,7 +106,7 @@ test("netspeed without CSRF is rejected without mutation", async ({ page, contex
   const fixture = await fixtures.create({ servers: [{ ipVersion: 4, verified: true }] });
   await installSession(context, fixture.sessionToken);
   await openServer(page, fixture);
-  const response = await page.request.post(UPDATE_PATH, {
+  const response = await page.request.post(NETSPEED_UPDATE_PATH, {
     form: { server: fixture.servers[0].serverId, a: fixture.accountToken, netspeed: "1500" },
     headers: { "HX-Request": "true" }, maxRedirects: 0,
   });
@@ -121,7 +119,7 @@ test("non-HTMX netspeed update redirects and persists", async ({ page, context, 
   await installSession(context, fixture.sessionToken);
   const fragment = await openServer(page, fixture);
   const csrf = await fragment.locator('input[name="auth_token"]').inputValue();
-  const response = await page.request.post(UPDATE_PATH, {
+  const response = await page.request.post(NETSPEED_UPDATE_PATH, {
     form: { auth_token: csrf, server: fixture.servers[0].serverId, a: fixture.accountToken, netspeed: "1500" }, maxRedirects: 0,
   });
   expect(response.status()).toBe(302);
@@ -129,4 +127,25 @@ test("non-HTMX netspeed update redirects and persists", async ({ page, context, 
   expect(await currentSpeed(fixture)).toBe(1500);
   await openServer(page, fixture);
   await expect(page.locator(`#netspeed_${fixture.servers[0].serverId}`)).toHaveText("1.5 Mbit");
+});
+
+function longDeletion(fixture: Fixture): string {
+  return `scheduled for deletion on ${humanDate(fixture.servers[0].deletionOn)}.`;
+}
+
+test("scheduled deletion date reads as a long date on the server list", async ({ page, context, fixtures }) => {
+  const fixture = await fixtures.create({ servers: [{ ipVersion: 4, verified: true, scheduledDeletion: true }] });
+  await installSession(context, fixture.sessionToken);
+  const fragment = await openServer(page, fixture);
+  await expect(fragment).toContainText(longDeletion(fixture));
+  await expect(fragment).not.toContainText("T00");
+});
+
+test("scheduled deletion date stays a long date after an HTMX netspeed swap", async ({ page, context, fixtures }) => {
+  const fixture = await fixtures.create({ servers: [{ ipVersion: 4, verified: true, scheduledDeletion: true }] });
+  await installSession(context, fixture.sessionToken);
+  await openServer(page, fixture);
+  const fragment = await swapNetspeed(page, fixture.servers[0], "1500");
+  await expect(fragment).toContainText(longDeletion(fixture));
+  await expect(fragment).not.toContainText("T00");
 });

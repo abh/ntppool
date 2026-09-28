@@ -1,5 +1,7 @@
+import type { Locator, Page } from "@playwright/test";
 import { connectRpc } from "./auth";
 import type { FixtureServer } from "./fixtures";
+import { swapFragment } from "./helpers";
 import { boolField, idField, intField, record, stringField } from "./json";
 
 export interface ServerRead {
@@ -29,6 +31,27 @@ export interface AuditLog {
 
 export function serverDeleteUrl(server: FixtureServer, accountToken: string): string {
   return `/manage/server/delete?server=${encodeURIComponent(server.ip)}&a=${encodeURIComponent(accountToken)}`;
+}
+
+export function serverListUrl(accountToken: string): string {
+  return `/manage/servers?a=${encodeURIComponent(accountToken)}`;
+}
+
+/** A deletion date as the manage templates show it, e.g. "January 01, 2099". */
+export function humanDate(isoDate: string): string {
+  return new Intl.DateTimeFormat("en-US", { month: "long", day: "2-digit", year: "numeric", timeZone: "UTC" })
+    .format(new Date(`${isoDate}T00:00:00Z`));
+}
+
+export const NETSPEED_UPDATE_PATH = "/manage/server/update/netspeed";
+
+// Picks a netspeed in the server block's select and waits until HTMX has
+// replaced the block. Returns a locator for the new block.
+export async function swapNetspeed(page: Page, server: FixtureServer, netspeed: string): Promise<Locator> {
+  const selector = `#server_${server.serverId}`;
+  return swapFragment(page, selector, NETSPEED_UPDATE_PATH, "POST", async () => {
+    await page.locator(`${selector} select[name="netspeed"]`).selectOption(netspeed);
+  });
 }
 
 export async function getServer(

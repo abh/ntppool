@@ -1,6 +1,6 @@
 import type { BrowserContext, Page } from "@playwright/test";
 import { installSession, mintSession, uniqueTestEmail } from "../lib/auth";
-import { bust } from "../lib/helpers";
+import { bust, swapFragment } from "../lib/helpers";
 import { expect, test, type Fixture } from "../lib/fixtures";
 import { getAccountAuditLogs, getServer } from "../lib/servers";
 
@@ -14,8 +14,9 @@ import { getAccountAuditLogs, getServer } from "../lib/servers";
 //
 // Fixture servers use documentation addresses, so no real hostname can pass
 // the API's DNS check; saving an empty hostname is the one save that succeeds.
-// Fixtures are never put in a real zone: an unknown zone name reaches the API
-// and fails there without touching zone membership.
+// Fixtures have no zones unless the seed asks for one, and these tests don't:
+// an unknown zone name reaches the API and fails there without touching zone
+// membership.
 
 const HOSTNAME_EDIT_PATH = "/manage/admin/hostname/edit";
 const HOSTNAME_SAVE_PATH = "/manage/admin/hostname/save";
@@ -45,31 +46,6 @@ async function openScoresAsStaff(
   const response = await page.goto(bust(`/scores/${encodeURIComponent(ip)}?a=${encodeURIComponent(staffAccount!)}`));
   expect(response?.status()).toBe(200);
   return staffSession;
-}
-
-/**
- * Run an action that swaps `selector` (outerHTML), assert the fragment request
- * returned 200, and wait for htmx to settle the replacement. A click inside
- * the settle window lands on an element whose hx-* handlers aren't attached
- * yet; see swapMonitorConfig in monitor-config.spec.ts.
- */
-async function swapFragment(
-  page: Page,
-  selector: string,
-  path: string,
-  method: "GET" | "POST",
-  action: () => Promise<void>,
-) {
-  const fragment = page.locator(selector);
-  const oldFragment = await fragment.elementHandle();
-  expect(oldFragment).not.toBeNull();
-  const responsePromise = page.waitForResponse(
-    (response) => new URL(response.url()).pathname === path && response.request().method() === method,
-  );
-  await action();
-  expect((await responsePromise).status()).toBe(200);
-  await expect.poll(() => oldFragment!.evaluate((node) => node.isConnected)).toBe(false);
-  await expect(fragment).not.toHaveClass(/\bhtmx-added\b/);
 }
 
 async function serverAuditLogCount(staffSession: string, fixture: Fixture): Promise<number> {

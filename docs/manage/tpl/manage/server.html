@@ -18,7 +18,7 @@
 
         [% IF server.deletion_on %]
         This server is <span class="deletion">scheduled for deletion</span>
-        on [% server.deletion_on %].
+        on [% server.deletion_date.strftime("%B %d, %Y") %].
         <br />
         [% END %]
         Current score: <b>[% server.score_raw | format("%.1f") %]</b><br />

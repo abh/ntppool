@@ -19,6 +19,8 @@ export interface ServerSeed {
   pendingVerification?: boolean;
   scheduledDeletion?: boolean;
   netspeed?: number;
+  /** Joins this zone and its parents, for example "de". */
+  zone?: string;
 }
 
 export interface FixtureServer {
@@ -29,6 +31,8 @@ export interface FixtureServer {
   verified: boolean;
   deletionOn: string;
   netspeed: number;
+  /** The seeded zone and its parents, root first, including "."; [] without a zone seed. */
+  zones: string[];
 }
 
 export const MONITOR_STATUSES = ["pending", "testing", "active", "paused"] as const;
@@ -169,6 +173,18 @@ function normalizeSubscription(seed: SubscriptionSeed | undefined): Subscription
   return { maxZones: seed.maxZones, maxDevices: seed.maxDevices, quantity: seed.quantity, tiered: seed.tiered };
 }
 
+// An older api-dev image omits zones, which is only acceptable when the seed
+// asked for none.
+function parseZones(value: unknown, label: string, want: string | undefined): string[] {
+  if (value === undefined && want === undefined) return [];
+  if (!Array.isArray(value)) throw new Error(`${label} zones must be an array`);
+  const zones = value.map((zone, index) => stringField(zone, `${label} zones[${index}]`));
+  if (want === undefined ? zones.length !== 0 : !zones.includes(want)) {
+    throw new Error(`${label} zones mismatched`);
+  }
+  return zones;
+}
+
 function parseServer(value: unknown, index: number, want: NormalizedServer): FixtureServer {
   const label = `fixture server ${index}`;
   const item = record(value, label);
@@ -194,6 +210,7 @@ function parseServer(value: unknown, index: number, want: NormalizedServer): Fix
     verified,
     deletionOn,
     netspeed,
+    zones: parseZones(item.zones, label, want.zone),
   };
 }
 
@@ -264,12 +281,14 @@ async function createFixture(attemptId: string, seed: FixtureSeed): Promise<Fixt
   const request: Record<string, unknown> = {
     attempt_id: attemptId,
     run_id: runId(),
+    // zone is sent only when seeded, for the same reason as subscription below.
     servers: servers.map((server) => ({
       ip_version: server.ipVersion,
       verified: server.verified ?? false,
       pending_verification: server.pendingVerification ?? false,
       scheduled_deletion: server.scheduledDeletion ?? false,
       netspeed: server.netspeed,
+      ...(server.zone ? { zone: server.zone } : {}),
     })),
     monitors: monitors.map((monitor) => Object.fromEntries(
       MONITOR_FAMILIES.filter((name) => monitor[name]).map((name) => [name, { status: monitor[name] }]),

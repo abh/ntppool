@@ -2,6 +2,7 @@ package NP::Data::Server;
 use v5.30;
 use strict;
 use warnings;
+use DateTime;
 
 # Lightweight data wrapper for server objects from API responses
 # Provides compatibility methods for templates that expect server objects
@@ -51,6 +52,15 @@ sub trace_id {
 sub deletion_on {
     my $self = shift;
     return $self->{deletion_on} || undef;
+}
+
+# deletion_on as a UTC DateTime, or undef when no deletion is scheduled
+sub deletion_date {
+    my $self  = shift;
+    my $value = $self->deletion_on or return undef;
+    $value =~ m/^(\d{4})-(\d{2})-(\d{2})$/
+      or die "unexpected deletion_on value: '$value'";
+    return DateTime->new(year => $1, month => $2, day => $3, time_zone => 'UTC');
 }
 
 sub graph_uri {

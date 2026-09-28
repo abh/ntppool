@@ -2,7 +2,7 @@ import { installSession, mintSession, uniqueTestEmail } from "../lib/auth";
 import { resolveDefaultAccountToken } from "../lib/accounts";
 import { bust } from "../lib/helpers";
 import { expect, test, type Fixture } from "../lib/fixtures";
-import { getAccountAuditLogs, getServer, serverDeleteUrl } from "../lib/servers";
+import { getAccountAuditLogs, getServer, humanDate, serverDeleteUrl } from "../lib/servers";
 
 const FORM = 'form[action="/manage/server/delete"]';
 
@@ -10,15 +10,10 @@ async function staffSession(): Promise<string> {
   return mintSession(uniqueTestEmail("deletion-audit-staff"), { grantStaff: true });
 }
 
-function humanDate(isoDate: string): string {
-  return new Intl.DateTimeFormat("en-US", { month: "long", day: "2-digit", year: "numeric", timeZone: "UTC" })
-    .format(new Date(`${isoDate}T00:00:00Z`));
-}
-
 async function assertDeletionOn(fixture: Fixture, index: number, value: string) {
   const server = fixture.servers[index];
   const deletionOn = (await getServer(fixture.sessionToken, fixture.accountToken, server.ip)).deletionOn;
-  expect(deletionOn).toBe(value ? `${value}T00:00:00Z` : "");
+  expect(deletionOn).toBe(value);
 }
 
 test("scheduling deletion persists the selected date", async ({ page, context, fixtures }) => {
@@ -120,6 +115,35 @@ test("cancellation is denied with two active unverified servers", async ({ page,
   await expect(alert).toContainText("Please verify active servers in the account first.");
   await expect(alert).toContainText(/Trace ID: [0-9a-f]{32}/i);
   await assertDeletionOn(fixture, 0, "2099-01-01");
+});
+
+test("cancel refused for an unscheduled server renders without a date", async ({ page, context, fixtures }) => {
+  const fixture = await fixtures.create({
+    servers: [
+      { ipVersion: 4, verified: true },
+      { ipVersion: 4 },
+      { ipVersion: 6 },
+    ],
+  });
+  const target = fixture.servers[0];
+  await installSession(context, fixture.sessionToken);
+  await page.goto(bust(serverDeleteUrl(target, fixture.accountToken)));
+  const csrf = await page.locator(`${FORM} input[name="auth_token"]`).inputValue();
+  const response = await page.request.post("/manage/server/delete", {
+    form: { server: target.serverId, a: fixture.accountToken, auth_token: csrf, cancel_deletion: "1" },
+    maxRedirects: 0,
+  });
+  expect(response.status()).toBe(200);
+  const body = await response.text();
+  const disposable = await context.newPage();
+  try {
+    await disposable.setContent(body);
+    await expect(disposable.locator('.alert.alert-danger[role="alert"]')).toContainText("Please verify active servers in the account first.");
+  } finally {
+    await disposable.close();
+  }
+  expect(body).not.toContain("will be deleted from the pool system");
+  await assertDeletionOn(fixture, 0, "");
 });
 
 test("deletion without CSRF is refused without mutation", async ({ page, context, fixtures }) => {

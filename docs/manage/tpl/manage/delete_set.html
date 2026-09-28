@@ -4,11 +4,13 @@
 
 [% PROCESS tpl/common/error_alert.html %]
 
+[% IF server.deletion_on %]
 <p>
 [% server.ip %] will be deleted from the pool system on
-[% server.deletion_on %].  The IP will stop being
+[% server.deletion_date.strftime("%B %d, %Y") %].  The IP will stop being
 in rotation about two weeks prior to this date.
 </p>
+[% END %]
 
 <p>
 <form action="/manage/server/delete" method="post">

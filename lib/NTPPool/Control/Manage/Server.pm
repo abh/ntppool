@@ -106,7 +106,8 @@ sub show_manage {
         $servers = [];
     }
     else {
-        $servers = $result->{data}{servers} || [];
+        $servers =
+          [map { NP::Data::Server->new(%$_) } @{$result->{data}{servers} || []}];
     }
     $self->tpl_param('servers', $servers);
 

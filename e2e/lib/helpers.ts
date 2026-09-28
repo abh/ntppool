@@ -1,4 +1,4 @@
-import { Page, expect } from "@playwright/test";
+import { Locator, Page, expect } from "@playwright/test";
 
 /**
  * Append a cache buster, per CLAUDE.local.md's dev-site guidance. A fresh
@@ -198,4 +198,31 @@ export async function expectErrorAlert(
     const traceId = await getTraceId(page);
     expect(traceId, "error alert should include a Trace ID").not.toBeNull();
   }
+}
+
+/**
+ * Run an action that swaps `selector` (outerHTML), assert the fragment request
+ * returned 200, and wait for htmx to settle the replacement. A click inside
+ * the settle window lands on an element whose hx-* handlers aren't attached
+ * yet; see swapMonitorConfig in lib/monitors.ts. Returns a locator for the
+ * new fragment.
+ */
+export async function swapFragment(
+  page: Page,
+  selector: string,
+  path: string,
+  method: "GET" | "POST",
+  action: () => Promise<void>,
+): Promise<Locator> {
+  const fragment = page.locator(selector);
+  const oldFragment = await fragment.elementHandle();
+  expect(oldFragment).not.toBeNull();
+  const responsePromise = page.waitForResponse(
+    (response) => new URL(response.url()).pathname === path && response.request().method() === method,
+  );
+  await action();
+  expect((await responsePromise).status()).toBe(200);
+  await expect.poll(() => oldFragment!.evaluate((node) => node.isConnected)).toBe(false);
+  await expect(fragment).not.toHaveClass(/\bhtmx-added\b/);
+  return fragment;
 }

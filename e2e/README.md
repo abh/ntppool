@@ -149,8 +149,16 @@ Fresh accounts can add servers; `can_add_servers` turns false after two active
 unverified servers (scheduled servers don't count as active for that check).
 Servers use `198.51.100.0/24`, `203.0.113.0/24` and `2001:db8::/32`; monitors
 use `192.0.2.0/24` and `2001:db8::/32`. Allocation locks and uniqueness checks
-cover active attempts. Server fixtures seed no zones, score rows, log-score
-rows or monitor-review rows, and both publication flags are off.
+cover active attempts. Server fixtures seed no score rows, log-score rows or
+monitor-review rows, and both publication flags are off.
+
+A server seed can name a `zone` (for example `de`). The server joins that
+zone and its parents up to `.`, and the create response lists them in
+`zones`, root first. Without a `zone` the server is in no zone and `zones` is
+empty. Zoned fixture servers stay out of DNS and zone counts because they
+have `in_pool = 0` and score 0, but they do show up in staff `zone:`
+searches while they exist. Cleanup removes their zone rows. An unknown zone
+fails the create with "fixture zone does not exist".
 
 That initial state keeps fixtures out of the normal monitor and selector
 queues, but it isn't a permanent no-probe barrier. A concurrent devel monitor
