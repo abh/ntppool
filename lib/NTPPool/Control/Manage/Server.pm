@@ -192,8 +192,8 @@ sub handle_add {
             # Template expects similar structure - just pass through
             $server{zones} = $result->{zones};
 
-          # Find country zone (2-letter code, not root or subdivisions)
-          # Zones are ordered child → parent (e.g., ["us-ca", "us", "north-america", "@"])
+            # Find country zone (2-letter code, not root or subdivisions)
+            # Zones are ordered root first (e.g., [".", "@", "europe", "de"])
             for my $zone (@{$result->{zones}}) {
                 if (length($zone->{name}) == 2) {
                     $server{country_zone} = $zone;
