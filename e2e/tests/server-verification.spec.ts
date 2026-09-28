@@ -244,7 +244,7 @@ test("pending verification redirects into the owner's account and completes", as
   const logs = await getAccountAuditLogs(await staffSession(), fixture.accountToken);
   expect(logs).toContainEqual(expect.objectContaining({
     type: "server",
-    message: "Server verified",
+    message: `Server verified: ${server.ip}`,
     user: { userId: fixture.userId, email: fixture.email },
     server: { serverId: server.serverId, ip: server.ip },
     account: { accountToken: fixture.accountToken },
@@ -341,7 +341,7 @@ test("another account cannot complete the owner's verification", async ({ browse
   }
   expect((await getServer(fixture.sessionToken, fixture.accountToken, server.ip)).verification.verified).toBe(false);
   const logs = await getAccountAuditLogs(await staffSession(), fixture.accountToken);
-  expect(logs.some((log) => log.type === "server" && log.message === "Server verified" && log.server?.serverId === server.serverId)).toBe(false);
+  expect(logs.some((log) => log.type === "server" && log.message.startsWith("Server verified") && log.server?.serverId === server.serverId)).toBe(false);
 });
 
 for (const ipVersion of [4, 6] as const) {
