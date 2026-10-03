@@ -334,8 +334,11 @@ sub handle_add {
     }
 
     # Fetch zones via CAPI
-    my $zones_result =
-      list_zones($self->api_auth_params, account => $account->{id_token});
+    my $zones_result = list_zones(
+        $self->api_auth_params,
+        account   => $account->{id_token},
+        countries => JSON::XS::true,
+    );
 
     my @all_zones;
     if ($zones_result->{error}) {
@@ -344,12 +347,8 @@ sub handle_add {
         @all_zones = ();
     }
     else {
-        # Filter to 2-character zones (country codes) with DNS enabled
-        my @zones = grep { length($_->{name} // '') == 2 && $_->{dns} }
-          @{$zones_result->{data}{zones} || []};
-
-        # Sort by description
-        @all_zones = sort { $a->{description} cmp $b->{description} } @zones;
+        # The API returns DNS-enabled country zones sorted by description
+        @all_zones = @{$zones_result->{data}{zones} || []};
     }
     $self->tpl_param(all_zones => \@all_zones);
 

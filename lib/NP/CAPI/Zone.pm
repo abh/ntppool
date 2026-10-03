@@ -139,6 +139,9 @@ B<Arguments:>
         parent => $value,       # string - parent is the parent zone name to list children for (e.g., "@" for continents)
  If empty, returns top-level zones (continents + @ + .)
  Special values: "@" for continents, "." is invalid (has no children)
+        countries => $value,       # bool - countries, when true, returns the DNS-enabled country zones (two-letter
+ names such as "us" or "de") sorted by description, for country pickers.
+ Mutually exclusive with parent. When false, behavior is unchanged.
     );
 
 B<Returns:>
@@ -207,6 +210,7 @@ sub list_zones {
     # Extract request fields from args
     my %request = ();
     $request{'parent'} = delete $args{'parent'} if exists $args{'parent'};
+    $request{'countries'} = delete $args{'countries'} if exists $args{'countries'};
 
     return connect_rpc(
         service     => 'ntppool.zone.v1.ZoneService',
