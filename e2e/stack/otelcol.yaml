@@ -1,0 +1,25 @@
+# Accepts OTLP from the API and the Perl app and throws it away, so the
+# exporters in both have somewhere to send to. To keep the data, add a real
+# exporter and list it under each pipeline.
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+exporters:
+  nop:
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      exporters: [nop]
+    metrics:
+      receivers: [otlp]
+      exporters: [nop]
+    logs:
+      receivers: [otlp]
+      exporters: [nop]

@@ -41,6 +41,8 @@ variables:
     manage_tls: "yes"
     # The proxy also answers as stripe-gw; there are no aliases here.
     stripe_gw_service: http://proxy
+    # The otelcol step discards what it receives.
+    OTEL_EXPORTER_OTLP_ENDPOINT: http://otelcol:4318
 
   - &s3_settings
     access_key:
@@ -95,6 +97,13 @@ steps:
         done
         echo "postgres was not ready after 120s" >&2
         exit 1
+
+  # Takes the traces, metrics and logs of the API and the Perl app and drops
+  # them. No health check: an exporter that starts first just retries.
+  - name: otelcol
+    image: otel/opentelemetry-collector:0.162.0
+    detach: true
+    entrypoint: ["/otelcol", "--config=e2e/stack/otelcol.yaml"]
 
   # The API image has no root and no psql, so the seed script runs in three
   # parts: setup and publish here, the SQL in the postgres image.
