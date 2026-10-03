@@ -1,0 +1,329 @@
+{
+  "Products": [
+    {
+      "ID": "prod_HKAEosLuFsXC7c",
+      "Name": "Personal NTP Pool DNS Zone",
+      "Description": "DNS Zone for personal / hobby use",
+      "MinClients": 500,
+      "MaxClients": 500,
+      "MaxZones": 1,
+      "AnnualCostLow": 1900,
+      "AnnualCostHigh": 1900,
+      "Available": true,
+      "AnnualCost": 1900,
+      "Cost": 1900,
+      "CostDevices": 0,
+      "Metadata": {
+        "category": "personal",
+        "max_clients": "500",
+        "max_zones": "1"
+      },
+      "Plans": [
+        {
+          "Name": "Personal NTP Pool DNS Zone",
+          "ID": "price_1K2YDO2ZWuSKvxWMLdJLsrCv",
+          "MinClients": 500,
+          "MaxClients": 500,
+          "AnnualCostLow": 1900,
+          "AnnualCostHigh": 1900,
+          "MaxZones": 1,
+          "IntervalMonths": 12,
+          "Tiers": [
+            {
+              "PriceID": "price_1K2YDO2ZWuSKvxWMLdJLsrCv",
+              "MaxClients": 500,
+              "MaxZones": 1,
+              "AnnualCost": 1900,
+              "Cost": 1900
+            }
+          ],
+          "TiersMode": "",
+          "Available": true,
+          "AnnualCost": 1900,
+          "Cost": 1900,
+          "CostDevices": 0
+        }
+      ]
+    },
+    {
+      "ID": "prod_HMQZs0XgBEC1IH",
+      "Name": "Prototyping & Development",
+      "Description": "For use in development and QA only",
+      "MinClients": 5000,
+      "MaxClients": 5000,
+      "MaxZones": 1,
+      "AnnualCostLow": 8900,
+      "AnnualCostHigh": 11600,
+      "Available": true,
+      "AnnualCost": 8900,
+      "Cost": 8900,
+      "CostDevices": 0,
+      "Metadata": {
+        "category": "business",
+        "max_clients": "5000",
+        "max_zones": "1"
+      },
+      "Plans": [
+        {
+          "Name": "Prototyping & Development",
+          "ID": "price_1K2Ym32ZWuSKvxWMTmp2UJj8",
+          "MinClients": 5000,
+          "MaxClients": 5000,
+          "AnnualCostLow": 8900,
+          "AnnualCostHigh": 8900,
+          "MaxZones": 1,
+          "IntervalMonths": 12,
+          "Tiers": [
+            {
+              "PriceID": "price_1K2Ym32ZWuSKvxWMTmp2UJj8",
+              "MaxClients": 5000,
+              "MaxZones": 1,
+              "AnnualCost": 8900,
+              "Cost": 8900
+            }
+          ],
+          "TiersMode": "",
+          "Available": true,
+          "AnnualCost": 8900,
+          "Cost": 8900,
+          "CostDevices": 0
+        },
+        {
+          "Name": "Prototyping & Development",
+          "ID": "price_1KU6Qd2ZWuSKvxWMXrlZzKpv",
+          "MinClients": 5000,
+          "MaxClients": 5000,
+          "AnnualCostLow": 11600,
+          "AnnualCostHigh": 11600,
+          "MaxZones": 1,
+          "IntervalMonths": 3,
+          "Tiers": [
+            {
+              "PriceID": "price_1KU6Qd2ZWuSKvxWMXrlZzKpv",
+              "MaxClients": 5000,
+              "MaxZones": 1,
+              "AnnualCost": 11600,
+              "Cost": 2900
+            }
+          ],
+          "TiersMode": "",
+          "Available": true,
+          "AnnualCost": 11600,
+          "Cost": 2900,
+          "CostDevices": 0
+        }
+      ]
+    },
+    {
+      "ID": "prod_HKA6fe5hrRHM9c",
+      "Name": "Production",
+      "Description": "Production products & systems",
+      "MinClients": 5000,
+      "MaxClients": 1000000,
+      "MaxZones": 4,
+      "AnnualCostLow": 25000,
+      "AnnualCostHigh": 1200000,
+      "Available": true,
+      "AnnualCost": 25000,
+      "Cost": 25000,
+      "CostDevices": 0,
+      "Metadata": {
+        "category": "business",
+        "max_zones": "4"
+      },
+      "Plans": [
+        {
+          "Name": "Production (Annual)",
+          "ID": "price_1K2Yr92ZWuSKvxWM558s0yM4",
+          "MinClients": 5000,
+          "MaxClients": 1000000,
+          "AnnualCostLow": 25000,
+          "AnnualCostHigh": 1000000,
+          "MaxZones": 4,
+          "IntervalMonths": 12,
+          "Tiers": [
+            {
+              "PriceID": "price_1K2Yr92ZWuSKvxWM558s0yM4",
+              "MaxClients": 5000,
+              "MaxZones": 4,
+              "AnnualCost": 25000,
+              "Cost": 25000
+            },
+            {
+              "PriceID": "price_1K2Yr92ZWuSKvxWM558s0yM4",
+              "MaxClients": 10000,
+              "MaxZones": 4,
+              "AnnualCost": 40000,
+              "Cost": 40000
+            },
+            {
+              "PriceID": "price_1K2Yr92ZWuSKvxWM558s0yM4",
+              "MaxClients": 25000,
+              "MaxZones": 4,
+              "AnnualCost": 100000,
+              "Cost": 100000
+            },
+            {
+              "PriceID": "price_1K2Yr92ZWuSKvxWM558s0yM4",
+              "MaxClients": 100000,
+              "MaxZones": 4,
+              "AnnualCost": 200000,
+              "Cost": 200000
+            },
+            {
+              "PriceID": "price_1K2Yr92ZWuSKvxWM558s0yM4",
+              "MaxClients": 500000,
+              "MaxZones": 4,
+              "AnnualCost": 750000,
+              "Cost": 750000
+            },
+            {
+              "PriceID": "price_1K2Yr92ZWuSKvxWM558s0yM4",
+              "MaxClients": 1000000,
+              "MaxZones": 4,
+              "AnnualCost": 1000000,
+              "Cost": 1000000
+            }
+          ],
+          "TiersMode": "volume",
+          "Available": true,
+          "AnnualCost": 25000,
+          "Cost": 25000,
+          "CostDevices": 0
+        },
+        {
+          "Name": "Production (Quarterly)",
+          "ID": "price_1MgPVr2ZWuSKvxWMPE796sD1",
+          "MinClients": 5000,
+          "MaxClients": 1000000,
+          "AnnualCostLow": 32000,
+          "AnnualCostHigh": 1200000,
+          "MaxZones": 4,
+          "IntervalMonths": 3,
+          "Tiers": [
+            {
+              "PriceID": "price_1MgPVr2ZWuSKvxWMPE796sD1",
+              "MaxClients": 5000,
+              "MaxZones": 4,
+              "AnnualCost": 32000,
+              "Cost": 8000
+            },
+            {
+              "PriceID": "price_1MgPVr2ZWuSKvxWMPE796sD1",
+              "MaxClients": 10000,
+              "MaxZones": 4,
+              "AnnualCost": 50000,
+              "Cost": 12500
+            },
+            {
+              "PriceID": "price_1MgPVr2ZWuSKvxWMPE796sD1",
+              "MaxClients": 25000,
+              "MaxZones": 4,
+              "AnnualCost": 120000,
+              "Cost": 30000
+            },
+            {
+              "PriceID": "price_1MgPVr2ZWuSKvxWMPE796sD1",
+              "MaxClients": 100000,
+              "MaxZones": 4,
+              "AnnualCost": 240000,
+              "Cost": 60000
+            },
+            {
+              "PriceID": "price_1MgPVr2ZWuSKvxWMPE796sD1",
+              "MaxClients": 500000,
+              "MaxZones": 4,
+              "AnnualCost": 920000,
+              "Cost": 230000
+            },
+            {
+              "PriceID": "price_1MgPVr2ZWuSKvxWMPE796sD1",
+              "MaxClients": 1000000,
+              "MaxZones": 4,
+              "AnnualCost": 1200000,
+              "Cost": 300000
+            }
+          ],
+          "TiersMode": "volume",
+          "Available": true,
+          "AnnualCost": 32000,
+          "Cost": 8000,
+          "CostDevices": 0
+        }
+      ]
+    },
+    {
+      "ID": "prod_HLdD8dQz0WFS7c",
+      "Name": "Enterprise",
+      "Description": "NTP Pool DNS Zone - Enterprise",
+      "MinClients": 1000000,
+      "MaxClients": 100000000,
+      "MaxZones": 10,
+      "AnnualCostLow": 1150000,
+      "AnnualCostHigh": 10800000,
+      "Available": true,
+      "AnnualCost": 1150000,
+      "Cost": 1150000,
+      "CostDevices": 0,
+      "Metadata": {
+        "category": "enterprise",
+        "max_zones": "10",
+        "quantity_scale": "1"
+      },
+      "Plans": [
+        {
+          "Name": "Enterprise (Enterprise Plan)",
+          "ID": "price_1MmQZP2ZWuSKvxWMo4I79PWE",
+          "MinClients": 1000000,
+          "MaxClients": 100000000,
+          "AnnualCostLow": 1150000,
+          "AnnualCostHigh": 10800000,
+          "MaxZones": 10,
+          "IntervalMonths": 12,
+          "Tiers": [
+            {
+              "PriceID": "price_1MmQZP2ZWuSKvxWMo4I79PWE",
+              "MaxClients": 1000000,
+              "MaxZones": 10,
+              "AnnualCost": 1150000,
+              "Cost": 1150000
+            },
+            {
+              "PriceID": "price_1MmQZP2ZWuSKvxWMo4I79PWE",
+              "MaxClients": 5000000,
+              "MaxZones": 10,
+              "AnnualCost": 2350000,
+              "Cost": 2350000
+            },
+            {
+              "PriceID": "price_1MmQZP2ZWuSKvxWMo4I79PWE",
+              "MaxClients": 30000000,
+              "MaxZones": 10,
+              "AnnualCost": 6100000,
+              "Cost": 6100000
+            },
+            {
+              "PriceID": "price_1MmQZP2ZWuSKvxWMo4I79PWE",
+              "MaxClients": 50000000,
+              "MaxZones": 10,
+              "AnnualCost": 7800000,
+              "Cost": 7800000
+            },
+            {
+              "PriceID": "price_1MmQZP2ZWuSKvxWMo4I79PWE",
+              "MaxClients": 100000000,
+              "MaxZones": 10,
+              "AnnualCost": 10800000,
+              "Cost": 10800000
+            }
+          ],
+          "TiersMode": "graduated",
+          "Available": true,
+          "AnnualCost": 1150000,
+          "Cost": 1150000,
+          "CostDevices": 0
+        }
+      ]
+    }
+  ]
+}

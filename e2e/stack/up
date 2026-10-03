@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+set -euo pipefail
+. "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
+
+if ! docker info >/dev/null 2>&1; then
+    echo "docker is not reachable: start OrbStack (or Docker) and retry" >&2
+    exit 1
+fi
+
+API_IMAGE=$(api_image)
+export API_IMAGE
+
+# Random per stack; the Perl app only needs them non-empty.
+ACCOUNT_ID_KEY=$(openssl rand -hex 16)
+VENDOR_ZONE_ID_KEY=$(openssl rand -hex 16)
+export ACCOUNT_ID_KEY VENDOR_ZONE_ID_KEY
+
+# The ntppool image builds from the repo root, which needs its submodules.
+# Captured first: in a pipeline under pipefail a failing git would read as
+# "all initialised".
+submodules=$(git -C "$STACK_DIR" submodule status)
+if grep -q '^-' <<<"$submodules"; then
+    echo "git submodules are not initialised: run 'git submodule update --init'" >&2
+    exit 1
+fi
+
+# Always start from nothing: a second run must not hit the previous seed.
+"$STACK_DIR/down"
+
+build_log=$(mktemp)
+trap 'rm -f "$build_log"' EXIT
+if ! compose build ntppool 2>&1 | tee "$build_log"; then
+    if grep -q 'harbor\.ntppool\.org' "$build_log"; then
+        echo "run: docker login harbor.ntppool.org" >&2
+    fi
+    echo "building the ntppool image failed" >&2
+    exit 1
+fi
+
+if ! compose up -d postgres seed api; then
+    echo "compose up failed; service logs follow" >&2
+    compose logs --no-color >&2 || true
+    exit 1
+fi
+
+# Surface a failed seed with its own logs instead of waiting for api to time out.
+seed_deadline=$((SECONDS + 180))
+while :; do
+    seed_id=$(compose ps -a -q seed)
+    seed_state=$(docker inspect -f '{{.State.Status}} {{.State.ExitCode}}' "$seed_id")
+    case $seed_state in
+    "exited 0") break ;;
+    exited*)
+        echo "seed failed ($seed_state)" >&2
+        compose logs --no-color seed >&2
+        exit 1
+        ;;
+    esac
+    if [ "$SECONDS" -ge "$seed_deadline" ]; then
+        echo "seed did not finish in 180s ($seed_state)" >&2
+        compose logs --no-color seed >&2
+        exit 1
+    fi
+    sleep 1
+done
+
+wait_healthy api 120
+
+# --no-deps: without it compose would start the finished seed service again
+# (ntppool -> api -> seed) and the seed SQL would fail on duplicate keys.
+for service in ntppool proxy; do
+    if ! compose up -d --no-deps "$service"; then
+        echo "compose up $service failed; service logs follow" >&2
+        compose logs --no-color >&2 || true
+        exit 1
+    fi
+    wait_healthy "$service" 300
+done
+echo "stack is up: api on http://127.0.0.1:4211/int/rpc, web and manage via https://127.0.0.1:8443"

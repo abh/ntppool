@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { loginAs, uniqueTestEmail } from "../lib/auth";
 
-test("minted user lands on the manage dashboard", async ({ page, context }) => {
+test("minted user lands on the manage dashboard", { tag: "@smoke" }, async ({ page, context }) => {
   const email = uniqueTestEmail();
   await loginAs(context, email);
 

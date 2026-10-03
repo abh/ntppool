@@ -145,7 +145,7 @@ async function staffSession(): Promise<string> {
   });
 }
 
-test("pending verification redirects into the owner's account and completes", async ({ page, context, fixtures }) => {
+test("pending verification redirects into the owner's account and completes", { tag: "@smoke" }, async ({ page, context, fixtures }) => {
   const fixture = await fixtures.create({ servers: [{ ipVersion: 4, pendingVerification: true }] });
   const server = fixture.servers[0];
   const path = verificationPath(server.verificationToken);

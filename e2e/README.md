@@ -1,6 +1,6 @@
 # ntppool E2E tests
 
-Playwright end-to-end tests that drive the live dev site as a logged-in user
+Playwright end-to-end tests that drive the site as a logged-in user
 without going through Auth0. Login works by minting a real session token with
 the api-dev binary's `api e2e session` command (reached through
 `NTP_API_CLI`), then setting it as the browser `npuid` session cookie.
@@ -18,17 +18,36 @@ npm install
 npx playwright install chromium
 ```
 
+## Targets
+
+`E2E_TARGET` picks where the suite runs. `lib/target.ts` owns the defaults for
+each target; any `NTP_*` variable you set explicitly wins over them, and global
+setup prints the target and URLs it resolved.
+
+- `stack` (the default) is the throwaway compose stack in `e2e/stack/`
+  (postgres, API, Perl app, Caddy). Start it with `e2e/stack/up` and run the
+  suite with `e2e/stack/test`; `e2e/stack/down` removes it. The stack sets all
+  `NTP_*` values itself, so no `.env` is needed. It uses `*.ntppool.test`
+  names behind Caddy's own CA, so the browser ignores HTTPS errors, and it
+  skips the Stripe checkout spec unless `E2E_STRIPE` is set.
+- `askdev` is the shared dev site. Put `E2E_TARGET=askdev` in `e2e/.env`, plus
+  `NTP_INTERNAL_API_URL` and `NTP_API_CLI` (see below), and run `npm test`.
+  `NTP_BASE_URL` and `NTP_MANAGE_URL` default to the askdev hosts.
+
+An unknown `E2E_TARGET` is an error.
+
 ## Configuration
 
-Copy `.env.example` to `.env` and fill in the values:
+For `askdev`, copy `.env.example` to `.env` and fill in the values:
 
-- `NTP_BASE_URL` — dev site under test (default
+- `E2E_TARGET` — `stack` (default) or `askdev`.
+- `NTP_BASE_URL` — site under test (default from the target; askdev:
   `https://web.askdev.grundclock.com`).
-- `NTP_MANAGE_URL` — authenticated dev management site (default
-  `https://manage.askdev.grundclock.com`). Global setup requires this value so
-  every tested surface is explicit.
-- `NTP_INTERNAL_API_URL` — base URL of the internal Go API, reachable over
-  Tailscale, for API reads (`GetSettings`, `GetServer`, `GetAccountAuditLogs`,
+- `NTP_MANAGE_URL` — authenticated management site (default from the target;
+  askdev: `https://manage.askdev.grundclock.com`). This is a separate site from
+  `NTP_BASE_URL`, so `lib/auth.ts` has no fallback of its own.
+- `NTP_INTERNAL_API_URL` — base URL of the internal Go API (askdev: reachable
+  over Tailscale; stack: `http://api:4211/int/rpc`), for API reads (`GetSettings`, `GetServer`, `GetAccountAuditLogs`,
   `GetAccount`). Must include the `/int/rpc` prefix the ConnectRPC services
   are mounted under (e.g. `http://api-internal.example.ts.net/int/rpc`), with
   no trailing slash. The harness appends the procedure path.

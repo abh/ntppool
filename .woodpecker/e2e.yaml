@@ -1,0 +1,235 @@
+# Runs the Playwright suite against a throwaway stack: the same pieces as
+# e2e/stack/compose.yaml, as a postgres service plus detached steps. Keep the
+# environment lists below in step with that file.
+#
+# Woodpecker facts this relies on (see the 2026-09-29 CI spike notes):
+# - services and detached steps are reachable by their name; nothing waits for
+#   them to be ready, so the wait-stack step polls;
+# - the workspace is shared between steps; ${CI_WORKSPACE} is empty here, so
+#   paths are relative to the working directory;
+# - ${VAR} anywhere in this file is substituted before the pipeline starts,
+#   so shell variables in commands are written without braces.
+
+# No pull_request: the harbor and s3 secrets are not available to that event,
+# and the build workflow it depends on needs them to push the image. A pull
+# request is covered by the push pipeline of its branch.
+when:
+  - event: [push, manual]
+
+depends_on: [build]
+
+variables:
+  # Woodpecker cannot read an image name from a file, so the API image pin is
+  # written here as the default of API_IMAGE (a pipeline variable overrides it)
+  # and also lives in e2e/stack/api-image for the local stack. check-api-pin
+  # fails if the two differ. Bump both together.
+  - &api_image ${API_IMAGE:-harbor.ntppool.org/ntporg/api-dev:sha-c3bbfb6b}
+
+  # The API CLI (`api e2e ...`) and the API itself talk to the database.
+  - &db_env
+    deployment_mode: devel
+    DATABASE_URI: postgres://ntppool:ntppool@postgres:5432/ntppool?sslmode=disable
+    pool_domain: test.pool.ntp.org
+
+  # Site settings the API and the Perl app share.
+  - &site_env
+    deployment_mode: devel
+    pool_domain: test.pool.ntp.org
+    web_hostname: web.ntppool.test
+    manage_hostname: manage.ntppool.test
+    web_tls: "yes"
+    manage_tls: "yes"
+    # The proxy also answers as stripe-gw; there are no aliases here.
+    stripe_gw_service: http://proxy
+
+  - &s3_settings
+    access_key:
+      from_secret: s3_access_key
+    secret_key:
+      from_secret: s3_secret_key
+    bucket: ntppool-ci
+    target: /e2e/${CI_PIPELINE_NUMBER}
+    strip_prefix: e2e/
+    endpoint: https://c3.hkga.ntp.dev/
+    path_style: true
+
+services:
+  - name: postgres
+    image: postgres:18
+    environment:
+      POSTGRES_USER: ntppool
+      POSTGRES_PASSWORD: ntppool
+      POSTGRES_DB: ntppool
+
+steps:
+  - name: check-api-pin
+    image: alpine:3.22
+    environment:
+      RUN_API_IMAGE: *api_image
+    commands:
+      # The api and ntppool steps run as non-root users.
+      - mkdir -p logs apibin caddydata
+      - chmod 777 logs apibin caddydata
+      # The default in the &api_image anchor, read from this file as committed.
+      - pin=$(sed -n 's/^  - &api_image .*API_IMAGE:-\(.*\)}$/\1/p' .woodpecker/e2e.yaml)
+      - filepin=$(cat e2e/stack/api-image)
+      - 'echo "API image for this run: $RUN_API_IMAGE"'
+      - |
+        if [ -z "$pin" ]; then
+          echo "could not read the &api_image default from .woodpecker/e2e.yaml" >&2
+          exit 1
+        fi
+        if [ "$pin" != "$filepin" ]; then
+          echo "api image pin drift: .woodpecker/e2e.yaml has $pin but e2e/stack/api-image has $filepin" >&2
+          echo "update both to the same image" >&2
+          exit 1
+        fi
+
+  - name: postgres-ready
+    image: postgres:18
+    commands:
+      - |
+        for i in $(seq 1 60); do
+          pg_isready -h postgres -U ntppool -d ntppool && exit 0
+          sleep 2
+        done
+        echo "postgres was not ready after 120s" >&2
+        exit 1
+
+  # The API image has no root and no psql, so the seed script runs in three
+  # parts: setup and publish here, the SQL in the postgres image.
+  - name: seed-setup
+    image: *api_image
+    environment:
+      <<: [*db_env, *site_env]
+    commands:
+      - export STACK_DIR="$PWD/e2e/stack" APIBIN="$PWD/apibin"
+      - /bin/sh e2e/stack/seed setup
+      - /bin/sh e2e/stack/seed publish
+
+  - name: seed-sql
+    image: postgres:18
+    environment:
+      <<: [*db_env, *site_env]
+    commands:
+      - export STACK_DIR="$PWD/e2e/stack"
+      - /bin/sh e2e/stack/seed sql
+
+  - name: api
+    image: *api_image
+    detach: true
+    environment:
+      <<: [*db_env, *site_env]
+    commands:
+      - /app/api internal 2>&1 | tee logs/api.log
+
+  - name: proxy
+    image: caddy:2
+    detach: true
+    commands:
+      # The Caddyfile serves the stripe-gw stub from /stripe-stub.
+      - ln -s "$PWD/e2e/stack/stripe-stub" /stripe-stub
+      - export XDG_DATA_HOME="$PWD/caddydata"
+      - caddy run --config e2e/stack/Caddyfile --adapter caddyfile 2>&1 | tee logs/proxy.log
+
+  - name: ntppool
+    image: harbor.ntppool.org/ntppool/ntppool:sha-${CI_COMMIT_SHA:0:8}
+    detach: true
+    environment:
+      <<: *site_env
+      api-internal: http://api:4211/
+      static_base: /static/
+      httpd_maxclients: "6"
+      email_default: support@ntppool.test
+      email_support: support@ntppool.test
+      email_help: help@ntppool.test
+      email_vendors: vendors@ntppool.test
+      email_notifications: notifications@ntppool.test
+      # Random-looking test values; the app only needs them non-empty.
+      account_id_key: 6f1c2a9e4b7d83a05c1e92f7d4a6b830
+      vendor_zone_id_key: b3d95e07a1c24f68e0a7c13d59f2b684
+      auth0_domain: ""
+      auth0_client: ""
+      auth0_secret: ""
+    commands:
+      - ws="$PWD"
+      - cd /ntppool
+      - ./docker/entrypoint ./docker-run 2>&1 | tee "$ws/logs/ntppool.log"
+
+  # The Playwright image (glibc) is used for the probes: busybox wget in alpine
+  # (musl) could not resolve the ntppool step's name although nslookup could.
+  - name: wait-stack
+    image: mcr.microsoft.com/playwright:v1.60.0-noble
+    commands:
+      - |
+        wait_for() {
+          name=$1; shift
+          for i in $(seq 1 90); do
+            out=$("$@" 2>&1) && { echo "$name is ready"; return 0; }
+            sleep 2
+          done
+          echo "$name was not ready after 180s: $*" >&2
+          echo "last attempt: $out" >&2
+          return 1
+        }
+      - |
+        wait_for api curl -fsS --max-time 5 http://api:4290/health/ready
+        wait_for ntppool curl -fsS --max-time 5 -o /dev/null -H "Host: web.ntppool.test" -H "X-Forwarded-Proto: https" http://ntppool:8299/en/
+        ip=$(getent hosts proxy | awk '{print $1}')
+        echo "$ip web.ntppool.test manage.ntppool.test" >> /etc/hosts
+        wait_for proxy curl -fsS --max-time 5 -k -o /dev/null https://manage.ntppool.test/
+        wait_for caddy-root-ca test -s caddydata/caddy/pki/authorities/local/root.crt
+
+  - name: test
+    image: mcr.microsoft.com/playwright:v1.60.0-noble
+    # The URLs and the internal API come from the stack defaults in
+    # e2e/lib/target.ts.
+    environment:
+      <<: *db_env
+      E2E_TARGET: stack
+    commands:
+      - export NTP_API_CLI="$PWD/apibin/api"
+      - export NODE_EXTRA_CA_CERTS="$PWD/caddydata/caddy/pki/authorities/local/root.crt"
+      - ip=$(getent hosts proxy | awk '{print $1}')
+      - echo "$ip web.ntppool.test manage.ntppool.test stripe-gw" >> /etc/hosts
+      - cd e2e
+      - npm ci
+      # Playwright defaults to one worker per two node CPUs; 28 Chromium
+      # workers OOM-killed the pod (exit 137). Match the local run instead.
+      - npx playwright test --workers=4
+
+  - name: upload-report
+    image: woodpeckerci/plugin-s3
+    when:
+      - event: [push, manual]
+        status: [success, failure]
+    settings:
+      <<: *s3_settings
+      source: e2e/playwright-report/**/*
+
+  # Traces and screenshots: only a failing run has any.
+  - name: upload-test-results
+    image: woodpeckerci/plugin-s3
+    when:
+      - event: [push, manual]
+        status: failure
+    settings:
+      <<: *s3_settings
+      source: e2e/test-results/**/*
+
+  - name: collect-logs
+    # glibc, like wait-stack: alpine's musl lookups miss the step names.
+    image: mcr.microsoft.com/playwright:v1.60.0-noble
+    when:
+      - status: failure
+    commands:
+      - |
+        for f in logs/*.log; do
+          echo "=== $f (last 200 lines) ==="
+          tail -n 200 "$f"
+        done
+      - |
+        for name in postgres api proxy ntppool; do
+          echo "=== $name resolves to: $(getent hosts $name | head -1)"
+        done
+      - curl -fsS --max-time 5 http://api:4290/health/ready || echo "api health check failed"

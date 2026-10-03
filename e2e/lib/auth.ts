@@ -203,8 +203,19 @@ export async function getAccountNumericId(
 // (the deployed config sets no cookie_domain, so plain_cookie falls back to the
 // request host), so it must be installed for the manage host or it never
 // reaches the app under test.
-export const MANAGE_URL =
-  process.env.NTP_MANAGE_URL || "https://manage.askdev.grundclock.com";
+// There is no default here: lib/target.ts fills NTP_MANAGE_URL from the target
+// before Playwright loads any spec.
+function requireManageUrl(): string {
+  const url = process.env.NTP_MANAGE_URL;
+  if (!url) {
+    throw new Error(
+      "NTP_MANAGE_URL is not set; playwright.config.ts sets it from the E2E_TARGET defaults",
+    );
+  }
+  return url;
+}
+
+export const MANAGE_URL = requireManageUrl();
 
 function manageHost(): string {
   // hostname (not host) so a non-default port never leaks into the cookie domain.

@@ -55,7 +55,7 @@ async function savePerServerLimit(page: Page, value: string) {
   await saveMonitorConfig(page);
 }
 
-test("monitor admin changes the per-server limit and restores Default (1)", async ({
+test("monitor admin changes the per-server limit and restores Default (1)", { tag: "@smoke" }, async ({
   page,
   context,
 }) => {

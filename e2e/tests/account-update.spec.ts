@@ -73,7 +73,7 @@ function uniqueSlug(prefix = "e2e"): string {
   return `${prefix}-${rand}`.slice(0, 32);
 }
 
-test("update account name saves and persists", async ({ page, context }) => {
+test("update account name saves and persists", { tag: "@smoke" }, async ({ page, context }) => {
   await loginAs(context, uniqueTestEmail("acct-update-name"));
 
   await expectCleanPage(page, accountUrl());

@@ -1,0 +1,4 @@
+Responses captured read-only from askdev's stripe-gw on 2026-10-01.
+GET /api/v1/products?quantity=0&zones=1 -> api/v1/products.json
+The stub ignores the query string. The Enterprise price (AnnualCost) varies
+with quantity in the real gateway; this file is the quantity=0 answer.

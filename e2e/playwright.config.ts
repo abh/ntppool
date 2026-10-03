@@ -1,12 +1,16 @@
 import "dotenv/config";
 import { defineConfig, devices } from "@playwright/test";
+import { applyTargetDefaults } from "./lib/target";
 
 // Public pages live on the web host; the authenticated /manage app is a
 // separate Combust site on the manage host. Each project pins its own baseURL
 // so specs keep using relative goto() paths.
-const webURL = process.env.NTP_BASE_URL || "https://web.askdev.grundclock.com";
-const manageURL =
-  process.env.NTP_MANAGE_URL || "https://manage.askdev.grundclock.com";
+//
+// The target (E2E_TARGET, default "stack") supplies the URL defaults and the
+// browser context options; it must run before any NTP_* variable is read.
+const target = applyTargetDefaults(process.env);
+const webURL = process.env.NTP_BASE_URL!;
+const manageURL = process.env.NTP_MANAGE_URL!;
 
 // Specs that exercise public, unauthenticated pages on the web host. Everything
 // else is an authenticated /manage flow and runs against the manage host.
@@ -33,6 +37,7 @@ export default defineConfig({
   // (npm run report) is far easier to read for failures (traces, diffs).
   reporter: [["list"], ["html", { open: "never" }]],
   use: {
+    ...target.contextOptions,
     trace: "on-first-retry",
   },
   projects: [

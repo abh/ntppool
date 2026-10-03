@@ -4,7 +4,7 @@ import { bust } from "../lib/helpers";
 import { expect, test } from "../lib/fixtures";
 import { getServer, serverListUrl, submitAdd } from "../lib/servers";
 
-test("re-adding an active server to its own account says it is already registered", async ({ page, context, fixtures }) => {
+test("re-adding an active server to its own account says it is already registered", { tag: "@smoke" }, async ({ page, context, fixtures }) => {
   const fixture = await fixtures.create({ servers: [{ ipVersion: 4, verified: true }] });
   const server = fixture.servers[0];
   await installSession(context, fixture.sessionToken);

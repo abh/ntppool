@@ -6,6 +6,7 @@ import {
   requireDevelEnvironmentHeader,
   requireDevelSettings,
 } from "./lib/deployment";
+import { applyTargetDefaults } from "./lib/target";
 
 // Run once before the whole suite. Validates configuration and proves we can
 // actually mint a session, so a misconfigured run fails immediately with ONE
@@ -22,6 +23,14 @@ export default async function globalSetup() {
         "Remove it from the environment and from e2e/.env.",
     );
   }
+
+  // playwright.config.ts already applied the defaults (lib/auth reads
+  // NTP_MANAGE_URL when it is imported above); this call only returns the
+  // target, and applying again changes nothing.
+  const target = applyTargetDefaults(process.env);
+  console.log(
+    `e2e target ${target.name}: ${process.env.NTP_BASE_URL} ${process.env.NTP_MANAGE_URL}`,
+  );
 
   const required = [
     "NTP_BASE_URL",
@@ -50,7 +59,7 @@ export default async function globalSetup() {
   if (/(^|\.)example\./.test(internalHost) || internalHost.includes(".example")) {
     throw new Error(
       `NTP_INTERNAL_API_URL is still the placeholder (${internal}).\n` +
-        `Point it at the real internal Go API (Tailscale-reachable). See e2e/README.md.`,
+        `Point it at the real internal Go API (for askdev, Tailscale-reachable). See e2e/README.md.`,
     );
   }
 
@@ -101,7 +110,7 @@ export default async function globalSetup() {
   // opaque per-test failures.
   const browser = await chromium.launch();
   try {
-    const context = await browser.newContext();
+    const context = await browser.newContext(target.contextOptions);
     const { email } = await loginAs(context, uniqueTestEmail("e2e-preflight"));
 
     const page = await context.newPage();

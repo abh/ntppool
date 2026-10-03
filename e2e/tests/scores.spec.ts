@@ -12,13 +12,21 @@ import { expectCleanPage, expectNoErrorBleed } from "../lib/helpers";
 // NTP_SCORES_TEST_IP to a known-good dev server IP if the default is removed.
 const SCORES_IP = process.env.NTP_SCORES_TEST_IP || "216.239.35.4";
 
+// The PNG graphs come from screensnap, which the stack does not run.
+// playwright.config.ts resolves E2E_TARGET (default "stack") before this loads.
+const skipWithoutScreensnap = [
+  process.env.E2E_TARGET === "stack",
+  "screensnap not in stack (follow-up: spec 'Not in scope', screensnap)",
+] as const;
+
 test.describe("score graphs / PNG endpoints", () => {
-  test("/scores/<ip> renders the public score page", async ({ page }) => {
+  test("/scores/<ip> renders the public score page", { tag: "@smoke" }, async ({ page }) => {
     // 200 + no Perl/ORM error bleed. A real server renders its score page.
     await expectCleanPage(page, `/scores/${SCORES_IP}`);
   });
 
   test("offset.png returns a PNG image", async ({ page }) => {
+    test.skip(...skipWithoutScreensnap);
     // The graph image rendered on /scores/<ip> is served by Graph.pm at
     // /graph/<ip>/offset.png (NP::Data::Server->graph_uri), which returns the
     // bytes directly as image/png. NOTE: the literal path /scores/<ip>/offset.png
@@ -62,6 +70,7 @@ test.describe("score graphs / PNG endpoints", () => {
   test("legacy /scores/graph/<id>-offset.png redirects to the PNG", async ({
     page,
   }) => {
+    test.skip(...skipWithoutScreensnap);
     // The score page links the legacy graph as /scores/graph/<id>-offset.png;
     // Scores.pm 301-redirects that to /graph/<ip>/offset.png. We can't know the
     // numeric server id from the IP without an API call, so drive it the way the

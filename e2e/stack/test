@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Run the Playwright suite in the stack's network; arguments go to
+# `npx playwright test`, for example: e2e/stack/test --grep @smoke
+set -euo pipefail
+. "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
+
+if [ -z "$(compose_existing ps -q --status running proxy)" ]; then
+    echo "stack is not running: run e2e/stack/up first" >&2
+    exit 1
+fi
+
+# --no-deps: the dependency chain reaches the finished seed service, and
+# compose would run it again.
+compose_existing run --rm --no-deps playwright "$@"

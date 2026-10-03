@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+. "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
+
+# --profile test also removes the playwright service's node_modules volume.
+compose_existing --profile test down -v --remove-orphans
