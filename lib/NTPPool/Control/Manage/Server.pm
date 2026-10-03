@@ -217,7 +217,9 @@ sub handle_add {
     for my $server (@servers) {
         if (!$server->{country_zone}) {
             $server->{data_missing} ||= 'Country not specified'
-              if !$server->{error} and $self->req_param('yes');
+              if !$server->{error}
+              and $self->req_param('yes')
+              and !$self->req_param('explicit_zone_' . $server->{ip});
         }
     }
 
@@ -261,29 +263,40 @@ sub handle_add {
             return OK, $self->evaluate_template('tpl/manage/add.html');
         }
 
-        # Match results to original servers
+        # Match results to the submitted servers by IP; the API returns one
+        # result per requested server.
+        my %result_for = map { $_->{ip} => $_ } @{$result->{data}{results} || []};
         my @added;
-        my $s;
-        my $result_idx      = 0;
         my $base_scores_url = $self->config->base_url('ntppool') . '/scores/';
 
         for my $server (@servers) {
             next if $server->{error} or $server->{listed};
 
-            my $api_result = $result->{data}{results}[$result_idx++];
-            if ($api_result->{success}) {
+            my $api_result = $result_for{$server->{ip}};
+            if ($api_result and $api_result->{success}) {
+                my $s = NP::Data::Server->new(%{$api_result->{server}});
                 $server->{id}                 = $api_result->{server}{id};
                 $server->{scores_url}         = $base_scores_url . $server->{ip};
                 $server->{deletion_cancelled} = $api_result->{deletion_cancelled} ? 1 : 0;
-                $s = NP::Data::Server->new(%{$api_result->{server}});
+                $server->{added}              = 1;
+                $server->{manage_url}         = $self->manage_url($s->manage_url);
                 push @added, $server;
+                next;
             }
+
+            my $error = $api_result && $api_result->{error};
+            warn "AddServer did not add $server->{ip}: "
+              . ($error // 'no result')
+              . " (trace: "
+              . ($result->{trace_id} // '') . ")";
+            $server->{error} = $error || "The server wasn't added";
         }
 
-        $self->tpl_param(servers => \@added);
+        # The servers template param is still \@servers; add_email.txt and
+        # add.html skip or flag every server that has an error.
         $self->tpl_param('comment', $comment);
 
-        if ($comment) {
+        if ($comment and @added) {
             my $msg = $self->evaluate_template('tpl/manage/add_email.txt');
             my $email =
               Email::Stuffer->from(NP::Email::address("sender"))
@@ -311,8 +324,13 @@ sub handle_add {
             warn Data::Dumper->Dump([\$msg, \$email, \$return], [qw(msg email return)]);
         }
 
-        my $next = $s ? $s->manage_url : "/manage/servers";
-        return $self->redirect($self->manage_url($next));
+        if (@added < @servers_to_add) {
+            $self->tpl_param(allow_submit => 0);
+            return OK, $self->evaluate_template('tpl/manage/add.html');
+        }
+
+        return $self->redirect(
+            @added ? $added[-1]{manage_url} : $self->manage_url('/manage/servers'));
     }
 
     # Fetch zones via CAPI

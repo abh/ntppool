@@ -1,19 +1,13 @@
 import { installSession, mintSession, uniqueTestEmail } from "../lib/auth";
 import { resolveDefaultAccountToken } from "../lib/accounts";
 import { bust } from "../lib/helpers";
-import { expect, test, type Fixture } from "../lib/fixtures";
-import { getAccountAuditLogs, getServer, humanDate, serverDeleteUrl } from "../lib/servers";
+import { expect, test } from "../lib/fixtures";
+import { assertDeletionOn, getAccountAuditLogs, getServer, humanDate, serverDeleteUrl } from "../lib/servers";
 
 const FORM = 'form[action="/manage/server/delete"]';
 
 async function staffSession(): Promise<string> {
   return mintSession(uniqueTestEmail("deletion-audit-staff"), { grantStaff: true });
-}
-
-async function assertDeletionOn(fixture: Fixture, index: number, value: string) {
-  const server = fixture.servers[index];
-  const deletionOn = (await getServer(fixture.sessionToken, fixture.accountToken, server.ip)).deletionOn;
-  expect(deletionOn).toBe(value);
 }
 
 test("scheduling deletion persists the selected date", async ({ page, context, fixtures }) => {

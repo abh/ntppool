@@ -18,6 +18,8 @@ export interface ServerSeed {
   verified?: boolean;
   pendingVerification?: boolean;
   scheduledDeletion?: boolean;
+  /** Already deleted: deletion date 2020-01-01. Not combinable with scheduledDeletion. */
+  deleted?: boolean;
   netspeed?: number;
   /** Joins this zone and its parents, for example "de". */
   zone?: string;
@@ -129,6 +131,9 @@ function normalizeServers(seeds: ServerSeed[]): NormalizedServer[] {
     if (seed.verified && seed.pendingVerification) {
       throw new Error(`server seed ${index} cannot be verified and pending`);
     }
+    if (seed.deleted && seed.scheduledDeletion) {
+      throw new Error(`server seed ${index} cannot be deleted and scheduled for deletion`);
+    }
     if (seed.zone === "") {
       throw new Error(`server seed ${index} has an empty zone`);
     }
@@ -200,7 +205,8 @@ function parseServer(value: unknown, index: number, want: NormalizedServer): Fix
     throw new Error(`${label} verification token state mismatched`);
   }
   const deletionOn = stringField(item.deletion_on ?? "", `${label} deletion_on`, true);
-  if (deletionOn !== (want.scheduledDeletion ? "2099-01-01" : "")) {
+  const wantDeletionOn = want.deleted ? "2020-01-01" : want.scheduledDeletion ? "2099-01-01" : "";
+  if (deletionOn !== wantDeletionOn) {
     throw new Error(`${label} deletion state mismatched`);
   }
   const netspeed = intField(item.netspeed, `${label} netspeed`);
@@ -290,6 +296,7 @@ async function createFixture(attemptId: string, seed: FixtureSeed): Promise<Fixt
       verified: server.verified ?? false,
       pending_verification: server.pendingVerification ?? false,
       scheduled_deletion: server.scheduledDeletion ?? false,
+      deleted: server.deleted ?? false,
       netspeed: server.netspeed,
       ...(server.zone ? { zone: server.zone } : {}),
     })),

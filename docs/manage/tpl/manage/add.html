@@ -28,6 +28,14 @@
         <tt><b>[% server.ip %]</b></tt><br />
 
 
+        [% IF server.added %]
+        <div class="alert alert-info">
+            [% server.ip %] was added. <a href="[% server.manage_url | html %]">Manage it</a>.
+        </div>
+    </div> [% # server info div %]
+    [% NEXT; END %]
+
+
         [% IF server.listed %]
         <div class="alert alert-info">
             [% server.ip %] is already registered in the system.

@@ -1,6 +1,6 @@
-import type { Locator, Page } from "@playwright/test";
+import { expect, type Locator, type Page, type Response } from "@playwright/test";
 import { connectRpc } from "./auth";
-import type { FixtureServer } from "./fixtures";
+import type { Fixture, FixtureServer } from "./fixtures";
 import { swapFragment } from "./helpers";
 import { boolField, idField, intField, record, stringField } from "./json";
 
@@ -147,4 +147,39 @@ export async function getValidationServer(ipVersion: 4 | 6): Promise<string> {
     "validation setting",
   );
   return stringField(validation[`server_v${ipVersion}`], `validation setting server_v${ipVersion}`);
+}
+
+export const ADD_FORM = 'form[action="/manage/server/add#add"]';
+
+// The precheck answers without querying NTP for a server that is already
+// registered and, on devel, for a fixture IP of the same run, so this works
+// with fixture IPs that never answer.
+export async function submitAdd(page: Page, ip: string): Promise<void> {
+  const form = page.locator(ADD_FORM);
+  await form.locator('input[name="host"]').fill(ip);
+  await Promise.all([
+    page.waitForURL((url) => url.pathname === "/manage/server/add"),
+    form.locator('[type="submit"]').click(),
+  ]);
+}
+
+/**
+ * Picks the country for ip on the confirm page, optionally adds a comment and
+ * submits. Returns the response to the POST to /manage/server/add, whatever
+ * the outcome, so callers assert the redirect or the error page themselves.
+ */
+export async function confirmAdd(page: Page, ip: string, zone: string, comment?: string): Promise<Response> {
+  await page.locator(`select[name="explicit_zone_${ip}"]`).selectOption(zone);
+  if (comment !== undefined) await page.locator('textarea[name="comment"]').fill(comment);
+  const [response] = await Promise.all([
+    page.waitForResponse((response) => new URL(response.url()).pathname === "/manage/server/add" && response.request().method() === "POST"),
+    page.locator('input[name="yes"]').click(),
+  ]);
+  return response;
+}
+
+export async function assertDeletionOn(fixture: Fixture, index: number, value: string): Promise<void> {
+  const server = fixture.servers[index];
+  const deletionOn = (await getServer(fixture.sessionToken, fixture.accountToken, server.ip)).deletionOn;
+  expect(deletionOn).toBe(value);
 }

@@ -342,7 +342,8 @@ Hashref with structure:
  committed result; false for a server that was added or restored.
             },
             # ... more items
-        ],  # arrayref[hashref (ServerAddResult)] - results contains add result for each requested server (only first 6 new servers processed)
+        ],  # arrayref[hashref (ServerAddResult)] - results has one result per requested server, in request order; servers
+ past the 6-new-server limit get a failed result
             servers_skipped => ...,  # int - servers_skipped is count of servers not processed due to 6-server limit
         },
         error        => undef,       # Error message (if any)
@@ -357,7 +358,8 @@ The C<data> field contains:
 
 =item * B<results> (arrayref[hashref (ServerAddResult)])
 
-results contains add result for each requested server (only first 6 new servers processed)
+results has one result per requested server, in request order; servers
+ past the 6-new-server limit get a failed result
 
 
 =item * B<servers_skipped> (int)

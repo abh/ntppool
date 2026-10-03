@@ -1,22 +1,8 @@
-import type { Page } from "@playwright/test";
 import { resolveDefaultAccountToken } from "../lib/accounts";
 import { installSession, mintSession, uniqueTestEmail } from "../lib/auth";
 import { bust } from "../lib/helpers";
 import { expect, test } from "../lib/fixtures";
-import { getServer, serverListUrl } from "../lib/servers";
-
-const ADD_FORM = 'form[action="/manage/server/add#add"]';
-
-// Precheck answers for an existing server before it queries NTP, so these
-// run with fixture IPs that never answer.
-async function submitAdd(page: Page, ip: string) {
-  const form = page.locator(ADD_FORM);
-  await form.locator('input[name="host"]').fill(ip);
-  await Promise.all([
-    page.waitForURL((url) => url.pathname === "/manage/server/add"),
-    form.locator('[type="submit"]').click(),
-  ]);
-}
+import { getServer, serverListUrl, submitAdd } from "../lib/servers";
 
 test("re-adding an active server to its own account says it is already registered", async ({ page, context, fixtures }) => {
   const fixture = await fixtures.create({ servers: [{ ipVersion: 4, verified: true }] });
