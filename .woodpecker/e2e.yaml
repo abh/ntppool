@@ -124,22 +124,38 @@ steps:
       - export STACK_DIR="$PWD/e2e/stack"
       - /bin/sh e2e/stack/seed sql
 
+  # The three detached services below are stopped when the workflow ends.
+  # Woodpecker runs `commands` through an outer `sh -c` that is PID 1 and has
+  # no trap, so SIGTERM never reaches a trap in the script and the stop turns
+  # into a kill (exit 137, step shown as failed). These steps use `entrypoint`
+  # instead, which makes this shell PID 1: it traps TERM, and the service runs
+  # in the background with the shell waiting on it.
   - name: api
     image: *api_image
     detach: true
     environment:
       <<: [*db_env, *site_env]
-    commands:
-      - /app/api internal 2>&1 | tee logs/api.log
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        trap 'exit 0' TERM INT
+        /app/api internal 2>&1 | tee logs/api.log &
+        wait
 
   - name: proxy
     image: caddy:2
     detach: true
-    commands:
-      # The Caddyfile serves the stripe-gw stub from /stripe-stub.
-      - ln -s "$PWD/e2e/stack/stripe-stub" /stripe-stub
-      - export XDG_DATA_HOME="$PWD/caddydata"
-      - caddy run --config e2e/stack/Caddyfile --adapter caddyfile 2>&1 | tee logs/proxy.log
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        # The Caddyfile serves the stripe-gw stub from /stripe-stub.
+        ln -s "$PWD/e2e/stack/stripe-stub" /stripe-stub
+        export XDG_DATA_HOME="$PWD/caddydata"
+        trap 'exit 0' TERM INT
+        caddy run --config e2e/stack/Caddyfile --adapter caddyfile 2>&1 | tee logs/proxy.log &
+        wait
 
   - name: ntppool
     image: harbor.ntppool.org/ntppool/ntppool:sha-${CI_COMMIT_SHA:0:8}
@@ -160,10 +176,15 @@ steps:
       auth0_domain: ""
       auth0_client: ""
       auth0_secret: ""
-    commands:
-      - ws="$PWD"
-      - cd /ntppool
-      - ./docker/entrypoint ./docker-run 2>&1 | tee "$ws/logs/ntppool.log"
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        ws="$PWD"
+        cd /ntppool
+        trap 'exit 0' TERM INT
+        ./docker/entrypoint ./docker-run 2>&1 | tee "$ws/logs/ntppool.log" &
+        wait
 
   # The Playwright image (glibc) is used for the probes: busybox wget in alpine
   # (musl) could not resolve the ntppool step's name although nslookup could.
