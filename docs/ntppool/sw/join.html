@@ -1,0 +1,80 @@
+[% page.title = 'Jiunge na NTP Pool!'  %]
+
+<div class="block">
+	<h3><a name="join">Ninawezaje kujiunga na pool.ntp.org?</a></h3>
+	<p>
+	Kwanza: Asante kwa kupendezwa kwako. Matumizi ya pool yameongezeka
+	sana, na njia pekee tunaweza kuifanya iwe rahisi kwa kila mtu kuendesha
+	seva ya pool ni pia kuongeza idadi ya seva zinazoshiriki.
+	</p>
+
+	<p>
+	Kompyuta yako <b>lazima iwe na anwani ya IP thabiti</b> na muunganisho
+	wa mtandao wa kudumu. Ni muhimu sana kwamba anwani yako ya IP isibadilishwe
+	au ibadilishwe mara chache sana (sema mara moja kwa mwaka au
+	chini). Kipimo data kinachohitajika ni kidogo sana. Kila mteja
+	atatuma pakiti chache za UDP kila dakika chache hadi kila dakika 20.
+	</p>
+
+	<p>
+	Kwa sasa seva nyingi zinapata pakiti 5-15 za NTP kwa sekunde
+	na vilele vya pakiti 60-120 kwa sekunde mara chache kwa siku.
+	Hii ni sawa na takriban 10-15Kbit/sekunde na
+	vilele vya 50-120Kbit/sekunde. Mradi unapata seva zaidi za saa
+	kwa kuendelea, kwa hivyo mzigo haupaswi kuongezeka sana kwa
+	kila seva. Kwa maneno rahisi, labda unahitaji angalau
+	384-512Kbit ya kipimo data (kinachoingia na kutoka).
+	</p>
+
+	<p>
+	Seva zinazojiunga hazipaswi kuwa na <tt>pool.ntp.org</tt> kama seva yao ya juu,
+	bali zinapaswa kusanidi <a href="https://support.ntp.org/Servers/StratumTwoTimeServers/">seva nzuri</a> kwa mikono. Seva hizo
+	<b>zinaweza</b> kuchaguliwa kutoka kwenye pool. Jambo kuu ni kwamba zinachaguliwa
+	kwa thabiti badala ya kupewa kwa nasibu kutoka kwenye pool kila seva
+	inapoanzishwa upya. Hii itasaidia kutoa ubora unaokubalika wa huduma.
+
+	Kumbuka kwamba si lazima seva yako iwe ya tabaka la 1 au 2
+	- kwa kuwa mradi huu ni zaidi ya kusambaza mzigo, hakuna
+	sababu kwa nini seva ya tabaka la 3 au hata tabaka la 4 isijiunga.
+	</p>
+
+	<p>
+	Tuna ukurasa wenye <a href="/join/configuration.html">mapendekezo ya usanidi kwa seva zinazojiunga na pool</a>.
+	</p>
+	<p>Hatimaye, lazima nisisitize kwamba kujiunga na pool ni <b>ahadi ya muda
+	mrefu</b>. Tutafurahi kukuondoa kwenye pool tena ikiwa hali
+	yako itabadilika, lakini kwa sababu ya jinsi wateja wa NTP wanavyofanya kazi <b>itachukua
+	wiki, miezi au hata MIAKA kabla ya trafiki kupotea kabisa</b>.
+	</p>
+
+	<p>
+	Ikiwa haya yote ni sawa, ingia kwenye
+	ukurasa wa <a href="/manage">usimamizi wa seva</a> na uombe seva yako iongezwe.
+	Ikiwa una tatizo lolote na mfumo, tuma barua pepe kwa <a
+	href="mailto:ask@develooper.com">ask@develooper.com</a>.
+	</p>
+
+	<p>
+	Tafadhali pia jiunge na <a href="[% language_url("/mailinglists.html") %]">jukwaa la jumuiya</a>
+	</p>
+
+	<p>
+	Itakuwa vizuri (lakini si lazima) ikiwa unaweza kuelekeza maombi ya wavuti
+	kwenye bandari ya 80 ya seva yako ya saa kwenye ukurasa rasmi wa mradi katika
+	<tt>https://www.ntppool.org/</tt>. Ikiwa unaendesha Apache, unaweza kufanya hivi kwa:
+	</p>
+
+        [% PROCESS tpl/join/virtual_host_example.html %]
+
+	<p>
+	Tena, hii ni tu ikiwa unaendesha seva ya wavuti tayari. Ukurasa rasmi wa mradi
+	utapewa daima na 'www' mwanzoni - lakini wakati mwingine
+	watu wanaandika <tt>pool.ntp.org</tt> na wanashangaa kupata ukurasa wa wavuti wa nasibu.
+	</p>
+	<p>
+	Mara ikiongezwa kwenye pool, seva inafuatiliwa kila wakati kwa
+        upatikanaji na usahihi. Unaweza kutazama utendaji wa seva yako
+        ukitumia <a href="scores">sehemu ya wavuti</a> au
+        <a href="/manage">ukurasa wa usimamizi</a>.
+	</p>
+</div>

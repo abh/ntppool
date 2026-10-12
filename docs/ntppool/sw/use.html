@@ -1,0 +1,115 @@
+[% page.title = 'Jinsi ya kusanidi NTP kutumia pool?' %]
+
+<div class="block">
+	<h3 id="use">Ninawezaje kutumia pool.ntp.org?</h3>
+
+	<p>
+	Ikiwa unataka tu kusawazisha saa ya kompyuta yako na mtandao, faili ya usanidi (kwa programu ya ntpd kutoka <a href="https://www.ntp.org/">ntp.org</a>, kwenye mfumo wowote unaotumika - <b>Linux, *BSD, Windows na hata mifumo mingine ya kipekee</b>) ni rahisi sana:
+	</p>
+
+	[% INCLUDE "ntppool/use/sample-config.html" %]
+
+	<p>
+	Majina 0, 1, 2 na <code>3.pool.ntp.org</code> yanaelekeza kwenye seti ya seva za nasibu ambazo zitabadilika kila saa. Hakikisha saa ya kompyuta yako imesanidiwa kwa kitu kinachofaa (ndani ya dakika chache za saa 'halisi') - unaweza kutumia <code>ntpdate pool.ntp.org</code>, au unaweza kutumia amri ya <code>date</code> na kuisanidi kulingana na saa yako ya mkono. Anzisha ntpd, na baada ya muda (hii inaweza kuchukua hadi nusu saa!), <code>ntpq -pn</code> inapaswa kuonyesha kitu kama:
+	</p>
+
+	[% INCLUDE "ntppool/use/sample-ntpq.html" %]
+
+	<p>
+	Anwani za IP zitakuwa tofauti, kwa sababu umepewa seva za saa za nasibu. Jambo muhimu ni kwamba mojawapo ya mistari inaanza na nyota (<code>*</code>), hii inamaanisha kompyuta yako inapata saa kutoka mtandao - huhitaji kuwa na wasiwasi tena!
+	</p>
+	<p>
+	Kutafuta <code>pool.ntp.org</code> (au <code>0.pool.ntp.org</code>,
+	<code>1.pool.ntp.org</code>, nk) kwa kawaida kutarudisha anwani za IP kwa seva zilizo ndani ya au karibu na nchi yako. Kwa watumiaji wengi hii itatoa matokeo bora.
+	</p>
+
+	<p>Unaweza pia kutumia <a href="/zone/@">kanda za bara</a> (Kwa mfano
+	<a href="/zone/europe">ulaya</a>,
+	<a href="/zone/north-america">amerika-kaskazini</a>,
+	<a href="/zone/oceania">oceania</a>
+	au <code><a href="/zone/asia">asia</a>.pool.ntp.org</code>),
+	na kanda ya nchi (kama
+	<code>ch.pool.ntp.org</code> nchini Uswisi) - kwa kanda hizi zote, unaweza tena kutumia viambishi 0,
+	1, 2, au 3, kama <code>0.ch.pool.ntp.org</code>. Lakini kumbuka, kanda ya nchi
+	huenda haipo kwa nchi yako, au inaweza kuwa na seva moja au mbili tu za saa.
+	</p>
+	<p>
+	Tafadhali kumbuka pia kwamba mfumo huu kwa sasa unatoa anwani za IPv6 kwa kanda pamoja
+	na anwani za IPv4 ikiwa jina la kanda limeongezwa nambari 2, k.m. <code>2.pool.ntp.org</code>
+	(mradi kuna seva yoyote ya NTP ya IPv6 katika kanda husika). Majina ya kanda ambayo hayajawekwa nambari,
+	au yamewekwa 0, 1 au 3, kwa sasa yanatoa anwani za IPv4 pekee.</p>
+	<p>
+	Ikiwa unatumia <b>toleo jipya la Windows</b>, unaweza kutumia mteja wa NTP
+	uliojengwa ndani ya mfumo.</p>
+	<p>Bofya kulia saa kwenye eneo la mfumo na uchague Rekebisha Tarehe/Saa au fungua mipangilio kwa Win+I na ubofye Saa na Lugha -&gt; Tarehe na Saa.
+		Sogea chini na ubofye Muundo wa tarehe, saa, na eneo
+		Sogea chini na ubofye Mipangilio ya ziada ya tarehe, saa na eneo
+		Bofya Tarehe na Saa na Saa ya Mtandao
+		Bofya kitufe cha Badilisha mipangilio. Ingiza <code>pool.ntp.org</code> na ubofye Sasisha sasa.</p>
+	<p>
+		Jaribu kwa kubofya kulia saa kwenye eneo la mfumo na uchague Rekebisha Tarehe/Saa au fungua mipangilio kwa Win+I na ubofye Saa na Lugha -&gt; Tarehe na Saa.
+		Bofya kitufe cha "Sawazisha sasa".
+	</p>
+	<p>
+	Ikiwa mfumo wako wa Windows ni sehemu ya kikoa, huenda usiweze kusasisha saa ya kompyuta yako kwa uhuru.
+
+	Kwa taarifa zaidi kuhusu kusanidi saa kwenye Windows, tazama <a href="https://technet.microsoft.com/en-us/library/cc773013%28WS.10%29.aspx">Jinsi Huduma ya Saa ya Windows Inavyofanya Kazi</a>.
+	</p>
+</div>
+
+<div class="block">
+	<h3 id="notes">Maelezo ya Ziada</h3>
+
+        <p><span class="hook">Fikiria kama NTP Pool inafaa kwa matumizi yako</span>. Ikiwa biashara, shirika au maisha ya binadamu
+        yanategemea kuwa na saa sahihi au yanaweza kuathiriwa na kuwa na saa isiyosahihi,
+        hupaswi "kuipata tu kutoka mtandao". NTP
+        Pool kwa ujumla ni ya ubora wa juu sana, lakini ni huduma inayoendeshwa
+        na watu wa kujitolea wakati wao wa mapumziko. Tafadhali ongea na
+        wauzaji wako wa vifaa na huduma kuhusu kupata huduma ya ndani na ya kuaminika iliyosanidiwa kwa ajili yako. Tazama pia <a href="/tos.html">masharti yetu
+        ya huduma</a>.
+
+        Tunapendekeza seva za saa kutoka
+        <a href="http://www.meinbergglobal.com/english/products/ntp-time-server.htm">Meinberg</a>,
+        lakini unaweza pia kupata seva za saa kutoka
+        <a href="http://www.endruntechnologies.com/NTP-Servers/gps-cdma-ntp.htm">End Run</a>,
+        <a href="http://spectracom.com/products-services/precision-timing#anchor-2172">Spectracom</a>
+        na wengine wengi.
+        </p>
+
+	<p><span class="hook">Ikiwa una anwani ya IP thabiti na muunganisho wa mtandao unaofaa</span> (kipimo data
+	si muhimu sana, lakini kinapaswa kuwa thabiti na si na mzigo mwingi), tafadhali
+	fikiria kuchangia seva yako kwenye pool ya seva. Haikugharimu zaidi ya
+	baiti mia chache kwa sekunde ya trafiki, lakini unasaidia mradi huu kuendelea.
+	Tafadhali <a href="/join.html">soma ukurasa wa kujiunga</a> kwa taarifa zaidi.
+	</p>
+
+	<p><span class="hook">Ikiwa mtoa huduma wako wa mtandao ana seva ya saa</span>, au ikiwa unajua seva nzuri ya saa
+	karibu nawe, unapaswa kutumia hiyo na si orodha hii - labda utapata
+	saa bora na utatumia rasilimali chache za mtandao. Ikiwa unajua seva moja tu ya saa
+	karibu nawe, bila shaka unaweza kutumia hiyo na mbili kutoka pool.ntp.org au kadhalika.</p>
+
+	<p><span class="hook">Mara chache inaweza kutokea kwamba umepewa seva ile ile ya saa mara mbili</span> -
+	kuanzisha upya seva ya NTP kwa kawaida kunasuluhisha tatizo hili. Ikiwa
+	unatumia kanda ya nchi, tafadhali kumbuka kwamba inaweza kuwa kwa sababu kuna seva moja tu
+	inayojulikana kwenye mradi - ni bora kutumia kanda ya bara
+	katika hali hiyo. Unaweza <a href="/zone">kuvinjari kanda</a> kuona ni
+	seva ngapi tunazo katika kila kanda.</p>
+
+	<p><span class="hook">Kuwa mwema</span>. Seva nyingi zinatolewa na watu wa kujitolea, na karibu seva zote za saa
+	kwa kweli ni seva za faili au barua pepe au wavuti ambazo pia zinaendesha NTP.
+	Kwa hivyo usitumie seva zaidi ya nne za saa katika usanidi wako, na usicheze
+	mbinu na <code>burst</code> au <code>minpoll</code> - unachopata ni mzigo
+        wa ziada kwenye seva za saa za kujitolea.</p>
+
+	<p><span class="hook">Hakikisha kuwa <i>usanidi wa eneo la saa</i> wa kompyuta yako ni sahihi</span>.
+	ntpd yenyewe haifanyi chochote kuhusu kanda za saa, inatumia UTC
+	ndani tu.</p>
+
+	<p><span class="hook">Ikiwa unasawazisha mtandao kwa pool.ntp.org</span>, tafadhali sanidi moja ya
+	kompyuta zako kama seva ya saa na usawazishe kompyuta nyingine kwa hiyo.
+	(utahitaji kusoma kidogo - si vigumu ingawa. Na kuna daima
+	<a href="news:comp.protocols.time.ntp">kikundi cha habari cha comp.protocols.time.ntp</a>.)</p>
+
+	<p class="thanks">Kwa wakati huu, ningependa kuwashukuru wale wanaotoa muda wao na seva za saa kwa
+	mtandao huu.</p>
+</div>
