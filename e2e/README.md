@@ -58,7 +58,7 @@ for at least six months, with these permissions and nothing else:
 | Checkout Sessions | Write |
 | Subscriptions | Write |
 | Customer portal | Write |
-| Stripe CLI | Write |
+| Debugging tools (the Stripe CLI) | Write |
 
 Then run `e2e/stack/stripe-key`: it asks for the key, the billing portal
 configuration (askdev's `bpc_`, Vault `kv/ntppool/devel/stripe`, field
