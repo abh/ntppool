@@ -1,0 +1,36 @@
+#!/bin/sh
+# Starts the real stripe-gw (compose service and CI step stripe-gw-app,
+# profile `stripe`) once its API key (seed service-key) and webhook signing
+# secret (stripe-listen) exist. In CI the steps start together, so wait.
+#
+# Environment: E2E_STACK_ID (tags what stripe-gw creates in Stripe), plus
+# stripe-gw's own (STRIPE_SECRET_KEY, STRIPE_UPGRADE_PORTAL_CONFIGURATION,
+# API_URL, ...); APIBIN (default /apibin) and STRIPE_SHARED (default
+# /stripe-shared) hold the two files.
+set -eu
+
+: "${E2E_STACK_ID:?E2E_STACK_ID is not set}"
+APIBIN=${APIBIN:-/apibin}
+STRIPE_SHARED=${STRIPE_SHARED:-/stripe-shared}
+
+for f in "$APIBIN/stripe-gw-api-key" "$STRIPE_SHARED/webhook-secret"; do
+    i=0
+    while [ ! -s "$f" ]; do
+        i=$((i + 1))
+        if [ "$i" -gt 60 ]; then
+            echo "$f is still missing or empty after 60s" >&2
+            exit 1
+        fi
+        sleep 1
+    done
+done
+
+API_KEY=$(cat "$APIBIN/stripe-gw-api-key")
+STRIPE_WEBHOOK_SECRET=$(cat "$STRIPE_SHARED/webhook-secret")
+STRIPE_EXTRA_METADATA="e2e_stack=$E2E_STACK_ID"
+export API_KEY STRIPE_WEBHOOK_SECRET STRIPE_EXTRA_METADATA
+
+# stripe-gw reads tpl/ and assets/ relative to its directory; CI starts the
+# step in the workspace instead of the image's WORKDIR.
+cd /stripe
+exec /stripe/stripe-gw

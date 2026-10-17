@@ -9,6 +9,28 @@ if [ -z "$(compose_existing ps -q --status running proxy)" ]; then
     exit 1
 fi
 
+# The stack's mode decides whether the Stripe spec runs: E2E_STRIPE=1 on a
+# stub stack would run it against the stub, and E2E_STRIPE=0 on a
+# real-Stripe stack would skip what the stack was started for.
+if [ -f "$STATE_DIR/stripe" ]; then
+    stack_stripe=1
+else
+    stack_stripe=""
+fi
+if [ -n "${E2E_STRIPE+set}" ]; then
+    case ${E2E_STRIPE} in "" | 0) caller_stripe="" ;; *) caller_stripe=1 ;; esac
+    if [ "$caller_stripe" != "$stack_stripe" ]; then
+        if [ -n "$stack_stripe" ]; then
+            echo "the stack runs the real stripe-gw (E2E_STRIPE=1 e2e/stack/up); unset E2E_STRIPE to run against it" >&2
+        else
+            echo "the stack runs the stripe-gw stub: start it with E2E_STRIPE=1 e2e/stack/up to run the Stripe spec" >&2
+        fi
+        exit 1
+    fi
+fi
+E2E_STRIPE=$stack_stripe
+export E2E_STRIPE
+
 # --no-deps: the dependency chain reaches the finished seed service, and
 # compose would run it again.
 compose_existing run --rm --no-deps playwright "$@"

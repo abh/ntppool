@@ -114,8 +114,13 @@ services:
     image: caddy:2
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./stripe-stub.caddy:/etc/caddy/stripe-stub.caddy:ro
+      - ./stripe-real.caddy:/etc/caddy/stripe-real.caddy:ro
       - ./stripe-stub:/stripe-stub:ro
       - caddydata:/data
+    environment:
+      # stub or real: which stripe-gw the Caddyfile's stripe-gw site imports.
+      STRIPE_MODE: ${STRIPE_MODE:?set STRIPE_MODE to stub or real (e2e/stack/up sets it)}
     ports:
       - "127.0.0.1:8443:443"
     networks:
@@ -132,6 +137,62 @@ services:
     depends_on:
       ntppool:
         condition: service_healthy
+
+  # Profile `stripe` (E2E_STRIPE=1 e2e/stack/up): the real stripe-gw against
+  # the Stripe test sandbox. Secrets and the stack id come from the
+  # environment of `docker compose` (an empty value here, not an error, so
+  # the stub stack still parses without them); up starts these with
+  # --no-deps, in order, so none of them declares depends_on.
+
+  # Forwards the sandbox's webhook events to stripe-gw-app and publishes the
+  # signing secret for it.
+  stripe-listen:
+    profiles: ["stripe"]
+    image: stripe/stripe-cli:v1.53.1
+    entrypoint: ["/bin/sh", "/stack/stripe-listen"]
+    environment:
+      STRIPE_SECRET_KEY:
+    volumes:
+      - ./:/stack:ro
+      - stripe-shared:/stripe-shared
+    healthcheck:
+      test: ["CMD", "test", "-s", "/stripe-shared/webhook-secret"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  stripe-gw-app:
+    profiles: ["stripe"]
+    image: ${STRIPE_GW_IMAGE:?set STRIPE_GW_IMAGE (e2e/stack/up reads e2e/stack/stripe-gw-image)}
+    platform: linux/amd64
+    entrypoint: ["/bin/sh", "/stack/stripe-gw-start"]
+    environment:
+      STRIPE_SECRET_KEY:
+      STRIPE_UPGRADE_PORTAL_CONFIGURATION:
+      E2E_STACK_ID:
+      API_URL: http://api:4211/int/rpc
+      NAMESPACE: e2e
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otelcol:4318
+    volumes:
+      - ./:/stack:ro
+      - apibin:/apibin:ro
+      - stripe-shared:/stripe-shared:ro
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:1323/__healthz"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  # One-shot: cancels the Stripe subscriptions a stack left (e2e/stack/down).
+  stripe-sweep:
+    profiles: ["stripe"]
+    image: alpine:3.22
+    entrypoint: ["/bin/sh", "/stack/stripe-sweep"]
+    environment:
+      STRIPE_SECRET_KEY:
+      DATABASE_URI: postgres://ntppool:ntppool@postgres:5432/ntppool?sslmode=disable
+    volumes:
+      - ./:/stack:ro
 
   # One-shot test runner, profile `test`; started by e2e/stack/test, never by up.
   playwright:
@@ -154,6 +215,8 @@ services:
       NODE_EXTRA_CA_CERTS: /caddy/caddy/pki/authorities/local/root.crt
       # The one server seed.sql creates; an askdev value in e2e/.env would 404.
       NTP_SCORES_TEST_IP: 216.239.35.4
+      # For `api e2e subscription cancel` and `api e2e run finish`.
+      stripe_gw_service: http://stripe-gw
       <<: *db-env
       E2E_STRIPE: ${E2E_STRIPE:-}
     # An entrypoint, so the arguments of `compose run` land in "$@".
@@ -163,3 +226,4 @@ volumes:
   apibin:
   e2e_node_modules:
   caddydata:
+  stripe-shared:

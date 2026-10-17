@@ -28,13 +28,56 @@ setup prints the target and URLs it resolved.
   (postgres, API, Perl app, Caddy). Start it with `e2e/stack/up` and run the
   suite with `e2e/stack/test`; `e2e/stack/down` removes it. The stack sets all
   `NTP_*` values itself, so no `.env` is needed. It uses `*.ntppool.test`
-  names behind Caddy's own CA, so the browser ignores HTTPS errors, and it
-  skips the Stripe checkout spec unless `E2E_STRIPE` is set.
+  names behind Caddy's own CA, so the browser ignores HTTPS errors. It
+  answers as stripe-gw with a stub and skips the Stripe checkout spec, unless
+  it was started with `E2E_STRIPE=1` (see "Real Stripe on the stack").
 - `askdev` is the shared dev site. Put `E2E_TARGET=askdev` in `e2e/.env`, plus
   `NTP_INTERNAL_API_URL` and `NTP_API_CLI` (see below), and run `npm test`.
   `NTP_BASE_URL` and `NTP_MANAGE_URL` default to the askdev hosts.
 
 An unknown `E2E_TARGET` is an error.
+
+## Real Stripe on the stack
+
+`E2E_STRIPE=1 e2e/stack/up` runs the real stripe-gw (the image pinned in
+`e2e/stack/stripe-gw-image`) against the Stripe test sandbox, with
+`stripe listen` forwarding the sandbox's webhooks to it. `e2e/stack/test`
+then runs `tests/stripe-checkout.spec.ts` too: `test` follows the mode the
+stack was started in (`e2e/stack/.state/stripe`) and refuses an
+`E2E_STRIPE` that disagrees. `e2e/.env` can't set it.
+
+It needs a restricted test-mode key that only e2e uses. In the Stripe
+dashboard (test mode, the shared sandbox), create a restricted key, valid
+for at least six months, with these permissions and nothing else:
+
+| Resource | Access |
+|---|---|
+| Products | Read |
+| Prices | Read |
+| Customers | Write |
+| Checkout Sessions | Write |
+| Subscriptions | Write |
+| Customer portal | Write |
+| Stripe CLI | Write |
+
+Then run `e2e/stack/stripe-key`: it asks for the key, the billing portal
+configuration (askdev's `bpc_`, Vault `kv/ntppool/devel/stripe`, field
+`upgrade_portal_configuration`) and the key's expiry date, and stores them
+in the macOS keychain (service `ntppool-e2e-stripe`). `--ci` also writes
+them as the Woodpecker repo secrets. Elsewhere, set `STRIPE_SECRET_KEY`,
+`STRIPE_UPGRADE_PORTAL_CONFIGURATION` and `STRIPE_KEY_EXPIRES` in the
+environment of `up` and `down`. `up` fails once the key has expired and
+warns in its last two weeks.
+
+Everything stripe-gw creates carries the metadata `e2e_stack=<stack id>`
+(printed by `up`; it starts with the UTC time). `e2e/stack/down` cancels the
+stack's subscriptions before removing it (`e2e/stack/stripe-sweep`); a
+weekly CI run (cron `e2e-stripe-weekly`) cancels tagged subscriptions older
+than two days. Customers are not deleted: find leftovers in the dashboard by
+the `e2e_stack` metadata.
+
+In CI the Stripe steps run on a manual pipeline with `E2E_STRIPE=1`, on the
+weekly cron, and on pushes to `main` that touch Stripe-related paths.
 
 ## Configuration
 

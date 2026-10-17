@@ -8,7 +8,8 @@ if ! docker info >/dev/null 2>&1; then
 fi
 
 API_IMAGE=$(api_image)
-export API_IMAGE
+STRIPE_GW_IMAGE=$(stripe_gw_image)
+export API_IMAGE STRIPE_GW_IMAGE
 
 # Random per stack; the Perl app only needs them non-empty.
 ACCOUNT_ID_KEY=$(openssl rand -hex 16)
@@ -25,7 +26,29 @@ if grep -q '^-' <<<"$submodules"; then
 fi
 
 # Always start from nothing: a second run must not hit the previous seed.
+# down also cancels what a previous real-Stripe stack left in Stripe.
 "$STACK_DIR/down"
+
+# The stack id tags what this stack creates in Stripe (metadata e2e_stack);
+# the timestamp lets a person tell a leftover from a live run.
+mkdir -p "$STATE_DIR"
+E2E_STACK_ID="$(date -u +%Y%m%dT%H%MZ)-$(openssl rand -hex 3)"
+printf '%s\n' "$E2E_STACK_ID" >"$STATE_DIR/stack-id"
+export E2E_STACK_ID
+
+# E2E_STRIPE: the real stripe-gw against the Stripe test sandbox (profile
+# stripe) instead of the stub. The marker is what test and down follow.
+if [ -n "${E2E_STRIPE:-}" ]; then
+    stripe_secrets
+    : >"$STATE_DIR/stripe"
+    STRIPE_MODE=real
+    # Every compose call below, wait_healthy's included, sees the services.
+    COMPOSE_PROFILES=stripe
+    export COMPOSE_PROFILES
+else
+    STRIPE_MODE=stub
+fi
+export STRIPE_MODE
 
 build_log=$(mktemp)
 trap 'rm -f "$build_log"' EXIT
@@ -66,6 +89,23 @@ done
 
 wait_healthy api 120
 
+# --no-deps throughout: stripe-gw-app needs api, and a dependency on it would
+# start the finished seed again.
+if [ "$STRIPE_MODE" = real ]; then
+    if ! compose run --rm --no-deps seed service-key; then
+        echo "creating stripe-gw's API key failed" >&2
+        exit 1
+    fi
+    for service in stripe-listen stripe-gw-app; do
+        if ! compose up -d --no-deps "$service"; then
+            echo "compose up $service failed; service logs follow" >&2
+            compose logs --no-color "$service" >&2 || true
+            exit 1
+        fi
+        wait_healthy "$service" 120
+    done
+fi
+
 # --no-deps: without it compose would start the finished seed service again
 # (ntppool -> api -> seed) and the seed SQL would fail on duplicate keys.
 for service in ntppool proxy; do
@@ -76,4 +116,4 @@ for service in ntppool proxy; do
     fi
     wait_healthy "$service" 300
 done
-echo "stack is up: api on http://127.0.0.1:4211/int/rpc, web and manage via https://127.0.0.1:8443"
+echo "stack $E2E_STACK_ID is up (stripe-gw: $STRIPE_MODE): api on http://127.0.0.1:4211/int/rpc, web and manage via https://127.0.0.1:8443"

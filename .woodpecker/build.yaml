@@ -1,5 +1,6 @@
+# cron: the weekly e2e-stripe-weekly run of e2e.yaml depends on this image.
 when:
-  - event: [push, pull_request, manual, tag]
+  - event: [push, pull_request, manual, tag, cron]
 
 clone:
   git:

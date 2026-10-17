@@ -1,9 +1,12 @@
 #!/bin/sh
-# Seeds the stack's database. Usage: seed [all|setup|sql|publish]
+# Seeds the stack's database. Usage: seed [all|setup|sql|publish|service-key]
 #
 # Compose runs `all` inside the pinned API image (service `seed`, as root).
 # CI has no root in that image, so it runs `setup` and `publish` there and
 # `sql` in an image that ships psql.
+#
+# `service-key` (real-Stripe stacks only, not part of `all`) creates the
+# stripe-gw service and writes its API key to $APIBIN/stripe-gw-api-key.
 #
 # Environment: STACK_DIR (default /stack) holds seed.sql, APIBIN (default
 # /apibin) receives the api binary.
@@ -43,6 +46,21 @@ publish() {
     cp /app/api "$APIBIN/api"
 }
 
+# The key is printed once, indented, on the line after the marker; it is
+# never echoed here. 0644: the volume is private to the stack, and
+# stripe-gw runs as another user.
+service_key() {
+    out=$(/app/api service create e2e-stripe-gw --type stripe-gw)
+    key=$(printf '%s\n' "$out" | awk '
+        found { gsub(/^[ \t]+|[ \t]+$/, ""); print; exit }
+        $0 == "API Key (save this - shown only once!):" { found = 1 }')
+    if [ -z "$key" ]; then
+        echo "api service create printed no API key after its marker line" >&2
+        exit 1
+    fi
+    (umask 022 && printf '%s\n' "$key" >"$APIBIN/stripe-gw-api-key")
+}
+
 case ${1:-all} in
 all)
     setup
@@ -52,8 +70,9 @@ all)
 setup) setup ;;
 sql) sql ;;
 publish) publish ;;
+service-key) service_key ;;
 *)
-    echo "usage: seed [all|setup|sql|publish]" >&2
+    echo "usage: seed [all|setup|sql|publish|service-key]" >&2
     exit 2
     ;;
 esac

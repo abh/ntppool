@@ -1,0 +1,28 @@
+#!/bin/sh
+# Usage: stripe-expiry YYYY-MM-DD
+# Fails if the e2e Stripe key's expiry date has passed; warns when fewer
+# than 14 days remain. Runs on macOS (BSD date) and in alpine (busybox).
+set -eu
+
+expires=${1:?usage: stripe-expiry YYYY-MM-DD}
+case $expires in
+[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]) ;;
+*)
+    echo "Stripe key expiry '$expires' is not YYYY-MM-DD" >&2
+    exit 1
+    ;;
+esac
+
+if ! end=$(date -u -d "$expires" +%s 2>/dev/null); then
+    end=$(date -j -u -f '%Y-%m-%d %H:%M:%S' "$expires 00:00:00" +%s)
+fi
+now=$(date -u +%s)
+days=$(((end - now) / 86400))
+
+if [ "$end" -le "$now" ]; then
+    echo "the e2e Stripe key expired on $expires: create a new one and run e2e/stack/stripe-key" >&2
+    exit 1
+fi
+if [ "$days" -lt 14 ]; then
+    echo "warning: the e2e Stripe key expires on $expires ($days days): create a new one and run e2e/stack/stripe-key" >&2
+fi

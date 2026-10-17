@@ -12,9 +12,11 @@
 
 # No pull_request: the harbor and s3 secrets are not available to that event,
 # and the build workflow it depends on needs them to push the image. A pull
-# request is covered by the push pipeline of its branch.
+# request is covered by the push pipeline of its branch. cron: the weekly
+# e2e-stripe-weekly run (the suite with real Stripe, then the old-leftovers
+# sweep); build.yaml runs on it too, for the image.
 when:
-  - event: [push, manual]
+  - event: [push, manual, cron]
 
 depends_on: [build]
 
@@ -24,6 +26,33 @@ variables:
   # and also lives in e2e/stack/api-image for the local stack. check-api-pin
   # fails if the two differ. Bump both together.
   - &api_image ${API_IMAGE:-harbor.ntppool.org/ntporg/api-dev:sha-c3bbfb6b}
+
+  # The stripe-gw image for real-Stripe runs, pinned the same way: also in
+  # e2e/stack/stripe-gw-image, and check-api-pin compares the two.
+  - &stripe_gw_image ${STRIPE_GW_IMAGE:-harbor.ntppool.org/ntporg/stripe-gw:sha-563cb4ec}
+
+  # When the real-Stripe steps run (the suite against the real stripe-gw and
+  # the Stripe test sandbox; e2e/README.md "Real Stripe on the stack"). One
+  # anchor per entry, so the sweep steps can merge a status into each.
+  - &stripe_manual
+    event: manual
+    evaluate: 'E2E_STRIPE == "1"'
+  - &stripe_cron
+    event: cron
+    cron: e2e-stripe-weekly
+  - &stripe_push
+    event: push
+    branch: main
+    path:
+      - lib/NP/Stripe.pm
+      - lib/NTPPool/Control/Vendor.pm
+      - docs/manage/tpl/vendor/**
+      - docs/manage/tpl/vendor.html
+      - e2e/tests/stripe-checkout.spec.ts
+      - e2e/lib/subscriptions.ts
+      - e2e/stack/stripe-*
+      - e2e/stack/seed
+      - .woodpecker/e2e.yaml
 
   # The API CLI (`api e2e ...`) and the API itself talk to the database.
   - &db_env
@@ -69,9 +98,9 @@ steps:
     environment:
       RUN_API_IMAGE: *api_image
     commands:
-      # The api and ntppool steps run as non-root users.
-      - mkdir -p logs apibin caddydata
-      - chmod 777 logs apibin caddydata
+      # The api, ntppool and stripe-gw-app steps run as non-root users.
+      - mkdir -p logs apibin caddydata stripe-shared
+      - chmod 777 logs apibin caddydata stripe-shared
       # The default in the &api_image anchor, read from this file as committed.
       - pin=$(sed -n 's/^  - &api_image .*API_IMAGE:-\(.*\)}$/\1/p' .woodpecker/e2e.yaml)
       - filepin=$(cat e2e/stack/api-image)
@@ -86,6 +115,28 @@ steps:
           echo "update both to the same image" >&2
           exit 1
         fi
+      - sgwpin=$(sed -n 's/^  - &stripe_gw_image .*STRIPE_GW_IMAGE:-\(.*\)}$/\1/p' .woodpecker/e2e.yaml)
+      - sgwfilepin=$(cat e2e/stack/stripe-gw-image)
+      - |
+        if [ -z "$sgwpin" ] || [ "$sgwpin" != "$sgwfilepin" ]; then
+          echo "stripe-gw image pin drift: .woodpecker/e2e.yaml has '$sgwpin' but e2e/stack/stripe-gw-image has $sgwfilepin" >&2
+          exit 1
+        fi
+
+  # Real Stripe on: checks the key's expiry, and writes the marker the shared
+  # steps below read (proxy, wait-stack, test) and the stack id stripe-gw
+  # tags what it creates in Stripe with.
+  - name: stripe-enabled
+    image: alpine:3.22
+    when: [*stripe_manual, *stripe_cron, *stripe_push]
+    environment:
+      STRIPE_KEY_EXPIRES:
+        from_secret: stripe_key_expires
+    commands:
+      - sh e2e/stack/stripe-expiry "$STRIPE_KEY_EXPIRES"
+      - echo "$(date -u +%Y%m%dT%H%MZ)-ci${CI_PIPELINE_NUMBER}" > stripe-shared/stack-id
+      - touch stripe-shared/enabled
+      - 'echo "real Stripe, stack id $(cat stripe-shared/stack-id)"'
 
   - name: postgres-ready
     image: postgres:18
@@ -124,7 +175,17 @@ steps:
       - export STACK_DIR="$PWD/e2e/stack"
       - /bin/sh e2e/stack/seed sql
 
-  # The three detached services below are stopped when the workflow ends.
+  # stripe-gw's API key, for its webhooks and syncs.
+  - name: seed-service-key
+    image: *api_image
+    when: [*stripe_manual, *stripe_cron, *stripe_push]
+    environment:
+      <<: [*db_env, *site_env]
+    commands:
+      - export APIBIN="$PWD/apibin"
+      - /bin/sh e2e/stack/seed service-key
+
+  # The detached services below are stopped when the workflow ends.
   # Woodpecker runs `commands` through an outer `sh -c` that is PID 1 and has
   # no trap, so SIGTERM never reaches a trap in the script and the stop turns
   # into a kill (exit 137, step shown as failed). These steps use `entrypoint`
@@ -150,7 +211,14 @@ steps:
       - /bin/sh
       - -c
       - |
-        # The Caddyfile serves the stripe-gw stub from /stripe-stub.
+        # The Caddyfile serves the stripe-gw stub from /stripe-stub, or
+        # proxies to stripe-gw-app when real Stripe is on. Caddy only logs a
+        # bad mode, so it is set here and nowhere else.
+        if [ -f stripe-shared/enabled ]; then
+          export STRIPE_MODE=real
+        else
+          export STRIPE_MODE=stub
+        fi
         ln -s "$PWD/e2e/stack/stripe-stub" /stripe-stub
         export XDG_DATA_HOME="$PWD/caddydata"
         trap 'exit 0' TERM INT
@@ -186,6 +254,50 @@ steps:
         ./docker/entrypoint ./docker-run 2>&1 | tee "$ws/logs/ntppool.log" &
         wait
 
+  # Real Stripe: forwards the sandbox's webhooks to stripe-gw-app, after
+  # publishing the signing secret in stripe-shared/.
+  - name: stripe-listen
+    image: stripe/stripe-cli:v1.53.1
+    detach: true
+    when: [*stripe_manual, *stripe_cron, *stripe_push]
+    environment:
+      STRIPE_SECRET_KEY:
+        from_secret: stripe_secret_key
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        export STRIPE_SHARED="$PWD/stripe-shared"
+        trap 'exit 0' TERM INT
+        sh e2e/stack/stripe-listen 2>&1 | tee logs/stripe-listen.log &
+        wait
+
+  # Real Stripe: the stripe-gw the proxy forwards to. Its start script waits
+  # for the API key and the webhook secret: detached steps start together.
+  - name: stripe-gw-app
+    image: *stripe_gw_image
+    detach: true
+    when: [*stripe_manual, *stripe_cron, *stripe_push]
+    environment:
+      STRIPE_SECRET_KEY:
+        from_secret: stripe_secret_key
+      STRIPE_UPGRADE_PORTAL_CONFIGURATION:
+        from_secret: stripe_portal_configuration
+      API_URL: http://api:4211/int/rpc
+      NAMESPACE: e2e
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otelcol:4318
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        ws="$PWD"
+        export APIBIN="$ws/apibin" STRIPE_SHARED="$ws/stripe-shared"
+        E2E_STACK_ID=$(cat stripe-shared/stack-id)
+        export E2E_STACK_ID
+        trap 'exit 0' TERM INT
+        sh e2e/stack/stripe-gw-start 2>&1 | tee "$ws/logs/stripe-gw-app.log" &
+        wait
+
   # The Playwright image (glibc) is used for the probes: busybox wget in alpine
   # (musl) could not resolve the ntppool step's name although nslookup could.
   - name: wait-stack
@@ -209,6 +321,9 @@ steps:
         echo "$ip web.ntppool.test manage.ntppool.test" >> /etc/hosts
         wait_for proxy curl -fsS --max-time 5 -k -o /dev/null https://manage.ntppool.test/
         wait_for caddy-root-ca test -s caddydata/caddy/pki/authorities/local/root.crt
+        if [ -f stripe-shared/enabled ]; then
+          wait_for stripe-gw-app curl -fsS --max-time 5 -o /dev/null http://stripe-gw-app:1323/__healthz
+        fi
 
   - name: test
     image: mcr.microsoft.com/playwright:v1.60.0-noble
@@ -217,7 +332,10 @@ steps:
     environment:
       <<: *db_env
       E2E_TARGET: stack
+      # For `api e2e subscription cancel` and `api e2e run finish`.
+      stripe_gw_service: http://proxy
     commands:
+      - if [ -f stripe-shared/enabled ]; then export E2E_STRIPE=1; fi
       - export NTP_API_CLI="$PWD/apibin/api"
       - export NODE_EXTRA_CA_CERTS="$PWD/caddydata/caddy/pki/authorities/local/root.crt"
       - ip=$(getent hosts proxy | awk '{print $1}')
@@ -228,10 +346,43 @@ steps:
       # workers OOM-killed the pod (exit 137). Match the local run instead.
       - npx playwright test --workers=4
 
+  # Real Stripe: cancel what this run left in Stripe, found through the
+  # stack's database and the e2e_stack metadata. On success too: cheap, and
+  # it catches what a passing test left.
+  - name: stripe-sweep
+    image: alpine:3.22
+    when:
+      - <<: *stripe_manual
+        status: [success, failure]
+      - <<: *stripe_cron
+        status: [success, failure]
+      - <<: *stripe_push
+        status: [success, failure]
+    environment:
+      <<: *db_env
+      STRIPE_SECRET_KEY:
+        from_secret: stripe_secret_key
+    commands:
+      - sh e2e/stack/stripe-sweep --stack "$(cat stripe-shared/stack-id)"
+
+  # Weekly: cancel any e2e-tagged subscription older than two days, from any
+  # stack (a crashed local run, a CI run whose sweep failed). Also after a
+  # failed suite: it is the only cleanup across stacks.
+  - name: stripe-sweep-weekly
+    image: alpine:3.22
+    when:
+      - <<: *stripe_cron
+        status: [success, failure]
+    environment:
+      STRIPE_SECRET_KEY:
+        from_secret: stripe_secret_key
+    commands:
+      - sh e2e/stack/stripe-sweep --older-than 2d
+
   - name: upload-report
     image: woodpeckerci/plugin-s3
     when:
-      - event: [push, manual]
+      - event: [push, manual, cron]
         status: [success, failure]
     settings:
       <<: *s3_settings
@@ -241,7 +392,7 @@ steps:
   - name: upload-test-results
     image: woodpeckerci/plugin-s3
     when:
-      - event: [push, manual]
+      - event: [push, manual, cron]
         status: failure
     settings:
       <<: *s3_settings
@@ -259,7 +410,11 @@ steps:
           tail -n 200 "$f"
         done
       - |
-        for name in postgres api proxy ntppool; do
+        for name in postgres api proxy ntppool stripe-listen stripe-gw-app; do
           echo "=== $name resolves to: $(getent hosts $name | head -1)"
         done
       - curl -fsS --max-time 5 http://api:4290/health/ready || echo "api health check failed"
+      - |
+        if [ -f stripe-shared/enabled ]; then
+          curl -fsS --max-time 5 http://stripe-gw-app:1323/__healthz || echo "stripe-gw-app health check failed"
+        fi

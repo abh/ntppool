@@ -1,0 +1,34 @@
+#!/bin/sh
+# Forwards the Stripe sandbox's webhook events to stripe-gw-app (compose
+# service and CI step stripe-listen, profile `stripe`).
+#
+# First publishes the CLI's signing secret as $STRIPE_SHARED/webhook-secret
+# for stripe-gw-app (written whole, then renamed: the healthcheck and the
+# reader never see half a file), then forwards until stopped.
+#
+# Environment: STRIPE_SECRET_KEY; STRIPE_SHARED (default /stripe-shared);
+# STRIPE_GW_URL (default http://stripe-gw-app:1323).
+set -eu
+
+: "${STRIPE_SECRET_KEY:?STRIPE_SECRET_KEY is not set}"
+STRIPE_SHARED=${STRIPE_SHARED:-/stripe-shared}
+STRIPE_GW_URL=${STRIPE_GW_URL:-http://stripe-gw-app:1323}
+
+# The CLI reads its key from STRIPE_API_KEY; that keeps it out of argv.
+STRIPE_API_KEY=$STRIPE_SECRET_KEY
+export STRIPE_API_KEY
+
+secret="$STRIPE_SHARED/webhook-secret"
+rm -f "$secret"
+stripe listen --print-secret >"$secret.tmp"
+if ! grep -q '^whsec_' "$secret.tmp"; then
+    echo "stripe listen --print-secret printed no whsec_ secret" >&2
+    exit 1
+fi
+mv "$secret.tmp" "$secret"
+echo "webhook signing secret published"
+
+# The event types stripe-gw reads (webhook.go). askdev's endpoint also takes
+# subscription_schedule.*, which stripe-gw ignores.
+exec stripe listen --forward-to "$STRIPE_GW_URL/webhook" \
+    --events checkout.session.completed,customer.subscription.created,customer.subscription.updated,customer.subscription.deleted

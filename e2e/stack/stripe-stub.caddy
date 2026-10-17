@@ -1,0 +1,22 @@
+# stripe-gw stub (STRIPE_MODE=stub, the default): one JSON file per endpoint
+# under /stripe-stub, query strings ignored. Every other path answers 502
+# naming the path, so a new stripe-gw dependency fails instead of passing
+# silently. Imported by the Caddyfile's stripe-gw site.
+handle /api/v1/products {
+	rewrite * /api/v1/products.json
+	file_server {
+		root /stripe-stub
+	}
+}
+# The e2e fixture subscriptions (e2e_ ids, vendor-coverage.spec.ts) don't
+# exist in Stripe. The real handler (stripe-gw subscription_upgrade.go)
+# fails getSubscription with echo's 500 {"message":"error id <request id>"};
+# Perl turns that into the email text. Not captured from askdev: it is a
+# POST, and captures stay read-only GETs.
+handle /api/v1/subscription/upgrade_session {
+	header Content-Type application/json
+	respond `{"message":"error id e2e-stub"}` 500
+}
+handle {
+	respond "stripe-gw stub: no stub for {path}" 502
+}

@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+# Stores the e2e Stripe test-mode key, the billing portal configuration and
+# the key's expiry date in the macOS keychain (service ntppool-e2e-stripe),
+# where e2e/stack/up and down read them. With --ci, also as the Woodpecker
+# repo secrets of ntppool/ntppool for the real-Stripe CI run.
+#
+# Create the key in the Stripe dashboard first (test mode, restricted; the
+# permissions are in e2e/README.md). Nothing here prints the key.
+set -euo pipefail
+. "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
+
+ci=""
+case ${1:-} in
+"") ;;
+--ci) ci=1 ;;
+*)
+    echo "usage: stripe-key [--ci]" >&2
+    exit 2
+    ;;
+esac
+
+read -r -s -p "Stripe restricted test key (rk_test_...): " key
+echo
+if ! [[ $key =~ ^rk_test_[A-Za-z0-9]+$ ]]; then
+    echo "not a restricted test-mode key: it must start with rk_test_" >&2
+    exit 1
+fi
+read -r -p "Billing portal configuration (bpc_...): " portal
+if ! [[ $portal =~ ^bpc_[A-Za-z0-9]+$ ]]; then
+    echo "not a billing portal configuration id: it must start with bpc_" >&2
+    exit 1
+fi
+read -r -p "Key expiry date (YYYY-MM-DD): " expires
+"$STACK_DIR/stripe-expiry" "$expires"
+
+# security -i reads its commands on stdin, so the key never reaches argv.
+# The values were checked above: no spaces or quotes to escape.
+security -i <<SECURITY
+add-generic-password -U -s ntppool-e2e-stripe -a secret_key -w $key
+add-generic-password -U -s ntppool-e2e-stripe -a portal_configuration -w $portal
+add-generic-password -U -s ntppool-e2e-stripe -a key_expires -w $expires
+SECURITY
+echo "keychain: stored the key, the portal configuration and the expiry ($expires)"
+
+if [ -n "$ci" ]; then
+    repo=ntppool/ntppool
+    tmp=$(mktemp "${TMPDIR:-/tmp}/stripe-key.XXXXXX")
+    trap 'rm -f "$tmp"' EXIT
+    chmod 600 "$tmp"
+    existing=$(woodpecker-cli repo secret ls --repository "$repo")
+    for pair in "stripe_secret_key:$key" "stripe_portal_configuration:$portal" "stripe_key_expires:$expires"; do
+        name=${pair%%:*}
+        printf '%s' "${pair#*:}" >"$tmp"
+        if grep -qw "$name" <<<"$existing"; then
+            action=update
+        else
+            action=add
+        fi
+        # @file: woodpecker-cli reads the value from the file, not argv.
+        woodpecker-cli repo secret "$action" --repository "$repo" --name "$name" \
+            --value "@$tmp" --event push --event manual --event cron >/dev/null
+        echo "woodpecker $repo: ${action}d $name"
+    done
+fi

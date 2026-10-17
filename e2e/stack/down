@@ -2,5 +2,28 @@
 set -euo pipefail
 . "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
-# --profile test also removes the playwright service's node_modules volume.
-compose_existing --profile test down -v --remove-orphans
+# A real-Stripe stack first cancels what it left in Stripe, while its
+# database is still up. A failed sweep still removes the stack and .state/
+# (so a revoked key or a Stripe outage can't block the next up), reports the
+# stack id, and fails down; the weekly CI sweep cancels the rest.
+sweep_failed=""
+if [ -f "$STATE_DIR/stripe" ]; then
+    stack_id=$(cat "$STATE_DIR/stack-id" 2>/dev/null || true)
+    if [ -z "$stack_id" ]; then
+        echo "$STATE_DIR/stripe exists but stack-id does not: cannot sweep Stripe" >&2
+        sweep_failed=1
+    elif ! stripe_secrets ||
+        ! compose_existing --profile stripe run --rm --no-deps stripe-sweep --stack "$stack_id"; then
+        sweep_failed=1
+    fi
+    if [ -n "$sweep_failed" ]; then
+        echo "the Stripe sweep for stack ${stack_id:-?} failed; the weekly sweep (CI cron e2e-stripe-weekly) cancels what is left" >&2
+    fi
+fi
+
+# --profile test also removes the playwright service's node_modules volume;
+# --profile stripe the Stripe services and their stripe-shared volume.
+compose_existing --profile test --profile stripe down -v --remove-orphans
+rm -rf "$STATE_DIR"
+
+[ -z "$sweep_failed" ]

@@ -4,6 +4,19 @@ import { boolField, idField, record, stringField } from "./json";
 import { runId } from "./run";
 
 /**
+ * Where stripe-gw's logs are for the target the run resolved
+ * (applyTargetDefaults writes it back to E2E_TARGET).
+ */
+function stripeGwLogsHint(): string {
+  if (process.env.E2E_TARGET === "stack") {
+    return process.env.CI
+      ? "logs/stripe-gw-app.log and logs/stripe-listen.log in the CI workspace"
+      : "docker compose -p ntppool-e2e --profile stripe logs stripe-gw-app stripe-listen";
+  }
+  return "kubectl --context dala -n askntp logs deploy/stripe-gw";
+}
+
+/**
  * One row of SubscriptionService's subscription list. The limits are proto
  * int64s, so ConnectRPC JSON sends them as decimal strings; they are converted
  * once here so callers compare numbers, like `FixtureSubscription` does.
@@ -101,8 +114,7 @@ export async function waitForSubscriptionStatus(
     if (Date.now() >= deadline) {
       throw new Error(
         `${stripeSubscriptionId} was "${sub?.status ?? "none"}" after ${timeoutMs}ms, expected "${status}". ` +
-          `The webhook never arrived: check stripe-gw's logs ` +
-          `(kubectl --context dala -n askntp logs deploy/stripe-gw).`,
+          `The webhook never arrived: check ${stripeGwLogsHint()}.`,
       );
     }
     await new Promise((resolve) => setTimeout(resolve, 2_000));

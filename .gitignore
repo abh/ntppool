@@ -39,3 +39,6 @@ docs/shared/static/js/assets/
 docs/shared/static/js/*.map
 docs/shared/static/js/legacy/
 *.log
+
+# e2e/stack/up: the running stack's id and mode
+e2e/stack/.state/

@@ -1,0 +1,4 @@
+# The real stripe-gw (STRIPE_MODE=real, `E2E_STRIPE=1 e2e/stack/up`): the
+# stripe-gw-app service, talking to the Stripe test sandbox. Imported by the
+# Caddyfile's stripe-gw site.
+reverse_proxy stripe-gw-app:1323
