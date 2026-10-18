@@ -30,7 +30,7 @@ sub render {
     return 404 unless $type and $type =~ m!^(offset|score)$!;
 
     return 404 unless $p;
-    my $result = get_server(ip => $p);
+    my $result = get_server(ip => $p, expected_codes => ['invalid_argument']);
     if (my $status = $self->capi_error_status($result, $result->{data}{server})) {
         return $status;
     }

@@ -26,7 +26,12 @@ my $json = JSON::XS->new->utf8;
 # ConnectRPC codes that are the API's normal answer rather than a failure.
 # Results with these codes still carry `error`, but aren't recorded as span
 # errors or warned about; the caller decides what they mean for the page.
+# A caller can add codes for one call with the `expected_codes` argument.
 my %EXPECTED_CODES = (not_found => 1,);
+
+# The expected codes for the call in progress, read by http_response_is_error
+# while the request runs.
+our %CALL_EXPECTED_CODES = %EXPECTED_CODES;
 
 my $api_base = $ENV{'api-internal'} || 'http://api-internal/';
 $api_base =~ s{/$}{};
@@ -130,6 +135,14 @@ Request context hashref with C<x_forwarded_for> field for client IP tracking.
 URL prefix for the API endpoint. Defaults to C</int/rpc> for internal ConnectRPC API.
 Use empty string C<''> for no prefix, or provide a custom prefix like C</api>.
 
+=item expected_codes (optional)
+
+Arrayref of ConnectRPC codes that are a normal answer for this call, in
+addition to C<not_found>. Use C<['invalid_argument']> when the request
+carries raw user input (a URL path segment or query parameter) that the API
+validates. The result still carries C<error>, but the span isn't marked as an
+error and no warning is logged.
+
 =back
 
 B<Returns:>
@@ -205,6 +218,9 @@ sub connect_rpc {
     my $http_method = delete $args{http_method}
       // 'POST';    # Allow GET for side-effect free RPCs
     my $prefix = delete $args{prefix} // '/int/rpc';  # Default to internal RPC API prefix
+    my $expected_codes = delete $args{expected_codes} // [];
+
+    local %CALL_EXPECTED_CODES = (%EXPECTED_CODES, map { $_ => 1 } @$expected_codes);
 
     my %result;
 
@@ -318,7 +334,7 @@ sub connect_rpc {
     $result{service} = $service;
     $result{method}  = $method;
 
-    my $expected = $result{error} && $EXPECTED_CODES{$result{connect_code} // ''};
+    my $expected = $result{error} && $CALL_EXPECTED_CODES{$result{connect_code} // ''};
 
     # Mark OpenTelemetry span as error for ConnectRPC errors
     if ($result{error} && $NP::CAPI::OTEL_AVAILABLE) {
@@ -407,7 +423,8 @@ API responses lives with the rest of the ConnectRPC handling.
 
 Any 2xx is not an error. A non-2xx response from the internal API is not an
 error when its ConnectRPC code is one the API answers with in normal
-operation (currently C<not_found>). Every other non-2xx response is an error.
+operation: C<not_found>, plus any C<expected_codes> the caller passed to
+L</connect_rpc>. Every other non-2xx response is an error.
 
 =cut
 
@@ -420,7 +437,7 @@ sub http_response_is_error {
     return 1 unless $req && index($req->uri, "$api_base/") == 0;
 
     my $data = _decode_error_body($res) or return 1;
-    return $EXPECTED_CODES{$data->{code} // ''} ? 0 : 1;
+    return $CALL_EXPECTED_CODES{$data->{code} // ''} ? 0 : 1;
 }
 
 # Decode a ConnectRPC JSON error body. Returns the hashref, or undef when the

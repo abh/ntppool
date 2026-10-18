@@ -192,7 +192,8 @@ sub server_data {
         $params{account} = $account->{id_token} if $account;
     }
 
-    my $result = get_server(%params);
+    # $ip is raw user input; the API answers invalid_argument for junk
+    my $result = get_server(%params, expected_codes => ['invalid_argument']);
 
     return $self->{$cache_key} = $result;
 }
