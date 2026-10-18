@@ -6,6 +6,8 @@
 #   stripe-sweep --older-than <N>d   every e2e_stack-tagged subscription
 #                                    created more than N days ago
 #
+# --dry-run (first) lists the live subscriptions instead of cancelling them.
+#
 # Runs in alpine: the compose service stripe-sweep (e2e/stack/down) and the
 # CI sweep steps. Environment: STRIPE_SECRET_KEY; DATABASE_URI (--stack).
 #
@@ -16,10 +18,15 @@
 set -eu
 
 usage() {
-    echo "usage: stripe-sweep --stack <id> | --older-than <N>d" >&2
+    echo "usage: stripe-sweep [--dry-run] --stack <id> | --older-than <N>d" >&2
     exit 2
 }
 
+dry_run=""
+if [ "${1:-}" = --dry-run ]; then
+    dry_run=1
+    shift
+fi
 [ $# -eq 2 ] || usage
 mode=$1
 arg=$2
@@ -118,6 +125,17 @@ case $mode in
     fi
     ;;
 esac
+
+if [ -n "$dry_run" ]; then
+    live_count=0
+    for id in $(sort -u "$work/ids"); do
+        echo "live $id"
+        live_count=$((live_count + 1))
+    done
+    echo "stripe-sweep --dry-run $mode $arg: live $live_count"
+    [ -z "$incomplete" ] || exit 1
+    exit 0
+fi
 
 failed=0
 cancelled=0

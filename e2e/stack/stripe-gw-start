@@ -13,8 +13,9 @@ set -eu
 APIBIN=${APIBIN:-/apibin}
 STRIPE_SHARED=${STRIPE_SHARED:-/stripe-shared}
 
+# One 60 s budget for both files, not 60 s each.
+i=0
 for f in "$APIBIN/stripe-gw-api-key" "$STRIPE_SHARED/webhook-secret"; do
-    i=0
     while [ ! -s "$f" ]; do
         i=$((i + 1))
         if [ "$i" -gt 60 ]; then

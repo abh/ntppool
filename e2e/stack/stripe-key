@@ -40,6 +40,15 @@ add-generic-password -U -s ntppool-e2e-stripe -a secret_key -w $key
 add-generic-password -U -s ntppool-e2e-stripe -a portal_configuration -w $portal
 add-generic-password -U -s ntppool-e2e-stripe -a key_expires -w $expires
 SECURITY
+# security -i reports a failed command and carries on, so read each item
+# back. The comparison keeps the values out of argv and output.
+for pair in "secret_key:$key" "portal_configuration:$portal" "key_expires:$expires"; do
+    account=${pair%%:*}
+    if [ "$(security find-generic-password -s ntppool-e2e-stripe -a "$account" -w 2>/dev/null)" != "${pair#*:}" ]; then
+        echo "keychain: storing $account failed" >&2
+        exit 1
+    fi
+done
 echo "keychain: stored the key, the portal configuration and the expiry ($expires)"
 
 if [ -n "$ci" ]; then

@@ -74,7 +74,14 @@ Everything stripe-gw creates carries the metadata `e2e_stack=<stack id>`
 stack's subscriptions before removing it (`e2e/stack/stripe-sweep`); a
 weekly CI run (cron `e2e-stripe-weekly`) cancels tagged subscriptions older
 than two days. Customers are not deleted: find leftovers in the dashboard by
-the `e2e_stack` metadata.
+the `e2e_stack` metadata. To list the live tagged subscriptions without
+cancelling them:
+
+```sh
+STRIPE_SECRET_KEY=$(security find-generic-password -s ntppool-e2e-stripe -a secret_key -w) \
+  docker run --rm -e STRIPE_SECRET_KEY -v "$PWD/e2e/stack:/stack:ro" alpine:3.22 \
+  sh /stack/stripe-sweep --dry-run --older-than 0d
+```
 
 In CI the Stripe steps run on a manual pipeline with `E2E_STRIPE=1`, on the
 weekly cron, and on pushes to `main` that touch Stripe-related paths.

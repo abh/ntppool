@@ -37,10 +37,10 @@ printf '%s\n' "$E2E_STACK_ID" >"$STATE_DIR/stack-id"
 export E2E_STACK_ID
 
 # E2E_STRIPE: the real stripe-gw against the Stripe test sandbox (profile
-# stripe) instead of the stub. The marker is what test and down follow.
+# stripe) instead of the stub. The marker (written below, once postgres is
+# up) is what test and down follow.
 if [ -n "${E2E_STRIPE:-}" ]; then
     stripe_secrets
-    : >"$STATE_DIR/stripe"
     STRIPE_MODE=real
     # Every compose call below, wait_healthy's included, sees the services.
     COMPOSE_PROFILES=stripe
@@ -92,6 +92,10 @@ wait_healthy api 120
 # --no-deps throughout: stripe-gw-app needs api, and a dependency on it would
 # start the finished seed again.
 if [ "$STRIPE_MODE" = real ]; then
+    # Nothing reaches Stripe before this point. Written earlier, a failed
+    # build would leave a marker whose sweep can't reach a database, and the
+    # next up's down would fail.
+    : >"$STATE_DIR/stripe"
     if ! compose run --rm --no-deps seed service-key; then
         echo "creating stripe-gw's API key failed" >&2
         exit 1

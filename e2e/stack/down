@@ -23,7 +23,10 @@ fi
 
 # --profile test also removes the playwright service's node_modules volume;
 # --profile stripe the Stripe services and their stripe-shared volume.
-compose_existing --profile test --profile stripe down -v --remove-orphans
+# .state/ goes even when compose down fails: the sweep has had its turn, and
+# a stale marker would send the next down's sweep to a database that is gone.
+down_failed=""
+compose_existing --profile test --profile stripe down -v --remove-orphans || down_failed=1
 rm -rf "$STATE_DIR"
 
-[ -z "$sweep_failed" ]
+[ -z "$sweep_failed" ] && [ -z "$down_failed" ]
