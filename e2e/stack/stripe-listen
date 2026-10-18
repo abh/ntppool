@@ -28,7 +28,29 @@ fi
 mv "$secret.tmp" "$secret"
 echo "webhook signing secret published"
 
+# The CLI prints the signing secret again in its "Ready!" line; the output
+# goes to CI logs, so it passes through a filter that blanks it. A FIFO
+# rather than a pipe gives this shell (PID 1 under compose) the CLI's pid
+# to pass TERM and INT on to.
+fifo=$(mktemp -u)
+mkfifo "$fifo"
+awk '{ gsub(/whsec_[A-Za-z0-9]+/, "whsec_[redacted]"); print; fflush() }' <"$fifo" &
+
 # The event types stripe-gw reads (webhook.go). askdev's endpoint also takes
 # subscription_schedule.*, which stripe-gw ignores.
-exec stripe listen --forward-to "$STRIPE_GW_URL/webhook" \
-    --events checkout.session.completed,customer.subscription.created,customer.subscription.updated,customer.subscription.deleted
+stripe listen --forward-to "$STRIPE_GW_URL/webhook" \
+    --events checkout.session.completed,customer.subscription.created,customer.subscription.updated,customer.subscription.deleted \
+    >"$fifo" 2>&1 &
+pid=$!
+trap 'kill "$pid" 2>/dev/null' TERM INT
+
+status=0
+wait "$pid" || status=$?
+# A signal ends the first wait early; wait for the CLI itself to exit.
+if kill -0 "$pid" 2>/dev/null; then
+    status=0
+    wait "$pid" || status=$?
+fi
+wait
+rm -f "$fifo"
+exit "$status"
