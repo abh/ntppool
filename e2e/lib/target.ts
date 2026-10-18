@@ -7,7 +7,18 @@ export type TargetName = "stack" | "askdev";
 export interface Target {
   name: TargetName;
   contextOptions: { ignoreHTTPSErrors: boolean };
+  launchOptions: { args: string[] };
 }
+
+// Every page loads two things from the internet: mapper.js from the
+// production mapper (`defer`, so DOMContentLoaded waits on it) and web fonts
+// from Google (the load event waits on them). From CI either can hang until
+// the 30s navigation timeout. Nothing the suite checks depends on them;
+// resolving their hosts to nothing makes them fail at once.
+const BROWSER_ARGS = [
+  "--host-resolver-rules=" +
+    "MAP www.mapper.ntppool.org ~NOTFOUND, MAP fonts.gstatic.com ~NOTFOUND",
+];
 
 const TARGETS: Record<
   TargetName,
@@ -66,5 +77,6 @@ export function applyTargetDefaults(env: NodeJS.ProcessEnv): Target {
   return {
     name,
     contextOptions: { ignoreHTTPSErrors: target.ignoreHTTPSErrors },
+    launchOptions: { args: BROWSER_ARGS },
   };
 }

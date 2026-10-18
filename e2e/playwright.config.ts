@@ -38,6 +38,7 @@ export default defineConfig({
   reporter: [["list"], ["html", { open: "never" }]],
   use: {
     ...target.contextOptions,
+    launchOptions: target.launchOptions,
     trace: "on-first-retry",
   },
   projects: [

@@ -108,7 +108,7 @@ export default async function globalSetup() {
   // place — a reachable API but a broken cookie (bad encoding), wrong host, or
   // unhonored session fails ONCE here with a clear message instead of as 30
   // opaque per-test failures.
-  const browser = await chromium.launch();
+  const browser = await chromium.launch(target.launchOptions);
   try {
     const context = await browser.newContext(target.contextOptions);
     const { email } = await loginAs(context, uniqueTestEmail("e2e-preflight"));
