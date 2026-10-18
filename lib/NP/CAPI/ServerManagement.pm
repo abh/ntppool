@@ -337,7 +337,8 @@ Hashref with structure:
                 deletion_cancelled => ...,  # bool - deletion_cancelled is true when the server was already registered to
  this account and scheduled for deletion, and AddServer cancelled the
  deletion instead of adding it: the server keeps its verification,
- netspeed, zones and history, and no "server added" email is sent.
+ netspeed, zones and history. The "server added" email lists it only
+ when the request has a batch_comment.
  success is true and server holds the kept server. Only set in a
  committed result; false for a server that was added or restored.
             },
