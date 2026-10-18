@@ -2,8 +2,7 @@ package NTPPool::Control::UserProfile;
 use strict;
 use parent            qw(NTPPool::Control);
 use Combust::Constant qw(OK);
-use NP::CAPI::Account qw(get_public_account_by_username);
-use NP::CAPI::Server  qw(get_account_servers);
+use NP::CAPI::Server  qw(get_account_servers get_public_account_by_username);
 
 sub uri_username {
     my $self = shift;

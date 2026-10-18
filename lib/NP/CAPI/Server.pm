@@ -12,6 +12,7 @@ use Exporter 'import';
 our @EXPORT_OK = qw(
     get_server
     get_account_servers
+    get_public_account_by_username
 );
 
 =head1 NAME
@@ -20,7 +21,7 @@ NP::CAPI::Server - ConnectRPC client for ServerService
 
 =head1 SYNOPSIS
 
-    use NP::CAPI::Server qw(get_server get_account_servers);
+    use NP::CAPI::Server qw(get_server get_account_servers get_public_account_by_username);
     # GetServer returns detailed information about a specific server.
 Authentication is optional by default - if authenticated, additional
 data may be returned based on ownership and account settings.
@@ -34,6 +35,14 @@ Set require_edit_permission=true to enforce authentication and permission checks
 Access control: public_profile=true OR authenticated user owns account OR user is staff.
 Returns 404 if account not found or not visible.
     my $result = get_account_servers(
+        $self->api_auth_params,      # Provides auth and context
+        account => $account->{id_token},
+    );
+
+    # GetPublicAccountByUsername returns the public account URL for legacy
+/user/{username} redirects. Authentication is not used: only users and
+accounts with public_profile=true are found.
+    my $result = get_public_account_by_username(
         $self->api_auth_params,      # Provides auth and context
         account => $account->{id_token},
     );
@@ -334,6 +343,76 @@ sub get_account_servers {
     return connect_rpc(
         service     => 'ntppool.server.v1.ServerService',
         method      => 'GetAccountServers',
+        request     => \%request,
+        http_method => 'GET',  # Side-effect free, use GET
+        %args  # Pass through auth, account, context
+    );
+}
+
+
+=head2 get_public_account_by_username
+
+GetPublicAccountByUsername returns the public account URL for legacy
+/user/{username} redirects. Authentication is not used: only users and
+accounts with public_profile=true are found.
+
+B<Arguments:>
+
+    my $result = get_public_account_by_username(
+        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
+        account => $account->{id_token},  # Optional: Account selection token
+        username => $value,       # string - username is the user's username to look up
+    );
+
+B<Returns:>
+
+Hashref with structure:
+
+    {
+        code         => 200,         # HTTP status code
+        status_line  => "200 OK",    # HTTP status text
+        connect_code => undef,       # ConnectRPC error code (or undef)
+        data         => {            # Response data
+            redirect_url => ...,  # string - redirect_url is the public account URL (e.g., "/a/example-slug")
+ Empty string if user/account not public or url_slug not set
+        },
+        error        => undef,       # Error message (if any)
+        trace_id     => "...",       # OpenTelemetry trace ID
+    }
+
+B<ConnectRPC Error Codes:>
+
+    unauthenticated, permission_denied, internal, invalid_argument, etc.
+
+B<Example:>
+
+    my $result = get_public_account_by_username(
+        $self->api_auth_params,           # Provides auth and context
+        account => $account->{id_token},  # Account from hashref
+    );
+
+    if ($result->{error}) {
+        warn "Error: $result->{error}";
+    } else {
+        my $data = $result->{data};
+        # Use response fields...
+    }
+
+=cut
+
+sub get_public_account_by_username {
+    my $validation_error = validate_key_value_args('get_public_account_by_username', @_);
+    return $validation_error if $validation_error;
+
+    my %args = @_;
+
+    # Extract request fields from args
+    my %request = ();
+    $request{'username'} = delete $args{'username'} if exists $args{'username'};
+
+    return connect_rpc(
+        service     => 'ntppool.server.v1.ServerService',
+        method      => 'GetPublicAccountByUsername',
         request     => \%request,
         http_method => 'GET',  # Side-effect free, use GET
         %args  # Pass through auth, account, context

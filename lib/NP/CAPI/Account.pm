@@ -33,7 +33,6 @@ our @EXPORT_OK = qw(
     schedule_account_deletion
     cancel_account_deletion
     check_user_deletion_eligibility
-    get_public_account_by_username
     get_related_accounts
     who_am_i
     BASIC
@@ -72,7 +71,7 @@ NP::CAPI::Account - ConnectRPC client for AccountService
 
 =head1 SYNOPSIS
 
-    use NP::CAPI::Account qw(get_account_status validate_session delete_session create_account update_account remove_user_from_account create_user_task list_user_tasks get_user_task get_account_server_verification_status get_accounts_to_notify get_account_users get_user_accounts get_account_invites create_account_invite accept_account_invite resend_account_invite get_account update_account_monitor_config can_delete_account schedule_account_deletion cancel_account_deletion check_user_deletion_eligibility get_public_account_by_username get_related_accounts who_am_i);
+    use NP::CAPI::Account qw(get_account_status validate_session delete_session create_account update_account remove_user_from_account create_user_task list_user_tasks get_user_task get_account_server_verification_status get_accounts_to_notify get_account_users get_user_accounts get_account_invites create_account_invite accept_account_invite resend_account_invite get_account update_account_monitor_config can_delete_account schedule_account_deletion cancel_account_deletion check_user_deletion_eligibility get_related_accounts who_am_i);
     # GetAccountStatus returns the current monitor eligibility and status for an account.
 Authentication is handled by middleware - the account is extracted from the session context.
     my $result = get_account_status(
@@ -259,13 +258,6 @@ Validates all accounts owned solely by the user and returns blocker details.
 Authentication: Required via session middleware.
 Authorization: User must be the target user or staff.
     my $result = check_user_deletion_eligibility(
-        $self->api_auth_params,      # Provides auth and context
-        account => $account->{id_token},
-    );
-
-    # GetPublicAccountByUsername returns public URL for legacy /user/{username} redirects.
-Authentication: Required (service key).
-    my $result = get_public_account_by_username(
         $self->api_auth_params,      # Provides auth and context
         account => $account->{id_token},
     );
@@ -2562,74 +2554,6 @@ sub check_user_deletion_eligibility {
     return connect_rpc(
         service     => 'ntppool.account.v1.AccountService',
         method      => 'CheckUserDeletionEligibility',
-        request     => \%request,
-        %args  # Pass through auth, account, context
-    );
-}
-
-
-=head2 get_public_account_by_username
-
-GetPublicAccountByUsername returns public URL for legacy /user/{username} redirects.
-Authentication: Required (service key).
-
-B<Arguments:>
-
-    my $result = get_public_account_by_username(
-        $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
-        account => $account->{id_token},  # Optional: Account selection token
-        username => $value,       # string - username is the user's username to look up
-    );
-
-B<Returns:>
-
-Hashref with structure:
-
-    {
-        code         => 200,         # HTTP status code
-        status_line  => "200 OK",    # HTTP status text
-        connect_code => undef,       # ConnectRPC error code (or undef)
-        data         => {            # Response data
-            redirect_url => ...,  # string - redirect_url is the public account URL (e.g., "/a/example-slug")
- Empty string if user/account not public or url_slug not set
-        },
-        error        => undef,       # Error message (if any)
-        trace_id     => "...",       # OpenTelemetry trace ID
-    }
-
-B<ConnectRPC Error Codes:>
-
-    unauthenticated, permission_denied, internal, invalid_argument, etc.
-
-B<Example:>
-
-    my $result = get_public_account_by_username(
-        $self->api_auth_params,           # Provides auth and context
-        account => $account->{id_token},  # Account from hashref
-    );
-
-    if ($result->{error}) {
-        warn "Error: $result->{error}";
-    } else {
-        my $data = $result->{data};
-        # Use response fields...
-    }
-
-=cut
-
-sub get_public_account_by_username {
-    my $validation_error = validate_key_value_args('get_public_account_by_username', @_);
-    return $validation_error if $validation_error;
-
-    my %args = @_;
-
-    # Extract request fields from args
-    my %request = ();
-    $request{'username'} = delete $args{'username'} if exists $args{'username'};
-
-    return connect_rpc(
-        service     => 'ntppool.account.v1.AccountService',
-        method      => 'GetPublicAccountByUsername',
         request     => \%request,
         %args  # Pass through auth, account, context
     );
