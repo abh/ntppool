@@ -107,8 +107,8 @@ test("a rejected zone is shown on the add page", async ({ page, fixtures }) => {
   await startAdd(page, adder, ip);
 
   // The page only offers real zones, so rewrite the chosen option. The
-  // comment runs the staff email branch on a failed add; the email itself
-  // can't be observed here, so this only shows the page still renders.
+  // comment goes to AddServer with the batch; this only shows the page
+  // still renders with one.
   const select = page.locator(`select[name="explicit_zone_${ip}"]`);
   await select.selectOption(ZONE);
   await select.evaluate((element) => {

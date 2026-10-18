@@ -87,10 +87,12 @@
     [% IF allow_submit %]
 
     <input type="hidden" name="host" value="[% host | html %]">
-    <h4>Comment</h4>
-    <textarea name="comment" rows="6" cols="80">
-</textarea><br />
-    <small>(Tell us if we auto-configured your zones wrong)</small>
+    <details>
+        <summary>Optional: need help from the NTP Pool staff with this addition? Add a comment</summary>
+        <textarea name="comment" rows="6" cols="80"
+            placeholder="Only if you need help with this addition, for example if we picked the wrong zones for your server. Leave it empty otherwise."></textarea><br />
+        <small>The comment goes to the support team, who will reply by email.</small>
+    </details>
 
     <br><br>
     <input type="submit" class="btn btn-primary" name="yes" value="Yes, this is my server, add it!">

@@ -170,7 +170,11 @@ export async function submitAdd(page: Page, ip: string): Promise<void> {
  */
 export async function confirmAdd(page: Page, ip: string, zone: string, comment?: string): Promise<Response> {
   await page.locator(`select[name="explicit_zone_${ip}"]`).selectOption(zone);
-  if (comment !== undefined) await page.locator('textarea[name="comment"]').fill(comment);
+  if (comment !== undefined) {
+    // The comment field is collapsed until its summary is clicked.
+    await page.locator("details", { has: page.locator('textarea[name="comment"]') }).locator("summary").click();
+    await page.locator('textarea[name="comment"]').fill(comment);
+  }
   const [response] = await Promise.all([
     page.waitForResponse((response) => new URL(response.url()).pathname === "/manage/server/add" && response.request().method() === "POST"),
     page.locator('input[name="yes"]').click(),

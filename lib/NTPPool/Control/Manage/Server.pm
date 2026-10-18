@@ -6,8 +6,6 @@ use NTPPool::Control::Manage;
 use parent            qw(NTPPool::Control::Manage);
 use Combust::Constant qw(OK NOT_FOUND);
 use Combust::Config   ();
-use NP::Email         ();
-use Email::Stuffer    ();
 use Sys::Hostname     qw(hostname);
 use Socket            qw(inet_ntoa);
 use Socket6;
@@ -267,7 +265,6 @@ sub handle_add {
         # result per requested server.
         my %result_for = map { $_->{ip} => $_ } @{$result->{data}{results} || []};
         my @added;
-        my $base_scores_url = $self->config->base_url('ntppool') . '/scores/';
 
         for my $server (@servers) {
             next if $server->{error} or $server->{listed};
@@ -275,11 +272,9 @@ sub handle_add {
             my $api_result = $result_for{$server->{ip}};
             if ($api_result and $api_result->{success}) {
                 my $s = NP::Data::Server->new(%{$api_result->{server}});
-                $server->{id}                 = $api_result->{server}{id};
-                $server->{scores_url}         = $base_scores_url . $server->{ip};
-                $server->{deletion_cancelled} = $api_result->{deletion_cancelled} ? 1 : 0;
-                $server->{added}              = 1;
-                $server->{manage_url}         = $self->manage_url($s->manage_url);
+                $server->{id}         = $api_result->{server}{id};
+                $server->{added}      = 1;
+                $server->{manage_url} = $self->manage_url($s->manage_url);
                 push @added, $server;
                 next;
             }
@@ -290,38 +285,6 @@ sub handle_add {
               . " (trace: "
               . ($result->{trace_id} // '') . ")";
             $server->{error} = $error || "The server wasn't added";
-        }
-
-        # The servers template param is still \@servers; add_email.txt and
-        # add.html skip or flag every server that has an error.
-        $self->tpl_param('comment', $comment);
-
-        if ($comment and @added) {
-            my $msg = $self->evaluate_template('tpl/manage/add_email.txt');
-            my $email =
-              Email::Stuffer->from(NP::Email::address("sender"))
-              ->to(NP::Email::address("notifications"))
-              ->reply_to($self->user->{email})
-              ->text_body($msg);
-
-            # Re-adding an own server that was scheduled for deletion
-            # cancels the deletion instead of adding a server.
-            my @new       = grep { !$_->{deletion_cancelled} } @added;
-            my @cancelled = grep { $_->{deletion_cancelled} } @added;
-            my @parts;
-            push @parts,
-              "New addition to the NTP Pool: " . join(", ", map { $_->{ip} } @new)
-              if @new;
-            push @parts, "Deletion cancelled: " . join(", ", map { $_->{ip} } @cancelled)
-              if @cancelled;
-            my $subject = join("; ", @parts);
-            if (grep { $_->{hostname} } @added) {
-                $subject .= " (" . join(", ", map { $_->{hostname} } @added) . ")";
-            }
-            $email->subject($subject);
-
-            my $return = NP::Email::sendmail($email->email);
-            warn Data::Dumper->Dump([\$msg, \$email, \$return], [qw(msg email return)]);
         }
 
         if (@added < @servers_to_add) {
