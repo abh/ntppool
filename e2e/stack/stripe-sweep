@@ -68,7 +68,7 @@ search() {
     page=""
     while :; do
         if [ -n "$page" ]; then
-            res=$(stripe_api GET /subscriptions/search -G --data-urlencode "query=$1" -d limit=100 -d "page=$page") || return 1
+            res=$(stripe_api GET /subscriptions/search -G --data-urlencode "query=$1" -d limit=100 --data-urlencode "page=$page") || return 1
         else
             res=$(stripe_api GET /subscriptions/search -G --data-urlencode "query=$1" -d limit=100) || return 1
         fi

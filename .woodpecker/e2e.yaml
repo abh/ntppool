@@ -50,6 +50,8 @@ variables:
       - docs/manage/tpl/vendor.html
       - e2e/tests/stripe-checkout.spec.ts
       - e2e/lib/subscriptions.ts
+      - e2e/lib/target.ts
+      - e2e/stack/Caddyfile
       - e2e/stack/stripe-*
       - e2e/stack/seed
       - .woodpecker/e2e.yaml
