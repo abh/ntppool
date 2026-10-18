@@ -29,7 +29,7 @@ variables:
 
   # The stripe-gw image for real-Stripe runs, pinned the same way: also in
   # e2e/stack/stripe-gw-image, and check-api-pin compares the two.
-  - &stripe_gw_image ${STRIPE_GW_IMAGE:-harbor.ntppool.org/ntporg/stripe-gw:sha-563cb4ec}
+  - &stripe_gw_image ${STRIPE_GW_IMAGE:-harbor.ntppool.org/ntporg/stripe-gw:0.10.0}
 
   # When the real-Stripe steps run (the suite against the real stripe-gw and
   # the Stripe test sandbox; e2e/README.md "Real Stripe on the stack"). One

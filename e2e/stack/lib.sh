@@ -22,7 +22,8 @@ compose_existing() {
 }
 
 # pinned_image <override> <pin file> <repository>: print the override if
-# set, else the pin file's image, after checking it is <repository>:sha-<hex>.
+# set, else the pin file's image, after checking it is <repository>:sha-<hex>
+# (a build) or <repository>:<x.y.z> (a release).
 pinned_image() {
     local override=$1 pin=$2 repo=$3 image
     if [ -n "$override" ]; then
@@ -33,8 +34,8 @@ pinned_image() {
     # trim leading and trailing whitespace
     image="${image#"${image%%[![:space:]]*}"}"
     image="${image%"${image##*[![:space:]]}"}"
-    if ! [[ $image =~ ^harbor\.ntppool\.org/ntporg/$repo:sha-[0-9a-f]{7,}$ ]]; then
-        echo "invalid $repo image '$image': expected harbor.ntppool.org/ntporg/$repo:sha-<7 or more hex digits> (see $STACK_DIR/$pin)" >&2
+    if ! [[ $image =~ ^harbor\.ntppool\.org/ntporg/$repo:(sha-[0-9a-f]{7,}|[0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+        echo "invalid $repo image '$image': expected harbor.ntppool.org/ntporg/$repo:sha-<7 or more hex digits> or :<x.y.z> (see $STACK_DIR/$pin)" >&2
         return 1
     fi
     printf '%s\n' "$image"
