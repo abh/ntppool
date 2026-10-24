@@ -71,6 +71,9 @@ function checkAndInitialize(): void {
 
   // Initialize Bootstrap components conditionally
   initializeBootstrap();
+
+  // Guard forms marked data-submit-once against double submits
+  initializeSubmitOnce();
 }
 
 // Initialize when DOM is ready
@@ -102,3 +105,6 @@ import './search-results-filter';
 
 // Load WebForm.dev integration
 import { initializeWebForm } from './webform';
+
+// Load submit-once form guard
+import { initializeSubmitOnce } from './submit-once';

@@ -23,7 +23,7 @@
           for diagnostics.<br/>
         [% END %]
         </p>
-    <form action="/manage/server/add#add" method="post">
+    <form action="/manage/server/add#add" method="post" data-submit-once="Checking servers…">
     <input type="hidden" name="a" value="[% account.id_token %]">
     <fieldset>
     <input type="text" class="text" name="host" value="[% host | html %]">

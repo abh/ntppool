@@ -25,7 +25,7 @@ variables:
   # written here as the default of API_IMAGE (a pipeline variable overrides it)
   # and also lives in e2e/stack/api-image for the local stack. check-api-pin
   # fails if the two differ. Bump both together.
-  - &api_image ${API_IMAGE:-harbor.ntppool.org/ntporg/api-dev:sha-c3bbfb6b}
+  - &api_image ${API_IMAGE:-harbor.ntppool.org/ntporg/api-dev:sha-e8ad0e71}
 
   # The stripe-gw image for real-Stripe runs, pinned the same way: also in
   # e2e/stack/stripe-gw-image, and check-api-pin compares the two.

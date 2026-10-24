@@ -18,6 +18,9 @@ use NP::CAPI::Server           qw(get_account_servers get_server);
 use NP::CAPI::ServerManagement qw(
     add_server_precheck
     add_server
+    ADD_SERVER_OUTCOME_ADDED
+    ADD_SERVER_OUTCOME_NEEDS_ZONE
+    ADD_SERVER_OUTCOME_CHECK_EXPIRED
     complete_server_verification
     get_server_verification
     move_server
@@ -147,7 +150,7 @@ sub handle_add {
         return OK, $self->evaluate_template('tpl/manage/add_form.html');
     }
 
-    my @servers;
+    return $self->_handle_add_confirm($host) if $self->req_param('yes');
 
     # Pass raw user input (hostname or IP) directly to API
     # DNS resolution happens in Go API (not Perl)
@@ -163,8 +166,137 @@ sub handle_add {
         return OK, $self->evaluate_template('tpl/manage/add_form.html');
     }
 
-    # Transform API results to template format
-    for my $result (@{$precheck_result->{data}{results}}) {
+    my $data    = $precheck_result->{data};
+    my @servers = _servers_from_precheck($data->{results});
+
+    if (!@servers) {
+        return OK, $self->evaluate_template('tpl/manage/add_form.html');
+    }
+
+    return $self->_render_add_results($data->{precheck_token},
+        \@servers, servers_skipped => $data->{servers_skipped});
+}
+
+# Show checked servers for confirmation. The token ties the confirmation
+# step to these results.
+sub _render_add_results {
+    my ($self, $precheck_token, $servers, %extra) = @_;
+
+    $self->tpl_param(precheck_token => $precheck_token);
+    $self->tpl_param(servers        => $servers);
+    $self->tpl_param(allow_submit   => scalar grep { !$_->{error} } @$servers);
+    $self->tpl_param($_, $extra{$_}) for keys %extra;
+    $self->_set_all_zones;
+
+    return OK, $self->evaluate_template('tpl/manage/add.html');
+}
+
+# The confirmation click: one AddServer call using the precheck token.
+sub _handle_add_confirm {
+    my ($self, $host) = @_;
+
+    # Each server that passed has an explicit_zone_<ip> field; the first
+    # value is the fallback zone (the API ignores it for servers with zones).
+    # Keys come in form order, which is the precheck's order.
+    my $params = $self->request->req_params;
+    my (@servers_to_add, %zone_choice, %seen);
+    for my $key ($params->keys) {
+        next unless $key =~ m/^explicit_zone_(.+)$/;
+        next if $seen{$key}++;
+        my $ip = $1;
+        my ($zone) = grep { defined and length } $params->get_all($key);
+
+        my %server_to_add = (ip => $ip);
+        if (defined $zone) {
+            $server_to_add{fallback_zone} = $zone;
+            $zone_choice{$ip} = $zone;
+        }
+        push @servers_to_add, \%server_to_add;
+    }
+
+    my $comment = $self->req_param('comment');
+    my $result  = add_server(
+        $self->api_auth_params,
+        account        => $self->current_account->{id_token},
+        input          => $host,
+        servers        => \@servers_to_add,
+        precheck_token => $self->req_param('precheck_token'),
+        batch_comment  => $comment,
+    );
+
+    if ($result->{error}) {
+        warn "Failed to add servers: $result->{error} (trace: $result->{trace_id})";
+        $self->tpl_param(error    => $result->{error});
+        $self->tpl_param(trace_id => $result->{trace_id});
+        return OK, $self->evaluate_template('tpl/manage/add.html');
+    }
+
+    my $outcome = $result->{data}{outcome} // '';
+
+    if (   $outcome eq ADD_SERVER_OUTCOME_NEEDS_ZONE
+        or $outcome eq ADD_SERVER_OUTCOME_CHECK_EXPIRED)
+    {
+
+        # Redraw from the API's results; needs_zone servers show their zone dropdown
+        return $self->_render_add_results(
+            $result->{data}{precheck_token},
+            [_servers_from_precheck($result->{data}{precheck_results})],
+            comment       => $comment,
+            zone_choice   => \%zone_choice,
+            check_expired => $outcome eq ADD_SERVER_OUTCOME_CHECK_EXPIRED,
+        );
+    }
+
+    if ($outcome ne ADD_SERVER_OUTCOME_ADDED) {
+        warn "AddServer returned unexpected outcome '$outcome' (trace: "
+          . ($result->{trace_id} // '') . ")";
+        $self->tpl_param(error    => "Unexpected response from the API");
+        $self->tpl_param(trace_id => $result->{trace_id});
+        return OK, $self->evaluate_template('tpl/manage/add.html');
+    }
+
+    # Match results to the submitted servers by IP; the API returns one
+    # result per requested server.
+    my %result_for = map { $_->{ip} => $_ } @{$result->{data}{results} || []};
+    my (@servers, @added);
+
+    for my $to_add (@servers_to_add) {
+        my %server = (ip => $to_add->{ip});
+        push @servers, \%server;
+
+        my $api_result = $result_for{$server{ip}};
+        if ($api_result and $api_result->{success}) {
+            my $s = NP::Data::Server->new(%{$api_result->{server}});
+            $server{id}         = $api_result->{server}{id};
+            $server{added}      = 1;
+            $server{manage_url} = $self->manage_url($s->manage_url);
+            push @added, \%server;
+            next;
+        }
+
+        my $error = $api_result && $api_result->{error};
+        warn "AddServer did not add $server{ip}: "
+          . ($error // 'no result')
+          . " (trace: "
+          . ($result->{trace_id} // '') . ")";
+        $server{error} = $error || "The server wasn't added";
+    }
+
+    if (@added < @servers_to_add) {
+        $self->tpl_param(servers => \@servers);
+        return OK, $self->evaluate_template('tpl/manage/add.html');
+    }
+
+    return $self->redirect(
+        @added ? $added[-1]{manage_url} : $self->manage_url('/manage/servers'));
+}
+
+# Transform API precheck results to the template format
+sub _servers_from_precheck {
+    my ($results) = @_;
+
+    my @servers;
+    for my $result (@{$results || []}) {
         my %server = (
             ip         => $result->{ip},
             ip_version => $result->{ip_version},
@@ -175,131 +307,40 @@ sub handle_add {
             $server{hostname} = $result->{hostname};
         }
 
-        # Handle errors and already-exists cases
-        if ($result->{error}) {
+        $server{not_checked} = 1 if $result->{not_checked};
+
+        if ($result->{needs_zone}) {
+
+            # Still valid; the API wants a zone for it. The error says why.
+            $server{needs_zone}       = 1;
+            $server{needs_zone_error} = $result->{error};
+        }
+        elsif ($result->{error}) {
+
+            # Handle errors and already-exists cases
             $server{error} = $result->{error};
             if ($result->{already_exists}) {
                 $server{listed} = $result->{already_exists_same_account};
             }
         }
 
-        # Build zones array from API response
-        if ($result->{zones} && @{$result->{zones}}) {
-
-            # API returns zones as hashrefs with name, description, url, dns
-            # Template expects similar structure - just pass through
-            $server{zones} = $result->{zones};
-
-            # Find country zone (2-letter code, not root or subdivisions)
-            # Zones are ordered root first (e.g., [".", "@", "europe", "de"])
-            for my $zone (@{$result->{zones}}) {
-                if (length($zone->{name}) == 2) {
-                    $server{country_zone} = $zone;
-                    last;
-                }
-            }
-        }
-
-        # Store detected country for fallback zone logic
-        $server{geoip_country} = $result->{detected_country}
-          if $result->{detected_country};
+        # API returns zones as hashrefs with name, description, url, dns;
+        # the template uses them as-is
+        $server{zones} = $result->{zones} if $result->{zones} && @{$result->{zones}};
 
         push @servers, \%server;
     }
 
-    if (!@servers) {
-        return OK, $self->evaluate_template('tpl/manage/add_form.html');
-    }
+    return @servers;
+}
 
-    # Handle data_missing for servers without zones
-    for my $server (@servers) {
-        if (!$server->{country_zone}) {
-            $server->{data_missing} ||= 'Country not specified'
-              if !$server->{error}
-              and $self->req_param('yes')
-              and !$self->req_param('explicit_zone_' . $server->{ip});
-        }
-    }
+# Country list for the zone dropdowns
+sub _set_all_zones {
+    my $self = shift;
 
-    # Store precheck token for the confirmation step
-    $self->tpl_param('precheck_token', $precheck_result->{data}{precheck_token});
-
-    my $allow_submit = grep { !$_->{error} } @servers;
-    my $data_missing = grep { $_->{data_missing} } @servers;
-
-    $self->tpl_param(servers => \@servers);
-
-    $self->tpl_param('allow_submit' => $allow_submit);
-
-    if ($self->req_param('yes') and $allow_submit and !$data_missing) {
-
-        # Collect all servers to add in single batch
-        my @servers_to_add;
-        for my $server (@servers) {
-            next if $server->{error} or $server->{listed};
-
-            my %server_to_add = (ip => $server->{ip});
-            if (my $zone = $self->req_param('explicit_zone_' . $server->{ip})) {
-                $server_to_add{fallback_zone} = $zone;
-            }
-            push @servers_to_add, \%server_to_add;
-        }
-
-        # Make single API call for all servers
-        my $comment = $self->req_param('comment');
-        my $result  = add_server(
-            $self->api_auth_params,
-            account        => $self->current_account->{id_token},
-            servers        => \@servers_to_add,
-            precheck_token => $self->req_param('precheck_token'),
-            batch_comment  => $comment,
-        );
-
-        if ($result->{error}) {
-            warn "Failed to add servers: $result->{error} (trace: $result->{trace_id})";
-            $self->tpl_param(error => $result->{error}, trace_id => $result->{trace_id});
-            return OK, $self->evaluate_template('tpl/manage/add.html');
-        }
-
-        # Match results to the submitted servers by IP; the API returns one
-        # result per requested server.
-        my %result_for = map { $_->{ip} => $_ } @{$result->{data}{results} || []};
-        my @added;
-
-        for my $server (@servers) {
-            next if $server->{error} or $server->{listed};
-
-            my $api_result = $result_for{$server->{ip}};
-            if ($api_result and $api_result->{success}) {
-                my $s = NP::Data::Server->new(%{$api_result->{server}});
-                $server->{id}         = $api_result->{server}{id};
-                $server->{added}      = 1;
-                $server->{manage_url} = $self->manage_url($s->manage_url);
-                push @added, $server;
-                next;
-            }
-
-            my $error = $api_result && $api_result->{error};
-            warn "AddServer did not add $server->{ip}: "
-              . ($error // 'no result')
-              . " (trace: "
-              . ($result->{trace_id} // '') . ")";
-            $server->{error} = $error || "The server wasn't added";
-        }
-
-        if (@added < @servers_to_add) {
-            $self->tpl_param(allow_submit => 0);
-            return OK, $self->evaluate_template('tpl/manage/add.html');
-        }
-
-        return $self->redirect(
-            @added ? $added[-1]{manage_url} : $self->manage_url('/manage/servers'));
-    }
-
-    # Fetch zones via CAPI
     my $zones_result = list_zones(
         $self->api_auth_params,
-        account   => $account->{id_token},
+        account   => $self->current_account->{id_token},
         countries => JSON::XS::true,
     );
 
@@ -307,18 +348,12 @@ sub handle_add {
     if ($zones_result->{error}) {
         warn "Failed to fetch zones via CAPI: " . $zones_result->{error};
         warn "Trace ID: " . $zones_result->{trace_id} if $zones_result->{trace_id};
-        @all_zones = ();
     }
     else {
         # The API returns DNS-enabled country zones sorted by description
         @all_zones = @{$zones_result->{data}{zones} || []};
     }
     $self->tpl_param(all_zones => \@all_zones);
-
-    #use Data::Dump qw(pp);
-    #warn "SERVERS: ", pp(\@servers);
-
-    return OK, $self->evaluate_template('tpl/manage/add.html');
 }
 
 # _get_server_ips removed - DNS resolution now handled by Go API

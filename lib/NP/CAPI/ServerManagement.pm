@@ -18,7 +18,19 @@ our @EXPORT_OK = qw(
     complete_server_verification
     get_server_verification
     move_server
+    ADD_SERVER_OUTCOME_UNSPECIFIED
+    ADD_SERVER_OUTCOME_ADDED
+    ADD_SERVER_OUTCOME_NEEDS_ZONE
+    ADD_SERVER_OUTCOME_CHECK_EXPIRED
 );
+
+# Enum constants
+use constant {
+    ADD_SERVER_OUTCOME_UNSPECIFIED => 'ADD_SERVER_OUTCOME_UNSPECIFIED',
+    ADD_SERVER_OUTCOME_ADDED => 'ADD_SERVER_OUTCOME_ADDED',
+    ADD_SERVER_OUTCOME_NEEDS_ZONE => 'ADD_SERVER_OUTCOME_NEEDS_ZONE',
+    ADD_SERVER_OUTCOME_CHECK_EXPIRED => 'ADD_SERVER_OUTCOME_CHECK_EXPIRED',
+};
 
 =head1 NAME
 
@@ -28,7 +40,10 @@ NP::CAPI::ServerManagement - ConnectRPC client for ServerManagementService
 
     use NP::CAPI::ServerManagement qw(add_server_precheck add_server update_server delete_server start_server_verification complete_server_verification get_server_verification move_server);
     # AddServerPrecheck validates multiple server IPs and returns results for each
-Accepts unlimited IPs; processes first 6 NEW servers only
+Accepts unlimited inputs. Cheap checks (format, public address, already
+registered) run for every resolved IP; the NTP check then runs on the
+remaining IPs a few at a time until 6 have passed or the check budget runs
+out. IPs that were not checked are returned with not_checked set.
 Authentication: Required via session middleware
 Authorization: User must have access to account
     my $result = add_server_precheck(
@@ -38,6 +53,10 @@ Authorization: User must have access to account
 
     # AddServer adds multiple servers to an account (all-or-nothing transaction)
 Accepts unlimited servers; processes first 6 NEW servers only
+With a valid precheck token the stored precheck results are used. If a
+server needs a zone, nothing is added and the token is kept. With a
+missing, expired or used token nothing is added; the response carries a
+fresh precheck and a new token (outcome CHECK_EXPIRED).
 Authentication: Required via session middleware
 Authorization: User must have access to account
 Requires can_add_servers (fewer than 2 unverified servers); otherwise
@@ -172,7 +191,10 @@ OpenTelemetry trace ID for request tracing and debugging. Include this when repo
 =head2 add_server_precheck
 
 AddServerPrecheck validates multiple server IPs and returns results for each
-Accepts unlimited IPs; processes first 6 NEW servers only
+Accepts unlimited inputs. Cheap checks (format, public address, already
+registered) run for every resolved IP; the NTP check then runs on the
+remaining IPs a few at a time until 6 have passed or the check budget runs
+out. IPs that were not checked are returned with not_checked set.
 Authentication: Required via session middleware
 Authorization: User must have access to account
 
@@ -189,8 +211,12 @@ B<Arguments:>
  - All DNS resolution occurs in Go API (client cannot control DNS responses)
  - Hostname-to-IP mapping is captured and stored in precheck token
  - AddServer validates IP matches the hostname from precheck token
- - 5-minute token expiry limits window for DNS changes between precheck and add
+ - 30-minute token expiry limits window for DNS changes between precheck and add
  - Internal domains (.local, .cluster) are blocked to prevent information leakage
+        prefer_ips => $value,       # arrayref[string] - prefer_ips are checked first, in the order given, ahead of the other
+ resolved IPs. A preferred IP only moves up in the check order; it goes
+ through every check like any other IP. Preferred IPs that are not among
+ the resolved IPs are ignored.
     );
 
 B<Returns:>
@@ -219,10 +245,15 @@ Hashref with structure:
  Multiple IPs may share the same hostname if DNS returned multiple addresses
                 original_input => ...,  # string - original_input is what the user originally entered (for grouping results in UI)
  This allows grouping results by the input that generated them
+                not_checked => ...,  # bool - not_checked is true when the NTP check did not run for this IP because 6
+ servers had already passed or the check budget ran out. valid is false
+ and error says why. It is not a failure of the server itself.
+                needs_zone => ...,  # bool - needs_zone is set by AddServer (outcome NEEDS_ZONE) on a passed server
+ that has no zones and no valid fallback_zone in the request.
             },
             # ... more items
         ],  # arrayref[hashref (ServerPrecheckResult)] - results contains validation results for each IP
-            precheck_token => ...,  # string - precheck_token is valid for 5 minutes and covers all IPs in this validation
+            precheck_token => ...,  # string - precheck_token is valid for 30 minutes and covers all IPs in this validation
  Can be used in AddServer to skip re-validation (if token not expired)
             servers_skipped => ...,  # int - servers_skipped is count of servers not processed due to 6-server limit
             already_exists_count => ...,  # int - already_exists_count is count of servers already in system (not processed)
@@ -244,7 +275,7 @@ results contains validation results for each IP
 
 =item * B<precheck_token> (string)
 
-precheck_token is valid for 5 minutes and covers all IPs in this validation
+precheck_token is valid for 30 minutes and covers all IPs in this validation
  Can be used in AddServer to skip re-validation (if token not expired)
 
 
@@ -289,6 +320,7 @@ sub add_server_precheck {
     # Extract request fields from args
     my %request = ();
     $request{'inputs'} = delete $args{'inputs'} if exists $args{'inputs'};
+    $request{'prefer_ips'} = delete $args{'prefer_ips'} if exists $args{'prefer_ips'};
 
     return connect_rpc(
         service     => 'ntppool.server.v1.ServerManagementService',
@@ -303,6 +335,10 @@ sub add_server_precheck {
 
 AddServer adds multiple servers to an account (all-or-nothing transaction)
 Accepts unlimited servers; processes first 6 NEW servers only
+With a valid precheck token the stored precheck results are used. If a
+server needs a zone, nothing is added and the token is kept. With a
+missing, expired or used token nothing is added; the response carries a
+fresh precheck and a new token (outcome CHECK_EXPIRED).
 Authentication: Required via session middleware
 Authorization: User must have access to account
 Requires can_add_servers (fewer than 2 unverified servers); otherwise
@@ -314,9 +350,14 @@ B<Arguments:>
         $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
         account => $account->{id_token},  # Optional: Account selection token
         servers => $value,       # arrayref[hashref (ServerToAdd)] - servers is the list of servers to add (unlimited input, max 6 processed)
-        precheck_token => $value,       # string - precheck_token skips validation if provided and valid (expires after 5 minutes)
- If expired, re-validation occurs before adding
+        precheck_token => $value,       # string - precheck_token is the token from AddServerPrecheck (expires after 30
+ minutes, single use). If it is missing, expired or used, nothing is added:
+ AddServer runs a fresh precheck (using input, with the request's server
+ IPs as prefer_ips) and returns it with a new token, outcome CHECK_EXPIRED.
         batch_comment => $value,       # string - batch_comment applies to all servers (sent to notifications)
+        input => $value,       # string - input is the hostname or IP the operator entered. Used for the fresh
+ precheck when the token is missing or expired. Required (invalid_argument
+ otherwise) when there is no precheck_token.
     );
 
 B<Returns:>
@@ -346,6 +387,35 @@ Hashref with structure:
         ],  # arrayref[hashref (ServerAddResult)] - results has one result per requested server, in request order; servers
  past the 6-new-server limit get a failed result
             servers_skipped => ...,  # int - servers_skipped is count of servers not processed due to 6-server limit
+            outcome => ...,  # string (enum: AddServerOutcome) - outcome says which of the three cases this response is.
+            precheck_results => [
+            {
+                ip => ...,  # string - ip is the IP address that was validated
+                valid => ...,  # bool - valid indicates if this IP passed validation
+                error => ...,  # string - Error information (only if invalid)
+                already_exists => ...,  # bool - Already-exists flags
+                already_exists_same_account => ...,  # bool
+                already_exists_other_account => ...,  # bool
+                ip_version => ...,  # string - Server information (only if valid and not exists)
+                stratum => ...,  # int - NTP check results
+                ntp_error => ...,  # string
+                zones => ...,  # hashref (ZoneReference) - Zone assignment (using existing ZoneReference type)
+                detected_country => ...,  # string - detected_country from GeoIP (empty if GeoIP failed)
+                hostname => ...,  # string - hostname if input was a hostname (empty if direct IP input)
+ Multiple IPs may share the same hostname if DNS returned multiple addresses
+                original_input => ...,  # string - original_input is what the user originally entered (for grouping results in UI)
+ This allows grouping results by the input that generated them
+                not_checked => ...,  # bool - not_checked is true when the NTP check did not run for this IP because 6
+ servers had already passed or the check budget ran out. valid is false
+ and error says why. It is not a failure of the server itself.
+                needs_zone => ...,  # bool - needs_zone is set by AddServer (outcome NEEDS_ZONE) on a passed server
+ that has no zones and no valid fallback_zone in the request.
+            },
+            # ... more items
+        ],  # arrayref[hashref (ServerPrecheckResult)] - precheck_results is set for NEEDS_ZONE (the stored results, with
+ needs_zone flagged) and CHECK_EXPIRED (the fresh results).
+            precheck_token => ...,  # string - precheck_token is set for NEEDS_ZONE (the same token, still valid) and
+ CHECK_EXPIRED (a new token).
         },
         error        => undef,       # Error message (if any)
         trace_id     => "...",       # OpenTelemetry trace ID
@@ -366,6 +436,23 @@ results has one result per requested server, in request order; servers
 =item * B<servers_skipped> (int)
 
 servers_skipped is count of servers not processed due to 6-server limit
+
+
+=item * B<outcome> (string (enum: AddServerOutcome))
+
+outcome says which of the three cases this response is.
+
+
+=item * B<precheck_results> (arrayref[hashref (ServerPrecheckResult)])
+
+precheck_results is set for NEEDS_ZONE (the stored results, with
+ needs_zone flagged) and CHECK_EXPIRED (the fresh results).
+
+
+=item * B<precheck_token> (string)
+
+precheck_token is set for NEEDS_ZONE (the same token, still valid) and
+ CHECK_EXPIRED (a new token).
 
 
 =back
@@ -401,6 +488,7 @@ sub add_server {
     $request{'servers'} = delete $args{'servers'} if exists $args{'servers'};
     $request{'precheck_token'} = delete $args{'precheck_token'} if exists $args{'precheck_token'};
     $request{'batch_comment'} = delete $args{'batch_comment'} if exists $args{'batch_comment'};
+    $request{'input'} = delete $args{'input'} if exists $args{'input'};
 
     return connect_rpc(
         service     => 'ntppool.server.v1.ServerManagementService',
