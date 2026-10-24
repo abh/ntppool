@@ -191,7 +191,8 @@ Hashref with structure:
             {
                 vendor_zone_id => ...,  # int - Core identification
  vendor_zone_id is the numeric ID
-                id_token => ...,  # string - id_token is the token ID (format: "vz_{token}")
+                id_token => ...,  # string - id_token is the zone token ID. New zones get "vz_{token}"; treat it as
+ opaque and pass it back unchanged.
                 zone_name => ...,  # string - zone_name is the DNS zone name (e.g., "example")
                 status => ...,  # string - status is the zone status (New, Pending, Approved, Rejected)
                 created_on => ...,  # string - created_on is when the zone was requested (RFC3339)
@@ -280,7 +281,8 @@ B<Arguments:>
     my $result = get_vendor_zone(
         $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
         account => $account->{id_token},  # Optional: Account selection token
-        id_token => $value,       # string - id_token identifies the zone (required, format: "vz_{token}")
+        id_token => $value,       # string - id_token identifies the zone (required). Pass the value the API returned
+ unchanged; don't check its format.
     );
 
 B<Returns:>
@@ -295,7 +297,8 @@ Hashref with structure:
             zone => {
                 vendor_zone_id => ...,  # int - Core identification
  vendor_zone_id is the numeric ID
-                id_token => ...,  # string - id_token is the token ID (format: "vz_{token}")
+                id_token => ...,  # string - id_token is the zone token ID. New zones get "vz_{token}"; treat it as
+ opaque and pass it back unchanged.
                 zone_name => ...,  # string - zone_name is the DNS zone name (e.g., "example")
                 status => ...,  # string - status is the zone status (New, Pending, Approved, Rejected)
                 created_on => ...,  # string - created_on is when the zone was requested (RFC3339)
@@ -403,12 +406,14 @@ Hashref with structure:
         connect_code => undef,       # ConnectRPC error code (or undef)
         data         => {            # Response data
             vendor_zone_id => ...,  # int - vendor_zone_id is the ID of the created request
-            id_token => ...,  # string - id_token is the token ID (format: "vz_{token}")
+            id_token => ...,  # string - id_token is the zone token ID. New zones get "vz_{token}"; treat it as
+ opaque and pass it back unchanged.
             status => ...,  # string - status will be "New"
             zone => {
                 vendor_zone_id => ...,  # int - Core identification
  vendor_zone_id is the numeric ID
-                id_token => ...,  # string - id_token is the token ID (format: "vz_{token}")
+                id_token => ...,  # string - id_token is the zone token ID. New zones get "vz_{token}"; treat it as
+ opaque and pass it back unchanged.
                 zone_name => ...,  # string - zone_name is the DNS zone name (e.g., "example")
                 status => ...,  # string - status is the zone status (New, Pending, Approved, Rejected)
                 created_on => ...,  # string - created_on is when the zone was requested (RFC3339)
@@ -446,7 +451,8 @@ vendor_zone_id is the ID of the created request
 
 =item * B<id_token> (string)
 
-id_token is the token ID (format: "vz_{token}")
+id_token is the zone token ID. New zones get "vz_{token}"; treat it as
+ opaque and pass it back unchanged.
 
 
 =item * B<status> (string)
@@ -517,7 +523,8 @@ B<Arguments:>
     my $result = update_vendor_zone(
         $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
         account => $account->{id_token},  # Optional: Account selection token
-        id_token => $value,       # string - id_token identifies the zone (required, format: "vz_{token}")
+        id_token => $value,       # string - id_token identifies the zone (required). Pass the value the API returned
+ unchanged; don't check its format.
         content => $value,       # hashref (VendorZoneContent) - content holds the fields to update (only provided fields are applied)
     );
 
@@ -534,7 +541,8 @@ Hashref with structure:
             zone => {
                 vendor_zone_id => ...,  # int - Core identification
  vendor_zone_id is the numeric ID
-                id_token => ...,  # string - id_token is the token ID (format: "vz_{token}")
+                id_token => ...,  # string - id_token is the zone token ID. New zones get "vz_{token}"; treat it as
+ opaque and pass it back unchanged.
                 zone_name => ...,  # string - zone_name is the DNS zone name (e.g., "example")
                 status => ...,  # string - status is the zone status (New, Pending, Approved, Rejected)
                 created_on => ...,  # string - created_on is when the zone was requested (RFC3339)
@@ -629,7 +637,8 @@ B<Arguments:>
     my $result = submit_vendor_zone(
         $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
         account => $account->{id_token},  # Optional: Account selection token
-        id_token => $value,       # string - id_token identifies the zone (required, format: "vz_{token}")
+        id_token => $value,       # string - id_token identifies the zone (required). Pass the value the API returned
+ unchanged; don't check its format.
         content => $value,       # hashref (VendorZoneContent) - content holds any final edits to apply before submission (optional).
  opensource_requested / opensource_info live here.
     );
@@ -649,7 +658,8 @@ Hashref with structure:
             zone => {
                 vendor_zone_id => ...,  # int - Core identification
  vendor_zone_id is the numeric ID
-                id_token => ...,  # string - id_token is the token ID (format: "vz_{token}")
+                id_token => ...,  # string - id_token is the zone token ID. New zones get "vz_{token}"; treat it as
+ opaque and pass it back unchanged.
                 zone_name => ...,  # string - zone_name is the DNS zone name (e.g., "example")
                 status => ...,  # string - status is the zone status (New, Pending, Approved, Rejected)
                 created_on => ...,  # string - created_on is when the zone was requested (RFC3339)
@@ -766,7 +776,8 @@ B<Arguments:>
     my $result = update_vendor_zone_status(
         $self->api_auth_params,      # Provides auth (user/session token) and context (X-Forwarded-For)
         account => $account->{id_token},  # Optional: Account selection token
-        id_token => $value,       # string - id_token identifies the zone (required, format: "vz_{token}")
+        id_token => $value,       # string - id_token identifies the zone (required). Pass the value the API returned
+ unchanged; don't check its format.
         status => $value,       # string - status is the new status (Approved, Rejected) (required)
         rt_ticket => $value,       # int - rt_ticket is optional admin tracking number
         opensource_approved => $value,       # bool - opensource_approved records whether the open-source exemption was granted.
@@ -787,7 +798,8 @@ Hashref with structure:
             zone => {
                 vendor_zone_id => ...,  # int - Core identification
  vendor_zone_id is the numeric ID
-                id_token => ...,  # string - id_token is the token ID (format: "vz_{token}")
+                id_token => ...,  # string - id_token is the zone token ID. New zones get "vz_{token}"; treat it as
+ opaque and pass it back unchanged.
                 zone_name => ...,  # string - zone_name is the DNS zone name (e.g., "example")
                 status => ...,  # string - status is the zone status (New, Pending, Approved, Rejected)
                 created_on => ...,  # string - created_on is when the zone was requested (RFC3339)
