@@ -23,7 +23,7 @@ test("adding another account's active server is refused", async ({ browser, fixt
   try {
     await resolveDefaultAccountToken(outsiderPage);
     await submitAdd(outsiderPage, server.ip);
-    await expect(outsiderPage.locator('.alert.alert-danger[role="alert"]')).toContainText("Server already registered");
+    await expect(outsiderPage.locator(".server_info .alert.alert-warning")).toContainText("Server already registered");
   } finally {
     await outsiderContext.close();
   }

@@ -20,10 +20,15 @@
 </div>
 [% END %]
 
-[% IF servers_skipped %]
+[% not_checked = [];
+   FOR server = servers; IF server.not_checked; not_checked.push(server.ip); END; END %]
+[% IF not_checked.size %]
 <div class="alert alert-info">
-    [% servers_skipped %] addresses weren't checked.
+    [% not_checked.size %] [% not_checked.size == 1 ? "address wasn't" : "addresses weren't" %] checked.
     Add these servers and verify them, then add the hostname again for the rest.
+    <ul class="mb-0">
+        [% FOR ip = not_checked %]<li><tt>[% ip | html %]</tt></li>[% END %]
+    </ul>
 </div>
 [% END %]
 
@@ -34,7 +39,8 @@
     <input type="hidden" name="precheck_token" value="[% precheck_token | html %]">
     [% END %]
 
-    [% FOR server = servers %]
+    [% FOR server = servers;
+       NEXT IF server.not_checked %]
 
     <div class="server_info" id="server[% loop.count %]">
 
@@ -57,16 +63,10 @@
     [% NEXT; END %]
 
 
-        [% IF server.not_checked %]
-        <div class="alert alert-info">
+        [% IF server.error %]
+        <div class="alert alert-warning">
             [% server.error | html %]
         </div>
-    </div> [% # server info div %]
-    [% NEXT; END %]
-
-
-        [% IF server.error %]
-        [% PROCESS tpl/common/error_alert.html, error = server.error %]
     </div> [% # server info div %]
     [% NEXT; END %]
 

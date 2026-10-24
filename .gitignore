@@ -42,3 +42,5 @@ docs/shared/static/js/legacy/
 
 # e2e/stack/up: the running stack's id and mode
 e2e/stack/.state/
+
+.mcp.json

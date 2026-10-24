@@ -173,8 +173,7 @@ sub handle_add {
         return OK, $self->evaluate_template('tpl/manage/add_form.html');
     }
 
-    return $self->_render_add_results($data->{precheck_token},
-        \@servers, servers_skipped => $data->{servers_skipped});
+    return $self->_render_add_results($data->{precheck_token}, \@servers);
 }
 
 # Show checked servers for confirmation. The token ties the confirmation
