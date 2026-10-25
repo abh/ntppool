@@ -325,7 +325,7 @@ function handleLegacyMonitorNetworkError(fallbackTarget: HTMLElement): void {
   const traceidSpan = document.getElementById('monitor-config-error-traceid');
 
   if (!errorDiv || !messageSpan || !traceidSpan) {
-    showErrorAlert(fallbackTarget, message, '');
+    showErrorAlert(fallbackTarget, message);
     console.log('Monitor network error shown in request target');
     return;
   }
@@ -346,7 +346,7 @@ function handleLegacyMonitorNetworkError(fallbackTarget: HTMLElement): void {
  * Replace a container's content with an error alert showing the message
  * and, when there is one, the trace ID
  */
-function showErrorAlert(container: HTMLElement, message: string, traceid: string): void {
+export function showErrorAlert(container: HTMLElement, message: string, traceid = ''): void {
   let errorHtml = `<div class="alert alert-danger" role="alert">
     <strong>Error:</strong> ${escapeHtml(message)}`;
 
