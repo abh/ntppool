@@ -522,7 +522,8 @@ sub render_edit_json {
     my $self = shift;
     my ($zone, $errors) = $self->_edit_zone;
 
-    return OK, $json->encode({zone => $zone, errors => $errors});
+    return OK, $json->encode({zone => $zone, errors => $errors}),
+      'application/json; charset=utf-8';
 }
 
 sub _edit_zone {
@@ -714,7 +715,8 @@ sub render_subscription {
                   . " (trace: "
                   . ($status->{trace_id} || 'none') . ")";
                 return OK,
-                  $json->encode({error => "Could not start checkout; please try again."});
+                  $json->encode({error => "Could not start checkout; please try again."}),
+                  'application/json; charset=utf-8';
             }
             $required_devices = $status->{data}{required_devices};
 
@@ -726,7 +728,8 @@ sub render_subscription {
                   . ($zone->{id_token} // 'none')
                   . "; refusing checkout";
                 return OK,
-                  $json->encode({error => "Could not start checkout; please try again."});
+                  $json->encode({error => "Could not start checkout; please try again."}),
+                  'application/json; charset=utf-8';
             }
         }
 
@@ -750,7 +753,8 @@ sub render_subscription {
               grep { $_->{ID} eq $price_id } @{$product ? $product->{Plans} : []};
             unless ($plan) {
                 warn "price $price_id is not a plan of product $product_id";
-                return OK, $json->encode({error => "Unknown plan; please choose again."});
+                return OK, $json->encode({error => "Unknown plan; please choose again."}),
+                  'application/json; charset=utf-8';
             }
 
             # A frozen account (deletion_on set) never reaches here: the
@@ -770,7 +774,8 @@ sub render_subscription {
                 unless ($zone) {
                     warn "refusing tiered checkout for price $price_id without a zone";
                     return OK,
-                      $json->encode({error => "Choose a plan from the zone's page."});
+                      $json->encode({error => "Choose a plan from the zone's page."}),
+                      'application/json; charset=utf-8';
                 }
                 $quantity = 0 + $required_devices;
             }
@@ -794,7 +799,8 @@ sub render_subscription {
                       (($customer && $customer->{error}) || 'no id returned');
                     return OK,
                       $json->encode(
-                          {error => "Could not start checkout; please try again."});
+                          {error => "Could not start checkout; please try again."}),
+                      'application/json; charset=utf-8';
                 }
 
                 my $update_result = update_account_stripe_customer(
@@ -809,7 +815,8 @@ sub render_subscription {
                       . ($update_result->{trace_id} || 'none') . ")";
                     return OK,
                       $json->encode(
-                          {error => "Could not start checkout; please try again."});
+                          {error => "Could not start checkout; please try again."}),
+                      'application/json; charset=utf-8';
                 }
 
                 # Update local copy for immediate use
@@ -834,7 +841,8 @@ sub render_subscription {
                 warn "create session error: ", $session->{error};
 
                 # TODO: formatted error page
-                return OK, $json->encode({error => $session->{error}});
+                return OK, $json->encode({error => $session->{error}}),
+                  'application/json; charset=utf-8';
             }
             return $self->redirect($session->{url});
 

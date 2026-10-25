@@ -59,7 +59,7 @@ sub render {
     my $json = JSON::XS->new->pretty->utf8->convert_blessed;
     my $js   = $json->encode($root);
 
-    return OK, $js;
+    return OK, $js, 'application/json; charset=utf-8';
 }
 
 1;
