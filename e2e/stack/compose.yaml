@@ -80,7 +80,7 @@ services:
     environment:
       <<: *site-env
       api-internal: http://api:4211/
-      # The image serves its own static files under /static/ (askdev: same).
+      # The image serves its own static files under /static/.
       static_base: /static/
       httpd_maxclients: "6"
       email_default: support@ntppool.test
@@ -205,15 +205,15 @@ services:
       - apibin:/apibin:ro
       - caddydata:/caddy:ro
     environment:
-      # Set explicitly so a leftover e2e/.env (askdev URLs) cannot win: dotenv
-      # never overrides variables that are already set.
+      # Set explicitly so a local e2e/.env cannot win: dotenv never overrides
+      # variables that are already set.
       E2E_TARGET: stack
       NTP_BASE_URL: https://web.ntppool.test
       NTP_MANAGE_URL: https://manage.ntppool.test
       NTP_INTERNAL_API_URL: http://api:4211/int/rpc
       NTP_API_CLI: /apibin/api
       NODE_EXTRA_CA_CERTS: /caddy/caddy/pki/authorities/local/root.crt
-      # The one server seed.sql creates; an askdev value in e2e/.env would 404.
+      # The one server seed.sql creates.
       NTP_SCORES_TEST_IP: 216.239.35.4
       # For `api e2e subscription cancel` and `api e2e run finish`.
       stripe_gw_service: http://stripe-gw

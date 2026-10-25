@@ -29,9 +29,31 @@ test("verified netspeed updates replace the HTMX fragment without navigation", a
   await expect.poll(() => oldElement!.evaluate((node) => node.isConnected)).toBe(false);
   await expect(page.locator(`#netspeed_${fixture.servers[0].serverId}`)).toHaveText("1.5 Mbit");
   expect(navigations).toBe(0);
+  const swapped = page.locator(`#server_${fixture.servers[0].serverId} select[name="netspeed"]`);
+  await expect(swapped.locator("option", { hasText: /^1\.5 Gbit$/ })).toBeEnabled();
   expect(await currentSpeed(fixture)).toBe(1500);
   await openServer(page, fixture);
   await expect(page.locator(`#netspeed_${fixture.servers[0].serverId}`)).toHaveText("1.5 Mbit");
+});
+
+test("unverified server lists what it can set and locks the rest", async ({ page, context, fixtures }) => {
+  const fixture = await fixtures.create({ servers: [{ ipVersion: 4 }] });
+  await installSession(context, fixture.sessionToken);
+  const fragment = await openServer(page, fixture);
+  const select = fragment.locator('select[name="netspeed"]');
+  await expect(select.locator("option:not([disabled])")).toHaveText(["disabled, monitoring only", "512 Kbit"]);
+  const locked = select.locator("option", { hasText: "1.5 Gbit (verify required)" });
+  await expect(locked).toBeDisabled();
+});
+
+test("verified server offers every netspeed", async ({ page, context, fixtures }) => {
+  const fixture = await fixtures.create({ servers: [{ ipVersion: 4, verified: true }] });
+  await installSession(context, fixture.sessionToken);
+  const fragment = await openServer(page, fixture);
+  const select = fragment.locator('select[name="netspeed"]');
+  await expect(select.locator("option", { hasText: /^1\.5 Mbit$/ })).toBeEnabled();
+  await expect(select.locator("option", { hasText: /^1\.5 Gbit$/ })).toBeEnabled();
+  await expect(select.locator("option[disabled]")).toHaveCount(1);
 });
 
 test("netspeed placeholder is disabled and cannot post an empty speed", async ({ page, context, fixtures }) => {

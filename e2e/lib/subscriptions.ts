@@ -3,17 +3,11 @@ import { runApiCli } from "./apicli";
 import { boolField, idField, record, stringField } from "./json";
 import { runId } from "./run";
 
-/**
- * Where stripe-gw's logs are for the target the run resolved
- * (applyTargetDefaults writes it back to E2E_TARGET).
- */
+/** Where the stack's stripe-gw logs are, in CI or locally. */
 function stripeGwLogsHint(): string {
-  if (process.env.E2E_TARGET === "stack") {
-    return process.env.CI
-      ? "logs/stripe-gw-app.log and logs/stripe-listen.log in the CI workspace"
-      : "docker compose -p ntppool-e2e --profile stripe logs stripe-gw-app stripe-listen";
-  }
-  return "kubectl --context dala -n askntp logs deploy/stripe-gw";
+  return process.env.CI
+    ? "logs/stripe-gw-app.log and logs/stripe-listen.log in the CI workspace"
+    : "docker compose -p ntppool-e2e --profile stripe logs stripe-gw-app stripe-listen";
 }
 
 /**

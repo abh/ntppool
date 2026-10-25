@@ -16,16 +16,17 @@ STATE_DIR=$STACK_DIR/.state
 # their values.
 compose_existing() {
     ACCOUNT_ID_KEY=unused VENDOR_ZONE_ID_KEY=unused STRIPE_MODE=${STRIPE_MODE:-stub} \
-        API_IMAGE=${API_IMAGE:-harbor.ntppool.org/ntporg/api-dev:sha-0000000} \
+        API_IMAGE=${API_IMAGE:-harbor.ntppool.org/ntporg/api-e2e:sha-0000000} \
         STRIPE_GW_IMAGE=${STRIPE_GW_IMAGE:-harbor.ntppool.org/ntporg/stripe-gw:sha-0000000} \
         compose "$@"
 }
 
-# pinned_image <override> <pin file> <repository>: print the override if
-# set, else the pin file's image, after checking it is <repository>:sha-<hex>
-# (a build) or <repository>:<x.y.z> (a release).
+# pinned_image <override> <pin file> <repository> [<release repository>]:
+# print the override if set, else the pin file's image, after checking it is
+# <repository>:sha-<hex> (a build) or <release repository>:<x.y.z> (a
+# release). The release repository defaults to <repository>.
 pinned_image() {
-    local override=$1 pin=$2 repo=$3 image
+    local override=$1 pin=$2 repo=$3 relrepo=${4:-$3} image
     if [ -n "$override" ]; then
         image=$override
     else
@@ -34,8 +35,8 @@ pinned_image() {
     # trim leading and trailing whitespace
     image="${image#"${image%%[![:space:]]*}"}"
     image="${image%"${image##*[![:space:]]}"}"
-    if ! [[ $image =~ ^harbor\.ntppool\.org/ntporg/$repo:(sha-[0-9a-f]{7,}|[0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
-        echo "invalid $repo image '$image': expected harbor.ntppool.org/ntporg/$repo:sha-<7 or more hex digits> or :<x.y.z> (see $STACK_DIR/$pin)" >&2
+    if ! [[ $image =~ ^harbor\.ntppool\.org/ntporg/($repo:sha-[0-9a-f]{7,}|$relrepo:[0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+        echo "invalid $repo image '$image': expected harbor.ntppool.org/ntporg/$repo:sha-<7 or more hex digits> or $relrepo:<x.y.z> (see $STACK_DIR/$pin)" >&2
         return 1
     fi
     printf '%s\n' "$image"
@@ -43,7 +44,7 @@ pinned_image() {
 
 # Print the API image to use: $API_IMAGE if set, else the pin file.
 api_image() {
-    pinned_image "${API_IMAGE:-}" api-image api-dev
+    pinned_image "${API_IMAGE:-}" api-image api-e2e
 }
 
 # Print the stripe-gw image to use: $STRIPE_GW_IMAGE if set, else the pin file.

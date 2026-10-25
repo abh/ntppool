@@ -512,8 +512,8 @@ B<Arguments:>
         account => $account->{id_token},  # Optional: Account selection token
         ip => $value,       # string
         hostname => $value,       # string - Fields to update (only provided fields are updated)
-        netspeed => $value,       # int - netspeed in Kbit/s: one of the settings the manage page offers, or the
- server's current value. Increasing it requires a verified server. A
+        netspeed => $value,       # int - netspeed in Kbit/s: one of the settings in Server.netspeed_options, or
+ the server's current value. Increasing it requires a verified server. A
  change from 10 Mbit (10000) or more to below it removes the server from
  the global "@" zone; a change back adds it.
         in_pool => $value,       # bool
@@ -552,6 +552,9 @@ Hashref with structure:
                 deleted => ...,  # bool - deleted is true once deletion_on has passed (deletion_on <= today, UTC)
                 history_hidden => ...,  # bool - history_hidden is true once the server has been deleted for more than
  6 months; clients should hide score history and graphs
+                netspeed_options => ...,  # arrayref[hashref (NetspeedOption)] - netspeed_options are the netspeed settings this server can be set to,
+ ascending. Set only when the caller can edit the server (GetServer with
+ require_edit_permission, GetAccountServers by id_token, UpdateServer).
             },  # hashref (Server)
         },
         error        => undef,       # Error message (if any)
@@ -805,6 +808,9 @@ Hashref with structure:
                 deleted => ...,  # bool - deleted is true once deletion_on has passed (deletion_on <= today, UTC)
                 history_hidden => ...,  # bool - history_hidden is true once the server has been deleted for more than
  6 months; clients should hide score history and graphs
+                netspeed_options => ...,  # arrayref[hashref (NetspeedOption)] - netspeed_options are the netspeed settings this server can be set to,
+ ascending. Set only when the caller can edit the server (GetServer with
+ require_edit_permission, GetAccountServers by id_token, UpdateServer).
             },  # hashref (Server) - The verified server with complete details
         },
         error        => undef,       # Error message (if any)
@@ -907,6 +913,9 @@ Hashref with structure:
                 deleted => ...,  # bool - deleted is true once deletion_on has passed (deletion_on <= today, UTC)
                 history_hidden => ...,  # bool - history_hidden is true once the server has been deleted for more than
  6 months; clients should hide score history and graphs
+                netspeed_options => ...,  # arrayref[hashref (NetspeedOption)] - netspeed_options are the netspeed settings this server can be set to,
+ ascending. Set only when the caller can edit the server (GetServer with
+ require_edit_permission, GetAccountServers by id_token, UpdateServer).
             },  # hashref (Server) - The server being verified with complete details
             already_verified => ...,  # bool - Whether the server is already verified
  If true, Perl should redirect to the server's manage page

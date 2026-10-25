@@ -27,18 +27,6 @@ test("explicit env wins", () => {
   assert.equal(env.NTP_MANAGE_URL, "https://manage.ntppool.test");
 });
 
-test("askdev keeps today's values", () => {
-  const env: NodeJS.ProcessEnv = { E2E_TARGET: "askdev" };
-  const target = applyTargetDefaults(env);
-  assert.equal(target.name, "askdev");
-  assert.equal(target.contextOptions.ignoreHTTPSErrors, false);
-  assert.equal(env.NTP_BASE_URL, "https://web.askdev.grundclock.com");
-  assert.equal(env.NTP_MANAGE_URL, "https://manage.askdev.grundclock.com");
-  assert.equal(env.NTP_INTERNAL_API_URL, undefined);
-  assert.equal(env.NTP_API_CLI, undefined);
-  assert.equal(env.NTP_SKIP_STRIPE_CHECKOUT, undefined);
-});
-
 test("stripe parameter leaves the checkout spec enabled", () => {
   const env: NodeJS.ProcessEnv = { E2E_STRIPE: "1" };
   applyTargetDefaults(env);
@@ -48,6 +36,6 @@ test("stripe parameter leaves the checkout spec enabled", () => {
 test("unknown target throws naming the allowed values", () => {
   assert.throws(
     () => applyTargetDefaults({ E2E_TARGET: "local" }),
-    (err: Error) => /stack/.test(err.message) && /askdev/.test(err.message),
+    (err: Error) => /stack/.test(err.message),
   );
 });

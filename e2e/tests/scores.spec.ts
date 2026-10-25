@@ -5,11 +5,9 @@ import { expectCleanPage, expectNoErrorBleed } from "../lib/helpers";
 // cookie needed, so this spec does not use loginAs.
 //
 // Server IP under test. The public scores/graph pages do a CAPI get_server
-// lookup and 404 for an unknown IP, so this MUST be a real server that exists
-// on the dev site (an RFC 5737 documentation address would just 404). Default
-// is Google's public NTP server, which the dev site uses in its own
-// cache-busting example (CLAUDE.local.md). The human should set
-// NTP_SCORES_TEST_IP to a known-good dev server IP if the default is removed.
+// lookup and 404 for an unknown IP, so this MUST be a server in the database
+// (an RFC 5737 documentation address would just 404). The default is the one
+// server e2e/stack/seed.sql creates.
 const SCORES_IP = process.env.NTP_SCORES_TEST_IP || "216.239.35.4";
 
 // The PNG graphs come from screensnap, which the stack does not run.

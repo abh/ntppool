@@ -36,8 +36,7 @@ fifo=$(mktemp -u)
 mkfifo "$fifo"
 awk '{ gsub(/whsec_[A-Za-z0-9]+/, "whsec_[redacted]"); print; fflush() }' <"$fifo" &
 
-# The event types stripe-gw reads (webhook.go). askdev's endpoint also takes
-# subscription_schedule.*, which stripe-gw ignores.
+# The event types stripe-gw reads (webhook.go).
 stripe listen --forward-to "$STRIPE_GW_URL/webhook" \
     --events checkout.session.completed,customer.subscription.created,customer.subscription.updated,customer.subscription.deleted \
     >"$fifo" 2>&1 &

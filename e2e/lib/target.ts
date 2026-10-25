@@ -2,7 +2,7 @@
 // the site URLs, the internal API, the API CLI and browser TLS handling.
 // E2E_TARGET picks one; explicit NTP_* variables always win over its defaults.
 
-export type TargetName = "stack" | "askdev";
+export type TargetName = "stack";
 
 export interface Target {
   name: TargetName;
@@ -33,15 +33,6 @@ const TARGETS: Record<
       NTP_API_CLI: "/apibin/api",
     },
     ignoreHTTPSErrors: true,
-  },
-  // The shared dev site. It has no safe default for the internal API or the
-  // API CLI; e2e/.env supplies them.
-  askdev: {
-    defaults: {
-      NTP_BASE_URL: "https://web.askdev.grundclock.com",
-      NTP_MANAGE_URL: "https://manage.askdev.grundclock.com",
-    },
-    ignoreHTTPSErrors: false,
   },
 };
 

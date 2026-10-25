@@ -2,7 +2,7 @@
 
 Playwright end-to-end tests that drive the site as a logged-in user
 without going through Auth0. Login works by minting a real session token with
-the api-dev binary's `api e2e session` command (reached through
+the api-e2e binary's `api e2e session` command (reached through
 `NTP_API_CLI`), then setting it as the browser `npuid` session cookie.
 
 **Dev only.** Before minting a session, global setup requires the API's
@@ -18,24 +18,22 @@ npm install
 npx playwright install chromium
 ```
 
-## Targets
+## The stack
 
-`E2E_TARGET` picks where the suite runs. `lib/target.ts` owns the defaults for
-each target; any `NTP_*` variable you set explicitly wins over them, and global
-setup prints the target and URLs it resolved.
+The suite runs against a throwaway compose stack in `e2e/stack/` (postgres,
+API, Perl app, Caddy). Start it with `e2e/stack/up` and run the suite with
+`e2e/stack/test`; `e2e/stack/down` removes it. The stack sets all `NTP_*`
+values itself (defaults in `lib/target.ts`), so no `.env` is needed. It uses
+`*.ntppool.test` names behind Caddy's own CA, so the browser ignores HTTPS
+errors. It answers as stripe-gw with a stub and skips the Stripe checkout
+spec, unless it was started with `E2E_STRIPE=1` (see "Real Stripe on the
+stack").
 
-- `stack` (the default) is the throwaway compose stack in `e2e/stack/`
-  (postgres, API, Perl app, Caddy). Start it with `e2e/stack/up` and run the
-  suite with `e2e/stack/test`; `e2e/stack/down` removes it. The stack sets all
-  `NTP_*` values itself, so no `.env` is needed. It uses `*.ntppool.test`
-  names behind Caddy's own CA, so the browser ignores HTTPS errors. It
-  answers as stripe-gw with a stub and skips the Stripe checkout spec, unless
-  it was started with `E2E_STRIPE=1` (see "Real Stripe on the stack").
-- `askdev` is the shared dev site. Put `E2E_TARGET=askdev` in `e2e/.env`, plus
-  `NTP_INTERNAL_API_URL` and `NTP_API_CLI` (see below), and run `npm test`.
-  `NTP_BASE_URL` and `NTP_MANAGE_URL` default to the askdev hosts.
-
-An unknown `E2E_TARGET` is an error.
+The API comes from the image pinned in `e2e/stack/api-image` (and, for CI, in
+`.woodpecker/e2e.yaml`; the two must match). It has to be
+`harbor.ntppool.org/ntporg/api-e2e`, the API's E2E fixtures build, at a
+`sha-…` (main) or `x.y.z` (release) tag. The `api` and `api-dev` images don't
+have the `api e2e` commands, and `api-e2e` is never deployed.
 
 ## Real Stripe on the stack
 
@@ -61,7 +59,7 @@ for at least six months, with these permissions and nothing else:
 | Debugging tools (the Stripe CLI) | Write |
 
 Then run `e2e/stack/stripe-key`: it asks for the key, the billing portal
-configuration (askdev's `bpc_`, Vault `kv/ntppool/devel/stripe`, field
+configuration (the `bpc_` ID in Vault `kv/ntppool/devel/stripe`, field
 `upgrade_portal_configuration`) and the key's expiry date, and stores them
 in the macOS keychain (service `ntppool-e2e-stripe`). `--ci` also writes
 them as the Woodpecker repo secrets. Elsewhere, set `STRIPE_SECRET_KEY`,
@@ -88,52 +86,41 @@ weekly cron, and on pushes to `main` that touch Stripe-related paths.
 
 ## Configuration
 
-For `askdev`, copy `.env.example` to `.env` and fill in the values:
+The stack sets these; an explicitly set variable wins over the defaults in
+`lib/target.ts`.
 
-- `E2E_TARGET` — `stack` (default) or `askdev`.
-- `NTP_BASE_URL` — site under test (default from the target; askdev:
-  `https://web.askdev.grundclock.com`).
-- `NTP_MANAGE_URL` — authenticated management site (default from the target;
-  askdev: `https://manage.askdev.grundclock.com`). This is a separate site from
+- `E2E_TARGET` — `stack`, the only target.
+- `NTP_BASE_URL` — site under test (`https://web.ntppool.test`).
+- `NTP_MANAGE_URL` — authenticated management site
+  (`https://manage.ntppool.test`). This is a separate site from
   `NTP_BASE_URL`, so `lib/auth.ts` has no fallback of its own.
-- `NTP_INTERNAL_API_URL` — base URL of the internal Go API (askdev: reachable
-  over Tailscale; stack: `http://api:4211/int/rpc`), for API reads (`GetSettings`, `GetServer`, `GetAccountAuditLogs`,
-  `GetAccount`). Must include the `/int/rpc` prefix the ConnectRPC services
-  are mounted under (e.g. `http://api-internal.example.ts.net/int/rpc`), with
-  no trailing slash. The harness appends the procedure path.
-- `NTP_API_CLI` — command prefix that runs the api-dev binary for test
+- `NTP_INTERNAL_API_URL` — base URL of the internal Go API
+  (`http://api:4211/int/rpc`), for API reads (`GetSettings`, `GetServer`,
+  `GetAccountAuditLogs`, `GetAccount`). Must include the `/int/rpc` prefix the
+  ConnectRPC services are mounted under, with no trailing slash. The harness
+  appends the procedure path.
+- `NTP_API_CLI` — command prefix that runs the api-e2e binary for test
   sessions and fixtures. See "Reaching the API CLI".
-- `NTP_SCORES_TEST_IP` — a real dev server IP for the public score/graph specs
-  (default Google NTP). The isolated server-management specs allocate their
-  own addresses and don't accept an existing server or caller-selected IP.
+- `NTP_SCORES_TEST_IP` — the server for the public score/graph specs (the one
+  server `stack/seed.sql` creates). The isolated server-management specs
+  allocate their own addresses and don't accept an existing server or
+  caller-selected IP.
 - `NTP_SKIP_STRIPE_CHECKOUT` — set to any value to skip
   `tests/stripe-checkout.spec.ts`. That spec buys a real subscription in the
-  Stripe sandbox, so it needs outbound access to `checkout.stripe.com` and a
-  devel stripe-gw running with a Stripe test key.
+  Stripe sandbox, so it needs outbound access to `checkout.stripe.com` and the
+  real stripe-gw. The stack sets it unless it was started with `E2E_STRIPE=1`.
 
 ## Reaching the API CLI
 
 Test sessions and fixtures come from `api e2e` subcommands that are
-only compiled into the api-dev image (build tag `e2efixtures`). The harness
+only compiled into the api-e2e image (build tag `e2efixtures`). The harness
 runs them through `NTP_API_CLI`: it splits the value on whitespace, starts it
 without a shell from the `e2e/` directory, appends the subcommand, writes a
-JSON request on stdin and reads one JSON object from stdout.
+JSON request on stdin and reads one JSON object from stdout. The stack copies
+the binary out of the pinned API image and sets `NTP_API_CLI` to it
+(`/apibin/api` in the Playwright container, `$PWD/apibin/api` in CI); the
+child inherits `deployment_mode` and the database settings.
 
-```sh
-# remote devel (needs exec access to the devel API pod)
-NTP_API_CLI=kubectl --context dala -n askntp exec -i deploy/api-internal -c main -- /ko-app/api
-
-# local docker container
-NTP_API_CLI=docker exec -i ntp-api /app/api
-
-# local binary, built in the API repo with: go build -tags e2efixtures -o api-e2e .
-NTP_API_CLI=../../go/ntp/api/api-e2e --config ../../go/ntp/api/database.yaml
-```
-
-- Each call through `kubectl exec` takes about 1 s.
-- `go run` would recompile on every call, so the local example uses a built
-  binary. The child inherits the environment, so a local binary can get
-  `deployment_mode` and `DATABASE_URI` from `e2e/.env`.
 - `api e2e session` only accepts emails at `example.com`, `example.net`,
   `example.org` and `ntppool.test`, whether the user is new or existing.
   It creates a new user named with the run's tag (see "Runs and cleanup");
@@ -167,7 +154,10 @@ Trace zips in `test-results/` and `playwright-report/` hold `npuid` session
 cookies. Those sessions stop working when the run finishes.
 
 If teardown never ran (the process was killed), finish the run by hand with
-the printed ID. Finishing a run twice is harmless:
+the printed ID, or remove the stack with `e2e/stack/down`. The scripts here
+and under "Fixtures" need `NTP_API_CLI` and the stack's database settings, so
+run them in the stack's Playwright container. Finishing a run twice is
+harmless:
 
 ```sh
 node --input-type=module - "<run id>" <<'NODE'
@@ -188,28 +178,12 @@ console.log(result);
 NODE
 ```
 
-## Fixture deployment
+## Fixtures
 
 The verification, deletion, netspeed, scores-context, staff-search,
 staff-server-edit, monitor-badges and vendor-coverage specs use
 `api e2e fixture create` and `api e2e fixture cleanup`. A command failure is a
 setup failure; the tests don't skip.
-
-Deploy in this order:
-
-1. Deploy an api-dev image with the `api e2e fixture` commands and run its
-   Goose migrations with `deployment_mode=devel`. In devel, migration 029
-   replaces the migration-027 `server_test_fixtures` tables with
-   `e2e_fixtures`, `e2e_fixture_servers` and `e2e_fixture_monitors`, and
-   refuses to run while an old attempt is uncleaned. Test and prod record
-   027 and 029 as no-ops.
-2. Confirm the devel database reports migration version 29 or later and
-   contains the three `e2e_fixture*` tables.
-3. Deploy the matching web revision with the environment response header and
-   the E2E suite.
-4. Confirm `api e2e --help` through `NTP_API_CLI` lists `fixture`, then run
-   the focused suite twice with `--retries=0`. Each run must use fresh
-   attempt IDs and report cleanup.
 
 Each create call owns a fresh ordinary user, a private account, zero to four
 servers, at most one monitor and at most one subscription, and needs at least
@@ -261,8 +235,7 @@ account: status `active`, name `E2E fixture`, the requested `max_zones` and
 harness sends them only when set), and `stripe_subscription_id`
 `e2e_<attempt_id>`. The account's `stripe_customer_id` stays empty. The
 harness sends the `subscription` key only for a seed that has one, because an
-api-dev image from before the seed rejects unknown fields; deploy an image
-with the seed before running `vendor-coverage.spec.ts`. Neither the account
+API image from before the seed rejects unknown fields. Neither the account
 nor the user deletion task removes subscription rows, and the row's account
 foreign key doesn't cascade, so don't combine the seed with account or user
 deletion flows.
@@ -278,9 +251,9 @@ moved to another account, or a fixture monitor has score, log-score or
 API-key rows.
 Cleanup is idempotent. Cleaning an unknown attempt creates a tombstone, so a
 delayed create with that ID can't add data. If a test loses the create
-response or teardown fails, run this from `e2e/`. Replace the example UUID
-with the attempt printed in the failure. The script loads `.env`, sends only
-`attempt_id`, and calls the harness's own `runApiCli`, so `NTP_API_CLI` is
+response or teardown fails, run this from `e2e/` in the stack's Playwright
+container. Replace the example UUID with the attempt printed in the failure.
+The script sends only `attempt_id`, and calls the harness's own `runApiCli`, so `NTP_API_CLI` is
 split the same way as in tests (zsh doesn't word-split `$NTP_API_CLI` in a
 shell command).
 
@@ -320,29 +293,32 @@ DELETE FROM account_subscriptions WHERE id IN (<subscription ids>);
 
 ## Run
 
+From `e2e/`, with the stack started by `stack/up`. `stack/test` passes its
+arguments to `npx playwright test` in the stack's Playwright container:
+
 ```sh
-npm test            # headless
-npm run test:headed # headed
+stack/test                 # the whole suite, headless
+stack/test --grep @smoke
 ```
 
-List the tests without running them (no live site or API CLI needed):
+List the tests without running them (no stack needed):
 
 ```sh
 npx playwright test --list
 ```
 
-After the matching fixture API and schema are deployed, run the acceptance set
-with retries disabled, then repeat the fixture-dependent specs so the second
-run allocates and cleans fresh attempts:
+For the acceptance set, run with retries disabled, then repeat the
+fixture-dependent specs so the second run allocates and cleans fresh
+attempts:
 
 ```sh
 npm run test:unit
 npm run typecheck
 npx playwright test --list
-npx playwright test tests/server.spec.ts tests/server-verification.spec.ts tests/server-deletion.spec.ts tests/server-netspeed.spec.ts tests/server-scores-context.spec.ts tests/staff-search.spec.ts tests/staff-server-edit.spec.ts tests/monitor-badges.spec.ts tests/vendor-coverage.spec.ts --project=manage --retries=0
-npx playwright test tests/server-verification.spec.ts tests/server-deletion.spec.ts tests/server-netspeed.spec.ts tests/server-scores-context.spec.ts tests/staff-search.spec.ts tests/staff-server-edit.spec.ts tests/monitor-badges.spec.ts tests/vendor-coverage.spec.ts --project=manage --retries=0
-npx playwright test tests/scores.spec.ts --project=web --retries=0
-npx playwright test tests/monitor-config.spec.ts --project=manage --retries=0
+stack/test tests/server.spec.ts tests/server-verification.spec.ts tests/server-deletion.spec.ts tests/server-netspeed.spec.ts tests/server-scores-context.spec.ts tests/staff-search.spec.ts tests/staff-server-edit.spec.ts tests/monitor-badges.spec.ts tests/vendor-coverage.spec.ts --project=manage --retries=0
+stack/test tests/server-verification.spec.ts tests/server-deletion.spec.ts tests/server-netspeed.spec.ts tests/server-scores-context.spec.ts tests/staff-search.spec.ts tests/staff-server-edit.spec.ts tests/monitor-badges.spec.ts tests/vendor-coverage.spec.ts --project=manage --retries=0
+stack/test tests/scores.spec.ts --project=web --retries=0
+stack/test tests/monitor-config.spec.ts --project=manage --retries=0
 ```
 
 Ordinary suite runs keep the retries configured in `playwright.config.ts`.
@@ -359,7 +335,7 @@ run — a coverage/validation pass, for example — redirect it into
 
 ```sh
 mkdir -p test-logs
-npx playwright test --project=manage --reporter=list > test-logs/run-1.log 2>&1
+stack/test --project=manage --reporter=list > test-logs/run-1.log 2>&1
 ```
 
 ## How login works
@@ -389,8 +365,7 @@ Specs are named for the area they cover; see `e2e/tests/`.
 Staff specs rely on the `grant_staff` / `grant_vendor_admin` flags of
 `api e2e session`; `monitor-config` and `monitor-badges` use
 `grant_monitor_admin`.
-Selectors are derived from the templates and may need adjustment against the
-live site on first run.
+Selectors are derived from the templates.
 
 The suite has no DB verification layer — there is no read-only Postgres
 connection anywhere in `e2e/`. State is confirmed through the UI (a fresh page

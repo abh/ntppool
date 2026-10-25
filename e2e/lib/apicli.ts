@@ -25,8 +25,8 @@ function e2eDir(): string {
  *
  * NTP_API_CLI is split on whitespace and started without a shell, with `args`
  * appended and the working directory set to e2e/, so relative paths in it
- * work wherever Playwright was started. The child inherits process.env, so a
- * local binary can pick up deployment_mode and DATABASE_URI from e2e/.env.
+ * work wherever Playwright was started. The child inherits process.env, so
+ * the binary gets deployment_mode and the database settings from the stack.
  *
  * `label` names the call in error messages and `subject` adds what it was
  * about (an email or attempt ID).

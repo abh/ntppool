@@ -170,6 +170,9 @@ Hashref with structure:
                 deleted => ...,  # bool - deleted is true once deletion_on has passed (deletion_on <= today, UTC)
                 history_hidden => ...,  # bool - history_hidden is true once the server has been deleted for more than
  6 months; clients should hide score history and graphs
+                netspeed_options => ...,  # arrayref[hashref (NetspeedOption)] - netspeed_options are the netspeed settings this server can be set to,
+ ascending. Set only when the caller can edit the server (GetServer with
+ require_edit_permission, GetAccountServers by id_token, UpdateServer).
             },  # hashref (Server) - server contains the complete server information
         },
         error        => undef,       # Error message (if any)
@@ -283,6 +286,9 @@ Hashref with structure:
                 deleted => ...,  # bool - deleted is true once deletion_on has passed (deletion_on <= today, UTC)
                 history_hidden => ...,  # bool - history_hidden is true once the server has been deleted for more than
  6 months; clients should hide score history and graphs
+                netspeed_options => ...,  # hashref (NetspeedOption) - netspeed_options are the netspeed settings this server can be set to,
+ ascending. Set only when the caller can edit the server (GetServer with
+ require_edit_permission, GetAccountServers by id_token, UpdateServer).
             },
             # ... more items
         ],  # arrayref[hashref (Server)] - servers contains all active servers for this account

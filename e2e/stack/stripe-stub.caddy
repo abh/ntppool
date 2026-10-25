@@ -11,8 +11,7 @@ handle /api/v1/products {
 # The e2e fixture subscriptions (e2e_ ids, vendor-coverage.spec.ts) don't
 # exist in Stripe. The real handler (stripe-gw subscription_upgrade.go)
 # fails getSubscription with echo's 500 {"message":"error id <request id>"};
-# Perl turns that into the email text. Not captured from askdev: it is a
-# POST, and captures stay read-only GETs.
+# Perl turns that into the email text.
 handle /api/v1/subscription/upgrade_session {
 	header Content-Type application/json
 	respond `{"message":"error id e2e-stub"}` 500

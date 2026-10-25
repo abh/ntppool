@@ -1,5 +1,4 @@
--- Reference data for the e2e stack, captured from askdev on 2026-10-01
--- (see ntppool-plans handoffs/2026-09-29-e2e-seed-capture.md).
+-- Reference data for the e2e stack.
 -- Rule: only data production also has. Per-test data goes through
 -- `api e2e fixture`, never here. Runs after `api setup`, which has already
 -- created the DNS root and the zones.

@@ -84,8 +84,7 @@ export async function connectRpc<T>(
     });
   } catch (err) {
     // Network/DNS failure — almost always a wrong or unreachable
-    // NTP_INTERNAL_API_URL (e.g. the .env.example placeholder, or Tailscale
-    // down). Surface that rather than a bare "fetch failed".
+    // NTP_INTERNAL_API_URL. Surface that rather than a bare "fetch failed".
     throw new Error(
       `${label} request to ${url} failed (network/DNS). ` +
         `Is NTP_INTERNAL_API_URL correct and reachable? ` +

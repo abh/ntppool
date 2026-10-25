@@ -42,24 +42,7 @@ export default async function globalSetup() {
   if (missing.length) {
     throw new Error(
       `e2e config incomplete: ${missing.join(", ")} not set.\n` +
-        `Copy e2e/.env.example to e2e/.env and fill it in (see e2e/README.md).`,
-    );
-  }
-
-  // Catch leftover placeholder values copied from .env.example.
-  const internal = process.env.NTP_INTERNAL_API_URL!;
-  let internalHost: string;
-  try {
-    internalHost = new URL(internal).host;
-  } catch {
-    throw new Error(
-      `NTP_INTERNAL_API_URL is not a valid URL: ${internal}`,
-    );
-  }
-  if (/(^|\.)example\./.test(internalHost) || internalHost.includes(".example")) {
-    throw new Error(
-      `NTP_INTERNAL_API_URL is still the placeholder (${internal}).\n` +
-        `Point it at the real internal Go API (for askdev, Tailscale-reachable). See e2e/README.md.`,
+        `The stack sets them; run the suite with e2e/stack/test (see e2e/README.md).`,
     );
   }
 
@@ -141,7 +124,7 @@ export default async function globalSetup() {
       `e2e preflight failed: could not establish a logged-in session.\n` +
         `Checked:\n` +
         `  - mint via NTP_API_CLI: exec access to the API? ` +
-        `api-dev image with \`api e2e\` deployed? same database as ${MANAGE_URL}?\n` +
+        `api-e2e image with \`api e2e\` deployed? same database as ${MANAGE_URL}?\n` +
         `  - logged-in load of ${MANAGE_URL}/manage (correct NTP_MANAGE_URL?)\n` +
         `Underlying error: ${(err as Error).message}`,
     );
