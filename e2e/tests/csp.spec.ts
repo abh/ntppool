@@ -87,9 +87,25 @@ test("main pages load without CSP violations", async ({ page, context, fixtures 
   });
   await installSession(context, fixture.sessionToken);
 
+  // The footer status widget (status-page.ts) fetches same-origin
+  // /api/status/v2/summary.json, which connect-src 'self' must cover. With
+  // status data it sets an indicator class on .color-dot; without it, it hides
+  // the link. Either one means the fetch ran and its result was handled.
+  const home = wwwUrl("/en/");
+  const statusResponse = page.waitForResponse((response) =>
+    new URL(response.url()).pathname === "/api/status/v2/summary.json");
+  await expectCleanPage(page, home);
+  expect(new URL((await statusResponse).url()).origin, "status fetch origin").toBe(new URL(home).origin);
+  const statusLink = page.locator('a[href="https://status.ntppool.org/"]');
+  await expect(
+    statusLink.and(page.locator(".status-link-hidden"))
+      .or(statusLink.locator(".color-dot.none, .color-dot.minor, .color-dot.major, .color-dot.critical")),
+    "the status widget handled its fetch",
+  ).toHaveCount(1);
+
   const acc = encodeURIComponent(fixture.accountToken);
   const pages = [
-    wwwUrl("/en/"),
+    home,
     wwwUrl(`/scores/${fixture.servers[0].ip}`),
     new URL(bust("/manage/login"), MANAGE_URL).toString(),
     new URL(bust(`/manage/servers?a=${acc}`), MANAGE_URL).toString(),
@@ -102,4 +118,33 @@ test("main pages load without CSP violations", async ({ page, context, fixtures 
   }
 
   expectNoCspViolations(violations);
+});
+
+/** The value of one directive in a Content-Security-Policy header. */
+function cspDirective(header: string, name: string): string {
+  const directive = header
+    .split(";")
+    .map((part) => part.trim())
+    .find((part) => part === name || part.startsWith(`${name} `));
+  if (directive === undefined) throw new Error(`no ${name} directive in: ${header}`);
+  return directive;
+}
+
+test("script-src has no unsafe keywords on www and manage", async ({ page }) => {
+  const base = process.env.NTP_BASE_URL;
+  if (!base) throw new Error("NTP_BASE_URL is not set");
+  for (const url of [new URL(bust("/"), base).toString(), new URL(bust("/"), MANAGE_URL).toString()]) {
+    const response = await page.request.get(url);
+    expect(response.status(), `status for ${url}`).toBe(200);
+    const header = response.headers()["content-security-policy"];
+    expect(header, `content-security-policy on ${url}`).toBeTruthy();
+    const scriptSrc = cspDirective(header!, "script-src");
+    expect(scriptSrc, `script-src on ${url}`).toContain("'self'");
+    expect(scriptSrc, `script-src on ${url}`).not.toContain("'unsafe-inline'");
+    expect(scriptSrc, `script-src on ${url}`).not.toContain("'unsafe-eval'");
+    expect(scriptSrc, `script-src on ${url}`).not.toContain("statuspage.io");
+    const connectSrc = cspDirective(header!, "connect-src");
+    expect(connectSrc, `connect-src on ${url}`).not.toContain("statuspage.io");
+    expect(connectSrc, `connect-src on ${url}`).not.toContain("status.ntppool.org");
+  }
 });

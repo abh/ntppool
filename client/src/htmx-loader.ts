@@ -20,6 +20,11 @@ export async function initializeHTMX(): Promise<void> {
     htmx.config.includeIndicatorStyles = false;
     htmx.config.historyCacheSize = 20;
 
+    // The CSP has no 'unsafe-eval' or 'unsafe-inline' in script-src, so
+    // htmx must not eval hx-on/js: expressions or run swapped-in <script>s.
+    htmx.config.allowEval = false;
+    htmx.config.allowScriptTags = false;
+
     // Initialize HTMX enhanced features (auto-redirect, error handling)
     initializeHTMXFeatures();
 
