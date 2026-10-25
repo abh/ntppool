@@ -532,11 +532,6 @@ sub surrogate_key {
 sub post_process {
     my $self = shift;
 
-    # Hosts for img-src and style-src. script-src has its own, shorter list
-    # below: the page scripts are all served from 'self' (static_base is
-    # /static/), so these hosts never need to run script.
-    my $cspdomains = "https://st.ntppool.org https://st.pimg.net https://news.ntppool.org";
-
     # If on manage site, add web hostname to CSP connect-src
     my $web_hostname = '';
     if ($self->site->name eq 'manage') {
@@ -559,18 +554,18 @@ sub post_process {
         [   'Content-Security-Policy' => join(
                 " ",
                 qq[default-src 'none'; base-uri 'none'; frame-ancestors 'none';],
-                qq[connect-src 'self' https://www.ntppool.org https://st.ntppool.org https://send.webform.dev${web_hostname};],
+                qq[connect-src 'self' https://www.ntppool.org https://send.webform.dev${web_hostname};],
                 qq[font-src https://fonts.gstatic.com;],
                 qq[form-action 'self' https://send.webform.dev https://checkout.stripe.com https://billing.stripe.com;],
-                qq[img-src 'self' data: $cspdomains https://*.mapper.ntppool.org;],
+                qq[img-src 'self' data: https://news.ntppool.org https://*.mapper.ntppool.org;],
 
-                # mapper.js only loads an image from *.mapper.ntppool.org, so
-                # it is pinned. send.webform.dev stays a whole host: its
-                # embed.js (injected by client/src/webform.ts) could not be
-                # fetched to check for further scripts. Stripe.js is not
-                # loaded anywhere; checkout is a server-side redirect.
-                qq[script-src 'self' https://www.mapper.ntppool.org/mapper.js https://send.webform.dev;],
-                qq[style-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://send.webform.dev $cspdomains;],
+                # Each third-party script is pinned to its one file: mapper.js
+                # only loads an image from *.mapper.ntppool.org, and the
+                # webform embed.js (injected by client/src/webform.ts) only
+                # fetches the form's own action URL. Stripe.js is not loaded
+                # anywhere; checkout is a server-side redirect.
+                qq[script-src 'self' https://www.mapper.ntppool.org/mapper.js https://send.webform.dev/js/embed.js;],
+                qq[style-src 'self' https://send.webform.dev;],
                 qq[report-uri https://ntppool.report-uri.com/r/t/csp/wizard],
             ),
         ],

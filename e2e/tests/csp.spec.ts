@@ -135,7 +135,7 @@ test("script-src and base-uri are locked down on www and manage", async ({ page 
     expect(header, `content-security-policy on ${url}`).toBeTruthy();
     const scriptSrc = cspDirective(header!, "script-src");
     expect(scriptSrc, `script-src on ${url}`).toBe(
-      "script-src 'self' https://www.mapper.ntppool.org/mapper.js https://send.webform.dev",
+      "script-src 'self' https://www.mapper.ntppool.org/mapper.js https://send.webform.dev/js/embed.js",
     );
     expect(cspDirective(header!, "base-uri"), `base-uri on ${url}`).toBe("base-uri 'none'");
     expect(scriptSrc, `script-src on ${url}`).not.toContain("'unsafe-inline'");
