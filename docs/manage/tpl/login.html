@@ -15,27 +15,29 @@ Sign in or create account
 
 <p>Manage your servers, account, and vendor zones (pool DNS names for software developers and device makers).</p>
 
-<br>
-<br>
 <hr>
 
 <p>
-
-[% UNLESS msg_thanks %]
-If you need help logging in, please fill out the form below.
-[% END %]
 If you need help using or participating in the NTP Pool,
 see <a href="https://community.ntppool.org">community.ntppool.org</a>
 or <a href="https://www.ntppool.org/">ntppool.org</a>. Information for
 developers or distributors of software or hardware,
 see <a href="https://www.ntppool.org/vendors">vendor information</a>.
-
 </p>
 
-<p>
 [% IF msg_thanks %]
-<i>Your message has been sent, thanks!</i>
+<p><i>Your message has been sent, thanks!</i></p>
 [% ELSE %]
+<details id="login-help">
+<summary class="btn btn-outline-secondary">
+    <i class="bi bi-question-circle"></i> Need help signing in?
+</summary>
+
+<div class="card">
+<div class="card-body">
+
+<h3 class="card-title h5">Contact support</h3>
+<p class="card-text text-muted">Send us a message and we'll get back to you by email.</p>
 
 <form action="https://send.webform.dev/send/form_5591UV4BxvG8_2316865334"
     method="POST" id="help-form" class="webform-embed needs-validation" novalidate
@@ -44,25 +46,28 @@ see <a href="https://www.ntppool.org/vendors">vendor information</a>.
     data-submit-text="Sending..."
     data-error-position="top">
 
-    <div class="mb-3">
-        <label for="help-name" class="form-label">Your name</label>
-        <input type="text" name="name" id="help-name" class="form-control" placeholder="Enter your name" required>
-        <div class="invalid-feedback">
-            Please provide your name.
+    <div class="row g-3 mb-3">
+        <div class="col-md-6">
+            <label for="help-name" class="form-label">Your name</label>
+            <input type="text" name="name" id="help-name" class="form-control" autocomplete="name" required>
+            <div class="invalid-feedback">
+                Please provide your name.
+            </div>
         </div>
-    </div>
 
-    <div class="mb-3">
-        <label for="help-email" class="form-label">Email address</label>
-        <input type="email" name="_replyto" id="help-email" class="form-control" placeholder="Enter your email address" required>
-        <div class="invalid-feedback">
-            Please provide a valid email address.
+        <div class="col-md-6">
+            <label for="help-email" class="form-label">Email address</label>
+            <input type="email" name="_replyto" id="help-email" class="form-control" autocomplete="email" aria-describedby="help-email-note" required>
+            <div id="help-email-note" class="form-text">The address on your account, if you have one.</div>
+            <div class="invalid-feedback">
+                Please provide a valid email address.
+            </div>
         </div>
     </div>
 
     <div class="mb-3">
         <label for="help-message" class="form-label">Message</label>
-        <textarea name="text" id="help-message" class="form-control" rows="6" placeholder="Describe the issue you're having with logging in..." required></textarea>
+        <textarea name="text" id="help-message" class="form-control" rows="5" placeholder="Describe the issue you're having with logging in..." required></textarea>
         <div class="invalid-feedback">
             Please provide a message describing your issue.
         </div>
@@ -71,13 +76,18 @@ see <a href="https://www.ntppool.org/vendors">vendor information</a>.
     <input type="text" name="_gotcha" value="" class="gotcha" />
     <input type="hidden" name="_next" value="[% combust.manage_url('/manage', "msg"="thanks") %]">
 
-    <button type="submit" class="btn btn-primary">
-        <i class="bi bi-envelope"></i> Request help
-    </button>
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-envelope"></i> Request help
+        </button>
+        <small class="text-muted">Powered by <a href="https://www.webform.dev" target="_blank" rel="noopener">webform.dev</a></small>
+    </div>
 </form>
-<p><small class="text-muted">Powered by <a href="https://www.webform.dev" target="_blank" rel="noopener">webform.dev</a></small></p>
+
+</div>
+</div>
+</details>
 [% END %]
-</p>
 
 </div></div>
 

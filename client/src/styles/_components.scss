@@ -1016,6 +1016,24 @@ p.thanks {
     input.gotcha {
         display: none;
     }
+
+    #login-help {
+        > summary {
+            list-style: none;
+
+            &::-webkit-details-marker {
+                display: none;
+            }
+        }
+
+        &[open] > summary {
+            margin-bottom: 1rem;
+        }
+
+        .card {
+            max-width: 42rem;
+        }
+    }
 }
 
 // Table styles
