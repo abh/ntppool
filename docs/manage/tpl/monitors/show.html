@@ -74,8 +74,8 @@
           [% END %]
 
           [% IF mon.combined_status %]
-          <button class="btn btn-secondary btn-sm"
-            hx-on:click="htmx.findAll('.monitor-status').forEach(function(child) { htmx.toggleClass(child, 'hidden') })">
+          <button type="button" class="btn btn-secondary btn-sm"
+            data-toggle-class="hidden" data-toggle-target=".monitor-status">
           Change status for both or individually</button>
           [% END %]
 

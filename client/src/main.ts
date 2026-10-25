@@ -74,6 +74,9 @@ function checkAndInitialize(): void {
 
   // Guard forms marked data-submit-once against double submits
   initializeSubmitOnce();
+
+  // Toggle classes from data-toggle-class/data-toggle-target attributes
+  initializeToggleClass();
 }
 
 // Initialize when DOM is ready
@@ -108,3 +111,6 @@ import { initializeWebForm } from './webform';
 
 // Load submit-once form guard
 import { initializeSubmitOnce } from './submit-once';
+
+// Load data-attribute class toggle
+import { initializeToggleClass } from './toggle-class';
