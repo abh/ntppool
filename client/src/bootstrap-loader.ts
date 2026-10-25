@@ -5,6 +5,17 @@
  * maintainable approach that loads a pre-configured bundle.
  */
 
+/** The parts of Bootstrap's Modal that client code uses. */
+export interface BootstrapModal {
+  show(): void;
+  dispose(): void;
+}
+
+export interface BootstrapModalStatic {
+  new (element: Element): BootstrapModal;
+  getInstance(element: Element): BootstrapModal | null;
+}
+
 // Extend Window interface to include bootstrap
 declare global {
   interface Window {
@@ -13,7 +24,7 @@ declare global {
       Alert?: any;
       Collapse?: any;
       Popover?: any;
-      Modal?: any;
+      Modal?: BootstrapModalStatic;
     };
   }
 }
@@ -62,7 +73,7 @@ export async function initializeBootstrap(): Promise<void> {
 /**
  * Load and initialize Bootstrap bundle
  */
-async function loadBootstrapBundle(): Promise<void> {
+export async function loadBootstrapBundle(): Promise<void> {
   try {
     // Load our custom bundle (includes Dropdown + Alert + Collapse + Popover)
     // @ts-ignore - This is a plain JS file with our custom Bootstrap bundle

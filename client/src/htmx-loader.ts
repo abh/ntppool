@@ -6,6 +6,7 @@
 import htmx from 'htmx.org';
 import { initializeHTMXAnalytics } from './htmx-analytics-loader.js';
 import { initializeHTMXFeatures } from './htmx-features.js';
+import { initializeHTMXModals } from './htmx-modal.js';
 
 /**
  * Initialize and configure HTMX
@@ -21,6 +22,9 @@ export async function initializeHTMX(): Promise<void> {
 
     // Initialize HTMX enhanced features (auto-redirect, error handling)
     initializeHTMXFeatures();
+
+    // Show Bootstrap modals that htmx fragments mark with data-htmx-modal
+    initializeHTMXModals();
 
     // Initialize HTMX analytics
     await initializeHTMXAnalytics();
