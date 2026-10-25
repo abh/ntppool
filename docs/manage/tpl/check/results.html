@@ -18,8 +18,8 @@
                 Offset: [% r.NTP.ClockOffset / 100000 | html %]ms<br>
                 RTT: [% r.NTP.RTT / 1000000 | html %]ms<br>
             [% END %]
-            [% IF r.NTP.Leap %]Leap flag: [% r.NTP.Leap %]<br>[% END %]
-            [% IF r.NTP.KissCode %]Kiss Code: [% r.NTP.KissCode %]<br>[% END %]
+            [% IF r.NTP.Leap %]Leap flag: [% r.NTP.Leap | html %]<br>[% END %]
+            [% IF r.NTP.KissCode %]Kiss Code: [% r.NTP.KissCode | html %]<br>[% END %]
 
         [% END %]
     </li>

@@ -10,6 +10,7 @@ use Net::DNS;
 use Net::IP;
 use Math::BaseCalc       qw();
 use Math::Random::Secure qw(irand);
+use URI                  ();
 use URI::URL             ();
 use NP::UA;
 use NP::CAPI::Account
@@ -327,7 +328,8 @@ sub render {
             $self->handle_login();
         }
         if ($self->user) {
-            my $r = $self->req_param('r') || '/manage';
+            my $r = URI->new($self->req_param('r') || '/manage')->path_query;
+            $r = '/manage' unless $r =~ m{^/(?!/)};
             return $self->redirect($r);
         }
 

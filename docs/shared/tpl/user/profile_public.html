@@ -2,7 +2,7 @@
 
 <div id="userprofile" class="block">
 
-<h3>[% page.title %]</h3>
+<h3>[% page.title | html %]</h3>
 
 [% UNLESS account_data.public_profile %]
 <p><i>This profile is not public.</i></p>
@@ -35,12 +35,12 @@ Zones: [% FOR zone = server.zones %] <a href="[% zone.url %]">[% zone.name %]</a
  %]
 
 <noscript>
-<a href="/scores/[% server.ip %]">
+<a href="/scores/[% server.ip | html %]">
   <img border="0" src="[% server.graph_uri('offset') %]" alt="Server score graph"></a>
   <br>
 </noscript>
 
-<ntp-server-chart server-ip="[% server.ip %]" show-legend="true" show-legend-only="true" width="500" height="140" inherit-styles="true"></ntp-server-chart>
+<ntp-server-chart server-ip="[% server.ip | html %]" show-legend="true" show-legend-only="true" width="500" height="140" inherit-styles="true"></ntp-server-chart>
 
 </div>
 [% END %]

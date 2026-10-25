@@ -84,7 +84,7 @@
                     id="public_profile">
                 <label class="form-check-label" for="public_profile">
                     [% IF account.public_url %]
-                    Enable <a href="[% account.public_url %]">profile page</a>
+                    Enable <a href="[% account.public_url | html %]">profile page</a>
                     [% ELSE %]
                     Enable profile page
                     [% END%]

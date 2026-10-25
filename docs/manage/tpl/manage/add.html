@@ -44,12 +44,12 @@
 
     <div class="server_info" id="server[% loop.count %]">
 
-        <tt><b>[% server.ip %]</b></tt><br />
+        <tt><b>[% server.ip | html %]</b></tt><br />
 
 
         [% IF server.added %]
         <div class="alert alert-info">
-            [% server.ip %] was added. <a href="[% server.manage_url | html %]">Manage it</a>.
+            [% server.ip | html %] was added. <a href="[% server.manage_url | html %]">Manage it</a>.
         </div>
     </div> [% # server info div %]
     [% NEXT; END %]
@@ -57,7 +57,7 @@
 
         [% IF server.listed %]
         <div class="alert alert-info">
-            [% server.ip %] is already registered in the system.
+            [% server.ip | html %] is already registered in the system.
         </div>
     </div> [% # server info div %]
     [% NEXT; END %]
@@ -75,7 +75,7 @@
     IF zone.name == "."; NEXT; END;
     %]
     <a href="[% combust.www_url(zone.url) %]">[% zone.description %]</a>[% UNLESS loop.last %], [% END %]
-    <input type="hidden" name="explicit_zone_[% server.ip %]" value="[% zone.name %]">
+    <input type="hidden" name="explicit_zone_[% server.ip | html %]" value="[% zone.name %]">
     [% END %]
     [% ELSE %]
 
@@ -83,7 +83,7 @@
         <div class="alert alert-warning">
             [% IF server.needs_zone_error %][% server.needs_zone_error | html %]<br>[% END %]
             We couldn't determine which country this IP address is in, please specify:
-            <select name="explicit_zone_[% server.ip %]" class="form-control" required>
+            <select name="explicit_zone_[% server.ip | html %]" class="form-control" required>
                 <option value="">Select country:</option>
                 [% FOR zone = all_zones %]
                 <option value="[% zone.name %]"[% IF zone_choice.${server.ip} == zone.name %] selected[% END %]>[% zone.description %]</option>
