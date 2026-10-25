@@ -127,17 +127,21 @@ function cspDirective(header: string, name: string): string {
   return directive;
 }
 
-test("script-src has no unsafe keywords on www and manage", async ({ page }) => {
+test("script-src and base-uri are locked down on www and manage", async ({ page }) => {
   for (const url of [wwwUrl("/"), manageUrl("/")]) {
     const response = await page.request.get(url);
     expect(response.status(), `status for ${url}`).toBe(200);
     const header = response.headers()["content-security-policy"];
     expect(header, `content-security-policy on ${url}`).toBeTruthy();
     const scriptSrc = cspDirective(header!, "script-src");
-    expect(scriptSrc, `script-src on ${url}`).toContain("'self'");
+    expect(scriptSrc, `script-src on ${url}`).toBe(
+      "script-src 'self' https://www.mapper.ntppool.org/mapper.js https://send.webform.dev",
+    );
+    expect(cspDirective(header!, "base-uri"), `base-uri on ${url}`).toBe("base-uri 'none'");
     expect(scriptSrc, `script-src on ${url}`).not.toContain("'unsafe-inline'");
     expect(scriptSrc, `script-src on ${url}`).not.toContain("'unsafe-eval'");
     expect(scriptSrc, `script-src on ${url}`).not.toContain("statuspage.io");
+    expect(scriptSrc, `script-src on ${url}`).not.toContain("stripe.com");
     const connectSrc = cspDirective(header!, "connect-src");
     expect(connectSrc, `connect-src on ${url}`).not.toContain("statuspage.io");
     expect(connectSrc, `connect-src on ${url}`).not.toContain("status.ntppool.org");

@@ -532,14 +532,17 @@ sub surrogate_key {
 sub post_process {
     my $self = shift;
 
-    my $cspdomains = "st.ntppool.org st.pimg.net news.ntppool.org";
+    # Hosts for img-src and style-src. script-src has its own, shorter list
+    # below: the page scripts are all served from 'self' (static_base is
+    # /static/), so these hosts never need to run script.
+    my $cspdomains = "https://st.ntppool.org https://st.pimg.net https://news.ntppool.org";
 
     # If on manage site, add web hostname to CSP connect-src
     my $web_hostname = '';
     if ($self->site->name eq 'manage') {
         if (my $ntppool_site = $config->site->{ntppool}) {
             if (my $servername = $ntppool_site->{servername}) {
-                $web_hostname = " $servername";
+                $web_hostname = " https://$servername";
             }
         }
     }
@@ -555,15 +558,19 @@ sub post_process {
         ],
         [   'Content-Security-Policy' => join(
                 " ",
-                qq[default-src 'none'; frame-ancestors 'none';],
-                qq[connect-src 'self' www.ntppool.org st.ntppool.org send.webform.dev${web_hostname};],
-                qq[font-src fonts.gstatic.com;],
-                qq[form-action 'self' send.webform.dev checkout.stripe.com billing.stripe.com;],
-                qq[img-src 'self' data: $cspdomains *.mapper.ntppool.org;],
-                qq[script-src 'self' $cspdomains www.mapper.ntppool.org js.stripe.com send.webform.dev;],
-                qq[style-src 'self' fonts.googleapis.com fonts.gstatic.com send.webform.dev $cspdomains;],
+                qq[default-src 'none'; base-uri 'none'; frame-ancestors 'none';],
+                qq[connect-src 'self' https://www.ntppool.org https://st.ntppool.org https://send.webform.dev${web_hostname};],
+                qq[font-src https://fonts.gstatic.com;],
+                qq[form-action 'self' https://send.webform.dev https://checkout.stripe.com https://billing.stripe.com;],
+                qq[img-src 'self' data: $cspdomains https://*.mapper.ntppool.org;],
 
-                # qq[child-src 'self' js.stripe.com;],
+                # mapper.js only loads an image from *.mapper.ntppool.org, so
+                # it is pinned. send.webform.dev stays a whole host: its
+                # embed.js (injected by client/src/webform.ts) could not be
+                # fetched to check for further scripts. Stripe.js is not
+                # loaded anywhere; checkout is a server-side redirect.
+                qq[script-src 'self' https://www.mapper.ntppool.org/mapper.js https://send.webform.dev;],
+                qq[style-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://send.webform.dev $cspdomains;],
                 qq[report-uri https://ntppool.report-uri.com/r/t/csp/wizard],
             ),
         ],
