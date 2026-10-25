@@ -512,9 +512,14 @@ B<Arguments:>
         account => $account->{id_token},  # Optional: Account selection token
         ip => $value,       # string
         hostname => $value,       # string - Fields to update (only provided fields are updated)
-        netspeed => $value,       # int
+        netspeed => $value,       # int - netspeed in Kbit/s: one of the settings the manage page offers, or the
+ server's current value. Increasing it requires a verified server. A
+ change from 10 Mbit (10000) or more to below it removes the server from
+ the global "@" zone; a change back adds it.
         in_pool => $value,       # bool
-        zones => $value,       # arrayref[string]
+        zones => $value,       # arrayref[string] - zones replaces the server's zones, "@" included, after the netspeed
+ rule above (staff only). Leaving "." out doesn't remove the server
+ from it.
     );
 
 B<Returns:>
