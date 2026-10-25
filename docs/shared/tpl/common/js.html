@@ -21,7 +21,7 @@ MACRO show_js(list_js_files) BLOCK;
         IF !unique_js.${js};
             IF js.match('^(https?:)?//');
                 jspath = js;
-            ELSIF js.match('^(/|cdn/)');
+            ELSIF js.match('^/');
                jspath = combust.static_url(js) || js;
             ELSE;
                jspath = combust.static_url("/js/${js}") || "/js/${js}";
