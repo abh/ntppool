@@ -3,16 +3,12 @@ import { installSession, loginAs, MANAGE_URL, uniqueTestEmail } from "../lib/aut
 import { expectNoCspViolations, watchCspViolations } from "../lib/csp";
 import { expect, test } from "../lib/fixtures";
 import { bust, expectCleanPage } from "../lib/helpers";
-import { monitorListUrl } from "../lib/monitors";
+import { monitorListUrl, monitorUrl } from "../lib/monitors";
+import { serverListUrl } from "../lib/servers";
 
 // The behaviors that used inline JavaScript (an onclick, an hx-on attribute
 // and a <script> in an htmx fragment), plus a sweep of the main pages. Every
-// test fails on any CSP violation, so a page that still needs inline script
-// shows up here once the header drops 'unsafe-inline' and 'unsafe-eval'.
-
-function monitorUrl(accountToken: string, tlsName: string): string {
-  return `/manage/monitors/monitor?a=${encodeURIComponent(accountToken)}&name=${encodeURIComponent(tlsName)}`;
-}
+// test fails on any CSP violation.
 
 function wwwUrl(path: string): string {
   const base = process.env.NTP_BASE_URL;
@@ -20,8 +16,21 @@ function wwwUrl(path: string): string {
   return new URL(bust(path), base).toString();
 }
 
+function manageUrl(path: string): string {
+  return new URL(bust(path), MANAGE_URL).toString();
+}
+
+let violations: () => string[];
+
+test.beforeEach(async ({ page }) => {
+  violations = await watchCspViolations(page);
+});
+
+test.afterEach(async ({ page }) => {
+  await expectNoCspViolations(page, violations);
+});
+
 test("development notice Details toggles devDetails", async ({ page, context }) => {
-  const violations = await watchCspViolations(page);
   await loginAs(context, uniqueTestEmail("csp-dev"));
   await expectCleanPage(page, bust("/manage/"));
 
@@ -32,12 +41,9 @@ test("development notice Details toggles devDetails", async ({ page, context }) 
   await expect(details).not.toHaveClass(/\bd-none\b/);
   await toggle.click();
   await expect(details).toHaveClass(/\bd-none\b/);
-
-  expectNoCspViolations(violations);
 });
 
 test("delete confirmation modal opens, cancels and reopens without CSP violations", async ({ page, context, fixtures }) => {
-  const violations = await watchCspViolations(page);
   const fixture = await fixtures.create({ monitors: [{ ipv4: { status: "paused" } }] });
   await installSession(context, fixture.sessionToken);
   await expectCleanPage(page, bust(monitorUrl(fixture.accountToken, fixture.monitors[0].tlsName)));
@@ -53,12 +59,9 @@ test("delete confirmation modal opens, cancels and reopens without CSP violation
   await openButton.click();
   await expect(modal).toBeVisible();
   await expect(page.locator(".modal-backdrop")).toHaveCount(1);
-
-  expectNoCspViolations(violations);
 });
 
 test("monitor admin toggles combined and per-address status forms", async ({ page, context, fixtures }) => {
-  const violations = await watchCspViolations(page);
   const fixture = await fixtures.create({
     monitors: [{ ipv4: { status: "testing" }, ipv6: { status: "testing" } }],
   });
@@ -75,12 +78,9 @@ test("monitor admin toggles combined and per-address status forms", async ({ pag
   await expect(forms.nth(0)).toBeHidden();
   await expect(forms.nth(1)).toBeVisible();
   await expect(forms.nth(2)).toBeVisible();
-
-  expectNoCspViolations(violations);
 });
 
 test("main pages load without CSP violations", async ({ page, context, fixtures }) => {
-  const violations = await watchCspViolations(page);
   const fixture = await fixtures.create({
     servers: [{ ipVersion: 4, verified: true }],
     monitors: [{ ipv4: { status: "paused" } }],
@@ -103,21 +103,18 @@ test("main pages load without CSP violations", async ({ page, context, fixtures 
     "the status widget handled its fetch",
   ).toHaveCount(1);
 
-  const acc = encodeURIComponent(fixture.accountToken);
   const pages = [
     home,
     wwwUrl(`/scores/${fixture.servers[0].ip}`),
-    new URL(bust("/manage/login"), MANAGE_URL).toString(),
-    new URL(bust(`/manage/servers?a=${acc}`), MANAGE_URL).toString(),
-    new URL(bust(accountFormUrl(fixture.accountToken)), MANAGE_URL).toString(),
-    new URL(bust(monitorListUrl(fixture.accountToken)), MANAGE_URL).toString(),
+    manageUrl("/manage/login"),
+    manageUrl(serverListUrl(fixture.accountToken)),
+    manageUrl(accountFormUrl(fixture.accountToken)),
+    manageUrl(monitorListUrl(fixture.accountToken)),
   ];
   for (const url of pages) {
     await expectCleanPage(page, url);
     await page.waitForLoadState("networkidle");
   }
-
-  expectNoCspViolations(violations);
 });
 
 /** The value of one directive in a Content-Security-Policy header. */
@@ -131,9 +128,7 @@ function cspDirective(header: string, name: string): string {
 }
 
 test("script-src has no unsafe keywords on www and manage", async ({ page }) => {
-  const base = process.env.NTP_BASE_URL;
-  if (!base) throw new Error("NTP_BASE_URL is not set");
-  for (const url of [new URL(bust("/"), base).toString(), new URL(bust("/"), MANAGE_URL).toString()]) {
+  for (const url of [wwwUrl("/"), manageUrl("/")]) {
     const response = await page.request.get(url);
     expect(response.status(), `status for ${url}`).toBe(200);
     const header = response.headers()["content-security-policy"];

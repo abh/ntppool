@@ -24,6 +24,10 @@ export function monitorListUrl(accountToken: string): string {
   return `${MONITOR_LIST_PATH}?a=${encodeURIComponent(accountToken)}`;
 }
 
+export function monitorUrl(accountToken: string, tlsName: string): string {
+  return `/manage/monitors/monitor?a=${encodeURIComponent(accountToken)}&name=${encodeURIComponent(tlsName)}`;
+}
+
 export function monitorConfigUrl(accountToken: string): string {
   return `${MONITOR_CONFIG_PATH}?a=${encodeURIComponent(accountToken)}`;
 }
