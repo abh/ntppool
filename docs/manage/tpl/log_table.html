@@ -27,7 +27,7 @@
             <td>[% log.message | html %]</td>
         </tr>
             [% IF log.changes %]
-                [% FOR k IN log.changes.keys %]
+                [% FOR k IN log.changes.keys.sort %]
                 <tr class="log-changes">
                     <td></td>
                     <td colspan="4" class="text-muted small">
