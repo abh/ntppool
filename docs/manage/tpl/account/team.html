@@ -8,6 +8,11 @@
             <input type="hidden" name="a" value="[% account.account_id ? account.id_token : 'new' %]" />
             <input type="hidden" name="auth_token" value="[% combust.auth_token %]" />
 
+            [% IF users_error %]
+            <div class="alert alert-warning" role="alert">
+                Could not load the account team. Please reload the page to try again.
+            </div>
+            [% END %]
             <table class="table">
                 [% FOR user = users %]
                 <tr>
@@ -53,6 +58,12 @@
         </div>
         [% END %]
 
+        [% IF invites_error %]
+        <h4>Account invitations</h4>
+        <div class="alert alert-warning" role="alert">
+            Could not load the account invitations. Please reload the page to try again.
+        </div>
+        [% END %]
         [% IF invites && invites.size > 0 %]
         <h4>Account invitations</h4>
         <table class="table">

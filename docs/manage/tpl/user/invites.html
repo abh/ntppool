@@ -1,6 +1,10 @@
 <div class="row">
     <div class="col-md-10">
-        [% IF invites && invites.size > 0 %]
+        [% IF invites_error %]
+        <div class="alert alert-warning" role="alert">
+            Could not load your account invitations. Please reload the page to try again.
+        </div>
+        [% ELSIF invites && invites.size > 0 %]
         <h3>Account invitations for [% user.email | html %]</h3>
         <table class="table">
             <tr>

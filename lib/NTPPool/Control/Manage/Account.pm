@@ -4,7 +4,7 @@ use NTPPool::Control::Manage;
 use base              qw(NTPPool::Control::Manage);
 use Combust::Constant qw(OK NOT_FOUND SERVER_ERROR);
 use NP::CAPI::Account qw(
-    get_account_users get_user_accounts get_account_invites
+    get_account_users get_account_invites
     create_account get_account update_account remove_user_from_account create_user_task
     list_user_tasks get_user_task
     check_user_deletion_eligibility
@@ -35,23 +35,12 @@ sub _account_users {
     my $result =
       get_account_users($self->api_auth_params, account => $account->{id_token},);
 
-    return $self->{$cache_key} = [] if $result->{error};
+    # undef (not an empty list) so callers can tell a failed lookup from an
+    # empty team. connect_rpc logs the error.
+    return $self->{$cache_key} = undef if $result->{error};
 
     # ✅ GOOD: Return API hashrefs directly (no ORM objects!)
     return $self->{$cache_key} = $result->{data}{users} || [];
-}
-
-sub _user_accounts {
-    my ($self, $user) = @_;
-    my $cache_key = '_user_accounts_' . $user->{user_id};
-    return $self->{$cache_key} if exists $self->{$cache_key};
-
-    my $result = get_user_accounts($self->api_auth_params,);
-
-    return $self->{$cache_key} = [] if $result->{error};
-
-    # ✅ GOOD: Return API hashrefs directly (no ORM objects!)
-    return $self->{$cache_key} = $result->{data}{accounts} || [];
 }
 
 sub _account_invites {
@@ -65,7 +54,9 @@ sub _account_invites {
         for_user => JSON::XS::false,
     );
 
-    return $self->{$cache_key} = [] if $result->{error};
+    # undef (not an empty list) so the page can say the list failed to load
+    # rather than showing no invitations. connect_rpc logs the error.
+    return $self->{$cache_key} = undef if $result->{error};
 
     # ✅ GOOD: Return API hashrefs directly (no ORM objects!)
     return $self->{$cache_key} = $result->{data}{invites} || [];
@@ -78,7 +69,9 @@ sub _user_invites {
 
     my $result = get_account_invites($self->api_auth_params, for_user => JSON::XS::true,);
 
-    return $self->{$cache_key} = [] if $result->{error};
+    # undef (not an empty list) so callers can tell a failed lookup from no
+    # invitations. connect_rpc logs the error.
+    return $self->{$cache_key} = undef if $result->{error};
 
     # ✅ GOOD: Return API hashrefs directly (no ORM objects!)
     return $self->{$cache_key} = $result->{data}{invites} || [];
@@ -138,7 +131,13 @@ sub manage_dispatch {
         # and no pending invitations. So a logged-in user with no account
         # should only get here if they have an invitation to act on...
         my $invites = $self->_user_invites($self->user);
-        if ($invites && @$invites) {
+        unless (defined $invites) {
+            $self->tpl_param('error',
+                'We could not check your account invitations. Please reload the page to try again. If this keeps happening, contact support and include the trace ID below.'
+            );
+            return SERVER_ERROR, $self->evaluate_template('tpl/user/account_error.html');
+        }
+        if (@$invites) {
             return $self->redirect("/manage/account/invites/");
         }
 
@@ -267,6 +266,12 @@ sub manage_dispatch {
 sub _remove_user_from_account {
     my ($self, $account, $user_id) = @_;
     my $users = $self->_account_users($account);
+    unless (defined $users) {
+        $self->tpl_param('error',
+            'Could not load the account team, so no one was removed. Please try again.'
+        );
+        return $self->render_users($account);
+    }
     my ($user) = grep { $_->{user_id} == $user_id } @$users;
     return $self->render_users($account)
       unless $user;
@@ -442,7 +447,11 @@ sub render_users_invite {
         my $code = $result->{connect_code} // 'internal';
 
         if ($code eq 'already_exists') {
-            $errors{invite_email} = "User is already on this account";
+
+            # The API says whether the user is already on the account or
+            # already has a pending invitation.
+            $errors{invite_email} = $result->{error}
+              || 'This email address is already on or invited to this account';
         }
         elsif ($code eq 'resource_exhausted') {
             $errors{invite_email} = 'Too many recent account invitations (limit: 5)';
@@ -519,8 +528,9 @@ sub render_user_invitations {
     my $user    = $self->user;
     my $invites = $self->_user_invites($user);
 
-    $self->tpl_param('user',    $user);
-    $self->tpl_param('invites', $invites);
+    $self->tpl_param('user',          $user);
+    $self->tpl_param('invites',       $invites);
+    $self->tpl_param('invites_error', 1) unless defined $invites;
 
     return OK, $self->evaluate_template('tpl/user/invites.html');
 }
@@ -531,8 +541,10 @@ sub render_users {
     my $invites = $self->_account_invites($account);
     my $users   = $self->_account_users($account);
 
-    $self->tpl_param('invites', $invites);
-    $self->tpl_param('users',   $users);
+    $self->tpl_param('invites',       $invites);
+    $self->tpl_param('invites_error', 1) unless defined $invites;
+    $self->tpl_param('users',         $users);
+    $self->tpl_param('users_error',   1) unless defined $users;
 
     if ($self->user_is_staff) {
 
