@@ -59,13 +59,13 @@
        [% IF have_subscription %]
        <p>
          The DNS zone is being processed and will be setup soon.
-         <a href="mailto:[% " vendors" | email %]?subject=Vendor zone [% vz.zone_name |
+         <a href="mailto:[% "vendors" | email %]?subject=Vendor zone [% vz.zone_name |
             html %] processing">Email if you have any questions</a>.
        </p>
        [% ELSE %]
        <p>
         If your application hasn't been processed or responded to
-        within a week, please email the <a href="mailto:[% " vendors" | email %]?subject=Vendor zone [% vz.zone_name |
+        within a week, please email the <a href="mailto:[% "vendors" | email %]?subject=Vendor zone [% vz.zone_name |
             html %] application">vendor support</a> address.
        </p>
        [% END %]
