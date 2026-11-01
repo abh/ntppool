@@ -1,7 +1,7 @@
 package NP::CAPI;
 use strict;
 use warnings;
-use NP::UA     qw($ua_long);
+use NP::UA     ();
 use JSON::XS   ();
 use Data::Dump ();
 use HTTP::Request;
@@ -69,24 +69,27 @@ Provides a Perl interface to Protocol Buffer-defined RPC services.
 
 =cut
 
-# ua returns a user agent object with the correct headers
+# RPCs that can take longer than the default 5s client timeout. Each user
+# agent's timeout is longer than the matching API write deadline
+# (rpcDeadlines in the Go API's server/api/api.go), so the API's answer
+# arrives before we give up.
+my %UA_FOR_METHOD = (
+
+    # API deadline 55s
+    'ntppool.server.v1.ServerManagementService/AddServerPrecheck' => $NP::UA::ua_long,
+    'ntppool.server.v1.ServerManagementService/AddServer'         => $NP::UA::ua_long,
+
+    # API default deadline 15s; these send the invite email synchronously
+    'ntppool.account.v1.AccountService/CreateAccountInvite' => $NP::UA::ua_medium,
+    'ntppool.account.v1.AccountService/ResendAccountInvite' => $NP::UA::ua_medium,
+);
+
+# ua returns the user agent for an RPC. The agents are shared across
+# requests, so per-request headers belong on the HTTP::Request, never in
+# the agent's default headers.
 sub ua {
-    my ($request_context, $service, $method) = @_;
-
-    # Use long-timeout UA for server management operations (precheck, add)
-    my $ua =
-      (      $service
-          && $service =~ /ServerManagementService/
-          && $method  =~ /^(AddServerPrecheck|AddServer)$/)
-      ? $NP::UA::ua_long
-      : $NP::UA::ua;
-
-    # Add X-Forwarded-For header if request context is provided
-    if ($request_context && $request_context->{x_forwarded_for}) {
-        $ua->default_header('X-Forwarded-For' => $request_context->{x_forwarded_for});
-    }
-
-    return $ua;
+    my ($service, $method) = @_;
+    return $UA_FOR_METHOD{"$service/$method"} // $NP::UA::ua;
 }
 
 =head2 connect_rpc
@@ -283,6 +286,11 @@ sub connect_rpc {
           if $ENV{CAPI_DEBUG};
     }
 
+    # Forward the client IP so the API sees the real user
+    if ($context && $context->{x_forwarded_for}) {
+        $req->header('X-Forwarded-For' => $context->{x_forwarded_for});
+    }
+
     # Encode request as JSON and set body (only for POST requests)
     if ($http_method ne 'GET') {
         my $json_body = $json->encode($request);
@@ -299,7 +307,7 @@ sub connect_rpc {
     }
 
     # Make request with error handling
-    my $ua  = ua($context, $service, $method);
+    my $ua = ua($service, $method);
     my $res = eval { $ua->request($req) };
     if ($@ || !$res) {
         return {
