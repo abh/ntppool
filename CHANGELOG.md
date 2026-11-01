@@ -4,12 +4,33 @@ All notable changes to the NTP Pool Project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## beta-2026.11.0
+
+### 🌐 User Interface & Experience
+
+- The server chart lists monitors that are no longer assigned to the server
+  in a "No longer assigned" group
+- The vendor zone pages ask you to follow up if you haven't heard back within
+  a month, instead of a week (thanks Philippe Coval)
+- The monitor setup page says a monitor can run on the same hardware as an
+  NTP Pool server; the system doesn't have a monitor check your own server
+- The DNS server page no longer shows a query count for each DNS server,
+  which has had no data since 2018, or the link to the query rate graphs,
+  which led to a 404
+- Inviting someone says whether they are already on the account or already
+  have a pending invitation
+- Fix: the support email links on the monitor and vendor pages go to the
+  right address (thanks Martino Dell'Ambrogio)
+- Fix: a request with a body the site can't read, such as a cut-off form
+  upload, gets "400 Bad Request" instead of a server error
+- Fix: entries in the pending vendor zones list no longer end in a blank line
+- Fix: sending or resending an account invitation no longer times out
+  while the invitation email is being sent
+- Fix: the account team and invitation pages show a warning when the list
+  can't be loaded, instead of an empty list, and removing a team member
+  shows an error when it fails
+
 ## prod-2026.10.4
-
-### ⚠️ Upgrade notes
-
-- Requires NTP Pool API v0.8.6 or later. Deploy it first; with an older API
-  the netspeed dropdown on the server page is empty.
 
 ### 🌐 User Interface & Experience
 
@@ -18,6 +39,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   up to the target before it is verified
 - The help form on the sign-in page is behind a "Need help signing in?"
   button
+- Fix: lowering a server's netspeed below 10 Mbit removes it from the global
+  zone again, and raising it to 10 Mbit or more adds it back. Since the
+  2026.10.0 release a netspeed change left the global zone as it was. (thanks
+  Claudio Perrone)
 
 ## prod-2026.10.3
 
