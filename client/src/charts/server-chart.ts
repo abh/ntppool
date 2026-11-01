@@ -510,7 +510,7 @@ function createLegend(
   showOnlyActiveTesting = false
 ): void {
   // Store monitor status map on chartGroup for use by fadeOtherMonitors
-  const monitorStatusMap = new Map(monitors.map(m => [m.id, m.status]));
+  const monitorStatusMap = new Map(monitors.map(m => [m.id, legendStatus(m)]));
   const chartGroupElement = chartGroup.node() as ChartGroupElement | null;
   if (chartGroupElement) {
     chartGroupElement.__monitorStatusMap = monitorStatusMap;
@@ -543,15 +543,24 @@ function createLegend(
 }
 
 /**
+ * Legend group for a monitor: its status, or 'unassigned' when the API sends
+ * a null status because the monitor no longer has an assignment for the server
+ */
+function legendStatus(monitor: Monitor): string {
+  return monitor.status ?? 'unassigned';
+}
+
+/**
  * Group monitors by status
  */
 function groupMonitorsByStatus(monitors: Monitor[]): Record<string, Monitor[]> {
   const groups: Record<string, Monitor[]> = {};
   monitors.forEach(monitor => {
-    if (!groups[monitor.status]) {
-      groups[monitor.status] = [];
+    const status = legendStatus(monitor);
+    if (!groups[status]) {
+      groups[status] = [];
     }
-    groups[monitor.status]!.push(monitor);
+    groups[status]!.push(monitor);
   });
   return groups;
 }
@@ -941,7 +950,7 @@ function createMonitorRow(monitor: Monitor, includeRtt: boolean, threeColumn = f
 
   // Add cells: Name | Score | RTT (if applicable)
   const nameCell = createCell(displayName, nameClass + textClass);
-  const scoreCell = createCell(monitor.score.toString(), scoreClass + textClass);
+  const scoreCell = createCell(monitor.score === null ? '' : monitor.score.toString(), scoreClass + textClass);
 
   // Add monitor ID to individual cells for precise hover targeting
   nameCell.dataset['monitorId'] = monitor.id.toString();

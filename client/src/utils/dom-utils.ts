@@ -73,7 +73,10 @@ export const MONITOR_STATUS: Record<string, MonitorStatusConfig> = {
   candidate: { order: 2, class: 'table-secondary', label: 'Candidate' },
   pending: { order: 3, class: 'table-secondary', label: 'Pending' },
   paused: { order: 4, class: 'table-danger', label: 'Paused' },
-  deleted: { order: 5, class: 'table-danger', label: 'Deleted' }
+  deleted: { order: 5, class: 'table-danger', label: 'Deleted' },
+  // Legend group for monitors with a null status from the API (no assignment
+  // for the server); the API never sends this value itself.
+  unassigned: { order: 6, class: 'table-secondary', label: 'No longer assigned' }
 };
 
 /**
@@ -318,12 +321,12 @@ export function getElementDimensions(
 /**
  * Sort monitors by status, then type (score first), then score (desc), then avg_rtt (asc), then name (asc)
  */
-export function sortMonitors<T extends { status: string; type: string; score: number; avg_rtt?: number; name: string }>(
+export function sortMonitors<T extends { status: string | null; type: string; score: number | null; avg_rtt?: number; name: string }>(
   monitors: T[]
 ): T[] {
   return [...monitors].sort((a, b) => {
-    const aStatus = MONITOR_STATUS[a.status] ?? { order: 999 };
-    const bStatus = MONITOR_STATUS[b.status] ?? { order: 999 };
+    const aStatus = (a.status === null ? undefined : MONITOR_STATUS[a.status]) ?? { order: 999 };
+    const bStatus = (b.status === null ? undefined : MONITOR_STATUS[b.status]) ?? { order: 999 };
 
     // Primary sort: status
     if (aStatus.order !== bStatus.order) {
@@ -335,8 +338,10 @@ export function sortMonitors<T extends { status: string; type: string; score: nu
       return b.type.localeCompare(a.type); // Descending order: "score" before "monitor"
     }
 
-    // Tertiary sort: score (descending)
+    // Tertiary sort: score (descending, null last)
     if (a.score !== b.score) {
+      if (a.score === null) return 1;
+      if (b.score === null) return -1;
       return b.score - a.score;
     }
 

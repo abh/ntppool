@@ -43,12 +43,12 @@ export interface Monitor {
   name: string;
   /** Monitor type */
   type: string;
-  /** Timestamp (ISO string) */
-  ts: string;
-  /** Current score */
-  score: number;
-  /** Monitor status */
-  status: 'active' | 'testing' | 'candidate' | 'pending' | 'paused' | 'deleted';
+  /** Timestamp (ISO string); null when the monitor has no assignment for the server */
+  ts: string | null;
+  /** Current score; null when the monitor has no assignment for the server */
+  score: number | null;
+  /** Monitor status; null when the monitor has no assignment for the server */
+  status: 'active' | 'testing' | 'candidate' | 'pending' | 'paused' | 'deleted' | null;
   /** Average round trip time */
   avg_rtt?: number;
 }
