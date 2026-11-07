@@ -81,23 +81,15 @@ sub render {
         $self->cache_control('max-age=10800, s-maxage=7200');
         return 404;
     }
-    elsif ($self->request->path =~ m!\.json$!) {
-        my $limit = $self->req_param('limit') || 0;
 
-        $self->request->header_out('Fastly-Follow' => '1');
-        return $self->redirect(
-            $self->www_url(
-                "/api/data/zone/counts/" . $zone_name,
-                {($limit ? (limit => $limit) : ())}
-            ),
-            301
-        );
-    }
+    my $is_json = $self->request->path =~ m!\.json$!;
 
-    # Fetch zone from CAPI
+    # Fetch zone from CAPI. The API matches the name ignoring case and
+    # returns it as stored.
     my $zone_result = get_zone(
         name    => $zone_name,
         context => $self->_get_request_context(),
+        ($is_json ? (basic_only => JSON::true) : ()),
     );
 
     if (my $status = $self->capi_error_status($zone_result, $zone_result->{data}{zone})) {
@@ -107,6 +99,23 @@ sub render {
     }
 
     my $zone = $zone_result->{data}{zone};
+
+    if ($is_json) {
+        my $limit = $self->req_param('limit') || 0;
+
+        $self->request->header_out('Fastly-Follow' => '1');
+        return $self->redirect(
+            $self->www_url(
+                "/api/data/zone/counts/" . $zone->{name},
+                {($limit ? (limit => $limit) : ())}
+            ),
+            301
+        );
+    }
+
+    if ($zone->{name} ne $zone_name) {
+        return $self->redirect($zone->{url}, 301);
+    }
 
     $self->tpl_param('zone' => $zone);
 

@@ -84,6 +84,13 @@ sub render_account {
     my $account_data = $account_result->{data}{account};
     my $servers      = $account_result->{data}{servers} || [];
 
+    # The API matches the slug ignoring case; send other spellings to
+    # the account's URL as stored.
+    my $public_url = $account_data->{public_url};
+    if ($public_url and $public_url ne "/a/$account_slug") {
+        return $self->redirect($public_url . (defined $extra ? "/$extra" : ''), 301);
+    }
+
     my $req_json = ($extra && $extra eq 'json');
 
     if ($req_json) {
