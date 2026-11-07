@@ -19,6 +19,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   which led to a 404
 - Inviting someone says whether they are already on the account or already
   have a pending invitation
+- Fix: profile and zone pages work with any capitalization in the URL again,
+  such as `/a/Example` or `/zone/DE`, and redirect to the name as it is
+  stored. Since the database move in October those URLs gave a 404 (thanks
+  Maurice)
 - Fix: the support email links on the monitor and vendor pages go to the
   right address (thanks Martino Dell'Ambrogio)
 - Fix: a request with a body the site can't read, such as a cut-off form
