@@ -58,10 +58,7 @@ unless ($update_hosting || $update_technical) {
 
 # Expected hosting providers (extracted from English source)
 my @expected_hosting_providers = (
-    {   name => 'Equinix',
-        url  => 'https://www.equinix.com/',
-    },
-    {   name => 'Netactuate',
+    {   name => 'NetActuate',
         url  => 'https://www.netactuate.com/',
     },
 );
@@ -69,27 +66,27 @@ my @expected_hosting_providers = (
 # Outdated hosting providers that should be updated
 my @outdated_hosting_patterns = (
     {   pattern     => qr/\bPacket\b(?!\s+Clearing\s+House)/i,
-        replacement => 'Equinix',
-        message     => 'Packet → Equinix',
+        replacement => 'NetActuate',
+        message     => 'Packet → NetActuate',
     },
     {   pattern     => qr/\bEquinix\s+Metal\b/i,
-        replacement => 'Equinix',
-        message     => 'Equinix Metal → Equinix',
+        replacement => 'NetActuate',
+        message     => 'Equinix Metal → NetActuate',
     },
     {   pattern     => qr/\bDevelooper\b/i,
-        replacement => 'Equinix and Netactuate',
+        replacement => 'NetActuate',
         message     => 'Develooper → modern hosting providers',
     },
-    {   pattern     => qr/\bNetActuate\b/i,    # Different capitalization
-        replacement => 'Netactuate',
-        message     => 'NetActuate → Netactuate (correct capitalization)',
+    {   pattern     => qr/\bEquinix\b/i,
+        replacement => 'NetActuate',
+        message     => 'Equinix → NetActuate',
     },
     {   pattern     => qr/\bOSUOSL\b/i,
-        replacement => 'Equinix and Netactuate',
+        replacement => 'NetActuate',
         message     => 'OSUOSL → modern hosting providers',
     },
     {   pattern     => qr/\bFastly\b/i,
-        replacement => 'Equinix and Netactuate',
+        replacement => 'NetActuate',
         message     => 'Fastly → modern hosting providers',
     },
 );

@@ -145,16 +145,11 @@ sub check_hosting_refs {
         my $content = read_file($intro_file);
 
         # Check for outdated references
-        if (   $content =~ /Packet(?!\s+Clearing\s+House)/i
-            && $content !~ /Equinix\s+Metal/i)
-        {
-            push @issues, "Outdated: 'Packet' should be 'Equinix Metal'";
+        if ($content =~ /Packet(?!\s+Clearing\s+House)|Equinix/i) {
+            push @issues, "Outdated: 'Packet' / 'Equinix' should be 'NetActuate'";
         }
-        if ($content =~ /Develooper/i && $content !~ /Equinix|OSUOSL|Fastly/i) {
+        if ($content =~ /Develooper/i && $content !~ /NetActuate/i) {
             push @issues, "Outdated: Missing modern hosting providers";
-        }
-        if ($content =~ /NetActuate/i && $content !~ /Equinix/i) {
-            push @issues, "Outdated: 'NetActuate' should include 'Equinix'";
         }
     }
 

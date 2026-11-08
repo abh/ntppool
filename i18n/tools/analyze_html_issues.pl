@@ -308,12 +308,12 @@ sub check_hosting_refs {
         }
 
         # Check if translation has outdated references
-        if ($content =~ /Packet(?!\s+Clearing\s+House)/i && $content !~ /Equinix/i) {
+        if ($content =~ /Packet(?!\s+Clearing\s+House)|Equinix/i) {
             push @issues, "Outdated: 'Packet' should be updated to current providers: "
               . join(", ", @en_providers);
         }
 
-        if ($content =~ /Develooper/i && $content !~ /Equinix|Netactuate/i) {
+        if ($content =~ /Develooper/i && $content !~ /NetActuate/i) {
             push @issues,
               "Outdated: 'Develooper' should be updated to current providers: "
               . join(", ", @en_providers);

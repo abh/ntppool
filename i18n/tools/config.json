@@ -76,19 +76,15 @@
     "description": "Current hosting providers (authoritative source: English)",
     "current": [
       {
-        "name": "Equinix",
-        "url": "https://www.equinix.com/"
-      },
-      {
-        "name": "Netactuate",
+        "name": "NetActuate",
         "url": "https://www.netactuate.com/"
       }
     ],
     "outdated": [
       "Packet",
+      "Equinix",
       "Equinix Metal",
       "Develooper",
-      "NetActuate",
       "OSUOSL",
       "Fastly"
     ]

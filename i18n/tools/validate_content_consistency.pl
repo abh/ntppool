@@ -27,17 +27,11 @@ my @standard_html_files = (
 );
 
 # Expected hosting providers (extracted from English source)
-my @expected_hosting_providers = ('Equinix', 'Netactuate',);
+my @expected_hosting_providers = ('NetActuate',);
 
 # Outdated hosting providers that should be updated
-my @outdated_hosting_providers = (
-    'Packet',
-    'Equinix Metal',
-    'Develooper',
-    'NetActuate',    # Different capitalization
-    'OSUOSL',
-    'Fastly',
-);
+my @outdated_hosting_providers =
+  ('Packet', 'Equinix', 'Equinix Metal', 'Develooper', 'OSUOSL', 'Fastly',);
 
 # Technical references that should be consistent
 my %technical_references = (
@@ -409,11 +403,11 @@ sub format_language_report {
 
     # Header
     $output .= "\n$colors{bold}=== $lang - $report->{name} ===$colors{reset}\n";
-    $output
-      .= "Status: "
-      . ($report->{testing}
-        ? "$colors{yellow}Beta/Testing$colors{reset}"
-        : "$colors{green}Production$colors{reset}") . "\n";
+    $output .= "Status: "
+      . ( $report->{testing}
+          ? "$colors{yellow}Beta/Testing$colors{reset}"
+          : "$colors{green}Production$colors{reset}"
+      ) . "\n";
     $output
       .= "Total consistency issues: $colors{red}$report->{total_issues}$colors{reset}\n";
 
