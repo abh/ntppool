@@ -6,13 +6,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## prod-2026.11.0
 
-### 🌍 Translation Updates
-
-- Slovak translation, shown on the beta site while it is reviewed (thanks
-  Matúš Kráľ)
-
-## beta-2026.11.0
-
 ### 🌐 User Interface & Experience
 
 - The server chart lists monitors that are no longer assigned to the server
@@ -40,6 +33,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix: the account team and invitation pages show a warning when the list
   can't be loaded, instead of an empty list, and removing a team member
   shows an error when it fails
+
+### 🌍 Translation Updates
+
+- Slovak translation, shown on the beta site while it is reviewed (thanks
+  Matúš Kráľ)
 
 ## prod-2026.10.4
 
