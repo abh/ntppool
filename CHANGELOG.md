@@ -4,6 +4,13 @@ All notable changes to the NTP Pool Project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## prod-2026.11.0
+
+### 🌍 Translation Updates
+
+- Slovak translation, shown on the beta site while it is reviewed (thanks
+  Matúš Kráľ)
+
 ## beta-2026.11.0
 
 ### 🌐 User Interface & Experience
