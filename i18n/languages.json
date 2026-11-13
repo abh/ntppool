@@ -90,6 +90,10 @@
   "si": {
     "name": "සිංහල"
   },
+  "sk": {
+    "name": "Slovenčina",
+    "testing": 1
+  },
   "sr": {
     "name": "Српски"
   },
