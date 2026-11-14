@@ -41,26 +41,3 @@ export function isWebComponentsSupported(): boolean {
     'dispatchEvent' in Element.prototype
   );
 }
-
-/**
- * Polyfill Web Components if needed
- * Returns a promise that resolves when polyfills are loaded
- */
-export async function ensureWebComponentsSupport(): Promise<void> {
-  if (isWebComponentsSupported()) {
-    return;
-  }
-
-  // For legacy browsers, the Vite legacy plugin should provide polyfills
-  // If not available, we'll gracefully degrade
-  console.warn('Web Components not fully supported. Modern features may not work.');
-
-  // Check if polyfills are available globally (loaded by legacy plugin)
-  if (typeof (window as any).webComponentsReady !== 'undefined') {
-    return;
-  }
-
-  // If no polyfills available, we'll still try to continue
-  // Modern browsers that reach this point should still work
-  console.warn('Web Components polyfills not available. Some features may not work in older browsers.');
-}

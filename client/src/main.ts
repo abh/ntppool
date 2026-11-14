@@ -9,10 +9,10 @@ import './styles/bootstrap.scss';
 
 import {
   registerAllComponents,
-  ensureWebComponentsSupport,
+  isWebComponentsSupported,
   CHART_TAG_NAMES
 } from '@/components/index';
-import { querySelector, showLegacyMessage, initializeGraphExplanation } from '@/utils/dom-utils';
+import { querySelector, showError, showLegacyMessage, initializeGraphExplanation } from '@/utils/dom-utils';
 
 
 
@@ -20,10 +20,14 @@ import { querySelector, showLegacyMessage, initializeGraphExplanation } from '@/
  * Initialize Web Components for charts
  */
 async function initializeWebComponents(): Promise<void> {
-  try {
-    // Ensure Web Components support (loads polyfills if needed)
-    await ensureWebComponentsSupport();
+  const legacyContainer = querySelector('#legacy-graphs');
 
+  if (!isWebComponentsSupported()) {
+    showLegacyMessage(legacyContainer);
+    return;
+  }
+
+  try {
     // Register all chart components
     await registerAllComponents();
 
@@ -35,9 +39,10 @@ async function initializeWebComponents(): Promise<void> {
   } catch (error) {
     console.error('Failed to initialize chart components:', error);
 
-    // Show legacy message if Web Components aren't supported
-    const legacyContainer = querySelector('#legacy-graphs');
-    showLegacyMessage(legacyContainer);
+    // The browser is fine; a chart module failed to load
+    if (legacyContainer) {
+      showError(legacyContainer, 'The charts could not be loaded. Please try reloading the page.');
+    }
 
     throw error;
   }
