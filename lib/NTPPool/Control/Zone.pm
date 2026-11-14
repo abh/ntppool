@@ -13,10 +13,10 @@ use Time::Duration qw();
 
 sub zone_name {
     my $self = shift;
-    my ($zone_name) =
-      ($self->request->uri =~ m!^/zone/(?:graph)?([^/]+?)(\.json|/|(-v6)?\.png)?$!);
-    $zone_name ||= '.';
-    $zone_name;
+    my $uri  = $self->request->uri;
+    return '.' if $uri eq '/zone';
+    my ($zone_name) = ($uri =~ m!^/zone/(?:graph)?([^/]+?)(\.json|/|(-v6)?\.png)?$!);
+    return $zone_name;
 }
 
 sub is_graph {
@@ -68,14 +68,15 @@ sub get_zone_stats {
 }
 
 sub render {
-    my $self      = shift;
-    my $zone_name = $self->zone_name;
-    return 404 if (length($zone_name) > 100);
+    my $self = shift;
 
     # discourage trailing slashes
     if (my ($path) = ($self->request->path =~ m!^(.*)/$!)) {
-        return $self->redirect($1, 301);
+        return $self->redirect($path, 301);
     }
+
+    my $zone_name = $self->zone_name;
+    return 404 unless defined $zone_name && length($zone_name) <= 100;
 
     if (my $ip_version = $self->is_graph) {
         $self->cache_control('max-age=10800, s-maxage=7200');
