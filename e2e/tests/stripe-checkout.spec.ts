@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Frame, type Locator, type Page } from "@playwright/test";
 import { loginAs, uniqueTestEmail } from "../lib/auth";
 import { bust, expectCleanPage } from "../lib/helpers";
 import {
@@ -27,23 +27,83 @@ import {
 // through `api e2e subscription cancel` writes nothing itself, so the status
 // only reaches the database if stripe-gw's webhook works.
 
+type CheckoutFields = {
+  cardNumber: Locator;
+  cardExpiry: Locator;
+  cardCvc: Locator;
+  billingName: Locator;
+  postalCode: Locator;
+  submit: Locator;
+};
+
+/**
+ * Stripe serves two Checkout layouts and, as of November 2026, picks one per
+ * session. The older one has the form on the page with stable field ids. The
+ * newer one puts the form in an iframe, without those ids; its fields are
+ * found by their labels. Waits for either and returns its fields. If Stripe
+ * changes a layout again, this is the function to update.
+ */
+async function checkoutFields(page: Page): Promise<CheckoutFields> {
+  const pageCardNumber = page.locator("#cardNumber");
+  const framedCardNumber = (f: Frame) => f.getByRole("textbox", { name: "Card number", exact: true });
+
+  let form: Frame | null | undefined;
+  await expect
+    .poll(
+      async () => {
+        if (await pageCardNumber.isVisible()) {
+          form = null;
+          return true;
+        }
+        for (const f of page.frames()) {
+          if (f !== page.mainFrame() && (await framedCardNumber(f).isVisible())) {
+            form = f;
+            return true;
+          }
+        }
+        return false;
+      },
+      { message: "Stripe Checkout shows a card number field", timeout: 30_000 },
+    )
+    .toBe(true);
+
+  if (!form) {
+    return {
+      cardNumber: pageCardNumber,
+      cardExpiry: page.locator("#cardExpiry"),
+      cardCvc: page.locator("#cardCvc"),
+      billingName: page.locator("#billingName"),
+      postalCode: page.locator("#billingPostalCode"),
+      submit: page.locator(".SubmitButton"),
+    };
+  }
+  return {
+    cardNumber: framedCardNumber(form),
+    cardExpiry: form.getByRole("textbox", { name: "Expiration (MM/YY)" }),
+    cardCvc: form.getByRole("textbox", { name: "Security code" }),
+    billingName: form.getByRole("textbox", { name: "Name on card" }),
+    postalCode: form.getByRole("textbox", { name: /ZIP|Postal/i }),
+    submit: form.getByRole("button", { name: "Subscribe", exact: true }),
+  };
+}
+
 /**
  * Pay on Stripe's hosted Checkout page with the always-approved test card
- * and wait to land back on /manage/vendor/plan. These are Stripe's stable
- * field ids; if it changes them, this is the block to update.
+ * and wait to land back on /manage/vendor/plan.
  */
 async function payWithTestCard(page: Page): Promise<void> {
-  await page.fill("#cardNumber", "4242424242424242");
-  await page.fill("#cardExpiry", "12/34");
-  await page.fill("#cardCvc", "123");
-  await page.fill("#billingName", "E2E Test");
-  const postalCode = page.locator("#billingPostalCode");
-  if (await postalCode.isVisible()) {
-    await postalCode.fill("94107");
+  const f = await checkoutFields(page);
+  await f.cardNumber.fill("4242424242424242");
+  await f.cardExpiry.fill("12/34");
+  await f.cardCvc.fill("123");
+  await f.billingName.fill("E2E Test");
+  // Asked for only in some countries; the runner's location picks one.
+  if (await f.postalCode.isVisible()) {
+    await f.postalCode.fill("94107");
   }
   await Promise.all([
     page.waitForURL(/\/manage\/vendor\/plan/, { timeout: 60_000 }),
-    page.locator(".SubmitButton").click(),
+    f.submit.click(),
   ]);
 }
 
