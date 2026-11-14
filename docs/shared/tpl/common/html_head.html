@@ -10,11 +10,11 @@
 <meta name="plausible-props" content="[% plausible_props | html %]">
 [% END %]
 
+[%- PROCESS tpl/common/language_headers.html -%]
+
 [%- IF page.canonical %]
 <link rel="canonical" href="[% page.canonical | html %]">
 [% END -%]
-
-[%- PROCESS tpl/common/language_headers.html -%]
 
 
 <link rel="stylesheet" href="[% combust.static_url("/build/style.css") %]" type="text/css">
