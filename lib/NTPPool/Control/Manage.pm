@@ -133,12 +133,6 @@ sub init {
                 $self->plausible_props("account" => $a->{id_token});
             }
         }
-
-        # Redirect users with scheduled deletion to logout page
-        if ($self->user->{deletion_on} and $self->request->uri ne "/manage/logout") {
-            return $self->redirect($self->manage_url('/manage/logout'));
-        }
-
     }
     elsif (my $err = $self->session_error) {
 
