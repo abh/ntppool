@@ -1,15 +1,27 @@
 [%- # Pages can set page.canonical_path to the path (without the language
    # prefix) they should be indexed under; otherwise the request path is
-   # used. Each language version is canonical for itself; the hreflang
-   # links tie the versions together.
+   # used.
    canonical_path = page.canonical_path || combust.request.path;
    canonical_path = canonical_path.replace('/index\.html$', '/');
-   canonical_lang = combust.path_language;
-   page.canonical = combust.www_url((canonical_lang ? '/' _ canonical_lang : '') _ canonical_path);
+
+   # Account, score and zone pages are mostly data that reads the same in
+   # every language. Index only the URL without a language prefix (it
+   # serves the visitor's language) and leave out the hreflang links.
+   # Other pages are canonical for their own language, tied together with
+   # hreflang links.
+   language_neutral = canonical_path.match('^/(a|scores|zone)/');
+   IF language_neutral;
+       page.canonical = combust.www_url(canonical_path);
+   ELSE;
+       canonical_lang = combust.path_language;
+       page.canonical = combust.www_url((canonical_lang ? '/' _ canonical_lang : '') _ canonical_path);
+   END;
 -%]
+[% UNLESS language_neutral %]
 [% FOR lang_id = combust.valid_languages_sorted %]
 [%- testing_lang = combust.valid_languages.$lang_id.testing || 0 %]
 [%- NEXT IF testing_lang AND combust.deployment_mode == 'prod' %]
 <link rel="alternate" hreflang="[% lang_id %]" href="[% combust.www_url('/' _ lang_id _ canonical_path) | html %]" />
 [%- END %]
 <link rel="alternate" hreflang="x-default" href="[% combust.www_url(canonical_path) | html %]" />
+[% END %]
