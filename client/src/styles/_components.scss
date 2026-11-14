@@ -1504,6 +1504,27 @@ div.product-group .btn {
     display: block;
 }
 
+// <server-points> (docs/shared/static/js/server-points.js, built from
+// ntppool-plots/server-points). The component injects no styles of its own.
+.server-points__table {
+    border-collapse: collapse;
+    margin-top: 0.5rem;
+}
+
+.server-points__th,
+.server-points__td {
+    padding: 0.25rem 0.5rem;
+    text-align: left;
+}
+
+.server-points__th {
+    border-bottom: 1px solid #ddd;
+}
+
+.server-points__error {
+    color: red;
+}
+
 // RTT cell fallback styles (for CSP compliance)
 .monitor-rtt-fallback {
     font-size: 0.7rem;

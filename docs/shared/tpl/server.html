@@ -127,7 +127,7 @@ and enable javascript to see the new graphs.<br><br>
 <p>
 <h3>Client distribution</h3>
 [% page.js.push("module:server-points.js"); %]
-<server-points serverip="[% server_data.ip %]"></server-points>
+<server-points serverip="[% server_data.ip %]" apiurl="[% combust.www_url('/api/data/server/dns/answers/') %]"></server-points>
 
 <br>
 The units are in permyriad (&pertenk;, 1/10000). "100" equals one percent of DNS queries from the specified country.<br>
