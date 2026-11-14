@@ -4,6 +4,23 @@ All notable changes to the NTP Pool Project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## prod-2026.11.1
+
+### 🔒 Security
+
+- Fix: scheduling your account for deletion signs you out on every device
+  right away (thanks TheHuman00)
+
+### 🌐 User Interface & Experience
+
+- Fix: when a chart fails to load, the page asks you to reload instead of
+  telling you to upgrade your browser
+- Fix: zone URLs with extra path segments, such as `/zone/ch/1000`, give a
+  404 instead of showing the global zone page
+- Fix: pages tell search engines their canonical URL. Profile, scores and
+  zone pages read the same in every language, so their canonical URL is the
+  one without a language prefix
+
 ## prod-2026.11.0
 
 ### 🌐 User Interface & Experience
