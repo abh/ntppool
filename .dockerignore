@@ -10,3 +10,5 @@ e2e/playwright-report/
 e2e/test-logs/
 test-results/
 .playwright-mcp/
+# Go build helpers for CI (tools/static-upload); not part of the image.
+tools/

@@ -1,0 +1,63 @@
+# Uploads the hash-named client build files from the image build.yaml just
+# pushed to the ntppool-static bucket, so HTML from any recent build still
+# finds its JS and CSS after a deploy. tools/static-upload does the work:
+# it uploads missing files, refreshes identical ones, fails on any other
+# difference, and waits until the dala zone has every file.
+# Design: ntppool-plans/ntppool/docs/superpowers/specs/
+# 2026-11-15-static-build-asset-store-design.md
+#
+# No pull_request: that event has no secrets, and the build workflow it
+# depends on needs them to push the image. cron: build.yaml also runs on
+# cron (the weekly e2e-stripe run) and pushes the sha- tag for that commit
+# again; that rebuild is uploaded too, and the uploader fails if its bytes
+# differ from what is already stored.
+#
+# This must be green before an image is bumped in flux-ntp.
+#
+# ${VAR} anywhere in this file is substituted before the pipeline starts,
+# so shell variables in commands are written without braces, and workspace
+# paths are relative (${CI_WORKSPACE} is empty here).
+when:
+  - event: [push, tag, manual, cron]
+
+depends_on: [build]
+
+steps:
+  # The ntppool image runs as user ntppool, which can't write to the
+  # workspace the clone step created.
+  - name: prepare
+    image: alpine:3.24
+    commands:
+      - mkdir -p static-build
+      - chmod 777 static-build
+
+  # Copy from the image build.yaml pushed, so the files are the image's
+  # files. cp -RP copies the app.js/style.css/d3-vendor.js symlinks as
+  # symlinks (the uploader checks that they are). Not cp -a: this step runs
+  # as user ntppool, and busybox cp fails when it can't keep the owner.
+  - name: extract
+    image: harbor.ntppool.org/ntppool/ntppool:sha-${CI_COMMIT_SHA:0:8}
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        set -e
+        cp -RP /ntppool/docs/shared/static/build/. static-build/
+        echo "copied $(ls -A static-build | wc -l) entries"
+
+  # Uses the build namespace's shared go-pkg volume (flux/docs/woodpecker.md),
+  # the same setup as the Go repos.
+  - name: upload
+    image: golang:1.27.4
+    volumes:
+      - go-pkg:/go/pkg
+    environment:
+      GOMODCACHE: /go/pkg/mod
+      GOCACHE: /go/pkg/cache
+      AWS_ACCESS_KEY_ID:
+        from_secret: s3_access_key
+      AWS_SECRET_ACCESS_KEY:
+        from_secret: s3_secret_key
+    commands:
+      - cd tools/static-upload
+      - go run . -dir ../../static-build
